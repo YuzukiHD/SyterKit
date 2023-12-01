@@ -1,1 +1,3 @@
 # SyterKit
+
+## Get Started
