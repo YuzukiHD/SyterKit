@@ -30,7 +30,7 @@ extern uint32_t __stack_ddr_srv_start;
 extern uint32_t __stack_ddr_srv_end;
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sun8i-v851s-tinyvision.dtb"
+#define CONFIG_DTB_FILENAME "sunxi.dtb"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
@@ -67,7 +67,7 @@ typedef struct
 
 sunxi_uart_t uart_dbg = {
     .base = 0x02500000,
-    .id = 2,
+    .id = 0,
     .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
     .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
 };

@@ -20,7 +20,7 @@ extern uint32_t __stack_ddr_srv_end;
 
 sunxi_uart_t uart_dbg = {
 	.base = 0x02500000,
-	.id = 2,
+	.id = 0,
 	.gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
 	.gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
 };
