@@ -14,9 +14,9 @@
 #include "sys-dram.h"
 #include "reg-dram.h"
 
-#define readl(addr)		   read32(addr)
-#define writel(val, addr)  write32((addr), (val))
-#define udelay(c)		   sdelay(c)
+#define readl(addr) read32(addr)
+#define writel(val, addr) write32((addr), (val))
+#define udelay(c) sdelay(c)
 #define DIV_ROUND_UP(a, b) (((a) + (b)-1) / (b))
 
 #define CONFIG_SYS_SDRAM_BASE SDRAM_BASE
@@ -81,10 +81,12 @@ static void eye_delay_compensation(dram_para_t *para) // s1
 	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(10)), delay); // DQS1 N
 
 	// DQS0 enable bit delay
-	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(0)), (para->dram_tpr11 & 0xf0000) << 9);
+	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(0)),
+		     (para->dram_tpr11 & 0xf0000) << 9);
 
 	// DQS1 enable bit delay
-	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(1)), (para->dram_tpr11 & 0xf00000) << 5);
+	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(1)),
+		     (para->dram_tpr11 & 0xf00000) << 5);
 
 	// PGCR0: release AC loopback FIFO reset
 	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), (1 << 26));
@@ -98,9 +100,12 @@ static void eye_delay_compensation(dram_para_t *para) // s1
 		setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay);
 
 	// Set CK CS delay
-	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(2)), (para->dram_tpr10 & 0x0f) << 8);
-	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(3)), (para->dram_tpr10 & 0x0f) << 8);
-	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(28)), (para->dram_tpr10 & 0xf00) >> 4);
+	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(2)),
+		     (para->dram_tpr10 & 0x0f) << 8);
+	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(3)),
+		     (para->dram_tpr10 & 0x0f) << 8);
+	setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(28)),
+		     (para->dram_tpr10 & 0xf00) >> 4);
 }
 
 /*
@@ -156,246 +161,246 @@ static void mctl_set_timing_params(dram_para_t *para)
 	uint32_t tdinit3;
 
 	switch (para->dram_type) {
-		case SUNXI_DRAM_TYPE_DDR2:
-			/* DRAM_TPR0 */
-			tfaw = ns_to_t(para, 50);
-			trrd = ns_to_t(para, 10);
-			trcd = ns_to_t(para, 20);
-			trc	 = ns_to_t(para, 65);
+	case SUNXI_DRAM_TYPE_DDR2:
+		/* DRAM_TPR0 */
+		tfaw = ns_to_t(para, 50);
+		trrd = ns_to_t(para, 10);
+		trcd = ns_to_t(para, 20);
+		trc = ns_to_t(para, 65);
 
-			/* DRAM_TPR1 */
-			txp	 = 2;
-			twtr = ns_to_t(para, 8);
-			twr	 = ns_to_t(para, 15);
-			trp	 = ns_to_t(para, 15);
-			tras = ns_to_t(para, 45);
+		/* DRAM_TPR1 */
+		txp = 2;
+		twtr = ns_to_t(para, 8);
+		twr = ns_to_t(para, 15);
+		trp = ns_to_t(para, 15);
+		tras = ns_to_t(para, 45);
 
-			/* DRAM_TRP2 */
-			trfc  = ns_to_t(para, 328);
-			trefi = ns_to_t(para, 7800) / 32;
+		/* DRAM_TRP2 */
+		trfc = ns_to_t(para, 328);
+		trefi = ns_to_t(para, 7800) / 32;
 
-			trasmax = para->dram_clk / 30;
-			if (para->dram_clk < 409) {
-				t_rdata_en = 1;
-				tcl		   = 3;
-				mr0		   = 0x06a3;
-			} else {
-				t_rdata_en = 2;
-				tcl		   = 4;
-				mr0		   = 0x0e73;
-			}
-			tmrd	   = 2;
-			twtp	   = twr + 5;
-			tcksrx	   = 5;
-			tckesr	   = 4;
-			trd2wr	   = 4;
-			tcke	   = 3;
-			tmod	   = 12;
-			wr_latency = 1;
-			tmrw	   = 0;
-			twr2rd	   = twtr + 5;
-			tcwl	   = 0;
-
-			mr1 = para->dram_mr1;
-			mr2 = 0;
-			mr3 = 0;
-
-			tdinit0 = 200 * para->dram_clk + 1;
-			tdinit1 = 100 * para->dram_clk / 1000 + 1;
-			tdinit2 = 200 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-
-			break;
-		case SUNXI_DRAM_TYPE_DDR3:
-			trfc  = ns_to_t(para, 350);
-			trefi = ns_to_t(para, 7800) / 32 + 1; // XXX
-
-			twtr = ns_to_t(para, 8) + 2; // + 2 ? XXX
-			/* Only used by trd2wr calculation, which gets discard below */
-			//		twr		= max(ns_to_t(para, 15), 2);
-			trrd = max(ns_to_t(para, 10), 2);
-			txp	 = max(ns_to_t(para, 10), 2);
-
-			if (para->dram_clk <= 800) {
-				tfaw = ns_to_t(para, 50);
-				trcd = ns_to_t(para, 15);
-				trp	 = ns_to_t(para, 15);
-				trc	 = ns_to_t(para, 53);
-				tras = ns_to_t(para, 38);
-
-				mr0		   = 0x1c70;
-				mr2		   = 0x18;
-				tcl		   = 6;
-				wr_latency = 2;
-				tcwl	   = 4;
-				t_rdata_en = 4;
-			} else {
-				tfaw = ns_to_t(para, 35);
-				trcd = ns_to_t(para, 14);
-				trp	 = ns_to_t(para, 14);
-				trc	 = ns_to_t(para, 48);
-				tras = ns_to_t(para, 34);
-
-				mr0		   = 0x1e14;
-				mr2		   = 0x20;
-				tcl		   = 7;
-				wr_latency = 3;
-				tcwl	   = 5;
-				t_rdata_en = 5;
-			}
-
-			trasmax = para->dram_clk / 30;
-			twtp	= tcwl + 2 + twtr; // WL+BL/2+tWTR
-			/* Gets overwritten below */
-			//		trd2wr		= tcwl + 2 + twr;		// WL+BL/2+tWR
-			twr2rd = tcwl + twtr; // WL+tWTR
-
-			tdinit0 = 500 * para->dram_clk + 1; // 500 us
-			tdinit1 = 360 * para->dram_clk / 1000 + 1; // 360 ns
-			tdinit2 = 200 * para->dram_clk + 1; // 200 us
-			tdinit3 = 1 * para->dram_clk + 1; //   1 us
-
-			mr1	   = para->dram_mr1;
-			mr3	   = 0;
-			tcke   = 3;
-			tcksrx = 5;
-			tckesr = 4;
-			if (((para->dram_tpr13 & 0xc) == 0x04) || para->dram_clk < 912)
-				trd2wr = 5;
-			else
-				trd2wr = 6;
-
-			tmod = 12;
-			tmrd = 4;
-			tmrw = 0;
-
-			break;
-		case SUNXI_DRAM_TYPE_LPDDR2:
-			tfaw = max(ns_to_t(para, 50), 4);
-			trrd = max(ns_to_t(para, 10), 1);
-			trcd = max(ns_to_t(para, 24), 2);
-			trc	 = ns_to_t(para, 70);
-			txp	 = ns_to_t(para, 8);
-			if (txp < 2) {
-				txp++;
-				twtr = 2;
-			} else {
-				twtr = txp;
-			}
-			twr	  = max(ns_to_t(para, 15), 2);
-			trp	  = ns_to_t(para, 17);
-			tras  = ns_to_t(para, 42);
-			trefi = ns_to_t(para, 3900) / 32;
-			trfc  = ns_to_t(para, 210);
-
-			trasmax	   = para->dram_clk / 60;
-			mr3		   = para->dram_mr3;
-			twtp	   = twr + 5;
-			mr2		   = 6;
-			mr1		   = 5;
-			tcksrx	   = 5;
-			tckesr	   = 5;
-			trd2wr	   = 10;
-			tcke	   = 2;
-			tmod	   = 5;
-			tmrd	   = 5;
-			tmrw	   = 3;
-			tcl		   = 4;
-			wr_latency = 1;
+		trasmax = para->dram_clk / 30;
+		if (para->dram_clk < 409) {
 			t_rdata_en = 1;
+			tcl = 3;
+			mr0 = 0x06a3;
+		} else {
+			t_rdata_en = 2;
+			tcl = 4;
+			mr0 = 0x0e73;
+		}
+		tmrd = 2;
+		twtp = twr + 5;
+		tcksrx = 5;
+		tckesr = 4;
+		trd2wr = 4;
+		tcke = 3;
+		tmod = 12;
+		wr_latency = 1;
+		tmrw = 0;
+		twr2rd = twtr + 5;
+		tcwl = 0;
 
-			tdinit0 = 200 * para->dram_clk + 1;
-			tdinit1 = 100 * para->dram_clk / 1000 + 1;
-			tdinit2 = 11 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-			twr2rd	= twtr + 5;
-			tcwl	= 2;
-			mr1		= 195;
-			mr0		= 0;
+		mr1 = para->dram_mr1;
+		mr2 = 0;
+		mr3 = 0;
 
-			break;
-		case SUNXI_DRAM_TYPE_LPDDR3:
-			tfaw  = max(ns_to_t(para, 50), 4);
-			trrd  = max(ns_to_t(para, 10), 1);
-			trcd  = max(ns_to_t(para, 24), 2);
-			trc	  = ns_to_t(para, 70);
-			twtr  = max(ns_to_t(para, 8), 2);
-			twr	  = max(ns_to_t(para, 15), 2);
-			trp	  = ns_to_t(para, 17);
-			tras  = ns_to_t(para, 42);
-			trefi = ns_to_t(para, 3900) / 32;
-			trfc  = ns_to_t(para, 210);
-			txp	  = twtr;
+		tdinit0 = 200 * para->dram_clk + 1;
+		tdinit1 = 100 * para->dram_clk / 1000 + 1;
+		tdinit2 = 200 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
 
-			trasmax = para->dram_clk / 60;
-			if (para->dram_clk < 800) {
-				tcwl	   = 4;
-				wr_latency = 3;
-				t_rdata_en = 6;
-				mr2		   = 12;
-			} else {
-				tcwl	   = 3;
-				tcke	   = 6;
-				wr_latency = 2;
-				t_rdata_en = 5;
-				mr2		   = 10;
-			}
-			twtp	= tcwl + 5;
-			tcl		= 7;
-			mr3		= para->dram_mr3;
-			tcksrx	= 5;
-			tckesr	= 5;
-			trd2wr	= 13;
-			tcke	= 3;
-			tmod	= 12;
-			tdinit0 = 400 * para->dram_clk + 1;
-			tdinit1 = 500 * para->dram_clk / 1000 + 1;
-			tdinit2 = 11 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-			tmrd	= 5;
-			tmrw	= 5;
-			twr2rd	= tcwl + twtr + 5;
-			mr1		= 195;
-			mr0		= 0;
+		break;
+	case SUNXI_DRAM_TYPE_DDR3:
+		trfc = ns_to_t(para, 350);
+		trefi = ns_to_t(para, 7800) / 32 + 1; // XXX
 
-			break;
-		default:
-			trfc  = 128;
-			trp	  = 6;
-			trefi = 98;
-			txp	  = 10;
-			twr	  = 8;
-			twtr  = 3;
-			tras  = 14;
-			tfaw  = 16;
-			trc	  = 20;
-			trcd  = 6;
-			trrd  = 3;
+		twtr = ns_to_t(para, 8) + 2; // + 2 ? XXX
+		/* Only used by trd2wr calculation, which gets discard below */
+		//		twr		= max(ns_to_t(para, 15), 2);
+		trrd = max(ns_to_t(para, 10), 2);
+		txp = max(ns_to_t(para, 10), 2);
 
-			twr2rd	   = 8; // 48(sp)
-			tcksrx	   = 4; // t1
-			tckesr	   = 3; // t4
-			trd2wr	   = 4; // t6
-			trasmax	   = 27; // t3
-			twtp	   = 12; // s6
-			tcke	   = 2; // s8
-			tmod	   = 6; // t0
-			tmrd	   = 2; // t5
-			tmrw	   = 0; // a1
-			tcwl	   = 3; // a5
-			tcl		   = 3; // a0
-			wr_latency = 1; // a7
-			t_rdata_en = 1; // a4
-			mr3		   = 0; // s0
-			mr2		   = 0; // t2
-			mr1		   = 0; // s1
-			mr0		   = 0; // a3
-			tdinit3	   = 0; // 40(sp)
-			tdinit2	   = 0; // 32(sp)
-			tdinit1	   = 0; // 24(sp)
-			tdinit0	   = 0; // 16(sp)
+		if (para->dram_clk <= 800) {
+			tfaw = ns_to_t(para, 50);
+			trcd = ns_to_t(para, 15);
+			trp = ns_to_t(para, 15);
+			trc = ns_to_t(para, 53);
+			tras = ns_to_t(para, 38);
 
-			break;
+			mr0 = 0x1c70;
+			mr2 = 0x18;
+			tcl = 6;
+			wr_latency = 2;
+			tcwl = 4;
+			t_rdata_en = 4;
+		} else {
+			tfaw = ns_to_t(para, 35);
+			trcd = ns_to_t(para, 14);
+			trp = ns_to_t(para, 14);
+			trc = ns_to_t(para, 48);
+			tras = ns_to_t(para, 34);
+
+			mr0 = 0x1e14;
+			mr2 = 0x20;
+			tcl = 7;
+			wr_latency = 3;
+			tcwl = 5;
+			t_rdata_en = 5;
+		}
+
+		trasmax = para->dram_clk / 30;
+		twtp = tcwl + 2 + twtr; // WL+BL/2+tWTR
+		/* Gets overwritten below */
+		//		trd2wr		= tcwl + 2 + twr;		// WL+BL/2+tWR
+		twr2rd = tcwl + twtr; // WL+tWTR
+
+		tdinit0 = 500 * para->dram_clk + 1; // 500 us
+		tdinit1 = 360 * para->dram_clk / 1000 + 1; // 360 ns
+		tdinit2 = 200 * para->dram_clk + 1; // 200 us
+		tdinit3 = 1 * para->dram_clk + 1; //   1 us
+
+		mr1 = para->dram_mr1;
+		mr3 = 0;
+		tcke = 3;
+		tcksrx = 5;
+		tckesr = 4;
+		if (((para->dram_tpr13 & 0xc) == 0x04) || para->dram_clk < 912)
+			trd2wr = 5;
+		else
+			trd2wr = 6;
+
+		tmod = 12;
+		tmrd = 4;
+		tmrw = 0;
+
+		break;
+	case SUNXI_DRAM_TYPE_LPDDR2:
+		tfaw = max(ns_to_t(para, 50), 4);
+		trrd = max(ns_to_t(para, 10), 1);
+		trcd = max(ns_to_t(para, 24), 2);
+		trc = ns_to_t(para, 70);
+		txp = ns_to_t(para, 8);
+		if (txp < 2) {
+			txp++;
+			twtr = 2;
+		} else {
+			twtr = txp;
+		}
+		twr = max(ns_to_t(para, 15), 2);
+		trp = ns_to_t(para, 17);
+		tras = ns_to_t(para, 42);
+		trefi = ns_to_t(para, 3900) / 32;
+		trfc = ns_to_t(para, 210);
+
+		trasmax = para->dram_clk / 60;
+		mr3 = para->dram_mr3;
+		twtp = twr + 5;
+		mr2 = 6;
+		mr1 = 5;
+		tcksrx = 5;
+		tckesr = 5;
+		trd2wr = 10;
+		tcke = 2;
+		tmod = 5;
+		tmrd = 5;
+		tmrw = 3;
+		tcl = 4;
+		wr_latency = 1;
+		t_rdata_en = 1;
+
+		tdinit0 = 200 * para->dram_clk + 1;
+		tdinit1 = 100 * para->dram_clk / 1000 + 1;
+		tdinit2 = 11 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
+		twr2rd = twtr + 5;
+		tcwl = 2;
+		mr1 = 195;
+		mr0 = 0;
+
+		break;
+	case SUNXI_DRAM_TYPE_LPDDR3:
+		tfaw = max(ns_to_t(para, 50), 4);
+		trrd = max(ns_to_t(para, 10), 1);
+		trcd = max(ns_to_t(para, 24), 2);
+		trc = ns_to_t(para, 70);
+		twtr = max(ns_to_t(para, 8), 2);
+		twr = max(ns_to_t(para, 15), 2);
+		trp = ns_to_t(para, 17);
+		tras = ns_to_t(para, 42);
+		trefi = ns_to_t(para, 3900) / 32;
+		trfc = ns_to_t(para, 210);
+		txp = twtr;
+
+		trasmax = para->dram_clk / 60;
+		if (para->dram_clk < 800) {
+			tcwl = 4;
+			wr_latency = 3;
+			t_rdata_en = 6;
+			mr2 = 12;
+		} else {
+			tcwl = 3;
+			tcke = 6;
+			wr_latency = 2;
+			t_rdata_en = 5;
+			mr2 = 10;
+		}
+		twtp = tcwl + 5;
+		tcl = 7;
+		mr3 = para->dram_mr3;
+		tcksrx = 5;
+		tckesr = 5;
+		trd2wr = 13;
+		tcke = 3;
+		tmod = 12;
+		tdinit0 = 400 * para->dram_clk + 1;
+		tdinit1 = 500 * para->dram_clk / 1000 + 1;
+		tdinit2 = 11 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
+		tmrd = 5;
+		tmrw = 5;
+		twr2rd = tcwl + twtr + 5;
+		mr1 = 195;
+		mr0 = 0;
+
+		break;
+	default:
+		trfc = 128;
+		trp = 6;
+		trefi = 98;
+		txp = 10;
+		twr = 8;
+		twtr = 3;
+		tras = 14;
+		tfaw = 16;
+		trc = 20;
+		trcd = 6;
+		trrd = 3;
+
+		twr2rd = 8; // 48(sp)
+		tcksrx = 4; // t1
+		tckesr = 3; // t4
+		trd2wr = 4; // t6
+		trasmax = 27; // t3
+		twtp = 12; // s6
+		tcke = 2; // s8
+		tmod = 6; // t0
+		tmrd = 2; // t5
+		tmrw = 0; // a1
+		tcwl = 3; // a5
+		tcl = 3; // a0
+		wr_latency = 1; // a7
+		t_rdata_en = 1; // a4
+		mr3 = 0; // s0
+		mr2 = 0; // t2
+		mr1 = 0; // s1
+		mr0 = 0; // a3
+		tdinit3 = 0; // 40(sp)
+		tdinit2 = 0; // 32(sp)
+		tdinit1 = 0; // 24(sp)
+		tdinit0 = 0; // 16(sp)
+
+		break;
 	}
 
 	/* Set mode registers */
@@ -404,23 +409,34 @@ static void mctl_set_timing_params(dram_para_t *para)
 	writel(mr2, (MCTL_PHY_BASE + MCTL_PHY_DRAM_MR2));
 	writel(mr3, (MCTL_PHY_BASE + MCTL_PHY_DRAM_MR3));
 	/* TODO: dram_odt_en is either 0x0 or 0x1, so right shift looks weird */
-	writel((para->dram_odt_en >> 4) & 0x3, (MCTL_PHY_BASE + MCTL_PHY_LP3MR11));
+	writel((para->dram_odt_en >> 4) & 0x3,
+	       (MCTL_PHY_BASE + MCTL_PHY_LP3MR11));
 
 	/* Set dram timing DRAMTMG0 - DRAMTMG5 */
-	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG0));
-	writel((txp << 16) | (trtp << 8) | (trc << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG1));
-	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG2));
-	writel((tmrw << 16) | (tmrd << 12) | (tmod << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG3));
-	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG4));
-	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0), (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG5));
+	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG0));
+	writel((txp << 16) | (trtp << 8) | (trc << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG1));
+	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG2));
+	writel((tmrw << 16) | (tmrd << 12) | (tmod << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG3));
+	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG4));
+	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_DRAMTMG5));
 
 	/* Set dual rank timing */
-	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DRAMTMG8), 0xf000ffff, (para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
+	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DRAMTMG8), 0xf000ffff,
+			(para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
 
 	/* Set phy interface time PITMG0, PTR3, PTR4 */
-	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0), (MCTL_PHY_BASE + MCTL_PHY_PITMG0));
-	writel(((tdinit0 << 0) | (tdinit1 << 20)), (MCTL_PHY_BASE + MCTL_PHY_PTR3));
-	writel(((tdinit2 << 0) | (tdinit3 << 20)), (MCTL_PHY_BASE + MCTL_PHY_PTR4));
+	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0),
+	       (MCTL_PHY_BASE + MCTL_PHY_PITMG0));
+	writel(((tdinit0 << 0) | (tdinit1 << 20)),
+	       (MCTL_PHY_BASE + MCTL_PHY_PTR3));
+	writel(((tdinit2 << 0) | (tdinit3 << 20)),
+	       (MCTL_PHY_BASE + MCTL_PHY_PTR4));
 
 	/* Set refresh timing and mode */
 	writel((trefi << 16) | (trfc << 0), (MCTL_PHY_BASE + MCTL_PHY_RFSHTMG));
@@ -518,9 +534,9 @@ static void mctl_sys_init(dram_para_t *para)
 //
 static void mctl_com_init(dram_para_t *para)
 {
-	uint32_t	  val, width;
+	uint32_t val, width;
 	unsigned long ptr;
-	int			  i;
+	int i;
 
 	// Setting controller wait time
 	clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_DBGCR), 0x3f00, 0x2000);
@@ -530,7 +546,8 @@ static void mctl_com_init(dram_para_t *para)
 	val |= (para->dram_type & 0x7) << 16; // DRAM type
 	val |= (~para->dram_para2 & 0x1) << 12; // DQ width
 	val |= (1 << 22); // ??
-	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 || para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
+	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 ||
+	    para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
 		val |= (1 << 19); // type 6 and 7 must use 1T
 	} else {
 		if (para->dram_tpr13 & (1 << 5))
@@ -539,7 +556,8 @@ static void mctl_com_init(dram_para_t *para)
 	writel(val, (MCTL_COM_BASE + MCTL_COM_WORK_MODE0));
 
 	// init rank / bank / row for single/dual or two different ranks
-	if ((para->dram_para2 & (1 << 8)) && ((para->dram_para2 & 0xf000) != 0x1000))
+	if ((para->dram_para2 & (1 << 8)) &&
+	    ((para->dram_para2 & 0xf000) != 0x1000))
 		width = 32;
 	else
 		width = 16;
@@ -550,32 +568,34 @@ static void mctl_com_init(dram_para_t *para)
 
 		val |= (para->dram_para2 >> 12) & 0x3; // rank
 		val |= ((para->dram_para1 >> (i + 12)) << 2) & 0x4; // bank - 2
-		val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) & 0xff; // row - 1
+		val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) &
+		       0xff; // row - 1
 
 		// convert from page size to column addr width - 3
 		switch ((para->dram_para1 >> i) & 0xf) {
-			case 8:
-				val |= 0xa00;
-				break;
-			case 4:
-				val |= 0x900;
-				break;
-			case 2:
-				val |= 0x800;
-				break;
-			case 1:
-				val |= 0x700;
-				break;
-			default:
-				val |= 0x600;
-				break;
+		case 8:
+			val |= 0xa00;
+			break;
+		case 4:
+			val |= 0x900;
+			break;
+		case 2:
+			val |= 0x800;
+			break;
+		case 1:
+			val |= 0x700;
+			break;
+		default:
+			val |= 0x600;
+			break;
 		}
 		writel(val, ptr);
 		ptr += 4;
 	}
 
 	// set ODTMAP based on number of ranks in use
-	val = (readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)) & 0x1) ? 0x303 : 0x201;
+	val = (readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)) & 0x1) ? 0x303 :
+								     0x201;
 	writel(val, (MCTL_PHY_BASE + MCTL_PHY_ODTMAP));
 
 	// set mctl reg 3c4 to zero when using half DQ
@@ -584,11 +604,12 @@ static void mctl_com_init(dram_para_t *para)
 
 	// set dram address mapping from dram_tpr4 param
 	if (para->dram_tpr4) {
-		setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0), (para->dram_tpr4 & 0x3) << 25);
-		setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE1), (para->dram_tpr4 & 0x7fc) << 10);
+		setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0),
+			     (para->dram_tpr4 & 0x3) << 25);
+		setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE1),
+			     (para->dram_tpr4 & 0x7fc) << 10);
 	}
 }
-
 
 // Init the controller channel. The key part is placing commands in the main
 // command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
@@ -600,7 +621,8 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	dqs_gating_mode = (para->dram_tpr13 & 0xc) >> 2;
 
 	// set DDR clock to half of CPU clock
-	clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_TMR), 0xfff, (para->dram_clk / 2) - 1);
+	clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_TMR), 0xfff,
+			(para->dram_clk / 2) - 1);
 
 	// MRCTRL0 nibble 3 undocumented
 	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xf00, 0x300);
@@ -612,16 +634,20 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	// DX0GCR0
 	if (para->dram_clk > 672)
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(0)), 0xf63e, val);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(0)), 0xf63e,
+				val);
 	else
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(0)), 0xf03e, val);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(0)), 0xf03e,
+				val);
 
 	// DX1GCR0
 	if (para->dram_clk > 672) {
 		setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(0)), 0x400);
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(1)), 0xf63e, val);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(1)), 0xf63e,
+				val);
 	} else {
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(1)), 0xf03e, val);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(1)), 0xf03e,
+				val);
 	}
 
 	// (MCTL_PHY_BASE+MCTL_PHY_ACIOCR0) undocumented
@@ -637,31 +663,40 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	} else if (dqs_gating_mode == 2) {
 		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0, 0x80);
 
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DQSGMR), 0x107, (((para->dram_tpr13 >> 16) & 0x1f) - 2) | 0x100);
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR), (1 << 31), (1 << 27));
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DQSGMR), 0x107,
+				(((para->dram_tpr13 >> 16) & 0x1f) - 2) |
+					0x100);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR), (1 << 31),
+				(1 << 27));
 	} else {
 		clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0x40);
 		udelay(10);
 		setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0);
 	}
 
-	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 || para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
+	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 ||
+	    para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
 		if (dqs_gating_mode == 1)
-			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR), 0x080000c0, 0x80000000);
+			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR),
+					0x080000c0, 0x80000000);
 		else
-			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR), 0x77000000, 0x22000000);
+			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXCCR),
+					0x77000000, 0x22000000);
 	}
 
 	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DTCR), 0x0fffffff,
-					(para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007);
+			(para->dram_para2 & (1 << 12)) ? 0x03000001 :
+							 0x01000007);
 
-	if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
+	if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) &
+	    (1 << 16)) {
 		clrbits_le32((R_PRCM_BASE + VDD_SYS_PWROFF_GATING_REG), 0x2);
 		udelay(10);
 	}
 
 	// Set ZQ config
-	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_ZQCR), 0x3ffffff, (para->dram_zq & 0x00ffffff) | (1 << 25));
+	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_ZQCR), 0x3ffffff,
+			(para->dram_zq & 0x00ffffff) | (1 << 25));
 
 	// Initialise DRAM controller
 	if (dqs_gating_mode == 1) {
@@ -675,14 +710,18 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 		// 0x520 = prep DQS gating + DRAM init + d-cal
 		if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
-			writel(0x5a0, (MCTL_PHY_BASE + MCTL_PHY_PIR)); // + DRAM reset
+			writel(0x5a0,
+			       (MCTL_PHY_BASE + MCTL_PHY_PIR)); // + DRAM reset
 		else
 			writel(0x520, (MCTL_PHY_BASE + MCTL_PHY_PIR));
 	} else {
-		if ((readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) == 0) {
+		if ((readl((SUNXI_R_CPUCFG_BASE +
+			    SUNXI_R_CPUCFG_SUP_STAN_FLAG)) &
+		     (1 << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
-				writel(0x1f2, (MCTL_PHY_BASE + MCTL_PHY_PIR)); // + DRAM reset
+				writel(0x1f2, (MCTL_PHY_BASE +
+					       MCTL_PHY_PIR)); // + DRAM reset
 			else
 				writel(0x172, (MCTL_PHY_BASE + MCTL_PHY_PIR));
 		} else {
@@ -697,8 +736,10 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000, 0x04000000);
+	if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) &
+	    (1 << 16)) {
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000,
+				0x04000000);
 		udelay(10);
 
 		setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
@@ -718,18 +759,21 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 		if (dqs_gating_mode == 1) {
 			clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0);
-			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000, 0x02000000);
+			clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3),
+					0x06000000, 0x02000000);
 			udelay(1);
 			writel(0x401, (MCTL_PHY_BASE + MCTL_PHY_PIR));
 
-			while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & 0x1) == 0) {
+			while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) &
+				0x1) == 0) {
 			}
 		}
 	}
 
 	// Check for training error
 	if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 20)) {
-		printk(LOG_LEVEL_ERROR, "ZQ calibration error, check external 240 ohm resistor\r\n");
+		printk(LOG_LEVEL_ERROR,
+		       "ZQ calibration error, check external 240 ohm resistor\r\n");
 		return 0;
 	}
 
@@ -771,16 +815,18 @@ static unsigned int calculate_rank_size(uint32_t regval)
  */
 static unsigned int DRAMC_get_dram_size(void)
 {
-	uint32_t	 val;
+	uint32_t val;
 	unsigned int size;
 
-	val	 = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)); /* MCTL_COM_WORK_MODE0 */
+	val = readl((MCTL_COM_BASE +
+		     MCTL_COM_WORK_MODE0)); /* MCTL_COM_WORK_MODE0 */
 	size = calculate_rank_size(val);
 
 	if ((val & 0x3) == 0) /* single rank? */
 		return size;
 
-	val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE1)); /* MCTL_WORK_MODE1 */
+	val = readl(
+		(MCTL_COM_BASE + MCTL_COM_WORK_MODE1)); /* MCTL_WORK_MODE1 */
 	if ((val & 0x3) == 0) /* two identical ranks? */
 		return size * 2;
 
@@ -815,12 +861,15 @@ static int dqs_gate_detect(dram_para_t *para)
 	}
 
 	if (dx0 == 2) {
-		dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(1)) & 0x3000000) >> 24;
+		dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(1)) &
+		       0x3000000) >>
+		      24;
 		if (dx1 == 2) {
 			para->dram_para2 = para->dram_para2 & ~0xf00f;
 			printk(LOG_LEVEL_INFO, "single rank and full DQ\r\n");
 		} else {
-			para->dram_para2 = (para->dram_para2 & ~0xf00f) | BIT(0);
+			para->dram_para2 = (para->dram_para2 & ~0xf00f) |
+					   BIT(0);
 			printk(LOG_LEVEL_INFO, "single rank and half DQ\r\n");
 		}
 
@@ -838,9 +887,9 @@ static int dqs_gate_detect(dram_para_t *para)
 
 static int dramc_simple_wr_test(unsigned int mem_mb, int len)
 {
-	unsigned int  offs	= (mem_mb / 2) << 18; // half of memory size
-	unsigned int  patt1 = 0x01234567;
-	unsigned int  patt2 = 0xfedcba98;
+	unsigned int offs = (mem_mb / 2) << 18; // half of memory size
+	unsigned int patt1 = 0x01234567;
+	unsigned int patt2 = 0xfedcba98;
 	unsigned int *addr, v1, v2, i;
 
 	addr = (unsigned int *)CONFIG_SYS_SDRAM_BASE;
@@ -855,14 +904,16 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
-			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n", v1, v2, addr + i);
+			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n",
+			       v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
 			printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
-			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n", v1, v2, addr + offs + i);
+			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n",
+			       v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
@@ -878,11 +929,13 @@ static void mctl_vrefzq_init(dram_para_t *para)
 	if (para->dram_tpr13 & (1 << 17))
 		return;
 
-	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_IOVCR0), 0x7f7f7f7f, para->dram_tpr5);
+	clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_IOVCR0), 0x7f7f7f7f,
+			para->dram_tpr5);
 
 	// IOCVR1
 	if ((para->dram_tpr13 & (1 << 16)) == 0)
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_IOVCR1), 0x7f, para->dram_tpr6 & 0x7f);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_IOVCR1), 0x7f,
+				para->dram_tpr6 & 0x7f);
 }
 
 // Perform an init of the controller. This is actually done 3 times. The first
@@ -916,11 +969,11 @@ static int mctl_core_init(dram_para_t *para)
  */
 static int auto_scan_dram_size(dram_para_t *para)
 {
-	uint32_t	  i = 0, j = 0, current_rank = 0;
-	uint32_t	  rank_count = 1, addr_line = 0;
-	uint32_t	  reg_val = 0, ret = 0, cnt = 0;
+	uint32_t i = 0, j = 0, current_rank = 0;
+	uint32_t rank_count = 1, addr_line = 0;
+	uint32_t reg_val = 0, ret = 0, cnt = 0;
 	unsigned long mc_work_mode;
-	uint32_t	  rank1_addr = CONFIG_SYS_SDRAM_BASE;
+	uint32_t rank1_addr = CONFIG_SYS_SDRAM_BASE;
 
 	// init core
 	if (mctl_core_init(para) == 0) {
@@ -933,30 +986,36 @@ static int auto_scan_dram_size(dram_para_t *para)
 		rank_count = 2;
 
 	for (current_rank = 0; current_rank < rank_count; current_rank++) {
-		mc_work_mode = ((MCTL_COM_BASE + MCTL_COM_WORK_MODE0) + 4 * current_rank);
+		mc_work_mode = ((MCTL_COM_BASE + MCTL_COM_WORK_MODE0) +
+				4 * current_rank);
 
 		/* Set 16 Row 4Bank 512BPage for Rank 1 */
 		if (current_rank == 1) {
-			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0), 0xf0c, 0x6f0);
-			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE1), 0xf0c, 0x6f0);
+			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0),
+					0xf0c, 0x6f0);
+			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE1),
+					0xf0c, 0x6f0);
 			/* update Rank 1 addr */
 			rank1_addr = CONFIG_SYS_SDRAM_BASE + (0x1 << 27);
 		}
 
 		/* write test pattern */
 		for (i = 0; i < 64; i++) {
-			writel((i % 2) ? (CONFIG_SYS_SDRAM_BASE + 4 * i) : (~(CONFIG_SYS_SDRAM_BASE + 4 * i)),
-				   CONFIG_SYS_SDRAM_BASE + 4 * i);
+			writel((i % 2) ? (CONFIG_SYS_SDRAM_BASE + 4 * i) :
+					 (~(CONFIG_SYS_SDRAM_BASE + 4 * i)),
+			       CONFIG_SYS_SDRAM_BASE + 4 * i);
 		}
 		/* set row mode */
 		clrsetbits_le32(mc_work_mode, 0xf0c, 0x6f0);
 		udelay(2);
 
 		for (i = 11; i < 17; i++) {
-			ret = CONFIG_SYS_SDRAM_BASE + (1 << (i + 2 + 9)); /* row-bank-column */
+			ret = CONFIG_SYS_SDRAM_BASE +
+			      (1 << (i + 2 + 9)); /* row-bank-column */
 			cnt = 0;
 			for (j = 0; j < 64; j++) {
-				reg_val = (j % 2) ? (rank1_addr + 4 * j) : (~(rank1_addr + 4 * j));
+				reg_val = (j % 2) ? (rank1_addr + 4 * j) :
+						    (~(rank1_addr + 4 * j));
 				if (reg_val == readl(ret + j * 4)) {
 					cnt++;
 				} else
@@ -970,16 +1029,19 @@ static int auto_scan_dram_size(dram_para_t *para)
 			i = 16;
 		addr_line += i;
 
-		printk(LOG_LEVEL_INFO, "rank %d row = %d \r\n", current_rank, i);
+		printk(LOG_LEVEL_INFO, "rank %d row = %d \r\n", current_rank,
+		       i);
 
 		/* Store rows in para 1 */
 		para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
 		para->dram_para1 |= (i << (16 * current_rank + 4));
-		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n",
+		       para->dram_para1);
 
 		/* Set bank mode for current rank */
 		if (current_rank == 1) { /* Set bank mode for rank0 */
-			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0), 0xffc, 0x6a4);
+			clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0),
+					0xffc, 0x6a4);
 		}
 
 		/* Set bank mode for current rank */
@@ -990,7 +1052,8 @@ static int auto_scan_dram_size(dram_para_t *para)
 			ret = CONFIG_SYS_SDRAM_BASE + (0x1U << (i + 2 + 9));
 			cnt = 0;
 			for (j = 0; j < 64; j++) {
-				reg_val = (j % 2) ? (rank1_addr + 4 * j) : (~(rank1_addr + 4 * j));
+				reg_val = (j % 2) ? (rank1_addr + 4 * j) :
+						    (~(rank1_addr + 4 * j));
 				if (reg_val == readl(ret + j * 4)) {
 					cnt++;
 				} else
@@ -1002,12 +1065,14 @@ static int auto_scan_dram_size(dram_para_t *para)
 		}
 
 		addr_line += i + 2;
-		printk(LOG_LEVEL_INFO, "rank %d bank = %d \r\n", current_rank, (4 + i * 4));
+		printk(LOG_LEVEL_INFO, "rank %d bank = %d \r\n", current_rank,
+		       (4 + i * 4));
 
 		/* Store bank in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
 		para->dram_para1 |= (i << (16 * current_rank + 12));
-		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n",
+		       para->dram_para1);
 
 		/* Set page mode for rank0 */
 		if (current_rank == 1) {
@@ -1020,10 +1085,14 @@ static int auto_scan_dram_size(dram_para_t *para)
 
 		/* Scan per address line, until address wraps (i.e. see shadow) */
 		for (i = 9; i <= 13; i++) {
-			ret = CONFIG_SYS_SDRAM_BASE + (0x1U << i); // column 40000000+（9~13）
+			ret = CONFIG_SYS_SDRAM_BASE +
+			      (0x1U << i); // column 40000000+（9~13）
 			cnt = 0;
 			for (j = 0; j < 64; j++) {
-				reg_val = (j % 2) ? (CONFIG_SYS_SDRAM_BASE + 4 * j) : (~(CONFIG_SYS_SDRAM_BASE + 4 * j));
+				reg_val = (j % 2) ? (CONFIG_SYS_SDRAM_BASE +
+						     4 * j) :
+						    (~(CONFIG_SYS_SDRAM_BASE +
+						       4 * j));
 				if (reg_val == readl(ret + j * 4)) {
 					cnt++;
 				} else {
@@ -1048,22 +1117,26 @@ static int auto_scan_dram_size(dram_para_t *para)
 			i = (0x1U << (i - 10));
 		}
 
-		printk(LOG_LEVEL_INFO, "rank %d page size = %d KB \r\n", current_rank, i);
+		printk(LOG_LEVEL_INFO, "rank %d page size = %d KB \r\n",
+		       current_rank, i);
 
 		/* Store page in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank));
 		para->dram_para1 |= (i << (16 * current_rank));
-		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_INFO, "para->dram_para1 = 0x%x\r\n",
+		       para->dram_para1);
 	}
 
 	/* check dual rank config */
 	if (rank_count == 2) {
 		para->dram_para2 &= 0xfffff0ff;
 		if ((para->dram_para1 & 0xffff) == (para->dram_para1 >> 16)) {
-			printk(LOG_LEVEL_INFO, "rank1 config same as rank0\r\n");
+			printk(LOG_LEVEL_INFO,
+			       "rank1 config same as rank0\r\n");
 		} else {
 			para->dram_para2 |= 0x1 << 8;
-			printk(LOG_LEVEL_INFO, "rank1 config different from rank0\r\n");
+			printk(LOG_LEVEL_INFO,
+			       "rank1 config different from rank0\r\n");
 		}
 	}
 	return 1;
@@ -1108,13 +1181,17 @@ static int auto_scan_dram_rank_width(dram_para_t *para)
  */
 static int auto_scan_dram_config(dram_para_t *para)
 {
-	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
-		printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram rank & width failed\r\n");
+	if (((para->dram_tpr13 & BIT(14)) == 0) &&
+	    (auto_scan_dram_rank_width(para) == 0)) {
+		printk(LOG_LEVEL_ERROR,
+		       "ERROR: auto scan dram rank & width failed\r\n");
 		return 0;
 	}
 
-	if (((para->dram_tpr13 & BIT(0)) == 0) && (auto_scan_dram_size(para) == 0)) {
-		printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram size failed\r\n");
+	if (((para->dram_tpr13 & BIT(0)) == 0) &&
+	    (auto_scan_dram_size(para) == 0)) {
+		printk(LOG_LEVEL_ERROR,
+		       "ERROR: auto scan dram size failed\r\n");
 		return 0;
 	}
 
@@ -1130,33 +1207,41 @@ int init_DRAM(int type, dram_para_t *para)
 
 	printk(LOG_LEVEL_INFO, "DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
 	printk(LOG_LEVEL_INFO, "DRAM CLK = %d MHz\r\n", para->dram_clk);
-	printk(LOG_LEVEL_INFO, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n", para->dram_type);
+	printk(LOG_LEVEL_INFO, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n",
+	       para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
 		printk(LOG_LEVEL_INFO, "DRAMC read ODT off\r\n");
 	else
-		printk(LOG_LEVEL_INFO, "DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
+		printk(LOG_LEVEL_INFO, "DRAMC ZQ value: 0x%x\r\n",
+		       para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
 		printk(LOG_LEVEL_INFO, "DRAM only have internal ZQ\r\n");
-		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 8));
+		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
+			     (1 << 8));
 		writel(0, (SYS_CONTROL_REG_BASE + ZQ_RES_CTRL_REG));
 		udelay(10);
 	} else {
 		clrbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x3);
-		writel(para->dram_tpr13 & (1 << 16), (R_PRCM_BASE + ANALOG_PWROFF_GATING_REG));
+		writel(para->dram_tpr13 & (1 << 16),
+		       (R_PRCM_BASE + ANALOG_PWROFF_GATING_REG));
 		udelay(10);
-		clrsetbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x108, (1 << 1));
+		clrsetbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x108,
+				(1 << 1));
 		udelay(10);
-		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 0));
+		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
+			     (1 << 0));
 		udelay(20);
-		printk(LOG_LEVEL_INFO, "ZQ value = 0x%x\r\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+		printk(LOG_LEVEL_INFO, "ZQ value = 0x%x\r\n",
+		       readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
 	}
 
 	/* Set SDRAM controller auto config */
 	if ((para->dram_tpr13 & (1 << 0)) == 0) {
 		if (auto_scan_dram_config(para) == 0) {
-			printk(LOG_LEVEL_ERROR, "auto_scan_dram_config() FAILED\r\n");
+			printk(LOG_LEVEL_ERROR,
+			       "auto_scan_dram_config() FAILED\r\n");
 			return 0;
 		}
 	}
@@ -1204,7 +1289,8 @@ int init_DRAM(int type, dram_para_t *para)
 
 	/* Set HDR/DDR dynamic */
 	if (para->dram_tpr13 & (1 << 9)) {
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0xf000, 0x5000);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0xf000,
+				0x5000);
 	} else {
 		if (para->dram_type != SUNXI_DRAM_TYPE_LPDDR2)
 			clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0xf000);
@@ -1215,7 +1301,8 @@ int init_DRAM(int type, dram_para_t *para)
 
 	/* Set VTF feature */
 	if (para->dram_tpr13 & (1 << 8))
-		writel(readl((MCTL_PHY_BASE + MCTL_PHY_VTFCR)) | 0x300, (MCTL_PHY_BASE + MCTL_PHY_VTFCR));
+		writel(readl((MCTL_PHY_BASE + MCTL_PHY_VTFCR)) | 0x300,
+		       (MCTL_PHY_BASE + MCTL_PHY_VTFCR));
 
 	/* Set PAD Hold */
 	if (para->dram_tpr13 & (1 << 16))
@@ -1225,11 +1312,13 @@ int init_DRAM(int type, dram_para_t *para)
 
 	/* Set LPDDR3 ODT delay */
 	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR3)
-		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_ODTCFG), 0xf0000, 0x1000);
+		clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_ODTCFG), 0xf0000,
+				0x1000);
 
 	dram_enable_all_master();
 	if (para->dram_tpr13 & (1 << 28)) {
-		if ((readl(0x070901f8) & (1 << 16)) || dramc_simple_wr_test(mem_size_mb, 4096))
+		if ((readl(0x070901f8) & (1 << 16)) ||
+		    dramc_simple_wr_test(mem_size_mb, 4096))
 			return 0;
 	}
 
@@ -1239,30 +1328,30 @@ int init_DRAM(int type, dram_para_t *para)
 unsigned long sunxi_dram_init(void)
 {
 	dram_para_t para = {
-		.dram_clk	 = 528,
-		.dram_type	 = 2,
-		.dram_zq	 = 0x7b7bf9,
+		.dram_clk = 528,
+		.dram_type = 2,
+		.dram_zq = 0x7b7bf9,
 		.dram_odt_en = 0x0,
-		.dram_para1	 = 0x00d2,
-		.dram_para2	 = 0x0,
-		.dram_mr0	 = 0xe73,
-		.dram_mr1	 = 0x02,
-		.dram_mr2	 = 0x0,
-		.dram_mr3	 = 0x0,
-		.dram_tpr0	 = 0x00471992,
-		.dram_tpr1	 = 0x0131a10c,
-		.dram_tpr2	 = 0x00057041,
-		.dram_tpr3	 = 0xb4787896,
-		.dram_tpr4	 = 0x0,
-		.dram_tpr5	 = 0x48484848,
-		.dram_tpr6	 = 0x48,
-		.dram_tpr7	 = 0x1621121e,
-		.dram_tpr8	 = 0x0,
-		.dram_tpr9	 = 0x0,
-		.dram_tpr10	 = 0x00000000,
-		.dram_tpr11	 = 0x00000022,
-		.dram_tpr12	 = 0x00000077,
-		.dram_tpr13	 = 0x34000100,
+		.dram_para1 = 0x00d2,
+		.dram_para2 = 0x0,
+		.dram_mr0 = 0xe73,
+		.dram_mr1 = 0x02,
+		.dram_mr2 = 0x0,
+		.dram_mr3 = 0x0,
+		.dram_tpr0 = 0x00471992,
+		.dram_tpr1 = 0x0131a10c,
+		.dram_tpr2 = 0x00057041,
+		.dram_tpr3 = 0xb4787896,
+		.dram_tpr4 = 0x0,
+		.dram_tpr5 = 0x48484848,
+		.dram_tpr6 = 0x48,
+		.dram_tpr7 = 0x1621121e,
+		.dram_tpr8 = 0x0,
+		.dram_tpr9 = 0x0,
+		.dram_tpr10 = 0x00000000,
+		.dram_tpr11 = 0x00000022,
+		.dram_tpr12 = 0x00000077,
+		.dram_tpr13 = 0x34000100,
 	};
 
 	return init_DRAM(0, &para) * 1024UL * 1024;

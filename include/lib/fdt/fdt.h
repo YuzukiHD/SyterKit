@@ -31,8 +31,7 @@
 /* see linux document: ./Documentation/devicetree/booting-without-of.txt */
 #define OF_DT_MAGIC 0xd00dfeed
 
-typedef struct
-{
+typedef struct {
 	unsigned int magic_number;
 	unsigned int total_size;
 	unsigned int offset_dt_struct;
@@ -53,5 +52,6 @@ unsigned int of_get_magic_number(void *blob);
 unsigned int of_get_dt_total_size(void *blob);
 int check_dt_blob_valid(void *blob);
 int fixup_chosen_node(void *blob, char *bootargs);
-int fixup_memory_node(void *blob, unsigned int *mem_bank, unsigned int *mem_size);
+int fixup_memory_node(void *blob, unsigned int *mem_bank,
+		      unsigned int *mem_size);
 #endif /* #ifndef __FDT_H__ */

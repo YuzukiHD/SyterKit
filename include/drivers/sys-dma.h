@@ -15,8 +15,7 @@
 
 #include "reg-dma.h"
 
-typedef struct
-{
+typedef struct {
 	uint32_t volatile config;
 	uint32_t volatile source_addr;
 	uint32_t volatile dest_addr;
@@ -26,8 +25,7 @@ typedef struct
 	uint32_t volatile reserved[2];
 } dma_desc_t;
 
-typedef struct
-{
+typedef struct {
 	uint32_t volatile src_drq_type : 6;
 	uint32_t volatile src_burst_length : 2;
 	uint32_t volatile src_addr_mode : 1;
@@ -40,22 +38,19 @@ typedef struct
 	uint32_t volatile reserved1 : 5;
 } dma_channel_config_t;
 
-typedef struct
-{
+typedef struct {
 	dma_channel_config_t channel_cfg;
 	uint32_t loop_mode;
 	uint32_t data_block_size;
 	uint32_t wait_cyc;
 } dma_set_t;
 
-typedef struct
-{
+typedef struct {
 	void *m_data;
 	void (*m_func)(void);
 } dma_irq_handler_t;
 
-typedef struct
-{
+typedef struct {
 	uint32_t volatile enable;
 	uint32_t volatile pause;
 	uint32_t volatile desc_addr;
@@ -70,8 +65,7 @@ typedef struct
 	uint32_t volatile res[5];
 } dma_channel_reg_t;
 
-typedef struct
-{
+typedef struct {
 	uint32_t volatile irq_en0; /* 0x0 dma irq enable register 0 */
 	uint32_t volatile irq_en1; /* 0x4 dma irq enable register 1 */
 	uint32_t volatile reserved0[2];
@@ -89,8 +83,7 @@ typedef struct
 	dma_channel_reg_t channel[16]; /* 0x100 dma channel register */
 } dma_reg_t;
 
-typedef struct
-{
+typedef struct {
 	uint32_t used;
 	uint32_t channel_count;
 	dma_channel_reg_t *channel;

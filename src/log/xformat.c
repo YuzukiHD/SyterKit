@@ -55,13 +55,13 @@
  * numer if supported we use the long long type
  */
 #if XCFG_FORMAT_LONGLONG
-#define FLOAT_LONG	LONGLONG
+#define FLOAT_LONG LONGLONG
 #define FLOAT_VALUE llvalue
-#define FLOAT_TYPE	FLAG_TYPE_LONGLONG
+#define FLOAT_TYPE FLAG_TYPE_LONGLONG
 #else
-#define FLOAT_LONG	LONG
+#define FLOAT_LONG LONG
 #define FLOAT_VALUE lvalue
-#define FLOAT_TYPE	FLAG_TYPE_LONG
+#define FLOAT_TYPE FLAG_TYPE_LONG
 #endif
 
 /**
@@ -125,22 +125,36 @@ struct param_s {
 	 */
 	unsigned flags;
 
-#define FLAG_TYPE_INT	   0x0000 /* Argument is integer					*/
-#define FLAG_TYPE_LONG	   0x0001 /* Argument is long						*/
-#define FLAG_TYPE_SIZEOF   0x0002 /* Argument is size_t					*/
-#define FLAG_TYPE_LONGLONG 0x0003 /* Argument is long long				*/
-#define FLAG_TYPE_MASK	   0x0003 /* Mask for field type					*/
-#define FLAG_PREC		   0x0004 /* Precision set						*/
-#define FLAG_LEFT		   0x0008 /* Left alignment						*/
-#define FLAG_BLANK		   0x0010 /* Blank before positive integer number */
-#define FLAG_PREFIX		   0x0020 /* Prefix required						*/
-#define FLAG_PLUS		   0x0040 /* Force a + before positive number		*/
-#define FLAG_UPPER		   0x0080 /* Output in upper case letter			*/
-#define FLAG_DECIMAL	   0x0100 /* Decimal field						*/
-#define FLAG_INTEGER	   0x0200 /* Integer field						*/
-#define FLAG_MINUS		   0x0400 /* Field is negative					*/
-#define FLAG_VALUE		   0x0800 /* Value set							*/
-#define FLAG_BUFFER		   0x1000 /* Buffer set							*/
+#define FLAG_TYPE_INT \
+	0x0000 /* Argument is integer					*/
+#define FLAG_TYPE_LONG \
+	0x0001 /* Argument is long						*/
+#define FLAG_TYPE_SIZEOF \
+	0x0002 /* Argument is size_t					*/
+#define FLAG_TYPE_LONGLONG \
+	0x0003 /* Argument is long long				*/
+#define FLAG_TYPE_MASK \
+	0x0003 /* Mask for field type					*/
+#define FLAG_PREC \
+	0x0004 /* Precision set						*/
+#define FLAG_LEFT \
+	0x0008 /* Left alignment						*/
+#define FLAG_BLANK 0x0010 /* Blank before positive integer number */
+#define FLAG_PREFIX \
+	0x0020 /* Prefix required						*/
+#define FLAG_PLUS 0x0040 /* Force a + before positive number		*/
+#define FLAG_UPPER \
+	0x0080 /* Output in upper case letter			*/
+#define FLAG_DECIMAL \
+	0x0100 /* Decimal field						*/
+#define FLAG_INTEGER \
+	0x0200 /* Integer field						*/
+#define FLAG_MINUS \
+	0x0400 /* Field is negative					*/
+#define FLAG_VALUE \
+	0x0800 /* Value set							*/
+#define FLAG_BUFFER \
+	0x1000 /* Buffer set							*/
 
 	/**
 	 * Length of the prefix
@@ -247,11 +261,15 @@ static const char ms_digits[] = "0123456789abcdef";
  */
 
 static const unsigned char formatStates[] = {
-	0x06, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, 0x00, 0x10, 0x00, 0x03, 0x06, 0x00, 0x06, 0x02, 0x10, 0x04, 0x45, 0x45,
-	0x45, 0x45, 0x05, 0x05, 0x05, 0x05, 0x35, 0x30, 0x00, 0x50, 0x60, 0x00, 0x00, 0x00, 0x20, 0x28, 0x38, 0x50, 0x50,
-	0x00, 0x00, 0x00, 0x30, 0x30, 0x30, 0x50, 0x50, 0x00, 0x00, 0x08, 0x20, 0x20, 0x28, 0x20, 0x20, 0x20, 0x00, 0x08,
-	0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x00, 0x00, 0x70, 0x78, 0x78, 0x78, 0x70, 0x78, 0x00, 0x07, 0x08, 0x00, 0x00,
-	0x07, 0x00, 0x00, 0x08, 0x08, 0x00, 0x00, 0x08, 0x00, 0x08, 0x00, 0x00, 0x08, 0x00, 0x07};
+	0x06, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, 0x00, 0x10, 0x00, 0x03, 0x06,
+	0x00, 0x06, 0x02, 0x10, 0x04, 0x45, 0x45, 0x45, 0x45, 0x05, 0x05, 0x05,
+	0x05, 0x35, 0x30, 0x00, 0x50, 0x60, 0x00, 0x00, 0x00, 0x20, 0x28, 0x38,
+	0x50, 0x50, 0x00, 0x00, 0x00, 0x30, 0x30, 0x30, 0x50, 0x50, 0x00, 0x00,
+	0x08, 0x20, 0x20, 0x28, 0x20, 0x20, 0x20, 0x00, 0x08, 0x60, 0x60, 0x60,
+	0x60, 0x60, 0x60, 0x00, 0x00, 0x70, 0x78, 0x78, 0x78, 0x70, 0x78, 0x00,
+	0x07, 0x08, 0x00, 0x00, 0x07, 0x00, 0x00, 0x08, 0x08, 0x00, 0x00, 0x08,
+	0x00, 0x08, 0x00, 0x00, 0x08, 0x00, 0x07
+};
 
 /**
  * Convert an unsigned value in one string
@@ -270,28 +288,28 @@ static void ulong2a(struct param_s *param)
 
 	while (param->prec-- > 0 || param->values.lvalue) {
 		switch (param->radix) {
-			case 2:
-				digit = param->values.lvalue & 0x01;
-				param->values.lvalue >>= 1;
-				break;
+		case 2:
+			digit = param->values.lvalue & 0x01;
+			param->values.lvalue >>= 1;
+			break;
 
-			case 8:
-				digit = param->values.lvalue & 0x07;
-				param->values.lvalue >>= 3;
-				break;
+		case 8:
+			digit = param->values.lvalue & 0x07;
+			param->values.lvalue >>= 3;
+			break;
 
-			case 16:
-				digit = param->values.lvalue & 0x0F;
-				param->values.lvalue >>= 4;
-				break;
+		case 16:
+			digit = param->values.lvalue & 0x0F;
+			param->values.lvalue >>= 4;
+			break;
 
-			default:
-			case 10:
-				//				digit = param->values.lvalue % 10;
-				digit = param->values.lvalue % 10;
-				//				param->values.lvalue /= 10;
-				param->values.lvalue = param->values.lvalue / 10;
-				break;
+		default:
+		case 10:
+			//				digit = param->values.lvalue % 10;
+			digit = param->values.lvalue % 10;
+			//				param->values.lvalue /= 10;
+			param->values.lvalue = param->values.lvalue / 10;
+			break;
 		}
 
 		*param->out-- = ms_digits[digit];
@@ -309,27 +327,27 @@ static void ullong2a(struct param_s *param)
 
 	while (param->prec-- > 0 || param->values.llvalue) {
 		switch (param->radix) {
-			case 2:
-				digit = param->values.llvalue & 0x01;
-				param->values.llvalue >>= 1;
-				break;
+		case 2:
+			digit = param->values.llvalue & 0x01;
+			param->values.llvalue >>= 1;
+			break;
 
-			case 8:
-				digit = param->values.llvalue & 0x07;
-				param->values.llvalue >>= 3;
-				break;
+		case 8:
+			digit = param->values.llvalue & 0x07;
+			param->values.llvalue >>= 3;
+			break;
 
-			case 16:
-				digit = param->values.llvalue & 0x0F;
-				param->values.llvalue >>= 4;
-				break;
+		case 16:
+			digit = param->values.llvalue & 0x0F;
+			param->values.llvalue >>= 4;
+			break;
 
-			default:
-			case 10:
-				digit = param->values.llvalue % 10;
-				param->values.llvalue /= 10;
+		default:
+		case 10:
+			digit = param->values.llvalue % 10;
+			param->values.llvalue /= 10;
 
-				break;
+			break;
 		}
 
 		*param->out-- = ms_digits[digit];
@@ -353,7 +371,7 @@ static void ullong2a(struct param_s *param)
  */
 unsigned xformat(void (*outchar)(void *, char), void *arg, const char *fmt, ...)
 {
-	va_list	 list;
+	va_list list;
 	unsigned count;
 
 	va_start(list, fmt);
@@ -381,11 +399,12 @@ static unsigned xstrlen(const char *s)
 	return (unsigned)(i - s);
 }
 
-static unsigned outBuffer(void (*myoutchar)(void *arg, char), void *arg, const char *buffer, int len, unsigned toupper)
+static unsigned outBuffer(void (*myoutchar)(void *arg, char), void *arg,
+			  const char *buffer, int len, unsigned toupper)
 {
 	unsigned count = 0;
-	int		 i;
-	char	 c;
+	int i;
+	char c;
 
 	for (i = 0; i < len; i++) {
 		c = buffer[i];
@@ -401,7 +420,8 @@ static unsigned outBuffer(void (*myoutchar)(void *arg, char), void *arg, const c
 	return count;
 }
 
-static unsigned outChars(void (*myoutchar)(void *arg, char), void *arg, char ch, int len)
+static unsigned outChars(void (*myoutchar)(void *arg, char), void *arg, char ch,
+			 int len)
 {
 	unsigned count = 0;
 
@@ -464,11 +484,12 @@ static unsigned outChars(void (*myoutchar)(void *arg, char), void *arg, char ch,
  *
  * @return The number of char emitted.
  */
-unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_list _args)
+unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt,
+		  va_list _args)
 {
 	XCFG_FORMAT_STATIC struct param_s param;
-	int								  i;
-	char							  c;
+	int i;
+	char c;
 
 #if XCFG_FORMAT_VA_COPY
 	va_list args;
@@ -492,393 +513,447 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 		param.state = formatStates[(i << 3) + param.state] >> 4;
 
 		switch (param.state) {
+		default:
+		case ST_NORMAL:
+			(*outchar)(arg, c);
+			param.count++;
+			break;
+
+		case ST_PERCENT:
+			param.length = param.prefixlen = param.width =
+				param.prec = 0;
+			param.flags = 0;
+			param.pad = ' ';
+			break;
+
+		case ST_WIDTH:
+			if (c == '*')
+				param.width = (int)va_arg(args, int);
+			else
+				param.width = param.width * 10 + (c - '0');
+			break;
+
+		case ST_DOT:
+			break;
+
+		case ST_PRECIS:
+			param.flags |= FLAG_PREC;
+			if (c == '*')
+				param.prec = (int)va_arg(args, int);
+			else
+				param.prec = param.prec * 10 + (c - '0');
+			break;
+
+		case ST_SIZE:
+			switch (c) {
 			default:
-			case ST_NORMAL:
-				(*outchar)(arg, c);
-				param.count++;
+				break;
+			case 'z':
+				param.flags &= ~FLAG_TYPE_MASK;
+				param.flags |= FLAG_TYPE_SIZEOF;
 				break;
 
-			case ST_PERCENT:
-				param.length = param.prefixlen = param.width = param.prec = 0;
-				param.flags												  = 0;
-				param.pad												  = ' ';
-				break;
-
-			case ST_WIDTH:
-				if (c == '*')
-					param.width = (int)va_arg(args, int);
-				else
-					param.width = param.width * 10 + (c - '0');
-				break;
-
-			case ST_DOT:
-				break;
-
-			case ST_PRECIS:
-				param.flags |= FLAG_PREC;
-				if (c == '*')
-					param.prec = (int)va_arg(args, int);
-				else
-					param.prec = param.prec * 10 + (c - '0');
-				break;
-
-			case ST_SIZE:
-				switch (c) {
-					default:
-						break;
-					case 'z':
-						param.flags &= ~FLAG_TYPE_MASK;
-						param.flags |= FLAG_TYPE_SIZEOF;
-						break;
-
-					case 'l':
+			case 'l':
 #if XCFG_FORMAT_LONGLONG
-						if ((param.flags & FLAG_TYPE_MASK) == FLAG_TYPE_LONG) {
-							param.flags &= ~FLAG_TYPE_MASK;
-							param.flags |= FLAG_TYPE_LONGLONG;
-						} else {
-							param.flags &= ~FLAG_TYPE_MASK;
-							param.flags |= FLAG_TYPE_LONG;
-						}
+				if ((param.flags & FLAG_TYPE_MASK) ==
+				    FLAG_TYPE_LONG) {
+					param.flags &= ~FLAG_TYPE_MASK;
+					param.flags |= FLAG_TYPE_LONGLONG;
+				} else {
+					param.flags &= ~FLAG_TYPE_MASK;
+					param.flags |= FLAG_TYPE_LONG;
+				}
 #else
-						param.flags &= ~FLAG_TYPE_MASK;
-						param.flags |= FLAG_TYPE_LONG;
+				param.flags &= ~FLAG_TYPE_MASK;
+				param.flags |= FLAG_TYPE_LONG;
 #endif
-						break;
-				}
+				break;
+			}
+			break;
+
+		case ST_FLAG:
+			switch (c) {
+			default:
+				break;
+			case '-':
+				param.flags |= FLAG_LEFT;
+				break;
+			case '0':
+				param.pad = '0';
+				break;
+			case ' ':
+				param.flags |= FLAG_BLANK;
+				break;
+			case '#':
+				param.flags |= FLAG_PREFIX;
+				break;
+			case '+':
+				param.flags |= FLAG_PLUS;
+				break;
+			}
+			break;
+
+		case ST_TYPE:
+			switch (c) {
+			default:
+				param.length = 0;
 				break;
 
-			case ST_FLAG:
-				switch (c) {
-					default:
-						break;
-					case '-':
-						param.flags |= FLAG_LEFT;
-						break;
-					case '0':
-						param.pad = '0';
-						break;
-					case ' ':
-						param.flags |= FLAG_BLANK;
-						break;
-					case '#':
-						param.flags |= FLAG_PREFIX;
-						break;
-					case '+':
-						param.flags |= FLAG_PLUS;
-						break;
-				}
-				break;
-
-			case ST_TYPE:
-				switch (c) {
-					default:
-						param.length = 0;
-						break;
-
-						/*
+				/*
 						 * Pointer upper case
 						 */
-					case 'P':
-						param.flags |= FLAG_UPPER;
-						/* no break */
-						/*lint -fallthrough */
+			case 'P':
+				param.flags |= FLAG_UPPER;
+				/* no break */
+				/*lint -fallthrough */
 
-						/*
+				/*
 						 * Pointer
 						 */
-					case 'p':
-						param.flags |= FLAG_INTEGER;
-						param.flags &= ~FLAG_TYPE_MASK;
-						param.flags |= FLAG_TYPE_SIZEOF;
-						param.radix		= 16;
-						param.prec		= sizeof(void *) * 2;
-						param.prefix[0] = '-';
-						param.prefix[1] = '>';
-						param.prefixlen = 2;
-						break;
+			case 'p':
+				param.flags |= FLAG_INTEGER;
+				param.flags &= ~FLAG_TYPE_MASK;
+				param.flags |= FLAG_TYPE_SIZEOF;
+				param.radix = 16;
+				param.prec = sizeof(void *) * 2;
+				param.prefix[0] = '-';
+				param.prefix[1] = '>';
+				param.prefixlen = 2;
+				break;
 
-						/*
+				/*
 						 * Binary number
 						 */
-					case 'b':
-						param.flags |= FLAG_INTEGER;
-						param.radix = 2;
-						if (param.flags & FLAG_PREFIX) {
-							param.prefix[0] = '0';
-							param.prefix[1] = 'b';
-							param.prefixlen = 2;
-						}
-						break;
+			case 'b':
+				param.flags |= FLAG_INTEGER;
+				param.radix = 2;
+				if (param.flags & FLAG_PREFIX) {
+					param.prefix[0] = '0';
+					param.prefix[1] = 'b';
+					param.prefixlen = 2;
+				}
+				break;
 
-						/*
+				/*
 						 * Octal number
 						 */
-					case 'o':
-						param.flags |= FLAG_INTEGER;
-						param.radix = 8;
-						if (param.flags & FLAG_PREFIX) {
-							param.prefix[0] = '0';
-							param.prefixlen = 1;
-						}
-						break;
+			case 'o':
+				param.flags |= FLAG_INTEGER;
+				param.radix = 8;
+				if (param.flags & FLAG_PREFIX) {
+					param.prefix[0] = '0';
+					param.prefixlen = 1;
+				}
+				break;
 
-						/*
+				/*
 						 * Hex number upper case letter.
 						 */
-					case 'X':
-						/* no break */
-						param.flags |= FLAG_UPPER;
+			case 'X':
+				/* no break */
+				param.flags |= FLAG_UPPER;
 
-						/* no break */
+				/* no break */
 
-						/* lint -fallthrough */
+				/* lint -fallthrough */
 
-						/*
+				/*
 						 * Hex number lower case
 						 */
-					case 'x':
-						param.flags |= FLAG_INTEGER;
-						param.radix = 16;
-						if (param.flags & FLAG_PREFIX) {
-							param.prefix[0] = '0';
-							param.prefix[1] = 'x';
-							param.prefixlen = 2;
-						}
-						break;
+			case 'x':
+				param.flags |= FLAG_INTEGER;
+				param.radix = 16;
+				if (param.flags & FLAG_PREFIX) {
+					param.prefix[0] = '0';
+					param.prefix[1] = 'x';
+					param.prefixlen = 2;
+				}
+				break;
 
-						/*
+				/*
 						 * Integer number radix 10
 						 */
-					case 'd':
-					case 'i':
-						param.flags |= FLAG_DECIMAL | FLAG_INTEGER;
-						param.radix = 10;
-						break;
+			case 'd':
+			case 'i':
+				param.flags |= FLAG_DECIMAL | FLAG_INTEGER;
+				param.radix = 10;
+				break;
 
-						/*
+				/*
 						 * Unsigned number
 						 */
-					case 'u':
-						param.flags |= FLAG_INTEGER;
-						param.radix = 10;
-						break;
+			case 'u':
+				param.flags |= FLAG_INTEGER;
+				param.radix = 10;
+				break;
 
-						/*
+				/*
 						 * Upper case string
 						 */
-					case 'S':
-						param.flags |= FLAG_UPPER;
-						/* no break */
-						/*lint -fallthrough */
+			case 'S':
+				param.flags |= FLAG_UPPER;
+				/* no break */
+				/*lint -fallthrough */
 
-						/*
+				/*
 						 * Normal string
 						 */
-					case 's':
-						param.out = va_arg(args, char *);
-						if (param.out == 0)
-							param.out = (char *)ms_null;
-						param.length = (int)xstrlen(param.out);
-						break;
+			case 's':
+				param.out = va_arg(args, char *);
+				if (param.out == 0)
+					param.out = (char *)ms_null;
+				param.length = (int)xstrlen(param.out);
+				break;
 
-						/*
+				/*
 						 * Upper case char
 						 */
-					case 'C':
-						param.flags |= FLAG_UPPER;
-						/* no break */
-						/* lint -fallthrough */
+			case 'C':
+				param.flags |= FLAG_UPPER;
+				/* no break */
+				/* lint -fallthrough */
 
-						/*
+				/*
 						 * Char
 						 */
-					case 'c':
-						param.out		= param.buffer;
-						param.buffer[0] = (char)va_arg(args, int);
-						param.length	= 1;
-						break;
+			case 'c':
+				param.out = param.buffer;
+				param.buffer[0] = (char)va_arg(args, int);
+				param.length = 1;
+				break;
 
 #if XCFG_FORMAT_FLOAT
-						/**
+				/**
 						 * Floating point number
 						 */
-					case 'f':
-						if (!(param.flags & FLAG_PREC)) {
-							param.prec = 6;
-						}
+			case 'f':
+				if (!(param.flags & FLAG_PREC)) {
+					param.prec = 6;
+				}
 
-						param.dbl			= va_arg(args, DOUBLE);
-						param.values.dvalue = 0.51;
-						for (i = 0; i < param.prec; i++)
-							param.values.dvalue /= 10.0;
+				param.dbl = va_arg(args, DOUBLE);
+				param.values.dvalue = 0.51;
+				for (i = 0; i < param.prec; i++)
+					param.values.dvalue /= 10.0;
 
-						if (param.dbl < 0) {
-							param.flags |= FLAG_MINUS;
-							param.dbl -= param.values.dvalue;
-							param.fPart = (FLOAT_LONG)param.dbl;
-							param.dbl -= (FLOAT_LONG)param.fPart;
-							param.dbl = -param.dbl;
-						} else {
-							param.dbl += param.values.dvalue;
-							param.fPart = (FLOAT_LONG)param.dbl;
-							param.dbl -= param.fPart;
-						}
+				if (param.dbl < 0) {
+					param.flags |= FLAG_MINUS;
+					param.dbl -= param.values.dvalue;
+					param.fPart = (FLOAT_LONG)param.dbl;
+					param.dbl -= (FLOAT_LONG)param.fPart;
+					param.dbl = -param.dbl;
+				} else {
+					param.dbl += param.values.dvalue;
+					param.fPart = (FLOAT_LONG)param.dbl;
+					param.dbl -= param.fPart;
+				}
 
-						for (i = 0; i < param.prec; i++)
-							param.dbl *= 10.0;
+				for (i = 0; i < param.prec; i++)
+					param.dbl *= 10.0;
 
-						param.values.lvalue = (unsigned LONG)param.dbl;
+				param.values.lvalue = (unsigned LONG)param.dbl;
 
-						param.out	= param.buffer + sizeof(param.buffer) - 1;
-						param.radix = 10;
-						if (param.prec) {
-							ulong2a(&param);
-							*param.out-- = '.';
-							param.length++;
-						}
-						param.flags |= FLAG_INTEGER | FLAG_BUFFER | FLAG_DECIMAL | FLAG_VALUE | FLOAT_TYPE;
+				param.out =
+					param.buffer + sizeof(param.buffer) - 1;
+				param.radix = 10;
+				if (param.prec) {
+					ulong2a(&param);
+					*param.out-- = '.';
+					param.length++;
+				}
+				param.flags |= FLAG_INTEGER | FLAG_BUFFER |
+					       FLAG_DECIMAL | FLAG_VALUE |
+					       FLOAT_TYPE;
 
-						param.prec				 = 0;
-						param.values.FLOAT_VALUE = (unsigned FLOAT_LONG)param.fPart;
-						break;
+				param.prec = 0;
+				param.values.FLOAT_VALUE =
+					(unsigned FLOAT_LONG)param.fPart;
+				break;
 #endif
 
-						/**
+				/**
 						 * Boolean value
 						 */
-					case 'B':
-						if (va_arg(args, int) != 0)
-							param.out = (char *)ms_true;
-						else
-							param.out = (char *)ms_false;
+			case 'B':
+				if (va_arg(args, int) != 0)
+					param.out = (char *)ms_true;
+				else
+					param.out = (char *)ms_false;
 
-						param.length = (int)xstrlen(param.out);
-						break;
-				}
+				param.length = (int)xstrlen(param.out);
+				break;
+			}
 
-				/*
+			/*
 				 * Process integer number
 				 */
-				if (param.flags & FLAG_INTEGER) {
-					if (param.prec == 0)
-						param.prec = 1;
+			if (param.flags & FLAG_INTEGER) {
+				if (param.prec == 0)
+					param.prec = 1;
 
-					if (!(param.flags & FLAG_VALUE)) {
-						if (param.flags & FLAG_DECIMAL) {
-							switch (param.flags & FLAG_TYPE_MASK) {
-								case FLAG_TYPE_SIZEOF:
-									param.values.lvalue = (unsigned LONG)va_arg(args, void *);
-									break;
-								case FLAG_TYPE_LONG:
-									param.values.lvalue = (LONG)va_arg(args, long);
-									break;
-								case FLAG_TYPE_INT:
-									param.values.lvalue = (LONG)va_arg(args, int);
-									break;
-#if XCFG_FORMAT_LONGLONG
-								case FLAG_TYPE_LONGLONG:
-									param.values.llvalue = (LONGLONG)va_arg(args, long long);
-									break;
-#endif
-							}
-
-						} else {
-							switch (param.flags & FLAG_TYPE_MASK) {
-								case FLAG_TYPE_SIZEOF:
-									param.values.lvalue = (unsigned LONG)va_arg(args, void *);
-									break;
-								case FLAG_TYPE_LONG:
-									param.values.lvalue = (unsigned LONG)va_arg(args, unsigned long);
-									break;
-								case FLAG_TYPE_INT:
-									param.values.lvalue = (unsigned LONG)va_arg(args, unsigned int);
-									break;
-#if XCFG_FORMAT_LONGLONG
-								case FLAG_TYPE_LONGLONG:
-									param.values.llvalue = (unsigned LONGLONG)va_arg(args, unsigned long long);
-									break;
-#endif
-							}
-						}
-					}
-
-					if ((param.flags & FLAG_PREFIX) && param.values.lvalue == 0) {
-						param.prefixlen = 0;
-					}
-
-					/*
-					 * Manage signed integer
-					 */
+				if (!(param.flags & FLAG_VALUE)) {
 					if (param.flags & FLAG_DECIMAL) {
+						switch (param.flags &
+							FLAG_TYPE_MASK) {
+						case FLAG_TYPE_SIZEOF:
+							param.values.lvalue =
+								(unsigned LONG)va_arg(
+									args,
+									void *);
+							break;
+						case FLAG_TYPE_LONG:
+							param.values.lvalue =
+								(LONG)va_arg(
+									args,
+									long);
+							break;
+						case FLAG_TYPE_INT:
+							param.values.lvalue =
+								(LONG)va_arg(
+									args,
+									int);
+							break;
 #if XCFG_FORMAT_LONGLONG
-						if ((param.flags & FLAG_TYPE_MASK) == FLAG_TYPE_LONGLONG) {
-							if ((LONGLONG)param.values.llvalue < 0) {
-								param.values.llvalue = ~param.values.llvalue + 1;
-								param.flags |= FLAG_MINUS;
-							}
-						} else {
+						case FLAG_TYPE_LONGLONG:
+							param.values.llvalue =
+								(LONGLONG)va_arg(
+									args,
+									long long);
+							break;
 #endif
-							if ((LONG)param.values.lvalue < 0) {
-								param.values.lvalue = ~param.values.lvalue + 1;
-								param.flags |= FLAG_MINUS;
-							}
+						}
+
+					} else {
+						switch (param.flags &
+							FLAG_TYPE_MASK) {
+						case FLAG_TYPE_SIZEOF:
+							param.values.lvalue =
+								(unsigned LONG)va_arg(
+									args,
+									void *);
+							break;
+						case FLAG_TYPE_LONG:
+							param.values.lvalue =
+								(unsigned LONG)va_arg(
+									args,
+									unsigned long);
+							break;
+						case FLAG_TYPE_INT:
+							param.values.lvalue =
+								(unsigned LONG)va_arg(
+									args,
+									unsigned int);
+							break;
 #if XCFG_FORMAT_LONGLONG
-						}
+						case FLAG_TYPE_LONGLONG:
+							param.values.llvalue =
+								(unsigned LONGLONG)va_arg(
+									args,
+									unsigned long long);
+							break;
 #endif
-						if (!(param.flags & FLAG_MINUS) && (param.flags & FLAG_BLANK)) {
-							param.prefix[0] = ' ';
-							param.prefixlen = 1;
 						}
-					}
-
-					if ((param.flags & FLAG_BUFFER) == 0) {
-						param.out = param.buffer + sizeof(param.buffer) - 1;
-					}
-
-#if XCFG_FORMAT_LONGLONG
-					if ((param.flags & FLAG_TYPE_MASK) == FLAG_TYPE_LONGLONG)
-						ullong2a(&param);
-					else
-						ulong2a(&param);
-#else
-
-					ulong2a(&param);
-#endif
-					param.out++;
-
-					/*
-					 * Check if a sign is required
-					 */
-					if (param.flags & (FLAG_MINUS | FLAG_PLUS)) {
-						c = param.flags & FLAG_MINUS ? '-' : '+';
-
-						if (param.pad == '0') {
-							param.prefixlen = 1;
-							param.prefix[0] = c;
-						} else {
-							*--param.out = c;
-							param.length++;
-						}
-					}
-
-				} else {
-					if (param.width && param.length > param.width) {
-						param.length = param.width;
 					}
 				}
 
+				if ((param.flags & FLAG_PREFIX) &&
+				    param.values.lvalue == 0) {
+					param.prefixlen = 0;
+				}
+
 				/*
+					 * Manage signed integer
+					 */
+				if (param.flags & FLAG_DECIMAL) {
+#if XCFG_FORMAT_LONGLONG
+					if ((param.flags & FLAG_TYPE_MASK) ==
+					    FLAG_TYPE_LONGLONG) {
+						if ((LONGLONG)param.values
+							    .llvalue < 0) {
+							param.values.llvalue =
+								~param.values
+									 .llvalue +
+								1;
+							param.flags |=
+								FLAG_MINUS;
+						}
+					} else {
+#endif
+						if ((LONG)param.values.lvalue <
+						    0) {
+							param.values.lvalue =
+								~param.values
+									 .lvalue +
+								1;
+							param.flags |=
+								FLAG_MINUS;
+						}
+#if XCFG_FORMAT_LONGLONG
+					}
+#endif
+					if (!(param.flags & FLAG_MINUS) &&
+					    (param.flags & FLAG_BLANK)) {
+						param.prefix[0] = ' ';
+						param.prefixlen = 1;
+					}
+				}
+
+				if ((param.flags & FLAG_BUFFER) == 0) {
+					param.out = param.buffer +
+						    sizeof(param.buffer) - 1;
+				}
+
+#if XCFG_FORMAT_LONGLONG
+				if ((param.flags & FLAG_TYPE_MASK) ==
+				    FLAG_TYPE_LONGLONG)
+					ullong2a(&param);
+				else
+					ulong2a(&param);
+#else
+
+				ulong2a(&param);
+#endif
+				param.out++;
+
+				/*
+					 * Check if a sign is required
+					 */
+				if (param.flags & (FLAG_MINUS | FLAG_PLUS)) {
+					c = param.flags & FLAG_MINUS ? '-' :
+								       '+';
+
+					if (param.pad == '0') {
+						param.prefixlen = 1;
+						param.prefix[0] = c;
+					} else {
+						*--param.out = c;
+						param.length++;
+					}
+				}
+
+			} else {
+				if (param.width && param.length > param.width) {
+					param.length = param.width;
+				}
+			}
+
+			/*
 				 * Now width contain the size of the pad
 				 */
-				param.width -= (param.length + param.prefixlen);
+			param.width -= (param.length + param.prefixlen);
 
-				param.count += outBuffer(outchar, arg, param.prefix, param.prefixlen, param.flags & FLAG_UPPER);
-				if (!(param.flags & FLAG_LEFT))
-					param.count += outChars(outchar, arg, param.pad, param.width);
-				param.count += outBuffer(outchar, arg, param.out, param.length, param.flags & FLAG_UPPER);
-				if (param.flags & FLAG_LEFT)
-					param.count += outChars(outchar, arg, param.pad, param.width);
+			param.count += outBuffer(outchar, arg, param.prefix,
+						 param.prefixlen,
+						 param.flags & FLAG_UPPER);
+			if (!(param.flags & FLAG_LEFT))
+				param.count += outChars(outchar, arg, param.pad,
+							param.width);
+			param.count += outBuffer(outchar, arg, param.out,
+						 param.length,
+						 param.flags & FLAG_UPPER);
+			if (param.flags & FLAG_LEFT)
+				param.count += outChars(outchar, arg, param.pad,
+							param.width);
 		}
 	}
 

@@ -18,8 +18,8 @@
 #include "log.h"
 
 typedef struct {
-	uint32_t   base;
-	uint8_t	   id;
+	uint32_t base;
+	uint8_t id;
 	gpio_mux_t gpio_tx;
 	gpio_mux_t gpio_rx;
 } sunxi_uart_t;

@@ -35,7 +35,8 @@ void sunxi_clk_init(void)
 	 * 1200000000Hz：val |= (1 << 30 | (1 << 29) | (50 << 8));
 	 */
 	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
-	val &= ~((1 << 27) | (0x3FF << 8) | 0x3); /* CPU_PLL: Output disable, PLL_N = 0, M = 0 */
+	/* CPU_PLL: Output disable, PLL_N = 0, M = 0 */
+	val &= ~((1 << 27) | (0x3FF << 8) | 0x3);
 	val |= (1 << 30 | (1 << 29) | (17 << 8));
 	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 	sdelay(5);
@@ -90,7 +91,8 @@ void sunxi_clk_init(void)
 	sdelay(1);
 
 	printk(LOG_LEVEL_INFO, "sunxi clock init end\r\n");
-	printk(LOG_LEVEL_INFO, "cpu clk reg (#0x%x): 0x%08x\r\n", CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
+	printk(LOG_LEVEL_INFO, "cpu clk reg (#0x%x): 0x%08x\r\n",
+	       CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
 
 	return;
 }
@@ -102,8 +104,7 @@ uint32_t sunxi_clk_get_peri1x_rate()
 
 	/* PLL PERI */
 	reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
-	if (reg32 & (1 << 31))
-	{
+	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
 		p0 = ((reg32 >> 16) & 0x03) + 1;
@@ -126,8 +127,7 @@ void sunxi_clk_dump()
 	cpu_clk_src = (reg32 >> 24) & 0x7;
 	printk(LOG_LEVEL_INFO, "CLK: CPU CLK_reg=0x%08x\r\n", reg32);
 
-	switch (cpu_clk_src)
-	{
+	switch (cpu_clk_src) {
 	case 0x0:
 		clock_str = "OSC24M";
 		break;
@@ -157,56 +157,49 @@ void sunxi_clk_dump()
 	}
 
 	p0 = (reg32 >> 16) & 0x03;
-	if (p0 == 0)
-	{
+	if (p0 == 0) {
 		p1 = 1;
-	}
-	else if (p0 == 1)
-	{
+	} else if (p0 == 1) {
 		p1 = 2;
-	}
-	else if (p0 == 2)
-	{
+	} else if (p0 == 2) {
 		p1 = 4;
-	}
-	else
-	{
+	} else {
 		p1 = 1;
 	}
 
-	printk(LOG_LEVEL_INFO, "CLK: CPU PLL=%s FREQ=%uMHz\r\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
+	printk(LOG_LEVEL_INFO, "CLK: CPU PLL=%s FREQ=%uMHz\r\n", clock_str,
+	       ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) *
+		24 / p1));
 
 	/* PLL PERI */
 	reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
-	if (reg32 & (1 << 31))
-	{
+	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk(LOG_LEVEL_INFO, "CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\r\n", (24 * plln) / (pllm * p0),
-			  (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
-	}
-	else
-	{
+		printk(LOG_LEVEL_INFO,
+		       "CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\r\n",
+		       (24 * plln) / (pllm * p0),
+		       (24 * plln) / (pllm * p0) >> 1,
+		       (24 * plln) / (pllm * p1));
+	} else {
 		printk(LOG_LEVEL_INFO, "CLK: PLL_peri disabled\r\n");
 	}
 
 	/* PLL DDR */
 	reg32 = read32(CCU_BASE + CCU_PLL_DDR_CTRL_REG);
-	if (reg32 & (1 << 31))
-	{
+	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 
 		pllm = (reg32 & 0x01) + 1;
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk(LOG_LEVEL_INFO, "CLK: PLL_ddr=%uMHz\r\n", (24 * plln) / (p0 * p1));
-	}
-	else
-	{
+		printk(LOG_LEVEL_INFO, "CLK: PLL_ddr=%uMHz\r\n",
+		       (24 * plln) / (p0 * p1));
+	} else {
 		printk(LOG_LEVEL_INFO, "CLK: PLL_ddr disabled\r\n");
 	}
 }

@@ -18,7 +18,10 @@
 uint64_t get_arch_counter(void)
 {
 	uint32_t low = 0, high = 0;
-	asm volatile("mrrc p15, 0, %0, %1, c14" : "=r"(low), "=r"(high) : : "memory");
+	asm volatile("mrrc p15, 0, %0, %1, c14"
+		     : "=r"(low), "=r"(high)
+		     :
+		     : "memory");
 	return ((uint64_t)high << 32) | (uint64_t)low;
 }
 
@@ -43,8 +46,8 @@ void udelay(uint64_t us)
 	uint64_t now;
 
 	now = time_us();
-	while (time_us() - now < us)
-		{};
+	while (time_us() - now < us) {
+	};
 }
 
 void mdelay(uint32_t ms)
@@ -53,15 +56,15 @@ void mdelay(uint32_t ms)
 	uint32_t now;
 
 	now = time_ms();
-	while (time_ms() - now < ms) 
-		{};
+	while (time_ms() - now < ms) {
+	};
 }
 
 void sdelay(uint32_t loops)
 {
 	__asm__ volatile("1:\n"
-					 "subs %0, %1, #1\n"
-					 "bne 1b"
-					 : "=r"(loops)
-					 : "0"(loops));
+			 "subs %0, %1, #1\n"
+			 "bne 1b"
+			 : "=r"(loops)
+			 : "0"(loops));
 }

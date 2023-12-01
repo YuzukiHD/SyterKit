@@ -65,8 +65,7 @@ int strcmp(const char *p1, const char *p2)
 {
 	unsigned char c1, c2;
 
-	while (1)
-	{
+	while (1) {
 		c1 = *p1++;
 		c2 = *p2++;
 		if (c1 != c2)
@@ -82,8 +81,7 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt)
 {
 	unsigned char c1, c2;
 
-	while (cnt--)
-	{
+	while (cnt--) {
 		c1 = *p1++;
 		c2 = *p2++;
 
@@ -111,23 +109,17 @@ char *strstr(const char *s1, const char *s2)
 	register const char *s = s1;
 	register const char *p = s2;
 
-	do
-	{
-		if (!*p)
-		{
+	do {
+		if (!*p) {
 			return (char *)s1;
 			;
 		}
-		if (*p == *s)
-		{
+		if (*p == *s) {
 			++p;
 			++s;
-		}
-		else
-		{
+		} else {
 			p = s2;
-			if (!*s)
-			{
+			if (!*s) {
 				return NULL;
 			}
 			s = ++s1;
@@ -140,10 +132,8 @@ void *memchr(void *src, int val, unsigned int cnt)
 	char *p = NULL;
 	char *s = (char *)src;
 
-	while (cnt)
-	{
-		if (*s == val)
-		{
+	while (cnt) {
+		if (*s == val) {
 			p = s;
 			break;
 		}
@@ -158,15 +148,12 @@ void *memmove(void *dst, const void *src, unsigned int cnt)
 {
 	char *p, *s;
 
-	if (dst <= src)
-	{
+	if (dst <= src) {
 		p = (char *)dst;
 		s = (char *)src;
 		while (cnt--)
 			*p++ = *s++;
-	}
-	else
-	{
+	} else {
 		p = (char *)dst + cnt;
 		s = (char *)src + cnt;
 		while (cnt--)
