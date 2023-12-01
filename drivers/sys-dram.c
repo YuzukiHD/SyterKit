@@ -17,7 +17,6 @@
 #define readl(addr)		   read32(addr)
 #define writel(val, addr)  write32((addr), (val))
 #define udelay(c)		   sdelay(c)
-#define printf			   uart_printf
 #define DIV_ROUND_UP(a, b) (((a) + (b)-1) / (b))
 
 #define CONFIG_SYS_SDRAM_BASE SDRAM_BASE
@@ -730,7 +729,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	// Check for training error
 	if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 20)) {
-		printf("ZQ calibration error, check external 240 ohm resistor\r\n");
+		printk(LOG_LEVEL_ERROR, "ZQ calibration error, check external 240 ohm resistor\r\n");
 		return 0;
 	}
 
@@ -855,15 +854,15 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			printf("DRAM: simple test FAIL\r\n");
-			printf("%x != %x at address %p\r\n", v1, v2, addr + i);
+			printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
+			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			printf("DRAM: simple test FAIL\r\n");
-			printf("%x != %x at address %p\r\n", v1, v2, addr + offs + i);
+			printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
+			printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
@@ -1110,12 +1109,12 @@ static int auto_scan_dram_rank_width(dram_para_t *para)
 static int auto_scan_dram_config(dram_para_t *para)
 {
 	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
-		printf("ERROR: auto scan dram rank & width failed\r\n");
+		printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram rank & width failed\r\n");
 		return 0;
 	}
 
 	if (((para->dram_tpr13 & BIT(0)) == 0) && (auto_scan_dram_size(para) == 0)) {
-		printf("ERROR: auto scan dram size failed\r\n");
+		printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram size failed\r\n");
 		return 0;
 	}
 
@@ -1157,7 +1156,7 @@ int init_DRAM(int type, dram_para_t *para)
 	/* Set SDRAM controller auto config */
 	if ((para->dram_tpr13 & (1 << 0)) == 0) {
 		if (auto_scan_dram_config(para) == 0) {
-			printf("auto_scan_dram_config() FAILED\r\n");
+			printk(LOG_LEVEL_ERROR, "auto_scan_dram_config() FAILED\r\n");
 			return 0;
 		}
 	}
