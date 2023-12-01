@@ -15,7 +15,8 @@
 #define SMHC_GCTRL_ACCESS_DONE_DIRECT (1 << 30)
 #define SMHC_GCTRL_ACCESS_BY_AHB (1 << 31)
 #define SMHC_GCTRL_ACCESS_BY_DMA (0 << 31)
-#define SMHC_GCTRL_HARDWARE_RESET (SMHC_GCTRL_SOFT_RESET | SMHC_GCTRL_FIFO_RESET | SMHC_GCTRL_DMA_RESET)
+#define SMHC_GCTRL_HARDWARE_RESET \
+	(SMHC_GCTRL_SOFT_RESET | SMHC_GCTRL_FIFO_RESET | SMHC_GCTRL_DMA_RESET)
 
 /*
  * Clock control bits
@@ -76,12 +77,15 @@
 #define SMHC_RINT_SDIO_INTERRUPT (0x1 << 16)
 #define SMHC_RINT_CARD_INSERT (0x1 << 30)
 #define SMHC_RINT_CARD_REMOVE (0x1 << 31)
-#define SMHC_RINT_INTERRUPT_ERROR_BIT                                                                                 \
-	(SMHC_RINT_RESP_ERROR | SMHC_RINT_RESP_CRC_ERROR | SMHC_RINT_DATA_CRC_ERROR | SMHC_RINT_RESP_TIMEOUT |            \
-	 SMHC_RINT_DATA_TIMEOUT | SMHC_RINT_VOLTAGE_CHANGE_DONE | SMHC_RINT_FIFO_RUN_ERROR | SMHC_RINT_HARD_WARE_LOCKED | \
+#define SMHC_RINT_INTERRUPT_ERROR_BIT                             \
+	(SMHC_RINT_RESP_ERROR | SMHC_RINT_RESP_CRC_ERROR |        \
+	 SMHC_RINT_DATA_CRC_ERROR | SMHC_RINT_RESP_TIMEOUT |      \
+	 SMHC_RINT_DATA_TIMEOUT | SMHC_RINT_VOLTAGE_CHANGE_DONE | \
+	 SMHC_RINT_FIFO_RUN_ERROR | SMHC_RINT_HARD_WARE_LOCKED |  \
 	 SMHC_RINT_START_BIT_ERROR | SMHC_RINT_END_BIT_ERROR) /* 0xbfc2 */
-#define SMHC_RINT_INTERRUPT_DONE_BIT \
-	(SMHC_RINT_AUTO_COMMAND_DONE | SMHC_RINT_DATA_OVER | SMHC_RINT_COMMAND_DONE | SMHC_RINT_VOLTAGE_CHANGE_DONE)
+#define SMHC_RINT_INTERRUPT_DONE_BIT                         \
+	(SMHC_RINT_AUTO_COMMAND_DONE | SMHC_RINT_DATA_OVER | \
+	 SMHC_RINT_COMMAND_DONE | SMHC_RINT_VOLTAGE_CHANGE_DONE)
 
 /*
  * Status
@@ -129,11 +133,11 @@
  *  Bits 26-31: not used
  * Since we only ever set buf1 size, we can simply store it directly.
  */
-#define SMHC_IDMAC_DES0_DIC BIT(1)	/* disable interrupt on completion */
-#define SMHC_IDMAC_DES0_LD BIT(2)	/* last descriptor */
-#define SMHC_IDMAC_DES0_FD BIT(3)	/* first descriptor */
-#define SMHC_IDMAC_DES0_CH BIT(4)	/* chain mode */
-#define SMHC_IDMAC_DES0_ER BIT(5)	/* end of ring */
+#define SMHC_IDMAC_DES0_DIC BIT(1) /* disable interrupt on completion */
+#define SMHC_IDMAC_DES0_LD BIT(2) /* last descriptor */
+#define SMHC_IDMAC_DES0_FD BIT(3) /* first descriptor */
+#define SMHC_IDMAC_DES0_CH BIT(4) /* chain mode */
+#define SMHC_IDMAC_DES0_ER BIT(5) /* end of ring */
 #define SMHC_IDMAC_DES0_CES BIT(30) /* card error summary */
 #define SMHC_IDMAC_DES0_OWN BIT(31) /* 1-idma owns it, 0-host owns it */
 

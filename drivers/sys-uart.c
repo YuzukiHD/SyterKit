@@ -25,13 +25,13 @@ void sunxi_uart_init(sunxi_uart_t *uart)
 
 	/* Open the clock gate for uart */
 	addr = CCU_BASE + CCU_UART_BGR_REG;
-	val	 = read32(addr);
+	val = read32(addr);
 	val |= 1 << uart->id;
 	write32(addr, val);
 
 	/* Deassert USART reset */
 	addr = CCU_BASE + CCU_UART_BGR_REG;
-	val	 = read32(addr);
+	val = read32(addr);
 	val |= 1 << (16 + uart->id);
 	write32(addr, val);
 

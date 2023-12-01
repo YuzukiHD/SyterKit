@@ -28,7 +28,7 @@ enum {
 
 void set_timer_count();
 
-void printk(int level, const char* fmt, ...);
+void printk(int level, const char *fmt, ...);
 
 void uart_printf(const char *fmt, ...);
 

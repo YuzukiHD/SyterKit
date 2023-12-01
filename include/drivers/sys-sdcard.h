@@ -14,8 +14,7 @@
 
 #include "log.h"
 
-enum
-{
+enum {
 	/* Class 1 */
 	MMC_GO_IDLE_STATE = 0,
 	MMC_SEND_OP_COND = 1,
@@ -71,8 +70,7 @@ enum
 	MMC_GO_IRQ_STATE = 40,
 };
 
-enum
-{
+enum {
 	SD_CMD_SEND_RELATIVE_ADDR = 3,
 	SD_CMD_SWITCH_FUNC = 6,
 	SD_CMD_SEND_IF_COND = 8,
@@ -83,8 +81,7 @@ enum
 	SD_CMD_APP_SEND_SCR = 51,
 };
 
-enum
-{
+enum {
 	MMC_RSP_PRESENT = (1 << 0),
 	MMC_RSP_136 = (1 << 1),
 	MMC_RSP_CRC = (1 << 2),
@@ -92,21 +89,24 @@ enum
 	MMC_RSP_OPCODE = (1 << 4),
 };
 
-enum
-{
+enum {
 	MMC_RSP_NONE = (0 << 24),
-	MMC_RSP_R1 = (1 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
-	MMC_RSP_R1B = (1 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE | MMC_RSP_BUSY),
+	MMC_RSP_R1 = (1 << 24) |
+		     (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
+	MMC_RSP_R1B = (1 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC |
+				   MMC_RSP_OPCODE | MMC_RSP_BUSY),
 	MMC_RSP_R2 = (2 << 24) | (MMC_RSP_PRESENT | MMC_RSP_136 | MMC_RSP_CRC),
 	MMC_RSP_R3 = (3 << 24) | (MMC_RSP_PRESENT),
 	MMC_RSP_R4 = (4 << 24) | (MMC_RSP_PRESENT),
-	MMC_RSP_R5 = (5 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
-	MMC_RSP_R6 = (6 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
-	MMC_RSP_R7 = (7 << 24) | (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
+	MMC_RSP_R5 = (5 << 24) |
+		     (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
+	MMC_RSP_R6 = (6 << 24) |
+		     (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
+	MMC_RSP_R7 = (7 << 24) |
+		     (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE),
 };
 
-enum
-{
+enum {
 	MMC_STATUS_IDLE = 0,
 	MMC_STATUS_READY = 1,
 	MMC_STATUS_IDENT = 2,
@@ -120,34 +120,29 @@ enum
 	MMC_STATUS_SLP = 10,
 };
 
-enum
-{
+enum {
 	OCR_BUSY = 0x80000000,
 	OCR_HCS = 0x40000000,
 	OCR_VOLTAGE_MASK = 0x00ffff80,
 	OCR_ACCESS_MODE = 0x60000000,
 };
 
-enum
-{
+enum {
 	MMC_DATA_READ = (1 << 0),
 	MMC_DATA_WRITE = (1 << 1),
 };
 
-enum
-{
+enum {
 	MMC_VDD_27_36 = (1 << 0),
 	MMC_VDD_165_195 = (1 << 1),
 };
 
-enum
-{
+enum {
 	MMC_BUS_WIDTH_1 = 1,
 	MMC_BUS_WIDTH_4 = 2,
 };
 
-enum
-{
+enum {
 	SD_VERSION_SD = 0x20000,
 	SD_VERSION_3 = (SD_VERSION_SD | 0x300),
 	SD_VERSION_2 = (SD_VERSION_SD | 0x200),
@@ -169,8 +164,7 @@ enum
 	MMC_VERSION_5_1 = (MMC_VERSION_MMC | 0x501),
 };
 
-typedef struct
-{
+typedef struct {
 	uint32_t version;
 	uint32_t ocr;
 	uint32_t rca;
@@ -186,8 +180,7 @@ typedef struct
 	uint64_t capacity;
 } sdmmc_t;
 
-typedef struct
-{
+typedef struct {
 	sdmmc_t card;
 	sdhci_t *hci;
 	uint8_t buf[512];
@@ -198,6 +191,7 @@ extern sdmmc_pdata_t card0;
 
 int sdmmc_init(sdmmc_pdata_t *data, sdhci_t *hci);
 
-uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno, uint64_t blkcnt);
+uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno,
+			uint64_t blkcnt);
 
 #endif /* __SDCARD_H__ */

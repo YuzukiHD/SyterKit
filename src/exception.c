@@ -10,8 +10,7 @@
 
 #include <log.h>
 
-struct arm_regs_t
-{
+struct arm_regs_t {
 	uint32_t esp;
 	uint32_t cpsr;
 	uint32_t r[13];
@@ -24,8 +23,10 @@ static void show_regs(struct arm_regs_t *regs)
 {
 	int i = 0;
 
-	printk(LOG_LEVEL_ERROR, "pc : [<%08lx>] lr : [<%08lx>] cpsr: %08lx\r\n", regs->pc, regs->lr, regs->cpsr);
-	printk(LOG_LEVEL_ERROR, "sp : %08lx esp : %08lx\r\n", regs->sp, regs->esp);
+	printk(LOG_LEVEL_ERROR, "pc : [<%08lx>] lr : [<%08lx>] cpsr: %08lx\r\n",
+	       regs->pc, regs->lr, regs->cpsr);
+	printk(LOG_LEVEL_ERROR, "sp : %08lx esp : %08lx\r\n", regs->sp,
+	       regs->esp);
 	for (i = 12; i >= 0; i--)
 		printk(LOG_LEVEL_ERROR, "r%-2d: %08lx\r\n", i, regs->r[i]);
 	printk(LOG_LEVEL_ERROR, "\r\n");

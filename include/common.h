@@ -11,7 +11,7 @@
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 #define ALIGN(size, align) (((size) + (align)-1) & (~((align)-1)))
-#define OF_ALIGN(size)	   ALIGN(size, 4)
+#define OF_ALIGN(size) ALIGN(size, 4)
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -21,7 +21,7 @@
 #endif
 
 #define FALSE 0
-#define TRUE  1
+#define TRUE 1
 
 static inline uint32_t swap_uint32(uint32_t data)
 {

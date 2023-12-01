@@ -36,8 +36,8 @@
 #include "fdt.h"
 
 #define OF_DT_TOKEN_NODE_BEGIN 0x00000001 /* Start node */
-#define OF_DT_TOKEN_NODE_END 0x00000002	  /* End node */
-#define OF_DT_TOKEN_PROP 0x00000003		  /* Property */
+#define OF_DT_TOKEN_NODE_END 0x00000002 /* End node */
+#define OF_DT_TOKEN_PROP 0x00000003 /* Property */
 #define OF_DT_TOKEN_NOP 0x00000004
 #define OF_DT_END 0x00000009
 
@@ -71,7 +71,8 @@ static inline void of_set_offset_dt_strings(void *blob, unsigned int offset)
 
 static inline char *of_get_string_by_offset(void *blob, unsigned int offset)
 {
-	return (char *)((unsigned int)blob + of_get_offset_dt_strings(blob) + offset);
+	return (char *)((unsigned int)blob + of_get_offset_dt_strings(blob) +
+			offset);
 }
 
 static inline unsigned int of_get_offset_dt_struct(void *blob)
@@ -130,5 +131,6 @@ static inline void of_set_dt_struct_len(void *blob, unsigned int len)
 
 static inline int of_blob_data_size(void *blob)
 {
-	return (unsigned int)of_get_offset_dt_strings(blob) + of_get_dt_strings_len(blob);
+	return (unsigned int)of_get_offset_dt_strings(blob) +
+	       of_get_dt_strings_len(blob);
 }
