@@ -5,3 +5,8 @@ void abort(void)
 	while (1)
 		;
 }
+
+int raise(void)
+{
+	return 0;
+}
