@@ -372,6 +372,7 @@ _boot:
     if (boot_image_setup((unsigned char *)image.dest, &entry_point))
     {
         printk(LOG_LEVEL_ERROR, "boot setup failed\r\n");
+        abort();
     }
 
     printk(LOG_LEVEL_INFO, "booting linux...\r\n");
