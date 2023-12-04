@@ -285,12 +285,6 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image)
 	return 0;
 }
 
-void abort(void)
-{
-	while (1)
-		;
-}
-
 void show_banner(void)
 {
 	uint32_t id[4];
@@ -397,6 +391,9 @@ _boot:
 
 	kernel_entry = (void (*)(int, int, unsigned int))entry_point;
 	kernel_entry(0, ~0, (unsigned int)image.of_dest);
+
+	// if kernel boot not success, jump to fel.
+	jmp_to_fel();
 
 	return 0;
 }

@@ -3,4 +3,5 @@
 add_syterkit_app(read_chipsid 
     start.S 
     main.c
+    eabi_compat.c
 )

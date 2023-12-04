@@ -2,6 +2,13 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+# Options
+
+# By setting ENABLE_HARDFP to ON, it indicates that the project is configured
+# to utilize hard floating-point operations when applicable. This can be beneficial 
+# in scenarios where performance gains from hardware acceleration are desired.
+option(ENABLE_HARDFP "Enable hardware floating-point operations" ON)
+
 set(CROSS_COMPILE "arm-none-eabi-")
 
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
@@ -9,7 +16,12 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
+if(ENABLE_HARDFP)
 set(CMAKE_COMMON_FLAGS "-nostdlib -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
+else()
+set(CMAKE_COMMON_FLAGS "-nostdlib -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
+endif()
+
 set(CMAKE_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration")
 
 set(CMAKE_C_FLAGS "${CMAKE_DISABLE_WARN_FLAGS} ${CMAKE_C_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "c flags")
@@ -64,6 +76,7 @@ include_directories(
     include/reg
     include/lib/fatfs
     include/lib/fdt
+    include/lib/elf
     ${PROJECT_BINARY_DIR}
 )
 

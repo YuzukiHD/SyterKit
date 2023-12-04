@@ -3,4 +3,5 @@
 add_syterkit_app(read_chip_efuse 
     start.S 
     main.c
+    eabi_compat.c
 )

@@ -37,4 +37,6 @@ static inline uint32_t swap_uint32(uint32_t data)
 
 void abort(void);
 
+int raise(int signum);
+
 #endif // __COMMON_H__
