@@ -479,9 +479,6 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 
 	// turn clock gate on
 	val = readl((CCU_BASE + CCU_DRAM_CLK_REG));
-#if 0
-	val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
-#endif
 	val &= 0xfcfffce0; // select DDR clk source, n=1, m=1
 	val |= 0x80000000; // turn clock on
 	writel(val, (CCU_BASE + CCU_DRAM_CLK_REG));

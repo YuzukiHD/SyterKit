@@ -51,12 +51,6 @@ void show_banner(void)
 	       id[2], id[3]);
 }
 
-void abort(void)
-{
-	while (1)
-		;
-}
-
 int main(void)
 {
 	sunxi_uart_init(&uart_dbg);
