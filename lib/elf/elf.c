@@ -6,8 +6,31 @@
 
 #include <elf.h>
 #include <elf_helpers.h>
+#include <elf_loader.h>
 
 #include <log.h>
+
+void print_elf32_ehdr(Elf32_Ehdr *header)
+{
+	printk(LOG_LEVEL_DEBUG, "e_ident: ");
+	for (int i = 0; i < EI_NIDENT; i++) {
+		printk(LOG_LEVEL_MUTE, "%02x ", header->e_ident[i]);
+	}
+	printk(LOG_LEVEL_MUTE, "\r\n");
+	printk(LOG_LEVEL_DEBUG, "e_type: 0x%08x\r\n", header->e_type);
+	printk(LOG_LEVEL_DEBUG, "e_machine: 0x%08x\r\n", header->e_machine);
+	printk(LOG_LEVEL_DEBUG, "e_version: 0x%08x\r\n", header->e_version);
+	printk(LOG_LEVEL_DEBUG, "e_entry: 0x%08x\r\n", header->e_entry);
+	printk(LOG_LEVEL_DEBUG, "e_phoff: 0x%08x\r\n", header->e_phoff);
+	printk(LOG_LEVEL_DEBUG, "e_shoff: 0x%08x\r\n", header->e_shoff);
+	printk(LOG_LEVEL_DEBUG, "e_flags: 0x%08x\r\n", header->e_flags);
+	printk(LOG_LEVEL_DEBUG, "e_ehsize: 0x%08x\r\n", header->e_ehsize);
+	printk(LOG_LEVEL_DEBUG, "e_phentsize: 0x%08x\r\n", header->e_phentsize);
+	printk(LOG_LEVEL_DEBUG, "e_phnum: 0x%08x\r\n", header->e_phnum);
+	printk(LOG_LEVEL_DEBUG, "e_shentsize: 0x%08x\r\n", header->e_shentsize);
+	printk(LOG_LEVEL_DEBUG, "e_shnum: 0x%08x\r\n", header->e_shnum);
+	printk(LOG_LEVEL_DEBUG, "e_shstrndx: 0x%08x\r\n", header->e_shstrndx);
+}
 
 phys_addr_t elf_get_entry_addr(phys_addr_t base)
 {
@@ -28,6 +51,9 @@ int load_elf_image(phys_addr_t img_addr)
 	void *src = NULL;
 
 	ehdr = (Elf32_Ehdr *)img_addr;
+
+	print_elf32_ehdr(ehdr);
+
 	phdr = (Elf32_Phdr *)(img_addr + ehdr->e_phoff);
 
 	/* load elf program segment */

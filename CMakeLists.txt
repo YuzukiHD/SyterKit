@@ -59,8 +59,8 @@ project(SyterKit C CXX ASM)
 include(cmake/add_syterkit_app.cmake)
 
 configure_file(
-        "${PROJECT_SOURCE_DIR}/config.h.in"
-        "${PROJECT_BINARY_DIR}/config.h"
+    "${PROJECT_SOURCE_DIR}/config.h.in"
+    "${PROJECT_BINARY_DIR}/config.h"
 )
 
 set(CMAKE_AR "${CROSS_COMPILE}ar")
@@ -98,6 +98,7 @@ add_library(SyterKit
     drivers/sys-dram.c
     drivers/sys-sdcard.c
     drivers/sys-sdhci.c
+    drivers/sys-rproc.c
     drivers/sys-spi.c
     drivers/sys-sid.c
     drivers/sys-timer.c
