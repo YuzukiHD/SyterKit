@@ -102,10 +102,6 @@
 #define CCU_CSI_MASTER2_CLK_REG 0x0C10 /* CSI Master2 Clock Register */
 #define CCU_CSI_BGR_REG 0x0C2C /* CSI Bus Gating Reset Register */
 #define CCU_WIEGAND_BGR_REG 0x0C7C /* WIEGAND Bus Gating Reset Register */
-#define CCU_RISCV_CLK_REG 0x0D00 /* RISCV Clock Register */
-#define CCU_RISCV_GATING_RST_REG \
-	0x0D04 /* RISCV Gating and Reset Configuration Register */
-#define CCU_RISCV_CFG_BGR_REG 0x0D0C /* RISCV_CFG Bus Gating Reset Register */
 #define CCU_PLL_PRE_DIV_REG 0x0E00 /* PLL Pre Divider Register */
 #define CCU_AHB_GATE_EN_REG 0x0E04 /* AHB Gate Enable Register */
 #define CCU_PERIPLL_GATE_EN_REG 0x0E08 /* PERIPLL Gate Enable Register */
@@ -140,5 +136,42 @@
 #define CCU_MMC_BGR_SMHC0_RST (1 << 16)
 #define CCU_MMC_BGR_SMHC1_RST (1 << 17)
 #define CCU_MMC_BGR_SMHC2_RST (1 << 18)
+
+/* This file defines the register addresses and bit fields for
+ * controlling the RISC-V subsystem in the CCU module. 
+ */
+#define CCU_RISCV_GATING_RST_REG \
+	(CCU_BASE + 0x0d04) // Register address for RISC-V gating reset control
+#define CCU_RISCV_GATING_RST_FIELD \
+	(0x16aa << 16) // Bit field value for RISC-V gating reset
+#define CCU_RISCV_SYS_APB_SOFT_RSTN \
+	(0x1 << 2) // Bit field value for RISC-V system APB soft reset
+#define CCU_RISCV_SOFT_RSTN (0x1 << 1) // Bit field value for RISC-V soft reset
+#define CCU_RISCV_CLK_GATING \
+	(0x1 << 0) // Bit field value for RISC-V clock gating
+
+#define CCU_RISCV_CLK_REG \
+	(CCU_BASE + 0x0d00) // Register address for RISC-V clock control
+#define CCU_RISCV_CLK_MASK (0x7 << 24) // Bit mask for RISC-V clock selection
+#define CCU_RISCV_CLK_HOSC \
+	(0) // Bit field value for high-frequency oscillator clock
+#define CCU_RISCV_CLK_32K (0x1 << 24) // Bit field value for 32 kHz clock
+#define CCU_RISCV_CLK_16M (0x2 << 24) // Bit field value for 16 MHz clock
+#define CCU_RISCV_CLK_PERI_600M \
+	(0x3 << 24) // Bit field value for 600 MHz peripheral clock
+#define CCU_RISCV_CLK_PERI_480M \
+	(0x4 << 24) // Bit field value for 480 MHz peripheral clock
+#define CCU_RISCV_CLK_CPUPLL (0x5 << 24) // Bit field value for CPU PLL clock
+
+#define CCU_PLL_CPUX_TUNING_REG \
+	(0x1400) // Register address for CPU PLL tuning control
+
+#define CCU_RISCV_CFG_BGR_REG \
+	(CCU_BASE +           \
+	 0x0d0c) // Register address for RISC-V configuration BGR control
+#define CCU_RISCV_CFG_RST \
+	(0x1 << 16) // Bit field value for RISC-V configuration reset
+#define CCU_RISCV_CFG_GATING \
+	(0x1 << 0) // Bit field value for RISC-V configuration gating
 
 #endif
