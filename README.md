@@ -1,5 +1,7 @@
 # SyterKit
 
+- [中文版](#syterkit-1)
+
 SyterKit is a bare-metal framework designed for development boards like TinyVision or other chips such as v851se/v851s/v851s3/v853. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootstrapping functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 6s boot time).
 
 | Name            | Function                                                     | Path                  |
