@@ -2,7 +2,7 @@
 
 - [中文版](#syterkit-1)
 
-SyterKit is a bare-metal framework designed for development boards like TinyVision or other chips such as v851se/v851s/v851s3/v853. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootstrapping functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 6s boot time).
+SyterKit is a bare-metal framework designed for development boards like TinyVision or other chips such as v851se/v851s/v851s3/v853. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 6s boot time).
 
 | Name            | Function                                                     | Path                  |
 | --------------- | ------------------------------------------------------------ | --------------------- |
@@ -10,9 +10,9 @@ SyterKit is a bare-metal framework designed for development boards like TinyVisi
 | init dram       | Initializes the serial port and DRAM                         | `app/init_dram`       |
 | read chip efuse | Reads chip efuse information                                 | `app/read_chip_efuse` |
 | read chipsid    | Reads the unique ID of the chip                              | `app/read_chipsid`    |
-| load e907       | Reads the small core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `app/load_e907`       |
+| load e907       | Reads the e907 core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `app/load_e907`       |
 | syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot`      |
-| syter amp       | Reads the small core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `app/syter_amp`       |
+| syter amp       | Reads the e907 core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `app/syter_amp`       |
 
 ## Getting Started
 
