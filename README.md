@@ -4,6 +4,8 @@
 
 SyterKit is a bare-metal framework designed for development boards like TinyVision or other chips such as v851se/v851s/v851s3/v853. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 6s boot time).
 
+## App
+
 | Name            | Function                                                     | Path                  |
 | --------------- | ------------------------------------------------------------ | --------------------- |
 | hello world     | Minimal program example, prints Hello World                  | `app/hello_world`     |
@@ -50,50 +52,31 @@ The compiled executable files will be located in `build/app`.
 
 The SyterKit project will compile two versions: firmware ending with `.elf` is for USB booting and requires bootloading by PC-side software, while firmware ending with `.bin` is for flashing and can be written into storage devices such as TF cards and SPI NAND.
 
+- For SD Card, You need to flash the `xxx_card.bin`
+- For SPI NAND/SPI NOR, You need to flash the `xxx_spi.bin`
+
 ### Creating TF Card Boot Firmware
 
-Since the firmware to be written into storage devices requires alignment, a tool for alignment is provided here, located at `tools/mksunxi.c`.
-
-#### Compiling mksunxi
-
-Simply navigate to the folder `make`.
-
-![image-20231206212457356](assets/post/README/image-20231206212457356.png)
-
-#### Aligning the Firmware for TF Card
-
-For devices like TF cards, it is recommended to align them to 512.
-
-Execute the command `mksunxi xxx.bin 512` to perform alignment. For example, let's align the `syter_boot_bin.bin` file.
-
-![image-20231206212627062](assets/post/README/image-20231206212627062.png)
-
-After aligning the firmware, you can flash it into the TF card. For the V851s platform, you can write it to either an 8K offset or a 128K offset. Generally, if the TF card uses MBR format, write it with an 8K offset. If it uses GPT format, write it with a 128K offset. Assuming `/dev/sdb` is the target TF card, you can use the following command to write it with an 8K offset:
+After build the firmware, you can flash it into the TF card. For the V851s platform, you can write it to either an 8K offset or a 128K offset. Generally, if the TF card uses MBR format, write it with an 8K offset. If it uses GPT format, write it with a 128K offset. Assuming `/dev/sdb` is the target TF card, you can use the following command to write it with an 8K offset:
 
 ```shell
-sudo dd if=syter_boot_bin.bin of=/dev/sdb bs=1024 seek=8
+sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=8
 ```
 
 If it is a GPT partition table, you need to write it with a 128K offset:
 
 ```shell
-sudo dd if=syter_boot_bin.bin of=/dev/sdb bs=1024 seek=128
+sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128
 ```
 
-#### Aligning the Firmware for SPI NAND
+#### Creating the Firmware for SPI NAND
 
-For devices like SPI NAND, it is recommended to align them to 8192.
-
-Execute the command `mksunxi xxx.bin 8192` to perform alignment. For example, let's align the `syter_boot_bin.bin` file.
-
-![image-20231206213445553](assets/post/README/image-20231206213445553.png)
-
-Next, we need to create the firmware for SPI NAND by writing SyterKit to the corresponding positions:
+For SPI NAND, we need to create the firmware for SPI NAND by writing SyterKit to the corresponding positions:
 
 ```shell
-dd if=syter_boot_bin.bin of=spi.img bs=2k
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
 ```
 
 You can also include the Linux kernel and device tree in the firmware:
@@ -109,20 +92,14 @@ Use the xfel tool to flash the created firmware into SPI NAND:
 xfel spinand write 0x0 spi.img
 ```
 
-#### Aligning the Firmware for SPI NOR
+#### Creating the Firmware for SPI NOR
 
-For devices like SPI NOR, it is recommended to align them to 8192.
-
-Execute the command `mksunxi xxx.bin 8192` to perform alignment. For example, let's align the `syter_boot_bin.bin` file.
-
-![image-20231206213445553](assets/post/README/image-20231206213445553.png)
-
-Next, we need to create the firmware for SPI NOR by writing SyterKit to the corresponding positions:
+For SPI NOR, we need to create the firmware for SPI NOR by writing SyterKit to the corresponding positions:
 
 ```shell
-dd if=syter_boot_bin.bin of=spi.img bs=2k
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
 ```
 
 You can also include the Linux kernel and device tree in the firmware:
@@ -191,50 +168,32 @@ make
 
 同一个项目工程 SyterKit 会编译两个版本，`elf` 结尾的固件为 USB 引导固件，需要电脑上位软件进行引导加载，`bin` 结尾的固件为刷写固件，可以刷入 TF 卡，SPI NAND 等储存器。
 
+- 对于 SD 卡，你需要刷写 `xxx_card.bin` 文件。
+- 对于 SPI NAND/SPI NOR，你需要刷写 `xxx_spi.bin` 文件。
+
+
 ### 制作 TF 卡启动固件
 
-由于刷写到存储器的固件需要进行对齐操作，所以这里提供一个工具进行对齐。位于 `tools/mksunxi.c`
-
-#### 编译 mksunxi 
-
-进入文件夹 `make ` 即可
-
-![image-20231206212457356](assets/post/README/image-20231206212457356.png)
-
-#### 对 TF 卡启动固件进行对齐
-
-对于 TF 卡这样的设备，需要 512 对齐。
-
-执行命令 `mksunxi xxx.bin 512` 即可对齐，例如这里我们对 `syter_boot_bin.bin` 进行对齐操作
-
-![image-20231206212627062](assets/post/README/image-20231206212627062.png)
-
-对齐后的固件可以刷入TF卡内使用，对于 V851s 平台，可以将其写入 8K 偏移位或者 128K 偏移位。一般来说如果TF卡使用的是 MBR 格式，写 8K 偏移，如果是 GPT 格式，写128K 偏移。这里假设 `/dev/sdb` 是目标 TF 卡。写入 8K 偏移位
+固件可以刷入TF卡内使用，对于 V851s 平台，可以将其写入 8K 偏移位或者 128K 偏移位。一般来说如果TF卡使用的是 MBR 格式，写 8K 偏移，如果是 GPT 格式，写128K 偏移。这里假设 `/dev/sdb` 是目标 TF 卡。写入 8K 偏移位
 
 ```shell
-sudo dd if=syter_boot_bin.bin of=/dev/sdb bs=1024 seek=8
+sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=8
 ```
 
 如果是 GPT 分区表，需要写入 128K 偏移量
 
 ```shell
-sudo dd if=syter_boot_bin.bin of=/dev/sdb bs=1024 seek=128
+sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128
 ```
 
-#### 对 SPI NAND 启动固件进行对齐
+#### 制作 SPI NAND 启动固件
 
-对于 SPI NAND 这样的设备，需要 8192 对齐。
-
-执行命令 `mksunxi xxx.bin 8192` 即可对齐，例如这里我们对 `syter_boot_bin.bin` 进行对齐操作
-
-![image-20231206213445553](assets/post/README/image-20231206213445553.png)
-
-然后我们需要制作 SPI NAND 的固件，将 SyterKit 写入对应位置制作固件
+制作 SPI NAND 的固件，需要将 SyterKit 写入对应位置制作固件
 
 ```shell
-dd if=syter_boot_bin.bin of=spi.img bs=2k
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
 ```
 
 同时也可以把 Linux 内核与设备树一同写入固件中
@@ -250,20 +209,14 @@ dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256
 xfel spinand write 0x0 spi.img
 ```
 
-#### 对 SPI NOR 启动固件进行对齐
+#### 制作 SPI NOR 启动固件
 
-对于 SPI NOR 这样的设备，需要 8192 对齐。
-
-执行命令 `mksunxi xxx.bin 8192` 即可对齐，例如这里我们对 `syter_boot_bin.bin` 进行对齐操作
-
-![image-20231206213445553](assets/post/README/image-20231206213445553.png)
-
-然后我们需要制作 SPI NOR 的固件，将 SyterKit 写入对应位置制作固件
+制作 SPI NOR 的固件，需要将 SyterKit 写入对应位置制作固件
 
 ```shell
-dd if=syter_boot_bin.bin of=spi.img bs=2k
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
 ```
 
 同时也可以把 Linux 内核与设备树一同写入固件中
