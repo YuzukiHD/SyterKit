@@ -101,6 +101,8 @@ add_library(SyterKit
     # string
     src/string/string.c
     src/string/memcpy.S
+    src/string/memset.S
+    src/string/memcmp.S
     # exception & common
     src/exception.c
     src/common.c
