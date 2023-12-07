@@ -29,7 +29,7 @@ extern char *strrchr(const char *s, int c);
 
 extern char *strstr(const char *s, const char *what);
 
-extern void *memchr(const char *ptr, int value, unsigned int num);
+extern void *memchr(void *ptr, int value, unsigned int num);
 
 extern void *memmove(void *dest, const void *src, unsigned int count);
 
