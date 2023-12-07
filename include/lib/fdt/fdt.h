@@ -1,57 +1,66 @@
-/* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support
- * ----------------------------------------------------------------------------
- * Copyright (c) 2012, Atmel Corporation
- *
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the disclaimer below.
- *
- * Atmel's name may not be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
- * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+#ifndef FDT_H
+#define FDT_H
+/*
+ * libfdt - Flat Device Tree manipulation
+ * Copyright (C) 2006 David Gibson, IBM Corporation.
+ * Copyright 2012 Kim Phillips, Freescale Semiconductor.
  */
-#ifndef __FDT_H__
-#define __FDT_H__
 
-/* see linux document: ./Documentation/devicetree/booting-without-of.txt */
-#define OF_DT_MAGIC 0xd00dfeed
+#ifndef __ASSEMBLY__
 
-typedef struct {
-	unsigned int magic_number;
-	unsigned int total_size;
-	unsigned int offset_dt_struct;
-	unsigned int offset_dt_strings;
-	unsigned int offset_reserve_map;
-	unsigned int format_version;
-	unsigned int last_compatible_version;
+struct fdt_header {
+	fdt32_t magic;			 /* magic word FDT_MAGIC */
+	fdt32_t totalsize;		 /* total size of DT block */
+	fdt32_t off_dt_struct;		 /* offset to structure */
+	fdt32_t off_dt_strings;		 /* offset to strings */
+	fdt32_t off_mem_rsvmap;		 /* offset to memory reserve map */
+	fdt32_t version;		 /* format version */
+	fdt32_t last_comp_version;	 /* last compatible version */
 
-	/* version 2 field */
-	unsigned int mach_id;
-	/* version 3 field */
-	unsigned int dt_strings_len;
-	/* version 17 field */
-	unsigned int dt_struct_len;
-} boot_param_header_t;
+	/* version 2 fields below */
+	fdt32_t boot_cpuid_phys;	 /* Which physical CPU id we're
+					    booting on */
+	/* version 3 fields below */
+	fdt32_t size_dt_strings;	 /* size of the strings block */
 
-unsigned int of_get_magic_number(void *blob);
-unsigned int of_get_dt_total_size(void *blob);
-int check_dt_blob_valid(void *blob);
-int fixup_chosen_node(void *blob, char *bootargs);
-int fixup_memory_node(void *blob, unsigned int *mem_bank,
-		      unsigned int *mem_size);
-#endif /* #ifndef __FDT_H__ */
+	/* version 17 fields below */
+	fdt32_t size_dt_struct;		 /* size of the structure block */
+};
+
+struct fdt_reserve_entry {
+	fdt64_t address;
+	fdt64_t size;
+};
+
+struct fdt_node_header {
+	fdt32_t tag;
+	char name[];
+};
+
+struct fdt_property {
+	fdt32_t tag;
+	fdt32_t len;
+	fdt32_t nameoff;
+	char data[];
+};
+
+#endif /* !__ASSEMBLY */
+
+#define FDT_MAGIC	0xd00dfeed	/* 4: version, 4: total size */
+#define FDT_TAGSIZE	sizeof(fdt32_t)
+
+#define FDT_BEGIN_NODE	0x1		/* Start node: full name */
+#define FDT_END_NODE	0x2		/* End node */
+#define FDT_PROP	0x3		/* Property: name off,
+					   size, content */
+#define FDT_NOP		0x4		/* nop */
+#define FDT_END		0x9
+
+#define FDT_V1_SIZE	(7*sizeof(fdt32_t))
+#define FDT_V2_SIZE	(FDT_V1_SIZE + sizeof(fdt32_t))
+#define FDT_V3_SIZE	(FDT_V2_SIZE + sizeof(fdt32_t))
+#define FDT_V16_SIZE	FDT_V3_SIZE
+#define FDT_V17_SIZE	(FDT_V16_SIZE + sizeof(fdt32_t))
+
+#endif /* FDT_H */
