@@ -117,7 +117,7 @@ char *strstr(const char *s1, const char *s2) {
     } while (1);
 }
 
-void *memchr(const char *src, int val, unsigned int cnt) {
+void *memchr(void *src, int val, unsigned int cnt) {
     char *p = NULL;
     char *s = (char *) src;
 
