@@ -57,14 +57,28 @@ endif ()
 project(SyterKit C CXX ASM)
 
 include(cmake/add_syterkit_app.cmake)
+include(ExternalProject)
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/config.h.in"
     "${PROJECT_BINARY_DIR}/config.h"
 )
 
+ExternalProject_Add(
+    mksunxi
+    PREFIX mksunxi
+    SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
+    INSTALL_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make -C ${PROJECT_SOURCE_DIR}/tools
+    BUILD_IN_SOURCE 1
+)
+
 set(CMAKE_AR "${CROSS_COMPILE}ar")
 set(CMAKE_OBJCOPY "${CROSS_COMPILE}objcopy")
+set(CMAKE_SIZE "${CROSS_COMPILE}size")
+
+set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
 
 set(LINK_SCRIPT_FEL ${CMAKE_SOURCE_DIR}/link/link_elf.ld)
 set(LINK_SCRIPT_BIN ${CMAKE_SOURCE_DIR}/link/link_bin.ld)
