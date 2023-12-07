@@ -10,6 +10,8 @@
     write32((addr), (read32(addr) & ~(clear)) | (set))
 #define setbits_le32(addr, set) write32((addr), read32(addr) | (set))
 #define clrbits_le32(addr, clear) write32((addr), read32(addr) & ~(clear))
+#define readl(addr) read32(addr)
+#define writel(val, addr) write32((addr), (val))
 
 typedef unsigned int virtual_addr_t;
 
