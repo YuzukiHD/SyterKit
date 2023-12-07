@@ -13,8 +13,9 @@ SyterKit is a bare-metal framework designed for development boards like TinyVisi
 | read chip efuse | Reads chip efuse information                                 | `app/read_chip_efuse` |
 | read chipsid    | Reads the unique ID of the chip                              | `app/read_chipsid`    |
 | load e907       | Reads the e907 core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `app/load_e907`       |
-| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot`      |
+| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux  | `app/syter_boot`      |
 | syter amp       | Reads the e907 core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `app/syter_amp`       |
+| fdt parser      | Reads the DTB and Parser Print out                           | `app/fdt_parser`      |
 
 ## Getting Started
 
@@ -131,6 +132,8 @@ SyterKit 是一个纯裸机框架，用于 TinyVision 或者其他 v851se/v851s/
 | load e907       | 读取小核固件，并且启动 e907 核心，将 V851s 作为大号 RISC-V 单片机使用（E907@600MHz 64M内存） | `app/load_e907`       |
 | syter boot      | 启动引导，完美代替 U-Boot 功能，快速启动 Linux 系统          | `app/syter_boot`      |
 | syter amp       | 读取小核固件，启动 e907 核心，并且读取 Kernel 启动 Linux 系统，e907 与 a7 双系统异构同时运行 | `app/syter_amp`       |
+| fdt parser      | 读取设备树并解析节点                          | `app/fdt_parser`      |
+
 
 ## 开始使用
 
