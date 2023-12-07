@@ -15,6 +15,14 @@ unsigned int strlen(const char *str) {
     return i - 1;
 }
 
+unsigned int strnlen(const char *s, unsigned int n) {
+    const char *sc;
+
+    for (sc = s; n-- && *sc != '\0'; ++sc)
+        ;
+    return sc - s;
+}
+
 char *strcpy(char *dst, const char *src) {
     char *bak = dst;
 
@@ -76,6 +84,17 @@ char *strchr(const char *s, int c) {
     return (char *) s;
 }
 
+char *strrchr(const char *s, int c) {
+    const char *p = s + strlen(s);
+
+    do {
+        if (*p == (char) c)
+            return (char *) p;
+    } while (--p >= s);
+
+    return NULL;
+}
+
 char *strstr(const char *s1, const char *s2) {
     register const char *s = s1;
     register const char *p = s2;
@@ -98,7 +117,7 @@ char *strstr(const char *s1, const char *s2) {
     } while (1);
 }
 
-void *memchr(void *src, int val, unsigned int cnt) {
+void *memchr(const char *src, int val, unsigned int cnt) {
     char *p = NULL;
     char *s = (char *) src;
 
