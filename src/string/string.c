@@ -6,26 +6,6 @@
 
 #include "string.h"
 
-void *memset(void *dst, int val, int cnt) {
-    char *d = (char *) dst;
-
-    while (cnt--)
-        *d++ = (char) val;
-
-    return dst;
-}
-
-int memcmp(const void *dst, const void *src, unsigned int cnt) {
-    const char *d = (const char *) dst;
-    const char *s = (const char *) src;
-    int r = 0;
-
-    while (cnt-- && (r = *d++ - *s++) == 0)
-        ;
-
-    return r;
-}
-
 unsigned int strlen(const char *str) {
     int i = 0;
 

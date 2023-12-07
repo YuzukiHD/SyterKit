@@ -15,7 +15,7 @@ function(add_syterkit_app target_name)
     add_custom_command(
         TARGET ${target_name}_fel
         POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_fel ${target_name}_fel.elf 
-        COMMENT "Copy Binary"
+        COMMENT "Copy Binary ${target_name}_fel"
     )
 
     add_executable(${target_name}_bin ${ARGN})
@@ -32,13 +32,13 @@ function(add_syterkit_app target_name)
     add_custom_command(
         TARGET ${target_name}_bin
         POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_bin ${target_name}_bin_card.bin 
-        COMMENT "Copy Block Binary"
+        COMMENT "Copy Block Binary ${target_name}_bin => ${target_name}_card.bin"
     )
 
     add_custom_command(
         TARGET ${target_name}_bin
         POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_bin ${target_name}_bin_spi.bin 
-        COMMENT "Copy MTD Binary"
+        COMMENT "Copy MTD Binary ${target_name}_bin => ${target_name}_spi.bin"
     )
 
     add_custom_command(
