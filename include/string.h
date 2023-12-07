@@ -13,6 +13,8 @@ extern int memcmp(const void *dst, const void *src, unsigned int cnt);
 
 extern unsigned int strlen(const char *str);
 
+extern unsigned int strnlen(const char *s, unsigned int n);
+
 extern char *strcpy(char *dst, const char *src);
 
 extern char *strcat(char *dst, const char *src);
@@ -23,9 +25,11 @@ extern int strncmp(const char *p1, const char *p2, unsigned int cnt);
 
 extern char *strchr(const char *s, int c);
 
+extern char *strrchr(const char *s, int c);
+
 extern char *strstr(const char *s, const char *what);
 
-extern void *memchr(void *ptr, int value, unsigned int num);
+extern void *memchr(const char *ptr, int value, unsigned int num);
 
 extern void *memmove(void *dest, const void *src, unsigned int count);
 
