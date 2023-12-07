@@ -17,7 +17,7 @@
 #include "sys-sid.h"
 #include "sys-spi.h"
 
-#include "fdt.h"
+#include "libfdt.h"
 #include "ff.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
@@ -228,15 +228,13 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
         return -1;
 
     /* get dtb size and read */
-    spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR,
-                  (uint32_t) sizeof(boot_param_header_t));
-    if (of_get_magic_number(image->of_dest) != OF_DT_MAGIC) {
-        printk(LOG_LEVEL_ERROR,
-               "SPI-NAND: DTB verification failed\r\n");
+    spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
+    if (fdt_check_header(image->of_dest)) {
+        printk(LOG_LEVEL_ERROR, "SPI-NAND: DTB verification failed\r\n");
         return -1;
     }
 
-    size = of_get_dt_total_size(image->of_dest);
+    size = fdt_totalsize(image->of_dest);
     printk(LOG_LEVEL_DEBUG,
            "SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\r\n",
            CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);

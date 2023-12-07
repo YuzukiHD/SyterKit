@@ -17,7 +17,7 @@
 #include "sys-sid.h"
 #include "sys-spi.h"
 
-#include "fdt.h"
+#include "libfdt.h"
 #include "ff.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
