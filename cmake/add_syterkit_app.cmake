@@ -8,6 +8,12 @@ function(add_syterkit_app target_name)
 
     add_custom_command(
         TARGET ${target_name}_fel
+        POST_BUILD COMMAND ${CMAKE_SIZE} -B -x ${target_name}_fel
+        COMMENT "Get Size of ${target_name}_fel"
+    )
+
+    add_custom_command(
+        TARGET ${target_name}_fel
         POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_fel ${target_name}_fel.elf 
         COMMENT "Copy Binary"
     )
@@ -19,7 +25,31 @@ function(add_syterkit_app target_name)
 
     add_custom_command(
         TARGET ${target_name}_bin
-        POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_bin ${target_name}_bin.bin 
-        COMMENT "Copy Binary"
+        POST_BUILD COMMAND ${CMAKE_SIZE} -B -x ${target_name}_bin
+        COMMENT "Get Size of ${target_name}_bin"
+    )
+
+    add_custom_command(
+        TARGET ${target_name}_bin
+        POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_bin ${target_name}_bin_card.bin 
+        COMMENT "Copy Block Binary"
+    )
+
+    add_custom_command(
+        TARGET ${target_name}_bin
+        POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_bin ${target_name}_bin_spi.bin 
+        COMMENT "Copy MTD Binary"
+    )
+
+    add_custom_command(
+        TARGET ${target_name}_bin
+        POST_BUILD COMMAND ${CMAKE_MKSUNXI} ${target_name}_bin_card.bin 512
+        COMMENT "Padding Block 512 Binary"
+    )
+
+    add_custom_command(
+        TARGET ${target_name}_bin
+        POST_BUILD COMMAND ${CMAKE_MKSUNXI} ${target_name}_bin_spi.bin 8192
+        COMMENT "Padding MTD 8192 Binary"
     )
 endfunction()
