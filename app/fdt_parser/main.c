@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
-#include <ctype.h>
 
 #include <config.h>
 #include <log.h>
@@ -378,68 +378,83 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
     return 0;
 }
 
+
 int main(void) {
+    /* Initialize UART debug interface */
     sunxi_uart_init(&uart_dbg);
 
+    /* Print boot screen */
     show_banner();
 
+    /* Initialize clock */
     sunxi_clk_init();
 
+    /* Initialize DRAM */
     sunxi_dram_init();
 
+    /* Print clock information */
     sunxi_clk_dump();
 
+    /* Clear image structure */
     memset(&image, 0, sizeof(image_info_t));
 
+    /* Set the target address of image to DTB load address */
     image.dest = (uint8_t *) CONFIG_DTB_LOADADDR;
 
+    /* Copy the DTB filename to the image structure */
     strcpy(image.filename, CONFIG_DTB_FILENAME);
 
+    /* Initialize SD card controller */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\r\n",
-               sdhci0.name);
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\r\n", sdhci0.name);
         return 0;
     } else {
-        printk(LOG_LEVEL_INFO,
-               "SMHC: %s controller v%x initialized\r\n", sdhci0.name,
-               sdhci0.reg->vers);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\r\n", sdhci0.name, sdhci0.reg->vers);
     }
 
+    /* Initialize SD card */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: init failed\r\n");
         return 0;
     }
 
+    /* Load DTB file from SD card */
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: loading failed\r\n");
         return 0;
     }
 
+    /* Force image.dest to be a pointer to fdt_header structure */
     struct fdt_header *dtb_header = (struct fdt_header *) image.dest;
 
     int err = 0;
 
+    /* Check if DTB header is valid */
     if ((err = fdt_check_header(dtb_header)) != 0) {
         printk(LOG_LEVEL_MUTE, "Invalid device tree blob: %s\n", fdt_strerror(err));
         return -1;
     }
 
+    /* Get the total size of DTB */
     uint32_t size = fdt_totalsize(image.dest);
-
     printk(LOG_LEVEL_INFO, "DTB FDT Size = 0x%x\r\n", size);
 
+    /* Print all device tree nodes */
     fdt_print(image.dest, "/", NULL, MAX_LEVEL);
 
     int len = 0;
+    /* Get the offset of "/chosen" node */
     uint32_t bootargs_node = fdt_path_offset(image.dest, "/chosen");
+    
+    /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
-
     printk(LOG_LEVEL_INFO, "DTB OLD bootargs = \"%s\"\r\n", bootargs_str);
 
+    /* New bootargs string */
     char *new_bootargs_str = "earlyprintk=sunxi-uart,0x02500C00 root=/dev/mmcblk0p3 rootwait loglevel=8 initcall_debug=0 console=ttyS0 init=/init";
-
     printk(LOG_LEVEL_INFO, "Now set bootargs to \"%s\"\r\n", new_bootargs_str);
 
+    /* Modify bootargs string */
     err = fdt_setprop(image.dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 
     if (err < 0) {
@@ -447,12 +462,14 @@ int main(void) {
         abort();
     }
 
+    /* Get updated bootargs string */
     char *updated_bootargs_str = (void *) fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
-
     printk(LOG_LEVEL_INFO, "DTB NEW bootargs = \"%s\"\r\n", updated_bootargs_str);
 
+    /* Terminate program execution */
     abort();
 
+    /* Jump to FEL mode execution */
     jmp_to_fel();
 
     return 0;
