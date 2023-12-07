@@ -23,7 +23,7 @@ enum {
 };
 
 #ifndef LOG_LEVEL_DEFAULT
-#define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
+#define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
 #endif
 
 void set_timer_count();

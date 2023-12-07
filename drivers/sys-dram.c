@@ -1169,14 +1169,14 @@ static int auto_scan_dram_config(dram_para_t *para) {
 int init_DRAM(int type, dram_para_t *para) {
     uint32_t rc, mem_size_mb;
 
-    printk(LOG_LEVEL_INFO, "DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
-    printk(LOG_LEVEL_INFO, "DRAM CLK = %d MHz\r\n", para->dram_clk);
-    printk(LOG_LEVEL_INFO, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n",
+    printk(LOG_LEVEL_DEBUG, "DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
+    printk(LOG_LEVEL_DEBUG, "DRAM CLK = %d MHz\r\n", para->dram_clk);
+    printk(LOG_LEVEL_DEBUG, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n",
            para->dram_type);
     if ((para->dram_odt_en & 0x1) == 0)
         printk(LOG_LEVEL_DEBUG, "DRAMC read ODT off\r\n");
     else
-        printk(LOG_LEVEL_INFO, "DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
+        printk(LOG_LEVEL_DEBUG, "DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
 
     /* Test ZQ status */
     if (para->dram_tpr13 & (1 << 16)) {

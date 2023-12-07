@@ -61,7 +61,7 @@ void sunxi_clk_init(void) {
 
     /* Periph0 has been enabled */
     if (read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG) & (1 << 31))
-        printk(LOG_LEVEL_INFO, "periph0 has been enabled\r\n");
+        printk(LOG_LEVEL_DEBUG, "periph0 has been enabled\r\n");
 
     /* AHB_Clock = CLK_SRC/M/N, PERIPH_600M / N(1) / M(3) = 200MHz */
     write32(CCU_BASE + CCU_AHB_CLK_REG, (0x3 << 24) | 0x2);
@@ -89,8 +89,8 @@ void sunxi_clk_init(void) {
     write32(CCU_BASE + CCU_MBUS_CLK_REG, val);
     sdelay(1);
 
-    printk(LOG_LEVEL_INFO, "sunxi clock init end\r\n");
-    printk(LOG_LEVEL_INFO, "cpu clk reg (#0x%x): 0x%08x\r\n",
+    printk(LOG_LEVEL_DEBUG, "sunxi clock init end\r\n");
+    printk(LOG_LEVEL_DEBUG, "cpu clk reg (#0x%x): 0x%08x\r\n",
            CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
 
     return;
@@ -122,7 +122,7 @@ void sunxi_clk_dump() {
     /* PLL CPU */
     reg32 = read32(CCU_BASE + CCU_CPU_CLK_REG);
     cpu_clk_src = (reg32 >> 24) & 0x7;
-    printk(LOG_LEVEL_INFO, "CLK: CPU CLK_reg=0x%08x\r\n", reg32);
+    printk(LOG_LEVEL_DEBUG, "CLK: CPU CLK_reg=0x%08x\r\n", reg32);
 
     switch (cpu_clk_src) {
         case 0x0:
@@ -164,7 +164,7 @@ void sunxi_clk_dump() {
         p1 = 1;
     }
 
-    printk(LOG_LEVEL_INFO, "CLK: CPU PLL=%s FREQ=%uMHz\r\n", clock_str,
+    printk(LOG_LEVEL_DEBUG, "CLK: CPU PLL=%s FREQ=%uMHz\r\n", clock_str,
            ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) *
             24 / p1));
 
@@ -176,13 +176,13 @@ void sunxi_clk_dump() {
         p0 = ((reg32 >> 16) & 0x03) + 1;
         p1 = ((reg32 >> 20) & 0x03) + 1;
 
-        printk(LOG_LEVEL_INFO,
+        printk(LOG_LEVEL_DEBUG,
                "CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\r\n",
                (24 * plln) / (pllm * p0),
                (24 * plln) / (pllm * p0) >> 1,
                (24 * plln) / (pllm * p1));
     } else {
-        printk(LOG_LEVEL_INFO, "CLK: PLL_peri disabled\r\n");
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_peri disabled\r\n");
     }
 
     /* PLL DDR */
@@ -194,9 +194,9 @@ void sunxi_clk_dump() {
         p1 = ((reg32 >> 1) & 0x1) + 1;
         p0 = (reg32 & 0x01) + 1;
 
-        printk(LOG_LEVEL_INFO, "CLK: PLL_ddr=%uMHz\r\n",
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_ddr=%uMHz\r\n",
                (24 * plln) / (p0 * p1));
     } else {
-        printk(LOG_LEVEL_INFO, "CLK: PLL_ddr disabled\r\n");
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_ddr disabled\r\n");
     }
 }
