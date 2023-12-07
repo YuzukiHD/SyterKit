@@ -14,9 +14,6 @@
 #include "reg-dram.h"
 #include "sys-dram.h"
 
-#define readl(addr) read32(addr)
-#define writel(val, addr) write32((addr), (val))
-#define udelay(c) sdelay(c)
 #define DIV_ROUND_UP(a, b) (((a) + (b) -1) / (b))
 
 #define CONFIG_SYS_SDRAM_BASE SDRAM_BASE
@@ -35,14 +32,14 @@ static void dram_enable_all_master(void) {
     writel(~0, (MCTL_COM_BASE + MCTL_COM_MAER0));
     writel(0xff, (MCTL_COM_BASE + MCTL_COM_MAER1));
     writel(0xffff, (MCTL_COM_BASE + MCTL_COM_MAER2));
-    udelay(10);
+    sdelay(10);
 }
 
 static void dram_disable_all_master(void) {
     writel(1, (MCTL_COM_BASE + MCTL_COM_MAER0));
     writel(0, (MCTL_COM_BASE + MCTL_COM_MAER1));
     writel(0, (MCTL_COM_BASE + MCTL_COM_MAER2));
-    udelay(10);
+    sdelay(10);
 }
 
 static void eye_delay_compensation(dram_para_t *para)// s1
@@ -88,7 +85,7 @@ static void eye_delay_compensation(dram_para_t *para)// s1
     // PGCR0: release AC loopback FIFO reset
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), (1 << 26));
 
-    udelay(1);
+    sdelay(1);
 
     delay = (para->dram_tpr10 & 0xf0) << 4;
 
@@ -465,7 +462,7 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
         ;
     }
 
-    udelay(20);
+    sdelay(20);
 
     // enable PLL output
     val = readl(CCU_BASE);
@@ -491,11 +488,11 @@ static void mctl_sys_init(dram_para_t *para) {
     // turn off sdram clock gate, assert sdram reset
     clrbits_le32((CCU_BASE + CCU_DRAM_BGR_REG), 0x10001);
     clrsetbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31), (1 << 27));
-    udelay(10);
+    sdelay(10);
 
     // set ddr pll clock
     para->dram_clk = ccu_set_pll_ddr_clk(0, para) / 2;
-    udelay(100);
+    sdelay(100);
     dram_disable_all_master();
 
     // release sdram reset
@@ -505,18 +502,18 @@ static void mctl_sys_init(dram_para_t *para) {
     setbits_le32((CCU_BASE + CCU_MBUS_CLK_REG), (1 << 30));
     setbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 30));
 
-    udelay(5);
+    sdelay(5);
 
     // turn on sdram clock gate
     setbits_le32((CCU_BASE + CCU_DRAM_BGR_REG), (1 << 0));
 
     // turn dram clock gate on, trigger sdr clock update
     setbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 27));
-    udelay(5);
+    sdelay(5);
 
     // mCTL clock enable
     writel(0x8000, (MCTL_PHY_BASE + MCTL_PHY_CLKEN));
-    udelay(10);
+    sdelay(10);
 }
 
 // The main purpose of this routine seems to be to copy an address configuration
@@ -658,7 +655,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
                         (1 << 27));
     } else {
         clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0x40);
-        udelay(10);
+        sdelay(10);
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0);
     }
 
@@ -678,7 +675,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) &
         (1 << 16)) {
         clrbits_le32((R_PRCM_BASE + VDD_SYS_PWROFF_GATING_REG), 0x2);
-        udelay(10);
+        sdelay(10);
     }
 
     // Set ZQ config
@@ -693,7 +690,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
 
         while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & 0x1) == 0) {
         }// wait for IDONE
-        udelay(10);
+        sdelay(10);
 
         // 0x520 = prep DQS gating + DRAM init + d-cal
         if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
@@ -719,7 +716,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
 
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PIR), 0x1);// GO
 
-    udelay(10);
+    sdelay(10);
     while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & 0x1) == 0) {
     }// wait for IDONE
 
@@ -727,7 +724,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
         (1 << 16)) {
         clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000,
                         0x04000000);
-        udelay(10);
+        sdelay(10);
 
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
 
@@ -735,20 +732,20 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
         }
 
         clrbits_le32((R_PRCM_BASE + VDD_SYS_PWROFF_GATING_REG), 0x1);
-        udelay(10);
+        sdelay(10);
 
         clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
 
         while ((readl((MCTL_PHY_BASE + MCTL_PHY_STATR)) & 0x7) != 0x1) {
         }
 
-        udelay(15);
+        sdelay(15);
 
         if (dqs_gating_mode == 1) {
             clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0);
             clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3),
                             0x06000000, 0x02000000);
-            udelay(1);
+            sdelay(1);
             writel(0x401, (MCTL_PHY_BASE + MCTL_PHY_PIR));
 
             while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) &
@@ -769,11 +766,11 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     }
 
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_RFSHCTL0), (1 << 31));
-    udelay(10);
+    sdelay(10);
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_RFSHCTL0), (1 << 31));
-    udelay(10);
+    sdelay(10);
     setbits_le32((MCTL_COM_BASE + MCTL_COM_CCCR), (1 << 31));
-    udelay(10);
+    sdelay(10);
 
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000);
 
@@ -986,7 +983,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
         }
         /* set row mode */
         clrsetbits_le32(mc_work_mode, 0xf0c, 0x6f0);
-        udelay(2);
+        sdelay(2);
 
         for (i = 11; i < 17; i++) {
             ret = CONFIG_SYS_SDRAM_BASE +
@@ -1024,7 +1021,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
 
         /* Set bank mode for current rank */
         clrsetbits_le32(mc_work_mode, 0xffc, 0x6a4);
-        udelay(1);
+        sdelay(1);
 
         for (i = 0; i < 1; i++) {
             ret = CONFIG_SYS_SDRAM_BASE + (0x1U << (i + 2 + 9));
@@ -1058,7 +1055,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
 
         /* Set page mode for current rank */
         clrsetbits_le32(mc_work_mode, 0xffc, 0xaa0);
-        udelay(2);
+        sdelay(2);
 
         /* Scan per address line, until address wraps (i.e. see shadow) */
         for (i = 9; i <= 13; i++) {
@@ -1184,18 +1181,18 @@ int init_DRAM(int type, dram_para_t *para) {
         setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
                      (1 << 8));
         writel(0, (SYS_CONTROL_REG_BASE + ZQ_RES_CTRL_REG));
-        udelay(10);
+        sdelay(10);
     } else {
         clrbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x3);
         writel(para->dram_tpr13 & (1 << 16),
                (R_PRCM_BASE + ANALOG_PWROFF_GATING_REG));
-        udelay(10);
+        sdelay(10);
         clrsetbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x108,
                         (1 << 1));
-        udelay(10);
+        sdelay(10);
         setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
                      (1 << 0));
-        udelay(20);
+        sdelay(20);
         printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%x\r\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
     }
 
