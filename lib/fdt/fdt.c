@@ -26,9 +26,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <types.h>
 
 #include <log.h>
@@ -36,101 +36,87 @@
 #include "fdt.h"
 
 #define OF_DT_TOKEN_NODE_BEGIN 0x00000001 /* Start node */
-#define OF_DT_TOKEN_NODE_END 0x00000002 /* End node */
-#define OF_DT_TOKEN_PROP 0x00000003 /* Property */
+#define OF_DT_TOKEN_NODE_END 0x00000002   /* End node */
+#define OF_DT_TOKEN_PROP 0x00000003       /* Property */
 #define OF_DT_TOKEN_NOP 0x00000004
 #define OF_DT_END 0x00000009
 
-inline unsigned int of_get_magic_number(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+inline unsigned int of_get_magic_number(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->magic_number);
+    return swap_uint32(header->magic_number);
 }
 
-static inline unsigned int of_get_format_version(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline unsigned int of_get_format_version(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->format_version);
+    return swap_uint32(header->format_version);
 }
 
-static inline unsigned int of_get_offset_dt_strings(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline unsigned int of_get_offset_dt_strings(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->offset_dt_strings);
+    return swap_uint32(header->offset_dt_strings);
 }
 
-static inline void of_set_offset_dt_strings(void *blob, unsigned int offset)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline void of_set_offset_dt_strings(void *blob, unsigned int offset) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	header->offset_dt_strings = swap_uint32(offset);
+    header->offset_dt_strings = swap_uint32(offset);
 }
 
-static inline char *of_get_string_by_offset(void *blob, unsigned int offset)
-{
-	return (char *)((unsigned int)blob + of_get_offset_dt_strings(blob) +
-			offset);
+static inline char *of_get_string_by_offset(void *blob, unsigned int offset) {
+    return (char *) ((unsigned int) blob + of_get_offset_dt_strings(blob) +
+                     offset);
 }
 
-static inline unsigned int of_get_offset_dt_struct(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline unsigned int of_get_offset_dt_struct(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->offset_dt_struct);
+    return swap_uint32(header->offset_dt_struct);
 }
 
-static inline unsigned int of_dt_struct_offset(void *blob, unsigned int offset)
-{
-	return (unsigned int)blob + of_get_offset_dt_struct(blob) + offset;
+static inline unsigned int of_dt_struct_offset(void *blob, unsigned int offset) {
+    return (unsigned int) blob + of_get_offset_dt_struct(blob) + offset;
 }
 
-unsigned int of_get_dt_total_size(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+unsigned int of_get_dt_total_size(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->total_size);
+    return swap_uint32(header->total_size);
 }
 
-static inline void of_set_dt_total_size(void *blob, unsigned int size)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline void of_set_dt_total_size(void *blob, unsigned int size) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	header->total_size = swap_uint32(size);
+    header->total_size = swap_uint32(size);
 }
 
-static inline unsigned int of_get_dt_strings_len(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline unsigned int of_get_dt_strings_len(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->dt_strings_len);
+    return swap_uint32(header->dt_strings_len);
 }
 
-static inline void of_set_dt_strings_len(void *blob, unsigned int len)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline void of_set_dt_strings_len(void *blob, unsigned int len) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	header->dt_strings_len = swap_uint32(len);
+    header->dt_strings_len = swap_uint32(len);
 }
 
-static inline unsigned int of_get_dt_struct_len(void *blob)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline unsigned int of_get_dt_struct_len(void *blob) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	return swap_uint32(header->dt_struct_len);
+    return swap_uint32(header->dt_struct_len);
 }
 
-static inline void of_set_dt_struct_len(void *blob, unsigned int len)
-{
-	boot_param_header_t *header = (boot_param_header_t *)blob;
+static inline void of_set_dt_struct_len(void *blob, unsigned int len) {
+    boot_param_header_t *header = (boot_param_header_t *) blob;
 
-	header->dt_struct_len = swap_uint32(len);
+    header->dt_struct_len = swap_uint32(len);
 }
 
-static inline int of_blob_data_size(void *blob)
-{
-	return (unsigned int)of_get_offset_dt_strings(blob) +
-	       of_get_dt_strings_len(blob);
+static inline int of_blob_data_size(void *blob) {
+    return (unsigned int) of_get_offset_dt_strings(blob) +
+           of_get_dt_strings_len(blob);
 }

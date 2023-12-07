@@ -3,9 +3,9 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <types.h>
 
 #include <sys-timer.h>
@@ -14,12 +14,12 @@
 #include "xformat.h"
 
 enum {
-	LOG_LEVEL_TRACE = 0,
-	LOG_LEVEL_DEBUG = 1,
-	LOG_LEVEL_INFO = 2,
-	LOG_LEVEL_WARNING = 3,
-	LOG_LEVEL_ERROR = 4,
-	LOG_LEVEL_MUTE = 5,
+    LOG_LEVEL_TRACE = 0,
+    LOG_LEVEL_DEBUG = 1,
+    LOG_LEVEL_INFO = 2,
+    LOG_LEVEL_WARNING = 3,
+    LOG_LEVEL_ERROR = 4,
+    LOG_LEVEL_MUTE = 5,
 };
 
 #ifndef LOG_LEVEL_DEFAULT

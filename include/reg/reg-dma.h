@@ -57,4 +57,4 @@
 #define DMA_PKG_END_INT (1 << 1)
 #define DMA_QUEUE_END_INT (1 << 2)
 
-#endif // __REG_DMA_H__
+#endif// __REG_DMA_H__
