@@ -3,12 +3,12 @@
 #ifndef __SYS_TIMER_H__
 #define __SYS_TIMER_H__
 
-#include <stdarg.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <types.h>
 #include <io.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <types.h>
 
 #include "log.h"
 
@@ -24,4 +24,4 @@ void mdelay(uint32_t ms);
 
 void sdelay(uint32_t loops);
 
-#endif // __SYS_TIMER_H__
+#endif// __SYS_TIMER_H__

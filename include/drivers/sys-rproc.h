@@ -7,4 +7,4 @@ void sunxi_e907_clock_init(uint32_t addr);
 
 void sunxi_e907_clock_reset(void);
 
-#endif // __SYS_RPROC_H__
+#endif// __SYS_RPROC_H__
