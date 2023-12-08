@@ -26,8 +26,8 @@ int main(int argc, char *argv[]) {
     char *buffer;
     int buflen, filelen;
     uint32_t *p;
-    uint32_t sum;
-    int i, l, loop, padding;
+    uint32_t sum = 0;
+    int i = 0, l = 0, loop = 0, padding = 0;
 
     if (argc != 3) {
         printf("Usage: mksunxi <bootloader> <padding>\n");

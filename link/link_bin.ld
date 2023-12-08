@@ -19,10 +19,11 @@ SECTIONS
 
     .text :
     {
-    . = ALIGN(4);
-    PROVIDE(__spl_start = .);
-    *(.text .text.*)
-    . = ALIGN(4);
+        . = ALIGN(4);
+        PROVIDE(__spl_start = .);
+        *(.text .text.*)
+        KEEP(*(.note.gnu.build-id))
+        . = ALIGN(4);
     } > ram
 
     . = ALIGN(4);
@@ -50,7 +51,7 @@ SECTIONS
     .stack (NOLOAD):
     {
         . = ALIGN(8);
-    /* SRV stack section */
+        /* SRV stack section */
         __stack_srv_start = .;
         . += STACK_SIZE;
         __stack_srv_end = .;
