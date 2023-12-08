@@ -9,7 +9,7 @@
 
 #include <common.h>
 
-sunxi_uart_t uart_dbg = {
+sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
         .id = 0,
         .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
@@ -17,11 +17,11 @@ sunxi_uart_t uart_dbg = {
 };
 
 int main(void) {
-    sunxi_uart_init(&uart_dbg);
+    sunxi_serial_init(&uart_dbg);
 
     sunxi_clk_init();
 
-    printk(LOG_LEVEL_INFO, "Hello World!\r\n");
+    printk(LOG_LEVEL_INFO, "Hello World!\n");
 
     return 0;
 }

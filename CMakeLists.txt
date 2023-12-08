@@ -85,12 +85,14 @@ set(LINK_SCRIPT_BIN ${CMAKE_SOURCE_DIR}/link/link_bin.ld)
 
 include_directories(
     include
+    include/cli
     include/arch
     include/drivers
     include/reg
     include/lib/fatfs
     include/lib/fdt
     include/lib/elf
+    include/lib/cJSON
     ${PROJECT_BINARY_DIR}
 )
 
@@ -103,11 +105,19 @@ add_library(SyterKit
     src/string/memcpy.S
     src/string/memset.S
     src/string/memcmp.S
+    # cli
+    src/cli/commands.c
+    src/cli/history.c
+    src/cli/lineedit.c
+    src/cli/parse.c
+    src/cli/shell.c
     # exception & common
     src/exception.c
     src/common.c
     src/jmp.c
+    src/uart.c
     src/ctype.c
+    src/fdt_wrapper.c
     # deiver
     drivers/sys-clk.c
     drivers/sys-dma.c
@@ -120,9 +130,10 @@ add_library(SyterKit
     drivers/sys-sid.c
     drivers/sys-timer.c
     drivers/sys-uart.c
+    drivers/sys-wdt.c
 )
 
-target_link_libraries(SyterKit gcc)
+target_link_libraries(SyterKit gcc fdt)
 
 add_subdirectory(lib)
 

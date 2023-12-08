@@ -6,10 +6,10 @@
 #include <types.h>
 
 #include "common.h"
-#include "log.h"
-#include "xformat.h"
 
-extern sunxi_uart_t uart_dbg;
+#include "log.h"
+#include "uart.h"
+#include "xformat.h"
 
 static uint32_t init_timestamp = 0;
 
@@ -49,7 +49,7 @@ void printk(int level, const char *fmt, ...) {
     va_start(args, fmt);
     va_list args_copy;
     va_copy(args_copy, args);
-    xvformat(sunxi_uart_putc, &uart_dbg, fmt, args_copy);
+    xvformat(uart_log_putchar, NULL, fmt, args_copy);
     va_end(args);
     va_end(args_copy);
 }
@@ -59,7 +59,7 @@ void uart_printf(const char *fmt, ...) {
     va_start(args, fmt);
     va_list args_copy;
     va_copy(args_copy, args);
-    xvformat(sunxi_uart_putc, &uart_dbg, fmt, args_copy);
+    xvformat(uart_log_putchar, NULL, fmt, args_copy);
     va_end(args);
     va_end(args_copy);
 }

@@ -62,9 +62,9 @@ void dump_efuse(void) {
                sids[n].offset, sids[n].size_bits);
         for (int i = 0; i < count; i++) {
             if (i >= 0 && ((i % 8) == 0))
-                printk(LOG_LEVEL_MUTE, "\r\n%-4s", "");
+                printk(LOG_LEVEL_MUTE, "\n%-4s", "");
             printk(LOG_LEVEL_MUTE, "%08x ", buffer[i]);
         }
-        printk(LOG_LEVEL_MUTE, "\r\n");
+        printk(LOG_LEVEL_MUTE, "\n");
     }
 }
