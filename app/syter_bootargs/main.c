@@ -424,7 +424,7 @@ int cmd_boot(int argc, const char **argv) {
 const msh_command_entry commands[] = {
         msh_define_command(bootargs),
         msh_define_command(reload),
-        msh_define_command(bootm),
+        msh_define_command(boot),
         msh_command_end,
 };
 
