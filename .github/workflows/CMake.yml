@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Setup env
-      run: sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
+      run: sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
 
     - name: Configure CMake arm-none-eabi
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -42,6 +42,15 @@ jobs:
     - name: Build arm-linux-gnueabihf
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build-arm-linux-gnueabihf --config ${{env.BUILD_TYPE}}
+
+    - name: Configure CMake arm-linux-gnueabi
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build-arm-linux-gnueabi -DCROSS_COMPILE=arm-linux-gnueabi- -DENABLE_HARDFP=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build arm-linux-gnueabi
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build-arm-linux-gnueabi --config ${{env.BUILD_TYPE}}
 
       
 
