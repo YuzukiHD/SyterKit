@@ -38,4 +38,6 @@ void abort(void);
 
 int raise(int signum);
 
+void show_banner(void);
+
 #endif// __COMMON_H__

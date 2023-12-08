@@ -6,5 +6,6 @@
 // Project Info
 #define PROJECT_NAME "@PROJECT_NAME@"
 #define PROJECT_GIT_HASH  "@PROJECT_GIT_HASH@"
+#define PROJECT_C_COMPILER "@COMPILER_NAME@"
 
 #endif // _CONFIG_H_
