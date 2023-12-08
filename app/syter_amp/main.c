@@ -111,7 +111,7 @@ unsigned int end;
 static int boot_image_setup(unsigned char *addr, unsigned int *entry) {
     linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
 
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->code  = 0x");
+    printk(LOG_LEVEL_INFO, "Linux zImage->code  = 0x");
     for (int i = 0; i < 9; i++)
         printk(LOG_LEVEL_MUTE, "%x", code[i]);
 
@@ -228,28 +228,7 @@ static int load_sdcard(image_info_t *image) {
     return 0;
 }
 
-void show_banner(void) {
-    uint32_t id[4];
 
-    printk(LOG_LEVEL_MUTE, "\n");
-    printk(LOG_LEVEL_INFO, " _____     _           _____ _ _   \n");
-    printk(LOG_LEVEL_INFO, "|   __|_ _| |_ ___ ___|  |  |_| |_ \n");
-    printk(LOG_LEVEL_INFO, "|__   | | |  _| -_|  _|    -| | _| \n");
-    printk(LOG_LEVEL_INFO, "|_____|_  |_| |___|_| |__|__|_|_|  \n");
-    printk(LOG_LEVEL_INFO, "      |___|                        \n");
-    printk(LOG_LEVEL_INFO, "***********************************\n");
-    printk(LOG_LEVEL_INFO, " %s V0.1.1 Commit: %s\n", PROJECT_NAME,
-           PROJECT_GIT_HASH);
-    printk(LOG_LEVEL_INFO, "***********************************\n");
-
-    id[0] = read32(0x03006200 + 0x0);
-    id[1] = read32(0x03006200 + 0x4);
-    id[2] = read32(0x03006200 + 0x8);
-    id[3] = read32(0x03006200 + 0xc);
-
-    printk(LOG_LEVEL_INFO, "Chip ID is: %08x%08x%08x%08x\n", id[0], id[1],
-           id[2], id[3]);
-}
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);

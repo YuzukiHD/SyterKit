@@ -59,6 +59,9 @@ project(SyterKit C CXX ASM)
 include(cmake/add_syterkit_app.cmake)
 include(ExternalProject)
 
+string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)
+string(REGEX REPLACE ".*/" "" COMPILER_NAME ${COMPILER_NAME})
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/config.h.in"
     "${PROJECT_BINARY_DIR}/config.h"
