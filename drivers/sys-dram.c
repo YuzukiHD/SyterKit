@@ -757,7 +757,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     // Check for training error
     if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 20)) {
         printk(LOG_LEVEL_ERROR,
-               "ZQ calibration error, check external 240 ohm resistor\r\n");
+               "ZQ calibration error, check external 240 ohm resistor\n");
         return 0;
     }
 
@@ -828,7 +828,7 @@ static int dqs_gate_detect(dram_para_t *para) {
 
     if ((readl(MCTL_PHY_BASE + MCTL_PHY_PGSR0) & BIT(22)) == 0) {
         para->dram_para2 = (para->dram_para2 & ~0xf) | BIT(12);
-        printk(LOG_LEVEL_DEBUG, "dual rank and full DQ\r\n");
+        printk(LOG_LEVEL_DEBUG, "dual rank and full DQ\n");
 
         return 1;
     }
@@ -836,7 +836,7 @@ static int dqs_gate_detect(dram_para_t *para) {
     dx0 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) & 0x3000000) >> 24;
     if (dx0 == 0) {
         para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
-        printk(LOG_LEVEL_DEBUG, "dual rank and half DQ\r\n");
+        printk(LOG_LEVEL_DEBUG, "dual rank and half DQ\n");
 
         return 1;
     }
@@ -847,11 +847,11 @@ static int dqs_gate_detect(dram_para_t *para) {
               24;
         if (dx1 == 2) {
             para->dram_para2 = para->dram_para2 & ~0xf00f;
-            printk(LOG_LEVEL_DEBUG, "single rank and full DQ\r\n");
+            printk(LOG_LEVEL_DEBUG, "single rank and full DQ\n");
         } else {
             para->dram_para2 = (para->dram_para2 & ~0xf00f) |
                                BIT(0);
-            printk(LOG_LEVEL_DEBUG, "single rank and half DQ\r\n");
+            printk(LOG_LEVEL_DEBUG, "single rank and half DQ\n");
         }
 
         return 1;
@@ -860,8 +860,8 @@ static int dqs_gate_detect(dram_para_t *para) {
     if ((para->dram_tpr13 & BIT(29)) == 0)
         return 0;
 
-    printk(LOG_LEVEL_DEBUG, "DX0 state: %d\r\n", dx0);
-    printk(LOG_LEVEL_DEBUG, "DX1 state: %d\r\n", dx1);
+    printk(LOG_LEVEL_DEBUG, "DX0 state: %d\n", dx0);
+    printk(LOG_LEVEL_DEBUG, "DX1 state: %d\n", dx1);
 
     return 0;
 }
@@ -883,22 +883,22 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
         v1 = readl((unsigned long) (addr + i));
         v2 = patt1 + i;
         if (v1 != v2) {
-            printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
-            printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n",
+            printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\n");
+            printk(LOG_LEVEL_ERROR, "%x != %x at address %p\n",
                    v1, v2, addr + i);
             return 1;
         }
         v1 = readl((unsigned long) (addr + offs + i));
         v2 = patt2 + i;
         if (v1 != v2) {
-            printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\r\n");
-            printk(LOG_LEVEL_ERROR, "%x != %x at address %p\r\n",
+            printk(LOG_LEVEL_ERROR, "DRAM: simple test FAIL\n");
+            printk(LOG_LEVEL_ERROR, "%x != %x at address %p\n",
                    v1, v2, addr + offs + i);
             return 1;
         }
     }
 
-    printk(LOG_LEVEL_INFO, "DRAM: simple test OK\r\n");
+    printk(LOG_LEVEL_INFO, "DRAM: simple test OK\n");
     return 0;
 }
 
@@ -954,7 +954,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
 
     // init core
     if (mctl_core_init(para) == 0) {
-        printk(LOG_LEVEL_DEBUG, "DRAM initial error : 0!\r\n");
+        printk(LOG_LEVEL_DEBUG, "DRAM initial error : 0!\n");
         return 0;
     }
 
@@ -1004,13 +1004,13 @@ static int auto_scan_dram_size(dram_para_t *para) {
             i = 16;
         addr_line += i;
 
-        printk(LOG_LEVEL_DEBUG, "rank %d row = %d \r\n", current_rank,
+        printk(LOG_LEVEL_DEBUG, "rank %d row = %d \n", current_rank,
                i);
 
         /* Store rows in para 1 */
         para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
         para->dram_para1 |= (i << (16 * current_rank + 4));
-        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n",
+        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\n",
                para->dram_para1);
 
         /* Set bank mode for current rank */
@@ -1039,13 +1039,13 @@ static int auto_scan_dram_size(dram_para_t *para) {
         }
 
         addr_line += i + 2;
-        printk(LOG_LEVEL_DEBUG, "rank %d bank = %d \r\n", current_rank,
+        printk(LOG_LEVEL_DEBUG, "rank %d bank = %d \n", current_rank,
                (4 + i * 4));
 
         /* Store bank in para 1 */
         para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
         para->dram_para1 |= (i << (16 * current_rank + 12));
-        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n",
+        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\n",
                para->dram_para1);
 
         /* Set page mode for rank0 */
@@ -1087,22 +1087,22 @@ static int auto_scan_dram_size(dram_para_t *para) {
             i = (0x1U << (i - 10));
         }
 
-        printk(LOG_LEVEL_DEBUG, "rank %d page size = %d KB \r\n", current_rank, i);
+        printk(LOG_LEVEL_DEBUG, "rank %d page size = %d KB \n", current_rank, i);
 
         /* Store page in para 1 */
         para->dram_para1 &= ~(0xfU << (16 * current_rank));
         para->dram_para1 |= (i << (16 * current_rank));
-        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
+        printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\n", para->dram_para1);
     }
 
     /* check dual rank config */
     if (rank_count == 2) {
         para->dram_para2 &= 0xfffff0ff;
         if ((para->dram_para1 & 0xffff) == (para->dram_para1 >> 16)) {
-            printk(LOG_LEVEL_DEBUG, "rank1 config same as rank0\r\n");
+            printk(LOG_LEVEL_DEBUG, "rank1 config same as rank0\n");
         } else {
             para->dram_para2 |= 0x1 << 8;
-            printk(LOG_LEVEL_DEBUG, "rank1 config different from rank0\r\n");
+            printk(LOG_LEVEL_DEBUG, "rank1 config different from rank0\n");
         }
     }
     return 1;
@@ -1147,13 +1147,13 @@ static int auto_scan_dram_rank_width(dram_para_t *para) {
 static int auto_scan_dram_config(dram_para_t *para) {
     if (((para->dram_tpr13 & BIT(14)) == 0) &&
         (auto_scan_dram_rank_width(para) == 0)) {
-        printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram rank & width failed\r\n");
+        printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram rank & width failed\n");
         return 0;
     }
 
     if (((para->dram_tpr13 & BIT(0)) == 0) &&
         (auto_scan_dram_size(para) == 0)) {
-        printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram size failed\r\n");
+        printk(LOG_LEVEL_ERROR, "ERROR: auto scan dram size failed\n");
         return 0;
     }
 
@@ -1166,18 +1166,18 @@ static int auto_scan_dram_config(dram_para_t *para) {
 int init_DRAM(int type, dram_para_t *para) {
     uint32_t rc, mem_size_mb;
 
-    printk(LOG_LEVEL_DEBUG, "DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
-    printk(LOG_LEVEL_DEBUG, "DRAM CLK = %d MHz\r\n", para->dram_clk);
-    printk(LOG_LEVEL_DEBUG, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n",
+    printk(LOG_LEVEL_DEBUG, "DRAM BOOT DRIVE INFO: %s\n", "V0.24");
+    printk(LOG_LEVEL_DEBUG, "DRAM CLK = %d MHz\n", para->dram_clk);
+    printk(LOG_LEVEL_DEBUG, "DRAM Type = %d (2:DDR2,3:DDR3)\n",
            para->dram_type);
     if ((para->dram_odt_en & 0x1) == 0)
-        printk(LOG_LEVEL_DEBUG, "DRAMC read ODT off\r\n");
+        printk(LOG_LEVEL_DEBUG, "DRAMC read ODT off\n");
     else
-        printk(LOG_LEVEL_DEBUG, "DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
+        printk(LOG_LEVEL_DEBUG, "DRAMC ZQ value: 0x%x\n", para->dram_zq);
 
     /* Test ZQ status */
     if (para->dram_tpr13 & (1 << 16)) {
-        printk(LOG_LEVEL_DEBUG, "DRAM only have internal ZQ\r\n");
+        printk(LOG_LEVEL_DEBUG, "DRAM only have internal ZQ\n");
         setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
                      (1 << 8));
         writel(0, (SYS_CONTROL_REG_BASE + ZQ_RES_CTRL_REG));
@@ -1193,13 +1193,13 @@ int init_DRAM(int type, dram_para_t *para) {
         setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG),
                      (1 << 0));
         sdelay(20);
-        printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%x\r\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+        printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%x\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
     }
 
     /* Set SDRAM controller auto config */
     if ((para->dram_tpr13 & (1 << 0)) == 0) {
         if (auto_scan_dram_config(para) == 0) {
-            printk(LOG_LEVEL_ERROR, "auto_scan_dram_config() FAILED\r\n");
+            printk(LOG_LEVEL_ERROR, "auto_scan_dram_config() FAILED\n");
             return 0;
         }
     }
@@ -1207,13 +1207,13 @@ int init_DRAM(int type, dram_para_t *para) {
     /* report ODT */
     rc = para->dram_mr1;
     if ((rc & 0x44) == 0)
-        printk(LOG_LEVEL_DEBUG, "DRAM ODT off\r\n");
+        printk(LOG_LEVEL_DEBUG, "DRAM ODT off\n");
     else
-        printk(LOG_LEVEL_DEBUG, "DRAM ODT value: 0x%x\r\n", rc);
+        printk(LOG_LEVEL_DEBUG, "DRAM ODT value: 0x%x\n", rc);
 
     /* Init core, final run */
     if (mctl_core_init(para) == 0) {
-        printk(LOG_LEVEL_DEBUG, "DRAM initialisation error: 1\r\n");
+        printk(LOG_LEVEL_DEBUG, "DRAM initialisation error: 1\n");
         return 0;
     }
 
@@ -1225,7 +1225,7 @@ int init_DRAM(int type, dram_para_t *para) {
         rc = (rc >> 16) & ~(1 << 15);
     } else {
         rc = dramc_get_dram_size();
-        printk(LOG_LEVEL_INFO, "DRAM: size = %dMB\r\n", rc);
+        printk(LOG_LEVEL_INFO, "DRAM: size = %dMB\n", rc);
         para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
     }
     mem_size_mb = rc;
@@ -1238,7 +1238,7 @@ int init_DRAM(int type, dram_para_t *para) {
         writel(rc, (MCTL_PHY_BASE + MCTL_PHY_ASRTC));
         writel(0x40a, (MCTL_PHY_BASE + MCTL_PHY_ASRC));
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), (1 << 0));
-        printk(LOG_LEVEL_DEBUG, "Enable Auto SR\r\n");
+        printk(LOG_LEVEL_DEBUG, "Enable Auto SR\n");
     } else {
         clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_ASRTC), 0xffff);
         clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);

@@ -25,14 +25,14 @@
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-sunxi_uart_t uart_dbg = {
+sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
         .id = 0,
         .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
         .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
 };
 
-sunxi_uart_t uart_e907 = {
+sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
         .gpio_tx = {GPIO_PIN(PORTE, 0), GPIO_PERIPH_MUX7},
@@ -80,7 +80,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
         printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\r\n", filename,
+               "FATFS: open, filename: [%s]: error %d\n", filename,
                fret);
         ret = -1;
         goto open_fail;
@@ -98,7 +98,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\r\n", fret);
+        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -107,7 +107,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\r\n", time,
+    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -125,7 +125,7 @@ static int load_sdcard(image_info_t *image) {
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0,
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\r\n",
+    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -133,13 +133,13 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\r\n", fret);
+        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\r\n");
+        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\r\n", image->filename,
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename,
            (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
@@ -148,12 +148,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\r\n", fret);
+        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\r\n");
+        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\r\n", time_ms() - start);
+    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -161,30 +161,30 @@ static int load_sdcard(image_info_t *image) {
 void show_banner(void) {
     uint32_t id[4];
 
-    printk(LOG_LEVEL_MUTE, "\r\n");
-    printk(LOG_LEVEL_INFO, " _____     _           _____ _ _   \r\n");
-    printk(LOG_LEVEL_INFO, "|   __|_ _| |_ ___ ___|  |  |_| |_ \r\n");
-    printk(LOG_LEVEL_INFO, "|__   | | |  _| -_|  _|    -| | _| \r\n");
-    printk(LOG_LEVEL_INFO, "|_____|_  |_| |___|_| |__|__|_|_|  \r\n");
-    printk(LOG_LEVEL_INFO, "      |___|                        \r\n");
-    printk(LOG_LEVEL_INFO, "***********************************\r\n");
-    printk(LOG_LEVEL_INFO, " %s V0.1.1 Commit: %s\r\n", PROJECT_NAME,
+    printk(LOG_LEVEL_MUTE, "\n");
+    printk(LOG_LEVEL_INFO, " _____     _           _____ _ _   \n");
+    printk(LOG_LEVEL_INFO, "|   __|_ _| |_ ___ ___|  |  |_| |_ \n");
+    printk(LOG_LEVEL_INFO, "|__   | | |  _| -_|  _|    -| | _| \n");
+    printk(LOG_LEVEL_INFO, "|_____|_  |_| |___|_| |__|__|_|_|  \n");
+    printk(LOG_LEVEL_INFO, "      |___|                        \n");
+    printk(LOG_LEVEL_INFO, "***********************************\n");
+    printk(LOG_LEVEL_INFO, " %s V0.1.1 Commit: %s\n", PROJECT_NAME,
            PROJECT_GIT_HASH);
-    printk(LOG_LEVEL_INFO, "***********************************\r\n");
+    printk(LOG_LEVEL_INFO, "***********************************\n");
 
     id[0] = read32(0x03006200 + 0x0);
     id[1] = read32(0x03006200 + 0x4);
     id[2] = read32(0x03006200 + 0x8);
     id[3] = read32(0x03006200 + 0xc);
 
-    printk(LOG_LEVEL_INFO, "Chip ID is: %08x%08x%08x%08x\r\n", id[0], id[1],
+    printk(LOG_LEVEL_INFO, "Chip ID is: %08x%08x%08x%08x\n", id[0], id[1],
            id[2], id[3]);
 }
 
 int main(void) {
-    sunxi_uart_init(&uart_dbg);
+    sunxi_serial_init(&uart_dbg);
 
-    // sunxi_uart_init(&uart_e907);
+    // sunxi_serial_init(&uart_e907);
 
     show_banner();
 
@@ -201,39 +201,39 @@ int main(void) {
     strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\r\n",
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n",
                sdhci0.name);
         return 0;
     } else {
         printk(LOG_LEVEL_INFO,
-               "SMHC: %s controller v%x initialized\r\n", sdhci0.name,
+               "SMHC: %s controller v%x initialized\n", sdhci0.name,
                sdhci0.reg->vers);
     }
 
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: init failed\r\n");
+        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
         return 0;
     }
 
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: loading failed\r\n");
+        printk(LOG_LEVEL_ERROR, "SMHC: loading failed\n");
         return 0;
     }
 
     sunxi_e907_clock_reset();
 
     uint32_t elf_run_addr = elf_get_entry_addr((phys_addr_t) image.dest);
-    printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\r\n", elf_run_addr);
+    printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
     if (load_elf_image((phys_addr_t) image.dest)) {
-        printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\r\n");
+        printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\n");
     }
 
     sunxi_e907_clock_init(elf_run_addr);
 
     dump_e907_clock();
 
-    printk(LOG_LEVEL_INFO, "RISC-V E907 Core now Running... \r\n");
+    printk(LOG_LEVEL_INFO, "RISC-V E907 Core now Running... \n");
 
     abort();
 

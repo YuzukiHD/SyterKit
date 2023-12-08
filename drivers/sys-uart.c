@@ -13,7 +13,7 @@
 
 #include "sys-uart.h"
 
-void sunxi_uart_init(sunxi_uart_t *uart) {
+void sunxi_serial_init(sunxi_serial_t *uart) {
     uint32_t addr;
     uint32_t val;
 
@@ -52,10 +52,24 @@ void sunxi_uart_init(sunxi_uart_t *uart) {
     write32(addr + 0x0c, val);
 }
 
-void sunxi_uart_putc(void *arg, char c) {
-    sunxi_uart_t *uart = (sunxi_uart_t *) arg;
+void sunxi_serial_putc(void *arg, char c) {
+    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 
-    while ((read32(uart->base + 0x7c) & (0x1 << 1)) == 0)
+    while ((read32(uart->base + 0x14) & (0x1 << 6)) == 0)
         ;
     write32(uart->base + 0x00, c);
+}
+
+char sunxi_serial_getc(void *arg) {
+    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
+
+    while ((read32(uart->base + 0x14) & 1) == 0)
+        ;
+    return read32(uart->base + 0x00);
+}
+
+int sunxi_serial_tstc(void *arg) {
+    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
+
+    return (read32(uart->base + 0x14)) & 1;
 }

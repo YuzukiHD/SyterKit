@@ -72,7 +72,7 @@ void dump_e907_clock(void) {
 
         pll_perf = (24 * plln) / (pllm * p0) >> 1;
     } else {
-        printk(LOG_LEVEL_INFO, "CLK: PLL_peri disabled\r\n");
+        printk(LOG_LEVEL_INFO, "CLK: PLL_peri disabled\n");
         return;
     }
 
@@ -81,7 +81,7 @@ void dump_e907_clock(void) {
     factor_n = ((reg_val >> 8) & 0x3) + 1;
     pll_riscv = pll_perf / factor_m;
 
-    printk(LOG_LEVEL_INFO, "CLK: RISC-V PLL FREQ=%uMHz\r\n", pll_riscv);
-    printk(LOG_LEVEL_INFO, "CLK: RISC-V AXI FREQ=%uMHz\r\n",
+    printk(LOG_LEVEL_INFO, "CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
+    printk(LOG_LEVEL_INFO, "CLK: RISC-V AXI FREQ=%uMHz\n",
            pll_riscv / factor_n);
 }

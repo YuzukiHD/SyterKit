@@ -76,7 +76,7 @@ DRESULT disk_read(BYTE pdrv, /* Physical drive nmuber to identify the drive */
 	last = sector + count;
 	bytes = count * FF_MIN_SS;
 
-	printk(LOG_LEVEL_TRACE, "FATFS: read %u sectors at %u\r\n", count,
+	printk(LOG_LEVEL_TRACE, "FATFS: read %u sectors at %u\n", count,
 	       first);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
@@ -86,13 +86,13 @@ DRESULT disk_read(BYTE pdrv, /* Physical drive nmuber to identify the drive */
 		memcpy(buff, cache + (first - cache_first) * FF_MIN_SS, chunk);
 		buff += chunk;
 		first += (cache_last - first);
-		printk(LOG_LEVEL_TRACE, "FATFS: chunk %u first %u\r\n", chunk,
+		printk(LOG_LEVEL_TRACE, "FATFS: chunk %u first %u\n", chunk,
 		       first);
 	}
 
 	// Read is NOT in the cache
 	if (last > cache_last || first < cache_first) {
-		printk(LOG_LEVEL_TRACE, "FATFS: if %u > %u || %u < %u\r\n",
+		printk(LOG_LEVEL_TRACE, "FATFS: if %u > %u || %u < %u\n",
 		       last, cache_last, first, cache_first);
 
 		read_pos = (first / cache_size) *
@@ -103,18 +103,18 @@ DRESULT disk_read(BYTE pdrv, /* Physical drive nmuber to identify the drive */
 
 		if (blkread != cache_size) {
 			printk(LOG_LEVEL_WARNING,
-			       "FATFS: MMC read %u/%u blocks\r\n", blkread,
+			       "FATFS: MMC read %u/%u blocks\n", blkread,
 			       cache_size);
 			return RES_ERROR;
 		}
 		printk(LOG_LEVEL_TRACE,
-		       "FATFS: cached %u sectors (%uKB) at %u/[%u-%u]\r\n",
+		       "FATFS: cached %u sectors (%uKB) at %u/[%u-%u]\n",
 		       blkread, (blkread * FF_MIN_SS) / 1024, first, read_pos,
 		       read_pos + cache_size);
 	}
 
 	// Copy from read cache to output buffer
-	printk(LOG_LEVEL_TRACE, "FATFS: copy %u from 0x%x to 0x%x\r\n", bytes,
+	printk(LOG_LEVEL_TRACE, "FATFS: copy %u from 0x%x to 0x%x\n", bytes,
 	       (cache + ((first - cache_first) * FF_MIN_SS)), buff);
 	memcpy(buff, (cache + ((first - cache_first) * FF_MIN_SS)), bytes);
 

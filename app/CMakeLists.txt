@@ -10,8 +10,14 @@ add_subdirectory(read_chip_efuse)
 
 add_subdirectory(syter_boot)
 
+add_subdirectory(syter_bootargs)
+
 add_subdirectory(load_e907)
 
 add_subdirectory(syter_amp)
 
 add_subdirectory(fdt_parser)
+
+add_subdirectory(cli_test)
+
+add_subdirectory(fdt_cli)

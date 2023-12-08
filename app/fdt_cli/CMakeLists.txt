@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+add_syterkit_app(fdt_cli 
+    start.S 
+    main.c
+    eabi_compat.c
+)

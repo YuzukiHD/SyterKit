@@ -487,7 +487,7 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
         if (cdr2) {
             div = mclk / (spi_clk * 2) - 1;
             reg |= SPI_CLK_CTL_CDR2(div) | SPI_CLK_CTL_DRS;
-            printk(LOG_LEVEL_DEBUG, "SPI: CDR2 - n = %lu\r\n", div);
+            printk(LOG_LEVEL_DEBUG, "SPI: CDR2 - n = %lu\n", div);
             freq = mclk / (2 * ((div + 1)));
         } else { /* CDR1 */
             while (src_clk > spi_clk) {
@@ -495,14 +495,14 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
                 src_clk >>= 1;
             }
             reg |= SPI_CLK_CTL_CDR1(div);
-            printk(LOG_LEVEL_DEBUG, "SPI: CDR1 - n = %lu\r\n", div);
+            printk(LOG_LEVEL_DEBUG, "SPI: CDR1 - n = %lu\n", div);
             freq = src_clk;
         }
     }
 
-    printk(LOG_LEVEL_DEBUG, "SPI: clock div=%u \r\n", div);
+    printk(LOG_LEVEL_DEBUG, "SPI: clock div=%u \n", div);
     printk(LOG_LEVEL_DEBUG,
-           "SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\r\n",
+           "SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
            spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
     write32(spi->base + SPI_CCR, reg);
@@ -522,7 +522,7 @@ static int spi_clk_init(uint32_t mod_clk) {
         rval = (1U << 31) | (0x1 << 24) | (0 << 8) |
                0; /* gate enable | use PERIPH_300M */
     }
-    printk(LOG_LEVEL_TRACE, "SPI: parent_clk=%dMHz\r\n", SPI_MOD_CLK);
+    printk(LOG_LEVEL_TRACE, "SPI: parent_clk=%dMHz\n", SPI_MOD_CLK);
 
     write32(CCU_BASE + CCU_SPI0_CLK_REG, rval);
 
@@ -560,7 +560,7 @@ static int spi_dma_cfg(void) {
     spi_rx_dma_hd = dma_request(DMAC_DMATYPE_NORMAL);
 
     if ((spi_rx_dma_hd == 0)) {
-        printk(LOG_LEVEL_ERROR, "SPI: DMA request failed\r\n");
+        printk(LOG_LEVEL_ERROR, "SPI: DMA request failed\n");
         return -1;
     }
     /* config spi rx dma */
@@ -754,7 +754,7 @@ static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
 static int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf,
                         uint32_t txlen, void *rxbuf, uint32_t rxlen) {
     uint32_t stxlen, fcr;
-    printk(LOG_LEVEL_TRACE, "SPI: tsfr mode=%u tx=%u rx=%u\r\n", mode,
+    printk(LOG_LEVEL_TRACE, "SPI: tsfr mode=%u tx=%u rx=%u\n", mode,
            txlen, rxlen);
 
     spi_set_io_mode(spi, mode);
@@ -800,7 +800,7 @@ static int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf,
             if (dma_start(spi_rx_dma_hd, spi->base + SPI_RXD,
                           (u32) rxbuf, rxlen) != 0) {
                 printk(LOG_LEVEL_ERROR,
-                       "SPI: DMA transfer failed\r\n");
+                       "SPI: DMA transfer failed\n");
                 return -1;
             }
             while (dma_querystatus(spi_rx_dma_hd)) {
@@ -810,7 +810,7 @@ static int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf,
         }
     }
 
-    printk(LOG_LEVEL_TRACE, "SPI: ISR=0x%x\r\n",
+    printk(LOG_LEVEL_TRACE, "SPI: ISR=0x%x\n",
            read32(spi->base + SPI_ISR));
 
     return txlen + rxlen;
@@ -830,7 +830,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     if (r < 0)
         return r;
 
-    printk(LOG_LEVEL_DEBUG, "rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\r\n", rx[0],
+    printk(LOG_LEVEL_DEBUG, "rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
            rx[1], rx[2], rx[3]);
 
     if (rx[0] == 0xff) {
@@ -854,7 +854,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
         }
     }
 
-    printk(LOG_LEVEL_ERROR, "SPI-NAND: unknown mfr:0x%02x dev:0x%04x\r\n",
+    printk(LOG_LEVEL_ERROR, "SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n",
            id.mfr, id.dev);
 
     return -1;
@@ -948,20 +948,20 @@ int spi_nand_detect(sunxi_spi_t *spi) {
                  0) &&
                 !(val & 0x01)) {
                 printk(LOG_LEVEL_DEBUG,
-                       "SPI-NAND: enable Quad mode\r\n");
+                       "SPI-NAND: enable Quad mode\n");
                 val |= (1 << 0);
                 spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
                 spi_nand_wait_while_busy(spi);
             }
         }
 
-        printk(LOG_LEVEL_INFO, "SPI-NAND: %s detected\r\n",
+        printk(LOG_LEVEL_INFO, "SPI-NAND: %s detected\n",
                spi->info.name);
 
         return 0;
     }
 
-    printk(LOG_LEVEL_ERROR, "SPI-NAND: flash not found\r\n");
+    printk(LOG_LEVEL_ERROR, "SPI-NAND: flash not found\n");
     return -1;
 }
 
@@ -1009,13 +1009,13 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr,
             break;
 
         default:
-            printk(LOG_LEVEL_ERROR, "spi_nand: invalid mode\r\n");
+            printk(LOG_LEVEL_ERROR, "spi_nand: invalid mode\n");
             return -1;
     };
 
     if (addr % spi->info.page_size) {
         printk(LOG_LEVEL_ERROR,
-               "spi_nand: address is not page-aligned\r\n");
+               "spi_nand: address is not page-aligned\n");
         return -1;
     }
 

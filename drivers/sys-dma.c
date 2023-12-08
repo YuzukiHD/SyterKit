@@ -21,7 +21,7 @@ static dma_source_t dma_channel_source[SUNXI_DMA_MAX];
 static dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
 
 void dma_init(void) {
-    printk(LOG_LEVEL_INFO, "DMA: init\r\n");
+    printk(LOG_LEVEL_INFO, "DMA: init\n");
     int i;
     uint32_t val;
     dma_reg_t *const dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
@@ -122,7 +122,7 @@ uint32_t dma_request(uint32_t dmatype) {
         if (dma_channel_source[i].used == 0) {
             dma_channel_source[i].used = 1;
             dma_channel_source[i].channel_count = i;
-            printk(LOG_LEVEL_DEBUG, "DMA: provide channel %u\r\n", i);
+            printk(LOG_LEVEL_DEBUG, "DMA: provide channel %u\n", i);
             return (uint32_t) &dma_channel_source[i];
         }
     }
@@ -217,7 +217,7 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
     uint32_t i, valid;
 
     len = ALIGN(len, 4);
-    printk(LOG_LEVEL_DEBUG, "DMA: test 0x%08x ====> 0x%08x, len %uKB \r\n",
+    printk(LOG_LEVEL_DEBUG, "DMA: test 0x%08x ====> 0x%08x, len %uKB \n",
            (uint32_t) src_addr, (uint32_t) dst_addr, (len / 1024));
 
     /* dma */
@@ -239,7 +239,7 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
 
     hdma = dma_request(0);
     if (!hdma) {
-        printk(LOG_LEVEL_ERROR, "DMA: can't request dma\r\n");
+        printk(LOG_LEVEL_ERROR, "DMA: can't request dma\n");
         return -1;
     }
 
@@ -264,7 +264,7 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
     }
 
     if (st) {
-        printk(LOG_LEVEL_ERROR, "DMA: test timeout!\r\n");
+        printk(LOG_LEVEL_ERROR, "DMA: test timeout!\n");
         dma_stop(hdma);
         dma_release(hdma);
 
@@ -280,10 +280,10 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
             }
         }
         if (valid) {
-            printk(LOG_LEVEL_INFO, "DMA: test OK in %lums\r\n",
+            printk(LOG_LEVEL_INFO, "DMA: test OK in %lums\n",
                    (time_ms() - timeout));
         } else
-            printk(LOG_LEVEL_ERROR, "DMA: test check failed at %u bytes\r\n", i);
+            printk(LOG_LEVEL_ERROR, "DMA: test check failed at %u bytes\n", i);
     }
 
     dma_stop(hdma);
