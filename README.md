@@ -13,9 +13,12 @@ SyterKit is a bare-metal framework designed for development boards like TinyVisi
 | read chip efuse | Reads chip efuse information                                 | `app/read_chip_efuse` |
 | read chipsid    | Reads the unique ID of the chip                              | `app/read_chipsid`    |
 | load e907       | Reads the e907 core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `app/load_e907`       |
-| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux  | `app/syter_boot`      |
+| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot`      |
 | syter amp       | Reads the e907 core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `app/syter_amp`       |
 | fdt parser      | Reads the DTB and Parser Print out                           | `app/fdt_parser`      |
+| fdt cli         | Reads the DTB with a CLI support uboot fdt command           | `app/fdt_cli`         |
+| syter bootargs  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux, Within a CLI to change bootargs | `app/syter_bootargs`  |
+| cli test        | Test baisc CLI function                                      | `app/cli_test`        |
 
 ## Getting Started
 
@@ -125,15 +128,17 @@ SyterKit 是一个纯裸机框架，用于 TinyVision 或者其他 v851se/v851s/
 
 | 名称            | 功能                                                         | 路径                  |
 | --------------- | ------------------------------------------------------------ | --------------------- |
-| hello world     | 最小化程序示例，打印 Hello World                             | `app/hello_world`     |
-| init dram       | 初始化串口并初始化 DRAM                                      | `app/init_dram`       |
+| hello world     | 最小程序示例，打印 Hello World                               | `app/hello_world`     |
+| init dram       | 初始化串行端口和 DRAM                                        | `app/init_dram`       |
 | read chip efuse | 读取芯片 efuse 信息                                          | `app/read_chip_efuse` |
-| read chipsid    | 读取芯片唯一 ID                                              | `app/read_chipsid`    |
-| load e907       | 读取小核固件，并且启动 e907 核心，将 V851s 作为大号 RISC-V 单片机使用（E907@600MHz 64M内存） | `app/load_e907`       |
-| syter boot      | 启动引导，完美代替 U-Boot 功能，快速启动 Linux 系统          | `app/syter_boot`      |
-| syter amp       | 读取小核固件，启动 e907 核心，并且读取 Kernel 启动 Linux 系统，e907 与 a7 双系统异构同时运行 | `app/syter_amp`       |
-| fdt parser      | 读取设备树并解析节点                          | `app/fdt_parser`      |
-
+| read chipsid    | 读取芯片的唯一 ID                                            | `app/read_chipsid`    |
+| load e907       | 读取 e907 核心固件，启动 e907 核心，并使用 V851s 作为大型 RISC-V 微控制器（E907 @ 600 MHz，64MB 内存） | `app/load_e907`       |
+| syter boot      | 替代 U-Boot 的引导函数，为 Linux 启用快速系统启动            | `app/syter_boot`      |
+| syter amp       | 读取 e907 核心固件，启动 e907 核心，加载内核，并在 e907 和 a7 系统上同时运行 Linux，系统是异构集成运行的 | `app/syter_amp`       |
+| fdt parser      | 读取设备树二进制文件并解析打印输出                           | `app/fdt_parser`      |
+| fdt cli         | 使用支持 uboot fdt 命令的 CLI 读取设备树二进制文件           | `app/fdt_cli`         |
+| syter bootargs  | 替代 U-Boot 引导，为 Linux 启用快速系统启动，支持在 CLI 中更改启动参数 | `app/syter_bootargs`  |
+| cli test        | 测试基本 CLI 功能                                            | `app/cli_test`        |
 
 ## 开始使用
 
