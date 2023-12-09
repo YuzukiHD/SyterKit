@@ -9,7 +9,7 @@
  *     Buffer Sizes for Commandline Editting
  * ************************************************************************* */
 /* maximum chars per line, INCLUDEING a traling null char */
-#define MSH_CMDLINE_CHAR_MAX (150)
+#define MSH_CMDLINE_CHAR_MAX (300)
 
 /* maximum argument a commandline can hold, i.e., max of argc value */
 #define MSH_CMDARGS_MAX (16)
