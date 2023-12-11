@@ -349,7 +349,7 @@ _boot:
     enable_kernel_smp();
     printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
 
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n", image.dest);
+    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
 
     kernel_entry = (void (*)(int, int, unsigned int)) entry_point;
     kernel_entry(0, ~0, (unsigned int) image.of_dest);
