@@ -36,7 +36,7 @@ void sunxi_clk_init(void) {
     val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
     /* CPU_PLL: Output disable, PLL_N = 0, M = 0 */
     val &= ~((1 << 27) | (0x3FF << 8) | 0x3);
-    val |= (1 << 30 | (1 << 29) | (50 << 8));
+    val |= (1 << 30 | (1 << 29) | (37 << 8));
     write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
     sdelay(5);
 
