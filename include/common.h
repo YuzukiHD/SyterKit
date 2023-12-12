@@ -40,4 +40,8 @@ int raise(int signum);
 
 void show_banner(void);
 
+void rtc_set_vccio_det_spare(void);
+
+void sys_ldo_check(void);
+
 #endif// __COMMON_H__
