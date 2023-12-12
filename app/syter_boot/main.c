@@ -12,6 +12,7 @@
 #include <common.h>
 #include <jmp.h>
 #include <smalloc.h>
+#include <string.h>
 
 #include "sys-dram.h"
 #include "sys-sdcard.h"
@@ -327,73 +328,80 @@ static const char *find_entry_value(const IniEntry *entries, int entry_count, co
     return NULL;
 }
 
-static int update_bootargs_from_config() {
+static int update_bootargs_from_config(uint64_t dram_size) {
     int ret = 0;
+    char *bootargs_str_config = NULL;
 
+    /* Check if using config file, get bootargs in the config file */
     if (image.is_config) {
         size_t size_a = strlen(image.config_dest);
         int entry_count = parse_ini_data(image.config_dest, size_a, entries, MAX_ENTRY);
-
         for (int i = 0; i < entry_count; ++i) {
             /* Print parsed INI entries */
             printk(LOG_LEVEL_DEBUG, "INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
         }
+        bootargs_str_config = find_entry_value(entries, entry_count, "configs", "bootargs");
+    }
 
-        const char *bootargs_str_config = find_entry_value(entries, entry_count, "configs", "bootargs");
+    /* Force image.dest to be a pointer to fdt_header structure */
+    struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
 
-        if (bootargs_str_config != NULL) {
-            /* Set bootargs based on the configuration file */
-            printk(LOG_LEVEL_DEBUG, "INI: Set bootargs to %s\n", bootargs_str_config);
+    /* Check if DTB header is valid */
+    if ((ret = fdt_check_header(dtb_header)) != 0) {
+        printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
+        abort();
+    }
 
-            /* Force image.dest to be a pointer to fdt_header structure */
-            struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+    /* Get the total size of DTB */
+    uint32_t size = fdt_totalsize(image.of_dest);
+    printk(LOG_LEVEL_DEBUG, "%s: FDT Size = %d\n", image.of_filename, size);
 
-            /* Check if DTB header is valid */
-            if ((ret = fdt_check_header(dtb_header)) != 0) {
-                printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
-                abort();
-            }
+    int len = 0;
+    /* Get the offset of "/chosen" node */
+    uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
 
-            /* Get the total size of DTB */
-            uint32_t size = fdt_totalsize(image.of_dest);
-            printk(LOG_LEVEL_DEBUG, "%s: FDT Size = %d\n", image.of_filename, size);
+    /* Get bootargs string */
+    char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
 
-            int len = 0;
-            /* Get the offset of "/chosen" node */
-            uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
+    /* If config file read fail or not using */
+    if (bootargs_str_config == NULL) {
+        printk(LOG_LEVEL_WARNING, "INI: Cannot parse bootargs, using default bootargs in DTB.\n");
+        bootargs_str_config = bootargs_str;
+    }
 
-            /* Get bootargs string */
-            char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+    /* Add dram size to dtb */
+    char dram_size_str[8];
+    strcat(bootargs_str_config, " mem=");
+    strcat(bootargs_str_config, simple_ltoa(dram_size, dram_size_str, 10));
+    strcat(bootargs_str_config, "M");
 
-        _add_dts_size:
-            /* Modify bootargs string */
-            ret = fdt_setprop(image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
-            if (ret == -FDT_ERR_NOSPACE) {
-                printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
-                ret = fdt_increase_size(image.of_dest, 512);
-                if (!ret)
-                    goto _add_dts_size;
-                else
-                    goto _err_size;
-            } else if (ret < 0) {
-                printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
-                abort();
-            }
+    /* Set bootargs based on the configuration file */
+    printk(LOG_LEVEL_DEBUG, "INI: Set bootargs to %s\n", bootargs_str_config);
 
-            /* Get the total size of DTB */
-            printk(LOG_LEVEL_DEBUG, "Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+_add_dts_size:
+    /* Modify bootargs string */
+    ret = fdt_setprop(image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
+    if (ret == -FDT_ERR_NOSPACE) {
+        printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+        ret = fdt_increase_size(image.of_dest, 512);
+        if (!ret)
+            goto _add_dts_size;
+        else
+            goto _err_size;
+    } else if (ret < 0) {
+        printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
+        abort();
+    }
 
-            if (ret < 0) {
-                printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-                abort();
-            }
-        } else {
-            printk(LOG_LEVEL_WARNING, "INI: Cannot parse bootargs, using default bootargs in DTB.\n");
-        }
+    /* Get the total size of DTB */
+    printk(LOG_LEVEL_DEBUG, "Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+
+    if (ret < 0) {
+        printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+        abort();
     }
 
     return 0;
-
 _err_size:
     printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
     abort();
@@ -469,7 +477,7 @@ int main(void) {
     }
 
     /* Update boot arguments based on configuration file. */
-    update_bootargs_from_config();
+    update_bootargs_from_config(dram_size);
 
     /* Set up boot parameters for the kernel. */
     if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {

@@ -211,3 +211,34 @@ unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
 
     return result;
 }
+
+char *simple_ltoa(long int num, char *str, int base) {
+    int i = 0;
+    int is_negative = 0;
+
+    if (num < 0 && base == 10) {
+        is_negative = 1;
+        num = -num;
+    }
+
+    do {
+        int digit = num % base;
+        str[i++] = (digit < 10) ? (digit + '0') : (digit - 10 + 'a');
+        num /= base;
+    } while (num > 0);
+
+    if (is_negative) {
+        str[i++] = '-';
+    }
+
+    str[i] = '\0';
+
+    int len = strlen(str);
+    for (int j = 0; j < len / 2; j++) {
+        char temp = str[j];
+        str[j] = str[len - j - 1];
+        str[len - j - 1] = temp;
+    }
+
+    return str;
+}
