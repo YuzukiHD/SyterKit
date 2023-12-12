@@ -89,10 +89,12 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
                  :
                  : "r"(mmu_base)
                  : "memory");
+
     /* Set the access control to all-supervisor */
     asm volatile("mcr p15, 0, %0, c3, c0, 0"
                  :
-                 : "r"(0x55555555));//modified, origin value is (~0)
+                 : "r"(0x55555555)); /* modified, origin value is (~0) */
+
     asm volatile("isb");
     /* and enable the mmu */
     asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR"
@@ -101,8 +103,10 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
                  : "cc");
 
     sdelay(100);
-    reg |= ((1 << 0) | (1 << 12));//enable mmu, icache
-    reg &= ~(1 << 2);             //disable dcache
+    /* enable mmu, icache */
+    reg |= ((1 << 0) | (1 << 12));
+    /* disable dcache */
+    reg &= ~(1 << 2);
     asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR"
                  :
                  : "r"(reg)

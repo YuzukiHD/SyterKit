@@ -123,6 +123,7 @@ add_library(SyterKit
     src/ctype.c
     src/fdt_wrapper.c
     src/smalloc.c
+    src/cache.S
     # deiver
     drivers/sys-clk.c
     drivers/sys-dma.c
