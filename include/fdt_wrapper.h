@@ -17,4 +17,6 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 
 int fdt_parse_prop(char const **newval, int count, char *data, int *len);
 
+int fdt_increase_size(void *fdt, int add_len);
+
 #endif //__FDT_WRAPPER_H__
