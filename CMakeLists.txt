@@ -95,7 +95,7 @@ include_directories(
     include/lib/fatfs
     include/lib/fdt
     include/lib/elf
-    include/lib/cJSON
+    include/lib/ini
     ${PROJECT_BINARY_DIR}
 )
 
@@ -117,10 +117,12 @@ add_library(SyterKit
     # exception & common
     src/exception.c
     src/common.c
+    # src
     src/jmp.c
     src/uart.c
     src/ctype.c
     src/fdt_wrapper.c
+    src/smalloc.c
     # deiver
     drivers/sys-clk.c
     drivers/sys-dma.c
