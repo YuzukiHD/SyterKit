@@ -12,6 +12,8 @@
 
 #include "log.h"
 
+#include <reg-ncat.h>
+
 static const struct sid_section_t {
     char *name;
     uint32_t offset;
@@ -31,10 +33,10 @@ static const struct sid_section_t {
 };
 
 enum {
-    SID_PRCTL = 0x03006000 + 0x040,
-    SID_PRKEY = 0x03006000 + 0x050,
-    SID_RDKEY = 0x03006000 + 0x060,
-    EFUSE_HV_SWITCH = 0x07090000 + 0x204,
+    SID_PRCTL = SUNXI_SID_BASE + 0x040,
+    SID_PRKEY = SUNXI_SID_BASE + 0x050,
+    SID_RDKEY = SUNXI_SID_BASE + 0x060,
+    EFUSE_HV_SWITCH = SUNXI_RTC_BASE + 0x204,
 };
 
 uint32_t efuse_read(uint32_t offset);
