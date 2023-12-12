@@ -17,6 +17,8 @@ extern unsigned int strnlen(const char *s, unsigned int n);
 
 extern char *strcpy(char *dst, const char *src);
 
+extern char *strncpy(char *dest, const char *src, unsigned int n);
+
 extern char *strcat(char *dst, const char *src);
 
 extern int strcmp(const char *p1, const char *p2);

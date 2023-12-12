@@ -133,6 +133,18 @@ void *memchr(void *src, int val, unsigned int cnt) {
     return p;
 }
 
+char *strncpy(char *dest, const char *src, unsigned int n) {
+    char *tmp = dest;
+
+    while (n) {
+        if ((*tmp = *src) != 0)
+            src++;
+        tmp++;
+        n--;
+    }
+    return dest;
+}
+
 void *memmove(void *dst, const void *src, unsigned int cnt) {
     char *p, *s;
 
