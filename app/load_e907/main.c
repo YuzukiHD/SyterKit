@@ -32,13 +32,6 @@ sunxi_serial_t uart_dbg = {
         .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
 };
 
-sunxi_serial_t uart_e907 = {
-        .base = 0x02500C00,
-        .id = 3,
-        .gpio_tx = {GPIO_PIN(PORTE, 0), GPIO_PERIPH_MUX7},
-        .gpio_rx = {GPIO_PIN(PORTE, 1), GPIO_PERIPH_MUX7},
-};
-
 sdhci_t sdhci0 = {
         .name = "sdhci0",
         .reg = (sdhci_reg_t *) 0x04020000,
@@ -161,8 +154,6 @@ static int load_sdcard(image_info_t *image) {
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
-    // sunxi_serial_init(&uart_e907);
-
     show_banner();
 
     sunxi_clk_init();
@@ -178,13 +169,10 @@ int main(void) {
     strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n",
-               sdhci0.name);
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
         return 0;
     } else {
-        printk(LOG_LEVEL_INFO,
-               "SMHC: %s controller v%x initialized\n", sdhci0.name,
-               sdhci0.reg->vers);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
     if (sdmmc_init(&card0, &sdhci0) != 0) {
