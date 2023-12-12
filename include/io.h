@@ -13,7 +13,7 @@
 #define readl(addr) read32(addr)
 #define writel(val, addr) write32((addr), (val))
 
-typedef unsigned int virtual_addr_t;
+typedef uint32_t virtual_addr_t;
 
 static inline __attribute__((__always_inline__)) uint8_t
 read8(virtual_addr_t addr) {
