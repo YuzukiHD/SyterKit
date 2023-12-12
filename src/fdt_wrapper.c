@@ -305,3 +305,10 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
     }
     return 0;
 }
+
+int fdt_increase_size(void *fdt, int add_len) {
+    int newlen;
+    newlen = fdt_totalsize(fdt) + add_len;
+    /* Open in place with a new len */
+    return fdt_open_into(fdt, fdt, newlen);
+}
