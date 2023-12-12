@@ -21,3 +21,5 @@ add_subdirectory(fdt_parser)
 add_subdirectory(cli_test)
 
 add_subdirectory(fdt_cli)
+
+add_subdirectory(syter_boot_spi)

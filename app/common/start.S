@@ -32,9 +32,9 @@ reset:
 	.byte 0x00, 0x00, 0x00, 0x00    /* platform information - 8byte */
 	.byte 0x34, 0x2e, 0x30, 0x00
 
-/*
- * The actual reset code
- */
+	/*
+	* The actual reset code
+	*/
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r0, r0, #ARMV7_SVC_MODE
@@ -42,7 +42,7 @@ reset:
 	bic r0, r0, #(1<<9)     @set little-endian
 	msr cpsr_c, r0
 
-/* Set vector base address register */
+	/* Set vector base address register */
 
 	ldr r0, =_vector
 	mcr p15, 0, r0, c12, c0, 0
@@ -71,9 +71,9 @@ reset:
 	bl  clear_bss
 
 	/*
-		* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
-		* except if in HYP mode already
-		*/
+	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
+	* except if in HYP mode already
+	*/
 	mrs     r0, cpsr
 	and     r1, r0, #0x1f           @ mask mode bits
 	teq     r1, #0x1a               @ test for HYP mode
@@ -176,9 +176,9 @@ _fiq:
 	mov r0, r0
 .endm
 
-/*
- * Exception handlers
- */
+	/*
+	* Exception handlers
+	*/
 	.align 5
 undefined_instruction:
 	sub lr, lr, #4
