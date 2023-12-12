@@ -23,7 +23,7 @@
 #endif
 
 static int ns_to_t(dram_para_t *para, int nanoseconds) {
-    const unsigned int ctrl_freq = para->dram_clk / 2;
+    const uint32_t ctrl_freq = para->dram_clk / 2;
 
     return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
 }
@@ -440,7 +440,7 @@ static void mctl_set_timing_params(dram_para_t *para) {
 // the MBUS and sdram.
 //
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
-    unsigned int val, clk, n;
+    uint32_t val, clk, n;
 
     if (para->dram_tpr13 & (1 << 6))
         clk = para->dram_tpr9;
@@ -600,8 +600,8 @@ static void mctl_com_init(dram_para_t *para) {
 // Init the controller channel. The key part is placing commands in the main
 // command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
 //
-static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) {
-    unsigned int val, dqs_gating_mode;
+static uint32_t mctl_channel_init(uint32_t ch_index, dram_para_t *para) {
+    uint32_t val, dqs_gating_mode;
 
     dqs_gating_mode = (para->dram_tpr13 & 0xc) >> 2;
 
@@ -780,8 +780,8 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     return 1;
 }
 
-static unsigned int calculate_rank_size(uint32_t regval) {
-    unsigned int bits;
+static uint32_t calculate_rank_size(uint32_t regval) {
+    uint32_t bits;
 
     bits = (regval >> 8) & 0xf;  /* page size - 3 */
     bits += (regval >> 4) & 0xf; /* row width - 1 */
@@ -796,9 +796,9 @@ static unsigned int calculate_rank_size(uint32_t regval) {
  * the number of address bits in each rank available. It then calculates
  * total memory size in MB.
  */
-static unsigned int dramc_get_dram_size(void) {
+static uint32_t dramc_get_dram_size(void) {
     uint32_t val;
-    unsigned int size;
+    uint32_t size;
 
     val = readl((MCTL_COM_BASE +
                  MCTL_COM_WORK_MODE0)); /* MCTL_COM_WORK_MODE0 */
@@ -866,19 +866,19 @@ static int dqs_gate_detect(dram_para_t *para) {
     return 0;
 }
 
-static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
-    unsigned int offs = (mem_mb / 2) << 18;// half of memory size
-    unsigned int patt1 = 0x01234567;
-    unsigned int patt2 = 0xfedcba98;
-    unsigned int *addr, v1, v2, i;
+static int dramc_simple_wr_test(uint32_t mem_mb, int len) {
+    uint32_t offs = (mem_mb / 2) << 18;// half of memory size
+    uint32_t patt1 = 0x01234567;
+    uint32_t patt2 = 0xfedcba98;
+    uint32_t *addr, v1, v2, i;
 
-    addr = (unsigned int *) CONFIG_SYS_SDRAM_BASE;
+    addr = (uint32_t *) CONFIG_SYS_SDRAM_BASE;
     for (i = 0; i != len; i++, addr++) {
         writel(patt1 + i, (unsigned long) addr);
         writel(patt2 + i, (unsigned long) (addr + offs));
     }
 
-    addr = (unsigned int *) CONFIG_SYS_SDRAM_BASE;
+    addr = (uint32_t *) CONFIG_SYS_SDRAM_BASE;
     for (i = 0; i != len; i++) {
         v1 = readl((unsigned long) (addr + i));
         v2 = patt1 + i;
@@ -1115,8 +1115,8 @@ static int auto_scan_dram_size(dram_para_t *para) {
  * dram_para2 is updated with the rank and width findings.
  */
 static int auto_scan_dram_rank_width(dram_para_t *para) {
-    unsigned int s1 = para->dram_tpr13;
-    unsigned int s2 = para->dram_para1;
+    uint32_t s1 = para->dram_tpr13;
+    uint32_t s2 = para->dram_para1;
 
     para->dram_para1 = 0x00b000b0;
     para->dram_para2 = (para->dram_para2 & ~0xf) | (1 << 12);
@@ -1281,7 +1281,7 @@ int init_DRAM(int type, dram_para_t *para) {
     return mem_size_mb;
 }
 
-unsigned long sunxi_dram_init(void) {
+uint64_t sunxi_dram_init(void) {
     dram_para_t para = {
             .dram_clk = 528,
             .dram_type = 2,
@@ -1309,5 +1309,5 @@ unsigned long sunxi_dram_init(void) {
             .dram_tpr13 = 0x34000100,
     };
 
-    return init_DRAM(0, &para) * 1024UL * 1024;
+    return init_DRAM(0, &para);
 }
