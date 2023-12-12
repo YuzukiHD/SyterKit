@@ -331,6 +331,7 @@ static const char *find_entry_value(const IniEntry *entries, int entry_count, co
 static int update_bootargs_from_config(uint64_t dram_size) {
     int ret = 0;
     char *bootargs_str_config = NULL;
+    char *mac_addr = NULL;
 
     /* Check if using config file, get bootargs in the config file */
     if (image.is_config) {
@@ -341,6 +342,7 @@ static int update_bootargs_from_config(uint64_t dram_size) {
             printk(LOG_LEVEL_DEBUG, "INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
         }
         bootargs_str_config = find_entry_value(entries, entry_count, "configs", "bootargs");
+        mac_addr = find_entry_value(entries, entry_count, "configs", "mac_addr");
     }
 
     /* Force image.dest to be a pointer to fdt_header structure */
@@ -367,6 +369,12 @@ static int update_bootargs_from_config(uint64_t dram_size) {
     if (bootargs_str_config == NULL) {
         printk(LOG_LEVEL_WARNING, "INI: Cannot parse bootargs, using default bootargs in DTB.\n");
         bootargs_str_config = bootargs_str;
+    }
+
+    /* update mac address of board */
+    if (mac_addr != NULL) {
+        strcat(bootargs_str_config, " mac_addr=");
+        strcat(bootargs_str_config, mac_addr);
     }
 
     /* Add dram size to dtb */
