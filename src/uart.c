@@ -83,3 +83,13 @@ char get_uart_input(void) {
     /* Return the received character */
     return c;
 }
+
+/* Check if there are characters available in the input buffer */
+int tstc() {
+    return sunxi_serial_tstc(&uart_dbg);
+}
+
+/* Clib Porting */
+int puts(const char *s) {
+    return uart_puts(s);
+}

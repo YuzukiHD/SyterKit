@@ -35,10 +35,4 @@ extern void *memchr(void *ptr, int value, unsigned int num);
 
 extern void *memmove(void *dest, const void *src, unsigned int count);
 
-extern unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base);
-
-extern unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base);
-
-extern char* simple_ltoa(long int num, char* str, int base);
-
 #endif /* #ifndef __STRING_H__ */
