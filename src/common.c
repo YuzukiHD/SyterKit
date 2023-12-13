@@ -1,13 +1,26 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#include <io.h>
+#include <arm32.h>
 #include <config.h>
+#include <io.h>
 #include <log.h>
 
 #include <sys-timer.h>
 
 #include <reg-ccu.h>
 #include <reg-ncat.h>
+
+void clean_syterboot_data(void) {
+    /* Disable MMU, data cache, instruction cache, interrupts */
+    arm32_mmu_disable();
+    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    arm32_dcache_disable();
+    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    arm32_icache_disable();
+    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    arm32_interrupt_disable();
+    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+}
 
 void rtc_set_vccio_det_spare(void) {
     u32 val = 0;
