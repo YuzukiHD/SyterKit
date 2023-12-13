@@ -333,7 +333,7 @@ TCHAR *f_gets(TCHAR *buff, int len, FIL *fp); /* Get a string from the file */
 /* Some API fucntions are implemented as macro */
 
 #define f_eof(fp) ((int)((fp)->fptr == (fp)->obj.objsize))
-#define f_printk(LOG_LEVEL_ERROR, fp) ((fp)->err)
+#define f_printf(fp) ((fp)->err)
 #define f_tell(fp) ((fp)->fptr)
 #define f_size(fp) ((fp)->obj.objsize)
 #define f_rewind(fp) f_lseek((fp), 0)

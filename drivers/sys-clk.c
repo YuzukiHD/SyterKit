@@ -96,6 +96,23 @@ void sunxi_clk_init(void) {
     return;
 }
 
+void sunxi_clk_reset(void) {
+    uint32_t reg_val;
+
+    /*set ahb,apb to default, use OSC24M*/
+    reg_val = read32(CCU_BASE + CCU_AHB_CLK_REG);
+    reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
+    write32(CCU_BASE + CCU_AHB_CLK_REG, reg_val);
+
+    reg_val = read32(CCU_BASE + CCU_APB0_CLK_REG);
+    reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
+    write32(CCU_BASE + CCU_APB0_CLK_REG, reg_val);
+
+    /*set cpux pll to default,use OSC24M*/
+    write32(CCU_BASE + CCU_CPU_CLK_REG, 0x0301);
+    return;
+}
+
 uint32_t sunxi_clk_get_peri1x_rate() {
     uint32_t reg32;
     uint8_t plln, pllm, p0;

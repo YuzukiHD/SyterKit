@@ -29,7 +29,7 @@
 #define __MEDIA_H__
 
 extern int sdmmc_initialize(void);
-extern unsigned int sdmmc_block_read(unsigned int start, unsigned int blkcnt,
-				     void *dest);
+
+extern unsigned int sdmmc_block_read(unsigned int start, unsigned int blkcnt, void *dest);
 
 #endif

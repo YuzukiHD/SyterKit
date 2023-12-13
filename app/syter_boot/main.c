@@ -23,6 +23,7 @@
 #include "sys-sdcard.h"
 #include "sys-sid.h"
 #include "sys-spi.h"
+#include "sys-rtc.h"
 #include "sys-timer.h"
 
 #include "fdt_wrapper.h"
@@ -188,7 +189,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk(LOG_LEVEL_INFO, "FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -249,7 +250,7 @@ static int load_sdcard(image_info_t *image) {
     } else {
         printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk(LOG_LEVEL_INFO, "FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -432,8 +433,8 @@ static int abortboot_single_key(int bootdelay) {
     /* Check if key already pressed */
     if (tstc()) {       /* we got a key press */
         uart_getchar(); /* consume input */
-        puts("\b\b\b 0");
-        abort = 1; /* don't auto boot	*/
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
+        abort = 1; /* don't auto boot */
     }
 
     while ((bootdelay > 0) && (!abort)) {
@@ -441,9 +442,8 @@ static int abortboot_single_key(int bootdelay) {
         /* delay 1000 ms */
         ts = time_ms();
         do {
-            if (tstc()) {      /* we got a key press	*/
-                abort = 1;     /* don't auto boot	*/
-                bootdelay = 0; /* no more delay	*/
+            if (tstc()) {      /* we got a key press */
+                abort = 1;     /* don't auto boot */
                 break;
             }
             udelay(10000);
@@ -582,15 +582,10 @@ int cmd_boot(int argc, const char **argv) {
         printk(LOG_LEVEL_ERROR, "boot setup failed\n");
         abort();
     }
-    /* Disable MMU, data cache, instruction cache, interrupts, and enable symmetric multiprocessing (SMP) in the kernel. */
-    arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
-    arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
-    arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
-    arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+
+    /* Disable MMU, data cache, instruction cache, interrupts */
+    clean_syterboot_data();
+
     enable_kernel_smp();
     printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
 
@@ -627,6 +622,16 @@ int main(void) {
 
     /* Initialize the system clock. */
     sunxi_clk_init();
+
+    /* Check rtc fel flag. if set flag, goto fel */
+    if (rtc_probe_fel_flag()) {
+        printk(LOG_LEVEL_INFO, "RTC: get fel flag, jump to fel mode.\n");
+        clean_syterboot_data();
+        rtc_clear_fel_flag();
+        sunxi_clk_reset();
+        mdelay(100);
+        goto _fel;
+    }
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init();
@@ -706,6 +711,7 @@ int main(void) {
 _shell:
     syterkit_shell_attach(commands);
 
+_fel:
     /* If the kernel boot fails, jump to FEL mode. */
     jmp_to_fel();
 

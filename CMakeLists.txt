@@ -139,6 +139,8 @@ add_library(SyterKit
     drivers/sys-timer.c
     drivers/sys-uart.c
     drivers/sys-wdt.c
+    drivers/sys-rtc.c
+    drivers/sys-i2c.c
 )
 
 target_link_libraries(SyterKit gcc fdt)

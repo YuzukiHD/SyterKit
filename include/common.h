@@ -40,6 +40,8 @@ int raise(int signum);
 
 void show_banner(void);
 
+void clean_syterboot_data(void);
+
 void rtc_set_vccio_det_spare(void);
 
 void sys_ldo_check(void);
