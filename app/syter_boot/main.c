@@ -12,7 +12,12 @@
 #include <common.h>
 #include <jmp.h>
 #include <smalloc.h>
+#include <sstdlib.h>
 #include <string.h>
+
+#include <cli.h>
+#include <cli_shell.h>
+#include <cli_termesc.h>
 
 #include "sys-dram.h"
 #include "sys-sdcard.h"
@@ -23,10 +28,11 @@
 #include "fdt_wrapper.h"
 #include "ff.h"
 #include "libfdt.h"
+#include "uart.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_CONFIG_FILENAME "config.ini"
+#define CONFIG_CONFIG_FILENAME "config.txt"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
@@ -35,6 +41,8 @@
 #define CONFIG_CONFIG_LOAD_ADDR (0x40008000)
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
+
+#define CONFIG_DEFAULT_BOOTDELAY 5
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -55,7 +63,7 @@ typedef struct {
 #define MAX_SECTION_LEN 16
 #define MAX_KEY_LEN 16
 #define MAX_VALUE_LEN 512
-#define MAX_ENTRY 2
+#define CONFIG_MAX_ENTRY 3
 
 typedef struct {
     char section[MAX_SECTION_LEN];
@@ -63,7 +71,7 @@ typedef struct {
     char value[MAX_VALUE_LEN];
 } IniEntry;
 
-IniEntry entries[MAX_ENTRY];
+IniEntry entries[CONFIG_MAX_ENTRY];
 
 /* Linux zImage Header */
 #define LINUX_ZIMAGE_MAGIC 0x016f2818
@@ -336,7 +344,7 @@ static int update_bootargs_from_config(uint64_t dram_size) {
     /* Check if using config file, get bootargs in the config file */
     if (image.is_config) {
         size_t size_a = strlen(image.config_dest);
-        int entry_count = parse_ini_data(image.config_dest, size_a, entries, MAX_ENTRY);
+        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
         for (int i = 0; i < entry_count; ++i) {
             /* Print parsed INI entries */
             printk(LOG_LEVEL_DEBUG, "INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
@@ -380,7 +388,7 @@ static int update_bootargs_from_config(uint64_t dram_size) {
     /* Add dram size to dtb */
     char dram_size_str[8];
     strcat(bootargs_str_config, " mem=");
-    strcat(bootargs_str_config, simple_ltoa(dram_size, dram_size_str, 10));
+    strcat(bootargs_str_config, ltoa(dram_size, dram_size_str, 10));
     strcat(bootargs_str_config, "M");
 
     /* Set bootargs based on the configuration file */
@@ -415,6 +423,196 @@ _err_size:
     abort();
 }
 
+static int abortboot_single_key(int bootdelay) {
+    int abort = 0;
+    unsigned long ts;
+
+    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
+
+    /* Check if key already pressed */
+    if (tstc()) {       /* we got a key press */
+        uart_getchar(); /* consume input */
+        puts("\b\b\b 0");
+        abort = 1; /* don't auto boot	*/
+    }
+
+    while ((bootdelay > 0) && (!abort)) {
+        --bootdelay;
+        /* delay 1000 ms */
+        ts = time_ms();
+        do {
+            if (tstc()) {      /* we got a key press	*/
+                abort = 1;     /* don't auto boot	*/
+                bootdelay = 0; /* no more delay	*/
+                break;
+            }
+            udelay(10000);
+        } while (!abort && time_ms() - ts < 1000);
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d ", bootdelay);
+    }
+    uart_putchar('\n');
+    return abort;
+}
+
+msh_declare_command(bootargs);
+msh_define_help(bootargs, "get/set bootargs for kernel",
+                "Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
+                "       bootargs get            - get current bootargs\n");
+int cmd_bootargs(int argc, const char **argv) {
+    int err = 0;
+
+    if (argc < 2) {
+        uart_puts(cmd_bootargs_usage);
+        return 0;
+    }
+
+    if (strncmp(argv[1], "set", 3) == 0) {
+        if (argc != 3) {
+            uart_puts(cmd_bootargs_usage);
+            return 0;
+        }
+        /* Force image.of_dest to be a pointer to fdt_header structure */
+        struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+
+        /* Check if DTB header is valid */
+        if ((err = fdt_check_header(dtb_header)) != 0) {
+            printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(err));
+            return 0;
+        }
+
+        int len = 0;
+        /* Get the offset of "/chosen" node */
+        uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
+
+        /* Get bootargs string */
+        char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+        printk(LOG_LEVEL_MUTE, "DTB OLD bootargs = \"%s\"\n", bootargs_str);
+
+        /* New bootargs string */
+        char *new_bootargs_str = argv[2];
+        printk(LOG_LEVEL_MUTE, "Now set bootargs to \"%s\"\n", new_bootargs_str);
+
+    _add_dts_size:
+        /* Modify bootargs string */
+        err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
+        if (err == -FDT_ERR_NOSPACE) {
+            printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
+            err = fdt_increase_size(image.of_dest, 512);
+            if (!err)
+                goto _add_dts_size;
+            else
+                goto _err_size;
+        } else if (err < 0) {
+            printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(err));
+            abort();
+        }
+
+        /* Get updated bootargs string */
+        char *updated_bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+        printk(LOG_LEVEL_MUTE, "DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
+    } else if (strncmp(argv[1], "get", 3) == 0) {
+        /* Force image.of_dest to be a pointer to fdt_header structure */
+        struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+
+        int err = 0;
+
+        /* Check if DTB header is valid */
+        if ((err = fdt_check_header(dtb_header)) != 0) {
+            printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(err));
+            return 0;
+        }
+
+        int len = 0;
+        /* Get the offset of "/chosen" node */
+        uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
+
+        /* Get bootargs string */
+        char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+        printk(LOG_LEVEL_MUTE, "DTB bootargs = \"%s\"\n", bootargs_str);
+    } else {
+        uart_puts(cmd_bootargs_usage);
+    }
+    return 0;
+
+_err_size:
+    printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(err));
+    abort();
+}
+
+msh_declare_command(reload);
+msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
+int cmd_reload(int argc, const char **argv) {
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
+        return 0;
+    }
+
+    if (load_sdcard(&image) != 0) {
+        printk(LOG_LEVEL_ERROR, "SMHC: loading failed\n");
+        return 0;
+    }
+    return 0;
+}
+
+msh_declare_command(print);
+msh_define_help(print, "print out env config", "Usage: print\n");
+int cmd_print(int argc, const char **argv) {
+    if (image.is_config) {
+        size_t size_a = strlen(image.config_dest);
+        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
+        for (int i = 0; i < entry_count; ++i) {
+            /* Print parsed INI entries */
+            printk(LOG_LEVEL_MUTE, "ENV: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
+        }
+    } else {
+        printk(LOG_LEVEL_WARNING, "ENV: Can not find env file\n");
+    }
+    return 0;
+}
+
+msh_declare_command(boot);
+msh_define_help(boot, "boot to linux", "Usage: boot\n");
+int cmd_boot(int argc, const char **argv) {
+    /* Initialize variables for kernel entry point and SD card access. */
+    uint32_t entry_point = 0;
+    void (*kernel_entry)(int zero, int arch, uint32_t params);
+
+    /* Set up boot parameters for the kernel. */
+    if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {
+        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
+        abort();
+    }
+    /* Disable MMU, data cache, instruction cache, interrupts, and enable symmetric multiprocessing (SMP) in the kernel. */
+    arm32_mmu_disable();
+    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    arm32_dcache_disable();
+    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    arm32_icache_disable();
+    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    arm32_interrupt_disable();
+    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+    enable_kernel_smp();
+    printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
+
+    /* Debug message to indicate the kernel address that the system is jumping to. */
+    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
+
+    /* Jump to the kernel entry point. */
+    kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
+    kernel_entry(0, ~0, (uint32_t) image.of_dest);
+
+    // if kernel boot not success, jump to fel.
+    jmp_to_fel();
+    return 0;
+}
+
+const msh_command_entry commands[] = {
+        msh_define_command(bootargs),
+        msh_define_command(reload),
+        msh_define_command(boot),
+        msh_define_command(print),
+        msh_command_end,
+};
 
 /* 
  * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
@@ -445,10 +643,6 @@ int main(void) {
 
     /* Check if system voltage is within limits. */
     sys_ldo_check();
-
-    /* Initialize variables for kernel entry point and SD card access. */
-    uint32_t entry_point = 0;
-    void (*kernel_entry)(int zero, int arch, uint32_t params);
 
     /* Dump information about the system clocks. */
     sunxi_clk_dump();
@@ -487,33 +681,30 @@ int main(void) {
     /* Update boot arguments based on configuration file. */
     update_bootargs_from_config(dram_size);
 
-    /* Set up boot parameters for the kernel. */
-    if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {
-        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
-        abort();
+    int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
+
+    if (image.is_config) {
+        size_t size_a = strlen(image.config_dest);
+        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
+        for (int i = 0; i < entry_count; ++i) {
+            /* Print parsed INI entries */
+            printk(LOG_LEVEL_DEBUG, "INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
+        }
+        char *bootdelay_str = find_entry_value(entries, entry_count, "configs", "bootdelay");
+        if (bootdelay_str != NULL) {
+            bootdelay = simple_atoi(bootdelay_str);
+        }
     }
 
-    /* Debug message to indicate that the kernel is being booted. */
-    printk(LOG_LEVEL_INFO, "booting linux...\n");
+    /* Showing boot delays */
+    if (abortboot_single_key(bootdelay)) {
+        goto _shell;
+    }
 
-    /* Disable MMU, data cache, instruction cache, interrupts, and enable symmetric multiprocessing (SMP) in the kernel. */
-    arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
-    arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
-    arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
-    arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
-    enable_kernel_smp();
-    printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
+    cmd_boot(0, NULL);
 
-    /* Debug message to indicate the kernel address that the system is jumping to. */
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
-
-    /* Jump to the kernel entry point. */
-    kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
-    kernel_entry(0, ~0, (uint32_t) image.of_dest);
+_shell:
+    syterkit_shell_attach(commands);
 
     /* If the kernel boot fails, jump to FEL mode. */
     jmp_to_fel();

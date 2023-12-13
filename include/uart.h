@@ -13,4 +13,8 @@ char get_uart_input(void);
 
 void uart_log_putchar(void *arg, char c);
 
+int tstc();
+
+extern int puts(const char *);
+
 #endif//__CLI_UART_H__
