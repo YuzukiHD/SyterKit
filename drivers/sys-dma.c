@@ -16,8 +16,11 @@
 #define SUNXI_DMA_MAX 16
 
 static int dma_int_cnt = 0;
+
 static int dma_init_ok = -1;
+
 static dma_source_t dma_channel_source[SUNXI_DMA_MAX];
+
 static dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
 
 void dma_init(void) {
@@ -74,9 +77,7 @@ void dma_init(void) {
 void dma_exit(void) {
     int i;
     dma_reg_t *dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
-#if defined(CONFIG_SUNXI_VERSION1)
-    struct sunxi_ccu_reg *const ccu = (struct sunxi_ccu_reg *) T113_CCU_BASE;
-#endif
+
     /* free dma channel if other module not free it */
     for (i = 0; i < SUNXI_DMA_MAX; i++) {
         if (dma_channel_source[i].used == 1) {
@@ -85,12 +86,8 @@ void dma_exit(void) {
         }
     }
 
-#if defined(CONFIG_SUNXI_VERSION1)
-    ccu->ahb_gate0 &= ~(1 << AHB_GATE_OFFSET_DMA);
-#else
     /* close dma clock when dma exit */
     dma_reg->auto_gate &= ~(1 << DMA_GATING_OFS | 1 << DMA_RST_OFS);
-#endif
 
     dma_reg->irq_en0 = 0;
     dma_reg->irq_en1 = 0;

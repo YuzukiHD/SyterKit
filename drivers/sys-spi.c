@@ -390,7 +390,7 @@ static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
     write32(spi->base + SPI_BCC, bcc);
 }
 
-int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
+int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
     uint32_t stxlen, fcr;
     printk(LOG_LEVEL_TRACE, "SPI: tsfr mode=%u tx=%u rx=%u\n", mode,
            txlen, rxlen);
@@ -416,9 +416,7 @@ int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txl
     spi_reset_fifo(spi);
     write32(spi->base + SPI_ISR, 0);// Clear ISR
 
-    write32(spi->base + SPI_TCR,
-            read32(spi->base + SPI_TCR) |
-                    (1 << 31));// Start exchange when data in FIFO
+    write32(spi->base + SPI_TCR, read32(spi->base + SPI_TCR) | (1 << 31));// Start exchange when data in FIFO
 
     if (txbuf && txlen) {
         spi_write_tx_fifo(spi, txbuf, txlen);
@@ -432,17 +430,13 @@ int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txl
     // Setup DMA for RX
     if (rxbuf && rxlen) {
         if (rxlen > 64) {
-            write32(spi->base + SPI_FCR,
-                    (fcr |
-                     SPI_FCR_RX_DRQEN_MSK));// Enable RX FIFO DMA request
-            if (dma_start(spi_rx_dma_hd, spi->base + SPI_RXD,
-                          (u32) rxbuf, rxlen) != 0) {
-                printk(LOG_LEVEL_ERROR,
-                       "SPI: DMA transfer failed\n");
+            write32(spi->base + SPI_FCR, (fcr | SPI_FCR_RX_DRQEN_MSK));// Enable RX FIFO DMA request
+            if (dma_start(spi_rx_dma_hd, spi->base + SPI_RXD, (u32) rxbuf, rxlen) != 0) {
+                printk(LOG_LEVEL_ERROR, "SPI: DMA transfer failed\n");
                 return -1;
             }
-            while (dma_querystatus(spi_rx_dma_hd)) {
-            };
+            while (dma_querystatus(spi_rx_dma_hd))
+                ;
         } else {
             spi_read_rx_fifo(spi, rxbuf, rxlen);
         }

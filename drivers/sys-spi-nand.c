@@ -115,7 +115,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     int i, r; /* Loop counter and return value */
 
     tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
-    r = spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
 
@@ -169,7 +169,7 @@ static int spi_nand_reset(sunxi_spi_t *spi) {
     int r; /* Return value */
 
     tx[0] = OPCODE_RESET; /* Command to reset SPI NAND */
-    r = spi_transfer(spi, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         return -1;
 
@@ -192,7 +192,7 @@ static int spi_nand_get_config(sunxi_spi_t *spi, uint8_t addr, uint8_t *val) {
 
     tx[0] = OPCODE_READ_STATUS; /* Command to read status register */
     tx[1] = addr; /* Address to read from */
-    r = spi_transfer(spi, SPI_IO_SINGLE, tx, 2, val, 1); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, val, 1); /* Perform SPI transfer */
     if (r < 0)
         return -1;
 
@@ -214,7 +214,7 @@ static int spi_nand_set_config(sunxi_spi_t *spi, uint8_t addr, uint8_t val) {
     tx[0] = OPCODE_WRITE_STATUS; /* Command to write status register */
     tx[1] = addr; /* Address to write to */
     tx[2] = val; /* Value to be written */
-    r = spi_transfer(spi, SPI_IO_SINGLE, tx, 3, 0, 0); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 3, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         return -1;
 
@@ -236,7 +236,7 @@ static void spi_nand_wait_while_busy(sunxi_spi_t *spi) {
     rx[0] = 0x00;
 
     do {
-        r = spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 1); /* Perform SPI transfer */
+        r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 1); /* Perform SPI transfer */
         if (r < 0)
             break;
     } while ((rx[0] & 0x1) == 0x1); /* Check SR3 Busy bit */
@@ -314,7 +314,7 @@ static int spi_nand_load_page(sunxi_spi_t *spi, uint32_t offset) {
     tx[2] = (uint8_t) (pa >> 8); /* Middle byte of page address */
     tx[3] = (uint8_t) (pa >> 0); /* Low byte of page address */
 
-    spi_transfer(spi, SPI_IO_SINGLE, tx, 4, 0, 0); /* Perform SPI transfer */
+    sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, 0, 0); /* Perform SPI transfer */
     spi_nand_wait_while_busy(spi); /* Wait until SPI NAND is not busy */
 
     return 0; /* Return success */
@@ -375,7 +375,7 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
             tx[2] = (uint8_t) (ca >> 0);
             tx[3] = 0x0;
 
-            spi_transfer(spi, info.mode, tx, 4, buf, n);
+            sunxi_spi_transfer(spi, info.mode, tx, 4, buf, n);
 
             address += n;
             buf += n;
@@ -399,7 +399,7 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
         tx[3] = 0x0;
         tx[4] = 0x0;
 
-        spi_transfer(spi, info.mode, tx, txlen, buf, rxlen);
+        sunxi_spi_transfer(spi, info.mode, tx, txlen, buf, rxlen);
     }
   
     return len; /* Return total number of bytes read */

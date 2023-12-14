@@ -27,3 +27,5 @@ add_subdirectory(syter_boot_spi)
 add_subdirectory(i2c_test)
 
 add_subdirectory(i2c_oled)
+
+add_subdirectory(spi_lcd)
