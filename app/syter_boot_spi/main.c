@@ -16,6 +16,7 @@
 #include "sys-sdcard.h"
 #include "sys-sid.h"
 #include "sys-spi.h"
+#include "sys-dma.h"
 #include "sys-spi-nand.h"
 
 #include "libfdt.h"
