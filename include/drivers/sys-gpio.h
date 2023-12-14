@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __SUNXI_GPIO_H__
-#define __SUNXI_GPIO_H__
+#ifndef __SYS_GPIO_H__
+#define __SYS_GPIO_H__
 
 #include <inttypes.h>
 #include <io.h>

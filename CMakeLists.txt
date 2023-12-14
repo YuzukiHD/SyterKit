@@ -135,6 +135,7 @@ add_library(SyterKit
     drivers/sys-sdhci.c
     drivers/sys-rproc.c
     drivers/sys-spi.c
+    drivers/sys-spi-nand.c
     drivers/sys-sid.c
     drivers/sys-timer.c
     drivers/sys-uart.c
