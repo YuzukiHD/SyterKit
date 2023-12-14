@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __SUNXI_SPI_H__
-#define __SUNXI_SPI_H__
+#ifndef __SYS_SPI_H__
+#define __SYS_SPI_H__
 
 #include <io.h>
 #include <stdarg.h>
@@ -23,24 +23,6 @@ typedef enum {
 } spi_io_mode_t;
 
 typedef struct {
-    uint8_t mfr;
-    uint16_t dev;
-    uint8_t dlen;
-} __attribute__((packed)) spi_nand_id_t;
-
-typedef struct {
-    char *name;
-    spi_nand_id_t id;
-    uint32_t page_size;
-    uint32_t spare_size;
-    uint32_t pages_per_block;
-    uint32_t blocks_per_die;
-    uint32_t planes_per_die;
-    uint32_t ndies;
-    spi_io_mode_t mode;
-} spi_nand_info_t;
-
-typedef struct {
     uint32_t base;
     uint8_t id;
     uint32_t clk_rate;
@@ -50,14 +32,12 @@ typedef struct {
     gpio_mux_t gpio_mosi;
     gpio_mux_t gpio_wp;
     gpio_mux_t gpio_hold;
-
-    spi_nand_info_t info;
 } sunxi_spi_t;
 
 int sunxi_spi_init(sunxi_spi_t *spi);
+
 void sunxi_spi_disable(sunxi_spi_t *spi);
-int spi_nand_detect(sunxi_spi_t *spi);
-uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr,
-                       uint32_t rxlen);
+
+int spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
 
 #endif
