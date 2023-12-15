@@ -3,7 +3,8 @@
 #ifndef __REG_DMA_H__
 #define __REG_DMA_H__
 
-#define SUNXI_DMA_BASE 0x03002000
+#include <reg-ncat.h>
+
 #define SUNXI_DMA_CHANNEL_BASE (SUNXI_DMA_BASE + 0x100)
 #define DMA_AUTO_GATE_REG (SUNXI_DMA_BASE + 0x28)
 
