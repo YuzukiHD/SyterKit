@@ -50,14 +50,14 @@ static int cmd_history(int argc, const char **argv) {
 }
 
 static int cmd_reset(int argc, const char **argv) {
-    clean_syterboot_data();
+    clean_syterkit_data();
     uart_puts("Now Reset System...\n\n");
     sys_reset();
     return 0;
 }
 
 static int cmd_efex(int argc, const char **argv) {
-    clean_syterboot_data();
+    clean_syterkit_data();
     rtc_set_fel_flag();
     uart_puts("Now Reset System to efex...\n\n");
     sys_reset();

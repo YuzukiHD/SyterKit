@@ -10,7 +10,7 @@
 #include <reg-ccu.h>
 #include <reg-ncat.h>
 
-void clean_syterboot_data(void) {
+void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
     printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
