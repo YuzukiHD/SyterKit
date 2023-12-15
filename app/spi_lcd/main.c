@@ -234,7 +234,15 @@ int main(void) {
 
     LCD_ShowString(0, 240, "1.0.2", BLACK, WHITE, 32, 0);
 
-    abort();
+    sunxi_spi_disable(&sunxi_spi0);
+
+    arm32_mmu_disable();
+
+    clean_syterkit_data();
+
+    sunxi_clk_reset();
+
+    jmp_to_fel();
 
     return 0;
 }

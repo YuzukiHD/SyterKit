@@ -584,7 +584,7 @@ int cmd_boot(int argc, const char **argv) {
     }
 
     /* Disable MMU, data cache, instruction cache, interrupts */
-    clean_syterboot_data();
+    clean_syterkit_data();
 
     enable_kernel_smp();
     printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
@@ -626,7 +626,7 @@ int main(void) {
     /* Check rtc fel flag. if set flag, goto fel */
     if (rtc_probe_fel_flag()) {
         printk(LOG_LEVEL_INFO, "RTC: get fel flag, jump to fel mode.\n");
-        clean_syterboot_data();
+        clean_syterkit_data();
         rtc_clear_fel_flag();
         sunxi_clk_reset();
         mdelay(100);
