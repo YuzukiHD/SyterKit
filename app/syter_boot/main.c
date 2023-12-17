@@ -20,10 +20,10 @@
 #include <cli_termesc.h>
 
 #include "sys-dram.h"
+#include "sys-rtc.h"
 #include "sys-sdcard.h"
 #include "sys-sid.h"
 #include "sys-spi.h"
-#include "sys-rtc.h"
 #include "sys-timer.h"
 
 #include "fdt_wrapper.h"
@@ -360,7 +360,7 @@ static int update_bootargs_from_config(uint64_t dram_size) {
     /* Check if DTB header is valid */
     if ((ret = fdt_check_header(dtb_header)) != 0) {
         printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
-        abort();
+        return -1;
     }
 
     /* Get the total size of DTB */
@@ -407,7 +407,7 @@ _add_dts_size:
             goto _err_size;
     } else if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
-        abort();
+        return -1;
     }
 
     /* Get the total size of DTB */
@@ -415,13 +415,13 @@ _add_dts_size:
 
     if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-        abort();
+        return -1;
     }
 
     return 0;
 _err_size:
     printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
-    abort();
+    return -1;
 }
 
 static int abortboot_single_key(int bootdelay) {
@@ -442,8 +442,8 @@ static int abortboot_single_key(int bootdelay) {
         /* delay 1000 ms */
         ts = time_ms();
         do {
-            if (tstc()) {      /* we got a key press */
-                abort = 1;     /* don't auto boot */
+            if (tstc()) {  /* we got a key press */
+                abort = 1; /* don't auto boot */
                 break;
             }
             udelay(10000);
@@ -687,7 +687,9 @@ int main(void) {
     }
 
     /* Update boot arguments based on configuration file. */
-    update_bootargs_from_config(dram_size);
+    if (update_bootargs_from_config(dram_size)) {
+        goto _shell;
+    }
 
     int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
 
