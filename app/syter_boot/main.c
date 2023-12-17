@@ -669,6 +669,7 @@ int main(void) {
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        goto _shell;
     } else {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
@@ -676,11 +677,13 @@ int main(void) {
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+        goto _shell;
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
+        goto _shell;
     }
 
     /* Update boot arguments based on configuration file. */
