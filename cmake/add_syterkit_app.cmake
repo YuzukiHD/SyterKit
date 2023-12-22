@@ -6,7 +6,7 @@ set(APP_COMMON_LIBRARY
 )
 
 function(add_syterkit_app target_name)
-    add_executable(${target_name}_fel ${ARGN})
+    add_executable(${target_name}_fel $<TARGET_OBJECTS:common-obj> ${ARGN})
 
     set_target_properties(${target_name}_fel PROPERTIES LINK_DEPENDS "${LINK_SCRIPT_FEL}")
     target_link_libraries(${target_name}_fel ${APP_COMMON_LIBRARY} -T"${LINK_SCRIPT_FEL}" -nostdlib -Wl,-z,noexecstack,-Map,${target_name}_fel.map)
@@ -23,7 +23,7 @@ function(add_syterkit_app target_name)
         COMMENT "Copy Binary ${target_name}_fel"
     )
 
-    add_executable(${target_name}_bin ${ARGN})
+    add_executable(${target_name}_bin $<TARGET_OBJECTS:common-obj> ${ARGN})
 
     set_target_properties(${target_name}_bin PROPERTIES LINK_DEPENDS "${LINK_SCRIPT_BIN}")
     target_link_libraries(${target_name}_bin ${APP_COMMON_LIBRARY} -T"${LINK_SCRIPT_BIN}" -nostdlib -Wl,-z,noexecstack,-Map,${target_name}_bin.map)
