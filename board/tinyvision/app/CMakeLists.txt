@@ -1,8 +1,7 @@
-add_library(common-obj OBJECT
-    start.S
-    eabi_compat.c
+set(APP_COMMON_SOURCE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/start.S 
+    ${CMAKE_CURRENT_SOURCE_DIR}/eabi_compat.c
 )
-
 
 add_subdirectory(helloworld)
 
