@@ -1,20 +1,8 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+#ifndef __SYS_UART_H__
+#define __SYS_UART_H__
 
-#ifndef __SYS_USART_H__
-#define __SYS_USART_H__
-
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <types.h>
-
-#include "sys-clk.h"
-#include "sys-gpio.h"
-#include "sys-uart.h"
-
-#include "log.h"
+#include <sys-gpio.h>
 
 typedef struct {
     uint32_t base;
@@ -31,4 +19,4 @@ int sunxi_serial_tstc(void *arg);
 
 char sunxi_serial_getc(void *arg);
 
-#endif
+#endif // __SYS_UART_H__
