@@ -31,7 +31,7 @@ set(CMAKE_ASM_FLAGS "${CMAKE_C_DISABLE_WARN_FLAGS} ${CMAKE_ASM_FLAGS} ${CMAKE_CO
 
 # Set Version, Release need cmake
 set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 0)
+set(PROJECT_VERSION_MINOR 2)
 
 # use git version as library version
 find_package(Git QUIET)
@@ -87,65 +87,23 @@ set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
 set(LINK_SCRIPT_FEL ${CMAKE_SOURCE_DIR}/link/link_elf.ld)
 set(LINK_SCRIPT_BIN ${CMAKE_SOURCE_DIR}/link/link_bin.ld)
 
+
+set(CONFIG_ARCH_ARM32 True)
+set(CONFIG_CHIP_SUN8IW21 True)
+
+add_definitions(-DCONFIG_CHIP_SUN8IW21)
+
+if (CONFIG_ARCH_ARM32)
+set(ARCH_INCLUDE include/arch/arm32)
+endif()
+
 include_directories(
     include
-    include/cli
-    include/arch
     include/drivers
-    include/reg
-    include/lib/fatfs
-    include/lib/fdt
-    include/lib/elf
-    include/lib/ini
-    ${PROJECT_BINARY_DIR}
+    include/drivers/reg
+    ${ARCH_INCLUDE}
 )
 
-add_library(SyterKit
-    # log
-    src/log/log.c
-    src/log/xformat.c
-    # string
-    src/string/string.c
-    src/string/memcpy.S
-    src/string/memset.S
-    src/string/memcmp.S
-    # cli
-    src/cli/commands.c
-    src/cli/history.c
-    src/cli/lineedit.c
-    src/cli/parse.c
-    src/cli/shell.c
-    # exception & common
-    src/exception.c
-    src/common.c
-    # src
-    src/jmp.c
-    src/uart.c
-    src/ctype.c
-    src/fdt_wrapper.c
-    src/smalloc.c
-    src/sstdlib.c
-    src/cache.S
-    # deiver
-    drivers/sys-clk.c
-    drivers/sys-dma.c
-    drivers/sys-gpio.c
-    drivers/sys-dram.c
-    drivers/sys-sdcard.c
-    drivers/sys-sdhci.c
-    drivers/sys-rproc.c
-    drivers/sys-spi.c
-    drivers/sys-spi-nand.c
-    drivers/sys-sid.c
-    drivers/sys-timer.c
-    drivers/sys-uart.c
-    drivers/sys-wdt.c
-    drivers/sys-rtc.c
-    drivers/sys-i2c.c
-)
+add_subdirectory(src)
 
-target_link_libraries(SyterKit gcc fdt)
-
-add_subdirectory(lib)
-
-add_subdirectory(app)
+add_subdirectory(board/tinyvision/app/helloworld)

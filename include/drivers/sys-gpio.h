@@ -27,13 +27,20 @@ enum {
     GPIO_DISABLED = 0xf,
 };
 
-#define PORTA 0
-#define PORTC 1
-#define PORTD 2
-#define PORTE 3
-#define PORTF 4
-#define PORTH 5
-#define SUNXI_GPIO_PORTS 6
+enum {
+    GPIO_PORTA = 0,
+    GPIO_PORTB,
+    GPIO_PORTC,
+    GPIO_PORTD,
+    GPIO_PORTE,
+    GPIO_PORTF,
+    GPIO_PORTG,
+    GPIO_PORTH,
+    GPIO_PORTI,
+    GPIO_PORTJ,
+    GPIO_PORTK,
+    GPIO_PORTL,
+};
 
 enum gpio_pull_t {
     GPIO_PULL_UP = 0,
