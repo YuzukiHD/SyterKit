@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <arm32.h>
+#include <mmu.h>
 
 #include <log.h>
 
