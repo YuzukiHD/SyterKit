@@ -12,12 +12,7 @@
 #include "sys-i2c.h"
 #include "sys-uart.h"
 
-sunxi_serial_t uart_dbg = {
-        .base = 0x02500000,
-        .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
-};
+extern sunxi_serial_t uart_dbg;
 
 sunxi_i2c_t i2c_0 = {
         .base = 0x02502000,

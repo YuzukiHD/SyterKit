@@ -24,14 +24,9 @@
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
-sunxi_serial_t uart_dbg = {
-        .base = 0x02500000,
-        .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
-};
+extern sunxi_serial_t uart_dbg;
 
-sunxi_spi_t sunxi_spi0 = {
+sunxi_spi_t sunxi_spi0_lcd = {
         .base = 0x04025000,
         .id = 0,
         .clk_rate = 120 * 1000 * 1000,
@@ -64,13 +59,13 @@ static void LCD_Write_Bus(uint8_t dat) {
     int r;         /* Return value */
 
     tx[0] = dat;
-    r = sunxi_spi_transfer(&sunxi_spi0, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len) {
-    int r = sunxi_spi_transfer(&sunxi_spi0, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
+    int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
 }
@@ -210,7 +205,7 @@ int main(void) {
 
     dma_init();
 
-    if (sunxi_spi_init(&sunxi_spi0) != 0) {
+    if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
         printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
     }
 
@@ -234,7 +229,7 @@ int main(void) {
 
     LCD_ShowString(0, 240, "1.0.2", BLACK, WHITE, 32, 0);
 
-    sunxi_spi_disable(&sunxi_spi0);
+    sunxi_spi_disable(&sunxi_spi0_lcd);
 
     arm32_mmu_disable();
 

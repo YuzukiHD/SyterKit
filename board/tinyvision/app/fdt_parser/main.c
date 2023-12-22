@@ -27,12 +27,7 @@
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-sunxi_serial_t uart_dbg = {
-        .base = 0x02500000,
-        .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
-};
+extern sunxi_serial_t uart_dbg;
 
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
@@ -41,21 +36,7 @@ sunxi_serial_t uart_e907 = {
         .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
 };
 
-sdhci_t sdhci0 = {
-        .name = "sdhci0",
-        .reg = (sdhci_reg_t *) 0x04020000,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_50M,
-        .removable = 0,
-        .isspi = FALSE,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-};
+extern sdhci_t sdhci0;
 
 #define FILENAME_MAX_LEN 64
 typedef struct {

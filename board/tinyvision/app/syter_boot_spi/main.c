@@ -56,40 +56,11 @@ typedef struct {
     unsigned int end;
 } linux_zimage_header_t;
 
-sunxi_serial_t uart_dbg = {
-        .base = 0x02500000,
-        .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
-};
+extern sunxi_serial_t uart_dbg;
 
-sunxi_spi_t sunxi_spi0 = {
-        .base = 0x04025000,
-        .id = 0,
-        .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
-};
+extern sunxi_spi_t sunxi_spi0;
 
-sdhci_t sdhci0 = {
-        .name = "sdhci0",
-        .reg = (sdhci_reg_t *) 0x04020000,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_50M,
-        .removable = 0,
-        .isspi = FALSE,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-};
+extern sdhci_t sdhci0;
 
 image_info_t image;
 
