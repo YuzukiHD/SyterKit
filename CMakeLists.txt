@@ -107,4 +107,4 @@ include_directories(
 
 add_subdirectory(src)
 
-add_subdirectory(board/tinyvision/app/helloworld)
+add_subdirectory(board/tinyvision/)
