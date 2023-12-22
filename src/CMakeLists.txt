@@ -12,6 +12,13 @@ add_library(SyterKit
     # uart
     uart.c
 
+    # cli
+    cli/commands.c
+    cli/history.c
+    cli/lineedit.c
+    cli/parse.c
+    cli/shell.c
+
     $<TARGET_OBJECTS:arch-obj>
     $<TARGET_OBJECTS:drivers-obj>
     $<TARGET_OBJECTS:chip_drivers-obj>

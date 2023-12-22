@@ -99,6 +99,7 @@ endif()
 
 include_directories(
     include
+    include/cli
     include/drivers
     include/drivers/reg
     ${ARCH_INCLUDE}

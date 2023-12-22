@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __ARM32_H__
-#define __ARM32_H__
+#ifndef __MMU_H__
+#define __MMU_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +50,11 @@ static inline void arm32_interrupt_disable(void) {
                          : "=r"(tmp)
                          :
                          : "memory");
+}
+
+static inline void data_sync_barrier(void) {
+    asm volatile("DSB");
+    asm volatile("ISB");
 }
 
 static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size) {
@@ -170,4 +175,4 @@ static inline void arm32_icache_disable(void) {
 }
 #endif
 
-#endif /* __ARM32_H__ */
+#endif /* __MMU_H__ */
