@@ -52,11 +52,6 @@ static inline void arm32_interrupt_disable(void) {
                          : "memory");
 }
 
-static inline void data_sync_barrier(void) {
-    asm volatile("DSB");
-    asm volatile("ISB");
-}
-
 static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size) {
     uint32_t mmu_base;
 
@@ -169,6 +164,11 @@ static inline void arm32_icache_enable(void) {
 static inline void arm32_icache_disable(void) {
     uint32_t value = arm32_read_p15_c1();
     arm32_write_p15_c1(value & ~(1 << 12));
+}
+
+inline void data_sync_barrier(void) {
+    asm volatile("DSB");
+    asm volatile("ISB");
 }
 
 #ifdef __cplusplus

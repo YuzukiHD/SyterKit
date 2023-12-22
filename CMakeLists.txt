@@ -102,9 +102,16 @@ include_directories(
     include/cli
     include/drivers
     include/drivers/reg
+    include/lib/fatfs
+    include/lib/fdt
+    include/lib/elf
+    include/lib/ini
     ${ARCH_INCLUDE}
+    ${PROJECT_BINARY_DIR}
 )
 
 add_subdirectory(src)
+
+add_subdirectory(lib)
 
 add_subdirectory(board/tinyvision/)

@@ -8,7 +8,7 @@
 #include <config.h>
 #include <log.h>
 
-#include <arm32.h>
+#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
 
@@ -62,27 +62,27 @@ typedef struct {
 sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
 };
 
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
-        .gpio_tx = {GPIO_PIN(PORTE, 0), GPIO_PERIPH_MUX7},
-        .gpio_rx = {GPIO_PIN(PORTE, 1), GPIO_PERIPH_MUX7},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
 };
 
 sunxi_spi_t sunxi_spi0 = {
         .base = 0x04025000,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(PORTC, 5), GPIO_PERIPH_MUX4},
+        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
+        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
+        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
+        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
+        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
+        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
 };
 
 sdhci_t sdhci0 = {
@@ -93,12 +93,12 @@ sdhci_t sdhci0 = {
         .clock = MMC_CLK_50M,
         .removable = 0,
         .isspi = FALSE,
-        .gpio_clk = {GPIO_PIN(PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(PORTF, 4), GPIO_PERIPH_MUX2},
+        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
+        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
+        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
+        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
+        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
+        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
 };
 
 image_info_t image;
@@ -125,7 +125,7 @@ static int boot_image_setup(unsigned char *addr, unsigned int *entry) {
         return 0;
     }
 
-    printk(LOG_LEVEL_ERROR, "unsupported kernel image\n");
+    printk(LOG_LEVEL_ERROR, "unsupGPIO_PORTed kernel image\n");
 
     return -1;
 }

@@ -7,7 +7,7 @@
 
 #include <log.h>
 
-#include <arm32.h>
+#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
 #include <smalloc.h>
@@ -27,27 +27,27 @@
 sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
 };
 
 sunxi_spi_t sunxi_spi0 = {
         .base = 0x04025000,
         .id = 0,
         .clk_rate = 120 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(PORTC, 3), GPIO_PERIPH_MUX4},
+        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
+        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
+        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
+        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
 };
 
 static gpio_mux_t lcd_dc_pins = {
-        .pin = GPIO_PIN(PORTC, 4),
+        .pin = GPIO_PIN(GPIO_PORTC, 4),
         .mux = GPIO_OUTPUT,
 };
 
 static gpio_mux_t lcd_res_pins = {
-        .pin = GPIO_PIN(PORTC, 5),
+        .pin = GPIO_PIN(GPIO_PORTC, 5),
         .mux = GPIO_OUTPUT,
 };
 

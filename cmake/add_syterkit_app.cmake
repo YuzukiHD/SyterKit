@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(APP_COMMON_LIBRARY
+set(APP_COMMON_LIBRARY 
+    fatfs
+    fdt
     SyterKit
+    elf
     gcc
 )
 

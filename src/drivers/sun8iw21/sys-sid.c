@@ -10,6 +10,8 @@
 
 #include <log.h>
 
+#include <common.h>
+
 #include "sys-sid.h"
 
 uint32_t efuse_read(uint32_t offset) {

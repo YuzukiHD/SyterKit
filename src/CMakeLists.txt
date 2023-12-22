@@ -2,6 +2,9 @@ add_subdirectory(arch)
 add_subdirectory(drivers)
 
 add_library(SyterKit
+    # Common 
+    common.c
+
     # String
     string.c
 
@@ -18,6 +21,18 @@ add_library(SyterKit
     cli/lineedit.c
     cli/parse.c
     cli/shell.c
+
+    # malloc
+    smalloc.c
+
+    # stdlib
+    sstdlib.c
+
+    # fdt
+    fdt_wrapper.c
+
+    # ctype
+    ctype.c
 
     $<TARGET_OBJECTS:arch-obj>
     $<TARGET_OBJECTS:drivers-obj>
