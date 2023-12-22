@@ -11,6 +11,8 @@
 
 #include <reg-ncat.h>
 
+#include <mmu.h>
+
 #define EFEX_FLAG (0x5AA5A55A)
 #define RTC_FEL_INDEX 2
 #define RTC_BOOT_INDEX 6

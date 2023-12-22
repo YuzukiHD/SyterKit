@@ -9,7 +9,7 @@
 #include <config.h>
 #include <log.h>
 
-#include <arm32.h>
+#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
 
@@ -30,15 +30,15 @@
 sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(PORTH, 9), GPIO_PERIPH_MUX5},
-        .gpio_rx = {GPIO_PIN(PORTH, 10), GPIO_PERIPH_MUX5},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
 };
 
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
-        .gpio_tx = {GPIO_PIN(PORTE, 0), GPIO_PERIPH_MUX7},
-        .gpio_rx = {GPIO_PIN(PORTE, 1), GPIO_PERIPH_MUX7},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
 };
 
 sdhci_t sdhci0 = {
@@ -49,12 +49,12 @@ sdhci_t sdhci0 = {
         .clock = MMC_CLK_50M,
         .removable = 0,
         .isspi = FALSE,
-        .gpio_clk = {GPIO_PIN(PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(PORTF, 4), GPIO_PERIPH_MUX2},
+        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
+        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
+        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
+        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
+        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
+        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
 };
 
 #define FILENAME_MAX_LEN 64

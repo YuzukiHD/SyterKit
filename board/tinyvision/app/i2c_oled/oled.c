@@ -12,7 +12,7 @@
 #include "oledfont.h"
 
 #define OLED_IIC_ADDR 0x3c
-#define OLED_IIC_PORT 0
+#define OLED_IIC_GPIO_PORT 0
 
 #define OLED_CMD 0  /*写命令 */
 #define OLED_DATA 1 /* 写数据 */
@@ -23,8 +23,8 @@ sunxi_i2c_t i2c_0 = {
         .base = 0x02502000,
         .id = 0,
         .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(PORTE, 4), GPIO_PERIPH_MUX8},
-        .gpio_sda = {GPIO_PIN(PORTE, 5), GPIO_PERIPH_MUX8},
+        .gpio_scl = {GPIO_PIN(GPIO_PORTE, 4), GPIO_PERIPH_MUX8},
+        .gpio_sda = {GPIO_PIN(GPIO_PORTE, 5), GPIO_PERIPH_MUX8},
 };
 
 void OLED_WR_Byte(uint8_t dat, uint8_t mode) {

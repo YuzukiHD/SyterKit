@@ -5,4 +5,5 @@ add_library(arch-obj OBJECT
     memset.S
     strncmp.S
     timer.c
+    jmp.c
 )

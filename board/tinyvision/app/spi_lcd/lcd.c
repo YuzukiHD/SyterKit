@@ -1,4 +1,4 @@
-#include <arm32.h>
+#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
 #include <smalloc.h>
