@@ -7,7 +7,7 @@ SEARCH_DIR(.)
 /* Memory Spaces Definitions */
 MEMORY
 {
-  ram   (rwx) : ORIGIN = 0x00020000, LENGTH = 128K /* SRAMC. 132K on boot mode, 100K on FEL mode */
+  ram   (rwx) : ORIGIN = @ARCH_START_ADDRESS@, LENGTH = @ARCH_SRAM_LENGTH@ /* SRAMC. 132K on boot mode, 100K on FEL mode */
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */

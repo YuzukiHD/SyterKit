@@ -84,9 +84,8 @@ set(CMAKE_SIZE "${CROSS_COMPILE}size")
 
 set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
 
-set(LINK_SCRIPT_FEL ${CMAKE_SOURCE_DIR}/link/link_elf.ld)
-set(LINK_SCRIPT_BIN ${CMAKE_SOURCE_DIR}/link/link_bin.ld)
-
+set(LINK_SCRIPT_FEL ${PROJECT_BINARY_DIR}/link_elf.ld)
+set(LINK_SCRIPT_BIN ${PROJECT_BINARY_DIR}/link_bin.ld)
 
 set(CONFIG_ARCH_ARM32 True)
 set(CONFIG_CHIP_SUN8IW21 True)
@@ -95,6 +94,23 @@ add_definitions(-DCONFIG_CHIP_SUN8IW21)
 
 if (CONFIG_ARCH_ARM32)
 set(ARCH_INCLUDE include/arch/arm32)
+
+set(ARCH_START_ADDRESS "0x00020000")
+set(ARCH_SRAM_LENGTH "128K")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
+    "${PROJECT_BINARY_DIR}/link_bin.ld"
+)
+
+set(ARCH_START_ADDRESS "0x00028000")
+set(ARCH_SRAM_LENGTH "100K")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
+    "${PROJECT_BINARY_DIR}/link_elf.ld"
+)
+
 endif()
 
 include_directories(
