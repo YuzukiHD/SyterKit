@@ -4,9 +4,11 @@
 #define __G_REG_NCAT_H__
 
 #if defined(CONFIG_CHIP_SUN8IW21)
-#include <sun8iw21/reg/reg-ncat.h>
+    #include <sun8iw21/reg/reg-ncat.h>
+#elif defined(CONFIG_CHIP_SUN8IW20)
+    #include <sun8iw20/reg/reg-ncat.h>
 #else
-#error "Unsupported chip"
+    #error "Unsupported chip"
 #endif
 
 #endif // __G_REG_NCAT_H__
