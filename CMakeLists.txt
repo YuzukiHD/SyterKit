@@ -103,22 +103,42 @@ set(LINK_SCRIPT_BIN ${PROJECT_BINARY_DIR}/link_bin.ld)
 if (CONFIG_ARCH_ARM32)
 set(ARCH_INCLUDE include/arch/arm32)
 
-set(ARCH_START_ADDRESS "0x00020000")
-set(ARCH_SRAM_LENGTH "128K")
+set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
     "${PROJECT_BINARY_DIR}/link_bin.ld"
 )
 
-set(ARCH_START_ADDRESS "0x00028000")
-set(ARCH_SRAM_LENGTH "100K")
+set(ARCH_START_ADDRESS "${ARCH_FEL_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
     "${PROJECT_BINARY_DIR}/link_elf.ld"
 )
+endif()
 
+# If the CONFIG_ARCH_ARM32 variable is defined, execute the following content
+if (CONFIG_ARCH_RISCV64)
+set(ARCH_INCLUDE include/arch/riscv64)
+
+set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/riscv64/link.ld"
+    "${PROJECT_BINARY_DIR}/link_bin.ld"
+)
+
+set(ARCH_START_ADDRESS "${ARCH_FEL_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/riscv64/link.ld"
+    "${PROJECT_BINARY_DIR}/link_elf.ld"
+)
 endif()
 
 # Specify the paths of the include files
