@@ -4,9 +4,11 @@
 #define __SYS_DRAM_H__
 
 #if defined(CONFIG_CHIP_SUN8IW21)
-#include <sun8iw21/sys-dram.h>
+    #include <sun8iw21/sys-dram.h>
+#elif defined(CONFIG_CHIP_SUN8IW20)
+    #include <sun8iw20/sys-dram.h>
 #else
-#error "Unsupported chip"
+    #error "Unsupported chip"
 #endif
 
 #endif // __SYS_DRAM_H__

@@ -4,9 +4,11 @@
 #define _SYS_SID_H_
 
 #if defined(CONFIG_CHIP_SUN8IW21)
-#include <sun8iw21/sys-sid.h>
+    #include <sun8iw21/sys-sid.h>
+#elif defined(CONFIG_CHIP_SUN8IW20)
+    #include <sun8iw20/sys-sid.h>
 #else
-#error "Unsupported chip"
+    #error "Unsupported chip"
 #endif
 
 #endif// _SYS_SID_H_
