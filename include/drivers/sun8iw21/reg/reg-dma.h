@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __REG_DMA_H__
-#define __REG_DMA_H__
+#ifndef __SUN8IW21_REG_DMA_H__
+#define __SUN8IW21_REG_DMA_H__
 
 #include <reg-ncat.h>
 
@@ -58,4 +58,4 @@
 #define DMA_PKG_END_INT (1 << 1)
 #define DMA_QUEUE_END_INT (1 << 2)
 
-#endif// __REG_DMA_H__
+#endif// __SUN8IW21_REG_DMA_H__
