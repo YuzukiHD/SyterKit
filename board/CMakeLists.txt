@@ -9,3 +9,7 @@ endif()
 if(CONFIG_BOARD_100ASK-T113S3)
     add_subdirectory(100ask-t113s3)
 endif()
+
+if(CONFIG_BOARD_100ASK-T113I)
+    add_subdirectory(100ask-t113i)
+endif()
