@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __REG_CCU_H__
-#define __REG_CCU_H__
+#ifndef __SUN8IW21_REG_CCU_H__
+#define __SUN8IW21_REG_CCU_H__
 
 #define CCU_BASE (0x02001000)
 
@@ -174,4 +174,4 @@
 #define CCU_RISCV_CFG_GATING \
     (0x1 << 0)// Bit field value for RISC-V configuration gating
 
-#endif // __REG_CCU_H__
+#endif // __SUN8IW21_REG_CCU_H__
