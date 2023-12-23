@@ -12,7 +12,7 @@ void show_banner(void) {
     printk(LOG_LEVEL_INFO, "|_____|_  |_| |___|_| |__|__|_|_|  \n");
     printk(LOG_LEVEL_INFO, "      |___|                        \n");
     printk(LOG_LEVEL_INFO, "***********************************\n");
-    printk(LOG_LEVEL_INFO, " %s V0.1.2 Commit: %s\n", PROJECT_NAME, PROJECT_GIT_HASH);
+    printk(LOG_LEVEL_INFO, " %s V0.2.0 Commit: %s\n", PROJECT_NAME, PROJECT_GIT_HASH);
     printk(LOG_LEVEL_INFO, " Built by: %s\n", PROJECT_C_COMPILER);
     printk(LOG_LEVEL_INFO, "***********************************\n");
     printk(LOG_LEVEL_INFO, "\n");
