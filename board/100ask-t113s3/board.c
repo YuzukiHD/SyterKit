@@ -18,14 +18,14 @@
 #include <sys-sdcard.h>
 
 sunxi_serial_t uart_dbg = {
-        .base = 0x02500000,
+        .base = SUNXI_UART0_BASE,
         .id = 0,
         .gpio_tx = {GPIO_PIN(GPIO_PORTE, 2), GPIO_PERIPH_MUX5},
         .gpio_rx = {GPIO_PIN(GPIO_PORTE, 3), GPIO_PERIPH_MUX5},
 };
 
 sunxi_spi_t sunxi_spi0 = {
-        .base = 0x04025000,
+        .base = SUNXI_SPI0_BASE,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
         .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
@@ -38,7 +38,7 @@ sunxi_spi_t sunxi_spi0 = {
 
 sdhci_t sdhci0 = {
         .name = "sdhci0",
-        .reg = (sdhci_reg_t *) 0x04020000,
+        .reg = (sdhci_reg_t *) SUNXI_SMHC0_BASE,
         .voltage = MMC_VDD_27_36,
         .width = MMC_BUS_WIDTH_4,
         .clock = MMC_CLK_50M,
