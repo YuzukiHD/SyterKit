@@ -13,8 +13,19 @@ if(CMAKE_BOARD_FILE)
     message(STATUS "CMAKE_BOARD_FILE = ${CMAKE_BOARD_FILE}")
     include(${CMAKE_BOARD_FILE})
 else()
-    # Get all available board loader files and print an error message
-    message(FATAL_ERROR "Please select a target board.")
+    set(CMAKE_AVALIABLE_BOARD "")
+    file(GLOB FILE_LIST "${BOARD_FLOADER_PATH}/*.cmake")
+    foreach(FILE_PATH ${FILE_LIST})
+        get_filename_component(BOARD_FILE_NAME ${FILE_PATH} NAME)
+        set(CMAKE_AVALIABLE_BOARD "${CMAKE_AVALIABLE_BOARD}\n ${BOARD_FILE_NAME}")
+    endforeach()
+    message(FATAL_ERROR 
+        "You need to select target Board:" 
+        "${CMAKE_AVALIABLE_BOARD}" 
+        "\nUse -DCMAKE_BOARD_FILE=xxx.cmake to define target board"
+        "\neg:"
+        "\n cmake -DCMAKE_BOARD_FILE=tinyvision.cmake .."
+    )
 endif()
 
 # Set compilation flags
