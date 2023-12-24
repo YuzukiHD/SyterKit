@@ -2,8 +2,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-# Set the toolchain location if using Windows
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain-arm-none-eabi.cmake)
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain-arm-eabi.cmake)
 
 # Options
 
@@ -61,17 +60,22 @@ configure_file(
     "${PROJECT_BINARY_DIR}/config.h"
 )
 
-ExternalProject_Add(
-    mksunxi
-    PREFIX mksunxi
-    SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
-    INSTALL_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND make -C ${PROJECT_SOURCE_DIR}/tools
-    BUILD_IN_SOURCE 1
-)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+    set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi.exe")
 
-set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
+else()
+    ExternalProject_Add(
+        mksunxi
+        PREFIX mksunxi
+        SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
+        INSTALL_COMMAND ""
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND make -C ${PROJECT_SOURCE_DIR}/tools
+        BUILD_IN_SOURCE 1
+    )
+    set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
+    
+endif()
 
 set(LINK_SCRIPT_FEL ${CMAKE_SOURCE_DIR}/link/link_elf.ld)
 set(LINK_SCRIPT_BIN ${CMAKE_SOURCE_DIR}/link/link_bin.ld)

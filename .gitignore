@@ -3,5 +3,4 @@ build/
 test/
 tools/*.bin
 mksunxi
-mksunxi.exe
 lib/arduino

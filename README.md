@@ -60,16 +60,7 @@ Run the following commands to configure CMake cache:
 cmake ..
 ```
 
-If you are using Windows, you may need to run 
-```shell
-cmake .. -DTOOLCHAIN_PREFIX="path/to/your/toochain" -G 'Unix Makefiles'
-```
-to specify the toolchain for building this project, e.g.
-
-```shell
-cmake .. -DTOOLCHAIN_PREFIX="D:/gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-eabi" -G 'Unix Makefiles'
-```
-Besides you can add `set(TOOLCHAIN_PREFIX "D:/gcc-linaro-7.5.0-201912-i686-mingw32_arm-eabi")` into the top of `cmake\toolchain-arm-eabi.cmake` to set it default as well. Then you can directly run
+If you are using Windows, you may need to specify the toolchain path in [cmake\toolchain-arm-eabi.cmake](cmake/toolchain-arm-eabi.cmake#L26). Then you can configure CMake cache by running
 
 ```shell
 cmake .. -G 'Unix Makefiles'
@@ -79,7 +70,8 @@ cmake .. -G 'Unix Makefiles'
 
 Run the following commands to build SyterKit
 ```shell
-cmake --build
+cd build
+cmake --build . # You can add "-j" to enable multi-thread compilation
 ```
 
 
@@ -227,19 +219,7 @@ cd build
 cmake ..
 ```
 
-如果你使用的是 Windows，你可能需要运行
-
-```shell
-cmake .. -DTOOLCHAIN_PREFIX="path/to/your/toochain" -G 'Unix Makefiles'
-```
-
-来指定交叉编译工具链，例如
-
-```shell
-cmake .. -DTOOLCHAIN_PREFIX="D:/gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-eabi" -G 'Unix Makefiles'
-```
-
-除此之外，你也可以在 `cmake\toolchain-arm-eabi.cmake` 文件的顶部添加 `set(TOOLCHAIN_PREFIX "D:/gcc-linaro-7.5.0-201912-i686-mingw32_arm-eabi")` 来设置默认的交叉编译工具链。然后你可以直接运行
+如果你使用的是 Windows，你可能需要在 [cmake\toolchain-arm-eabi.cmake](cmake/toolchain-arm-eabi.cmake#L26) 中指定工具链路径。然后你可以运行以下命令配置 CMake 缓存
 
 ```shell
 cmake .. -G 'Unix Makefiles'
@@ -251,7 +231,8 @@ cmake .. -G 'Unix Makefiles'
 运行命令构建 SyterKit
 
 ```shell
-cmake --build
+cd build
+cmake --build . # 可以添加 "-j" 开启多线程编译
 ```
 
 编译后的可执行文件位于 `build/app` 中

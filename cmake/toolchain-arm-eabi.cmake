@@ -23,7 +23,7 @@ if(NOT DEFINED TOOLCHAIN_PREFIX)
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Darwin)
         set(TOOLCHAIN_PREFIX "/usr/local")
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
-        message(STATUS "Please specify the TOOLCHAIN_PREFIX !\n For example: -DTOOLCHAIN_PREFIX=\"C:/Program Files/GNU Tools ARM Embedded\" ")
+        set(TOOLCHAIN_PREFIX "D:/SDKs/gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-eabi") # Modify this to your toolchain path
     else()
         set(TOOLCHAIN_PREFIX "/usr")
         message(STATUS "No TOOLCHAIN_PREFIX specified, using default: " ${TOOLCHAIN_PREFIX})
