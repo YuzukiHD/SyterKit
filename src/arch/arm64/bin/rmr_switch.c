@@ -15,11 +15,12 @@ uint32_t start_addr = 0x28000;
  *
  * After that, it uses a data synchronization barrier (dsb) to ensure memory access completion,
  * and an instruction synchronization barrier (isb) to ensure correct instruction execution order and prevent instruction reordering.
+ *
  * Next, it reads the value of Register Maintenance Register (RMR) from co-processor CP15 into register r0,
  * performs a bitwise OR operation between the value in register r0 and 0x3, setting the lowest two bits to 1,
  * requesting a reset in AArch64 mode. Then, it writes the modified value to the RMR register in co-processor CP15,
  * requesting a reset. It uses the instruction synchronization barrier again afterwards.
- 
+ *
  * Finally, it executes the Wait For Interrupt (WFI) instruction,
  * waiting for an external event to wake up the system. It jumps back to the WFI instruction to continue waiting using an infinite loop.
  */
