@@ -2,19 +2,15 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+# Set the toolchain location if using Windows
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain-arm-none-eabi.cmake)
+
 # Options
 
 # By setting ENABLE_HARDFP to ON, it indicates that the project is configured
 # to utilize hard floating-point operations when applicable. This can be beneficial 
 # in scenarios where performance gains from hardware acceleration are desired.
 option(ENABLE_HARDFP "Enable hardware floating-point operations" ON)
-
-set(CROSS_COMPILE "arm-none-eabi-")
-
-set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
-
-set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
-set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 if(ENABLE_HARDFP)
 set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
@@ -25,9 +21,6 @@ endif()
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_DISABLE_WARN_FLAGS} ${CMAKE_C_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "c flags")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_DISABLE_WARN_FLAGS} ${CMAKE_CXX_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "c++ flags")
-set(CMAKE_ASM_FLAGS "${CMAKE_C_DISABLE_WARN_FLAGS} ${CMAKE_ASM_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "asm flags")
 
 # Set Version, Release need cmake
 set(PROJECT_VERSION_MAJOR 0)
@@ -78,10 +71,6 @@ ExternalProject_Add(
     BUILD_IN_SOURCE 1
 )
 
-set(CMAKE_AR "${CROSS_COMPILE}ar")
-set(CMAKE_OBJCOPY "${CROSS_COMPILE}objcopy")
-set(CMAKE_SIZE "${CROSS_COMPILE}size")
-
 set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
 
 set(LINK_SCRIPT_FEL ${CMAKE_SOURCE_DIR}/link/link_elf.ld)
@@ -126,7 +115,7 @@ add_library(SyterKit
     src/smalloc.c
     src/sstdlib.c
     src/cache.S
-    # deiver
+    # driver
     drivers/sys-clk.c
     drivers/sys-dma.c
     drivers/sys-gpio.c
@@ -149,3 +138,4 @@ target_link_libraries(SyterKit gcc fdt)
 add_subdirectory(lib)
 
 add_subdirectory(app)
+

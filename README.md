@@ -24,11 +24,13 @@ SyterKit is a bare-metal framework designed for development boards like TinyVisi
 
 ### Building SyterKit From Scratch
 
-Building SyterKit is a straightforward process that only requires setting up the environment for compilation on a Linux operating system. The software packages required by SyterKit include:
+Building SyterKit is a straightforward process that only requires setting up the environment for compilation on GNU/Linux, Windows or macOS(untested). The software packages required by SyterKit include:
 
-- `gcc-arm-none-eabi`
+- `gcc-arm-none-eabi` (`gcc-linaro-arm-eabi` works as well)
 - `CMake`
+- `GNU Make`
 
+#### Prepare Building Environment on GNU/Linux
 For commonly used Ubuntu systems, they can be installed using the following command:
 
 ```shell
@@ -36,19 +38,50 @@ sudo apt-get update
 sudo apt-get install gcc-arm-none-eabi cmake build-essential -y
 ```
 
-Then create a folder to store the compiled output files and navigate to it:
+#### Prepare Building Environment on Windows
+On Windows, the packages are required to be installed by hand:
+- [gcc-arm-eabi](https://releases.linaro.org/components/toolchain/binaries)
+- [CMake](https://cmake.org/download/)
+- [GNU Make](https://gnuwin32.sourceforge.net/packages/make.htm)
+
+*Note: it's a good idea to add the bin directories of above into `PATH` variable to avoid trouble.*
+
+#### Start building
+Create a folder to store the compiled output files and navigate to it:
 
 ```shell
 mkdir build
 cd build
 ```
 
-Finally, run the following commands to compile SyterKit:
+Run the following commands to configure CMake cache:
 
 ```shell
 cmake ..
-make
 ```
+
+If you are using Windows, you may need to run 
+```shell
+cmake .. -DTOOLCHAIN_PREFIX="path/to/your/toochain" -G 'Unix Makefiles'
+```
+to specify the toolchain for building this project, e.g.
+
+```shell
+cmake .. -DTOOLCHAIN_PREFIX="D:/gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-eabi" -G 'Unix Makefiles'
+```
+Besides you can add `set(TOOLCHAIN_PREFIX "D:/gcc-linaro-7.5.0-201912-i686-mingw32_arm-eabi")` into the top of `cmake\toolchain-arm-eabi.cmake` to set it default as well. Then you can directly run
+
+```shell
+cmake .. -G 'Unix Makefiles'
+```
+
+*Note: `-G 'Unix Makefiles' ` may be not required, add it when CMake is trying to generate a Visual Studio project or something else.*
+
+Run the following commands to build SyterKit
+```shell
+cmake --build
+```
+
 
 The compiled executable files will be located in `build/app`.
 
@@ -58,6 +91,8 @@ The SyterKit project will compile two versions: firmware ending with `.elf` is f
 
 - For SD Card, You need to flash the `xxx_card.bin`
 - For SPI NAND/SPI NOR, You need to flash the `xxx_spi.bin`
+
+To boot from USB or flash the boot image into SPI flash chips, you need to install the [XFEL](https://xboot.org/xfel) tool.
 
 ### Creating TF Card Boot Firmware
 
@@ -119,6 +154,17 @@ Use the xfel tool to flash the created firmware into SPI NOR:
 xfel spinor write 0x0 spi.img
 ```
 
+### Booting from USB
+Allwinner SoCs support `FEL` mode, which enables them to boot from USB, which is a convenient way to test SyterKit. Make sure you have installed XFEL tool,then you can load the fel image into the chip's memory and boot it:
+
+For example, to boot the `hello_world` firmware, you can use the following 
+
+```shell
+xfel write 0x28000 syter_boot_elf.bin # load the firmware into memory, 0x28000 is the beginning address of the SRAM of Allwinner V85x.
+
+xfel exec 0x28000 # boot the firmware
+```
+Then you can see the output of the firmware from UART0.
 
 # SyterKit
 
@@ -144,11 +190,13 @@ SyterKit 是一个纯裸机框架，用于 TinyVision 或者其他 v851se/v851s/
 
 ### 从零构建 SyterKit 
 
-构建 SyterKit 非常简单，只需要在 Linux 操作系统中安装配置环境即可编译。SyterKit 需要的软件包有：
+构建 SyterKit 非常简单，只需要在 GNU/Linux, Windows或macOS(未测试) 操作系统中安装配置环境即可编译。SyterKit 需要的软件包有：
 
 - `gcc-arm-none-eabi`
 - `CMake`
+- `GNU Make`
 
+#### 在 GNU/Linux 上准备构建环境
 对于常用的 Ubuntu 系统，可以通过如下命令安装
 
 ```shell
@@ -156,18 +204,54 @@ sudo apt-get update
 sudo apt-get install gcc-arm-none-eabi cmake build-essential -y
 ```
 
-然后新建一个文件夹存放编译的输出文件，并且进入这个文件夹
+#### 在 Windows 上准备构建环境
+在 Windows 上，需要手动安装软件包：
+- [gcc-arm-eabi](https://releases.linaro.org/components/toolchain/binaries)
+- [CMake](https://cmake.org/download/)
+- [GNU Make](https://gnuwin32.sourceforge.net/packages/make.htm)
+
+*注意：建议将上述软件包的 bin 目录添加到 `PATH` 环境变量中，以免出现麻烦。*
+
+#### 开始构建
+
+新建一个文件夹存放编译的输出文件，并且进入这个文件夹
 
 ```shell
 mkdir build
 cd build
 ```
 
-然后运行命令编译 SyterKit
+运行命令编译 SyterKit
 
 ```shell
 cmake ..
-make
+```
+
+如果你使用的是 Windows，你可能需要运行
+
+```shell
+cmake .. -DTOOLCHAIN_PREFIX="path/to/your/toochain" -G 'Unix Makefiles'
+```
+
+来指定交叉编译工具链，例如
+
+```shell
+cmake .. -DTOOLCHAIN_PREFIX="D:/gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-eabi" -G 'Unix Makefiles'
+```
+
+除此之外，你也可以在 `cmake\toolchain-arm-eabi.cmake` 文件的顶部添加 `set(TOOLCHAIN_PREFIX "D:/gcc-linaro-7.5.0-201912-i686-mingw32_arm-eabi")` 来设置默认的交叉编译工具链。然后你可以直接运行
+
+```shell
+cmake .. -G 'Unix Makefiles'
+```
+
+*注意：`-G 'Unix Makefiles'` 可能不是必须的，当 CMake 尝试生成 Visual Studio 项目或其他项目时添加它。*
+
+
+运行命令构建 SyterKit
+
+```shell
+cmake --build
 ```
 
 编译后的可执行文件位于 `build/app` 中
@@ -179,6 +263,7 @@ make
 - 对于 SD 卡，你需要刷写 `xxx_card.bin` 文件。
 - 对于 SPI NAND/SPI NOR，你需要刷写 `xxx_spi.bin` 文件。
 
+要通过 USB 引导或者刷写 SPI Flash 的固件，你需要安装 [XFEL](https://xboot.org/xfel) 工具。
 
 ### 制作 TF 卡启动固件
 
@@ -238,4 +323,16 @@ dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256
 
 ```shell
 xfel spinor write 0x0 spi.img
+```
+
+### 通过 USB 引导
+
+Allwinner SoC 支持 `FEL` 模式，可以通过 USB 引导，这是一个方便的测试 SyterKit 的方式。确保你已经安装了 XFEL 工具，然后可以将 fel 镜像加载到芯片的内存中并启动它。
+
+例如，要引导 `hello_world` 固件，可以使用以下命令
+
+```shell
+xfel write 0x28000 syter_boot_elf.bin # 把固件加载到内存中，0x28000 是 Allwinner V85x 的 SRAM 的起始地址。
+
+xfel exec 0x28000 # 启动固件
 ```

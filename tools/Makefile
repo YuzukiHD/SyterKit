@@ -13,8 +13,8 @@ INCLUDES = -I includes -I ../lib
 CFLAGS   = -O2 -std=gnu99 $(INCLUDES)
 CXXFLAGS = -O2 -std=gnu++11 $(INCLUDES)
 
-CC  ?= gcc
-CXX ?= g++
+CC  = gcc
+CXX = g++
 
 all: tools
 tools: $(BUILD_DIR) $(MKSUNXI)
