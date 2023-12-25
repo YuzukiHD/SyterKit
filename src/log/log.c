@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <types.h>
 
-#include "common.h"
-
 #include "log.h"
 #include "uart.h"
 #include "xformat.h"

@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-
-#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
 
 #include <log.h>
+
+#include "ctype.h"
 
 #include "fdt_wrapper.h"
 #include "libfdt.h"

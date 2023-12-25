@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <sys-timer.h>
+#include <timer.h>
+
 #include <sys-uart.h>
 
 #include <uart.h>
