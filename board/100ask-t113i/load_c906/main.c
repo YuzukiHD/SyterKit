@@ -205,8 +205,6 @@ int main(void) {
 
     sunxi_c906_clock_init(elf_run_addr);
 
-    dump_c906_clock();
-
     abort();
 
     jmp_to_fel();
