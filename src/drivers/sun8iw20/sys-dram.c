@@ -1119,7 +1119,6 @@ static int auto_scan_dram_size(dram_para_t *para)
 		/* Store rows in para 1 */
 		para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
 		para->dram_para1 |= (i << (16 * current_rank + 4));
-		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 
 		/* Set bank mode for current rank */
 		if (current_rank == 1) { /* Set bank mode for rank0 */
@@ -1151,7 +1150,6 @@ static int auto_scan_dram_size(dram_para_t *para)
 		/* Store bank in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
 		para->dram_para1 |= (i << (16 * current_rank + 12));
-		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 
 		/* Set page mode for rank0 */
 		if (current_rank == 1) {
@@ -1197,7 +1195,6 @@ static int auto_scan_dram_size(dram_para_t *para)
 		/* Store page in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank));
 		para->dram_para1 |= (i << (16 * current_rank));
-		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 	}
 
 	/* check dual rank config */

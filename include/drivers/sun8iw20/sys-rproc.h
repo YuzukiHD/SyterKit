@@ -5,8 +5,8 @@
 
 #include "reg/reg-rproc.h"
 
-void sunxi_e907_clock_init(uint32_t addr);
+void sunxi_c906_clock_init(uint32_t addr);
 
-void sunxi_e907_clock_reset(void);
+void sunxi_c906_clock_reset(void);
 
 #endif// __SUN8IW20_SYS_RPROC_H__

@@ -72,9 +72,6 @@
 #define CCU_SCR_BGR_REG (0x93C)
 #define CCU_SPI0_CLK_REG (0x940)
 #define CCU_SPI_BGR_REG (0x96c)
-#define CCU_RISCV_CLK_REG (0xd00)
-#define CCU_RISCV_GATING_REG (0xd04)
-#define CCU_RISCV_CFG_BGR_REG (0xd0c)
 
 /* MMC clock bit field */
 #define CCU_MMC_CTRL_M(x) ((x) -1)
@@ -97,5 +94,31 @@
 #define CCU_MMC_BGR_SMHC1_RST (1 << 17)
 #define CCU_MMC_BGR_SMHC2_RST (1 << 18)
 
+/* RISC-V base */
+#define CCU_RISCV_GATING_RST_REG (CCU_BASE + 0x0d04)
+#define CCU_RISCV_CLK_GATING (0x1 << 31)
+#define CCU_RISCV_GATING_FIELD (0x16aa << 0)
+
+#define CCU_RISCV_RST_REG (CCU_BASE + 0x0f20)
+#define CCU_RISCV_RST_KEY_FIELD (0x16aa << 16)
+#define CCU_RISCV_RST_SOFT_RSTN (0x1 << 0)
+
+#define CCU_RISCV_CLK_REG (CCU_BASE + 0x0d00)
+#define CCU_RISCV_CLK_MASK (0x7 << 24)
+#define CCU_RISCV_CLK_HOSC (0x0 << 24)
+#define CCU_RISCV_CLK_32K (0x1 << 24)
+#define CCU_RISCV_CLK_16M (0x2 << 24)
+#define CCU_RISCV_CLK_PERI_800M (0x3 << 24)
+#define CCU_RISCV_CLK_PERI_PERIPLL1X (0x4 << 24)
+#define CCU_RISCV_CLK_CPUPLL (0x5 << 24)
+#define CCU_RISCV_CLK_AUDIO1PLL_DIV2 (0x6 << 24)
+
+#define CCU_RISCV_CFG_BGR_REG (CCU_BASE + 0x0d0c)
+#define CCU_RISCV_CFG_RST (0x1 << 16)
+#define CCU_RISCV_CFG_GATING (0x1 << 0)
+
+#define CCU_RISCV_CFG_BASE (0x06010000)
+#define CCU_RISCV_STA_ADD_L_REG (CCU_RISCV_CFG_BASE + 0x0004)
+#define CCU_RISCV_STA_ADD_H_REG (CCU_RISCV_CFG_BASE + 0x0008)
 
 #endif// __SUN8IW20_REG_CCU_H__

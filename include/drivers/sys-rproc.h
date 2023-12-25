@@ -4,7 +4,9 @@
 #define __SYS_RPROC_H__
 
 #if defined(CONFIG_CHIP_SUN8IW21)
-#include <sun8iw21/sys-rproc.h>
+    #include <sun8iw21/sys-rproc.h>
+#elif defined(CONFIG_CHIP_SUN8IW20)
+    #include <sun8iw20/sys-rproc.h>
 #else
 #error "Unsupported chip"
 #endif
