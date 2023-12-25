@@ -9,7 +9,7 @@ set(CMAKE_CXX_COMPILER "${RISCV_ROOT_PATH}/bin/riscv64-unknown-linux-gnu-g++")
 
 set(CMAKE_SYSROOT "${RISCV_ROOT_PATH}/sysroot")
 
-set(CMAKE_COMMON_FLAGS "-march=rv64gvxthead -mabi=lp64d -mcmodel=medany -fno-stack-protector")
+set(CMAKE_COMMON_FLAGS "-mcpu=c906fdv -mcmodel=medany -fno-stack-protector")
 set(CMAKE_DISABLE_WARN_FLAGS "-Wint-to-pointer-cast -Wimplicit-function-declaration")
 
 set(CMAKE_C_FLAGS "${CMAKE_DISABLE_WARN_FLAGS} ${CMAKE_C_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "c flags")
