@@ -245,10 +245,10 @@ int main(void) {
 
     sunxi_e907_clock_reset();
 
-    uint32_t elf_run_addr = elf_get_entry_addr((phys_addr_t) image.dest);
+    uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
     printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
-    if (load_elf_image((phys_addr_t) image.dest)) {
+    if (load_elf32_image((phys_addr_t) image.dest)) {
         printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\n");
     }
 
