@@ -26,6 +26,8 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern dram_para_t dram_para;
+
 sunxi_spi_t sunxi_spi0_lcd = {
         .base = 0x04025000,
         .id = 0,
@@ -191,7 +193,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    uint64_t dram_size = sunxi_dram_init();
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     printk(LOG_LEVEL_DEBUG, "enable mmu ok\n");

@@ -58,6 +58,8 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
+extern dram_para_t dram_para;
+
 extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
@@ -252,7 +254,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    sunxi_dram_init();
+    sunxi_dram_init(&dram_para);
 
     unsigned int entry_point = 0;
     void (*kernel_entry)(int zero, int arch, unsigned int params);
