@@ -153,26 +153,29 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+    sunxi_serial_init(&uart_dbg); // Initialize the serial interface for debugging
 
-    show_banner();
+    show_banner(); // Display a banner
 
-    sunxi_clk_init();
+    sunxi_clk_init(); // Initialize clock configurations
 
-    sunxi_dram_init(&dram_para);
+    sunxi_dram_init(&dram_para); // Initialize DRAM parameters
 
-    sunxi_clk_dump();
+    sunxi_clk_dump(); // Dump clock information
 
-    memset(&image, 0, sizeof(image_info_t));
+    memset(&image, 0, sizeof(image_info_t)); // Clear the image structure
 
+    // Set destination addresses for different images
     image.dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
     image.sbi_dest = (uint8_t *) CONFIG_RISCV_OPENSBI_LOADADDR;
     image.uboot_dest = (uint8_t *) CONFIG_RISCV_UBOOT_LOADADDR;
 
+    // Set filenames for different images
     strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
     strcpy(image.sbi_filename, CONFIG_RISCV_OPENSBI_FILENAME);
     strcpy(image.uboot_filename, CONFIG_RISCV_UBOOT_FILENAME);
 
+    // Initialize SDHCI controller
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
         return 0;
@@ -180,34 +183,38 @@ int main(void) {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
+    // Initialize SD/MMC card
     if (sdmmc_init(&card0, &sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
         return 0;
     }
 
+    // Load image from SD card
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: loading failed\n");
         return 0;
     }
 
-    sunxi_c906_clock_reset();
+    sunxi_c906_clock_reset(); // Reset C906 clock
 
+    // Get entry address of RISC-V ELF
     uint32_t elf_run_addr = elf64_get_entry_addr((phys_addr_t) image.dest);
     printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
+    // Load RISC-V ELF image
     if (load_elf64_image((phys_addr_t) image.dest)) {
         printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\n");
     }
 
     printk(LOG_LEVEL_INFO, "RISC-V C906 Core now Running... \n");
 
-    mdelay(100);
+    mdelay(100); // Delay for 100 milliseconds
 
-    sunxi_c906_clock_init(elf_run_addr);
+    sunxi_c906_clock_init(elf_run_addr); // Initialize C906 clock with entry address
 
-    abort();
+    abort(); // Abort A7 execution, loop forever
 
-    jmp_to_fel();
+    jmp_to_fel(); // Jump to FEL mode
 
     return 0;
 }
