@@ -43,4 +43,6 @@ uint32_t efuse_read(uint32_t offset);
 
 void efuse_write(uint32_t offset, uint32_t value);
 
+void dump_efuse(void);
+
 #endif// __SUN8IW21_SYS_SID_H__
