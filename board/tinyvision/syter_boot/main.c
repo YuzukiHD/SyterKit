@@ -118,7 +118,7 @@ static int boot_image_setup(uint8_t *addr, uint32_t *entry) {
         return 0;
     }
 
-    printk(LOG_LEVEL_ERROR, "unsupGPIO_PORTed kernel image\n");
+    printk(LOG_LEVEL_ERROR, "unsupported kernel image\n");
 
     return -1;
 }
