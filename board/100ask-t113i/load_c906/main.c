@@ -8,9 +8,9 @@
 #include <config.h>
 #include <log.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 
 #include "sys-dram.h"
 #include "sys-sdcard.h"
@@ -23,6 +23,12 @@
 #define CONFIG_RISCV_ELF_FILENAME "c906.elf"
 #define CONFIG_RISCV_ELF_LOADADDR (0x45000000)
 
+#define CONFIG_RISCV_OPENSBI_FILENAME "fw_jump.bin"
+#define CONFIG_RISCV_OPENSBI_LOADADDR (0x41fc0000)
+
+#define CONFIG_RISCV_UBOOT_FILENAME "u-boot.bin"
+#define CONFIG_RISCV_UBOOT_LOADADDR (0x42000000)
+
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
 extern sunxi_serial_t uart_dbg;
@@ -33,11 +39,14 @@ extern dram_para_t dram_para;
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
-    unsigned int offset;
-    unsigned int length;
     unsigned char *dest;
-
     char filename[FILENAME_MAX_LEN];
+
+    unsigned char *sbi_dest;
+    char sbi_filename[FILENAME_MAX_LEN];
+
+    unsigned char *uboot_dest;
+    char uboot_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
 image_info_t image;
@@ -115,9 +124,18 @@ static int load_sdcard(image_info_t *image) {
         printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename,
-           (unsigned int) image->dest);
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
+    if (ret)
+        return ret;
+
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->sbi_filename, (unsigned int) image->sbi_dest);
+    ret = fatfs_loadimage(image->sbi_filename, image->sbi_dest);
+    if (ret)
+        return ret;
+
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->uboot_filename, (unsigned int) image->uboot_dest);
+    ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
     if (ret)
         return ret;
 
@@ -148,8 +166,12 @@ int main(void) {
     memset(&image, 0, sizeof(image_info_t));
 
     image.dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
+    image.sbi_dest = (uint8_t *) CONFIG_RISCV_OPENSBI_LOADADDR;
+    image.uboot_dest = (uint8_t *) CONFIG_RISCV_UBOOT_LOADADDR;
 
     strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
+    strcpy(image.sbi_filename, CONFIG_RISCV_OPENSBI_FILENAME);
+    strcpy(image.uboot_filename, CONFIG_RISCV_UBOOT_FILENAME);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
