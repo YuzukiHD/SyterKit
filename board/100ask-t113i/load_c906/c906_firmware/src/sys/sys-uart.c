@@ -12,17 +12,7 @@ void sys_uart_init() {
     virtual_addr_t addr;
     u32_t val;
 
-    /* Config GPIOE2 and GPIOE3 to txd0 and rxd0 */
-    addr = 0x020000c0 + 0x0;
-    val = read32(addr);
-    val &= ~(0xf << ((2 & 0x7) << 2));
-    val |= ((0x6 & 0xf) << ((2 & 0x7) << 2));
-    write32(addr, val);
-
-    val = read32(addr);
-    val &= ~(0xf << ((3 & 0x7) << 2));
-    val |= ((0x6 & 0xf) << ((3 & 0x7) << 2));
-    write32(addr, val);
+    /* GPIO Configed by SyterKit */
 
     /* Open the clock gate for uart0 */
     addr = 0x0200190c;
