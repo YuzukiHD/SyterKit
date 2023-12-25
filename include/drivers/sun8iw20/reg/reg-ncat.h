@@ -26,6 +26,7 @@
 /*storage*/
 #define SUNXI_SMHC0_BASE (0x04020000)
 #define SUNXI_SMHC1_BASE (0x04021000)
+#define SUNXI_SMHC2_BASE (0x04022000)
 
 /*noraml*/
 #define SUNXI_UART0_BASE (0x02500000)
@@ -92,4 +93,4 @@
 #define VCCIO_THRESHOLD_VOLTAGE_3_0 (5 << 4)
 #define VCCIO_DET_BYPASS_EN (1 << 0)
 
-#endif // __SUN8IW20_REG_NCAT_H__
+#endif// __SUN8IW20_REG_NCAT_H__
