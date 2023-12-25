@@ -26,6 +26,7 @@
 /*storage*/
 #define SUNXI_SMHC0_BASE (0x04020000)
 #define SUNXI_SMHC1_BASE (0x04021000)
+#define SUNXI_SMHC2_BASE (0x04022000)
 
 /*noraml*/
 #define SUNXI_UART0_BASE (0x02500000)
