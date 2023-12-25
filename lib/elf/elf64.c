@@ -12,7 +12,7 @@
 
 void print_elf64_ehdr(Elf64_Ehdr *header)
 {
-	printk(LOG_LEVEL_DEBUG, "e_ident: ");
+	printk(LOG_LEVEL_INFO, "e_ident: ");
 	for (int i = 0; i < EI_NIDENT; i++) {
 		printk(LOG_LEVEL_MUTE, "%02x ", header->e_ident[i]);
 	}
