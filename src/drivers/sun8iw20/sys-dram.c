@@ -29,12 +29,6 @@ static int ns_to_t(dram_para_t *para, int nanoseconds)
 	return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
 }
 
-void abort(void)
-{
-	while (1)
-		;
-}
-
 static void sid_read_ldoB_cal(dram_para_t *para)
 {
 	uint32_t reg;
@@ -680,8 +674,8 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 	fuse = (readl(SUNXI_SID_BASE + 0x28) & 0xf00) >> 8;
 	chipid = (readl(SUNXI_SID_BASE) & 0xffff);
 
-	debug("DDR efuse: 0x%" PRIx32 "\r\n", fuse);
-	debug("chip id efuse: 0x%" PRIx32 "\r\n", chipid);
+	printk(LOG_LEVEL_DEBUG, "DDR efuse: 0x%" PRIx32 "\r\n", fuse);
+	printk(LOG_LEVEL_DEBUG, "chip id efuse: 0x%" PRIx32 "\r\n", chipid);
 
 	if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
 		if (fuse == 15)
@@ -701,7 +695,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 					cfg = ac_remapping_tables[3];
 					break;
 				case 10:
-				if(chipid == 0x6800){ // 0x6800 is T113-S4 no remap
+				if(chipid == 0x6800){
 					cfg = ac_remapping_tables[0];
 				} else {
 					cfg = ac_remapping_tables[5];
@@ -949,7 +943,7 @@ static int dqs_gate_detect(dram_para_t *para)
 
 	if ((readl(MCTL_PHY_BASE + MCTL_PHY_PGSR0) & BIT(22)) == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | BIT(12);
-		debug("dual rank and full DQ\r\n");
+		printk(LOG_LEVEL_DEBUG, "dual rank and full DQ\r\n");
 
 		return 1;
 	}
@@ -957,7 +951,7 @@ static int dqs_gate_detect(dram_para_t *para)
 	dx0 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) & 0x3000000) >> 24;
 	if (dx0 == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
-		debug("dual rank and half DQ\r\n");
+		printk(LOG_LEVEL_DEBUG, "dual rank and half DQ\r\n");
 
 		return 1;
 	}
@@ -966,10 +960,10 @@ static int dqs_gate_detect(dram_para_t *para)
 		dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(1)) & 0x3000000) >> 24;
 		if (dx1 == 2) {
 			para->dram_para2 = para->dram_para2 & ~0xf00f;
-			debug("single rank and full DQ\r\n");
+			printk(LOG_LEVEL_DEBUG, "single rank and full DQ\r\n");
 		} else {
 			para->dram_para2 = (para->dram_para2 & ~0xf00f) | BIT(0);
-			debug("single rank and half DQ\r\n");
+			printk(LOG_LEVEL_DEBUG, "single rank and half DQ\r\n");
 		}
 
 		return 1;
@@ -978,8 +972,8 @@ static int dqs_gate_detect(dram_para_t *para)
 	if ((para->dram_tpr13 & BIT(29)) == 0)
 		return 0;
 
-	debug("DX0 state: %" PRIu32 "\r\n", dx0);
-	debug("DX1 state: %" PRIu32 "\r\n", dx1);
+	printk(LOG_LEVEL_DEBUG, "DX0 state: %" PRIu32 "\r\n", dx0);
+	printk(LOG_LEVEL_DEBUG, "DX1 state: %" PRIu32 "\r\n", dx1);
 
 	return 0;
 }
@@ -1015,7 +1009,7 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		}
 	}
 
-	debug("DRAM: simple test OK\r\n");
+	printk(LOG_LEVEL_DEBUG, "DRAM: simple test OK\r\n");
 	return 0;
 }
 
@@ -1074,7 +1068,7 @@ static int auto_scan_dram_size(dram_para_t *para)
 
 	// init core
 	if (mctl_core_init(para) == 0) {
-		debug("DRAM initial error : 0!\r\n");
+		printk(LOG_LEVEL_DEBUG, "DRAM initial error : 0!\r\n");
 		return 0;
 	}
 
@@ -1120,12 +1114,12 @@ static int auto_scan_dram_size(dram_para_t *para)
 			i = 16;
 		addr_line += i;
 
-		debug("rank %" PRIu32 " row = %" PRIu32 " \r\n", current_rank, i);
+		printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " row = %" PRIu32 " \r\n", current_rank, i);
 
 		/* Store rows in para 1 */
 		para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
 		para->dram_para1 |= (i << (16 * current_rank + 4));
-		debug("para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 
 		/* Set bank mode for current rank */
 		if (current_rank == 1) { /* Set bank mode for rank0 */
@@ -1152,12 +1146,12 @@ static int auto_scan_dram_size(dram_para_t *para)
 		}
 
 		addr_line += i + 2;
-		debug("rank %" PRIu32 " bank = %" PRIu32 " \r\n", current_rank, (4 + i * 4));
+		printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " bank = %" PRIu32 " \r\n", current_rank, (4 + i * 4));
 
 		/* Store bank in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
 		para->dram_para1 |= (i << (16 * current_rank + 12));
-		debug("para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 
 		/* Set page mode for rank0 */
 		if (current_rank == 1) {
@@ -1198,22 +1192,22 @@ static int auto_scan_dram_size(dram_para_t *para)
 			i = (0x1U << (i - 10));
 		}
 
-		debug("rank %" PRIu32 " page size = %" PRIu32 " KB \r\n", current_rank, i);
+		printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " page size = %" PRIu32 " KB \r\n", current_rank, i);
 
 		/* Store page in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank));
 		para->dram_para1 |= (i << (16 * current_rank));
-		debug("para->dram_para1 = 0x%x\r\n", para->dram_para1);
+		printk(LOG_LEVEL_DEBUG, "para->dram_para1 = 0x%x\r\n", para->dram_para1);
 	}
 
 	/* check dual rank config */
 	if (rank_count == 2) {
 		para->dram_para2 &= 0xfffff0ff;
 		if ((para->dram_para1 & 0xffff) == (para->dram_para1 >> 16)) {
-			debug("rank1 config same as rank0\r\n");
+			printk(LOG_LEVEL_DEBUG, "rank1 config same as rank0\r\n");
 		} else {
 			para->dram_para2 |= 0x1 << 8;
-			debug("rank1 config different from rank0\r\n");
+			printk(LOG_LEVEL_DEBUG, "rank1 config different from rank0\r\n");
 		}
 	}
 	return 1;
@@ -1278,17 +1272,17 @@ int init_DRAM(int type, dram_para_t *para)
 {
 	u32 rc, mem_size_mb;
 
-	debug("DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
-	debug("DRAM CLK = %d MHz\r\n", para->dram_clk);
-	debug("DRAM Type = %d (2:DDR2,3:DDR3)\r\n", para->dram_type);
+	printk(LOG_LEVEL_DEBUG, "DRAM BOOT DRIVE INFO: %s\r\n", "V0.24");
+	printk(LOG_LEVEL_DEBUG, "DRAM CLK = %d MHz\r\n", para->dram_clk);
+	printk(LOG_LEVEL_DEBUG, "DRAM Type = %d (2:DDR2,3:DDR3)\r\n", para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
-		debug("DRAMC read ODT off\r\n");
+		printk(LOG_LEVEL_DEBUG, "DRAMC read ODT off\r\n");
 	else
-		debug("DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
+		printk(LOG_LEVEL_DEBUG, "DRAMC ZQ value: 0x%x\r\n", para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
-		debug("DRAM only have internal ZQ\r\n");
+		printk(LOG_LEVEL_DEBUG, "DRAM only have internal ZQ\r\n");
 		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 8));
 		writel(0, (SYS_CONTROL_REG_BASE + ZQ_RES_CTRL_REG));
 		udelay(10);
@@ -1300,7 +1294,7 @@ int init_DRAM(int type, dram_para_t *para)
 		udelay(10);
 		setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 0));
 		udelay(20);
-		debug("ZQ value = 0x%" PRIx32 "\r\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+		printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%" PRIx32 "\r\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
 	}
 
 	dram_voltage_set(para);
@@ -1316,26 +1310,25 @@ int init_DRAM(int type, dram_para_t *para)
 	/* report ODT */
 	rc = para->dram_mr1;
 	if ((rc & 0x44) == 0)
-		debug("DRAM ODT off\r\n");
+		printk(LOG_LEVEL_DEBUG, "DRAM ODT off\r\n");
 	else
-		debug("DRAM ODT value: 0x%" PRIx32 "\r\n", rc);
+		printk(LOG_LEVEL_DEBUG, "DRAM ODT value: 0x%" PRIx32 "\r\n", rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(para) == 0) {
-		debug("DRAM initialisation error: 1\r\n");
+		printk(LOG_LEVEL_DEBUG, "DRAM initialisation error: 1\r\n");
 		return 0;
 	}
 
 	/* Get SDRAM size
 	 * You can set dram_para2 to force set the dram size
-	 * TODO: who ever puts a negative number in the top half?
 	 */
 	rc = para->dram_para2;
 	if (rc & (1 << 31)) {
 		rc = (rc >> 16) & ~(1 << 15);
 	} else {
 		rc = DRAMC_get_dram_size();
-		debug("DRAM: size = %" PRIu32 "MB\r\n", rc);
+		printk(LOG_LEVEL_INFO, "DRAM: size = %uMB\r\n", rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;
@@ -1348,7 +1341,7 @@ int init_DRAM(int type, dram_para_t *para)
 		writel(rc, (MCTL_PHY_BASE + MCTL_PHY_ASRTC));
 		writel(0x40a, (MCTL_PHY_BASE + MCTL_PHY_ASRC));
 		setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), (1 << 0));
-		debug("Enable Auto SR\r\n");
+		printk(LOG_LEVEL_DEBUG, "Enable Auto SR\r\n");
 	} else {
 		clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_ASRTC), 0xffff);
 		clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
@@ -1389,34 +1382,7 @@ int init_DRAM(int type, dram_para_t *para)
 	return mem_size_mb;
 }
 
-uint64_t sunxi_dram_init(void)
+uint64_t sunxi_dram_init(dram_para_t *para)
 {
-	dram_para_t para = {
-		.dram_clk = 792,
-		.dram_type = 3,
-		.dram_zq = 0x7b7bfb,
-		.dram_odt_en = 0x00,
-		.dram_para1 = 0x000010d2,
-		.dram_para2 = 0,
-		.dram_mr0 = 0x1c70,
-		.dram_mr1 = 0x42,
-		.dram_mr2 = 0x18,
-		.dram_mr3 = 0,
-		.dram_tpr0 = 0x004a2195,
-		.dram_tpr1 = 0x02423190,
-		.dram_tpr2 = 0x0008b061,
-		.dram_tpr3 = 0xb4787896, // unused
-		.dram_tpr4 = 0,
-		.dram_tpr5 = 0x48484848,
-		.dram_tpr6 = 0x00000048,
-		.dram_tpr7 = 0x1620121e, // unused
-		.dram_tpr8 = 0,
-		.dram_tpr9 = 0, // clock?
-		.dram_tpr10 = 0,
-		.dram_tpr11 = 0x00340000,
-		.dram_tpr12 = 0x00000046,
-		.dram_tpr13 = 0x34000100,
-	};
-
-	return init_DRAM(0, &para);
+	return init_DRAM(0, para);
 };

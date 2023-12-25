@@ -56,6 +56,6 @@ typedef struct __DRAM_PARA {
 
 int init_DRAM(int type, dram_para_t *para);
 
-uint64_t sunxi_dram_init(void);
+uint64_t sunxi_dram_init(dram_para_t *para);
 
 #endif // __SUN8IW20_SYS_DRAM_H__
