@@ -50,7 +50,7 @@ else ()
     set(PROJECT_GIT_HASH "")
 endif ()
 
-project(D1s-DRAM C CXX ASM)
+project(T113-I_Miniloader C CXX ASM)
 
 configure_file(
         "${PROJECT_SOURCE_DIR}/config.h.in"
