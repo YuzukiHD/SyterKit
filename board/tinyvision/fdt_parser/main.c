@@ -29,6 +29,8 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern dram_para_t dram_para;
+
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
@@ -152,7 +154,7 @@ int main(void) {
     sunxi_clk_init();
 
     /* Initialize DRAM */
-    sunxi_dram_init();
+    sunxi_dram_init(&dram_para);
 
     /* Print clock information */
     sunxi_clk_dump();

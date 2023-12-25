@@ -64,6 +64,8 @@ extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
 
+extern dram_para_t dram_para;
+
 image_info_t image;
 
 unsigned int code[9];
@@ -383,7 +385,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    sunxi_dram_init();
+    sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();
 

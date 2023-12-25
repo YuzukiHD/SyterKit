@@ -89,6 +89,8 @@ extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
 
+extern dram_para_t dram_para;
+
 image_info_t image;
 
 uint32_t code[9];
@@ -605,7 +607,7 @@ int main(void) {
     }
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init();
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Debug message to indicate that MMU is enabled. */

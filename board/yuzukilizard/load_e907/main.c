@@ -29,6 +29,8 @@ extern sunxi_serial_t uart_dbg;
 
 extern sdhci_t sdhci0;
 
+extern dram_para_t dram_para;
+
 #define FILENAME_MAX_LEN 64
 typedef struct {
     unsigned int offset;
@@ -139,7 +141,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    sunxi_dram_init();
+    sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();
 
