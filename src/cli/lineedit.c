@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <types.h>
+
+#include "ctype.h"
 
 #include "cli_history.h"
 #include "cli_termesc.h"

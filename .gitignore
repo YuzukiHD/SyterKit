@@ -2,3 +2,4 @@ build/
 test/
 tools/*.bin
 mksunxi
+.vscode/settings.json

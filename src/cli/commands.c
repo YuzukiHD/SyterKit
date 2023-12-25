@@ -7,8 +7,6 @@
 #include <sys-sid.h>
 #include <sys-wdt.h>
 
-#include <common.h>
-
 #include "cli.h"
 #include "cli_config.h"
 #include "cli_history.h"
