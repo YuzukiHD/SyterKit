@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(RISCV_ROOT_PATH "/home/awol/workspace/sdk/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.4.0")
+set(RISCV_ROOT_PATH "~/sdk/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.8.0")
 
 set(RISCV_ROOT_PATH ${RISCV_ROOT_PATH} CACHE STRING "root path to riscv toolchain")
 
