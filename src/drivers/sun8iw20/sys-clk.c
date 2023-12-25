@@ -173,6 +173,23 @@ void sunxi_clk_init(void) {
     set_module(CCU_BASE + CCU_PLL_AUDIO1_CTRL_REG);
 }
 
+void sunxi_clk_reset(void) {
+    uint32_t reg_val;
+
+	/*set ahb,apb to default, use OSC24M*/
+	reg_val = readl(CCU_BASE + CCU_PSI_CLK_REG);
+	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
+	writel(reg_val, CCU_BASE + CCU_PSI_CLK_REG);
+
+	reg_val = readl(CCU_BASE + CCU_APB0_CLK_REG);
+	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
+	writel(reg_val, CCU_BASE + CCU_APB0_CLK_REG);
+
+	/*set cpux pll to default,use OSC24M*/
+	writel(0x0301, CCU_BASE + CCU_CPU_AXI_CFG_REG);
+	return;
+}
+
 uint32_t sunxi_clk_get_peri1x_rate() {
     uint32_t reg32;
     uint8_t plln, pllm, p0;
