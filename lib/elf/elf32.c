@@ -32,7 +32,7 @@ void print_elf32_ehdr(Elf32_Ehdr *header)
 	printk(LOG_LEVEL_DEBUG, "e_shstrndx: 0x%08x\n", header->e_shstrndx);
 }
 
-phys_addr_t elf_get_entry_addr(phys_addr_t base)
+phys_addr_t elf32_get_entry_addr(phys_addr_t base)
 {
 	Elf32_Ehdr *ehdr;
 
@@ -41,7 +41,7 @@ phys_addr_t elf_get_entry_addr(phys_addr_t base)
 	return ehdr->e_entry;
 }
 
-int load_elf_image(phys_addr_t img_addr)
+int load_elf32_image(phys_addr_t img_addr)
 {
 	int i;
 	Elf32_Ehdr *ehdr;
@@ -78,7 +78,7 @@ int load_elf_image(phys_addr_t img_addr)
 	return 0;
 }
 
-static Elf32_Shdr *elf_find_segment(phys_addr_t elf_addr, const char *seg_name)
+static Elf32_Shdr *elf32_find_segment(phys_addr_t elf_addr, const char *seg_name)
 {
 	int i = 0;
 	Elf32_Shdr *shdr;
@@ -101,22 +101,22 @@ static Elf32_Shdr *elf_find_segment(phys_addr_t elf_addr, const char *seg_name)
 	return NULL;
 }
 
-void *elf_find_segment_offset(phys_addr_t elf_addr, const char *seg_name)
+void *elf32_find_segment_offset(phys_addr_t elf_addr, const char *seg_name)
 {
 	Elf32_Shdr *shdr;
 
-	shdr = elf_find_segment(elf_addr, seg_name);
+	shdr = elf32_find_segment(elf_addr, seg_name);
 	if (!shdr)
 		return NULL;
 
 	return (void *)elf_addr + shdr->sh_offset;
 }
 
-void *elf_find_segment_addr(phys_addr_t elf_addr, const char *seg_name)
+void *elf32_find_segment_addr(phys_addr_t elf_addr, const char *seg_name)
 {
 	Elf32_Shdr *shdr;
 
-	shdr = elf_find_segment(elf_addr, seg_name);
+	shdr = elf32_find_segment(elf_addr, seg_name);
 	if (!shdr)
 		return NULL;
 
