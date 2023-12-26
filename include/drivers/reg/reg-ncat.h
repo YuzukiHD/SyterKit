@@ -7,6 +7,8 @@
     #include <sun8iw21/reg/reg-ncat.h>
 #elif defined(CONFIG_CHIP_SUN8IW20)
     #include <sun8iw20/reg/reg-ncat.h>
+#elif defined(CONFIG_CHIP_SUN50IW9)
+    #include <sun50iw9/reg/reg-ncat.h>
 #else
     #error "Unsupported chip"
 #endif

@@ -1,7 +1,7 @@
 add_subdirectory(arch)
 add_subdirectory(drivers)
 
-add_library(SyterKit
+add_library(SyterKit STATIC
     # Common 
     common.c
 
