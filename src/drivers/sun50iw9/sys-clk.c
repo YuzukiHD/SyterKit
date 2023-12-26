@@ -143,9 +143,9 @@ void set_circuits_analog(void) {
     /* calibration circuits analog enable */
     uint32_t reg_val;
 
-    reg_val = readl(ANA_PWR_RST_REG);
+    reg_val = readl(VDD_SYS_PWROFF_GATING_REG);
     reg_val |= (0x01 << VDD_ADDA_OFF_GATING);
-    writel(reg_val, ANA_PWR_RST_REG);
+    writel(reg_val, VDD_SYS_PWROFF_GATING_REG);
     sdelay(1);
 
     reg_val = readl(RES_CAL_CTRL_REG);
@@ -267,7 +267,10 @@ int sunxi_clock_init_gpadc(void) {
     return 0;
 }
 
+extern sunxi_serial_t uart_dbg;
+
 void sunxi_clk_init(void) {
+    printk(LOG_LEVEL_DEBUG, "Set SoC CLK Start.\n");
     set_platform_config();
     set_pll_cpux_axi();
     set_pll_periph0();

@@ -7,6 +7,8 @@
 
 #include <log.h>
 
+#include <common.h>
+
 #include <sys-dram.h>
 
 extern sunxi_serial_t uart_dbg;
@@ -14,13 +16,13 @@ extern sunxi_serial_t uart_dbg;
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
-    //sunxi_clk_init();
+    show_banner();
 
-    //sunxi_clk_dump();
+    sunxi_clk_init();
 
-    while (1) {
-        sunxi_serial_putc(&uart_dbg, 'H');
-    }
+    sunxi_clk_dump();
+
+    abort();
 
     return 0;
 }
