@@ -13,7 +13,9 @@
 #define CCU_PLL_DDR1_CTRL_REG (CCU_BASE + 0x18)
 #define CCU_PLL_PERI0_CTRL_REG (CCU_BASE + 0x20)
 #define CCU_PLL_PERI1_CTRL_REG (CCU_BASE + 0x28)
+
 #define CCU_PLL_HSIC_CTRL_REG (CCU_BASE + 0x70)
+
 
 /* cfg list */
 #define CCU_CPUX_AXI_CFG_REG (CCU_BASE + 0x500)

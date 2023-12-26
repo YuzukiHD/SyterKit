@@ -7,13 +7,6 @@ set(CONFIG_BOARD_LONGANPI-3H True)
 
 add_definitions(-DCONFIG_CHIP_SUN50IW9)
 
-# Options
-
-# By setting ENABLE_HARDFP to ON, it indicates that the project is configured
-# to utilize hard floating-point operations when applicable. This can be beneficial 
-# in scenarios where performance gains from hardware acceleration are desired.
-set(ENABLE_HARDFP OFF)
-
 # Set the cross-compile toolchain
 set(CROSS_COMPILE "arm-none-eabi-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
@@ -22,12 +15,7 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
-# Configure compiler flags based on ENABLE_HARDFP option
-if(ENABLE_HARDFP)
-    set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a53 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
-else()
-    set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a53 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
-endif()
+set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a53")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
