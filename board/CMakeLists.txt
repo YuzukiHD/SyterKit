@@ -13,3 +13,7 @@ endif()
 if(CONFIG_BOARD_100ASK-T113I)
     add_subdirectory(100ask-t113i)
 endif()
+
+if(CONFIG_BOARD_LONGANPI-3H)
+    add_subdirectory(longanpi-3h)
+endif()
