@@ -7,6 +7,10 @@ include(ExternalProject)
 
 # Define the path to the board loader files
 set(BOARD_FLOADER_PATH ${CMAKE_SOURCE_DIR}/cmake/board/)
+# Define the path to the mksunxi tool
+set(CMAKE_MKSUNXI "${CMAKE_SOURCE_DIR}/tools/mksunxi")
+# Define the path to the bin2array tool
+set(CMAKE_BIN2ARRAY "${CMAKE_SOURCE_DIR}/tools/bin2array")
 
 # Check if the CMAKE_BOARD_FILE variable is defined
 if(CMAKE_BOARD_FILE)
@@ -92,9 +96,6 @@ ExternalProject_Add(
 set(CMAKE_AR "${CROSS_COMPILE}ar")
 set(CMAKE_OBJCOPY "${CROSS_COMPILE}objcopy")
 set(CMAKE_SIZE "${CROSS_COMPILE}size")
-
-# Define the path to the mksunxi tool
-set(CMAKE_MKSUNXI "${PROJECT_SOURCE_DIR}/tools/mksunxi")
 
 # Define the paths to the linker scripts
 set(LINK_SCRIPT_FEL ${PROJECT_BINARY_DIR}/link_elf.ld)
