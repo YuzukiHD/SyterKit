@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#ifndef __G_REG_SMHC_H__
+#define __G_REG_SMHC_H__
+
 /*
  * Global control register bits
  */
@@ -256,3 +259,5 @@ typedef struct {
     volatile uint32_t res7[63];   /* (0x201~0x2FF)*/
     volatile uint32_t vers;       /* (0x300) SMHC Version Register */
 } sdhci_reg_t;
+
+#endif // __G_REG_SMHC_H__
