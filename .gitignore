@@ -2,5 +2,6 @@ build/
 test/
 tools/*.bin
 mksunxi
+bin2array
 .vscode/settings.json
 prebuilt/

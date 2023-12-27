@@ -103,6 +103,25 @@ set(LINK_SCRIPT_BIN ${PROJECT_BINARY_DIR}/link_bin.ld)
 if (CONFIG_ARCH_ARM32)
 set(ARCH_INCLUDE include/arch/arm32)
 
+if (CONFIG_USE_DRAM_PAYLOAD)
+set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link_dram_payloads.ld"
+    "${PROJECT_BINARY_DIR}/link_bin.ld"
+)
+
+set(ARCH_START_ADDRESS "${ARCH_FEL_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link_dram_payloads.ld"
+    "${PROJECT_BINARY_DIR}/link_elf.ld"
+)
+
+else()
+
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
 set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
 
@@ -118,6 +137,7 @@ configure_file(
     "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
     "${PROJECT_BINARY_DIR}/link_elf.ld"
 )
+endif()
 endif()
 
 # If the CONFIG_ARCH_ARM32 variable is defined, execute the following content

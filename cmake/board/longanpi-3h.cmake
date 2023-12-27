@@ -3,12 +3,13 @@
 set(CONFIG_ARCH_ARM32 True)
 set(CONFIG_ARCH_ARM32_ARM64 True)
 set(CONFIG_CHIP_SUN50IW9 True)
+set(CONFIG_USE_DRAM_PAYLOAD True)
 set(CONFIG_BOARD_LONGANPI-3H True)
 
 add_definitions(-DCONFIG_CHIP_SUN50IW9)
 
 # Set the cross-compile toolchain
-set(CROSS_COMPILE "arm-none-eabi-")
+set(CROSS_COMPILE "arm-linux-gnueabi-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
