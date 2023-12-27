@@ -37,5 +37,5 @@ uint64_t sunxi_dram_init(void *para) {
                          :
                          :
                          : "memory");
-    syterkit_jmp(INIT_DRAM_BIN_BASE);
+    ((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
 }
