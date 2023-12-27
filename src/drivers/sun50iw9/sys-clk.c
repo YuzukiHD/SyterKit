@@ -215,7 +215,7 @@ int sunxi_clock_init_gpadc(void) {
 extern sunxi_serial_t uart_dbg;
 
 void sunxi_clk_init(void) {
-    printk(LOG_LEVEL_DEBUG, "Set SoC AW%04x CLK Start.\n", read32(SUNXI_SID_BASE) & 0xffff);
+    printk(LOG_LEVEL_DEBUG, "Set SoC 1823 (H616/H313/H618) CLK Start.\n");
     set_platform_config();
     set_pll_cpux_axi();
     set_pll_periph0();

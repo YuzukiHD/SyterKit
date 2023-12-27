@@ -26,6 +26,8 @@ int main(void) {
 
     sunxi_dram_init(NULL);
 
+    sunxi_clk_dump();
+
     int i = 0;
 
     while (1) {
