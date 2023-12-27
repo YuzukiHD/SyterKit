@@ -3,6 +3,8 @@
 # Specify the minimum required version of CMake
 cmake_minimum_required(VERSION 3.10)
 
+include(ExternalProject)
+
 # Define the path to the board loader files
 set(BOARD_FLOADER_PATH ${CMAKE_SOURCE_DIR}/cmake/board/)
 
@@ -64,7 +66,6 @@ project(SyterKit C CXX ASM)
 
 # Include other CMake modules
 include(cmake/add_syterkit_app.cmake)
-include(ExternalProject)
 
 # Get the name of the compiler
 string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)
@@ -103,6 +104,25 @@ set(LINK_SCRIPT_BIN ${PROJECT_BINARY_DIR}/link_bin.ld)
 if (CONFIG_ARCH_ARM32)
 set(ARCH_INCLUDE include/arch/arm32)
 
+if (CONFIG_USE_DRAM_PAYLOAD)
+set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link_dram_payloads.ld"
+    "${PROJECT_BINARY_DIR}/link_bin.ld"
+)
+
+set(ARCH_START_ADDRESS "${ARCH_FEL_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/arm32/link_dram_payloads.ld"
+    "${PROJECT_BINARY_DIR}/link_elf.ld"
+)
+
+else()
+
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
 set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
 
@@ -118,6 +138,7 @@ configure_file(
     "${PROJECT_SOURCE_DIR}/link/arm32/link.ld"
     "${PROJECT_BINARY_DIR}/link_elf.ld"
 )
+endif()
 endif()
 
 # If the CONFIG_ARCH_ARM32 variable is defined, execute the following content
