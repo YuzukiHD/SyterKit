@@ -22,6 +22,8 @@ int main(void) {
 
     sunxi_clk_dump();
 
+    neon_enable();
+
     sunxi_dram_init(NULL);
 
     int i = 0;
