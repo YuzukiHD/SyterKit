@@ -2,78 +2,71 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BYTES_PER_LINE 16
+#define BYTES_PER_LINE 16// Number of bytes to display per line in the output C array
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s input_file output_file\n", argv[0]);
+    if (argc != 4) {
+        printf("Usage: %s input_file output_file\n", argv[0]);// Print usage information if the number of command-line arguments is not 3
         return 1;
     }
 
     FILE *inputFile, *outputFile;
-    char *inputFileName = argv[1]; // 输入的二进制文件名
-    char *outputFileName = argv[2];// 输出的C数组文件名
+    char *inputFileName = argv[1]; // Name of the input binary file
+    char *outputFileName = argv[2];// Name of the output C array file
+    char *funcName = argv[3];// Name of the output C array
     int fileSize;
 
-    // 打开输入的二进制文件
+    // Open the input binary file
     inputFile = fopen(inputFileName, "rb");
     if (inputFile == NULL) {
-        printf("无法打开输入文件\n");
+        printf("Unable to open input file\n");// Print an error message if the input file cannot be opened
         return 1;
     }
 
-    // 提取输出文件的名称作为C数组的名称
-    char *arrayName = strrchr(outputFileName, '/');
-    if (arrayName == NULL) {
-        arrayName = strtok(outputFileName, ".");
-    } else {
-        arrayName++;// 跳过文件名分隔符
-    }
-
-    // 获取文件大小
+    // Get the size of the file
     fseek(inputFile, 0, SEEK_END);
     fileSize = ftell(inputFile);
     fseek(inputFile, 0, SEEK_SET);
 
-    // 创建输出的C数组文件
+    // Create the output C array file
     outputFile = fopen(outputFileName, "w");
     if (outputFile == NULL) {
-        printf("无法创建输出文件\n");
+        printf("Unable to create output file\n");// Print an error message if the output file cannot be created
         fclose(inputFile);
         return 1;
     }
 
-    // 写入C数组声明到输出文件
-    fprintf(outputFile, "const unsigned char __attribute__((section(\".%s\"))) %s[%d] = {\n\t", arrayName, arrayName, fileSize);
+    // Write the C array declaration to the output file
+    fprintf(outputFile, "const unsigned char __attribute__((section(\".%s\"))) %s[%d] = {\n\t", funcName, funcName, fileSize);
 
-    // 逐字节读取二进制文件并写入C数组文件
+    // Read the binary file byte by byte and write to the C array file
     for (int i = 0; i < fileSize; i++) {
         unsigned char byte;
         if (fread(&byte, 1, 1, inputFile) != 1) {
-            printf("读取文件时发生错误\n");
+            printf("Error occurred while reading the file\n");// Print an error message if there is an error reading the file
             fclose(inputFile);
             fclose(outputFile);
             return 1;
         }
-        fprintf(outputFile, "0x%02X", byte);// 以十六进制格式写入字节值
+        fprintf(outputFile, "0x%02X", byte);// Write the byte value in hexadecimal format
         if (i < fileSize - 1) {
-            fprintf(outputFile, ", ");// 写入逗号分隔符
+            fprintf(outputFile, ", ");// Write a comma as a separator
         }
         if ((i + 1) % BYTES_PER_LINE == 0) {
-            fprintf(outputFile, "\n\t");// 每16个字节换行
+            fprintf(outputFile, "\n\t");// Move to a new line every 16 bytes
         }
     }
 
-    fprintf(outputFile, "\n};");// 结尾加上分号
+    fprintf(outputFile, "\n};");// Add a semicolon at the end
 
-    // 写入C数组声明到输出文件
-    fprintf(outputFile, "\n\nunsigned long long %s_length = %d;\n\t", arrayName, fileSize);
+    // Write the C array length declaration to the output file
+    fprintf(outputFile, "\n\nunsigned long long %s_length = %d;\n\t", funcName, fileSize);
 
-    // 关闭文件
+    // Close the files
     fclose(inputFile);
     fclose(outputFile);
 
-    printf("转换完成\n");
+    printf("Conversion complete %s => %s\n", inputFileName, outputFileName);// Print a completion message
 
     return 0;
 }

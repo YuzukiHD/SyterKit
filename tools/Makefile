@@ -21,7 +21,7 @@ all: tools
 tools: $(BUILD_DIR) $(MKSUNXI) $(BINTOARR)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 
 clean:
 	rm -rf build
@@ -29,15 +29,15 @@ clean:
 	rm -f $(BINTOARR)
 
 $(BUILD_DIR)/%.o : %.c
-	echo "  CC    $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo "  CC    $<"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.opp : %.cpp
-	echo "  CXX   $<"
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@echo "  CXX   $<"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(MKSUNXI): $(MKSUNXI_COBJS)
-	$(CC) $(CFLAGS) $(BUILD_DIR)/mksunxi.o -o $(MKSUNXI)
+	@$(CC) $(CFLAGS) $(BUILD_DIR)/mksunxi.o -o $(MKSUNXI)
 
 $(BINTOARR): $(BINTOARR_COBJS)
-	$(CC) $(CFLAGS) $(BUILD_DIR)/bin2array.o -o $(BINTOARR)
+	@$(CC) $(CFLAGS) $(BUILD_DIR)/bin2array.o -o $(BINTOARR)
