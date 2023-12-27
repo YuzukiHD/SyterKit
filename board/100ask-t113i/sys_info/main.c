@@ -24,7 +24,7 @@ int main(void) {
 
     printk(LOG_LEVEL_INFO, "Hello World!\n");
 
-    dump_efuse();
+    syter_efuse_dump();
 
     sunxi_clk_reset();
 

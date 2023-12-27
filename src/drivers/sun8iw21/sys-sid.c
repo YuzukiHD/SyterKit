@@ -14,7 +14,7 @@
 
 #include "sys-sid.h"
 
-uint32_t efuse_read(uint32_t offset) {
+uint32_t syter_efuse_read(uint32_t offset) {
     uint32_t val;
 
     val = read32(SID_PRCTL);
@@ -33,7 +33,7 @@ uint32_t efuse_read(uint32_t offset) {
     return val;
 }
 
-void efuse_write(uint32_t offset, uint32_t value) {
+void syter_efuse_write(uint32_t offset, uint32_t value) {
     uint32_t val;
 
     write32(EFUSE_HV_SWITCH, 0x1);
@@ -52,13 +52,13 @@ void efuse_write(uint32_t offset, uint32_t value) {
     write32(EFUSE_HV_SWITCH, 0x0);
 }
 
-void dump_efuse(void) {
+void syter_efuse_dump(void) {
     uint32_t buffer[2048 / 4];
 
     for (int n = 0; n < ARRAY_SIZE(sids); n++) {
         uint32_t count = sids[n].size_bits / 32;
         for (int i = 0; i < count; i++)
-            buffer[i] = efuse_read(sids[n].offset + i * 4);
+            buffer[i] = syter_efuse_read(sids[n].offset + i * 4);
 
         printk(LOG_LEVEL_MUTE, "%s:(0x%04x %d-bits)", sids[n].name,
                sids[n].offset, sids[n].size_bits);

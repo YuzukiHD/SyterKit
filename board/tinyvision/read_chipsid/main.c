@@ -18,7 +18,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    dump_efuse();
+    syter_efuse_dump();
 
     return 0;
 }
