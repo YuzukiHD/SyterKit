@@ -2,6 +2,7 @@ build/
 test/
 tools/*.bin
 mksunxi
+init_dram_bin
 bin2array
 .vscode/settings.json
 prebuilt/
