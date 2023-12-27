@@ -1645,4 +1645,3 @@ const unsigned char __attribute__((section(".init_dram_bin"))) init_dram_bin[262
 };
 
 unsigned long long init_dram_bin_length = 26284;
-	
