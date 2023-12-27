@@ -22,7 +22,7 @@ uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
 
-    printk(LOG_LEVEL_DEBUG, "0x%x -> 0x%x size: %x\n", src, dst, __ddr_bin_start - __ddr_bin_end);
+    printk(LOG_LEVEL_DEBUG, "0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);
     memcpy(dst, src, __ddr_bin_end - __ddr_bin_start);
 
     __asm__ __volatile__("isb sy"
@@ -37,7 +37,8 @@ uint64_t sunxi_dram_init(void *para) {
                          :
                          :
                          : "memory");
-    syterkit_jmp(INIT_DRAM_BIN_BASE);
+
+    ((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
 
     printk(LOG_LEVEL_ERROR, "Dram initsssssss\n\n\n");
 }
