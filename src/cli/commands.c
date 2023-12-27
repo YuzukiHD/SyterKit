@@ -76,7 +76,7 @@ static int cmd_get_sid(int argc, const char **argv) {
 }
 
 static int cmd_get_efuse(int argc, const char **argv) {
-    dump_efuse();
+    syter_efuse_dump();
     return 0;
 }
 

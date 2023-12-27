@@ -22,7 +22,17 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    neon_enable();
+
+    sunxi_dram_init(NULL);
+
+    int i = 0;
+
+    while (1) {
+        i++;
+        printk(LOG_LEVEL_INFO, "Count: %d\n", i);
+        mdelay(1000);
+    }
 
     abort();
 
