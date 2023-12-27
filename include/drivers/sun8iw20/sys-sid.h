@@ -48,10 +48,10 @@ enum {
     EFUSE_HV_SWITCH = SUNXI_RTC_BASE + 0x204,
 };
 
-uint32_t efuse_read(uint32_t offset);
+uint32_t syter_efuse_read(uint32_t offset);
 
-void efuse_write(uint32_t offset, uint32_t value);
+void syter_efuse_write(uint32_t offset, uint32_t value);
 
-void dump_efuse(void);
+void syter_efuse_dump(void);
 
 #endif// __SUN8IW20_SYS_SID_H__
