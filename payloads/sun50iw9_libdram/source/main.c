@@ -47,7 +47,7 @@ void sys_init_dram(void) {
             .dram_tpr11 = 0x241f1923,
             .dram_tpr12 = 0x14151313,
             .dram_tpr13 = 0x81d24,
-            .dram_tpr14 = 0x2023211f,
+            .dram_tpr14 = 0x00,
     };
 
     uint32_t dram_size = 0;

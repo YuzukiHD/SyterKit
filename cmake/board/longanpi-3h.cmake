@@ -44,6 +44,7 @@ ExternalProject_Add(
     BUILD_IN_SOURCE 1
 )
 
+# Create inital init dram bin file for build
 add_custom_command(
     TARGET init_dram
     POST_BUILD COMMAND ${CMAKE_BIN2ARRAY} ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH} ${CONFIG_USE_DRAM_PAYLOAD_SECTION}
