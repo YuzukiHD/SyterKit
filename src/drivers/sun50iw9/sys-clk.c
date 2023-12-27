@@ -302,13 +302,27 @@ void sunxi_clk_dump() {
         p0 = ((reg32 >> 16) & 0x03) + 1;
         p1 = ((reg32 >> 20) & 0x03) + 1;
 
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_peri (2X)=%" PRIu32 "MHz, (1X)=%" PRIu32 "MHz, (1200M)=%" PRIu32 "MHz\r\n", (24 * plln) / (pllm * p0),
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI0 (2X)=%" PRIu32 "MHz, (1X)=%" PRIu32 "MHz, (1200M)=%" PRIu32 "MHz\r\n", (24 * plln) / (pllm * p0),
                (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
     } else {
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_peri disabled\r\n");
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI0 disabled\r\n");
     }
 
-    /* PLL DDR */
+    /* PLL PERIx */
+    reg32 = read32(CCU_PLL_PERI1_CTRL_REG);
+    if (reg32 & (1 << 31)) {
+        plln = ((reg32 >> 8) & 0xff) + 1;
+        pllm = (reg32 & 0x01) + 1;
+        p0 = ((reg32 >> 16) & 0x03) + 1;
+        p1 = ((reg32 >> 20) & 0x03) + 1;
+
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI1 (2X)=%" PRIu32 "MHz, (1X)=%" PRIu32 "MHz, (1200M)=%" PRIu32 "MHz\r\n", (24 * plln) / (pllm * p0),
+               (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+    } else {
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI1 disabled\r\n");
+    }
+
+    /* PLL DDR0 */
     reg32 = read32(CCU_PLL_DDR0_CTRL_REG);
     if (reg32 & (1 << 31)) {
         plln = ((reg32 >> 8) & 0xff) + 1;
@@ -317,9 +331,40 @@ void sunxi_clk_dump() {
         p1 = ((reg32 >> 1) & 0x1) + 1;
         p0 = (reg32 & 0x01) + 1;
 
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_ddr=%" PRIu32 "MHz\r\n", (24 * plln) / (p0 * p1));
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_DDR0=%" PRIu32 "MHz\r\n", (24 * plln) / (p0 * p1));
 
     } else {
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_ddr disabled\r\n");
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_DDR0 disabled\r\n");
+    }
+
+    
+    /* PLL DDR1 */
+    reg32 = read32(CCU_PLL_DDR1_CTRL_REG);
+    if (reg32 & (1 << 31)) {
+        plln = ((reg32 >> 8) & 0xff) + 1;
+
+        pllm = (reg32 & 0x01) + 1;
+        p1 = ((reg32 >> 1) & 0x1) + 1;
+        p0 = (reg32 & 0x01) + 1;
+
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_DDR1=%" PRIu32 "MHz\r\n", (24 * plln) / (p0 * p1));
+
+    } else {
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_DDR1 disabled\r\n");
+    }
+
+    /* PLL HSIC */
+    reg32 = read32(CCU_PLL_HSIC_CTRL_REG);
+    if (reg32 & (1 << 31)) {
+        plln = ((reg32 >> 8) & 0xff) + 1;
+
+        pllm = (reg32 & 0x01) + 1;
+        p1 = ((reg32 >> 1) & 0x1) + 1;
+        p0 = (reg32 & 0x01) + 1;
+
+        printk(LOG_LEVEL_DEBUG, "CLK: HSIC=%" PRIu32 "MHz\r\n", (24 * plln) / (p0 * p1));
+
+    } else {
+        printk(LOG_LEVEL_DEBUG, "CLK: HSIC disabled\r\n");
     }
 }
