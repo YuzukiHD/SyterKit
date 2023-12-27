@@ -3,6 +3,8 @@
 # Specify the minimum required version of CMake
 cmake_minimum_required(VERSION 3.10)
 
+include(ExternalProject)
+
 # Define the path to the board loader files
 set(BOARD_FLOADER_PATH ${CMAKE_SOURCE_DIR}/cmake/board/)
 
@@ -64,7 +66,6 @@ project(SyterKit C CXX ASM)
 
 # Include other CMake modules
 include(cmake/add_syterkit_app.cmake)
-include(ExternalProject)
 
 # Get the name of the compiler
 string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)

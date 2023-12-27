@@ -27,3 +27,14 @@ set(ARCH_BIN_SRAM_LENGTH "128K")
 
 set(ARCH_FEL_START_ADDRESS "0x00028000")
 set(ARCH_FEL_SRAM_LENGTH "100K")
+
+# Create an external project and build it
+ExternalProject_Add(
+    init_dram
+    PREFIX init_dram
+    SOURCE_DIR "${CMAKE_SOURCE_DIR}/payloads/sun50iw9_libdram"
+    INSTALL_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make -C ${CMAKE_SOURCE_DIR}/payloads/sun50iw9_libdram
+    BUILD_IN_SOURCE 1
+)
