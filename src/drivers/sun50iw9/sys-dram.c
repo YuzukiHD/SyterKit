@@ -37,8 +37,5 @@ uint64_t sunxi_dram_init(void *para) {
                          :
                          :
                          : "memory");
-
-    ((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
-
-    printk(LOG_LEVEL_ERROR, "Dram initsssssss\n\n\n");
+    syterkit_jmp(INIT_DRAM_BIN_BASE);
 }

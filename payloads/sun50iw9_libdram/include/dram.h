@@ -13,6 +13,7 @@ typedef struct {
     uint32_t dram_dx_odt;
     uint32_t dram_dx_dri;
     uint32_t dram_ca_dri;
+    uint32_t dram_odt_en;
     uint32_t dram_para0;
     uint32_t dram_para1;
     uint32_t dram_para2;
