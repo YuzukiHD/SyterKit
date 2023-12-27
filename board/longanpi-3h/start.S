@@ -24,17 +24,22 @@ reset:
 	.byte 'e', 'G', 'O', 'N', '.', 'B', 'T', '0'
 	.long 0x12345678                                /* checksum */
 	.long __spl_size                                /* spl size */
-	.long 0x30                                              /* boot header size */
+	.long 0x30                                      /* boot header size */
 	.long 0x30303033                                /* boot header version */
 	.long 0x00020000                                /* return value */
 	.long 0x00028000                                /* run address */
-	.long 0x0                                               /* eGON version */
-	.byte 0x00, 0x00, 0x00, 0x00    /* platform information - 8byte */
+	.long 0x0                                       /* eGON version */
+	.byte 0x00, 0x00, 0x00, 0x00    				/* platform information - 8byte */
 	.byte 0x34, 0x2e, 0x30, 0x00
 
-	/*
-	* The actual reset code
-	*/
+	/* Invalidate L1 I/D */
+	mov	r0, #0			        /* set up for MCR */
+	mcr	p15, 0, r0, c8, c7,  0	/* invalidate TLBs */
+	mcr	p15, 0, r0, c7, c5,  0	/* invalidate icache */
+	mcr	p15, 0, r0, c7, c5,  6	/* invalidate BP array */
+	DSB	/* DSB */
+	ISB	/* ISB */
+
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r0, r0, #ARMV7_SVC_MODE
@@ -43,7 +48,6 @@ reset:
 	msr cpsr_c, r0
 
 	/* Set vector base address register */
-
 	ldr r0, =_vector
 	mcr p15, 0, r0, c12, c0, 0
 	mrc p15, 0, r0, c1, c0, 0

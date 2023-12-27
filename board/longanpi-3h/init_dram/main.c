@@ -22,7 +22,7 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    sunxi_dram_init(NULL);
 
     abort();
 
