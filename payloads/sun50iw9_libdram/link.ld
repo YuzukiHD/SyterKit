@@ -37,15 +37,27 @@ SECTIONS
     PROVIDE(__spl_end = .);
     PROVIDE(__spl_size = __spl_end - __spl_start);
 
-    .stack (NOLOAD):
+	. = ALIGN(16);
+  	.rodata : 
     {
-        . = ALIGN(8);
-        /* SRV stack section */
-        __stack_srv_start = .;
-        . += STACK_SIZE;
-        __stack_srv_end = .;
-    } > ram
+        *(.rodata) 
+    }
 
-    . = ALIGN(4);
-    _end = . ;
+	. = ALIGN(16);
+  	.data : 
+    { 
+        *(.data) 
+    }
+
+	. = ALIGN(4);
+	.bss :
+	{
+	    __bss_start = .;
+		*(.bss)
+	}
+
+	. = ALIGN(4);
+	__bss_end = .;
+
+	_end = .;
 }

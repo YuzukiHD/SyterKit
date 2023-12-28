@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <types.h>
 
@@ -40,6 +41,15 @@ static void udelay(uint32_t us) {
 // Wrapper function for udelay with a different name
 void __usdelay(uint32_t loop) {
     udelay(loop);// Call the udelay function to introduce a microsecond delay
+}
+
+void mdelay(uint32_t ms) {
+    udelay(ms * 1000);
+    uint32_t now;
+
+    now = time_ms();
+    while (time_ms() - now < ms) {
+    };
 }
 
 uint32_t time_ms(void) {

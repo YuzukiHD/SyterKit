@@ -8,51 +8,53 @@
 #include <string.h>
 #include <types.h>
 
-#include <dram.h>
-
 // init_DRAM in libdram.a
 extern int init_DRAM(int type, void *buff);
 
+extern void set_timer_count();
+
 // Initialize DRAM using the dram_para structure
 void sys_init_dram(void) {
-    dram_para_t dram_para = {
-            .dram_clk = 792,
-            .dram_type = 8,
-            .dram_dx_odt = 0x07070707,
-            .dram_dx_dri = 0x0d0d0d0d,
-            .dram_ca_dri = 0x0e0e,
-            .dram_para0 = 0x0d0a050c,
-            .dram_para1 = 0x30ea,
-            .dram_para2 = 0x1000,
-            .dram_mr0 = 0x0,
-            .dram_mr1 = 0x34,
-            .dram_mr2 = 0x1b,
-            .dram_mr3 = 0x33,
-            .dram_mr4 = 0x3,
-            .dram_mr5 = 0x0,
-            .dram_mr6 = 0x0,
-            .dram_mr11 = 0x04,
-            .dram_mr12 = 0x72,
-            .dram_mr13 = 0x0,
-            .dram_mr14 = 0x7,
-            .dram_mr16 = 0x0,
-            .dram_mr17 = 0x0,
-            .dram_mr22 = 0x26,
-            .dram_tpr0 = 0x06060606,
-            .dram_tpr1 = 0x04040404,
-            .dram_tpr2 = 0x1f080403,
-            .dram_tpr3 = 0x0,
-            .dram_tpr6 = 0x48010101,
-            .dram_tpr10 = 0x00273333,
-            .dram_tpr11 = 0x241f1923,
-            .dram_tpr12 = 0x14151313,
-            .dram_tpr13 = 0x81d24,
-            .dram_tpr14 = 0x00,
+    set_timer_count();
+    uint32_t dram_para[32] = {
+            0x2a0,     // dram_para[0]
+            0x8,       // dram_para[1]
+            0xc0c0c0c, // dram_para[2]
+            0xe0e0e0e, // dram_para[3]
+            0xa0e,     // dram_para[4]
+            0x7887ffff,// dram_para[5]
+            0x30fa,    // dram_para[6]
+            0x4000000, // dram_para[7]
+            0x0,       // dram_para[8]
+            0x34,      // dram_para[9]
+            0x1b,      // dram_para[10]
+            0x33,      // dram_para[11]
+            0x3,       // dram_para[12]
+            0x0,       // dram_para[13]
+            0x0,       // dram_para[14]
+            0x4,       // dram_para[15]
+            0x72,      // dram_para[16]
+            0x0,       // dram_para[17]
+            0x9,       // dram_para[18]
+            0x0,       // dram_para[19]
+            0x0,       // dram_para[20]
+            0x24,      // dram_para[21]
+            0x0,       // dram_para[22]
+            0x0,       // dram_para[23]
+            0x0,       // dram_para[24]
+            0x0,       // dram_para[25]
+            0x39808080,// dram_para[26]
+            0x402f6603,// dram_para[27]
+            0x20262620,// dram_para[28]
+            0xe0e0f0f, // dram_para[29]
+            0x6061,    // dram_para[30]
+            0x0        // dram_para[31]
     };
 
     uint32_t dram_size = 0;
     dram_size = init_DRAM(0, &dram_para);
     printf("Init DRAM Done, DRAM Size = %dM\n", dram_size);
+    mdelay(10);
 }
 
 // fake function for link, we aleady set ddr voltage in SyterKit
