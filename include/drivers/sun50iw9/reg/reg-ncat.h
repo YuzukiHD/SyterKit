@@ -103,4 +103,10 @@
 #define GPIO_3_3V_MODE 0
 #define GPIO_1_8V_MODE 1
 
+/*cpu*/
+#define SUNXI_DBG_REG1 (0xc4)
+#define SUNXI_CLUSTER_PWROFF_GATING (0x44)
+#define SUNXI_CPU_RST_CTRL (0x0)
+#define SUNXI_CPU_PWR_SW(cpu) (0x50 + cpu * 0x04)
+
 #endif// __SUN50IW9_REG_NCAT_H__
