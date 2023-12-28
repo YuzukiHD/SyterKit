@@ -55,7 +55,7 @@ void sys_init_dram(void) {
             0x402f6603,// dram_para[27]
             0x20262620,// dram_para[28]
             0xe0e0f0f, // dram_para[29]
-            0x6061,    // dram_para[30]
+            0x1024,    // dram_para[30]
             0x0        // dram_para[31]
     };
 
