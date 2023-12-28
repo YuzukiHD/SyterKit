@@ -22,9 +22,9 @@ SECTIONS
         . = ALIGN(4);
         PROVIDE(__spl_start = .);
         *(.text .text.*)
-        PROVIDE(__ddr_bin_start = .);
-		KEEP(*(.init_dram_bin))
-		PROVIDE(__ddr_bin_end = .);
+	PROVIDE(__ddr_bin_start = .);
+	KEEP(*(.init_dram_bin))
+	PROVIDE(__ddr_bin_end = .);
         KEEP(*(.note.gnu.build-id))
         . = ALIGN(4);
     } > ram
