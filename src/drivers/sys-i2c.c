@@ -470,7 +470,7 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
     sunxi_gpio_init(i2c_dev->gpio_scl.pin, i2c_dev->gpio_scl.mux);
     sunxi_gpio_init(i2c_dev->gpio_sda.pin, i2c_dev->gpio_sda.mux);
 
-    printk(LOG_LEVEL_DEBUG, "Init GPIO for I2C, base = %08x, id = %d\n", i2c_dev->base, i2c_dev->id);
+    printk(LOG_LEVEL_DEBUG, "I2C: Init GPIO for I2C, base = 0x%08x, id = %d\n", i2c_dev->base, i2c_dev->id);
 
     sunxi_i2c_bus_open(i2c_dev);
 
