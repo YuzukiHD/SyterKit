@@ -29,18 +29,21 @@ enum {
 
 enum {
     GPIO_PORTA = 0,
-    GPIO_PORTB,
-    GPIO_PORTC,
-    GPIO_PORTD,
-    GPIO_PORTE,
-    GPIO_PORTF,
-    GPIO_PORTG,
-    GPIO_PORTH,
-    GPIO_PORTI,
-    GPIO_PORTJ,
-    GPIO_PORTK,
-    GPIO_PORTL,
+    GPIO_PORTB = 1,
+    GPIO_PORTC = 2,
+    GPIO_PORTD = 3,
+    GPIO_PORTE = 4,
+    GPIO_PORTF = 5,
+    GPIO_PORTG = 6,
+    GPIO_PORTH = 7,
+    GPIO_PORTI = 8,
+    GPIO_PORTJ = 9,
+    GPIO_PORTK = 10,
+    GPIO_PORTL = 11,
+    GPIO_PORTM = 12,
+    GPIO_PORTN = 13,
 };
+
 
 enum gpio_pull_t {
     GPIO_PULL_UP = 0,
@@ -48,15 +51,61 @@ enum gpio_pull_t {
     GPIO_PULL_NONE = 2,
 };
 
-typedef uint32_t gpio_t;
+#ifndef CONFIG_CHIP_GPIO_V1
+struct sunxi_gpio {
+    uint32_t cfg[4];
+    uint32_t dat;
+    uint32_t drv[4];
+    uint32_t pull[3];
+};
+#else
+struct sunxi_gpio {
+    uint32_t cfg[4];
+    uint32_t dat;
+    uint32_t drv[2];
+    uint32_t pull[2];
+};
+#endif
+
+/* gpio interrupt control */
+struct sunxi_gpio_int {
+    uint32_t cfg[3];
+    uint32_t ctl;
+    uint32_t sta;
+    uint32_t deb; /* interrupt debounce */
+};
+
+#define SUNXI_GPIO_BANKS 10
+#define SUNXI_GPIO_BANK_SIZE 32
 #define PIO_NUM_IO_BITS 5
 
-#define GPIO_PIN(x, y) (((uint32_t) (x << PIO_NUM_IO_BITS)) | y)
+struct sunxi_gpio_reg {
+    struct sunxi_gpio gpio_bank[SUNXI_GPIO_BANKS];
+    uint8_t res[0xbc];
+    struct sunxi_gpio_int gpio_int;
+};
+
+#define BANK_TO_GPIO(bank) (((bank) < GPIO_PORTL) ? &((struct sunxi_gpio_reg *) SUNXI_PIO_BASE)->gpio_bank[bank] : &((struct sunxi_gpio_reg *) SUNXI_R_PIO_BASE)->gpio_bank[(bank) -GPIO_PORTL])
+
+#define GPIO_BANK(pin) ((pin) >> PIO_NUM_IO_BITS)
+
+#define GPIO_CFG_INDEX(pin) (((pin) &0x1f) >> 3)
+#define GPIO_CFG_OFFSET(pin) ((((pin) &0x1f) & 0x7) << 2)
+
+#define GPIO_DRV_INDEX(pin) (((pin) &0x1f) >> 4)
+#define GPIO_DRV_OFFSET(pin) ((((pin) &0x1f) & 0xf) << 1)
+
+#define GPIO_PULL_INDEX(pin) (((pin) &0x1f) >> 4)
+#define GPIO_PULL_OFFSET(pin) ((((pin) &0x1f) & 0xf) << 1)
+
+typedef uint32_t gpio_t;
 
 typedef struct {
     gpio_t pin;
     uint8_t mux;
 } gpio_mux_t;
+
+#define GPIO_PIN(x, y) ((x) * SUNXI_GPIO_BANK_SIZE + (y))
 
 extern void sunxi_gpio_init(gpio_t pin, int cfg);
 

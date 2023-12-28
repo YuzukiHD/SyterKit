@@ -15,10 +15,6 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
     uint32_t addr;
     uint32_t val;
 
-    /* Config uart TXD and RXD pins */
-    sunxi_gpio_init(uart->gpio_tx.pin, uart->gpio_tx.mux);
-    sunxi_gpio_init(uart->gpio_rx.pin, uart->gpio_rx.mux);
-
     /* Open the clock gate for uart */
     addr = CCU_BASE + CCU_UART_BGR_REG;
     val = read32(addr);
@@ -48,6 +44,10 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
     val &= ~0x1f;
     val |= (0x3 << 0) | (0 << 2) | (0x0 << 3);
     write32(addr + 0x0c, val);
+
+    /* Config uart TXD and RXD pins */
+    sunxi_gpio_init(uart->gpio_tx.pin, uart->gpio_tx.mux);
+    sunxi_gpio_init(uart->gpio_rx.pin, uart->gpio_rx.mux);
 }
 
 void sunxi_serial_putc(void *arg, char c) {

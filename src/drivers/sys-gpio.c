@@ -9,96 +9,75 @@
 
 #include <log.h>
 
-#include <sys-gpio.h>
 #include <reg-ncat.h>
+#include <sys-gpio.h>
 
-enum {
-    GPIO_CFG0 = 0x00,
-    GPIO_CFG1 = 0x04,
-    GPIO_CFG2 = 0x08,
-    GPIO_CFG3 = 0x0c,
-    GPIO_DAT = 0x10,
-    GPIO_DRV0 = 0x14,
-    GPIO_DRV1 = 0x18,
-    GPIO_DRV2 = 0x1c,
-    GPIO_DRV3 = 0x20,
-    GPIO_PUL0 = 0x24,
-    GPIO_PUL1 = 0x28,
-};
-
-static inline uint32_t _port_num(gpio_t pin) {
-    return pin >> PIO_NUM_IO_BITS;
-}
-
-static uint32_t _port_base_get(gpio_t pin) {
-    uint32_t port = pin >> PIO_NUM_IO_BITS;
-    return SUNXI_PIO_BASE + port * 0x30;
-}
-
-static inline uint32_t _pin_num(gpio_t pin) {
-    return (pin & ((1 << PIO_NUM_IO_BITS) - 1));
+static void sunxi_gpio_bank_init(struct sunxi_gpio *pio, int bank_offset, uint32_t val) {
+    uint32_t index = GPIO_CFG_INDEX(bank_offset);
+    uint32_t offset = GPIO_CFG_OFFSET(bank_offset);
+    clrsetbits_le32((uint32_t) &pio->cfg[0] + index, 0xf << offset, val << offset);
+    printk(LOG_LEVEL_DEBUG, "GPIO: index = 0x%08x, offset = 0x%08x, pio->cfg[0] = 0x%08x\n", index, offset, read32((uint32_t) &pio->cfg[0]));
 }
 
 void sunxi_gpio_init(gpio_t pin, int cfg) {
-    uint32_t port_addr = _port_base_get(pin);
-    uint32_t pin_num = _pin_num(pin);
-    uint32_t addr;
-    uint32_t val;
+    uint32_t bank = GPIO_BANK(pin);
+    struct sunxi_gpio *pio = BANK_TO_GPIO(bank);
 
-    addr = port_addr + GPIO_CFG0 + ((pin_num >> 3) << 2);
-    val = read32(addr);
-    val &= ~(0xf << ((pin_num & 0x7) << 2));
-    val |= ((cfg & 0xf) << ((pin_num & 0x7) << 2));
-    write32(addr, val);
+    printk(LOG_LEVEL_DEBUG, "GPIO: pin = %d, bank = %d, &pio->cfg[0] = 0x%08x\n", pin, bank, &pio->cfg[0]);
+
+    sunxi_gpio_bank_init(pio, pin, cfg);
 }
 
 void sunxi_gpio_set_value(gpio_t pin, int value) {
-    uint32_t port_addr = _port_base_get(pin);
-    uint32_t pin_num = _pin_num(pin);
-    uint32_t val;
+    u32 bank = GPIO_BANK(pin);
+    u32 index = GPIO_DRV_INDEX(pin);
+    u32 offset = GPIO_DRV_OFFSET(pin);
+    struct sunxi_gpio *pio = BANK_TO_GPIO(bank);
 
-    val = read32(port_addr + GPIO_DAT);
-    val &= ~(1 << pin_num);
-    val |= (!!value) << pin_num;
-    write32(port_addr + GPIO_DAT, val);
+    clrsetbits_le32((uint32_t) &pio->drv[0] + index, 0x3 << offset, value << offset);
+}
+
+static int sunxi_gpio_get_bank_cfg(struct sunxi_gpio *pio, int bank_offset) {
+    uint32_t index = GPIO_CFG_INDEX(bank_offset);
+    uint32_t offset = GPIO_CFG_OFFSET(bank_offset);
+    uint32_t cfg;
+
+    cfg = readl((uint32_t) &pio->cfg[0] + index);
+    cfg >>= offset;
+
+    return cfg & 0xf;
 }
 
 int sunxi_gpio_read(gpio_t pin) {
-    uint32_t port_addr = _port_base_get(pin);
-    uint32_t pin_num = _pin_num(pin);
-    uint32_t val;
+    uint32_t bank = GPIO_BANK(pin);
+    struct sunxi_gpio *pio = BANK_TO_GPIO(bank);
 
-    val = read32(port_addr + GPIO_DAT);
-    return !!(val & (1 << pin_num));
+    return sunxi_gpio_get_bank_cfg(pio, pin);
 }
 
 void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
-    uint32_t port_addr = _port_base_get(pin);
-    uint32_t pin_num = _pin_num(pin);
-    uint32_t addr;
-    uint32_t val, v;
+    uint32_t bank = GPIO_BANK(pin);
+    uint32_t index = GPIO_PULL_INDEX(pin);
+    uint32_t offset = GPIO_PULL_OFFSET(pin);
+    struct sunxi_gpio *pio = BANK_TO_GPIO(bank);
+    uint32_t val;
 
     switch (pull) {
         case GPIO_PULL_UP:
-            v = 0x1;
+            val = 0x1;
             break;
 
         case GPIO_PULL_DOWN:
-            v = 0x2;
+            val = 0x2;
             break;
 
         case GPIO_PULL_NONE:
-            v = 0x0;
+            val = 0x0;
             break;
 
         default:
-            v = 0x0;
+            val = 0x0;
             break;
     }
-
-    addr = port_addr + GPIO_PUL0 + ((pin_num >> 4) << 2);
-    val = read32(addr);
-    val &= ~(v << ((pin_num & 0xf) << 1));
-    val |= (v << ((pin_num & 0xf) << 1));
-    write32(addr, val);
+    clrsetbits_le32((uint32_t) &pio->pull[0] + index, 0x3 << offset, val << offset);
 }
