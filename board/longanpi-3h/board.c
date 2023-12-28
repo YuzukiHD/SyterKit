@@ -14,6 +14,8 @@
 
 #include <sys-dram.h>
 #include <sys-gpio.h>
+#include <sys-i2c.h>
+#include <sys-sid.h>
 #include <sys-sdcard.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
@@ -53,6 +55,14 @@ sdhci_t sdhci0 = {
         .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
 };
 
+sunxi_i2c_t i2c_pmu = {
+        .base = SUNXI_RTWI_BASE,
+        .id = 0,
+        .speed = 4000000,
+        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX3},
+        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX3},
+};
+
 void neon_enable(void) {
     /* set NSACR, both Secure and Non-secure access are allowed to NEON */
     asm volatile("MRC p15, 0, r0, c1, c1, 2");
@@ -67,6 +77,25 @@ void neon_enable(void) {
     asm volatile("MCR p10, 7, r3, c8, c0, 0");
 }
 
+void set_cpu_down(unsigned int cpu) {
+    clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_DBG_REG1, 1 << cpu);
+    udelay(10);
+
+    setbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_CLUSTER_PWROFF_GATING, 1 << cpu);
+    udelay(20);
+
+    clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_CPU_RST_CTRL, 1 << cpu);
+    udelay(10);
+
+    printk(LOG_LEVEL_DEBUG, "CPU: Power-down cpu-%d ok.\n", cpu);
+}
+
+void set_cpu_poweroff(void) {
+    if (((readl(SUNXI_SID_BASE + 0x248) >> 29) & 0x1) == 1) {
+        set_cpu_down(2); /*power of cpu2*/
+        set_cpu_down(3); /*power of cpu3*/
+    }
+}
 
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
