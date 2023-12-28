@@ -4,22 +4,17 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
+#include <timer.h>
 
 #include "log.h"
 #include "uart.h"
 #include "xformat.h"
 
-static uint32_t init_timestamp = 0;
-
-void set_timer_count() {
-    init_timestamp = time_ms();
-}
-
 void printk(int level, const char *fmt, ...) {
     if (level < LOG_LEVEL_DEFAULT) {
         return;
     }
-    uint32_t now_timestamp = time_ms() - init_timestamp;
+    uint32_t now_timestamp = time_ms() - get_init_timestamp();
     uint32_t seconds = now_timestamp / 1000;
     uint32_t milliseconds = now_timestamp % 1000;
 
