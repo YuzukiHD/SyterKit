@@ -50,7 +50,7 @@ int main(void) {
         }
     }
 
-    mdelay(300); /* Delay 300ms for pmu bootup */
+    mdelay(30); /* Delay 300ms for pmu bootup */
 
     pmu_axp1530_dump(&i2c_pmu);
 
