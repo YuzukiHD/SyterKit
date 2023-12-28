@@ -12,9 +12,7 @@
 
 #include <reg-ncat.h>
 
-#define EFEX_FLAG (0x5AA5A55A)
-#define RTC_FEL_INDEX 2
-#define RTC_BOOT_INDEX 6
+#include <sys-rtc.h>
 
 void rtc_write_data(int index, uint32_t val) {
     writel(val, SUNXI_RTC_DATA_BASE + index * 4);
