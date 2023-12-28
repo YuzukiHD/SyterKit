@@ -25,7 +25,7 @@ void set_dram_size_rtc(uint32_t dram_size) {
 void sys_init_dram(void) {
     set_timer_count();
     uint32_t dram_para[32] = {
-            0x2a0,     // dram_para[0]
+            0x2d0,     // dram_para[0]
             0x8,       // dram_para[1]
             0xc0c0c0c, // dram_para[2]
             0xe0e0e0e, // dram_para[3]
