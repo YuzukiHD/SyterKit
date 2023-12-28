@@ -3,18 +3,20 @@
 set(CONFIG_ARCH_ARM32 True)
 set(CONFIG_ARCH_ARM32_ARM64 True)
 set(CONFIG_CHIP_SUN50IW9 True)
+set(CONFIG_CHIP_WITHPMU True)
 set(CONFIG_BOARD_LONGANPI-3H True)
 
 add_definitions(-DCONFIG_CHIP_SUN50IW9)
 
 set(CONFIG_USE_DRAM_PAYLOAD True)
+set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD false)
 set(CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH "${CMAKE_SOURCE_DIR}/payloads/sun50iw9_libdram")
 set(CONFIG_USE_DRAM_PAYLOAD_BIN_PATH "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}/output/ddr.bin")
 set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/longanpi-3h/payloads/init_dram_bin.c")
 set(CONFIG_USE_DRAM_PAYLOAD_SECTION "init_dram_bin")
 
 # Set the cross-compile toolchain
-set(CROSS_COMPILE "arm-linux-gnueabi-")
+set(CROSS_COMPILE "arm-none-eabi-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
@@ -45,8 +47,11 @@ ExternalProject_Add(
 )
 
 # Create inital init dram bin file for build
+if(CONFIG_USE_PREBUILT_DRAM_PAYLOAD)
+else()
 add_custom_command(
     TARGET init_dram
     POST_BUILD COMMAND ${CMAKE_BIN2ARRAY} ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH} ${CONFIG_USE_DRAM_PAYLOAD_SECTION}
     COMMENT "Generate DRAM LIB Payload ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} for ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH}"
 )
+endif()
