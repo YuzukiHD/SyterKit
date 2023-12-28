@@ -1,40 +1,29 @@
-	.text
-	.global _start
-_start:
-	/* Invalidate L1 I/D */
-	mov	r0, #0			        /* set up for MCR */
-	mcr	p15, 0, r0, c8, c7,  0	/* invalidate TLBs */
-	mcr	p15, 0, r0, c7, c5,  0	/* invalidate icache */
-	mcr	p15, 0, r0, c7, c5,  6	/* invalidate BP array */
-	DSB	/* DSB */
-	ISB	/* ISB */
-	b reset
+.globl _start
+_start: 
+	b	reset
 
 reset:
-	ldr r0, =__stack_srv_end
-	str sp, [r0, #0]
-	str lr, [r0, #4]
-	mrs lr, cpsr
-	str lr, [r0, #8]
-	mrc p15, 0, lr, c1, c0, 0
-	str lr, [r0, #12]
-	mrc p15, 0, lr, c12, c0, 0
-	str lr, [r0, #16]
-	mrc p15, 0, lr, c1, c0, 0
-	str lr, [r0, #20]
+	stmfd sp!, {lr}        @ Save the return address on the stack
+	bl  clear_bss          @ Call the clear_bss subroutine
 
-	bl sys_init_dram
+	mrc	p15, 0, r0, c1, c0, 0    @ Read the control register
+	orr	r0, r0, #0x00001000      @ Enable I-cache by setting a specific bit
+	mcr	p15, 0, r0, c1, c0, 0    @ Write the modified value back to the control register
 
-	ldr r0, =__stack_srv_end
-	ldr sp, [r0, #0]
-	ldr lr, [r0, #4]
-	ldr r1, [r0, #20]
-	mcr p15, 0, r1, c1, c0, 0
-	ldr r1, [r0, #16]
-	mcr p15, 0, r1, c12, c0, 0
-	ldr r1, [r0, #12]
-	mcr p15, 0, r1, c1, c0, 0
-	ldr r1, [r0, #8]
-	msr cpsr, r1
+	bl  sys_init_dram       @ Call the sys_init_dram subroutine
+	
+	ldmfd sp!, {lr}         @ Restore the return address from the stack
+	mov pc, lr              @ Return control to the caller
 
-	bx lr
+clear_bss:
+	ldr	r0, =__bss_start     @ Load the address of __bss_start into register r0
+	ldr	r1, =__bss_end       @ Load the address of __bss_end into register r1
+	mov	r2, #0x00000000       @ Set the value to be stored in BSS to zero
+
+clbss_l:
+	str	r2, [r0]             @ Store the value of r2 (zero) at the address in r0
+	add	r0, r0, #4           @ Increment the address by 4 bytes
+	cmp	r0, r1               @ Compare the current address with the end address of BSS
+	bne	clbss_l              @ If not equal, loop back to clbss_l
+
+	mov pc, lr               @ Return control to the caller
