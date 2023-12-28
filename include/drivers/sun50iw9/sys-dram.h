@@ -12,6 +12,6 @@
 
 #define SDRAM_BASE (0x40000000)
 
-uint64_t sunxi_dram_init(void *para);
+uint64_t sunxi_dram_init();
 
 #endif // __SUN50IW9_SYS_DRAM_H__

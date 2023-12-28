@@ -8,10 +8,18 @@
 #include <string.h>
 #include <types.h>
 
+#include <rtc.h>
+
 // init_DRAM in libdram.a
 extern int init_DRAM(int type, void *buff);
 
-extern void set_timer_count();
+void set_dram_size_rtc(uint32_t dram_size) {
+    do {
+        write32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4, dram_size);
+        asm volatile("DSB");
+        asm volatile("ISB");
+    } while (read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4) != dram_size);
+}
 
 // Initialize DRAM using the dram_para structure
 void sys_init_dram(void) {
@@ -55,6 +63,7 @@ void sys_init_dram(void) {
     dram_size = init_DRAM(0, &dram_para);
     printf("Init DRAM Done, DRAM Size = %dM\n", dram_size);
     mdelay(10);
+    set_dram_size_rtc(dram_size);
 }
 
 // fake function for link, we aleady set ddr voltage in SyterKit

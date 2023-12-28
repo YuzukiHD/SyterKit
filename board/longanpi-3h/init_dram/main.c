@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 #include <time.h>
+#include <types.h>
 
 #include <log.h>
 
@@ -54,7 +54,7 @@ int main(void) {
 
     pmu_axp1530_dump(&i2c_pmu);
 
-    sunxi_dram_init(NULL);
+    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init());
 
     sunxi_clk_dump();
 
