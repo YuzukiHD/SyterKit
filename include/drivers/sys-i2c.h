@@ -18,6 +18,18 @@ typedef struct {
     gpio_mux_t gpio_sda;
 } sunxi_i2c_t;
 
+enum {
+	SUNXI_I2C0 = 0,
+	SUNXI_I2C1,
+	SUNXI_I2C2,
+	SUNXI_I2C3,
+	SUNXI_I2C4,
+	SUNXI_I2C5,
+	SUNXI_R_I2C0,
+	SUNXI_R_I2C1,
+	SUNXI_I2C_BUS_MAX,
+};
+
 struct sunxi_twi_reg {
     volatile uint32_t addr;   /* slave address     */
     volatile uint32_t xaddr;  /* extend address    */

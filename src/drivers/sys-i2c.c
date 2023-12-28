@@ -12,8 +12,8 @@
 
 #include <sys-clk.h>
 
-#include "sys-i2c.h"
 #include "reg-ncat.h"
+#include "sys-i2c.h"
 
 #define I2C_WRITE 0
 #define I2C_READ 1
@@ -450,19 +450,39 @@ static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
 static void sunxi_i2c_bus_open(sunxi_i2c_t *i2c_dev) {
     int reg_value = 0;
 
-    //de-assert
-    reg_value = readl(CCU_BASE + CCU_TWI_BGR_REG);
-    reg_value |= (1 << (16 + i2c_dev->id));
-    writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
+    if (i2c_dev->id <= 5) {
+        //de-assert
+        reg_value = readl(CCU_BASE + CCU_TWI_BGR_REG);
+        reg_value |= (1 << (16 + i2c_dev->id));
+        writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
 
-    //gating clock pass
-    reg_value = readl(CCU_BASE + CCU_TWI_BGR_REG);
-    reg_value &= ~(1 << i2c_dev->id);
-    writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
+        //gating clock pass
+        reg_value = readl(CCU_BASE + CCU_TWI_BGR_REG);
+        reg_value &= ~(1 << i2c_dev->id);
+        writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
 
-    mdelay(1);
-    reg_value |= (1 << i2c_dev->id);
-    writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
+        mdelay(1);
+        reg_value |= (1 << i2c_dev->id);
+        writel(reg_value, CCU_BASE + CCU_TWI_BGR_REG);
+    } else {
+        uint32_t r_bus_num = (i2c_dev->base - SUNXI_RTWI_BASE) / 0x400;
+        /*de-assert*/
+        reg_value = readl(SUNXI_RTWI_BRG_REG);
+        reg_value &= ~(1 << (16 + r_bus_num));
+        writel(reg_value, SUNXI_RTWI_BRG_REG);
+
+        reg_value = readl(SUNXI_RTWI_BRG_REG);
+        reg_value |= (1 << (16 + r_bus_num));
+        writel(reg_value, SUNXI_RTWI_BRG_REG);
+
+        /*gating clock pass*/
+        reg_value = readl(SUNXI_RTWI_BRG_REG);
+        reg_value &= ~(1 << r_bus_num);
+        writel(reg_value, SUNXI_RTWI_BRG_REG);
+        mdelay(1);
+        reg_value |= (1 << r_bus_num);
+        writel(reg_value, SUNXI_RTWI_BRG_REG);
+    }
 }
 
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
