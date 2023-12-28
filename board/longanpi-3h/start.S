@@ -82,12 +82,12 @@ reset:
 
 	bl main
 
-	clear_bss:
+clear_bss:
 	ldr     r0, =_sbss
 	ldr     r1, =_ebss
 	mov     r2, #0
 
-	clbss_1:
+clbss_1:
 	stmia   r0!, {r2}
 	cmp r0, r1
 	blt clbss_1
