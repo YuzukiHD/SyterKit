@@ -24,4 +24,6 @@ void mdelay(uint32_t ms);
 
 void sdelay(uint32_t loops);
 
+uint32_t get_init_timestamp();
+
 #endif// __SYS_TIMER_H__
