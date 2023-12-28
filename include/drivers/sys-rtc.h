@@ -18,6 +18,8 @@ uint32_t rtc_read_data(int index);
 
 void rtc_set_fel_flag(void);
 
+void rtc_set_start_time_ms(void);
+
 uint32_t rtc_probe_fel_flag(void);
 
 void rtc_clear_fel_flag(void);

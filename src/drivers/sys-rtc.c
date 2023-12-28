@@ -1,17 +1,16 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 #include <io.h>
+#include <log.h>
+#include <mmu.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <timer.h>
 #include <types.h>
 
-#include <log.h>
-
 #include <reg-ncat.h>
-
-#include <mmu.h>
 
 #define EFEX_FLAG (0x5AA5A55A)
 #define RTC_FEL_INDEX 2
@@ -30,6 +29,14 @@ void rtc_set_fel_flag(void) {
         rtc_write_data(RTC_FEL_INDEX, EFEX_FLAG);
         data_sync_barrier();
     } while (rtc_read_data(RTC_FEL_INDEX) != EFEX_FLAG);
+}
+
+void rtc_set_start_time_ms(void) {
+    uint32_t init_time_ms = get_init_timestamp();
+    do {
+        rtc_write_data(RTC_FEL_INDEX, init_time_ms);
+        data_sync_barrier();
+    } while (rtc_read_data(RTC_FEL_INDEX) != init_time_ms);
 }
 
 uint32_t rtc_probe_fel_flag(void) {
