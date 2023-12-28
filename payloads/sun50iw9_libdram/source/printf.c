@@ -17,7 +17,6 @@ static uint32_t init_timestamp = 0;
 
 void set_timer_count() {
     init_timestamp = read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4);
-    printf("RTC = %08x", read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4));
 }
 
 // Function to transmit a single character via UART
