@@ -21,7 +21,6 @@ add_library(drivers-obj OBJECT
     sys-spi-nand.c
     sys-spi.c
     sys-sdcard.c
-    sys-sdhci.c
     sys-dma.c
     sys-i2c.c
     ${DRIVER_PMU}

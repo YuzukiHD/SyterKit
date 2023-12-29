@@ -433,6 +433,8 @@ bool sdhci_set_width(sdhci_t *sdhci, uint32_t width) {
 }
 
 static int init_default_timing(sdhci_t *sdhci) {
+    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing start\n");
+
     sdhci->odly[MMC_CLK_400K] = TM5_OUT_PH180;
     sdhci->odly[MMC_CLK_25M] = TM5_OUT_PH180;
     sdhci->odly[MMC_CLK_50M] = TM5_OUT_PH180;
@@ -443,6 +445,7 @@ static int init_default_timing(sdhci_t *sdhci) {
     sdhci->sdly[MMC_CLK_50M] = TM5_IN_PH90;
     sdhci->sdly[MMC_CLK_50M_DDR] = TM5_IN_PH180;
 
+    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing done\n");
     return 0;
 }
 
