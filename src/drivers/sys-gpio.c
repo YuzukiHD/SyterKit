@@ -131,6 +131,6 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
     val |= (v << ((pin_num & 0xf) << 1));
     write32(addr, val);
 
-    printk(LOG_LEVEL_TRACE, "GPIO: PUL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
+    printk(LOG_LEVEL_TRACE, "GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
            pin_num, addr, read32(addr), v);
 }
