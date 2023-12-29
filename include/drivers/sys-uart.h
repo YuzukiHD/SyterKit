@@ -4,6 +4,10 @@
 #include <types.h>
 #include <sys-gpio.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 typedef struct {
     uint32_t base;
     uint8_t id;
@@ -18,5 +22,9 @@ void sunxi_serial_putc(void *arg, char c);
 int sunxi_serial_tstc(void *arg);
 
 char sunxi_serial_getc(void *arg);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __SYS_UART_H__

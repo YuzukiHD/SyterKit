@@ -15,6 +15,10 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 typedef enum {
     MMC_CLK_400K = 0,
     MMC_CLK_25M,
@@ -94,5 +98,9 @@ bool sdhci_set_width(sdhci_t *hci, uint32_t width);
 bool sdhci_set_clock(sdhci_t *hci, smhc_clk_t hz);
 bool sdhci_transfer(sdhci_t *hci, sdhci_cmd_t *cmd, sdhci_data_t *dat);
 int sunxi_sdhci_init(sdhci_t *sdhci);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* __SDHCI_H__ */

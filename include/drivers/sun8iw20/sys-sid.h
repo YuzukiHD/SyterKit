@@ -14,6 +14,10 @@
 
 #include <reg-ncat.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 static const struct sid_section_t {
     char *name;
     uint32_t offset;
@@ -53,5 +57,9 @@ uint32_t syter_efuse_read(uint32_t offset);
 void syter_efuse_write(uint32_t offset, uint32_t value);
 
 void syter_efuse_dump(void);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SUN8IW20_SYS_SID_H__

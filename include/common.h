@@ -3,6 +3,10 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -39,5 +43,9 @@ void abort(void);
 int raise(int signum);
 
 void show_banner(void);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __COMMON_H__

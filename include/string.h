@@ -5,6 +5,10 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 extern void *memcpy(void *dst, const void *src, int cnt);
 
 extern void *memset(void *dst, int val, int cnt);
@@ -34,5 +38,9 @@ extern char *strstr(const char *s, const char *what);
 extern void *memchr(void *ptr, int value, unsigned int num);
 
 extern void *memmove(void *dest, const void *src, unsigned int count);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* #ifndef __STRING_H__ */

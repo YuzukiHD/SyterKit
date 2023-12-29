@@ -54,19 +54,20 @@ mkdir build
 cd build
 ```
 
-Run the following commands to configure CMake cache:
+Run the following command to configure CMake cache:
 
 ```shell
-cmake ..
+cmake .. -DCMAKE_BOARD_FILE="tinyvision.cmake"
 ```
 
-If you are using Windows, you may need to specify the toolchain path in [cmake\toolchain-arm-eabi.cmake](cmake/toolchain-arm-eabi.cmake#L26). Then you can configure CMake cache by running
+Where `tinyvision` is the target board you want to build SyterKit for. Remove this parameter to see available boards.  
+*If you are using Windows, you may need to add parameter `-G 'Unix Makefiles'`, like*
 
 ```shell
-cmake .. -G 'Unix Makefiles'
+cmake .. -DCMAKE_BOARD_FILE="tinyvision.cmake" -G 'Unix Makefiles'
 ```
 
-*Note: `-G 'Unix Makefiles' ` may be not required, add it when CMake is trying to generate a Visual Studio project or something else.*
+*This parameter may be not required, add it when CMake is trying to generate a Visual Studio project or something else.*
 
 Run the following commands to build SyterKit
 ```shell
@@ -213,19 +214,20 @@ mkdir build
 cd build
 ```
 
-运行命令编译 SyterKit
+运行以下命令配置 CMake 缓存
 
 ```shell
-cmake ..
+cmake .. -DCMAKE_BOARD_FILE="tinyvision.cmake"
 ```
+其中`tinyvision`是要构建SyterKit的目标开发板，可以通过去掉这个参数来查看可用的开发板列表。  
 
-如果你使用的是 Windows，你可能需要在 [cmake\toolchain-arm-eabi.cmake](cmake/toolchain-arm-eabi.cmake#L26) 中指定工具链路径。然后你可以运行以下命令配置 CMake 缓存
+*如果你使用的是 Windows，你可能需要添加`-G 'Unix Makefiles'`参数，例如：*
 
 ```shell
-cmake .. -G 'Unix Makefiles'
+cmake .. -DCMAKE_BOARD_FILE="tinyvision.cmake" -G 'Unix Makefiles'
 ```
 
-*注意：`-G 'Unix Makefiles'` 可能不是必须的，当 CMake 尝试生成 Visual Studio 项目或其他项目时添加它。*
+*这个参数可能不是必须的，当 CMake 尝试生成 Visual Studio 项目或其他项目时添加它。*
 
 
 运行命令构建 SyterKit

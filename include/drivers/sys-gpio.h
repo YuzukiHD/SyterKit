@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <types.h>
 
-#include "log.h"
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
 
 enum {
     GPIO_INPUT = 0,
@@ -114,5 +116,9 @@ extern void sunxi_gpio_set_value(gpio_t pin, int value);
 extern int sunxi_gpio_read(gpio_t pin);
 
 extern void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

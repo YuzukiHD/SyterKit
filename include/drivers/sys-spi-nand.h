@@ -16,6 +16,10 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 typedef struct {
     uint8_t mfr;
     uint16_t dev;
@@ -52,5 +56,9 @@ int spi_nand_detect(sunxi_spi_t *spi);
  * @return Number of bytes read on success, -1 on failure.
  */
 uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr,uint32_t rxlen);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __SYS_SPI_NAND_H__

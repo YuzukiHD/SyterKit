@@ -1,6 +1,10 @@
 #ifndef __FDT_WRAPPER_H__
 #define __FDT_WRAPPER_H__
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 #ifndef __packed
 #define __packed	__attribute__((__packed__))
 #endif
@@ -18,5 +22,9 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 int fdt_parse_prop(char const **newval, int count, char *data, int *len);
 
 int fdt_increase_size(void *fdt, int add_len);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif //__FDT_WRAPPER_H__

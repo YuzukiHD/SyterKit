@@ -10,6 +10,10 @@
 
 #include <sys-i2c.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 typedef struct _axp_step_info {
     uint32_t step_min_vol;
     uint32_t step_max_vol;
@@ -36,5 +40,9 @@ int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name);
 int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);
 
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __G_AXP_H__

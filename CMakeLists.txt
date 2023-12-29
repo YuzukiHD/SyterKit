@@ -3,9 +3,9 @@
 # Specify the minimum required version of CMake
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain-arm-eabi.cmake)
-
 include(ExternalProject)
+
+set(CMAKE_SYSTEM_NAME  Generic)
 
 # Define the path to the board loader files
 set(BOARD_FLOADER_PATH ${CMAKE_SOURCE_DIR}/cmake/board/)
@@ -83,16 +83,18 @@ configure_file(
     "${PROJECT_BINARY_DIR}/config.h"
 )
 
-# Create an external project and build it
-ExternalProject_Add(
-    mksunxi
-    PREFIX mksunxi
-    SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
-    INSTALL_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND make -C ${PROJECT_SOURCE_DIR}/tools
-    BUILD_IN_SOURCE 1
-)
+if(NOT WIN32)
+    # Create an external project and build it
+    ExternalProject_Add(
+        mksunxi
+        PREFIX mksunxi
+        SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
+        INSTALL_COMMAND ""
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND make -C ${PROJECT_SOURCE_DIR}/tools
+        BUILD_IN_SOURCE 1
+    )
+endif()
 
 # Set tools required for the build process
 set(CMAKE_AR "${CROSS_COMPILE}ar")

@@ -40,9 +40,17 @@
 #define XCFG_FORMAT_LONGLONG 0
 #endif
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 unsigned xvformat(void (*outchar)(void *arg, char), void *arg, const char *fmt,
 		  va_list args);
 unsigned xformat(void (*outchar)(void *arg, char), void *arg, const char *fmt,
 		 ...);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

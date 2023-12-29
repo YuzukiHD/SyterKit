@@ -14,6 +14,10 @@
 
 #include "xformat.h"
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 enum {
     LOG_LEVEL_TRACE = 0,
     LOG_LEVEL_DEBUG = 1,
@@ -32,5 +36,9 @@ void set_timer_count();
 void printk(int level, const char *fmt, ...);
 
 void uart_printf(const char *fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

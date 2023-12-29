@@ -12,6 +12,14 @@
 
 #define SDRAM_BASE (0x40000000)
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 uint64_t sunxi_dram_init();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __SUN50IW9_SYS_DRAM_H__

@@ -14,6 +14,10 @@
 
 #define SDRAM_BASE (0x40000000)
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 enum sunxi_dram_type {
     SUNXI_DRAM_TYPE_DDR2 = 2,
     SUNXI_DRAM_TYPE_DDR3 = 3,
@@ -57,5 +61,9 @@ typedef struct __DRAM_PARA {
 int init_DRAM(int type, dram_para_t *para);
 
 uint64_t sunxi_dram_init(dram_para_t *para);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __SUN8IW20_SYS_DRAM_H__

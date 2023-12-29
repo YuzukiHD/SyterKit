@@ -5,6 +5,10 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 extern unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base);
 
 extern unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base);
@@ -37,5 +41,8 @@ extern long long simple_atoll(const char *nptr);
 
 extern int simple_abs(int n);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __STDLIB_H__

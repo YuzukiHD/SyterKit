@@ -16,6 +16,10 @@
 #define RTC_FEL_INDEX 2
 #define RTC_BOOT_INDEX 6
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /* Write data to the RTC register at the specified index */
 void rtc_write_data(int index, uint32_t val);
 
@@ -39,5 +43,9 @@ int rtc_set_bootmode_flag(uint8_t flag);
 
 /* Get the bootmode flag from the RTC register */
 int rtc_get_bootmode_flag(void);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SYS_RTC_H__

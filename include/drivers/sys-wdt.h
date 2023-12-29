@@ -12,6 +12,14 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 void sys_reset();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SYS_WDT_H__
