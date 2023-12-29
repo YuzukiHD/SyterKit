@@ -19,6 +19,7 @@
 
 #define FALSE 0
 #define TRUE 1
+
 static void set_read_timeout(sdhci_t *sdhci, uint32_t timeout) {
     uint32_t rval = 0;
     uint32_t rdto_clk = 0;
@@ -432,23 +433,6 @@ bool sdhci_set_width(sdhci_t *sdhci, uint32_t width) {
     return TRUE;
 }
 
-static int init_default_timing(sdhci_t *sdhci) {
-    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing start\n");
-
-    sdhci->odly[MMC_CLK_400K] = TM5_OUT_PH180;
-    sdhci->odly[MMC_CLK_25M] = TM5_OUT_PH180;
-    sdhci->odly[MMC_CLK_50M] = TM5_OUT_PH180;
-    sdhci->odly[MMC_CLK_50M_DDR] = TM5_OUT_PH90;
-
-    sdhci->sdly[MMC_CLK_400K] = TM5_IN_PH180;
-    sdhci->sdly[MMC_CLK_25M] = TM5_IN_PH180;
-    sdhci->sdly[MMC_CLK_50M] = TM5_IN_PH90;
-    sdhci->sdly[MMC_CLK_50M_DDR] = TM5_IN_PH180;
-
-    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing done\n");
-    return 0;
-}
-
 static int config_delay(sdhci_t *sdhci) {
     uint32_t rval, freq, val;
     uint8_t odly, sdly;
@@ -475,11 +459,6 @@ static int config_delay(sdhci_t *sdhci) {
     rval &= (~(0x3 << 8));
     rval |= ((sdly & 0x3) << 8);
     sdhci->reg->ntsr = rval;
-
-    /*enable hw skew auto mode*/
-    rval = sdhci->reg->skew_ctrl;
-    rval |= (0x1 << 4);
-    sdhci->reg->skew_ctrl = rval;
 
     return 0;
 }
@@ -607,6 +586,19 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
     return true;
 }
 
+static int init_default_timing(sdhci_t *sdhci) {
+    sdhci->odly[MMC_CLK_400K] = TM5_OUT_PH180;
+    sdhci->odly[MMC_CLK_25M] = TM5_OUT_PH180;
+    sdhci->odly[MMC_CLK_50M] = TM5_OUT_PH180;
+    sdhci->odly[MMC_CLK_50M_DDR] = TM5_OUT_PH90;
+
+    sdhci->sdly[MMC_CLK_400K] = TM5_IN_PH180;
+    sdhci->sdly[MMC_CLK_25M] = TM5_IN_PH180;
+    sdhci->sdly[MMC_CLK_50M] = TM5_IN_PH90;
+    sdhci->sdly[MMC_CLK_50M_DDR] = TM5_IN_PH180;
+    return 0;
+}
+
 int sunxi_sdhci_init(sdhci_t *sdhci) {
     sunxi_gpio_init(sdhci->gpio_clk.pin, sdhci->gpio_clk.mux);
     sunxi_gpio_set_pull(sdhci->gpio_clk.pin, GPIO_PULL_UP);
@@ -628,11 +620,6 @@ int sunxi_sdhci_init(sdhci_t *sdhci) {
 
     init_default_timing(sdhci);
     sdhci_set_clock(sdhci, MMC_CLK_400K);
-
-    sdhci->reg->gctrl = SMHC_GCTRL_HARDWARE_RESET;
-    sdhci->reg->rint = 0xffffffff;
-
-    sdhci->dma_trglvl = ((0x3 << 28) | (15 << 16) | 240);
 
     udelay(100);
 

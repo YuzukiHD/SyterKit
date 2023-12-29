@@ -25,6 +25,21 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern void set_cpu_poweroff(void);
 
+void set_pmu_fin_voltage(char* power_name, uint32_t voltage){
+    int set_vol = voltage;
+    int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, power_name);
+    if (src_vol > voltage) {
+        for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) {
+            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
+        }
+    } else if (src_vol < voltage) {
+        for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) {
+            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
+        }
+    }
+    mdelay(30); /* Delay 300ms for pmu bootup */
+}
+
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
@@ -42,20 +57,8 @@ int main(void) {
 
     pmu_axp1530_dump(&i2c_pmu);
 
-    int set_vol = 1100; /* LPDDR4 1100mv */
-
-    int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, "dcdc3");
-    if (src_vol > set_vol) {
-        for (temp_vol = src_vol; temp_vol >= set_vol; temp_vol -= 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1);
-        }
-    } else if (src_vol < set_vol) {
-        for (temp_vol = src_vol; temp_vol <= set_vol; temp_vol += 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1);
-        }
-    }
-
-    mdelay(30); /* Delay 300ms for pmu bootup */
+    set_pmu_fin_voltage("dcdc2", 1100);
+    set_pmu_fin_voltage("dcdc3", 1100);
 
     pmu_axp1530_dump(&i2c_pmu);
 
@@ -67,8 +70,15 @@ int main(void) {
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
     }
+
+    /* Initialize the SD card and check if initialization is successful. */
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+    }
+
+    printk(LOG_LEVEL_DEBUG, "Card OK!\n");
 
     abort();
 

@@ -74,13 +74,7 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
             printk(LOG_LEVEL_INFO, "PMU: Cannot found match PMU\n");
             return -1;
     }
-    /* Set DCDC2 GPU voltage to 1.16V */
-    if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_DC2OUT_VOL, &axp_val))
-        return -1;
-    axp_val |= (0x1 << 7);
-    if (sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_DC2OUT_VOL, axp_val))
-        return -1;
-
+    
     /* Set over temperature shutdown functtion */
     if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, &axp_val))
         return -1;
