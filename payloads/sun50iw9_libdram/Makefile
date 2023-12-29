@@ -19,9 +19,9 @@ endif
 #
 # Load default variables.
 #
-ASFLAGS		:= -g -ggdb -Wall -O3
-CFLAGS		:= -g -ggdb -Wall -O3
-CXXFLAGS	:= -g -ggdb -Wall -O3
+ASFLAGS		:= -Os
+CFLAGS		:= -Os
+CXXFLAGS	:= -Os
 LDFLAGS		:= -T link.ld -nostdlib 
 ARFLAGS		:= -rcs
 OCFLAGS		:= -v -O binary

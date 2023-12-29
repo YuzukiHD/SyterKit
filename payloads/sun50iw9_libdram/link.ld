@@ -7,11 +7,8 @@ SEARCH_DIR(.)
 /* Memory Spaces Definitions */
 MEMORY
 {
-  ram   (rwx) : ORIGIN = 0x48000, LENGTH = 0x10000 /* SRAMC. */
+  ram   (rwx) : ORIGIN = 0x48000, LENGTH = 0x08000 /* SRAMC. */
 }
-
-/* The stack size used by the application. NOTE: you need to adjust according to your application. */
-STACK_SIZE = 0x1000; /* 4KB */
 
 /* Section Definitions */
 SECTIONS
