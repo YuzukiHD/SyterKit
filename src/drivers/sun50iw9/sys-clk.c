@@ -13,7 +13,7 @@
 
 #include <sys-clk.h>
 
-void set_pll_cpux_axi(void) {
+static inline void set_pll_cpux_axi(void) {
     uint32_t reg_val;
     /* select CPUX clock src: OSC24M, AXI divide ratio is 2, system apb clk ratio is 4 */
     writel((0 << 24) | (3 << 8) | (1 << 0), CCU_BASE + CCU_CPUX_AXI_CFG_REG);
@@ -50,7 +50,7 @@ void set_pll_cpux_axi(void) {
     sdelay(1);
 }
 
-void set_pll_periph0(void) {
+static inline void set_pll_periph0(void) {
     uint32_t reg_val;
 
     if ((1U << 31) & read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG)) {
@@ -78,7 +78,7 @@ void set_pll_periph0(void) {
     writel(reg_val, CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 }
 
-void set_ahb(void) {
+static inline void set_ahb(void) {
     /* PLL6:AHB1:APB1 = 600M:200M:100M */
     writel((2 << 0) | (0 << 8), CCU_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
     writel((0x03 << 24) | read32(CCU_BASE + CCU_PSI_AHB1_AHB2_CFG_REG), CCU_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
@@ -88,14 +88,14 @@ void set_ahb(void) {
     writel((0x03 << 24) | read32(CCU_BASE + CCU_AHB3_CFG_GREG), CCU_BASE + CCU_AHB3_CFG_GREG);
 }
 
-void set_apb(void) {
+static inline void set_apb(void) {
     /*PLL6:APB1 = 600M:100M */
     writel((2 << 0) | (1 << 8), CCU_BASE + CCU_APB1_CFG_GREG);
     writel((0x03 << 24) | read32(CCU_BASE + CCU_APB1_CFG_GREG), CCU_BASE + CCU_APB1_CFG_GREG);
     sdelay(1);
 }
 
-void set_pll_dma(void) {
+static inline void set_pll_dma(void) {
     /*dma reset*/
     writel(read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 16), CCU_BASE + CCU_DMA_BGR_REG);
     sdelay(20);
@@ -103,7 +103,7 @@ void set_pll_dma(void) {
     writel(read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 0), CCU_BASE + CCU_DMA_BGR_REG);
 }
 
-void set_pll_mbus(void) {
+static inline void set_pll_mbus(void) {
     uint32_t reg_val;
 
     /*reset mbus domain*/
@@ -130,7 +130,7 @@ void set_pll_mbus(void) {
     sdelay(1);
 }
 
-void set_circuits_analog(void) {
+static inline void set_circuits_analog(void) {
     /* calibration circuits analog enable */
     uint32_t reg_val;
 
@@ -162,7 +162,7 @@ static inline void set_iommu_auto_gating(void) {
     writel(0x01, IOMMU_AUTO_GATING_REG);
 }
 
-void set_platform_config(void) {
+static inline void set_platform_config(void) {
     /* 
      * At present, the audio codec finds a problem. VRA1 does not accelerate the power-on,
 	 * which will affect the stability of the bais circuit and affect the boot speed.
@@ -172,7 +172,7 @@ void set_platform_config(void) {
     set_iommu_auto_gating();
 }
 
-void set_modules_clock(void) {
+static inline void set_modules_clock(void) {
     uint32_t reg_val = 0x0;
     const uint32_t modules_reg_addrs[] = {
             CCU_BASE + CCU_BASE + 0x28,// peri1 clk
@@ -185,7 +185,7 @@ void set_modules_clock(void) {
             CCU_BASE + CCU_BASE + 0xE0,// csi clk
             CCU_BASE + CCU_BASE + 0x78 // audio clk
     };
-    
+
     for (int i = 0; i < sizeof(modules_reg_addrs) / sizeof(modules_reg_addrs[0]); i++) {
         reg_val = read32(modules_reg_addrs[i]);
         reg_val |= (1 << 31);
@@ -194,7 +194,7 @@ void set_modules_clock(void) {
     }
 }
 
-int sunxi_clock_init_gpadc(void) {
+static inline int sunxi_clock_init_gpadc(void) {
     uint32_t reg_val = 0;
     /* reset */
     reg_val = read32(CCU_BASE + CCU_GPADC_BGR_REG);
@@ -211,8 +211,6 @@ int sunxi_clock_init_gpadc(void) {
     writel(reg_val, CCU_BASE + CCU_GPADC_BGR_REG);
     return 0;
 }
-
-extern sunxi_serial_t uart_dbg;
 
 void sunxi_clk_init(void) {
     printk(LOG_LEVEL_DEBUG, "Set SoC 1823 (H616/H313/H618) CLK Start.\n");
@@ -354,7 +352,7 @@ void sunxi_clk_dump() {
         printk(LOG_LEVEL_DEBUG, "CLK: PLL_DDR0 disabled\r\n");
     }
 
-    
+
     /* PLL DDR1 */
     reg32 = read32(CCU_BASE + CCU_PLL_DDR1_CTRL_REG);
     if (reg32 & (1 << 31)) {
