@@ -3,6 +3,5 @@ add_library(arch-obj OBJECT
     memcmp.S
     memcpy.S
     memset.S
-    strncmp.S
     timer.c
 )
