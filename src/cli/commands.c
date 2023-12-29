@@ -7,8 +7,6 @@
 #include <sys-sid.h>
 #include <sys-wdt.h>
 
-#include <common.h>
-
 #include "cli.h"
 #include "cli_config.h"
 #include "cli_history.h"
@@ -78,7 +76,7 @@ static int cmd_get_sid(int argc, const char **argv) {
 }
 
 static int cmd_get_efuse(int argc, const char **argv) {
-    dump_efuse();
+    syter_efuse_dump();
     return 0;
 }
 

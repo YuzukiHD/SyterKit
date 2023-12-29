@@ -3,8 +3,12 @@
 #ifndef __SYS_RPROC_H__
 #define __SYS_RPROC_H__
 
-void sunxi_e907_clock_init(uint32_t addr);
-
-void sunxi_e907_clock_reset(void);
+#if defined(CONFIG_CHIP_SUN8IW21)
+    #include <sun8iw21/sys-rproc.h>
+#elif defined(CONFIG_CHIP_SUN8IW20)
+    #include <sun8iw20/sys-rproc.h>
+#else
+#error "Unsupported chip"
+#endif
 
 #endif// __SYS_RPROC_H__

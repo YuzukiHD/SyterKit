@@ -140,6 +140,7 @@ enum {
 enum {
     MMC_BUS_WIDTH_1 = 1,
     MMC_BUS_WIDTH_4 = 2,
+    MMC_BUS_WIDTH_8 = 3,
 };
 
 enum {

@@ -137,59 +137,59 @@ const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char 
         if (ret < 0) {
             return NULL;
         } else
-                /*
+            /*
          * No more chars to read. Case I
          */
-                if (ret == 0) {
-            switch (*(state.readpos)) {
-                case '\0':
-                    return cmdline;
-                case MSH_CMD_SEP_CHAR:
-                    return (state.readpos + 1);
-                default:
-                    uart_puts("Fatal error in parse() \n");
-                    return NULL;
+            if (ret == 0) {
+                switch (*(state.readpos)) {
+                    case '\0':
+                        return cmdline;
+                    case MSH_CMD_SEP_CHAR:
+                        return (state.readpos + 1);
+                    default:
+                        uart_puts("Fatal error in parse() \n");
+                        return NULL;
+                }
             }
-        }
 
-        /*
+            /*
          * Normal
          */
-        else {
-            (*pargc)++;
-            char stopchar = *(state.readpos);
-            /*
+            else {
+                (*pargc)++;
+                char stopchar = *(state.readpos);
+                /*
              * No more chars to read. Case II
              */
-            if (stopchar == '\0') {
-                return cmdline;
-            }
+                if (stopchar == '\0') {
+                    return cmdline;
+                }
 
-            /*
+                /*
              * End of command by ';'.
              * Tell the caller where to restart.
              */
-            if (stopchar == MSH_CMD_SEP_CHAR) {
-                state.readpos++; /* skip ';' */
-                return (state.readpos);
-            }
+                if (stopchar == MSH_CMD_SEP_CHAR) {
+                    state.readpos++; /* skip ';' */
+                    return (state.readpos);
+                }
 
-            /*
+                /*
              * read_token() stoped by a argument separator.
              */
-            else if (isspace((unsigned) stopchar)) {
-                argv[*pargc] = state.writepos;
-                continue;
-            }
+                else if (isspace((unsigned) stopchar)) {
+                    argv[*pargc] = state.writepos;
+                    continue;
+                }
 
-            /*
+                /*
              * Can't be!!
              */
-            else {
-                uart_puts("Fatal error in parse() ");
-                return NULL;
+                else {
+                    uart_puts("Fatal error in parse() ");
+                    return NULL;
+                }
             }
-        }
     }
 
     /* Tell the caller that whole line has processed */

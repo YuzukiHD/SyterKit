@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <types.h>
 
+#include "ctype.h"
 #include "sstdlib.h"
 
 static const char *_parse_integer_fixup_radix(const char *s, unsigned int *base) {

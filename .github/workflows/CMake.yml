@@ -4,9 +4,9 @@ name: CMake Build Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "v0.2.*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "v0.2.*" ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -28,7 +28,7 @@ jobs:
     - name: Configure CMake arm-none-eabi
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build-arm-none-eabi -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build-arm-none-eabi -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_BOARD_FILE=tinyvision.cmake
 
     - name: Build arm-none-eabi
       # Build your program with the given configuration
@@ -37,7 +37,7 @@ jobs:
     - name: Configure CMake arm-linux-gnueabihf
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build-arm-linux-gnueabihf -DCROSS_COMPILE=arm-linux-gnueabihf- -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build-arm-linux-gnueabihf -DCROSS_COMPILE=arm-linux-gnueabihf- -DCMAKE_BOARD_FILE=tinyvision.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build arm-linux-gnueabihf
       # Build your program with the given configuration
@@ -46,7 +46,7 @@ jobs:
     - name: Configure CMake arm-linux-gnueabi
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build-arm-linux-gnueabi -DCROSS_COMPILE=arm-linux-gnueabi- -DENABLE_HARDFP=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build-arm-linux-gnueabi -DCROSS_COMPILE=arm-linux-gnueabi- -DCMAKE_BOARD_FILE=tinyvision.cmake -DENABLE_HARDFP=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build arm-linux-gnueabi
       # Build your program with the given configuration

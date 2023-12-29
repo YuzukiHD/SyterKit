@@ -96,15 +96,23 @@ typedef struct {
 #define DMA_GATING_OFS 0
 
 void dma_init(void);
+
 void dma_exit(void);
 
 uint32_t dma_request(uint32_t dmatype);
+
 uint32_t dma_request_from_last(uint32_t dmatype);
+
 int dma_release(uint32_t hdma);
+
 int dma_setting(uint32_t hdma, dma_set_t *cfg);
+
 int dma_start(uint32_t hdma, uint32_t saddr, uint32_t daddr, uint32_t bytes);
+
 int dma_stop(uint32_t hdma);
+
 int dma_querystatus(uint32_t hdma);
+
 int dma_test(uint32_t *src_addr, uint32_t *dst_addr);
 
 #endif /* _SUNXI_DMA_H */
