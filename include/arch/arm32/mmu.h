@@ -166,11 +166,6 @@ static inline void arm32_icache_disable(void) {
     arm32_write_p15_c1(value & ~(1 << 12));
 }
 
-inline void data_sync_barrier(void) {
-    asm volatile("DSB");
-    asm volatile("ISB");
-}
-
 #ifdef __cplusplus
 }
 #endif

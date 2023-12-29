@@ -9,7 +9,7 @@
 * value back to the ACTLR register using coprocessor 
 * 15 (CP15) and its control register (CR).
 */
-inline void enable_kernel_smp(void) {
+static inline void enable_kernel_smp(void) {
     // Read ACTLR from coprocessor 15 (CP15), register c1
     asm volatile("MRC p15, 0, r0, c1, c0, 1");
     // Perform bitwise OR operation on register r0 with 0x040,
@@ -20,7 +20,7 @@ inline void enable_kernel_smp(void) {
     asm volatile("MCR p15, 0, r0, c1, c0, 1");
 }
 
-inline void syterkit_jmp(uint32_t addr) {
+static inline void syterkit_jmp(uint32_t addr) {
     // Move the constant value 0 into register r2
     asm volatile("mov r2, #0");
 
@@ -35,11 +35,11 @@ inline void syterkit_jmp(uint32_t addr) {
     asm volatile("bx r0");
 }
 
-inline void jmp_to_fel() {
+static inline void jmp_to_fel() {
     syterkit_jmp(0x20);
 }
 
-inline void syterkit_jmp_kernel(uint32_t addr, uint32_t fdt) {
+static inline void syterkit_jmp_kernel(uint32_t addr, uint32_t fdt) {
     void (*kernel_entry)(int zero, int arch, unsigned int params);
     kernel_entry = (void (*)(int, int, unsigned int)) addr;
     kernel_entry(0, ~0, (unsigned int) fdt);
