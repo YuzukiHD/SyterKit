@@ -11,7 +11,7 @@ add_subdirectory(init_dram)
 
 add_subdirectory(cli_test)
 
-add_subdirectory(arm64_test)
+add_subdirectory(load_bl31)
 
 add_subdirectory(smhc_test)
 
