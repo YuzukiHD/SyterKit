@@ -36,6 +36,7 @@ set(ARCH_BIN_SRAM_LENGTH "128K")
 set(ARCH_FEL_START_ADDRESS "0x00028000")
 set(ARCH_FEL_SRAM_LENGTH "128K")
 
+if(!CONFIG_USE_PREBUILT_DRAM_PAYLOAD)
 # Create an external project and build it
 ExternalProject_Add(
     init_dram
@@ -48,8 +49,6 @@ ExternalProject_Add(
 )
 
 # Create inital init dram bin file for build
-if(CONFIG_USE_PREBUILT_DRAM_PAYLOAD)
-else()
 add_custom_command(
     TARGET init_dram
     POST_BUILD COMMAND ${CMAKE_BIN2ARRAY} ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH} ${CONFIG_USE_DRAM_PAYLOAD_SECTION}
