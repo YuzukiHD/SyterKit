@@ -1,0 +1,3 @@
+[submodule "payloads"]
+	path = payloads
+	url = https://github.com/YuzukiHD/SyterKit-Payloads
