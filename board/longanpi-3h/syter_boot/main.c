@@ -21,10 +21,10 @@
 #include <cli_termesc.h>
 
 #include "sys-dram.h"
+#include "sys-i2c.h"
 #include "sys-rtc.h"
 #include "sys-sdcard.h"
 #include "sys-sid.h"
-#include "sys-i2c.h"
 #include "sys-spi.h"
 
 #include "fdt_wrapper.h"
@@ -606,6 +606,10 @@ int main(void) {
         mdelay(100);
         goto _fel;
     }
+    
+    pmu_axp1530_init(&i2c_pmu);
+    set_pmu_fin_voltage("dcdc2", 1100);
+    set_pmu_fin_voltage("dcdc3", 1100);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
