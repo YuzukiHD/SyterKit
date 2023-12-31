@@ -16,6 +16,7 @@ typedef struct {
     uint32_t speed;
     gpio_mux_t gpio_scl;
     gpio_mux_t gpio_sda;
+    bool status;
 } sunxi_i2c_t;
 
 enum {

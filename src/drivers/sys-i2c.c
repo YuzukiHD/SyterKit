@@ -388,13 +388,24 @@ i2c_write_err_occur:
 }
 
 int sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t data) {
+    if (!i2c_dev->status)
+        return I2C_NOK;
+
     return _sunxi_i2c_write(i2c_dev, addr, reg, 1, &data, 1);
 }
 
 int sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t *data) {
+    if (!i2c_dev->status)
+        return I2C_NOK;
+
     return _sunxi_i2c_read(i2c_dev, addr, reg, 1, data, 1);
 }
 
+/**
+ * @brief Set the clock frequency of sunxi_i2c.
+ * 
+ * @param i2c_dev Pointer to sunxi_i2c_t structure.
+ */
 static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
     struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 
@@ -496,4 +507,6 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 
     printk(LOG_LEVEL_DEBUG, "I2C: Bus open done.\n");
     sunxi_i2c_set_clock(i2c_dev);
+
+    i2c_dev->status = true;
 }
