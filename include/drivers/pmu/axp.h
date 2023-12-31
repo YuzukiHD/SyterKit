@@ -10,6 +10,8 @@
 
 #include <sys-i2c.h>
 
+#include "reg-axp.h"
+
 typedef struct _axp_step_info {
     uint32_t step_min_vol;
     uint32_t step_max_vol;
