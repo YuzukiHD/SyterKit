@@ -11,7 +11,6 @@
 #include <log.h>
 
 #include <pmu/axp.h>
-#include <pmu/reg-axp.h>
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
