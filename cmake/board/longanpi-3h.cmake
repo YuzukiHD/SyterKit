@@ -24,10 +24,10 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
-set(CMAKE_COMMON_FLAGS "-nostdlib -Os -mcpu=cortex-a53")
+set(CMAKE_COMMON_FLAGS "-nostdlib -Os -Wall -mcpu=cortex-a53")
 
 # Disable specific warning flags for C and C++ compilers
-set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
+set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 
 set(ARCH_BIN_START_ADDRESS "0x00020000")

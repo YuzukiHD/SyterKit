@@ -12,24 +12,31 @@
 
 #include "reg-axp.h"
 
+/**
+ * Structure describing a voltage step of the power domain.
+ */
 typedef struct _axp_step_info {
-    uint32_t step_min_vol;
-    uint32_t step_max_vol;
-    uint32_t step_val;
-    uint32_t regation;
+    uint32_t step_min_vol;  // Minimum voltage level for the step.
+    uint32_t step_max_vol;  // Maximum voltage level for the step.
+    uint32_t step_val;      // Voltage increment value for the step.
+    uint32_t regation;      // Regulator register address.
 } axp_step_info_t;
 
+/**
+ * Structure describing the control information of a power domain.
+ */
 typedef struct _axp_contrl_info {
-    char name[16];
-    uint32_t min_vol;
-    uint32_t max_vol;
-    uint32_t cfg_reg_addr;
-    uint32_t cfg_reg_mask;
-    uint32_t ctrl_reg_addr;
-    uint32_t ctrl_bit_ofs;
-    uint32_t reg_addr_offest;
-    axp_step_info_t axp_step_tbl[4];
+    char name[16];              // Name of the power domain.
+    uint32_t min_vol;           // Minimum voltage level for the domain.
+    uint32_t max_vol;           // Maximum voltage level for the domain.
+    uint32_t cfg_reg_addr;      // Configuration register address.
+    uint32_t cfg_reg_mask;      // Configuration register mask.
+    uint32_t ctrl_reg_addr;     // Control register address.
+    uint32_t ctrl_bit_ofs;      // Bit offset in the control register.
+    uint32_t reg_addr_offset;   // Offset of the register address.
+    axp_step_info_t axp_step_tbl[4]; // Voltage step table for the domain.
 } axp_contrl_info;
+
 
 /* AXP1530 */
 

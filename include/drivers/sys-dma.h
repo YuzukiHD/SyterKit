@@ -95,24 +95,84 @@ typedef struct {
 #define DMA_RST_OFS 16
 #define DMA_GATING_OFS 0
 
+/**
+ * Initialize the DMA subsystem.
+ */
 void dma_init(void);
 
+/**
+ * Clean up and exit the DMA subsystem.
+ */
 void dma_exit(void);
 
+/**
+ * Request a DMA channel of the specified type.
+ *
+ * @param dmatype The type of DMA channel to request.
+ * @return The DMA channel number if successful, or an error code if failed.
+ */
 uint32_t dma_request(uint32_t dmatype);
 
+/**
+ * Request a DMA channel from the last allocated channel of the specified type.
+ *
+ * @param dmatype The type of DMA channel to request.
+ * @return The DMA channel number if successful, or an error code if failed.
+ */
 uint32_t dma_request_from_last(uint32_t dmatype);
 
+/**
+ * Release a previously requested DMA channel.
+ *
+ * @param hdma The DMA channel number to release.
+ * @return 0 if successful, or an error code if failed.
+ */
 int dma_release(uint32_t hdma);
 
+/**
+ * Configure the settings of a DMA channel.
+ *
+ * @param hdma The DMA channel number to configure.
+ * @param cfg Pointer to the DMA configuration structure.
+ * @return 0 if successful, or an error code if failed.
+ */
 int dma_setting(uint32_t hdma, dma_set_t *cfg);
 
+/**
+ * Start a DMA transfer.
+ *
+ * @param hdma The DMA channel number to start the transfer on.
+ * @param saddr Source address of the data to transfer.
+ * @param daddr Destination address to transfer the data to.
+ * @param bytes Number of bytes to transfer.
+ * @return 0 if successful, or an error code if failed.
+ */
 int dma_start(uint32_t hdma, uint32_t saddr, uint32_t daddr, uint32_t bytes);
 
+/**
+ * Stop a currently running DMA transfer.
+ *
+ * @param hdma The DMA channel number to stop the transfer on.
+ * @return 0 if successful, or an error code if failed.
+ */
 int dma_stop(uint32_t hdma);
 
+/**
+ * Query the status of a DMA transfer.
+ *
+ * @param hdma The DMA channel number to query status for.
+ * @return The status of the DMA transfer.
+ */
 int dma_querystatus(uint32_t hdma);
 
+/**
+ * Perform a test DMA transfer between the specified source and destination addresses.
+ *
+ * @param src_addr Pointer to the source address.
+ * @param dst_addr Pointer to the destination address.
+ * @return 0 if successful, or an error code if failed.
+ */
 int dma_test(uint32_t *src_addr, uint32_t *dst_addr);
+
 
 #endif /* _SUNXI_DMA_H */

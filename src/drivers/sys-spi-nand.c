@@ -15,8 +15,8 @@
 #include <sys-dma.h>
 #include <sys-gpio.h>
 
-#include "sys-spi.h"
 #include "sys-spi-nand.h"
+#include "sys-spi.h"
 
 enum {
     OPCODE_READ_ID = 0x9f,
@@ -110,12 +110,12 @@ static spi_nand_info_t info; /* Static variable to store SPI NAND information */
  */
 static int spi_nand_info(sunxi_spi_t *spi) {
     spi_nand_info_t *info_table; /* Pointer to the SPI NAND information table */
-    spi_nand_id_t id; /* Structure to store the SPI NAND ID */
-    uint8_t tx[1]; /* Transmit buffer */
-    uint8_t rx[4], *rxp; /* Receive buffer and pointer */
-    int i, r; /* Loop counter and return value */
+    spi_nand_id_t id;            /* Structure to store the SPI NAND ID */
+    uint8_t tx[1];               /* Transmit buffer */
+    uint8_t rx[4], *rxp;         /* Receive buffer and pointer */
+    int i, r;                    /* Loop counter and return value */
 
-    tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
+    tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
@@ -165,11 +165,11 @@ static int spi_nand_info(sunxi_spi_t *spi) {
  * @param spi Pointer to the sunxi_spi_t structure.
  * @return 0 on success, -1 on failure.
  */
-static int spi_nand_reset(sunxi_spi_t *spi) {
+__attribute__((unused)) static int spi_nand_reset(sunxi_spi_t *spi) {
     uint8_t tx[1]; /* Transmit buffer */
-    int r; /* Return value */
+    int r;         /* Return value */
 
-    tx[0] = OPCODE_RESET; /* Command to reset SPI NAND */
+    tx[0] = OPCODE_RESET;                                    /* Command to reset SPI NAND */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         return -1;
@@ -189,10 +189,10 @@ static int spi_nand_reset(sunxi_spi_t *spi) {
  */
 static int spi_nand_get_config(sunxi_spi_t *spi, uint8_t addr, uint8_t *val) {
     uint8_t tx[2]; /* Transmit buffer */
-    int r; /* Return value */
+    int r;         /* Return value */
 
-    tx[0] = OPCODE_READ_STATUS; /* Command to read status register */
-    tx[1] = addr; /* Address to read from */
+    tx[0] = OPCODE_READ_STATUS;                                /* Command to read status register */
+    tx[1] = addr;                                              /* Address to read from */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, val, 1); /* Perform SPI transfer */
     if (r < 0)
         return -1;
@@ -210,11 +210,11 @@ static int spi_nand_get_config(sunxi_spi_t *spi, uint8_t addr, uint8_t *val) {
  */
 static int spi_nand_set_config(sunxi_spi_t *spi, uint8_t addr, uint8_t val) {
     uint8_t tx[3]; /* Transmit buffer */
-    int r; /* Return value */
+    int r;         /* Return value */
 
-    tx[0] = OPCODE_WRITE_STATUS; /* Command to write status register */
-    tx[1] = addr; /* Address to write to */
-    tx[2] = val; /* Value to be written */
+    tx[0] = OPCODE_WRITE_STATUS;                             /* Command to write status register */
+    tx[1] = addr;                                            /* Address to write to */
+    tx[2] = val;                                             /* Value to be written */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 3, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         return -1;
@@ -230,10 +230,10 @@ static int spi_nand_set_config(sunxi_spi_t *spi, uint8_t addr, uint8_t val) {
 static void spi_nand_wait_while_busy(sunxi_spi_t *spi) {
     uint8_t tx[2]; /* Transmit buffer */
     uint8_t rx[1]; /* Receive buffer */
-    int r; /* Return value */
+    int r;         /* Return value */
 
     tx[0] = OPCODE_READ_STATUS; /* Command to read status register */
-    tx[1] = 0xc0; /* SR3 address */
+    tx[1] = 0xc0;               /* SR3 address */
     rx[0] = 0x00;
 
     do {
@@ -305,18 +305,18 @@ int spi_nand_detect(sunxi_spi_t *spi) {
  * @return 0 on success, -1 on failure.
  */
 static int spi_nand_load_page(sunxi_spi_t *spi, uint32_t offset) {
-    uint32_t pa; /* Page address */
+    uint32_t pa;   /* Page address */
     uint8_t tx[4]; /* Transmit buffer */
 
     pa = offset / info.page_size; /* Calculate page address */
 
-    tx[0] = OPCODE_READ_PAGE; /* Command to read page */
+    tx[0] = OPCODE_READ_PAGE;     /* Command to read page */
     tx[1] = (uint8_t) (pa >> 16); /* High byte of page address */
-    tx[2] = (uint8_t) (pa >> 8); /* Middle byte of page address */
-    tx[3] = (uint8_t) (pa >> 0); /* Low byte of page address */
+    tx[2] = (uint8_t) (pa >> 8);  /* Middle byte of page address */
+    tx[3] = (uint8_t) (pa >> 0);  /* Low byte of page address */
 
     sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, 0, 0); /* Perform SPI transfer */
-    spi_nand_wait_while_busy(spi); /* Wait until SPI NAND is not busy */
+    spi_nand_wait_while_busy(spi);                       /* Wait until SPI NAND is not busy */
 
     return 0; /* Return success */
 }
@@ -332,12 +332,12 @@ static int spi_nand_load_page(sunxi_spi_t *spi, uint32_t offset) {
  */
 uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen) {
     uint32_t address = addr; /* Current address */
-    uint32_t cnt = rxlen; /* Remaining bytes to read */
-    uint32_t n; /* Number of bytes to read in each iteration */
-    uint32_t len = 0; /* Total number of bytes read */
-    uint32_t ca; /* Current address within a page */
-    uint32_t txlen = 4; /* Transmit buffer length */
-    uint8_t tx[6]; /* Transmit buffer */
+    uint32_t cnt = rxlen;    /* Remaining bytes to read */
+    uint32_t n;              /* Number of bytes to read in each iteration */
+    uint32_t len = 0;        /* Total number of bytes read */
+    uint32_t ca;             /* Current address within a page */
+    uint32_t txlen = 4;      /* Transmit buffer length */
+    uint8_t tx[6];           /* Transmit buffer */
 
     int read_opcode = OPCODE_READ; /* Read opcode */
     switch (info.mode) {
@@ -402,6 +402,6 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 
         sunxi_spi_transfer(spi, info.mode, tx, txlen, buf, rxlen);
     }
-  
+
     return len; /* Return total number of bytes read */
 }

@@ -40,9 +40,29 @@
 #define XCFG_FORMAT_LONGLONG 0
 #endif
 
-unsigned xvformat(void (*outchar)(void *arg, char), void *arg, const char *fmt,
-		  va_list args);
-unsigned xformat(void (*outchar)(void *arg, char), void *arg, const char *fmt,
-		 ...);
+/**
+ * Formats and outputs a string according to a format string 'fmt' and a variable argument list 'args'.
+ * The output is written character by character using a user-defined output function 'outchar'.
+ *
+ * @param outchar The output function that writes a single character.
+ * @param arg A pointer to optional arguments for the output function.
+ * @param fmt The format string specifying the output format.
+ * @param args The variable argument list containing the values to be formatted and output.
+ * @return The number of characters written.
+ */
+unsigned xvformat(void (*outchar)(void *arg, char), void *arg, const char *fmt, va_list args);
+
+/**
+ * Formats and outputs a string according to a format string 'fmt' and an arbitrary number of variable arguments.
+ * The output is written character by character using a user-defined output function 'outchar'.
+ *
+ * @param outchar The output function that writes a single character.
+ * @param arg A pointer to optional arguments for the output function.
+ * @param fmt The format string specifying the output format.
+ * @param ... The variable arguments containing the values to be formatted and output.
+ * @return The number of characters written.
+ */
+unsigned xformat(void (*outchar)(void *arg, char), void *arg, const char *fmt, ...);
+
 
 #endif
