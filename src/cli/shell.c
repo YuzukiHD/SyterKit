@@ -36,7 +36,6 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
         /* Loop for parse line and executing commands. */
         const char *linebufp = linebuf;
         while (1) {
-            int i;
             const char *ret_parse;
             int ret_command = -1;
 
@@ -53,9 +52,9 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 
 #if (MSH_ARGS_DEBUG == 1)
             uart_puts(" args> ");
-            for ( i = argc-1; i > 0; i-- ) {
+            for (int i = argc - 1; i > 0; i--) {
                 uart_puts(argv[i]);
-                if ( i > 1 ) {
+                if (i > 1) {
                     uart_puts(", ");
                 }
             }

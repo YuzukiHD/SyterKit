@@ -54,4 +54,6 @@ uint64_t sunxi_dram_init() {
 
     /* And Restore RTC Flag */
     rtc_clear_fel_flag();
+
+    return dram_size;
 }

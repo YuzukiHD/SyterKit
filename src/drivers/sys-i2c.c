@@ -33,7 +33,7 @@
 #define I2C_DATAREAD_NACK 0x58
 #define I2C_DATAREAD_ACK 0x50
 
-static void i2c_debug(sunxi_i2c_t *i2c_dev) {
+__attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev) {
     struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
     printk(LOG_LEVEL_DEBUG, "i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
     printk(LOG_LEVEL_DEBUG, "i2c->xaddr :\t0x%x:0x%x\n", &i2c->xaddr, i2c->xaddr);
@@ -278,7 +278,6 @@ static int32_t sunxi_i2c_send_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uin
  * @return int Number of status
  */
 static int _sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, int alen, uint8_t *buffer, int len) {
-    struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
     int i, ret, addrlen;
     char *slave_reg;
 
@@ -343,7 +342,6 @@ i2c_read_err_occur:
  * @return int Number of status
  */
 static int _sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, int alen, uint8_t *buffer, int len) {
-    struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
     int i, ret, ret0, addrlen;
     char *slave_reg;
 

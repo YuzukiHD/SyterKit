@@ -60,12 +60,37 @@ typedef struct {
     uint8_t mux;
 } gpio_mux_t;
 
-extern void sunxi_gpio_init(gpio_t pin, int cfg);
+/**
+ * Initialize the specified GPIO pin with the given configuration.
+ *
+ * @param pin The GPIO pin to initialize.
+ * @param cfg The configuration value for the GPIO pin.
+ */
+void sunxi_gpio_init(gpio_t pin, int cfg);
 
-extern void sunxi_gpio_set_value(gpio_t pin, int value);
+/**
+ * Set the value of the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the value for.
+ * @param value The value to be set (0 or 1) for the GPIO pin.
+ */
+void sunxi_gpio_set_value(gpio_t pin, int value);
 
-extern int sunxi_gpio_read(gpio_t pin);
+/**
+ * Read the value of the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to read the value from.
+ * @return The value (0 or 1) read from the GPIO pin.
+ */
+int sunxi_gpio_read(gpio_t pin);
 
-extern void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
+/**
+ * Set the pull configuration for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the pull configuration for.
+ * @param pull The pull configuration to be set for the GPIO pin.
+ */
+void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
 
-#endif // __SYS_GPIO_H__
+
+#endif// __SYS_GPIO_H__

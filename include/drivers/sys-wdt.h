@@ -12,6 +12,13 @@
 
 #include "log.h"
 
+/**
+ * Perform a system reset.
+ *
+ * This function resets the system, causing it to restart.
+ * Any unsaved data or state will be lost.
+ */
 void sys_reset();
+
 
 #endif// __SYS_WDT_H__
