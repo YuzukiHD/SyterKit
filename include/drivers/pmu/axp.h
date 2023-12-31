@@ -31,12 +31,43 @@ typedef struct _axp_contrl_info {
     axp_step_info_t axp_step_tbl[4];
 } axp_contrl_info;
 
+/* AXP1530 */
+
+/**
+ * Initialize the AXP1530 PMU.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @return 0 if successful, -1 if an error occurred.
+ */
 int pmu_axp1530_init(sunxi_i2c_t *i2c_dev);
 
+/**
+ * Get the voltage value of a specific power domain from the AXP1530 PMU.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @param name Name of the power domain.
+ * @return The voltage value of the power domain, or -1 if an error occurred.
+ */
 int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name);
 
+/**
+ * Set the voltage value of a specific power domain on the AXP1530 PMU.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @param name Name of the power domain.
+ * @param set_vol Voltage value to set.
+ * @param onoff On/Off switch for the power domain (1 - On, 0 - Off).
+ * @return 0 if successful, -1 if an error occurred.
+ */
 int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);
 
+/**
+ * Dump the register values of the AXP1530 PMU.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ */
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev);
+
+
 
 #endif // __G_AXP_H__
