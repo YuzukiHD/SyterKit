@@ -8,6 +8,10 @@
 #include <stdint.h>
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 #define ALIGN(size, align) (((size) + (align) -1) & (~((align) -1)))
@@ -39,5 +43,9 @@ void abort(void);
 int raise(int signum);
 
 void show_banner(void);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __COMMON_H__

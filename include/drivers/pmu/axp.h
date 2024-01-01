@@ -12,6 +12,10 @@
 
 #include "reg-axp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 /**
  * Structure describing a voltage step of the power domain.
  */
@@ -75,6 +79,8 @@ int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff
  */
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev);
 
-
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __G_AXP_H__

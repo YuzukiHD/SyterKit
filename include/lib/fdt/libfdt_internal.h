@@ -7,6 +7,10 @@
  */
 #include <fdt.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 #define FDT_ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
 #define FDT_TAGALIGN(x)		(FDT_ALIGN((x), FDT_TAGSIZE))
 
@@ -188,5 +192,9 @@ static inline bool can_assume_(int mask)
 
 /** helper macros for checking assumptions */
 #define can_assume(_assume)	can_assume_(ASSUME_ ## _assume)
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* LIBFDT_INTERNAL_H */

@@ -10,6 +10,10 @@
 #include <stdint.h>
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 typedef struct {
     uint32_t base;
     uint8_t id;
@@ -109,5 +113,9 @@ int sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t *da
  * D8h	  Second Address byte + Write bit transmitted, ACK not received
  * F8h	  No relevant status information or no interrupt
  *-----------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SYS_I2C_H__

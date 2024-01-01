@@ -22,6 +22,10 @@
 #include <stdarg.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /**
  * Define internal parameters as volatile for 8 bit cpu define
  * XCFG_FORMAT_STATIC=static to reduce stack usage.
@@ -64,5 +68,8 @@ unsigned xvformat(void (*outchar)(void *arg, char), void *arg, const char *fmt, 
  */
 unsigned xformat(void (*outchar)(void *arg, char), void *arg, const char *fmt, ...);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

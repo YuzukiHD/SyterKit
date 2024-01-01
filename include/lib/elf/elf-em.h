@@ -1,6 +1,10 @@
 #ifndef _LINUX_ELF_EM_H
 #define _LINUX_ELF_EM_H
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /* These constants define the various ELF target machines */
 #define EM_NONE 0
 #define EM_M32 1
@@ -56,5 +60,9 @@
 #define EM_S390_OLD 0xA390
 /* Also Panasonic/MEI MN10300, AM33 */
 #define EM_CYGNUS_MN10300 0xbeef
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* _LINUX_ELF_EM_H */

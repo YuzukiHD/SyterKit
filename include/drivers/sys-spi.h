@@ -15,6 +15,10 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 typedef enum {
     SPI_IO_SINGLE = 0x00,
     SPI_IO_DUAL_RX,
@@ -62,5 +66,8 @@ void sunxi_spi_disable(sunxi_spi_t *spi);
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

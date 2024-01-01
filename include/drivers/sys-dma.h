@@ -15,6 +15,10 @@
 
 #include "reg-dma.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 typedef struct {
     uint32_t volatile config;
     uint32_t volatile source_addr;
@@ -174,5 +178,8 @@ int dma_querystatus(uint32_t hdma);
  */
 int dma_test(uint32_t *src_addr, uint32_t *dst_addr);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* _SUNXI_DMA_H */

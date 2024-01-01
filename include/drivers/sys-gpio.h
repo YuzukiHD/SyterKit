@@ -13,6 +13,10 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 enum {
     GPIO_INPUT = 0,
     GPIO_OUTPUT = 1,
@@ -92,5 +96,8 @@ int sunxi_gpio_read(gpio_t pin);
  */
 void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SYS_GPIO_H__
