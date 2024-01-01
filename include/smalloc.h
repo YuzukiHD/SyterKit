@@ -6,6 +6,10 @@
 #include <stdint.h>
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 struct alloc_struct_t {
     phys_addr_t address;
     uint32_t size;
@@ -48,5 +52,8 @@ void *srealloc(void *p, uint32_t num_bytes);
  */
 void sfree(void *p);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SMALLOC_H__

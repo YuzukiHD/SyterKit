@@ -3,6 +3,10 @@
 #ifndef __CTYPE_H__
 #define __CTYPE_H__
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /**
  * Check if the given character is alphanumeric.
  *
@@ -131,5 +135,8 @@ int tolower(int c);
  */
 int toupper(int c);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* __CTYPE_H__ */

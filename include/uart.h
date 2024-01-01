@@ -3,6 +3,10 @@
 #ifndef __CLI_UART_H__
 #define __CLI_UART_H__
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /**
  * Writes a single character 'c' to the UART output.
  *
@@ -55,5 +59,9 @@ int tstc();
  * @return The number of characters written, excluding the terminating null byte.
  */
 extern int puts(const char *);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif//__CLI_UART_H__

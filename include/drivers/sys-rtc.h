@@ -12,6 +12,10 @@
 
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 #define EFEX_FLAG (0x5AA5A55A)
 #define RTC_FEL_INDEX 2
 #define RTC_BOOT_INDEX 6
@@ -72,5 +76,8 @@ int rtc_set_bootmode_flag(uint8_t flag);
  */
 int rtc_get_bootmode_flag(void);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __SYS_RTC_H__

@@ -5,6 +5,10 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /**
  * Copies the values of 'cnt' bytes from memory area 'src' to memory area 'dst'.
  *
@@ -146,5 +150,8 @@ void *memchr(void *ptr, int value, unsigned int num);
  */
 void *memmove(void *dest, const void *src, unsigned int count);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* #ifndef __STRING_H__ */

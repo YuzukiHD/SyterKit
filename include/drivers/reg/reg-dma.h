@@ -5,6 +5,10 @@
 
 #include <reg-ncat.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
+
 #define SUNXI_DMA_CHANNEL_BASE (SUNXI_DMA_BASE + 0x100)
 #define DMA_AUTO_GATE_REG (SUNXI_DMA_BASE + 0x28)
 
@@ -57,5 +61,9 @@
 #define DMA_PKG_HALF_INT (1 << 0)
 #define DMA_PKG_END_INT (1 << 1)
 #define DMA_QUEUE_END_INT (1 << 2)
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __REG_DMA_H__

@@ -28,8 +28,16 @@
 #ifndef __MEDIA_H__
 #define __MEDIA_H__
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 extern int sdmmc_initialize(void);
 
 extern unsigned int sdmmc_block_read(unsigned int start, unsigned int blkcnt, void *dest);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif

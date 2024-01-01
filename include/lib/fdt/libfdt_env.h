@@ -14,6 +14,10 @@
 #include <string.h>
 #include <limits.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 #ifdef __CHECKER__
 #define FDT_FORCE __attribute__((force))
 #define FDT_BITWISE __attribute__((bitwise))
@@ -92,5 +96,9 @@ static inline size_t fdt_strnlen(const char *string, size_t max_count)
           MAC_OS_X_VERSION_10_7) */
 
 #endif /* __APPLE__ */
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* LIBFDT_ENV_H */

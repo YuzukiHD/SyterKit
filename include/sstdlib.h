@@ -5,6 +5,10 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif // __cplusplus
+
 /**
  * Convert a string to an unsigned long integer, with optional base detection.
  *
@@ -153,5 +157,8 @@ long long simple_atoll(const char *nptr);
  */
 int simple_abs(int n);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif// __STDLIB_H__
