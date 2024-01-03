@@ -146,7 +146,7 @@ configure_file(
 )
 endif()
 
-# If the CONFIG_ARCH_ARM32 variable is defined, execute the following content
+# If the CONFIG_ARCH_RISCV64 variable is defined, execute the following content
 if (CONFIG_ARCH_RISCV64)
 set(ARCH_INCLUDE include/arch/riscv64)
 
@@ -163,6 +163,27 @@ set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/link/riscv64/link.ld"
+    "${PROJECT_BINARY_DIR}/link_elf.ld"
+)
+endif()
+
+# If the CONFIG_ARCH_RISCV32 variable is defined, execute the following content
+if (CONFIG_ARCH_RISCV32)
+set(ARCH_INCLUDE include/arch/riscv32)
+
+set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/riscv32/link.ld"
+    "${PROJECT_BINARY_DIR}/link_bin.ld"
+)
+
+set(ARCH_START_ADDRESS "${ARCH_FEL_START_ADDRESS}")
+set(ARCH_SRAM_LENGTH "${ARCH_FEL_SRAM_LENGTH}")
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/link/riscv32/link.ld"
     "${PROJECT_BINARY_DIR}/link_elf.ld"
 )
 endif()
