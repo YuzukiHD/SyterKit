@@ -980,8 +980,8 @@ static int dqs_gate_detect(dram_para_t *para) {
     if ((para->dram_tpr13 & BIT(29)) == 0)
         return 0;
 
-    printk(LOG_LEVEL_DEBUG, "DX0 state: %" PRIu32 "\r\n", dx0);
-    printk(LOG_LEVEL_DEBUG, "DX1 state: %" PRIu32 "\r\n", dx1);
+    printk(LOG_LEVEL_DEBUG, "DX0 state: %lu\r\n", dx0);
+    printk(LOG_LEVEL_DEBUG, "DX1 state: %lu\r\n", dx1);
 
     return 0;
 }
@@ -1118,7 +1118,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
             i = 16;
         addr_line += i;
 
-        printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " row = %" PRIu32 " \r\n", current_rank, i);
+        printk(LOG_LEVEL_DEBUG, "rank %lu row = %lu \r\n", current_rank, i);
 
         /* Store rows in para 1 */
         para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
@@ -1149,7 +1149,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
         }
 
         addr_line += i + 2;
-        printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " bank = %" PRIu32 " \r\n", current_rank, (4 + i * 4));
+        printk(LOG_LEVEL_DEBUG, "rank %lu bank = %lu \r\n", current_rank, (4 + i * 4));
 
         /* Store bank in para 1 */
         para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
@@ -1194,7 +1194,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
             i = (0x1U << (i - 10));
         }
 
-        printk(LOG_LEVEL_DEBUG, "rank %" PRIu32 " page size = %" PRIu32 " KB \r\n", current_rank, i);
+        printk(LOG_LEVEL_DEBUG, "rank %lu page size = %lu KB \r\n", current_rank, i);
 
         /* Store page in para 1 */
         para->dram_para1 &= ~(0xfU << (16 * current_rank));

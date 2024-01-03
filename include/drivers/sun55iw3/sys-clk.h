@@ -1,5 +1,5 @@
-#ifndef __SUN8IW21_CLK_H__
-#define __SUN8IW21_CLK_H__
+#ifndef __SUN55IW3_CLK_H__
+#define __SUN55IW3_CLK_H__
 
 #include "reg/reg-ccu.h"
 
@@ -32,4 +32,4 @@ void sunxi_clk_dump(void);
 uint32_t sunxi_clk_get_peri1x_rate();
 
 
-#endif// __SUN8IW21_CLK_H__
+#endif// __SUN55IW3_CLK_H__

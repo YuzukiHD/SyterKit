@@ -4,6 +4,8 @@ elseif(CONFIG_CHIP_SUN8IW20)
     add_subdirectory(sun8iw20)
 elseif(CONFIG_CHIP_SUN50IW9)
     add_subdirectory(sun50iw9)
+elseif(CONFIG_CHIP_SUN55IW3)
+    add_subdirectory(sun55iw3)
 endif()
 
 set(DRIVER_PMU "")

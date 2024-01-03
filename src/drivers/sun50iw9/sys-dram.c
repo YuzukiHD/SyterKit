@@ -24,7 +24,7 @@
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
-uint64_t sunxi_dram_init() {
+uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
 

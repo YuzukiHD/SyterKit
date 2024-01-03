@@ -17,3 +17,7 @@ endif()
 if(CONFIG_BOARD_LONGANPI-3H)
     add_subdirectory(longanpi-3h)
 endif()
+
+if(CONFIG_BOARD_LONGANPI-4B)
+    add_subdirectory(longanpi-4b)
+endif()
