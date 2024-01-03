@@ -7,8 +7,13 @@ include(ExternalProject)
 
 # Define the path to the board loader files
 set(BOARD_FLOADER_PATH ${CMAKE_SOURCE_DIR}/cmake/board/)
+
+# Define the path to the lib loader files
+set(BOARD_LIB_PATH ${CMAKE_SOURCE_DIR}/cmake/lib/)
+
 # Define the path to the mksunxi tool
 set(CMAKE_MKSUNXI "${CMAKE_SOURCE_DIR}/tools/mksunxi")
+
 # Define the path to the bin2array tool
 set(CMAKE_BIN2ARRAY "${CMAKE_SOURCE_DIR}/tools/bin2array")
 
@@ -18,6 +23,11 @@ if(CMAKE_BOARD_FILE)
     set(CMAKE_BOARD_FILE ${BOARD_FLOADER_PATH}${CMAKE_BOARD_FILE})
     message(STATUS "CMAKE_BOARD_FILE = ${CMAKE_BOARD_FILE}")
     include(${CMAKE_BOARD_FILE})
+elseif(CMAKE_LIB_FILE)
+    # Set the value of CMAKE_LIB_FILE and include the file
+    set(CMAKE_LIB_FILE ${BOARD_LIB_PATH}${CMAKE_LIB_FILE})
+    message(STATUS "CMAKE_LIB_FILE = ${CMAKE_LIB_FILE}")
+    include(${CMAKE_LIB_FILE})
 else()
     set(CMAKE_AVALIABLE_BOARD "")
     file(GLOB FILE_LIST "${BOARD_FLOADER_PATH}/*.cmake")
@@ -25,12 +35,25 @@ else()
         get_filename_component(BOARD_FILE_NAME ${FILE_PATH} NAME)
         set(CMAKE_AVALIABLE_BOARD "${CMAKE_AVALIABLE_BOARD}\n ${BOARD_FILE_NAME}")
     endforeach()
+
+    set(CMAKE_AVALIABLE_LIB "")
+    file(GLOB FILE_LIST "${BOARD_LIB_PATH}/*.cmake")
+    foreach(FILE_PATH ${FILE_LIST})
+        get_filename_component(LIB_FILE_NAME ${FILE_PATH} NAME)
+        set(CMAKE_AVALIABLE_LIB "${CMAKE_AVALIABLE_LIB}\n ${LIB_FILE_NAME}")
+    endforeach()
+
     message(FATAL_ERROR 
         "You need to select target Board:" 
         "${CMAKE_AVALIABLE_BOARD}" 
         "\nUse -DCMAKE_BOARD_FILE=xxx.cmake to define target board"
         "\neg:"
         "\n cmake -DCMAKE_BOARD_FILE=tinyvision.cmake .."
+        "\n\nIf SyterKit is built as a lib, Please select target LIB:"
+        "${CMAKE_AVALIABLE_LIB}" 
+        "\nUse -DCMAKE_LIB_FILE=xxx.cmake to define target LIB"
+        "\neg:"
+        "\n cmake -DCMAKE_LIB_FILE=generic_sun8iw21.cmake .."
     )
 endif()
 
