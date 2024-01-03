@@ -54,7 +54,7 @@ int main(void) {
 
     pmu_axp1530_dump(&i2c_pmu);
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init());
+    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
 
