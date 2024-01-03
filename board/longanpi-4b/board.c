@@ -23,8 +23,8 @@
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTH, 0), GPIO_PERIPH_MUX2},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTH, 1), GPIO_PERIPH_MUX2},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
 };
 
 sunxi_spi_t sunxi_spi0 = {

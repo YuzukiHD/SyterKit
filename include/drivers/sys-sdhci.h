@@ -13,6 +13,8 @@ extern "C" {
     #include <sun8iw20/sys-sdhci.h>
 #elif defined(CONFIG_CHIP_SUN50IW9)
     #include <sun50iw9/sys-sdhci.h>
+#elif defined(CONFIG_CHIP_SUN55IW3)
+    #include <sun55iw3/sys-sdhci.h>
 #else
 #   error "Unsupported chip"
 #endif

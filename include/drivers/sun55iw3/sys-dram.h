@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef __SUN50IW9_SYS_DRAM_H__
-#define __SUN50IW9_SYS_DRAM_H__
+#ifndef __SUN55IW3_SYS_DRAM_H__
+#define __SUN55IW3_SYS_DRAM_H__
 
 #include <io.h>
 #include <stdarg.h>
@@ -14,4 +14,4 @@
 
 uint64_t sunxi_dram_init(void *para);
 
-#endif // __SUN50IW9_SYS_DRAM_H__
+#endif // __SUN55IW3_SYS_DRAM_H__

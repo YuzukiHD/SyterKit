@@ -43,24 +43,23 @@ reset:
 	msr cpsr_c, r0
 
 	/* Set vector base address register */
-
 	ldr r0, =_vector
 	mcr p15, 0, r0, c12, c0, 0
 	mrc p15, 0, r0, c1, c0, 0
 	bic r0, #(1 << 13)
 	mcr p15, 0, r0, c1, c0, 0
 
-	mrc     p15, 0, r0, c1, c0, 0
-	bic     r0, r0, #0x00002000     @ clear bits 13 (--V-)
-	bic     r0, r0, #0x00000007     @ clear bits 2:0 (-CAM)
-	orr     r0, r0, #0x00000800     @ set bit 11 (Z---) BTB
-	bic     r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
-	mcr     p15, 0, r0, c1, c0, 0
+	mrc p15, 0, r0, c1, c0, 0
+	bic r0, r0, #0x00002000     @ clear bits 13 (--V-)
+	bic r0, r0, #0x00000007     @ clear bits 2:0 (-CAM)
+	orr r0, r0, #0x00000800     @ set bit 11 (Z---) BTB
+	bic r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
+	mcr p15, 0, r0, c1, c0, 0
 
 	/* Set stack pointer */
 	ldr sp, =__stack_srv_end
 
-	bl  clear_bss
+	bl clear_bss
 
 	/*
 	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
@@ -73,10 +72,6 @@ reset:
 	orrne   r0, r0, #0x13           @ set SVC mode
 	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
 	msr     cpsr,r0
-
-	@set cntfrq to 24M
-	ldr r0, =24000000
-	mcr p15, 0, r0, c14, c0, 0
 
 	bl set_timer_count
 
