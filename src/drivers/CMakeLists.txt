@@ -23,7 +23,7 @@ if (CONFIG_CHIP_WITHPMU)
     )
 endif()
 
-if (!CONFIG_CHIP_CLK_V1)
+if (NOT CONFIG_CHIP_CLK_V1)
     set(COMMON_DRIVER
         ${COMMON_DRIVER}
         sys-rtc.c
@@ -34,7 +34,6 @@ if (!CONFIG_CHIP_CLK_V1)
         sys-i2c.c
     )
 endif()
-
 
 add_library(drivers-obj OBJECT
     ${COMMON_DRIVER}
