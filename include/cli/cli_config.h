@@ -15,7 +15,7 @@
 #define MSH_CMDARGS_MAX (16)
 
 /* maximum number of history */
-#define MSH_CMD_HISTORY_MAX (32)
+#define MSH_CMD_HISTORY_MAX (8)
 
 /* default prompt string. (cmdedit.c) */
 #define MSH_CMD_PROMPT "SyterKit> "
