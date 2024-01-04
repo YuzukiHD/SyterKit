@@ -105,6 +105,7 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
     asm volatile("isb");
 
 #ifdef CONFIG_CHIP_DCACHE
+    /* enable smp */
 	asm volatile("mrc     p15, 0, r0, c1, c0, 1");
 	asm volatile("orr     r0, r0, #0x040");
 	asm volatile("mcr     p15, 0, r0, c1, c0, 1");
