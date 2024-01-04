@@ -94,7 +94,7 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
                     ((uint32_t) &pdes[des_idx + 1]) >> 2;
         }
         printk(LOG_LEVEL_TRACE,
-               "SMHC: frag %d, remain %d, des[%d] = 0x%08x:\n"
+               "SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
                "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
                i, remain, des_idx, (uint32_t) (&pdes[des_idx]),
                (uint32_t) ((uint32_t *) &pdes[des_idx])[0],
@@ -171,6 +171,8 @@ static int wait_done(sdhci_t *sdhci, sdhci_data_t *dat, uint32_t timeout_msecs,
         else
             done = (status & flag);
     } while (!done);
+
+    printk(LOG_LEVEL_TRACE, "SMHC: wait for flag 0x%x done!\n", flag);
 
     return 0;
 }
@@ -433,8 +435,6 @@ bool sdhci_set_width(sdhci_t *sdhci, uint32_t width) {
 }
 
 static int init_default_timing(sdhci_t *sdhci) {
-    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing start\n");
-
     sdhci->odly[MMC_CLK_400K] = TM5_OUT_PH180;
     sdhci->odly[MMC_CLK_25M] = TM5_OUT_PH180;
     sdhci->odly[MMC_CLK_50M] = TM5_OUT_PH180;
@@ -444,8 +444,6 @@ static int init_default_timing(sdhci_t *sdhci) {
     sdhci->sdly[MMC_CLK_25M] = TM5_IN_PH180;
     sdhci->sdly[MMC_CLK_50M] = TM5_IN_PH90;
     sdhci->sdly[MMC_CLK_50M_DDR] = TM5_IN_PH180;
-
-    printk(LOG_LEVEL_TRACE, "SMHC: init_default_timing done\n");
     return 0;
 }
 
@@ -543,9 +541,11 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
         pll = CCU_MMC_CTRL_OSCM24;
         pll_hz = 24000000;
     } else {
-        pll = CCU_MMC_CTRL_PLL_PERIPH2X2;
+        pll = CCU_MMC_CTRL_PLL6X2;
         pll_hz = sunxi_clk_get_peri1x_rate();
     }
+
+    printk(LOG_LEVEL_TRACE, "SMHC: sunxi_clk_get_peri1x_rate = 0x%u\n", pll_hz);
 
     div = pll_hz / mod_hz;
     if (pll_hz % mod_hz)
