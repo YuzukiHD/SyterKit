@@ -66,14 +66,23 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
     uint32_t reg;
 
     /* the front 1M contain BROM/SRAM */
+#ifdef CONFIG_CHIP_DCACHE
+    page_table[0] = (3 << 10) | (15 << 5) | (1 << 3) | (1 << 2) | 0x2;
+#else
     page_table[0] = (3 << 10) | (15 << 5) | (1 << 3) | (0 << 2) | 0x2;
-
+#endif
     /* the front 1G of memory(treated as 4G for all) is set up as none cacheable */
-    for (i = 1; i < (dram_base >> 20); i++)
+    for (i = 1; i < (dram_base >> 20); i++) {
         page_table[i] = (i << 20) | (3 << 10) | (15 << 5) | (0 << 3) | 0x2;
+    }
     /* Set up as write back and buffered for other 3GB, rw for everyone */
-    for (i = (dram_base >> 20); i < 4096; i++)
+    for (i = (dram_base >> 20); i < 4096; i++) {
+#ifdef CONFIG_CHIP_DCACHE
+        page_table[i] = (i << 20) | (3 << 10) | (15 << 5) | (1 << 3) | (1 << 2) | 0x2;
+#else
         page_table[i] = (i << 20) | (3 << 10) | (15 << 5) | (1 << 3) | (0 << 2) | 0x2;
+#endif
+    }
     /* flush tlb */
     asm volatile("mcr p15, 0, %0, c8, c7, 0"
                  :
@@ -89,13 +98,18 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
                  :
                  : "r"(mmu_base)
                  : "memory");
-
     /* Set the access control to all-supervisor */
     asm volatile("mcr p15, 0, %0, c3, c0, 0"
                  :
-                 : "r"(0x55555555)); /* modified, origin value is (~0) */
-
+                 : "r"(0x55555555));//modified, origin value is (~0)
     asm volatile("isb");
+
+#ifdef CONFIG_CHIP_DCACHE
+	asm volatile("mrc     p15, 0, r0, c1, c0, 1");
+	asm volatile("orr     r0, r0, #0x040");
+	asm volatile("mcr     p15, 0, r0, c1, c0, 1");
+#endif
+
     /* and enable the mmu */
     asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR"
                  : "=r"(reg)
@@ -103,10 +117,10 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
                  : "cc");
 
     sdelay(100);
-    /* enable mmu, icache */
-    reg |= ((1 << 0) | (1 << 12));
-    /* disable dcache */
-    reg &= ~(1 << 2);
+    reg |= ((1 << 0) | (1 << 12));// enable mmu, icache
+    reg &= ~(1 << 2);             // disable dcache
+
+    printk(LOG_LEVEL_TRACE, "MMU: CR = 0x%08x\n", reg);
     asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR"
                  :
                  : "r"(reg)
