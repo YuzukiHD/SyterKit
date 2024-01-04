@@ -20,6 +20,7 @@ set(COMMON_DRIVER
 if (CONFIG_CHIP_WITHPMU)
     set(DRIVER_PMU 
         pmu/axp1530.c
+        pmu/axp2202.c
     )
 endif()
 
