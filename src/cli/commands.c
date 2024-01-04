@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys-rtc.h>
-#include <sys-sid.h>
-#include <sys-wdt.h>
-
 #include "cli.h"
 #include "cli_config.h"
 #include "cli_history.h"
@@ -47,39 +43,6 @@ static int cmd_history(int argc, const char **argv) {
     return 0;
 }
 
-static int cmd_reset(int argc, const char **argv) {
-    clean_syterkit_data();
-    uart_puts("Now Reset System...\n\n");
-    sys_reset();
-    return 0;
-}
-
-static int cmd_efex(int argc, const char **argv) {
-    clean_syterkit_data();
-    rtc_set_fel_flag();
-    uart_puts("Now Reset System to efex...\n\n");
-    sys_reset();
-    return 0;
-}
-
-static int cmd_get_sid(int argc, const char **argv) {
-    uint32_t id[4];
-
-    id[0] = read32(0x03006200 + 0x0);
-    id[1] = read32(0x03006200 + 0x4);
-    id[2] = read32(0x03006200 + 0x8);
-    id[3] = read32(0x03006200 + 0xc);
-
-    printk(LOG_LEVEL_MUTE, "Chip ID is: %08x%08x%08x%08x\n", id[0], id[1],
-           id[2], id[3]);
-    return 0;
-}
-
-static int cmd_get_efuse(int argc, const char **argv) {
-    syter_efuse_dump();
-    return 0;
-}
-
 static int cmd_help(int argc, const char **argv) {
     if (argc == 1) {
         msh_print_cmdlist(msh_builtin_commands);
@@ -113,10 +76,6 @@ const msh_command_entry msh_builtin_commands[] = {
                                                                   "    short descriptions.\n"},
         {"echo", cmd_echo, "echo all arguments separated by a whitespace it can show args", "Usage: echo [string ...]\n"},
         {"history", cmd_history, "show all history command", "Usage: history\n"},
-        {"reset", cmd_reset, "reset chip system", "Usage: reset\n"},
-        {"sid", cmd_get_sid, "get chip sid", "Usage: sid\n"},
-        {"efuse", cmd_get_efuse, "get Chip efuse data", "Usage: efuse\n"},
-        {"efex", cmd_efex, "reset chip to efex mode", "Usage: efex\n"},
         msh_command_end,
 };
 
