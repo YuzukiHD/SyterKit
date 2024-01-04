@@ -175,15 +175,15 @@ static inline void set_platform_config(void) {
 static inline void set_modules_clock(void) {
     uint32_t reg_val = 0x0;
     const uint32_t modules_reg_addrs[] = {
-            CCU_BASE + CCU_BASE + 0x28,// peri1 clk
-            CCU_BASE + CCU_BASE + 0x30,// gpu clk
-            CCU_BASE + CCU_BASE + 0x40,// video0 clk
-            CCU_BASE + CCU_BASE + 0x48,// video1 clk
-            CCU_BASE + CCU_BASE + 0x50,// video2 clk
-            CCU_BASE + CCU_BASE + 0x58,// ve clk
-            CCU_BASE + CCU_BASE + 0x60,// de clk
-            CCU_BASE + CCU_BASE + 0xE0,// csi clk
-            CCU_BASE + CCU_BASE + 0x78 // audio clk
+            CCU_BASE + 0x28,// peri1 clk
+            CCU_BASE + 0x30,// gpu clk
+            CCU_BASE + 0x40,// video0 clk
+            CCU_BASE + 0x48,// video1 clk
+            CCU_BASE + 0x50,// video2 clk
+            CCU_BASE + 0x58,// ve clk
+            CCU_BASE + 0x60,// de clk
+            CCU_BASE + 0xE0,// csi clk
+            CCU_BASE + 0x78 // audio clk
     };
 
     for (int i = 0; i < sizeof(modules_reg_addrs) / sizeof(modules_reg_addrs[0]); i++) {
