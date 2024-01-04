@@ -224,6 +224,8 @@ int main(void) {
 
     sunxi_clk_dump();
 
+    sunxi_i2c_init(&i2c_pmu);
+
     pmu_axp1530_init(&i2c_pmu);
 
     set_pmu_fin_voltage("dcdc2", 1100);
