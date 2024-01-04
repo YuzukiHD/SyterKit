@@ -15,8 +15,8 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sid.h>
 #include <sys-sdcard.h>
+#include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
@@ -55,21 +55,12 @@ sdhci_t sdhci0 = {
         .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
 };
 
-sunxi_i2c_t i2c_pmu_axp717 = {
-        .base = SUNXI_RTWI_BASE,
+sunxi_i2c_t i2c_pmu = {
+        .base = SUNXI_R_TWI0_BASE,
         .id = SUNXI_R_I2C0,
         .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX3},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX3},
-};
-
-
-sunxi_i2c_t i2c_pmu_axp323 = {
-        .base = SUNXI_RTWI_BASE,
-        .id = SUNXI_R_I2C1,
-        .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX3},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX3},
+        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
+        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
 };
 
 void neon_enable(void) {
@@ -96,4 +87,39 @@ void clean_syterkit_data(void) {
     printk(LOG_LEVEL_INFO, "disable icache ok...\n");
     arm32_interrupt_disable();
     printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+}
+
+void rtc_set_vccio_det_spare(void) {
+    uint32_t val = 0;
+
+    /* set detection threshold to 2.9V */
+    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+    val &= ~(VCCIO_THRESHOLD_MASK << 4);
+    val |= (VCCIO_THRESHOLD_VOLTAGE_2_9);
+    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+
+    /* enable vccio debonce */
+    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+    val |= DEBOUNCE_NO_BYPASS;
+    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+
+    /* enable vccio detecter output */
+    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+    val |= FORCE_DETECTER_OUTPUT;
+    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+
+    /* enbale vccio detect */
+    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+    val &= ~VCCIO_DET_BYPASS_EN;
+    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
+}
+
+void set_rpio_power_mode(void) {
+    uint32_t reg_val = read32(SUNXI_R_GPIO_BASE + 0x348);
+    if (reg_val & 0x1) {
+        printk(LOG_LEVEL_DEBUG, "PL gpio voltage : 1.8V \n");
+        write32(SUNXI_R_GPIO_BASE + 0x340, 0x1);
+    } else {
+        printk(LOG_LEVEL_DEBUG, "PL gpio voltage : 3.3V \n");
+    }
 }
