@@ -31,6 +31,13 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
+/**
+ * Get control information from the table based on the given name.
+ *
+ * @param name The name of the control information to retrieve.
+ * @return A pointer to the axp_contrl_info structure corresponding to the given name,
+ *         or NULL if the name is not found in the table.
+ */
 static axp_contrl_info *get_ctrl_info_from_tbl(char *name) {
     int i = 0;
     int size = ARRAY_SIZE(axp_ctrl_tbl);
@@ -47,11 +54,15 @@ static axp_contrl_info *get_ctrl_info_from_tbl(char *name) {
 
 int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
     uint8_t axp_val;
+    int ret;
 
-    sunxi_i2c_init(i2c_dev);
+    if (!i2c_dev->status) {
+        printk(LOG_LEVEL_WARNING, "PMU: I2C not init\n");
+        return -1;
+    }
 
-    if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val)) {
-        printk(LOG_LEVEL_WARNING, "PMU: Probe target device failed.\n");
+    if (ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val)) {
+        printk(LOG_LEVEL_WARNING, "PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
         return -1;
     }
 
@@ -73,7 +84,7 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
             printk(LOG_LEVEL_INFO, "PMU: Cannot found match PMU\n");
             return -1;
     }
-    
+
     /* Set over temperature shutdown functtion */
     if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, &axp_val))
         return -1;
@@ -183,9 +194,9 @@ int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 }
 
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev) {
-    printk(LOG_LEVEL_DEBUG, "PMU: DCDC1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: DCDC2 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: DCDC3 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: ALDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "aldo1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: DLDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dldo1"));
+    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc1"));
+    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC2 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc2"));
+    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC3 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc3"));
+    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 ALDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "aldo1"));
+    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DLDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dldo1"));
 }
