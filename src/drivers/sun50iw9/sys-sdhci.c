@@ -95,7 +95,7 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
                     ((uint32_t) &pdes[des_idx + 1]) >> 2;
         }
         printk(LOG_LEVEL_TRACE,
-               "SMHC: frag %d, remain %d, des[%d] = 0x%08x:\n"
+               "SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
                "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
                i, remain, des_idx, (uint32_t) (&pdes[des_idx]),
                (uint32_t) ((uint32_t *) &pdes[des_idx])[0],
