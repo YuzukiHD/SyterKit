@@ -367,7 +367,7 @@ void sunxi_clk_dump() {
         p0 = ((reg32 >> 16) & 0x03) + 1;
         p1 = ((reg32 >> 20) & 0x03) + 1;
 
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
                (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
     } else {
         printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI0 disabled\r\n");
@@ -381,7 +381,7 @@ void sunxi_clk_dump() {
         p0 = ((reg32 >> 16) & 0x03) + 1;
         p1 = ((reg32 >> 20) & 0x03) + 1;
 
-        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+        printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
                (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
     } else {
         printk(LOG_LEVEL_DEBUG, "CLK: PLL_PERI1 disabled\r\n");
