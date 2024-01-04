@@ -343,8 +343,6 @@ int main(void) {
     sunxi_i2c_init(&i2c_pmu);
 
     pmu_axp1530_init(&i2c_pmu);
-    set_pmu_fin_voltage("dcdc2", 1100);
-    set_pmu_fin_voltage("dcdc3", 1100);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);

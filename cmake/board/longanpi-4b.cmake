@@ -9,7 +9,7 @@ set(CONFIG_BOARD_LONGANPI-4B True)
 add_definitions(-DCONFIG_CHIP_SUN55IW3)
 
 set(CONFIG_USE_DRAM_PAYLOAD True)
-set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD False)
+set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD True)
 set(CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH "${CMAKE_SOURCE_DIR}/payloads/sun55iw3_libdram")
 set(CONFIG_USE_DRAM_PAYLOAD_BIN_PATH "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}/output/ddr.bin")
 set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/longanpi-4b/payloads/init_dram_bin.c")
@@ -29,7 +29,7 @@ set(CMAKE_COMMON_FLAGS "-nostdlib -Os -mcpu=cortex-a55")
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 
-set(ARCH_BIN_START_ADDRESS "0x00044000")
+set(ARCH_BIN_START_ADDRESS "0x00020000")
 set(ARCH_BIN_SRAM_LENGTH "128K")
 
 set(ARCH_FEL_START_ADDRESS "0x00020000")
