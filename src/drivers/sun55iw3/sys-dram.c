@@ -14,7 +14,7 @@
 #include <sys-dram.h>
 #include <sys-rtc.h>
 
-#define INIT_DRAM_BIN_BASE 0x38000
+#define INIT_DRAM_BIN_BASE 0x4c000
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];

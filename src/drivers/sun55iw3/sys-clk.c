@@ -315,7 +315,7 @@ uint32_t sunxi_clk_get_peri1x_rate() {
     uint8_t plln, pllm, p0;
 
     /* PLL PERI */
-    reg32 = read32(CCU_BASE + CCU_BASE + CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
+    reg32 = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
     if (reg32 & (1 << 31)) {
         plln = ((reg32 >> 8) & 0xff) + 1;
         pllm = (reg32 & 0x01) + 1;
