@@ -346,7 +346,8 @@ int main(void) {
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
-    arm32_mmu_enable(SDRAM_BASE, dram_size);
+
+    arm32_mmu_enable(SDRAM_BASE, 4096);
 
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
@@ -370,7 +371,7 @@ int main(void) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
         goto _shell;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
