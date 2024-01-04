@@ -33,6 +33,8 @@ int main(void) {
 
     neon_enable();
 
+    sunxi_i2c_init(&i2c_pmu);
+
     pmu_axp1530_init(&i2c_pmu);
 
     pmu_axp1530_dump(&i2c_pmu);
