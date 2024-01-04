@@ -20,24 +20,24 @@ typedef struct {
     int FactorP;
 } core_pll_freq_fact;
 
-static void set_bit(u32 cpux, u8 bit) {
-    u32 reg_val;
+static void set_bit(uint32_t cpux, u8 bit) {
+    uint32_t reg_val;
     reg_val = readl(cpux);
     reg_val |= (1 << bit);
     writel(reg_val, cpux);
     printk(LOG_LEVEL_TRACE, "set_bit cpux = 0x%08x, bit = %d\n", cpux, bit);
 }
 
-static void clear_bit(u32 cpux, u8 bit) {
-    u32 reg_val;
+static void clear_bit(uint32_t cpux, u8 bit) {
+    uint32_t reg_val;
     reg_val = readl(cpux);
     reg_val &= ~(1 << bit);
     writel(reg_val, cpux);
     printk(LOG_LEVEL_TRACE, "clear_bit cpux = 0x%08x, bit = %d\n", cpux, bit);
 }
 
-static void enable_pll(u32 cpux, core_pll_freq_fact *CPUx, u32 default_val) {
-    u32 reg_val;
+static void enable_pll(uint32_t cpux, core_pll_freq_fact *CPUx, uint32_t default_val) {
+    uint32_t reg_val;
 
     writel(default_val, cpux);
     /* disable pll gating*/
@@ -78,7 +78,7 @@ static void enable_pll(u32 cpux, core_pll_freq_fact *CPUx, u32 default_val) {
 }
 
 static void set_pll_cpux_axi(void) {
-    u32 reg_val;
+    uint32_t reg_val;
     core_pll_freq_fact cpu_pll;
 
     writel(0x0305, CCU_PLL_CPUA_CLK_REG);
@@ -140,7 +140,7 @@ static void set_pll_cpux_axi(void) {
 }
 
 static void set_pll_periph0(void) {
-    u32 reg_val;
+    uint32_t reg_val;
 
     if ((1U << 31) & readl(CCU_BASE + CCU_PLL_PERI0_CTRL_REG)) {
         /*fel has enable pll_periph0*/
@@ -176,7 +176,7 @@ static void set_pll_periph0(void) {
 }
 
 static void set_pll_periph1(void) {
-    u32 reg_val;
+    uint32_t reg_val;
 
     if ((1U << 31) & readl(CCU_BASE + CCU_PLL_PERI1_CTRL_REG)) {
         /*fel has enable pll_periph0*/
@@ -234,7 +234,7 @@ static void set_pll_dma(void) {
 }
 
 static void set_pll_mbus(void) {
-    u32 reg_val = 0;
+    uint32_t reg_val = 0;
 
     /*reset mbus domain*/
     reg_val |= (0x1 << 30);
@@ -255,8 +255,6 @@ static void set_pll_mbus(void) {
 
 static void set_circuits_analog(void) {
     /* calibration circuits analog enable */
-    /* sunxi_clear_bit(RES_CAL_CTRL_REG, BIT(1)); */
-
     setbits_le32(VDD_SYS_PWROFF_GATING_REG, 0x01 << VDD_ADDA_OFF_GATING);
     sdelay(1);
 
@@ -296,8 +294,8 @@ void sunxi_clk_init(void) {
     return;
 }
 
-void sunxi_board_clock_reset(void) {
-    u32 reg_val;
+void sunxi_clk_reset(void) {
+    uint32_t reg_val;
     /*set ahb,apb to default, use OSC24M*/
     reg_val = readl(CCU_BASE + CCU_AHB0_CFG_REG);
     reg_val &= (~(0x3 << 24));
