@@ -12,7 +12,8 @@
 extern "C" {
 #endif// __cplusplus
 
-#include "reg-axp1530.h"
+#include "reg/reg-axp1530.h"
+#include "reg/reg-axp2202.h"
 
 #ifdef __cplusplus
 }
