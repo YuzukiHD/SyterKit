@@ -16,6 +16,11 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern sunxi_i2c_t i2c_pmu;
+
+extern void set_rpio_power_mode(void);
+extern void rtc_set_vccio_det_spare(void);
+
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
@@ -25,7 +30,21 @@ int main(void) {
 
     sunxi_clk_dump();
 
+    rtc_set_vccio_det_spare();
+    
+    set_rpio_power_mode();
+
+    sunxi_i2c_init(&i2c_pmu);
+
+    pmu_axp1530_init(&i2c_pmu);
+
+    pmu_axp2202_init(&i2c_pmu);
+
     mdelay(30); /* Delay 300ms for pmu bootup */
+
+    pmu_axp1530_dump(&i2c_pmu);
+
+    pmu_axp2202_dump(&i2c_pmu);
 
     printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
