@@ -10,3 +10,5 @@ add_subdirectory(hello_world)
 add_subdirectory(init_dram)
 
 add_subdirectory(syter_boot)
+
+add_subdirectory(smhc_test)
