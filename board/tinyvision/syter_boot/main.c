@@ -5,13 +5,13 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <timer.h>
 #include <config.h>
 #include <log.h>
+#include <timer.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 #include <smalloc.h>
 #include <sstdlib.h>
 #include <string.h>
@@ -687,6 +687,8 @@ int main(void) {
     cmd_boot(0, NULL);
 
 _shell:
+    asm volatile("mov r7, #1");
+    asm volatile("svc #0");
     syterkit_shell_attach(commands);
 
 _fel:

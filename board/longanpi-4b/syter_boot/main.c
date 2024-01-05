@@ -347,7 +347,7 @@ int main(void) {
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
 
-    arm32_mmu_enable(SDRAM_BASE, 4096);
+    arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
