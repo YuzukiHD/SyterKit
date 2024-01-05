@@ -2,137 +2,6 @@
 
 #include <linkage.h>
 
-#define  ARMV7_USR_MODE        0x10
-#define  ARMV7_FIQ_MODE        0x11
-#define  ARMV7_IRQ_MODE        0x12
-#define  ARMV7_SVC_MODE        0x13
-#define  ARMV7_MON_MODE        0x16
-#define  ARMV7_ABT_MODE        0x17
-#define  ARMV7_UND_MODE        0x1b
-#define  ARMV7_SYSTEM_MODE     0x1f
-#define  ARMV7_MODE_MASK       0x1f
-#define  ARMV7_FIQ_MASK        0x40
-#define  ARMV7_IRQ_MASK        0x80
-
-.arm
-.globl reset
-.text
-
-reset:
-	/* Boot head information for BROM */
-	.long 0xea000016
-	.byte 'e', 'G', 'O', 'N', '.', 'B', 'T', '0'
-	.long 0x12345678                                /* checksum */
-	.long __spl_size                                /* spl size */
-	.long 0x30                                              /* boot header size */
-	.long 0x30303033                                /* boot header version */
-	.long 0x00020000                                /* return value */
-	.long 0x00028000                                /* run address */
-	.long 0x0                                               /* eGON version */
-	.byte 0x00, 0x00, 0x00, 0x00    /* platform information - 8byte */
-	.byte 0x34, 0x2e, 0x30, 0x00
-
-	/*
-	* The actual reset code
-	*/
-	mrs r0, cpsr
-	bic r0, r0, #ARMV7_MODE_MASK
-	orr r0, r0, #ARMV7_SVC_MODE
-	orr r0, r0, #(ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)
-	bic r0, r0, #(1<<9)     @set little-endian
-	msr cpsr_c, r0
-
-	/* Set vector base address register */
-
-	ldr r0, =_vector
-	mcr p15, 0, r0, c12, c0, 0
-	mrc p15, 0, r0, c1, c0, 0
-	bic r0, #(1 << 13)
-	mcr p15, 0, r0, c1, c0, 0
-
-	mrc     p15, 0, r0, c1, c0, 0
-	bic     r0, r0, #0x00002000     @ clear bits 13 (--V-)
-	bic     r0, r0, #0x00000007     @ clear bits 2:0 (-CAM)
-	orr     r0, r0, #0x00000800     @ set bit 11 (Z---) BTB
-	bic     r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
-	mcr     p15, 0, r0, c1, c0, 0
-
-	/* Enable neon/vfp unit */
-	mrc p15, 0, r0, c1, c0, 2
-	orr r0, r0, #(0xf << 20)
-	mcr p15, 0, r0, c1, c0, 2
-	isb
-	mov r0, #0x40000000
-	vmsr fpexc, r0
-
-	/* Set stack pointer */
-	ldr sp, =__stack_srv_end
-
-	bl  clear_bss
-
-	/*
-	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
-	* except if in HYP mode already
-	*/
-	mrs     r0, cpsr
-	and     r1, r0, #0x1f           @ mask mode bits
-	teq     r1, #0x1a               @ test for HYP mode
-	bicne   r0, r0, #0x1f           @ clear all mode bits
-	orrne   r0, r0, #0x13           @ set SVC mode
-	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
-	msr     cpsr,r0
-
-	@set cntfrq to 24M
-	ldr r0, =24000000
-	mcr p15, 0, r0, c14, c0, 0
-
-	bl set_timer_count
-
-	bl main
-
-clear_bss:
-	ldr     r0, =_sbss
-	ldr     r1, =_ebss
-	mov     r2, #0
-
-clbss_1:
-	stmia   r0!, {r2}
-	cmp r0, r1
-	blt clbss_1
-
-	mov pc, lr
-
-_vector:
-	b reset
-	ldr pc, _undefined_instruction
-	ldr pc, _software_interrupt
-	ldr pc, _prefetch_abort
-	ldr pc, _data_abort
-	ldr pc, _not_used
-	ldr pc, _irq
-	ldr pc, _fiq
-
-_undefined_instruction:
-	.word undefined_instruction
-
-_software_interrupt:
-	.word software_interrupt
-
-_prefetch_abort:
-	.word prefetch_abort
-
-_data_abort:
-	.word data_abort
-
-_not_used:
-	.word not_used
-
-_irq:
-	.word irq
-
-_fiq:
-	.word fiq
-
 .macro save_regs
 	str lr, [sp, #-4]
 	mrs lr, spsr_all
@@ -181,6 +50,130 @@ _fiq:
 21:	ldm r12, {r0 - r15}^
 	mov r0, r0
 .endm
+
+#define  ARMV7_USR_MODE        0x10
+#define  ARMV7_FIQ_MODE        0x11
+#define  ARMV7_IRQ_MODE        0x12
+#define  ARMV7_SVC_MODE        0x13
+#define  ARMV7_MON_MODE        0x16
+#define  ARMV7_ABT_MODE        0x17
+#define  ARMV7_UND_MODE        0x1b
+#define  ARMV7_SYSTEM_MODE     0x1f
+#define  ARMV7_MODE_MASK       0x1f
+#define  ARMV7_FIQ_MASK        0x40
+#define  ARMV7_IRQ_MASK        0x80
+
+.arm
+.globl _start
+.text
+
+_start:
+	/* Boot head information for BROM */
+	.long 0xea000016
+	.byte 'e', 'G', 'O', 'N', '.', 'B', 'T', '0'
+	.long 0x12345678                                /* checksum */
+	.long __spl_size                                /* spl size */
+	.long 0x30                                      /* boot header size */
+	.long 0x30303033                                /* boot header version */
+	.long 0x00020000                                /* return value */
+	.long 0x00028000                                /* run address */
+	.long 0x0                                       /* eGON version */
+	.byte 0x00, 0x00, 0x00, 0x00    				/* platform information - 8byte */
+	.byte 0x34, 0x2e, 0x30, 0x00
+
+	.align 5
+_vector:
+	b reset
+	ldr pc, _undefined_instruction
+	ldr pc, _software_interrupt
+	ldr pc, _prefetch_abort
+	ldr pc, _data_abort
+	ldr pc, _not_used
+	ldr pc, _irq
+	ldr pc, _fiq
+
+_undefined_instruction:
+	.word undefined_instruction
+_software_interrupt:
+	.word software_interrupt
+_prefetch_abort:
+	.word prefetch_abort
+_data_abort:
+	.word data_abort
+_not_used:
+	.word not_used
+_irq:
+	.word irq
+_fiq:
+	.word fiq
+
+reset:
+	/* Enter svc mode cleanly and mask interrupts */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r0, r0, #ARMV7_SVC_MODE
+	orr r0, r0, #(ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)
+	bic r0, r0, #(1<<9)     @set little-endian
+	msr cpsr_c, r0
+
+	/* Set vector base address register */
+	ldr r0, =_vector
+	mcr p15, 0, r0, c12, c0, 0
+	mrc p15, 0, r0, c1, c0, 0
+	bic r0, #(1 << 13)
+	mcr p15, 0, r0, c1, c0, 0
+
+	mrc p15, 0, r0, c1, c0, 0
+	bic r0, r0, #0x00002000     @ clear bits 13 (--V-)
+	bic r0, r0, #0x00000007     @ clear bits 2:0 (-CAM)
+	orr r0, r0, #0x00000800     @ set bit 11 (Z---) BTB
+	bic r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
+	mcr p15, 0, r0, c1, c0, 0
+
+	/* Enable neon/vfp unit */
+	mrc p15, 0, r0, c1, c0, 2
+	orr r0, r0, #(0xf << 20)
+	mcr p15, 0, r0, c1, c0, 2
+	isb
+	mov r0, #0x40000000
+	vmsr fpexc, r0
+
+	/* Set stack pointer */
+	ldr sp, =__stack_srv_end
+
+	bl  clear_bss
+
+	/*
+	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
+	* except if in HYP mode already
+	*/
+	mrs     r0, cpsr
+	and     r1, r0, #0x1f           @ mask mode bits
+	teq     r1, #0x1a               @ test for HYP mode
+	bicne   r0, r0, #0x1f           @ clear all mode bits
+	orrne   r0, r0, #0x13           @ set SVC mode
+	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
+	msr     cpsr,r0
+
+	@set cntfrq to 24M
+	ldr r0, =24000000
+	mcr p15, 0, r0, c14, c0, 0
+
+	bl set_timer_count
+
+	bl main
+
+clear_bss:
+	ldr     r0, =_sbss
+	ldr     r1, =_ebss
+	mov     r2, #0
+
+clbss_1:
+	stmia   r0!, {r2}
+	cmp r0, r1
+	blt clbss_1
+
+	mov pc, lr
 
 	/*
 	* Exception handlers

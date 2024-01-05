@@ -21,41 +21,39 @@ struct arm_regs_t {
 static void show_regs(struct arm_regs_t *regs) {
     int i = 0;
 
-    printk(LOG_LEVEL_ERROR, "pc : [<%08lx>] lr : [<%08lx>] cpsr: %08lx\n",
-           regs->pc, regs->lr, regs->cpsr);
-    printk(LOG_LEVEL_ERROR, "sp : %08lx esp : %08lx\n", regs->sp,
-           regs->esp);
+    printk(LOG_LEVEL_ERROR, "pc : [<0x%08lx>] lr : [<0x%08lx>] cpsr: 0x%08lx\n", regs->pc, regs->lr, regs->cpsr);
+    printk(LOG_LEVEL_ERROR, "sp : 0x%08lx esp : 0x%08lx\n", regs->sp, regs->esp);
     for (i = 12; i >= 0; i--)
-        printk(LOG_LEVEL_ERROR, "r%-2d: %08lx\n", i, regs->r[i]);
+        printk(LOG_LEVEL_ERROR, "r%-2d: 0x%08lx\n", i, regs->r[i]);
     printk(LOG_LEVEL_ERROR, "\n");
 }
 
 void arm32_do_undefined_instruction(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "undefined_instruction\n");
+    show_regs(regs);
 }
 
 void arm32_do_software_interrupt(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "software_interrupt\n");
+    show_regs(regs);
 }
 
 void arm32_do_prefetch_abort(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "prefetch_abort\n");
+    show_regs(regs);
 }
 
 void arm32_do_data_abort(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "data_abort\n");
+    show_regs(regs);
 }
 
 void arm32_do_irq(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "undefined IRQ\n");
+    show_regs(regs);
 }
 
 void arm32_do_fiq(struct arm_regs_t *regs) {
-    show_regs(regs);
     printk(LOG_LEVEL_ERROR, "undefined FIQ\n");
+    show_regs(regs);
 }
