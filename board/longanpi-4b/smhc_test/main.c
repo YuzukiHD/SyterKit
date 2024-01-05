@@ -37,8 +37,16 @@ int cmd_reload(int argc, const char **argv) {
     return 0;
 }
 
+msh_declare_command(swi);
+msh_define_help(swi, "Software interrupt test", "Usage: swi\n");
+int cmd_swi(int argc, const char **argv) {
+    asm volatile("svc #0");
+    return 0;
+}
+
 const msh_command_entry commands[] = {
         msh_define_command(reload),
+        msh_define_command(swi),
         msh_command_end,
 };
 
@@ -69,9 +77,9 @@ int main(void) {
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+    } else {
+        printk(LOG_LEVEL_DEBUG, "Card OK!\n");
     }
-
-    printk(LOG_LEVEL_DEBUG, "Card OK!\n");
 
     syterkit_shell_attach(commands);
 
