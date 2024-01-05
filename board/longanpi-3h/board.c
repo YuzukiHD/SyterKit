@@ -77,6 +77,26 @@ void neon_enable(void) {
     asm volatile("MCR p10, 7, r3, c8, c0, 0");
 }
 
+void set_cpu_down(unsigned int cpu) {
+    clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_DBG_REG1, 1 << cpu);
+    udelay(10);
+
+    setbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_CLUSTER_PWROFF_GATING, 1 << cpu);
+    udelay(20);
+
+    clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_CPU_RST_CTRL, 1 << cpu);
+    udelay(10);
+
+    printk(LOG_LEVEL_DEBUG, "CPU: Power-down cpu-%d ok.\n", cpu);
+}
+
+void set_cpu_poweroff(void) {
+    if (((readl(SUNXI_SID_BASE + 0x248) >> 29) & 0x1) == 1) {
+        set_cpu_down(2); /*power of cpu2*/
+        set_cpu_down(3); /*power of cpu3*/
+    }
+}
+
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
