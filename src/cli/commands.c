@@ -2,19 +2,15 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sstdlib.h>
+
+#include <log.h>
 
 #include "cli.h"
 #include "cli_config.h"
 #include "cli_history.h"
 #include "cli_termesc.h"
 
-/* 
-    Echo all arguments separated by a whitespace.
-    Parameters:
-        argc: The number of arguments.
-        argv: An array of argument strings.
-    Returns: 0 on success.
-*/
 static int cmd_echo(int argc, const char **argv) {
     int i;
     if (argc < 1) {
@@ -28,13 +24,80 @@ static int cmd_echo(int argc, const char **argv) {
     return 0;
 }
 
-/* 
-    Display all history commands.
-    Parameters:
-        argc: The number of arguments.
-        argv: An array of argument strings.
-    Returns: 0 on success.
-*/
+static int cmd_hexdump(int argc, const char **argv) {
+    if (argc != 3) {
+        printk(LOG_LEVEL_MUTE, "Usage: hexdump [address] [length]\n");
+        return 1;
+    }
+
+    uint32_t start_addr = strtol(argv[1], NULL, 0);
+    uint32_t len = strtol(argv[2], NULL, 0);
+
+    uint8_t *ptr = (uint8_t *) start_addr;
+    uint32_t end_addr = start_addr + len;
+
+    while (ptr < (uint8_t *) end_addr) {
+        printk(LOG_LEVEL_MUTE, "%08X: ", (uint32_t) ptr);
+
+        // Print hexadecimal bytes for each line
+        for (int i = 0; i < 16; i++) {
+            if (ptr < (uint8_t *) end_addr) {
+                printk(LOG_LEVEL_MUTE, "%02X ", *ptr);
+                ptr++;
+            } else {
+                printk(LOG_LEVEL_MUTE, "   ");// Pad with spaces for incomplete bytes
+            }
+        }
+
+        // Print corresponding printable ASCII characters for each line
+        ptr -= 16;
+        printk(LOG_LEVEL_MUTE, " ");
+        for (int i = 0; i < 16; i++) {
+            if (ptr < (uint8_t *) end_addr) {
+                char c = *ptr;
+                if (c >= 32 && c <= 126) {
+                    printk(LOG_LEVEL_MUTE, "%c", c);// Printable character
+                } else {
+                    printk(LOG_LEVEL_MUTE, ".");// Replace non-printable character with dot
+                }
+                ptr++;
+            } else {
+                break;
+            }
+        }
+
+        printk(LOG_LEVEL_MUTE, "\n");
+    }
+
+    return 0;
+}
+
+static int cmd_read32(int argc, const char **argv) {
+    if (argc != 2) {
+        printk(LOG_LEVEL_MUTE, "Usage: read32 [address]\n");
+        return 1;
+    }
+
+    uint32_t ptr = (uint32_t) simple_strtoul(argv[1], NULL, 16);
+    uint32_t value = read32(ptr);
+
+    printk(LOG_LEVEL_MUTE, "Value at address %s: %08X\n", ptr, value);
+
+    return 0;
+}
+
+static int cmd_write32(int argc, const char **argv) {
+    if (argc < 3) {
+        printf("Usage: write32 [address] [data]\n");
+        return -1;
+    }
+    uint32_t addr = (uint32_t) simple_strtoul(argv[1], NULL, 16);
+    uint32_t data = (uint32_t) simple_strtoul(argv[2], NULL, 16);
+    write32(addr, data);
+    printk(LOG_LEVEL_MUTE, "Wrote 0x%08x to address 0x%08x\n", data, addr);
+    return 0;
+}
+
 static int cmd_history(int argc, const char **argv) {
     for (int i = get_history_count(); i >= 0; i--) {
         uart_puts(history_get(i));
@@ -76,6 +139,9 @@ const msh_command_entry msh_builtin_commands[] = {
                                                                   "    short descriptions.\n"},
         {"echo", cmd_echo, "echo all arguments separated by a whitespace it can show args", "Usage: echo [string ...]\n"},
         {"history", cmd_history, "show all history command", "Usage: history\n"},
+        {"hexdump", cmd_hexdump, "dumps memory region in hex", "Usage: hexdump [address] [length]\n"},
+        {"read32", cmd_read32, "read 32-bits value from device reg", "Usage: read32 [address]\n"},
+        {"write32", cmd_write32, "write 32-bits value to device reg", "Usage: write32 [address] [data]\n"},
         msh_command_end,
 };
 
