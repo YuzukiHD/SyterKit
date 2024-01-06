@@ -12,6 +12,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | 100ask-t113i                                                 | 100ask       | T113-I   | Dual-Core Cortex A7 + C906 RISC-V | [board/100ask-t113i](board/100ask-t113i)   | `100ask-t113i.cmake`  |
 | [longanpi-3h](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | sipeed       | H618     | Quad-Core Cortex A53              | [board/longanpi-3h](board/longanpi-3h)     | `longanpi-3h.cmake`   |
 | longanpi-4b                                                  | sipeed       | T527     | Octa-Core Cortex A55              | [board/longanpi-4b](board/longanpi-4b)     | `longanpi-4b.cmake`   |
+| BingPi-M1                                                    | BingPi       | V3s      | Cortex A7                         | [board/bingpi-m1](board/bingpi-m1)         | `bingpi-m1.cmake`     |
 
 ## Getting Started
 
