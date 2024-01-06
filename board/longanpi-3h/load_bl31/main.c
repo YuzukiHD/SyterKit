@@ -42,6 +42,9 @@
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_DTB_LOAD_ADDR (0x4a200000)
 
+#define CONFIG_KERNEL_FILENAME "Image"
+#define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
+
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
 #define CONFIG_HEAP_BASE (0x40800000)
@@ -67,13 +70,16 @@ typedef struct atf_head {
     uint64_t dtb_base;         /* the address of dtb */
 } atf_head_t;
 
-#define FILENAME_MAX_LEN 64
+#define FILENAME_MAX_LEN 16
 typedef struct {
     uint8_t *bl31_dest;
     char bl31_filename[FILENAME_MAX_LEN];
 
     uint8_t *uboot_dest;
     char uboot_filename[FILENAME_MAX_LEN];
+
+    uint8_t *kernel_dest;
+    char kernel_filename[FILENAME_MAX_LEN];
 
     uint8_t *of_dest;
     char of_filename[FILENAME_MAX_LEN];
@@ -160,13 +166,18 @@ static int load_sdcard(image_info_t *image) {
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
-    ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
-    if (ret)
-        return ret;
+    // printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
+    // ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
+    // if (ret)
+    //     return ret;
 
     printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
+    if (ret)
+        return ret;
+
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
+    ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
     if (ret)
         return ret;
 
@@ -184,6 +195,8 @@ static int load_sdcard(image_info_t *image) {
 }
 
 void jmp_to_arm64(uint32_t addr) {
+    /* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
+    rtc_set_start_time_ms();
 
     /* set the cpu boot entry addr: */
     write32(RVBARADDR0_L, addr);
@@ -246,10 +259,12 @@ int main(void) {
     image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
     image.uboot_dest = (uint8_t *) CONFIG_UBOOT_LOAD_ADDR;
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
+    image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.uboot_filename, CONFIG_UBOOT_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
+    strcpy(image.kernel_filename, CONFIG_KERNEL_FILENAME);
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
@@ -283,7 +298,7 @@ int main(void) {
 
     clean_syterkit_data();
 
-    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+    jmp_to_arm64(CONFIG_UBOOT_LOAD_ADDR);
 
     printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
 

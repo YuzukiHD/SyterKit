@@ -17,7 +17,14 @@ int raise(int signum) {
 
 // Inline function to retrieve the current value of the architecture-specific counter
 static inline uint64_t get_arch_counter(void) {
-    return 1; // fake func
+    uint32_t low = 0, high = 0;
+    // Use assembly language to read the architecture-specific counter
+    asm volatile("mrrc p15, 0, %0, %1, c14"
+                 : "=r"(low), "=r"(high)
+                 :
+                 : "memory");
+    // Combine the low and high values to form a 64-bit counter value
+    return (((uint64_t) high) << 32 | low);
 }
 
 // Delay function that waits for the specified number of microseconds

@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <types.h>
+#include <endian.h>
 
 static inline u16_t __swab16(u16_t x)
 {

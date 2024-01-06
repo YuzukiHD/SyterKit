@@ -2,8 +2,8 @@
 # Top makefile
 #
 
-CROSS		?= aarch64-linux-gnu-
-NAME		:= syter_bl33
+CROSS		?= arm-linux-gnueabi-
+NAME		:= syter_bl32
 
 #
 # System environment variable.
@@ -19,14 +19,14 @@ endif
 #
 # Load default variables.
 #
-ASFLAGS		:= -g -ggdb -Wall -O3
-CFLAGS		:= -g -ggdb -Wall -O3
-CXXFLAGS	:= -g -ggdb -Wall -O3
+ASFLAGS		:= -g -ggdb -Wall -O0
+CFLAGS		:= -g -ggdb -Wall -O0
+CXXFLAGS	:= -g -ggdb -Wall -O0
 LDFLAGS		:= -T link.ld -nostdlib 
 ARFLAGS		:= -rcs
 OCFLAGS		:= -v -O binary
 ODFLAGS		:=
-MCFLAGS		:= -nostdinc -nostdlib -g -ggdb -O3 -mcpu=cortex-a53 -Wno-builtin-declaration-mismatch -fno-short-enums -Wno-int-to-pointer-cast
+MCFLAGS		:= -nostdinc -nostdlib -g -ggdb -mcpu=cortex-a53 -Wno-builtin-declaration-mismatch -Wno-int-to-pointer-cast
 
 LIBDIRS		:= 
 LIBS 		:= 
