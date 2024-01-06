@@ -3,7 +3,7 @@
 #
 
 CROSS		?= arm-linux-gnueabi-
-NAME		:= syter_bl32
+NAME		:= syter_bl33
 
 #
 # System environment variable.
@@ -19,14 +19,14 @@ endif
 #
 # Load default variables.
 #
-ASFLAGS		:= -g -ggdb -Wall -O0
-CFLAGS		:= -g -ggdb -Wall -O0
-CXXFLAGS	:= -g -ggdb -Wall -O0
+ASFLAGS		:= -g -ggdb -Wall -Os
+CFLAGS		:= -g -ggdb -Wall -Os
+CXXFLAGS	:= -g -ggdb -Wall -Os
 LDFLAGS		:= -T link.ld -nostdlib 
 ARFLAGS		:= -rcs
 OCFLAGS		:= -v -O binary
 ODFLAGS		:=
-MCFLAGS		:= -nostdinc -nostdlib -g -ggdb -mcpu=cortex-a53 -Wno-builtin-declaration-mismatch -Wno-int-to-pointer-cast
+MCFLAGS		:= -nostdinc -nostdlib -g -ggdb -mabi=aapcs-linux -march=armv7-a -Wno-builtin-declaration-mismatch -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 
 LIBDIRS		:= 
 LIBS 		:= 
