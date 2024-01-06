@@ -27,16 +27,19 @@ typedef struct uart_serial {
 #define dlh ier
 #define iir fcr
 
-static uint32_t init_timestamp = 0;
+#define SUNXI_UART0_BASE 0x05000000
 
 static uart_serial_t *uart_dbg;
+
+static uint32_t init_timestamp = 0;
 
 void set_timer_count() {
     init_timestamp = read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4);
 }
 
-void sunxi_uart_init(uint32_t base) {
-    uart_dbg = (uart_serial_t *) base;
+void sunxi_serial_init()
+{
+	uart_dbg = (uart_serial_t *) SUNXI_UART0_BASE;
 }
 
 // Function to transmit a single character via UART
