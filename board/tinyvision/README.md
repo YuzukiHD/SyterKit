@@ -19,6 +19,23 @@ TinyVision - A Tiny Linux Board / IPC / Server / Router / And so on...
 - Online Video encode
 - RISC-V E907 RTOS Support, Based on RT-Thread + RTOS-HAL
 
+## App
+
+| Name            | Function                                                     | Path                  |
+| --------------- | ------------------------------------------------------------ | --------------------- |
+| hello world     | Minimal program example, prints Hello World                  | `app/hello_world`     |
+| init dram       | Initializes the serial port and DRAM                         | `app/init_dram`       |
+| read chip efuse | Reads chip efuse information                                 | `app/read_chip_efuse` |
+| read chipsid    | Reads the unique ID of the chip                              | `app/read_chipsid`    |
+| load e907       | Reads the e907 core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `app/load_e907`       |
+| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot`      |
+| syter boot_spi  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux for SPI NAND, SPI NOR| `app/syter_boot_spi`      |
+| syter amp       | Reads the e907 core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `app/syter_amp`       |
+| fdt parser      | Reads the DTB and Parser Print out                           | `app/fdt_parser`      |
+| fdt cli         | Reads the DTB with a CLI support uboot fdt command           | `app/fdt_cli`         |
+| syter bootargs  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux, Within a CLI to change bootargs | `app/syter_bootargs`  |
+| cli test        | Test baisc CLI function                                      | `app/cli_test`        |
+
 ## 购买链接
 
 ### TinyVision
