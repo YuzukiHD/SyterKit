@@ -1,29 +1,31 @@
-# SyterKit Common 
+# TinyVision
 
-## start.S
+TinyVision - A Tiny Linux Board / IPC / Server / Router / And so on...
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
+![image](https://github.com/YuzukiHD/SyterKit/assets/12003087/14378d81-ae4d-4008-b74d-abfc4c0ca6ac)
 
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
+- Based on Allwinner V851se / V851s3 
+- Cortex-A7 Core up to 1200MHz 
+- RISC-V E907GC@600MHz
+- 0.5Tops@int8 NPU
+- Built in 64M DDR2 (V851se) / 128M DDR3L (V851s3) memory
+- One TF Card Slot, Support UHS-SDR104
+- On board SD NAND
+- On board USB&UART Combo
+- Supports one 2-lane MIPI CSI inputs
+- Supports 1 individual ISP, with maximum resolution of 2560 x 1440
+- H.264/H.265 decoding at 4096x4096
+- H.264/H.265 encoder supports 3840x2160@20fps
+- Online Video encode
+- RISC-V E907 RTOS Support, Based on RT-Thread + RTOS-HAL
 
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
+## 购买链接
 
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
+### TinyVision
 
-4. Clear BSS Section: It zeroes out variables in the BSS section.
+- [https://item.taobao.com/item.htm?&id=756255119524](https://item.taobao.com/item.htm?&id=756255119524)
 
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
+### 配套配件
 
-6. Set Timer Frequency: It sets the timer frequency to 24M.
-
-7. Call the main Function: It jumps to the main function to execute the main logic.
-
-## eabi_compat.c
-
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
-
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
-
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
-
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
+- GC2053摄像头: [https://item.taobao.com/item.htm?&id=736796459015](https://item.taobao.com/item.htm?&id=736796459015)
+- RJ45 百兆线（选择4P转水晶头 50CM）: [https://item.taobao.com/item.htm?&id=626832235333](https://item.taobao.com/item.htm?&id=626832235333)
