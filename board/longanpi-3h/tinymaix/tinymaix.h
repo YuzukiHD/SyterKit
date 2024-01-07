@@ -27,7 +27,7 @@ limitations under the License.
 #include "tm_port.h"
 
 /******************************* MARCO ************************************/
-#define TM_MDL_MAGIC 'XIAM'//mdl magic sign
+#define TM_MDL_MAGIC 0x5849414d//mdl magic sign
 #define TM_ALIGN_SIZE (8)  //8 byte align
 #define TM_ALIGN(addr) ((((size_t) (addr)) + (TM_ALIGN_SIZE - 1)) / TM_ALIGN_SIZE * TM_ALIGN_SIZE)
 #define TM_MATP(mat, y, x, ch) ((mat)->data + ((y) * (mat)->w + (x)) * (mat)->c + (ch))
