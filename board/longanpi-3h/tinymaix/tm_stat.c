@@ -43,24 +43,24 @@ static const int tml_headsize_tbl[TML_MAXCNT] = {
 };
 
 tm_err_t tm_stat(tm_mdlbin_t *b) {
-    printf("================================ model stat ================================\n");
-    printf("mdl_type=%d (%s))\n", b->mdl_type, mdl_type_str[b->mdl_type]);
-    printf("out_deq=%d \n", b->out_deq);
-    printf("input_cnt=%d, output_cnt=%d, layer_cnt=%d\n", b->input_cnt, b->output_cnt, b->layer_cnt);
+    TM_PRINTF("================================ model stat ================================\n");
+    TM_PRINTF("mdl_type=%d (%s))\n", b->mdl_type, mdl_type_str[b->mdl_type]);
+    TM_PRINTF("out_deq=%d \n", b->out_deq);
+    TM_PRINTF("input_cnt=%d, output_cnt=%d, layer_cnt=%d\n", b->input_cnt, b->output_cnt, b->layer_cnt);
     uint16_t *idim = b->in_dims;
-    printf("input %ddims: (%d, %d, %d)\n", idim[0], idim[1], idim[2], idim[3]);
+    TM_PRINTF("input %ddims: (%d, %d, %d)\n", idim[0], idim[1], idim[2], idim[3]);
     uint16_t *odim = b->out_dims;
-    printf("output %ddims: (%d, %d, %d)\n", odim[0], odim[1], odim[2], odim[3]);
-    //printf("model param bin addr: 0x%x\n", (uint32_t)(b->layers_body));
-    printf("main buf size %d; sub buf size %d\n",
+    TM_PRINTF("output %ddims: (%d, %d, %d)\n", odim[0], odim[1], odim[2], odim[3]);
+    //TM_PRINTF("model param bin addr: 0x%x\n", (uint32_t)(b->layers_body));
+    TM_PRINTF("main buf size %d; sub buf size %d\n",
            b->buf_size, b->sub_size);
 
-    printf("//Note: PARAM is layer param size, include align padding\r\n\r\n");
-    printf("Idx\tLayer\t         outshape\tinoft\toutoft\tPARAM\tMEMOUT OPS\n");
-    printf("---\tInput    \t%3d,%3d,%3d\t-   \t0    \t0 \t%ld \t0\n",
+    TM_PRINTF("//Note: PARAM is layer param size, include align padding\r\n\r\n");
+    TM_PRINTF("Idx\tLayer\t         outshape\tinoft\toutoft\tPARAM\tMEMOUT OPS\n");
+    TM_PRINTF("---\tInput    \t%3d,%3d,%3d\t-   \t0    \t0 \t%ld \t0\n",
            idim[1], idim[2], idim[3], (long int) (idim[1] * idim[2] * idim[3] * sizeof(mtype_t)));
     //      000  Input    -     224,224,3  0x40001234 0x40004000 100000 500000 200000
-    //printf("000  Input    -     %3d,%3d,%d  0x%08x   0x%08x     %6d %6d %6d\n",)
+    //TM_PRINTF("000  Input    -     %3d,%3d,%d  0x%08x   0x%08x     %6d %6d %6d\n",)
     int sum_param = 0;
     int sum_ops = 0;
     uint8_t *layer_body = (uint8_t *) b->layers_body;
@@ -114,17 +114,17 @@ tm_err_t tm_stat(tm_mdlbin_t *b) {
                     break;
             }
             sum_ops += ops;
-            printf("%03d\t%s      \t%3d,%3d,%3d\t%d\t%d\t%d\t%ld\t", layer_i, tml_str_tbl[h->type],
+            TM_PRINTF("%03d\t%s      \t%3d,%3d,%3d\t%d\t%d\t%d\t%ld\t", layer_i, tml_str_tbl[h->type],
                    h->out_dims[1], h->out_dims[2], h->out_dims[3],
                    h->in_oft, h->out_oft, h->size - tml_headsize_tbl[h->type],
                    (long int) (memout * sizeof(mtype_t)));
-            printf("%d\r\n", ops);
+            TM_PRINTF("%d\r\n", ops);
         } else {
             return TM_ERR_LAYERTYPE;
         }
         layer_body += (h->size);
     }
-    printf("\r\nTotal param ~%.1f KB, OPS ~%.2f MOPS, buffer %.1f KB\r\n\r\n",
+    TM_PRINTF("\r\nTotal param ~%.1f KB, OPS ~%.2f MOPS, buffer %.1f KB\r\n\r\n",
            sum_param / 1024.0, sum_ops / 1000000.0, (b->buf_size + b->sub_size) / 1024.0);
     return TM_OK;
 }
