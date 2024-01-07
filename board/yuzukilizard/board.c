@@ -16,6 +16,7 @@
 #include <sys-spi.h>
 #include <sys-uart.h>
 #include <sys-sdcard.h>
+#include <sys-dram.h>
 
 sunxi_serial_t uart_dbg = {
         .base = 0x02500000,
