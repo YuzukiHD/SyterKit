@@ -687,8 +687,6 @@ int main(void) {
     cmd_boot(0, NULL);
 
 _shell:
-    asm volatile("mov r7, #1");
-    asm volatile("svc #0");
     syterkit_shell_attach(commands);
 
 _fel:
