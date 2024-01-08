@@ -5,13 +5,13 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <timer.h>
 #include <config.h>
 #include <log.h>
+#include <timer.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 #include <smalloc.h>
 #include <sstdlib.h>
 #include <string.h>
