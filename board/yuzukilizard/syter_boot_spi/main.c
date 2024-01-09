@@ -7,20 +7,26 @@
 
 #include <config.h>
 #include <log.h>
+#include <timer.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
+
+#include <cli.h>
+#include <cli_shell.h>
+#include <cli_termesc.h>
 
 #include "sys-dram.h"
-#include "sys-sdcard.h"
+#include "sys-rtc.h"
 #include "sys-sid.h"
 #include "sys-spi.h"
 #include "sys-dma.h"
 #include "sys-spi-nand.h"
 
-#include "libfdt.h"
 #include "ff.h"
+#include "libfdt.h"
+#include "uart.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -34,14 +40,16 @@
 #define CONFIG_SPINAND_DTB_ADDR (128 * 2048)
 #define CONFIG_SPINAND_KERNEL_ADDR (256 * 2048)
 
+#define CONFIG_DEFAULT_BOOTDELAY 5
+
 #define FILENAME_MAX_LEN 64
 typedef struct {
-    unsigned int offset;
-    unsigned int length;
-    unsigned char *dest;
+    uint32_t offset;
+    uint32_t length;
+    uint8_t *dest;
 
-    unsigned int of_offset;
-    unsigned char *of_dest;
+    uint32_t of_offset;
+    uint8_t *of_dest;
 
     char filename[FILENAME_MAX_LEN];
     char of_filename[FILENAME_MAX_LEN];
@@ -50,24 +58,49 @@ typedef struct {
 /* Linux zImage Header */
 #define LINUX_ZIMAGE_MAGIC 0x016f2818
 typedef struct {
-    unsigned int code[9];
-    unsigned int magic;
-    unsigned int start;
-    unsigned int end;
+    uint32_t code[9];
+    uint32_t magic;
+    uint32_t start;
+    uint32_t end;
 } linux_zimage_header_t;
 
 extern sunxi_serial_t uart_dbg;
 
-extern dram_para_t dram_para;
-
 extern sunxi_spi_t sunxi_spi0;
+
+extern dram_para_t dram_para;
 
 image_info_t image;
 
-unsigned int code[9];
-unsigned int magic;
-unsigned int start;
-unsigned int end;
+uint32_t code[9];
+uint32_t magic;
+uint32_t start;
+uint32_t end;
+
+static int boot_image_setup(uint8_t *addr, uint32_t *entry) {
+    linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
+
+    printk(LOG_LEVEL_INFO, "Linux zImage->code  = 0x");
+    for (int i = 0; i < 9; i++)
+        printk(LOG_LEVEL_MUTE, "%x", code[i]);
+
+    printk(LOG_LEVEL_MUTE, "\n");
+    printk(LOG_LEVEL_DEBUG, "Linux zImage->magic = 0x%x\n",
+           zimage_header->magic);
+    printk(LOG_LEVEL_DEBUG, "Linux zImage->start = 0x%x\n",
+           (uint32_t) addr + zimage_header->start);
+    printk(LOG_LEVEL_DEBUG, "Linux zImage->end   = 0x%x\n",
+           (uint32_t) addr + zimage_header->end);
+
+    if (zimage_header->magic == LINUX_ZIMAGE_MAGIC) {
+        *entry = ((uint32_t) addr + zimage_header->start);
+        return 0;
+    }
+
+    printk(LOG_LEVEL_ERROR, "unsupported kernel image\n");
+
+    return -1;
+}
 
 int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     linux_zimage_header_t *hdr;
@@ -120,68 +153,174 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     return 0;
 }
 
-int main(void) {
-    sunxi_serial_init(&uart_dbg);
+static int abortboot_single_key(int bootdelay) {
+    int abort = 0;
+    unsigned long ts;
 
-    show_banner();
+    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
 
-    sunxi_clk_init();
+    /* Check if key already pressed */
+    if (tstc()) {       /* we got a key press */
+        uart_getchar(); /* consume input */
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
+        abort = 1; /* don't auto boot */
+    }
 
-    sunxi_dram_init(&dram_para);
+    while ((bootdelay > 0) && (!abort)) {
+        --bootdelay;
+        /* delay 1000 ms */
+        ts = time_ms();
+        do {
+            if (tstc()) {  /* we got a key press */
+                abort = 1; /* don't auto boot */
+                break;
+            }
+            udelay(10000);
+        } while (!abort && time_ms() - ts < 1000);
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d ", bootdelay);
+    }
+    uart_putchar('\n');
+    return abort;
+}
 
-    unsigned int entry_point = 0;
-    void (*kernel_entry)(int zero, int arch, unsigned int params);
-
-    sunxi_clk_dump();
-
-    memset(&image, 0, sizeof(image_info_t));
-
-    image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-    image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-
-    strcpy(image.filename, CONFIG_KERNEL_FILENAME);
-    strcpy(image.of_filename, CONFIG_DTB_FILENAME);
-
-    dma_init();
-    dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
-             (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
-    printk(LOG_LEVEL_DEBUG, "SPI: init\n");
+msh_declare_command(reload);
+msh_define_help(reload, "rescan SPI NAND and reload DTB, Kernel zImage", "Usage: reload\n");
+int cmd_reload(int argc, const char **argv) {
     if (sunxi_spi_init(&sunxi_spi0) != 0) {
         printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        return 0;
     }
 
     if (load_spi_nand(&sunxi_spi0, &image) != 0) {
         printk(LOG_LEVEL_ERROR, "SPI-NAND: loading failed\n");
+        return 0;
     }
+    return 0;
+}
 
+msh_declare_command(boot);
+msh_define_help(boot, "boot to linux", "Usage: boot\n");
+int cmd_boot(int argc, const char **argv) {
+    /* Initialize variables for kernel entry point and SD card access. */
+    uint32_t entry_point = 0;
+    void (*kernel_entry)(int zero, int arch, uint32_t params);
+
+    /* Disable SPI controller, clean up and exit the DMA subsystem. */
     sunxi_spi_disable(&sunxi_spi0);
     dma_exit();
 
-    if (boot_image_setup((unsigned char *) image.dest, &entry_point)) {
+    /* Set up boot parameters for the kernel. */
+    if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {
         printk(LOG_LEVEL_ERROR, "boot setup failed\n");
         abort();
     }
 
-    printk(LOG_LEVEL_INFO, "booting linux...\n");
+    /* Disable MMU, data cache, instruction cache, interrupts */
+    clean_syterkit_data();
 
-    arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
-    arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
-    arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
-    arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
     enable_kernel_smp();
     printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
 
+    /* Debug message to indicate the kernel address that the system is jumping to. */
     printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
 
-    kernel_entry = (void (*)(int, int, unsigned int)) entry_point;
-    kernel_entry(0, ~0, (unsigned int) image.of_dest);
+    /* Jump to the kernel entry point. */
+    kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
+    kernel_entry(0, ~0, (uint32_t) image.of_dest);
 
     // if kernel boot not success, jump to fel.
     jmp_to_fel();
+    return 0;
+}
 
+const msh_command_entry commands[] = {
+        msh_define_command(reload),
+        msh_define_command(boot),
+        msh_command_end,
+};
+
+int main(void) {
+    /* Initialize the debug serial interface. */
+    sunxi_serial_init(&uart_dbg);
+
+    /* Display the bootloader banner. */
+    show_banner();
+
+    /* Initialize the system clock. */
+    sunxi_clk_init();
+
+    /* Check rtc fel flag. if set flag, goto fel */
+    if (rtc_probe_fel_flag()) {
+        printk(LOG_LEVEL_INFO, "RTC: get fel flag, jump to fel mode.\n");
+        clean_syterkit_data();
+        rtc_clear_fel_flag();
+        sunxi_clk_reset();
+        mdelay(100);
+        goto _fel;
+    }
+
+    /* Initialize the DRAM and enable memory management unit (MMU). */
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    arm32_mmu_enable(SDRAM_BASE, dram_size);
+
+    /* Debug message to indicate that MMU is enabled. */
+    printk(LOG_LEVEL_DEBUG, "enable mmu ok\n");
+
+    /* Set up Real-Time Clock (RTC) hardware. */
+    rtc_set_vccio_det_spare();
+
+    /* Check if system voltage is within limits. */
+    sys_ldo_check();
+
+    /* Dump information about the system clocks. */
+    sunxi_clk_dump();
+
+    /* Clear the image_info_t struct. */
+    memset(&image, 0, sizeof(image_info_t));
+
+    /* Set the destination address for the device tree binary (DTB), kernel image. */
+    image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
+    image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+
+    /* Copy the filenames for the DTB, kernel image. */
+    strcpy(image.filename, CONFIG_KERNEL_FILENAME);
+    strcpy(image.of_filename, CONFIG_DTB_FILENAME);
+
+    /* Initialize the DMA subsystem and test it */
+    dma_init();
+    dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
+             (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
+
+    /* Initialize the SPI controller. */
+    if (sunxi_spi_init(&sunxi_spi0) != 0) {
+        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        goto _shell;
+    } else {
+        printk(LOG_LEVEL_INFO, "SPI: spi0 controller initialized\n");
+    }
+
+    /* Load the DTB, kernel image from the SPI NAND. */
+    if (load_spi_nand(&sunxi_spi0, &image) != 0) {
+        printk(LOG_LEVEL_ERROR, "SPI-NAND: loading failed\n");
+        goto _shell;
+    }
+
+    int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
+
+    /* Showing boot delays */
+    if (abortboot_single_key(bootdelay)) {
+        goto _shell;
+    }
+
+    cmd_boot(0, NULL);
+
+_shell:
+    syterkit_shell_attach(commands);
+
+_fel:
+    /* If the kernel boot fails, jump to FEL mode. */
+    jmp_to_fel();
+
+    /* Return 0 to indicate successful execution. */
     return 0;
 }
