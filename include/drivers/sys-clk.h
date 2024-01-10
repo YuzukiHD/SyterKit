@@ -15,6 +15,8 @@ extern "C" {
     #include <sun55iw3/sys-clk.h>
 #elif defined(CONFIG_CHIP_SUN8IW8)
     #include <sun8iw8/sys-clk.h>
+#elif defined(CONFIG_CHIP_SUN50IW10)
+    #include <sun50iw10/sys-clk.h>
 #else
     #error "Unsupported chip"
 #endif

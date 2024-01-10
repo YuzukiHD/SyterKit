@@ -38,6 +38,8 @@ typedef unsigned int			virtual_size_t;
 typedef unsigned int			physical_addr_t;
 typedef unsigned int			physical_size_t;
 
+typedef unsigned long 			smc_call_arg_t;
+
 typedef struct {
 	volatile int counter;
 } atomic_t;

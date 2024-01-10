@@ -17,6 +17,8 @@ extern "C" {
     #include <sun55iw3/reg/reg-ncat.h>
 #elif defined(CONFIG_CHIP_SUN8IW8)
     #include <sun8iw8/reg/reg-ncat.h>
+#elif defined(CONFIG_CHIP_SUN50IW10)
+    #include <sun50iw10/reg/reg-ncat.h>
 #else
     #error "Unsupported chip"
 #endif

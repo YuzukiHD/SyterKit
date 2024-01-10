@@ -2,7 +2,7 @@
 # Top makefile
 #
 
-CROSS		?= arm-linux-gnueabi-
+CROSS		?= arm-none-eabi-
 NAME		:= syter_bl33
 
 #
@@ -19,14 +19,14 @@ endif
 #
 # Load default variables.
 #
-ASFLAGS		:= -g -ggdb -Wall -Os
-CFLAGS		:= -g -ggdb -Wall -Os
-CXXFLAGS	:= -g -ggdb -Wall -Os
-LDFLAGS		:= -T link.ld -nostdlib 
+ASFLAGS		:= -g -ggdb -Wall -O3
+CFLAGS		:= -g -ggdb -Wall -O3
+CXXFLAGS	:= -g -ggdb -Wall -O3
+LDFLAGS		:= -T link.ld -nostdlib
 ARFLAGS		:= -rcs
 OCFLAGS		:= -v -O binary
 ODFLAGS		:=
-MCFLAGS		:= -nostdinc -nostdlib -g -ggdb -mabi=aapcs-linux -march=armv7-a -Wno-builtin-declaration-mismatch -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
+MCFLAGS		:= -nostdinc -nostdlib -mabi=aapcs-linux -march=armv7-a -Wno-builtin-declaration-mismatch -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 
 LIBDIRS		:= 
 LIBS 		:= 
