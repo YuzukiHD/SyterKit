@@ -3,16 +3,21 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <time.h>
 #include <types.h>
 
 #include <log.h>
 
 #include <common.h>
 
-#include <pmu/axp.h>
+#include <mmu.h>
+
 #include <sys-dram.h>
+#include <sys-gpio.h>
 #include <sys-i2c.h>
+#include <sys-sid.h>
+#include <sys-sdcard.h>
+#include <sys-spi.h>
+#include <sys-uart.h>
 
 extern sunxi_serial_t uart_dbg;
 
@@ -47,9 +52,7 @@ int main(void) {
     pmu_axp2202_init(&i2c_pmu);
 
     set_pmu_fin_voltage("dcdc1", 1100);
-    set_pmu_fin_voltage("dcdc3", 1160);
-
-    mdelay(30); /* Delay 300ms for pmu bootup */
+    set_pmu_fin_voltage("dcdc3", 1100);
 
     pmu_axp2202_dump(&i2c_pmu);
 
@@ -57,13 +60,19 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    int i = 0;
-
-    while (1) {
-        i++;
-        printk(LOG_LEVEL_INFO, "Count: %d\n", i);
-        mdelay(1000);
+    /* Initialize the SD host controller. */
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+    } else {
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
     }
+
+    /* Initialize the SD card and check if initialization is successful. */
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+    }
+
+    printk(LOG_LEVEL_DEBUG, "Card OK!\n");
 
     abort();
 

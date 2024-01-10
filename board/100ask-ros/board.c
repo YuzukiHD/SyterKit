@@ -59,6 +59,6 @@ sunxi_i2c_t i2c_pmu = {
         .base = SUNXI_RTWI_BASE,
         .id = SUNXI_R_I2C0,
         .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX3},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX3},
+        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
+        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
 };

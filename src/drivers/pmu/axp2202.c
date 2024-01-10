@@ -103,7 +103,8 @@ int pmu_axp2202_init(sunxi_i2c_t *i2c_dev) {
     if (sunxi_i2c_read(i2c_dev, AXP2202_B_RUNTIME_ADDR, AXP2202_CHIP_ID_EXT, &axp_val)) {
         /* AXP717B probe fail, Try to probe AXP717C */
         if (sunxi_i2c_read(i2c_dev, AXP2202_C_RUNTIME_ADDR, AXP2202_CHIP_ID_EXT, &axp_val)) {
-            /* AXP717B probe fail */
+            /* AXP717C probe fail */
+            printk(LOG_LEVEL_WARNING, "PMU: AXP2202 PMU Read error\n");
             return -1;
         } else {
             AXP2202_RUNTIME_ADDR = AXP2202_C_RUNTIME_ADDR;
@@ -113,10 +114,10 @@ int pmu_axp2202_init(sunxi_i2c_t *i2c_dev) {
     }
 
     if (axp_val != 0x02) {
-        printk(LOG_LEVEL_INFO, "PMU: AXP PMU Check error\n");
+        printk(LOG_LEVEL_WARNING, "PMU: AXP PMU Check error\n");
         return -1;
     } else {
-        printk(LOG_LEVEL_INFO, "PMU: Found AXP717 PMU\n");
+        printk(LOG_LEVEL_INFO, "PMU: Found AXP717 PMU, Addr 0x%02x\n", AXP2202_RUNTIME_ADDR);
     }
 
     /* limit run current to 2A */
