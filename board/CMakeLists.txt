@@ -25,3 +25,11 @@ endif()
 if(CONFIG_BOARD_BINGPI-M1)
     add_subdirectory(bingpi-m1)
 endif()
+
+if(CONFIG_BOARD_100ASK_ROS)
+    add_subdirectory(100ask-ros)
+endif()
+
+if(CONFIG_BOARD_DONGSHANPI_AICT)
+    add_subdirectory(dongshanpi-aict)
+endif()

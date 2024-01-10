@@ -35,10 +35,10 @@ reset:
 
 	bl print_banner
 
-	bl sys_main
+	bl sys_boot
 
 ENTRY(sys_main)
-	push	{r4, lr}
+	push {r4, lr}
 	mov	r3, #1
 	ldr	r2, [pc, #16]
 	ldr	r1, [pc, #16]
