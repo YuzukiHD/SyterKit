@@ -19,11 +19,6 @@ typedef struct {
 int zImage_loader(uint8_t *addr, uint32_t *entry) {
     linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
 
-    uint32_t code[9];
-    uint32_t magic;
-    uint32_t start;
-    uint32_t end;
-
     printk(LOG_LEVEL_INFO, "Linux zImage->code  = 0x");
     for (int i = 0; i < 9; i++) {
         printk(LOG_LEVEL_MUTE, "%x", code[i]);
