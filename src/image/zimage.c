@@ -21,7 +21,7 @@ int zImage_loader(uint8_t *addr, uint32_t *entry) {
 
     printk(LOG_LEVEL_INFO, "Linux zImage->code  = 0x");
     for (int i = 0; i < 9; i++) {
-        printk(LOG_LEVEL_MUTE, "%x", code[i]);
+        printk(LOG_LEVEL_MUTE, "%x", zimage_header->code[i]);
     }
 
     printk(LOG_LEVEL_MUTE, "\n");
