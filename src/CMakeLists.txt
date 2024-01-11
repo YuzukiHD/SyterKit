@@ -27,6 +27,9 @@ add_library(SyterKit STATIC
     image/uimage.c
     image/zimage.c
 
+    # os
+    os.c
+
     # malloc
     smalloc.c
 
