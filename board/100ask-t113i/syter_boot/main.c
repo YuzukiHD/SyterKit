@@ -86,10 +86,6 @@ extern dram_para_t dram_para;
 
 image_info_t image;
 
-static int boot_image_setup(uint8_t *addr, uint32_t *entry) {
-    return zImage_loader(addr, entry);
-}
-
 #define CHUNK_SIZE 0x20000
 
 static int fatfs_loadimage(char *filename, BYTE *dest) {
@@ -518,7 +514,7 @@ int cmd_boot(int argc, const char **argv) {
     void (*kernel_entry)(int zero, int arch, uint32_t params);
 
     /* Set up boot parameters for the kernel. */
-    if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {
+    if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
         printk(LOG_LEVEL_ERROR, "boot setup failed\n");
         abort();
     }
