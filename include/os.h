@@ -40,9 +40,8 @@ void timer_create(timer_t *timer, void (*callback)(void *arg, uint32_t event), v
     @brief Start a timer.
     @param timer A pointer to an already created timer_t object.
     @param max_run_count The maximum number of times the timer will run. 0 means it will run indefinitely.
-    @param interval The time interval of the timer in milliseconds. 
+    @param interval The time interval of the timer. 
 */
-
 void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval);
 
 /**
