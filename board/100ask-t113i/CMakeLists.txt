@@ -11,3 +11,5 @@ add_subdirectory(sys_info)
 add_subdirectory(syter_boot)
 
 add_subdirectory(load_c906)
+
+add_subdirectory(os_test)

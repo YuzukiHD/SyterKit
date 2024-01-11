@@ -45,20 +45,14 @@ uint64_t time_us(void) {
 }
 
 void udelay(uint64_t us) {
-    uint64_t now;
-
-    now = time_us();
-    while (time_us() - now < us) {
-    };
+    volatile uint32_t counter = us * 8;
+    sdelay(counter);
 }
 
 void mdelay(uint32_t ms) {
-    udelay(ms * 1000);
-    uint32_t now;
-
-    now = time_ms();
-    while (time_ms() - now < ms) {
-    };
+    while (ms--) {
+        udelay(1000);
+    }
 }
 
 void sdelay(uint32_t loops) {
