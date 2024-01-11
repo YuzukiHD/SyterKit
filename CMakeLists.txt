@@ -192,6 +192,7 @@ endif()
 include_directories(
     include
     include/cli
+    include/image
     include/drivers
     include/drivers/reg
     include/lib/fatfs
