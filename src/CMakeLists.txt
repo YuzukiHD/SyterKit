@@ -22,6 +22,11 @@ add_library(SyterKit STATIC
     cli/parse.c
     cli/shell.c
 
+    # linux image loader
+    image/bimage.c
+    image/uimage.c
+    image/zimage.c
+
     # malloc
     smalloc.c
 
