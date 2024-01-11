@@ -7,15 +7,6 @@
 
 #include "image_loader.h"
 
-/* Linux zImage Header */
-#define LINUX_ZIMAGE_MAGIC 0x016f2818
-typedef struct {
-    uint32_t code[9];
-    uint32_t magic;
-    uint32_t start;
-    uint32_t end;
-} linux_zimage_header_t;
-
 int zImage_loader(uint8_t *addr, uint32_t *entry) {
     linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
 

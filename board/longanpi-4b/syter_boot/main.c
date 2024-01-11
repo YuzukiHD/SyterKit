@@ -20,6 +20,8 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
+#include <image_loader.h>
+
 #include "sys-dram.h"
 #include "sys-i2c.h"
 #include "sys-rtc.h"
@@ -75,15 +77,6 @@ typedef struct {
 
 IniEntry entries[CONFIG_MAX_ENTRY];
 
-/* Linux zImage Header */
-#define LINUX_ZIMAGE_MAGIC 0x016f2818
-typedef struct {
-    uint32_t code[9];
-    uint32_t magic;
-    uint32_t start;
-    uint32_t end;
-} linux_zimage_header_t;
-
 extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
@@ -91,30 +84,6 @@ extern sunxi_i2c_t i2c_pmu;
 extern sdhci_t sdhci0;
 
 image_info_t image;
-
-uint32_t code[9];
-uint32_t magic;
-uint32_t start;
-uint32_t end;
-
-static int boot_image_setup(uint8_t *addr, uint32_t *entry) {
-    linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->magic = 0x%x\n",
-           zimage_header->magic);
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->start = 0x%x\n",
-           (uint32_t) addr + zimage_header->start);
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->end   = 0x%x\n",
-           (uint32_t) addr + zimage_header->end);
-
-    if (zimage_header->magic == LINUX_ZIMAGE_MAGIC) {
-        *entry = ((uint32_t) addr + zimage_header->start);
-        return 0;
-    }
-
-    printk(LOG_LEVEL_ERROR, "unsupported kernel image\n");
-
-    return -1;
-}
 
 #define CHUNK_SIZE 0x20000
 
@@ -289,7 +258,7 @@ int cmd_boot(int argc, const char **argv) {
     void (*kernel_entry)(int zero, int arch, uint32_t params);
 
     /* Set up boot parameters for the kernel. */
-    if (boot_image_setup((uint8_t *) image.dest, &entry_point)) {
+    if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
         printk(LOG_LEVEL_ERROR, "boot setup failed\n");
         abort();
     }

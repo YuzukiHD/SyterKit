@@ -8,9 +8,9 @@
 #include <config.h>
 #include <log.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 
 #include "sys-dram.h"
 #include "sys-sdcard.h"
@@ -20,6 +20,8 @@
 #include <cli.h>
 #include <cli_shell.h>
 #include <cli_termesc.h>
+
+#include <image_loader.h>
 
 #include "ff.h"
 #include "libfdt.h"
@@ -49,15 +51,6 @@ typedef struct {
     char of_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-/* Linux zImage Header */
-#define LINUX_ZIMAGE_MAGIC 0x016f2818
-typedef struct {
-    unsigned int code[9];
-    unsigned int magic;
-    unsigned int start;
-    unsigned int end;
-} linux_zimage_header_t;
-
 extern sunxi_serial_t uart_dbg;
 
 extern sunxi_spi_t sunxi_spi0;
@@ -67,36 +60,6 @@ extern sdhci_t sdhci0;
 extern dram_para_t dram_para;
 
 image_info_t image;
-
-unsigned int code[9];
-unsigned int magic;
-unsigned int start;
-unsigned int end;
-
-static int boot_image_setup(unsigned char *addr, unsigned int *entry) {
-    linux_zimage_header_t *zimage_header = (linux_zimage_header_t *) addr;
-
-    printk(LOG_LEVEL_INFO, "Linux zImage->code  = 0x");
-    for (int i = 0; i < 9; i++)
-        printk(LOG_LEVEL_MUTE, "%x", code[i]);
-
-    printk(LOG_LEVEL_MUTE, "\n");
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->magic = 0x%x\n",
-           zimage_header->magic);
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->start = 0x%x\n",
-           (unsigned int) addr + zimage_header->start);
-    printk(LOG_LEVEL_DEBUG, "Linux zImage->end   = 0x%x\n",
-           (unsigned int) addr + zimage_header->end);
-
-    if (zimage_header->magic == LINUX_ZIMAGE_MAGIC) {
-        *entry = ((unsigned int) addr + zimage_header->start);
-        return 0;
-    }
-
-    printk(LOG_LEVEL_ERROR, "unsupported kernel image\n");
-
-    return -1;
-}
 
 #define CHUNK_SIZE 0x20000
 
@@ -228,8 +191,7 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
                   (uint32_t) sizeof(linux_zimage_header_t));
     hdr = (linux_zimage_header_t *) image->dest;
     if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
-        printk(LOG_LEVEL_DEBUG,
-               "SPI-NAND: zImage verification failed\n");
+        printk(LOG_LEVEL_DEBUG, "SPI-NAND: zImage verification failed\n");
         return -1;
     }
     size = hdr->end - hdr->start;
@@ -340,10 +302,10 @@ int cmd_reload(int argc, const char **argv) {
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
 int cmd_boot(int argc, const char **argv) {
-    unsigned int entry_point = 0;
+    uint32_t entry_point = 0;
     void (*kernel_entry)(int zero, int arch, unsigned int params);
 
-    if (boot_image_setup((unsigned char *) image.dest, &entry_point)) {
+    if (zImage_loader((unsigned char *) image.dest, &entry_point)) {
         printk(LOG_LEVEL_ERROR, "boot setup failed\n");
         return 0;
     }
