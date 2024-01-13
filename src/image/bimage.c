@@ -59,7 +59,6 @@ int bImage_loader(uint8_t *addr, uint32_t *entry) {
         printk(LOG_LEVEL_DEBUG, "[IMG] kernel magic is ok\n");
         printk(LOG_LEVEL_DEBUG, "[IMG] kernel_size = 0x%x\n", image_header->kernel_size);
         printk(LOG_LEVEL_DEBUG, "[IMG] ramdisk_size = 0x%x\n", image_header->ramdisk_size);
-        rbytes = image_header->kernel_size + image_header->ramdisk_size + image_header->second_size + 4 * 1024 + 511;
     } else {
         printk(LOG_LEVEL_ERROR, "[IMG] kernel 0x%08x magic is error\n", addr);
         return -1;
