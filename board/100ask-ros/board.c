@@ -62,3 +62,15 @@ sunxi_i2c_t i2c_pmu = {
         .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
         .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
 };
+
+void clean_syterkit_data(void) {
+    /* Disable MMU, data cache, instruction cache, interrupts */
+    arm32_mmu_disable();
+    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    arm32_dcache_disable();
+    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    arm32_icache_disable();
+    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    arm32_interrupt_disable();
+    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+}

@@ -36,9 +36,6 @@
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_UBOOT_FILENAME "u-boot.bin"
-#define CONFIG_UBOOT_LOAD_ADDR (0x4a000000)
-
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_DTB_LOAD_ADDR (0x4a200000)
 
@@ -74,9 +71,6 @@ typedef struct atf_head {
 typedef struct {
     uint8_t *bl31_dest;
     char bl31_filename[FILENAME_MAX_LEN];
-
-    uint8_t *uboot_dest;
-    char uboot_filename[FILENAME_MAX_LEN];
 
     uint8_t *kernel_dest;
     char kernel_filename[FILENAME_MAX_LEN];
@@ -145,9 +139,7 @@ static int load_sdcard(image_info_t *image) {
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
 
@@ -165,11 +157,6 @@ static int load_sdcard(image_info_t *image) {
     ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
     if (ret)
         return ret;
-
-    // printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
-    // ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
-    // if (ret)
-    //     return ret;
 
     printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
@@ -213,16 +200,16 @@ _loop:
     goto _loop;
 }
 
-void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
+static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
     int set_vol = voltage;
-    int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, power_name);
+    int temp_vol, src_vol = pmu_axp2202_get_vol(&i2c_pmu, power_name);
     if (src_vol > voltage) {
         for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
+            pmu_axp2202_set_vol(&i2c_pmu, power_name, temp_vol, 1);
         }
     } else if (src_vol < voltage) {
         for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
+            pmu_axp2202_set_vol(&i2c_pmu, power_name, temp_vol, 1);
         }
     }
     mdelay(30); /* Delay 300ms for pmu bootup */
@@ -239,11 +226,12 @@ int main(void) {
 
     sunxi_i2c_init(&i2c_pmu);
 
-    pmu_axp1530_init(&i2c_pmu);
+    pmu_axp2202_init(&i2c_pmu);
 
-    set_pmu_fin_voltage("dcdc2", 1100);
-
+    set_pmu_fin_voltage("dcdc1", 1100);
     set_pmu_fin_voltage("dcdc3", 1100);
+
+    pmu_axp2202_dump(&i2c_pmu);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
@@ -257,12 +245,10 @@ int main(void) {
     memset(&image, 0, sizeof(image_info_t));
 
     image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
-    image.uboot_dest = (uint8_t *) CONFIG_UBOOT_LOAD_ADDR;
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
-    strcpy(image.uboot_filename, CONFIG_UBOOT_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
     strcpy(image.kernel_filename, CONFIG_KERNEL_FILENAME);
 
@@ -288,7 +274,7 @@ int main(void) {
 
     atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
-    atf_head->next_boot_base = CONFIG_UBOOT_LOAD_ADDR;
+    atf_head->next_boot_base = CONFIG_KERNEL_LOAD_ADDR;
     atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
 
     printk(LOG_LEVEL_INFO, "ATF: jump_instruction: 0x%08x\n", atf_head->jump_instruction);
