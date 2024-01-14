@@ -14,7 +14,7 @@
 #include <sys-dram.h>
 #include <sys-rtc.h>
 
-#define INIT_DRAM_BIN_BASE 0x104000
+#define INIT_DRAM_BIN_BASE 0x3E900
 
 #define SUNXI_RTC_BASE (0x07000000)
 #define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)

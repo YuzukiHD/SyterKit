@@ -74,3 +74,43 @@ void clean_syterkit_data(void) {
     arm32_interrupt_disable();
     printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
 }
+
+#define RTC_DATA_COLD_START (7)
+#define CPUS_CODE_LENGTH (0x1000)
+#define CPUS_VECTOR_LENGTH (0x4000)
+
+extern uint8_t ar100code_bin[];
+extern uint32_t ar100code_bin_len;
+
+int ar100s_gpu_fix(void) {
+    uint32_t value;
+    uint32_t id = (readl(SUNXI_SYSCRL_BASE + 0x24)) & 0x07;
+    printk(LOG_LEVEL_DEBUG, "SUNXI_SYSCRL_BASE + 0x24 = 0x%08x, id = %d, RTC_DATA_COLD_START = %d\n",
+           readl(SUNXI_SYSCRL_BASE + 0x24), id, rtc_read_data(RTC_DATA_COLD_START));
+    if (((id == 0) || (id == 3) || (id == 4) || (id == 5))) {
+        if (rtc_read_data(RTC_DATA_COLD_START) == 0) {
+            rtc_write_data(RTC_DATA_COLD_START, 0x1);
+
+            value = readl(SUNXI_RCPUCFG_BASE + 0x0);
+            value &= ~1;
+            writel(value, SUNXI_RCPUCFG_BASE + 0x0);
+
+            memcpy((void *) SCP_SRAM_BASE, (void *) ar100code_bin, CPUS_CODE_LENGTH);
+            memcpy((void *) (SCP_SRAM_BASE + CPUS_VECTOR_LENGTH), (char *) ar100code_bin + CPUS_CODE_LENGTH, ar100code_bin_len - CPUS_CODE_LENGTH);
+            asm volatile("dsb");
+
+            value = readl(SUNXI_RCPUCFG_BASE + 0x0);
+            value &= ~1;
+            writel(value, SUNXI_RCPUCFG_BASE + 0x0);
+            value = readl(SUNXI_RCPUCFG_BASE + 0x0);
+            value |= 1;
+            writel(value, SUNXI_RCPUCFG_BASE + 0x0);
+            while (1)
+                asm volatile("WFI");
+        } else {
+            rtc_write_data(RTC_DATA_COLD_START, 0x0);
+        }
+    }
+
+    return 0;
+}
