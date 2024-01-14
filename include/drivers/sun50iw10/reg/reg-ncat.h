@@ -103,4 +103,20 @@
 #define GPIO_3_3V_MODE 0
 #define GPIO_1_8V_MODE 1
 
+/* sram layout*/
+#define CONFIG_SYS_SRAM_BASE (0x20000)
+#define CONFIG_SYS_SRAM_SIZE (0x4000)
+#define CONFIG_SYS_SRAMA2_BASE (0x100000)
+#define CONFIG_SYS_SRAMA2_SIZE (0x14000)
+#define CONFIG_SYS_SRAMC_BASE (0x24000)
+#define CONFIG_SYS_SRAMC_SIZE (0x21000)
+
+/* scp mem layout */
+#define SCP_DRAM_SIZE (0x0000) /* no cpus dram code on sun50iw10 */
+#define SCP_DTS_SIZE (0x40000)
+#define SCP_CODE_DRAM_OFFSET (0x14000)
+#define SCP_SRAM_BASE (CONFIG_SYS_SRAMA2_BASE)
+#define SCP_SRAM_SIZE (CONFIG_SYS_SRAMA2_SIZE)
+#define HEADER_OFFSET (0x4000)
+
 #endif// __SUN50IW10_REG_NCAT_H__

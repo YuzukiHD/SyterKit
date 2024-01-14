@@ -3,6 +3,7 @@ set(APP_COMMON_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/board.c
     ${CMAKE_CURRENT_SOURCE_DIR}/eabi_compat.c
     ${CMAKE_CURRENT_SOURCE_DIR}/payloads/init_dram_bin.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/payloads/ar100s.c
 )
 
 add_subdirectory(hello_world)
