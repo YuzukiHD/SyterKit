@@ -14,9 +14,9 @@ void printk(int level, const char *fmt, ...) {
     if (level < LOG_LEVEL_DEFAULT) {
         return;
     }
-    uint32_t now_timestamp = time_ms() - get_init_timestamp();
-    uint32_t seconds = now_timestamp / 1000;
-    uint32_t milliseconds = now_timestamp % 1000;
+    uint32_t now_timestamp = time_us() - get_init_timestamp();
+    uint32_t seconds = now_timestamp / (1000 * 1000);
+    uint32_t milliseconds = now_timestamp % (1000 * 1000);
 
     switch (level) {
         case LOG_LEVEL_TRACE:
