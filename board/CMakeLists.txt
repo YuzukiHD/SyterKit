@@ -33,3 +33,7 @@ endif()
 if(CONFIG_BOARD_DONGSHANPI_AICT)
     add_subdirectory(dongshanpi-aict)
 endif()
+
+if(CONFIG_BOARD_LT527X)
+    add_subdirectory(lt527x)
+endif()
