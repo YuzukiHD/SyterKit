@@ -33,3 +33,5 @@ add_subdirectory(i2c_test)
 add_subdirectory(i2c_oled)
 
 add_subdirectory(spi_lcd)
+
+add_subdirectory(usb_test)

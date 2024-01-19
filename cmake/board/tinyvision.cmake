@@ -3,6 +3,7 @@
 set(CONFIG_ARCH_ARM32 True)
 set(CONFIG_CHIP_SUN8IW21 True)
 set(CONFIG_BOARD_TINYVISION True)
+set(CONFIG_CHIP_USB True)
 
 add_definitions(-DCONFIG_CHIP_SUN8IW21)
 
@@ -29,7 +30,7 @@ else()
 endif()
 
 # Disable specific warning flags for C and C++ compilers
-set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
+set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 
 set(ARCH_BIN_START_ADDRESS "0x00020000")
