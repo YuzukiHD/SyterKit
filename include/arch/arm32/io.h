@@ -10,6 +10,13 @@
     write32((addr), (read32(addr) & ~(clear)) | (set))
 #define setbits_le32(addr, set) write32((addr), read32(addr) | (set))
 #define clrbits_le32(addr, clear) write32((addr), read32(addr) & ~(clear))
+
+#define readb(addr) read8(addr)
+#define writeb(val, addr) write8((addr), (val))
+
+#define readw(addr) read16(addr)
+#define writew(val, addr) write16((addr), (val))
+
 #define readl(addr) read32(addr)
 #define writel(val, addr) write32((addr), (val))
 

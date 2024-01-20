@@ -6,6 +6,7 @@
 #include <types.h>
 
 #include <mmu.h>
+#include <timer.h>
 
 #include <log.h>
 
@@ -26,6 +27,8 @@ static void show_regs(struct arm_regs_t *regs) {
     for (i = 12; i >= 0; i--)
         printk(LOG_LEVEL_ERROR, "r%-2d: 0x%08lx\n", i, regs->r[i]);
     printk(LOG_LEVEL_ERROR, "\n");
+
+    mdelay(1000);
 }
 
 void arm32_do_undefined_instruction(struct arm_regs_t *regs) {

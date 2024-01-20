@@ -24,7 +24,9 @@ set(USB_DRIVER
     usb/usb_clk.c
     usb/usb.c
     usb/usb_controller.c
+    usb/usb_device.c
     usb/usb_dma.c
+    usb/gic.c
 
     usb/module/usb_detect.c
 )
