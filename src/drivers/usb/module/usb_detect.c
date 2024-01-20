@@ -25,7 +25,6 @@ static int sunxi_usb_detect_init(void) {
 static int sunxi_usb_detect_exit(void) {
     printk(LOG_LEVEL_DEBUG, "USB: sunxi_usb_detect_exit\n");
     sunxi_usb_detect_flag = 0;
-
     return 0;
 }
 

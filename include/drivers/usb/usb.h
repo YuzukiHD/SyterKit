@@ -69,11 +69,25 @@ typedef struct sunxi_usb_setup_req_s {
 /* export usb module */
 sunxi_usb_module_ext(SUNXI_USB_DEVICE_DETECT);
 
+/* USB IO Wrzpper */
+#define usb_get_bit8(bp, reg) (read8(reg) & (1 << (bp)))
+#define usb_get_bit16(bp, reg) (read16(reg) & (1 << (bp)))
+#define usb_get_bit32(bp, reg) (read32(reg) & (1 << (bp)))
+
+#define usb_set_bit8(bp, reg) (write8((reg), (read8(reg) | (1 << (bp)))))
+#define usb_set_bit16(bp, reg) (write16((reg), (read16(reg) | (1 << (bp)))))
+#define usb_set_bit32(bp, reg) (write32((reg), (read32(reg) | (1 << (bp)))))
+
+#define usb_clear_bit8(bp, reg) (write8((reg), (read8(reg) & (~(1 << (bp))))))
+#define usb_clear_bit16(bp, reg) (write16((reg), (read16(reg) & (~(1 << (bp))))))
+#define usb_clear_bit32(bp, reg) (write32((reg), (read32(reg) & (~(1 << (bp))))))
 
 /* Function */
 void sunxi_usb_attach(uint32_t device_type);
 
-void sunxi_usb_init();
+int sunxi_usb_init();
+
+void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index);
 
 
 #endif// __USB_H__
