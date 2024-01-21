@@ -13,7 +13,7 @@
 #define GIC_SET_EN(n) (GIC_DIST_BASE + 0x100 + 4 * (n))
 
 #define GIC_CPUIF_BASE (SUNXI_GIC_BASE + 0x2000)
-#define GIC_INT_ACK_REG (GIC_CPUIF_BASE + 0x00c)// 0x800c
+#define GIC_INT_ACK_REG (GIC_CPUIF_BASE + 0x00c)
 
 void gic_enable(uint32_t irq) {
     uint32_t reg_val, offset;
