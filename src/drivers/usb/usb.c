@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+/* Based on https://github.com/allwinner-zh/bootloader */
 
 #include <io.h>
 #include <stdarg.h>
@@ -40,49 +41,6 @@ static uint64_t dma_rec_addr;
 static uint64_t dma_rec_size;
 
 /**
- * @brief Reset the bulk endpoints of the USB controller
- *
- * This function resets the bulk endpoints of the Allwinner A64 USB controller.
- * It configures the bulk-in and bulk-out endpoints for data transfer. The steps
- * involved are as follows:
- *
- * 1. Get the index of the currently active endpoint.
- * 2. Configure the bulk-in endpoint for transmitting data to the host.
- *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
- *    - Set the endpoint type to transmit (USBC_EP_TYPE_TX).
- *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
- *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_out_addr.
- *    - Enable interrupts for the endpoint.
- * 3. Configure the bulk-out endpoint for receiving data from the host.
- *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
- *    - Set the endpoint type to receive (USBC_EP_TYPE_RX).
- *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
- *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_in_addr.
- *    - Enable interrupts for the endpoint.
- * 4. Restore the previously active endpoint.
- *
- * @param none
- * @return none
- */
-static void sunxi_usb_bulk_ep_reset() {
-    uint8_t old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
-    /* tx */
-    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
-    usb_device_config_ep(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_EP_TYPE_TX, 1, sunxi_udc_source.bulk_ep_max & 0x7ff);
-    usb_controller_config_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, 1, sunxi_udc_source.fifo_size, (uint32_t) sunxi_udc_source.bulk_out_addr);
-    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_BULK_IN_EP_INDEX);
-
-    /* rx */
-    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
-    usb_device_config_ep(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_EP_TYPE_RX, 1, sunxi_udc_source.bulk_ep_max & 0x7ff);
-    usb_controller_config_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1, sunxi_udc_source.fifo_size, (uint32_t) sunxi_udc_source.bulk_in_addr);
-    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, SUNXI_USB_BULK_OUT_EP_INDEX);
-
-    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
-    return;
-}
-
-/**
  * @brief Clear all USB interrupts.
  *
  * This function clears all pending USB interrupts, including endpoint transmit (TX) and receive (RX) interrupts, as well as miscellaneous interrupts.
@@ -113,6 +71,77 @@ static void sunxi_usb_read_complete(uint32_t husb, uint32_t ep_type, uint32_t co
         usb_controller_int_clear_ep_pending(husb, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
     }
     return;
+}
+
+/**
+ * @brief Handle USB write complete event
+ *
+ * This function is called when a USB write operation is completed. It updates
+ * the write data status using usb_device_write_data_status(), waits for the
+ * transmit packet to be sent out, and clears the data end and IRQ if the
+ * endpoint type is EP0.
+ *
+ * @param husb     The USB handle
+ * @param ep_type  The type of the endpoint
+ * @param complete The completion status of the write operation
+ * @return none
+ */
+static void sunxi_usb_write_complete(uint32_t husb, uint32_t ep_type, uint32_t complete) {
+    usb_device_write_data_status(husb, ep_type, complete);
+
+    /* Wait for tx packet sent out */
+    while (usb_device_get_write_data_ready(husb, ep_type))
+        ;
+
+    if (ep_type == USBC_EP_TYPE_EP0) {
+        /* Clear data end */
+        if (complete) {
+            usb_device_ctrl_clear_setup_end(husb);
+        }
+
+        /* Clear IRQ */
+        usb_controller_int_clear_ep_pending(husb, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
+    }
+    return;
+}
+
+/**
+ * @brief Write data to the USB FIFO
+ *
+ * This function writes data from the buffer to the USB FIFO. It selects the
+ * appropriate endpoint, calculates the transfer size, and repeatedly calls
+ * usb_controller_write_packet() to write data to the FIFO until all data is
+ * transferred. After each write, it calls sunxi_usb_write_complete() to handle
+ * the completion of the write operation.
+ *
+ * @param buffer       The buffer containing the data to be written
+ * @param buffer_size  The size of the buffer
+ * @return 0 on success, -1 on failure
+ */
+static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size) {
+    uint32_t old_ep_idx = 0;
+    uint32_t fifo = 0;
+    uint32_t transfered = 0;
+    uint32_t left = 0;
+    uint32_t this_len;
+
+    /* Save index */
+    old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
+
+    left = buffer_size;
+    fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
+
+    while (left) {
+        this_len = min(sunxi_udc_source.fifo_size, left);
+        this_len = usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, this_len, buffer + transfered);
+        transfered += this_len;
+        left -= this_len;
+        sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, 1);
+    }
+
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
+    return 0;
 }
 
 /**
@@ -156,7 +185,7 @@ static int sunxi_usb_read_ep0_data(void *buffer, uint32_t data_type) {
  * 
  * @return Returns SUNXI_USB_REQ_SUCCESSED on success, or a negative error code on failure.
  */
-static int sunxi_usb_set_address(uint8_t address) {
+static int sunxi_usb_perform_set_address(uint8_t address) {
     usb_device_set_address(sunxi_udc_source.usbc_hd, address);
     if (usb_device_query_transfer_mode(sunxi_udc_source.usbc_hd) == USBC_TS_MODE_HS) {
         sunxi_udc_source.speed = USB_SPEED_HIGH;
@@ -223,7 +252,7 @@ static int ep0_recv_op(void) {
         /* This case is usually caused by sending an empty packet on EP0, can be ignored */
         printk(LOG_LEVEL_TRACE, "USB: ep0 rx data is not ready\n");
         if (sunxi_udc_source.address) {
-            sunxi_usb_set_address(sunxi_udc_source.address & 0xff);
+            sunxi_usb_perform_set_address(sunxi_udc_source.address & 0xff);
             printk(LOG_LEVEL_ERROR, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
             sunxi_udc_source.address = 0;
         }
@@ -384,6 +413,12 @@ ep0_recv_op_err:
     return ret;
 }
 
+/**
+ * @brief Send data on EP0.
+ * 
+ * This function send data on Endpoint 0 (EP0).
+ * @return Returns 0 on success, or a negative error code on failure.
+ */
 static int eptx_send_op() {
     // TODO: ep send operating
     return 0;
@@ -503,7 +538,6 @@ static int eprx_recv_op(void) {
 }
 
 void sunxi_usb_attach_module(uint32_t device_type) {
-    sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
     switch (device_type) {
         case SUNXI_USB_DEVICE_DETECT:
             sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
@@ -772,6 +806,7 @@ void sunxi_usb_attach() {
     int i = 0;
     while (1) {
         if (gic_is_pending(AW_IRQ_USB_OTG)) {
+            printk(LOG_LEVEL_TRACE, "USB: IRQ Pending...\n");
             sunxi_usb_irq();
         }
 
@@ -780,6 +815,84 @@ void sunxi_usb_attach() {
             sunxi_udev_active->state_loop(&sunxi_ubuf);
         }
     }
+}
+
+int sunxi_usb_extern_loop() {
+    return sunxi_udev_active->state_loop(&sunxi_ubuf);
+}
+
+void sunxi_usb_bulk_ep_reset() {
+    uint8_t old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+    /* tx */
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
+    usb_device_config_ep(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_EP_TYPE_TX, 1, sunxi_udc_source.bulk_ep_max & 0x7ff);
+    usb_controller_config_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, 1, sunxi_udc_source.fifo_size, (uint32_t) sunxi_udc_source.bulk_out_addr);
+    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_BULK_IN_EP_INDEX);
+
+    /* rx */
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
+    usb_device_config_ep(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_EP_TYPE_RX, 1, sunxi_udc_source.bulk_ep_max & 0x7ff);
+    usb_controller_config_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1, sunxi_udc_source.fifo_size, (uint32_t) sunxi_udc_source.bulk_in_addr);
+    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, SUNXI_USB_BULK_OUT_EP_INDEX);
+
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
+    return;
+}
+
+int sunxi_usb_start_recv_by_dma(void *mem_base, uint32_t length) {
+    uint32_t old_ep_idx;
+    uint32_t mem_buf = (uint32_t) mem_base;
+    usb_dma_trans_unaliged_bytes = length & (sizeof(int) - 1);
+    length &= ~(sizeof(int) - 1);
+    usb_dma_trans_unaligned_buf = (uint8_t *) mem_buf + length;
+
+    old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
+
+    usb_device_config_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+
+    sunxi_ubuf.request_size = length;
+    printk(LOG_LEVEL_TRACE, "USB: dma start 0x%lx, length 0x%x\n", mem_buf, length);
+    usb_dma_start(sunxi_udc_source.dma_recv_channal, mem_buf, length);
+
+    usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
+    return 0;
+}
+
+void sunxi_usb_send_setup(uint32_t length, void *buffer) {
+    uint32_t fifo = 0;
+
+    if (!length) {
+        /* sent zero packet */
+        sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+    } else {
+        fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
+        usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, length, (void *) buffer);
+        sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+    }
+}
+
+int sunxi_usb_set_address(uint32_t address) {
+    sunxi_udc_source.address = address;
+    usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+    return SUNXI_USB_REQ_SUCCESSED;
+}
+
+int sunxi_usb_send_data(void *buffer, uint32_t buffer_size) {
+    sunxi_ubuf.rx_ready_for_data = 0;
+    return sunxi_usb_write_fifo((uint8_t *) buffer, buffer_size);
+}
+
+int sunxi_usb_get_ep_max(void) {
+    return sunxi_udc_source.bulk_ep_max;
+}
+
+int sunxi_usb_get_ep_in_type(void) {
+    return (0x80 | SUNXI_USB_BULK_IN_EP_INDEX);
+}
+
+int sunxi_usb_get_ep_out_type(void) {
+    return SUNXI_USB_BULK_OUT_EP_INDEX;
 }
 
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {

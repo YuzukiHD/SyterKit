@@ -5,12 +5,115 @@
 
 #include "reg/reg-usb.h"
 
+/*
+ * Descriptor types
+ */
+#define USB_DT_DEVICE 0x01
+#define USB_DT_CONFIG 0x02
+#define USB_DT_STRING 0x03
+#define USB_DT_INTERFACE 0x04
+#define USB_DT_ENDPOINT 0x05
+#define USB_DT_DEVICE_QUALIFIER 0x06
+
+#define USB_DT_HID (USB_TYPE_CLASS | 0x01)
+#define USB_DT_REPORT (USB_TYPE_CLASS | 0x02)
+#define USB_DT_PHYSICAL (USB_TYPE_CLASS | 0x03)
+#define USB_DT_HUB (USB_TYPE_CLASS | 0x09)
+
+/*
+ * Descriptor sizes per descriptor type
+ */
+#define USB_DT_DEVICE_SIZE 18
+#define USB_DT_CONFIG_SIZE 9
+#define USB_DT_INTERFACE_SIZE 9
+#define USB_DT_ENDPOINT_SIZE 7
+#define USB_DT_ENDPOINT_AUDIO_SIZE 9 /* Audio extension */
+#define USB_DT_HUB_NONVAR_SIZE 7
+#define USB_DT_HID_SIZE 9
+
 enum usb_device_speed {
     USB_SPEED_LOW,
     USB_SPEED_FULL, /* usb 1.1 */
     USB_SPEED_HIGH, /* usb 2.0 */
     USB_SPEED_RESERVED
 };
+
+/*
+ * standard usb descriptor structures
+ */
+struct usb_endpoint_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType; /* 0x5 */
+    uint8_t bEndpointAddress;
+    uint8_t bmAttributes;
+    uint16_t wMaxPacketSize;
+    uint8_t bInterval;
+} __attribute__((packed));
+
+struct usb_interface_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType; /* 0x04 */
+    uint8_t bInterfaceNumber;
+    uint8_t bAlternateSetting;
+    uint8_t bNumEndpoints;
+    uint8_t bInterfaceClass;
+    uint8_t bInterfaceSubClass;
+    uint8_t bInterfaceProtocol;
+    uint8_t iInterface;
+} __attribute__((packed));
+
+struct usb_configuration_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType; /* 0x2 */
+    uint16_t wTotalLength;
+    uint8_t bNumInterfaces;
+    uint8_t bConfigurationValue;
+    uint8_t iConfiguration;
+    uint8_t bmAttributes;
+    uint8_t bMaxPower;
+} __attribute__((packed));
+
+struct usb_device_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType; /* 0x01 */
+    uint16_t bcdUSB;
+    uint8_t bDeviceClass;
+    uint8_t bDeviceSubClass;
+    uint8_t bDeviceProtocol;
+    uint8_t bMaxPacketSize0;
+    uint16_t idVendor;
+    uint16_t idProduct;
+    uint16_t bcdDevice;
+    uint8_t iManufacturer;
+    uint8_t iProduct;
+    uint8_t iSerialNumber;
+    uint8_t bNumConfigurations;
+} __attribute__((packed));
+
+struct usb_qualifier_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+
+    uint16_t bcdUSB;
+    uint8_t bDeviceClass;
+    uint8_t bDeviceSubClass;
+    uint8_t bDeviceProtocol;
+    uint8_t bMaxPacketSize0;
+    uint8_t bNumConfigurations;
+    uint8_t breserved;
+} __attribute__((packed));
+
+struct usb_string_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType; /* 0x03 */
+    uint16_t wData[0];
+} __attribute__((packed));
+
+struct usb_generic_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+    uint8_t bDescriptorSubtype;
+} __attribute__((packed));
 
 struct usb_device_request {
     uint8_t request_type;
@@ -59,8 +162,14 @@ typedef struct sunxi_usb_setup_req_s {
                               standard_req_op, nonstandard_req_op,       \
                               state_loop, dma_rx_isr, dma_tx_isr)        \
     sunxi_usb_setup_req_t setup_req_##name = {                           \
-            state_init, state_exit, state_reset, standard_req_op,        \
-            nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr};
+            state_init,                                                  \
+            state_exit,                                                  \
+            state_reset,                                                 \
+            standard_req_op,                                             \
+            nonstandard_req_op,                                          \
+            state_loop,                                                  \
+            dma_rx_isr,                                                  \
+            dma_tx_isr};
 
 #define sunxi_usb_module_reg(name) sunxi_udev_active = &setup_req_##name
 
@@ -170,5 +279,121 @@ void sunxi_usb_irq();
  * @return none
  */
 void sunxi_usb_attach();
+
+/**
+ * @brief Run the USB device state machine loop once
+ *
+ * This function runs the USB device state machine loop once by calling
+ * sunxi_udev_active->state_loop(&sunxi_ubuf) and returning the result.
+ *
+ * @param none
+ * @return The result of sunxi_udev_active->state_loop(&sunxi_ubuf)
+ */
+int sunxi_usb_extern_loop();
+
+/**
+ * @brief Reset the bulk endpoints of the USB controller
+ *
+ * This function resets the bulk endpoints of the Allwinner A64 USB controller.
+ * It configures the bulk-in and bulk-out endpoints for data transfer. The steps
+ * involved are as follows:
+ *
+ * 1. Get the index of the currently active endpoint.
+ * 2. Configure the bulk-in endpoint for transmitting data to the host.
+ *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
+ *    - Set the endpoint type to transmit (USBC_EP_TYPE_TX).
+ *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
+ *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_out_addr.
+ *    - Enable interrupts for the endpoint.
+ * 3. Configure the bulk-out endpoint for receiving data from the host.
+ *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
+ *    - Set the endpoint type to receive (USBC_EP_TYPE_RX).
+ *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
+ *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_in_addr.
+ *    - Enable interrupts for the endpoint.
+ * 4. Restore the previously active endpoint.
+ *
+ * @param none
+ * @return none
+ */
+void sunxi_usb_bulk_ep_reset();
+
+/**
+ * @brief Start receiving data by DMA
+ *
+ * This function starts receiving data by DMA. It configures the USB controller
+ * to use DMA for receiving, flushes the cache, enables DMA transfer, and
+ * restores the active endpoint after the transfer is started.
+ *
+ * @param mem_base  The base address of the memory buffer
+ * @param length    The length of the data to be received
+ * @return 0 on success, -1 on failure
+ */
+int sunxi_usb_start_recv_by_dma(void *mem_base, uint32_t length);
+
+/**
+ * @brief Send a setup packet
+ *
+ * This function sends a setup packet over USB. If the length is zero, it sends
+ * a zero-length packet. Otherwise, it selects the appropriate FIFO, writes
+ * the packet to the FIFO, and calls sunxi_usb_write_complete() to handle the
+ * completion of the write operation.
+ *
+ * @param length  The length of the setup packet
+ * @param buffer  The buffer containing the setup packet
+ */
+void sunxi_usb_send_setup(uint32_t length, void *buffer);
+
+/**
+ * @brief Set USB device address
+ *
+ * This function sets the USB device address to the specified address. It updates
+ * the address value in the sunxi_udc_source structure and calls usb_device_read_data_status()
+ * to handle the status phase of the control transfer.
+ *
+ * @param address The USB device address to set
+ * @return SUNXI_USB_REQ_SUCCESSED on success
+ */
+int sunxi_usb_set_address(uint32_t address);
+
+/**
+ * @brief Send data over USB
+ *
+ * This function sends data over USB. It sets the rx_ready_for_data flag to 0
+ * in the sunxi_ubuf structure and calls sunxi_usb_write_fifo() to write the
+ * data to the USB FIFO.
+ *
+ * @param buffer       The buffer containing the data to send
+ * @param buffer_size  The size of the data buffer
+ * @return 0 on success, -1 on failure
+ */
+int sunxi_usb_send_data(void *buffer, uint32_t buffer_size);
+
+/**
+ * @brief Get the maximum number of endpoints
+ *
+ * This function returns the maximum number of endpoints supported by the USB controller.
+ *
+ * @return The maximum number of endpoints
+ */
+int sunxi_usb_get_ep_max(void);
+
+/**
+ * @brief Get the IN endpoint type
+ *
+ * This function returns the type of the IN endpoint.
+ *
+ * @return The IN endpoint type
+ */
+int sunxi_usb_get_ep_in_type(void);
+
+/**
+ * @brief Get the OUT endpoint type
+ *
+ * This function returns the type of the OUT endpoint.
+ *
+ * @return The OUT endpoint type
+ */
+int sunxi_usb_get_ep_out_type(void);
 
 #endif// __USB_H__
