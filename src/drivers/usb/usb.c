@@ -39,6 +39,31 @@ static int dma_rec_flag;
 static uint64_t dma_rec_addr;
 static uint64_t dma_rec_size;
 
+/**
+ * @brief Reset the bulk endpoints of the USB controller
+ *
+ * This function resets the bulk endpoints of the Allwinner A64 USB controller.
+ * It configures the bulk-in and bulk-out endpoints for data transfer. The steps
+ * involved are as follows:
+ *
+ * 1. Get the index of the currently active endpoint.
+ * 2. Configure the bulk-in endpoint for transmitting data to the host.
+ *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
+ *    - Set the endpoint type to transmit (USBC_EP_TYPE_TX).
+ *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
+ *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_out_addr.
+ *    - Enable interrupts for the endpoint.
+ * 3. Configure the bulk-out endpoint for receiving data from the host.
+ *    - Set the transfer type to bulk (USBC_TS_TYPE_BULK).
+ *    - Set the endpoint type to receive (USBC_EP_TYPE_RX).
+ *    - Set the maximum packet size for the endpoint based on sunxi_udc_source.bulk_ep_max.
+ *    - Configure the FIFO buffer with a size of sunxi_udc_source.fifo_size and the base address sunxi_udc_source.bulk_in_addr.
+ *    - Enable interrupts for the endpoint.
+ * 4. Restore the previously active endpoint.
+ *
+ * @param none
+ * @return none
+ */
 static void sunxi_usb_bulk_ep_reset() {
     uint8_t old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
     /* tx */
@@ -57,163 +82,26 @@ static void sunxi_usb_bulk_ep_reset() {
     return;
 }
 
-void sunxi_usb_attach_module(uint32_t device_type) {
-    sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
-    switch (device_type) {
-        case SUNXI_USB_DEVICE_DETECT:
-            sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
-            break;
-        default:
-            printk(LOG_LEVEL_ERROR, "USB: unknown device, type id = %d\n", device_type);
-            break;
-    }
-}
-
-int sunxi_usb_init() {
-    uint32_t reg_val = 0;
-    static uint8_t rx_base_buffer[RX_BUFF_SIZE];
-
-    if (sunxi_udev_active->state_init()) {
-        printk(LOG_LEVEL_ERROR, "USB: fail to init usb device\n");
-        return -1;
-    }
-
-    printk(LOG_LEVEL_TRACE, "Init udc controller source\n");
-    /* Init udc controller source */
-    memset(&sunxi_udc_source, 0, sizeof(sunxi_udc_t));
-
-    sunxi_udc_source.usbc_hd = usb_controller_open_otg(0);
-
-    if (sunxi_udc_source.usbc_hd == 0) {
-        printk(LOG_LEVEL_ERROR, "USB: usb_controller_open_otg failed\n");
-        return -1;
-    }
-
-    usb_dma_init(sunxi_udc_source.usbc_hd);
-
-    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_OFF);
-
-    /* Close clock */
-    sunxi_usb_clk_deinit();
-
-    /* request dma channal for usb send and recv */
-    sunxi_udc_source.dma_send_channal = usb_dma_request();
-    if (!sunxi_udc_source.dma_send_channal) {
-        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb send data\n");
-        goto sunxi_usb_init_fail;
-    }
-    printk(LOG_LEVEL_TRACE, "USB: dma send ch %d\n", sunxi_udc_source.dma_send_channal);
-    sunxi_udc_source.dma_recv_channal = usb_dma_request();
-    if (!sunxi_udc_source.dma_recv_channal) {
-        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb receive data\n");
-        goto sunxi_usb_init_fail;
-    }
-    printk(LOG_LEVEL_TRACE, "USB: dma recv ch %d\n", sunxi_udc_source.dma_recv_channal);
-
-    /* init usb info */
-    sunxi_udc_source.address = 0;
-    sunxi_udc_source.speed = USB_SPEED_HIGH;
-    sunxi_udc_source.bulk_ep_max = HIGH_SPEED_EP_MAX_PACKET_SIZE;
-    sunxi_udc_source.fifo_size = BULK_FIFOSIZE;
-    sunxi_udc_source.bulk_in_addr = 100;
-    sunxi_udc_source.bulk_out_addr = sunxi_udc_source.bulk_in_addr + sunxi_udc_source.fifo_size * 2;
-
-    /* init usb buffer */
-    memset(&sunxi_ubuf, 0, sizeof(sunxi_ubuf_t));
-
-    /* We use static memory for this moment */
-    sunxi_ubuf.rx_base_buffer = rx_base_buffer;
-    if (!sunxi_ubuf.rx_base_buffer) {
-        printk(LOG_LEVEL_ERROR, "USB: %s:alloc memory fail\n");
-        goto sunxi_usb_init_fail;
-    }
-    sunxi_ubuf.rx_req_buffer = sunxi_ubuf.rx_base_buffer;
-
-    /* open usb clock */
-    sunxi_usb_clk_init();
-
-    /* disable OTG ID detect and set to device */
-    usb_controller_force_id_status(sunxi_udc_source.usbc_hd, USBC_ID_TYPE_DEVICE);
-
-    /* Force VBUS to HIGH */
-    usb_controller_force_vbus_valid(sunxi_udc_source.usbc_hd, USBC_VBUS_TYPE_HIGH);
-
-    /* disconnect usb */
-    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_OFF);
-
-    /* set pull up for dp dm and id */
-    usb_controller_dpdm_pull_enable(sunxi_udc_source.usbc_hd);
-    usb_controller_id_pull_enable(sunxi_udc_source.usbc_hd);
-
-    /* Set to use PIO mode */
-    usb_controller_select_bus(sunxi_udc_source.usbc_hd, USBC_IO_TYPE_PIO, 0, 0);
-
-    /* mapping SRAM buffer */
-    usb_controller_config_fifo_base(sunxi_udc_source.usbc_hd, 0);
-
-    /* set usb to HS mode and Bulk */
-    usb_device_config_transfer_mode(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_TS_MODE_HS);
-
-    /* config dma for send */
-    usb_dma_setting(sunxi_udc_source.dma_send_channal, USB_DMA_FROM_DRAM_TO_HOST, SUNXI_USB_BULK_IN_EP_INDEX);
-    usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
-
-    /* config dma for recv */
-    usb_dma_setting(sunxi_udc_source.dma_recv_channal, USB_DMA_FROM_HOST_TO_DRAM, SUNXI_USB_BULK_OUT_EP_INDEX);
-    usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
-
-    /* disable all interrupt */
-    usb_controller_int_disable_usb_misc_all(sunxi_udc_source.usbc_hd);
-    usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
-    usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
-
-    /* enable reset、resume、suspend  interrupt */
-    usb_controller_int_enable_usb_misc_uint(sunxi_udc_source.usbc_hd, USBC_INTUSB_SUSPEND | USBC_INTUSB_RESUME | USBC_INTUSB_RESET | USBC_INTUSB_SOF);
-
-    /* enable ep interrupt */
-    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
-
-    /* reset all ep */
-    sunxi_usb_bulk_ep_reset();
-
-    /* open usb device */
-    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_ON);
-
-    /* set bit 1  ->  0 */
-    reg_val = readl(SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
-    reg_val &= ~(0x01 << 1);
-    writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
-
-    reg_val = readl(SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
-    reg_val &= ~(0x01 << USBC_PHY_CTL_SIDDQ);
-    reg_val |= 0x01 << USBC_PHY_CTL_VBUSVLDEXT;
-    writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
-
-    gic_enable(AW_IRQ_USB_OTG);
-
-    sunxi_usb_dump(sunxi_udc_source.address, 0);
-
-    return 0;
-
-sunxi_usb_init_fail:
-    if (sunxi_udc_source.dma_send_channal) {
-        usb_dma_release(sunxi_udc_source.dma_send_channal);
-    }
-    if (sunxi_udc_source.dma_recv_channal) {
-        usb_dma_release(sunxi_udc_source.dma_recv_channal);
-    }
-    if (sunxi_udc_source.usbc_hd) {
-        usb_controller_close_otg(sunxi_udc_source.usbc_hd);
-    }
-    return -1;
-}
-
+/**
+ * @brief Clear all USB interrupts.
+ *
+ * This function clears all pending USB interrupts, including endpoint transmit (TX) and receive (RX) interrupts, as well as miscellaneous interrupts.
+ */
 static void sunxi_usb_clear_all_irq(void) {
     usb_controller_int_clear_ep_pending_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
     usb_controller_int_clear_ep_pending_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
     usb_controller_int_clear_misc_pending_all(sunxi_udc_source.usbc_hd);
 }
 
+/**
+ * @brief Handle the completion of a USB data read operation.
+ *
+ * This function handles the completion of a USB data read operation, updating the status and clearing any relevant interrupts.
+ *
+ * @param husb The USB controller handle.
+ * @param ep_type The type of endpoint where the read operation was performed.
+ * @param complete A flag indicating whether the read operation completed successfully or not.
+ */
 static void sunxi_usb_read_complete(uint32_t husb, uint32_t ep_type, uint32_t complete) {
     usb_device_read_data_status(husb, ep_type, complete);
     if (ep_type == USBC_EP_TYPE_EP0) {
@@ -227,6 +115,16 @@ static void sunxi_usb_read_complete(uint32_t husb, uint32_t ep_type, uint32_t co
     return;
 }
 
+/**
+ * @brief Read data from endpoint 0 of the USB device.
+ *
+ * This function reads data from endpoint 0 of the USB device and stores it in the provided buffer.
+ *
+ * @param buffer Pointer to the buffer where the read data will be stored.
+ * @param data_type Optional parameter indicating the type of data being read.
+ * 
+ * @return Returns 0 on success, or a negative error code on failure.
+ */
 static int sunxi_usb_read_ep0_data(void *buffer, uint32_t data_type) {
     uint32_t fifo_count = 0;
     uint32_t fifo = 0;
@@ -248,6 +146,16 @@ static int sunxi_usb_read_ep0_data(void *buffer, uint32_t data_type) {
     return ret;
 }
 
+/**
+ * @brief Set the USB device address.
+ *
+ * This function sets the USB device address and updates the speed and FIFO size
+ * based on the transfer mode of the USB controller.
+ *
+ * @param address The USB device address to be set.
+ * 
+ * @return Returns SUNXI_USB_REQ_SUCCESSED on success, or a negative error code on failure.
+ */
 static int sunxi_usb_set_address(uint8_t address) {
     usb_device_set_address(sunxi_udc_source.usbc_hd, address);
     if (usb_device_query_transfer_mode(sunxi_udc_source.usbc_hd) == USBC_TS_MODE_HS) {
@@ -262,6 +170,16 @@ static int sunxi_usb_set_address(uint8_t address) {
     return SUNXI_USB_REQ_SUCCESSED;
 }
 
+/**
+ * @brief Receive and process data on EP0.
+ * 
+ * This function receives and processes data on Endpoint 0 (EP0).
+ * It clears stall status, checks if setup end is cleared,
+ * and checks if the read data on EP0 is ready.
+ * Depending on the type of USB request, it performs different operations.
+ * 
+ * @return Returns 0 on success, or a negative error code on failure.
+ */
 static int ep0_recv_op(void) {
     uint32_t old_ep_index = 0;
     int ret = 0;
@@ -287,7 +205,7 @@ static int ep0_recv_op(void) {
         usb_device_ctrl_clear_setup_end(sunxi_udc_source.usbc_hd);
     }
 
-    /*检查读ep0数据是否完成*/
+    /* Check if read data on EP0 is ready */
     if (usb_device_get_read_data_ready(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0)) {
         uint32_t status;
 
@@ -302,7 +220,7 @@ static int ep0_recv_op(void) {
             goto ep0_recv_op_err;
         }
     } else {
-        /*此情况通常由于ep0发送空包引起，可以不处理*/
+        /* This case is usually caused by sending an empty packet on EP0, can be ignored */
         printk(LOG_LEVEL_TRACE, "USB: ep0 rx data is not ready\n");
         if (sunxi_udc_source.address) {
             sunxi_usb_set_address(sunxi_udc_source.address & 0xff);
@@ -466,10 +384,6 @@ ep0_recv_op_err:
     return ret;
 }
 
-void sunxi_usb_ep_reset(void) {
-    sunxi_usb_bulk_ep_reset();
-}
-
 static int eptx_send_op() {
     // TODO: ep send operating
     return 0;
@@ -586,6 +500,164 @@ static int eprx_recv_op(void) {
     }
     usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
     return 0;
+}
+
+void sunxi_usb_attach_module(uint32_t device_type) {
+    sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
+    switch (device_type) {
+        case SUNXI_USB_DEVICE_DETECT:
+            sunxi_usb_module_reg(SUNXI_USB_DEVICE_DETECT);
+            break;
+        case SUNXI_USB_DEVICE_MASS:
+            sunxi_usb_module_reg(SUNXI_USB_DEVICE_MASS);
+            break;
+        default:
+            printk(LOG_LEVEL_ERROR, "USB: unknown device, type id = %d\n", device_type);
+            break;
+    }
+}
+
+int sunxi_usb_init() {
+    uint32_t reg_val = 0;
+    static uint8_t rx_base_buffer[RX_BUFF_SIZE];
+
+    if (sunxi_udev_active->state_init()) {
+        printk(LOG_LEVEL_ERROR, "USB: fail to init usb device\n");
+        return -1;
+    }
+
+    printk(LOG_LEVEL_TRACE, "Init udc controller source\n");
+    /* Init udc controller source */
+    memset(&sunxi_udc_source, 0, sizeof(sunxi_udc_t));
+
+    sunxi_udc_source.usbc_hd = usb_controller_open_otg(0);
+
+    if (sunxi_udc_source.usbc_hd == 0) {
+        printk(LOG_LEVEL_ERROR, "USB: usb_controller_open_otg failed\n");
+        return -1;
+    }
+
+    usb_dma_init(sunxi_udc_source.usbc_hd);
+
+    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_OFF);
+
+    /* Close clock */
+    sunxi_usb_clk_deinit();
+
+    /* request dma channal for usb send and recv */
+    sunxi_udc_source.dma_send_channal = usb_dma_request();
+    if (!sunxi_udc_source.dma_send_channal) {
+        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb send data\n");
+        goto sunxi_usb_init_fail;
+    }
+    printk(LOG_LEVEL_TRACE, "USB: dma send ch %d\n", sunxi_udc_source.dma_send_channal);
+    sunxi_udc_source.dma_recv_channal = usb_dma_request();
+    if (!sunxi_udc_source.dma_recv_channal) {
+        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb receive data\n");
+        goto sunxi_usb_init_fail;
+    }
+    printk(LOG_LEVEL_TRACE, "USB: dma recv ch %d\n", sunxi_udc_source.dma_recv_channal);
+
+    /* init usb info */
+    sunxi_udc_source.address = 0;
+    sunxi_udc_source.speed = USB_SPEED_HIGH;
+    sunxi_udc_source.bulk_ep_max = HIGH_SPEED_EP_MAX_PACKET_SIZE;
+    sunxi_udc_source.fifo_size = BULK_FIFOSIZE;
+    sunxi_udc_source.bulk_in_addr = 100;
+    sunxi_udc_source.bulk_out_addr = sunxi_udc_source.bulk_in_addr + sunxi_udc_source.fifo_size * 2;
+
+    /* init usb buffer */
+    memset(&sunxi_ubuf, 0, sizeof(sunxi_ubuf_t));
+
+    /* We use static memory for this moment */
+    sunxi_ubuf.rx_base_buffer = rx_base_buffer;
+    if (!sunxi_ubuf.rx_base_buffer) {
+        printk(LOG_LEVEL_ERROR, "USB: %s:alloc memory fail\n");
+        goto sunxi_usb_init_fail;
+    }
+    sunxi_ubuf.rx_req_buffer = sunxi_ubuf.rx_base_buffer;
+
+    /* open usb clock */
+    sunxi_usb_clk_init();
+
+    /* disable OTG ID detect and set to device */
+    usb_controller_force_id_status(sunxi_udc_source.usbc_hd, USBC_ID_TYPE_DEVICE);
+
+    /* Force VBUS to HIGH */
+    usb_controller_force_vbus_valid(sunxi_udc_source.usbc_hd, USBC_VBUS_TYPE_HIGH);
+
+    /* disconnect usb */
+    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_OFF);
+
+    /* set pull up for dp dm and id */
+    usb_controller_dpdm_pull_enable(sunxi_udc_source.usbc_hd);
+    usb_controller_id_pull_enable(sunxi_udc_source.usbc_hd);
+
+    /* Set to use PIO mode */
+    usb_controller_select_bus(sunxi_udc_source.usbc_hd, USBC_IO_TYPE_PIO, 0, 0);
+
+    /* mapping SRAM buffer */
+    usb_controller_config_fifo_base(sunxi_udc_source.usbc_hd, 0);
+
+    /* set usb to HS mode and Bulk */
+    usb_device_config_transfer_mode(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_TS_MODE_HS);
+
+    /* config dma for send */
+    usb_dma_setting(sunxi_udc_source.dma_send_channal, USB_DMA_FROM_DRAM_TO_HOST, SUNXI_USB_BULK_IN_EP_INDEX);
+    usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
+
+    /* config dma for recv */
+    usb_dma_setting(sunxi_udc_source.dma_recv_channal, USB_DMA_FROM_HOST_TO_DRAM, SUNXI_USB_BULK_OUT_EP_INDEX);
+    usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
+
+    /* disable all interrupt */
+    usb_controller_int_disable_usb_misc_all(sunxi_udc_source.usbc_hd);
+    usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+    usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
+
+    /* enable reset、resume、suspend  interrupt */
+    usb_controller_int_enable_usb_misc_uint(sunxi_udc_source.usbc_hd, USBC_INTUSB_SUSPEND | USBC_INTUSB_RESUME | USBC_INTUSB_RESET | USBC_INTUSB_SOF);
+
+    /* enable ep interrupt */
+    usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
+
+    /* reset all ep */
+    sunxi_usb_bulk_ep_reset();
+
+    /* open usb device */
+    usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_ON);
+
+    /* set bit 1  ->  0 */
+    reg_val = readl(SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
+    reg_val &= ~(0x01 << 1);
+    writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
+
+    reg_val = readl(SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
+    reg_val &= ~(0x01 << USBC_PHY_CTL_SIDDQ);
+    reg_val |= 0x01 << USBC_PHY_CTL_VBUSVLDEXT;
+    writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
+
+    gic_enable(AW_IRQ_USB_OTG);
+
+    sunxi_usb_dump(sunxi_udc_source.address, 0);
+
+    return 0;
+
+sunxi_usb_init_fail:
+    if (sunxi_udc_source.dma_send_channal) {
+        usb_dma_release(sunxi_udc_source.dma_send_channal);
+    }
+    if (sunxi_udc_source.dma_recv_channal) {
+        usb_dma_release(sunxi_udc_source.dma_recv_channal);
+    }
+    if (sunxi_udc_source.usbc_hd) {
+        usb_controller_close_otg(sunxi_udc_source.usbc_hd);
+    }
+    return -1;
+}
+
+void sunxi_usb_ep_reset(void) {
+    sunxi_usb_bulk_ep_reset();
 }
 
 void sunxi_usb_irq() {
