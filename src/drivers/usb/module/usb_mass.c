@@ -143,6 +143,17 @@ static mass_trans_set_t trans_data;
 #define SCSI_WRITE_SAME 0x41   /* Write Same (O) */
 #define SCSI_RD_FMT_CAPAC 0x23 /* Read format caacity */
 
+/**
+ * @brief USB MASS: Set interface
+ *
+ * This function handles the set interface request for the USB Mass Storage device.
+ * It checks if the requested interface and alternate setting are valid. If they are,
+ * it calls sunxi_usb_ep_reset() to reset the USB endpoints. Otherwise, it prints an
+ * error message and returns SUNXI_USB_REQ_OP_ERR.
+ *
+ * @param req The USB device request
+ * @return SUNXI_USB_REQ_SUCCESSED on success, SUNXI_USB_REQ_OP_ERR on error
+ */
 static int usb_mass_usb_set_interface(struct usb_device_request *req) {
     printk(LOG_LEVEL_TRACE, "USB MASS: set interface\n");
     /* Only support interface 0, alternate 0 */
@@ -155,6 +166,16 @@ static int usb_mass_usb_set_interface(struct usb_device_request *req) {
     return SUNXI_USB_REQ_SUCCESSED;
 }
 
+/**
+ * @brief USB MASS: Set address
+ *
+ * This function handles the set address request for the USB Mass Storage device.
+ * It extracts the new address from the request and calls sunxi_usb_set_address()
+ * to set the new address.
+ *
+ * @param req The USB device request
+ * @return SUNXI_USB_REQ_SUCCESSED on success
+ */
 static int usb_mass_usb_set_address(struct usb_device_request *req) {
     uint8_t address = req->value & 0x7f;
     printk(LOG_LEVEL_TRACE, "set address 0x%x\n", address);
@@ -162,6 +183,16 @@ static int usb_mass_usb_set_address(struct usb_device_request *req) {
     return SUNXI_USB_REQ_SUCCESSED;
 }
 
+/**
+ * @brief USB MASS: Set configuration
+ *
+ * This function handles the set configuration request for the USB Mass Storage device.
+ * It checks if the requested configuration is valid. If it is, it calls sunxi_usb_ep_reset()
+ * to reset the USB endpoints. Otherwise, it prints an error message and returns SUNXI_USB_REQ_OP_ERR.
+ *
+ * @param req The USB device request
+ * @return SUNXI_USB_REQ_SUCCESSED on success, SUNXI_USB_REQ_OP_ERR on error
+ */
 static int usb_mass_usb_set_configuration(struct usb_device_request *req) {
     printk(LOG_LEVEL_TRACE, "set configuration\n");
     /* Only support 1 configuration so nak anything else */
@@ -174,10 +205,20 @@ static int usb_mass_usb_set_configuration(struct usb_device_request *req) {
     return SUNXI_USB_REQ_SUCCESSED;
 }
 
+/**
+ * usb_mass_usb_get_descriptor - Get USB descriptors
+ *
+ * This function retrieves USB descriptors based on the provided request.
+ *
+ * @param req: Pointer to the USB device request structure
+ * @param buffer: Pointer to the buffer to hold the descriptor data
+ *
+ * @return: Error code indicating the result of the function
+ */
 static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *buffer) {
     int ret = SUNXI_USB_REQ_SUCCESSED;
 
-    //获取描述符
+    // Get descriptor
     switch (req->value >> 8) {
         case USB_DT_DEVICE: {
             struct usb_device_descriptor *dev_dscrptr;
@@ -187,7 +228,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             dev_dscrptr->bLength = min(req->length, sizeof(struct usb_device_descriptor));
             dev_dscrptr->bDescriptorType = USB_DT_DEVICE;
             dev_dscrptr->bcdUSB = 0x200;
-            dev_dscrptr->bDeviceClass = 0;//设备类：大容量存储
+            dev_dscrptr->bDeviceClass = 0; // Device class: Mass Storage
             dev_dscrptr->bDeviceSubClass = 0;
             dev_dscrptr->bDeviceProtocol = 0;
             dev_dscrptr->bMaxPacketSize0 = 0x40;
@@ -219,7 +260,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             ep_in = (struct usb_endpoint_descriptor *) (buffer + sizeof(struct usb_configuration_descriptor) + sizeof(struct usb_interface_descriptor));
             ep_out = (struct usb_endpoint_descriptor *) (buffer + sizeof(struct usb_configuration_descriptor) + sizeof(struct usb_interface_descriptor) + sizeof(struct usb_endpoint_descriptor));
 
-            /* configuration */
+            /* Configuration */
             config_dscrptr->bLength = min(bytes_remaining, sizeof(struct usb_configuration_descriptor));
             config_dscrptr->bDescriptorType = USB_DT_CONFIG;
             config_dscrptr->wTotalLength = bytes_total;
@@ -227,8 +268,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             config_dscrptr->bConfigurationValue = 1;
             config_dscrptr->iConfiguration = 0;
             config_dscrptr->bmAttributes = 0xc0;
-            config_dscrptr->bMaxPower = 0xFA;//最大电流500ms(0xfa * 2)
-
+            config_dscrptr->bMaxPower = 0xFA; // Maximum current of 500ms (0xfa * 2)
             bytes_remaining -= config_dscrptr->bLength;
             /* interface */
             inter_dscrptr->bLength = min(bytes_remaining, sizeof(struct usb_interface_descriptor));
@@ -320,6 +360,18 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
     return ret;
 }
 
+/**
+ * usb_mass_usb_get_status - Handle a USB request to retrieve the status of the device
+ *
+ * This function handles a USB request to retrieve the status of the USB device. The status is returned in a buffer provided by the caller.
+ *
+ * @param req: Pointer to the USB device request structure
+ * @param buffer: Pointer to the buffer to hold the status data
+ *
+ * @return: Error code indicating the result of the function
+ *      SUNXI_USB_REQ_SUCCESSED if the request is successful
+ *      SUNXI_USB_REQ_OP_ERR if there is an operational error
+ */
 static int usb_mass_usb_get_status(struct usb_device_request *req, uint8_t *buffer) {
     uint8_t bLength = 0;
     printk(LOG_LEVEL_TRACE, "USB MASS: get status\n");
@@ -329,42 +381,72 @@ static int usb_mass_usb_get_status(struct usb_device_request *req, uint8_t *buff
         return SUNXI_USB_REQ_OP_ERR;
     }
     bLength = min(req->value, 2);
-    buffer[0] = 1;
-    buffer[1] = 0;
+
+    // Set the status information in the buffer
+    buffer[0] = 1; // Device is busy
+    buffer[1] = 0; // No error
+
+    // Send the response back to the host
     sunxi_usb_send_setup(bLength, buffer);
+
+    // Return the result of the operation
     return SUNXI_USB_REQ_SUCCESSED;
 }
 
+/**
+ * sunxi_usb_mass_init - Initialize the USB Mass Storage driver
+ *
+ * This function initializes the USB Mass Storage driver by allocating memory for data transmission and setting up initial values.
+ *
+ * @return: 0 if initialization is successful, otherwise -1
+ */
 static int sunxi_usb_mass_init(void) {
     printk(LOG_LEVEL_TRACE, "USB MASS: sunxi_mass_init\n");
+
+    // Reset the transmission data structure
     memset(&trans_data, 0, sizeof(mass_trans_set_t));
+
+    // Set initial values
     sunxi_usb_mass_write_enable = 0;
     sunxi_usb_mass_status = SUNXI_USB_MASS_IDLE;
 
+    // Allocate memory for receive buffer
     trans_data.base_recv_buffer = (uint8_t *) smalloc(SUNXI_MASS_RECV_MEM_SIZE);
     if (!trans_data.base_recv_buffer) {
         printk(LOG_LEVEL_ERROR, "USB MASS: unable to malloc memory for mass receive\n");
         return -1;
     }
 
+    // Allocate memory for send buffer
     trans_data.base_send_buffer = (uint8_t *) smalloc(SUNXI_MASS_SEND_MEM_SIZE);
     if (!trans_data.base_send_buffer) {
         printk(LOG_LEVEL_ERROR, "USB MASS: unable to malloc memory for mass send\n");
         sfree(trans_data.base_recv_buffer);
-
         return -1;
     }
+
     printk(LOG_LEVEL_TRACE, "USB MASS: recv addr 0x%x\n", (uint32_t) trans_data.base_recv_buffer);
     printk(LOG_LEVEL_TRACE, "USB MASS: send addr 0x%x\n", (uint32_t) trans_data.base_send_buffer);
 
     return 0;
 }
 
+/**
+ * sunxi_mass_exit - Exit the USB Mass Storage driver
+ *
+ * This function frees the memory allocated for data transmission and exits the USB Mass Storage driver.
+ *
+ * @return: 0 if exit is successful, otherwise an error code
+ */
 static int sunxi_mass_exit(void) {
     printk(LOG_LEVEL_TRACE, "USB MASS: sunxi_mass_exit\n");
+
+    // Free receive buffer memory
     if (trans_data.base_recv_buffer) {
         sfree(trans_data.base_recv_buffer);
     }
+
+    // Free send buffer memory
     if (trans_data.base_send_buffer) {
         sfree(trans_data.base_send_buffer);
     }
@@ -372,20 +454,48 @@ static int sunxi_mass_exit(void) {
     return 0;
 }
 
+/**
+ * sunxi_mass_reset - Reset the USB Mass Storage driver
+ *
+ * This function resets the USB Mass Storage driver by setting initial values.
+ */
 static void sunxi_mass_reset(void) {
     sunxi_usb_mass_write_enable = 0;
     sunxi_usb_mass_status = SUNXI_USB_MASS_IDLE;
 }
 
+/**
+ * sunxi_mass_usb_rx_dma_isr - Handle the USB Mass Storage RX DMA interrupt
+ *
+ * This function is called when a USB Mass Storage RX DMA interrupt occurs. It sets a flag to indicate that the USB host is ready to write data.
+ *
+ * @param p_arg: Pointer to a void argument (not used)
+ */
 static void sunxi_mass_usb_rx_dma_isr(void *p_arg) {
     printk(LOG_LEVEL_TRACE, "USB MASS: dma int for usb rx occur\n");
     sunxi_usb_mass_write_enable = 1;
 }
 
+/**
+ * sunxi_mass_usb_tx_dma_isr - Handle the USB Mass Storage TX DMA interrupt
+ *
+ * This function is called when a USB Mass Storage TX DMA interrupt occurs. It currently does not perform any action.
+ *
+ * @param p_arg: Pointer to a void argument (not used)
+ */
 static void sunxi_mass_usb_tx_dma_isr(void *p_arg) {
     printk(LOG_LEVEL_TRACE, "USB MASS: dma int for usb tx occur\n");
 }
-
+/**
+ * sunxi_mass_standard_req_op - Handle standard USB Mass Storage requests
+ *
+ * This function handles standard USB Mass Storage requests by calling the corresponding functions based on the command.
+ *
+ * @param cmd: The command code for the request
+ * @param req: Pointer to the USB device request structure
+ * @param buffer: Pointer to the data buffer
+ * @return: The result of the operation (error code or success)
+ */
 static int sunxi_mass_standard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer) {
     int ret = SUNXI_USB_REQ_OP_ERR;
 
@@ -420,6 +530,17 @@ static int sunxi_mass_standard_req_op(uint32_t cmd, struct usb_device_request *r
     return ret;
 }
 
+/**
+ * sunxi_mass_nonstandard_req_op - Handle non-standard USB Mass Storage requests
+ *
+ * This function handles non-standard USB Mass Storage requests by calling the corresponding functions based on the request type and request code.
+ *
+ * @param cmd: The command code for the request
+ * @param req: Pointer to the USB device request structure
+ * @param buffer: Pointer to the data buffer
+ * @param data_status: The status of the data transfer
+ * @return: The result of the operation (error code or success)
+ */
 static int sunxi_mass_nonstandard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status) {
     int ret = SUNXI_USB_REQ_SUCCESSED;
 
@@ -443,6 +564,15 @@ static int sunxi_mass_nonstandard_req_op(uint32_t cmd, struct usb_device_request
     return ret;
 }
 
+/**
+ * sunxi_mass_state_loop - State machine for USB Mass Storage operation
+ *
+ * This function implements a state machine for USB Mass Storage operation. It handles the different stages of the operation,
+ * such as sending/receiving data, checking status, and handling errors.
+ *
+ * @param buffer: Pointer to the data buffer
+ * @return: The result of the operation (error code or success)
+ */
 static int sunxi_mass_state_loop(void *buffer) {
     static struct umass_bbb_cbw_t *cbw;
     static struct umass_bbb_csw_t csw;
@@ -524,9 +654,9 @@ static int sunxi_mass_state_loop(void *buffer) {
                     printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     {
                         trans_data.base_send_buffer[0] = 3;
-                        trans_data.base_send_buffer[1] = 0;//�������ͣ�Ϊ0
-                        trans_data.base_send_buffer[2] = 0;//�豸��ʶ����, Ϊ0
-                        trans_data.base_send_buffer[3] = 0;//�����������ȣ�����Ϊ0
+                        trans_data.base_send_buffer[1] = 0;
+                        trans_data.base_send_buffer[2] = 0;
+                        trans_data.base_send_buffer[3] = 0;
 
                         trans_data.act_send_buffer = (uint32_t) trans_data.base_send_buffer;
                         trans_data.send_size = min(cbw->dCBWDataTransferLength, 4);
