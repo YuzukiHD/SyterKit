@@ -41,7 +41,6 @@ typedef struct sunxi_ubuf {
     uint32_t request_size;      /* size of the data to be sent */
 } sunxi_ubuf_t;
 
-
 typedef struct sunxi_usb_setup_req_s {
     int (*state_init)(void);
     int (*state_exit)(void);
@@ -54,6 +53,7 @@ typedef struct sunxi_usb_setup_req_s {
 } sunxi_usb_setup_req_t;
 
 #define SUNXI_USB_DEVICE_DETECT (1)
+#define SUNXI_USB_DEVICE_MASS (2)
 
 #define sunxi_usb_module_init(name, state_init, state_exit, state_reset, \
                               standard_req_op, nonstandard_req_op,       \
@@ -68,6 +68,7 @@ typedef struct sunxi_usb_setup_req_s {
 
 /* export usb module */
 sunxi_usb_module_ext(SUNXI_USB_DEVICE_DETECT);
+sunxi_usb_module_ext(SUNXI_USB_DEVICE_MASS);
 
 /* USB IO Wrzpper */
 #define usb_get_bit8(bp, reg) (read8(reg) & (1 << (bp)))
@@ -82,12 +83,35 @@ sunxi_usb_module_ext(SUNXI_USB_DEVICE_DETECT);
 #define usb_clear_bit16(bp, reg) (write16((reg), (read16(reg) & (~(1 << (bp))))))
 #define usb_clear_bit32(bp, reg) (write32((reg), (read32(reg) & (~(1 << (bp))))))
 
+/* Error Codes */
+#define SUNXI_USB_REQ_SUCCESSED (0)
+#define SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED (-1)
+#define SUNXI_USB_REQ_UNKNOWN_COMMAND (-2)
+#define SUNXI_USB_REQ_UNMATCHED_COMMAND (-3)
+#define SUNXI_USB_REQ_DATA_HUNGRY (-4)
+#define SUNXI_USB_REQ_OP_ERR (-5)
+
 /* Function */
-void sunxi_usb_attach(uint32_t device_type);
+void sunxi_usb_attach_module(uint32_t device_type);
 
 int sunxi_usb_init();
 
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index);
 
+void sunxi_usb_ep_reset();
+
+/**
+ * @brief Handle the USB interrupt.
+ *
+ * This function is responsible for handling various USB interrupts, including RESET, RESUME, SUSPEND,
+ * DISCONNECT, SOF, endpoint 0 (EP0), and data transfers for both transmit (TX) and receive (RX) endpoints.
+ * It also handles DMA interrupts for both TX and RX endpoints.
+ *
+ * @param None
+ * @return None
+ */
+void sunxi_usb_irq();
+
+void sunxi_usb_attach();
 
 #endif// __USB_H__

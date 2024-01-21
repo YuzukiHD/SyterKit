@@ -29,6 +29,7 @@ set(USB_DRIVER
     usb/gic.c
 
     usb/module/usb_detect.c
+    usb/module/usb_mass.c
 )
 endif()
 

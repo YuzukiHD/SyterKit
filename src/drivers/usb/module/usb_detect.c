@@ -12,7 +12,9 @@
 
 #include <sys-clk.h>
 
+#include "usb_defs.h"
 #include "usb.h"
+
 
 volatile uint32_t sunxi_usb_detect_flag;
 
@@ -40,7 +42,33 @@ static void sunxi_usb_detect_usb_tx_dma_isr(void *p_arg) {
 }
 
 static int sunxi_usb_detect_standard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer) {
-    return 0;
+    int ret = SUNXI_USB_REQ_OP_ERR;
+
+    printk(LOG_LEVEL_TRACE, "USB: sunxi_usb_detect_standard_req_op get cmd = %d\n", cmd);
+    switch (cmd) {
+        case USB_REQ_GET_STATUS: {
+            break;
+        }
+        case USB_REQ_SET_ADDRESS: {
+            break;
+        }
+        case USB_REQ_GET_DESCRIPTOR:
+        case USB_REQ_GET_CONFIGURATION: {
+            break;
+        }
+        case USB_REQ_SET_CONFIGURATION: {
+            break;
+        }
+        case USB_REQ_SET_INTERFACE: {
+            break;
+        }
+        default: {
+            printk(LOG_LEVEL_ERROR, "usb detect error: standard req is not supported\n");
+            ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
+            break;
+        }
+    }
+    return ret;
 }
 
 static int sunxi_usb_detect_nonstandard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status) {
@@ -48,6 +76,7 @@ static int sunxi_usb_detect_nonstandard_req_op(uint32_t cmd, struct usb_device_r
 }
 
 static int sunxi_usb_detect_state_loop(void *buffer) {
+    printk(LOG_LEVEL_TRACE, "USB: sunxi_usb_detect_state_loop get\n");
     return 0;
 }
 
