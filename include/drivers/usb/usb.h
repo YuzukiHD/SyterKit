@@ -91,13 +91,58 @@ sunxi_usb_module_ext(SUNXI_USB_DEVICE_MASS);
 #define SUNXI_USB_REQ_DATA_HUNGRY (-4)
 #define SUNXI_USB_REQ_OP_ERR (-5)
 
-/* Function */
+/**
+ * @brief Attach a module to the USB controller
+ *
+ * This function attaches a module to the USB controller. It registers the
+ * specified USB module and switches to the specified device type. Currently,
+ * two types of devices are supported: USB device detect and USB mass storage.
+ * If an unknown device type is specified, an error message is printed.
+ *
+ * @param device_type The type of the device to attach
+ *                    - SUNXI_USB_DEVICE_DETECT: USB device detect module
+ *                    - SUNXI_USB_DEVICE_MASS: USB mass storage module
+ *
+ * @return none
+ */
 void sunxi_usb_attach_module(uint32_t device_type);
 
+/**
+ * @brief Initialize the USB controller
+ *
+ * This function initializes the USB controller. It first checks if
+ * it can successfully initialize the USB device, then initializes the UDC controller
+ * source and requests DMA channels for data sending and receiving. Next, it configures
+ * the USB device by setting the transfer mode and speed, configuring DMA, etc.
+ * Finally, it enables interrupts and opens the USB device.
+ *
+ * @return 0 on success, -1 on failure
+ *
+ * @param none
+ */
 int sunxi_usb_init();
 
+/**
+ * @brief Dump the USB controller registers for a specific endpoint
+ *
+ * This function dumps the USB controller registers for a specific endpoint of the
+ * Allwinner A64 USB controller.
+ *
+ * @param usbc_base The base address of the USB controller
+ * @param ep_index  The index of the endpoint to dump registers for
+ * @return none
+ */
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index);
 
+/**
+ * @brief Reset all endpoints of the USB controller
+ *
+ * This function resets all endpoints of the Allwinner A64 USB controller by calling
+ * the sunxi_usb_bulk_ep_reset() function to reset the bulk endpoints.
+ *
+ * @param none
+ * @return none
+ */
 void sunxi_usb_ep_reset();
 
 /**
@@ -112,6 +157,18 @@ void sunxi_usb_ep_reset();
  */
 void sunxi_usb_irq();
 
+/**
+ * @brief Attach the USB device to the USB controller
+ *
+ * This function attaches the USB device to the USB controller and enters a loop
+ * to handle USB events. It continuously checks for pending USB interrupts,
+ * handles the USB interrupt by calling sunxi_usb_irq(), and then processes
+ * the USB device state by calling sunxi_udev_active->state_loop(&sunxi_ubuf)
+ * multiple times.
+ *
+ * @param none
+ * @return none
+ */
 void sunxi_usb_attach();
 
 #endif// __USB_H__
