@@ -16,7 +16,7 @@
 #include "usb_controller.h"
 #include "usb_device.h"
 
-void usb_device_set_address_default(uint32_t husb) {
+void usb_device_set_address_default(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -26,7 +26,7 @@ void usb_device_set_address_default(uint32_t husb) {
     writeb(0x00, USBC_REG_FADDR(usbc_otg->base_addr));
 }
 
-void usb_device_set_address(uint32_t husb, uint8_t address) {
+void usb_device_set_address(uint64_t husb, uint8_t address) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -36,7 +36,7 @@ void usb_device_set_address(uint32_t husb, uint8_t address) {
     writeb(address, USBC_REG_FADDR(usbc_otg->base_addr));
 }
 
-uint32_t usb_device_query_transfer_mode(uint32_t husb) {
+uint32_t usb_device_query_transfer_mode(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -50,7 +50,7 @@ uint32_t usb_device_query_transfer_mode(uint32_t husb) {
     }
 }
 
-void usb_device_config_transfer_mode(uint32_t husb, uint8_t ts_type, uint8_t speed_mode) {
+void usb_device_config_transfer_mode(uint64_t husb, uint8_t ts_type, uint8_t speed_mode) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -98,7 +98,7 @@ void usb_device_config_transfer_mode(uint32_t husb, uint8_t ts_type, uint8_t spe
     }
 }
 
-void usb_device_connect_switch(uint32_t husb, uint32_t is_on) {
+void usb_device_connect_switch(uint64_t husb, uint32_t is_on) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -112,7 +112,7 @@ void usb_device_connect_switch(uint32_t husb, uint32_t is_on) {
     }
 }
 
-uint32_t usb_device_query_power_status(uint32_t husb) {
+uint32_t usb_device_query_power_status(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -123,7 +123,7 @@ uint32_t usb_device_query_power_status(uint32_t husb) {
 }
 
 
-int usb_device_config_ep(uint32_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt) {
+int usb_device_config_ep(uint64_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -150,7 +150,7 @@ int usb_device_config_ep(uint32_t husb, uint32_t ts_type, uint32_t ep_type, uint
     return 0;
 }
 
-int usb_device_config_ep_default(uint32_t husb, uint32_t ep_type) {
+int usb_device_config_ep_default(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -177,7 +177,7 @@ int usb_device_config_ep_default(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-int usb_device_config_ep_dma(uint32_t husb, uint32_t ep_type) {
+int usb_device_config_ep_dma(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -205,7 +205,7 @@ int usb_device_config_ep_dma(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-int usb_device_clear_ep_dma(uint32_t husb, uint32_t ep_type) {
+int usb_device_clear_ep_dma(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -233,7 +233,7 @@ int usb_device_clear_ep_dma(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-int usb_device_get_ep_stall(uint32_t husb, uint32_t ep_type) {
+int usb_device_get_ep_stall(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -260,7 +260,7 @@ int usb_device_get_ep_stall(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-int usb_device_ep_send_stall(uint32_t husb, uint32_t ep_type) {
+int usb_device_ep_send_stall(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -287,7 +287,7 @@ int usb_device_ep_send_stall(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-int usb_device_ep_clear_stall(uint32_t husb, uint32_t ep_type) {
+int usb_device_ep_clear_stall(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -314,7 +314,7 @@ int usb_device_ep_clear_stall(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-uint32_t usb_device_ctrl_get_setup_end(uint32_t husb) {
+uint32_t usb_device_ctrl_get_setup_end(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -324,7 +324,7 @@ uint32_t usb_device_ctrl_get_setup_end(uint32_t husb) {
     return usb_device_ep0_get_setup_end(usbc_otg->base_addr);
 }
 
-void usb_device_ctrl_clear_setup_end(uint32_t husb) {
+void usb_device_ctrl_clear_setup_end(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -333,7 +333,7 @@ void usb_device_ctrl_clear_setup_end(uint32_t husb) {
     usb_device_ep0_clear_setup_end(usbc_otg->base_addr);
 }
 
-int usb_device_write_data_status(uint32_t husb, uint32_t ep_type, uint32_t complete) {
+int usb_device_write_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -347,7 +347,7 @@ int usb_device_write_data_status(uint32_t husb, uint32_t ep_type, uint32_t compl
     }
 }
 
-int usb_device_read_data_status(uint32_t husb, uint32_t ep_type, uint32_t complete) {
+int usb_device_read_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -361,7 +361,7 @@ int usb_device_read_data_status(uint32_t husb, uint32_t ep_type, uint32_t comple
     }
 }
 
-uint32_t usb_device_get_read_data_ready(uint32_t husb, uint32_t ep_type) {
+uint32_t usb_device_get_read_data_ready(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -386,7 +386,7 @@ uint32_t usb_device_get_read_data_ready(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-uint32_t usb_device_get_write_data_ready(uint32_t husb, uint32_t ep_type) {
+uint32_t usb_device_get_write_data_ready(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -410,7 +410,7 @@ uint32_t usb_device_get_write_data_ready(uint32_t husb, uint32_t ep_type) {
     return 0;
 }
 
-uint32_t usb_device_get_write_data_ready_fifo_empty(uint32_t husb, uint32_t ep_type) {
+uint32_t usb_device_get_write_data_ready_fifo_empty(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -434,7 +434,7 @@ uint32_t usb_device_get_write_data_ready_fifo_empty(uint32_t husb, uint32_t ep_t
     return 0;
 }
 
-int usb_device_iso_update_enable(uint32_t husb) {
+int usb_device_iso_update_enable(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {
@@ -445,7 +445,7 @@ int usb_device_iso_update_enable(uint32_t husb) {
     return 0;
 }
 
-void usb_device_flush_fifo(uint32_t husb, uint32_t ep_type) {
+void usb_device_flush_fifo(uint64_t husb, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
     if (usbc_otg == NULL) {

@@ -20,7 +20,7 @@
 
 /* USB PHY Define */
 #define USB_PHY_SEL 0x0420
-#define USB_PHY_CTL 0x410
+#define USB_PHY_CTL 0x0410
 
 /* reg offset */
 #define USBC_REG_o_FADDR 0x0098

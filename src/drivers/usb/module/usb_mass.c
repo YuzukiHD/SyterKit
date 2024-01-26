@@ -228,7 +228,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             dev_dscrptr->bLength = min(req->length, sizeof(struct usb_device_descriptor));
             dev_dscrptr->bDescriptorType = USB_DT_DEVICE;
             dev_dscrptr->bcdUSB = 0x200;
-            dev_dscrptr->bDeviceClass = 0; // Device class: Mass Storage
+            dev_dscrptr->bDeviceClass = 0;// Device class: Mass Storage
             dev_dscrptr->bDeviceSubClass = 0;
             dev_dscrptr->bDeviceProtocol = 0;
             dev_dscrptr->bMaxPacketSize0 = 0x40;
@@ -268,7 +268,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             config_dscrptr->bConfigurationValue = 1;
             config_dscrptr->iConfiguration = 0;
             config_dscrptr->bmAttributes = 0xc0;
-            config_dscrptr->bMaxPower = 0xFA; // Maximum current of 500ms (0xfa * 2)
+            config_dscrptr->bMaxPower = 0xFA;// Maximum current of 500ms (0xfa * 2)
             bytes_remaining -= config_dscrptr->bLength;
             /* interface */
             inter_dscrptr->bLength = min(bytes_remaining, sizeof(struct usb_interface_descriptor));
@@ -383,8 +383,8 @@ static int usb_mass_usb_get_status(struct usb_device_request *req, uint8_t *buff
     bLength = min(req->value, 2);
 
     // Set the status information in the buffer
-    buffer[0] = 1; // Device is busy
-    buffer[1] = 0; // No error
+    buffer[0] = 1;// Device is busy
+    buffer[1] = 0;// No error
 
     // Send the response back to the host
     sunxi_usb_send_setup(bLength, buffer);

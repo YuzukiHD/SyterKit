@@ -982,7 +982,7 @@ static inline void usb_device_rx_flush_fifo(uint32_t addr) {
  *
  * @param husb The USB device handle.
  */
-void usb_device_set_address_default(uint32_t husb);
+void usb_device_set_address_default(uint64_t husb);
 
 /**
  * Set the address for the USB device.
@@ -990,7 +990,7 @@ void usb_device_set_address_default(uint32_t husb);
  * @param husb The USB device handle.
  * @param address The address to set.
  */
-void usb_device_set_address(uint32_t husb, uint8_t address);
+void usb_device_set_address(uint64_t husb, uint8_t address);
 
 /**
  * Query the transfer mode of the USB device.
@@ -998,7 +998,7 @@ void usb_device_set_address(uint32_t husb, uint8_t address);
  * @param husb The USB device handle.
  * @return The transfer mode.
  */
-uint32_t usb_device_query_transfer_mode(uint32_t husb);
+uint32_t usb_device_query_transfer_mode(uint64_t husb);
 
 /**
  * Configure the transfer mode of the USB device.
@@ -1007,7 +1007,7 @@ uint32_t usb_device_query_transfer_mode(uint32_t husb);
  * @param ts_type The transfer mode type.
  * @param speed_mode The speed mode.
  */
-void usb_device_config_transfer_mode(uint32_t husb, uint8_t ts_type, uint8_t speed_mode);
+void usb_device_config_transfer_mode(uint64_t husb, uint8_t ts_type, uint8_t speed_mode);
 
 /**
  * Switch the USB device connection on or off.
@@ -1015,7 +1015,7 @@ void usb_device_config_transfer_mode(uint32_t husb, uint8_t ts_type, uint8_t spe
  * @param husb The USB device handle.
  * @param is_on Whether to turn the connection on (1) or off (0).
  */
-void usb_device_connect_switch(uint32_t husb, uint32_t is_on);
+void usb_device_connect_switch(uint64_t husb, uint32_t is_on);
 
 /**
  * Query the power status of the USB device.
@@ -1023,7 +1023,7 @@ void usb_device_connect_switch(uint32_t husb, uint32_t is_on);
  * @param husb The USB device handle.
  * @return The power status.
  */
-uint32_t usb_device_query_power_status(uint32_t husb);
+uint32_t usb_device_query_power_status(uint64_t husb);
 
 /**
  * Configure an endpoint of the USB device.
@@ -1035,7 +1035,7 @@ uint32_t usb_device_query_power_status(uint32_t husb);
  * @param ep_maxpkt The maximum packet size of the endpoint.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep(uint32_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
+int usb_device_config_ep(uint64_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
 
 /**
  * Configure a default endpoint of the USB device.
@@ -1044,7 +1044,7 @@ int usb_device_config_ep(uint32_t husb, uint32_t ts_type, uint32_t ep_type, uint
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep_default(uint32_t husb, uint32_t ep_type);
+int usb_device_config_ep_default(uint64_t husb, uint32_t ep_type);
 
 /**
  * Configure an endpoint of the USB device to use DMA.
@@ -1053,7 +1053,7 @@ int usb_device_config_ep_default(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep_dma(uint32_t husb, uint32_t ep_type);
+int usb_device_config_ep_dma(uint64_t husb, uint32_t ep_type);
 
 /**
  * Clear the DMA configuration for an endpoint of the USB device.
@@ -1062,7 +1062,7 @@ int usb_device_config_ep_dma(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_clear_ep_dma(uint32_t husb, uint32_t ep_type);
+int usb_device_clear_ep_dma(uint64_t husb, uint32_t ep_type);
 
 /**
  * Get the stall status of an endpoint of the USB device.
@@ -1071,7 +1071,7 @@ int usb_device_clear_ep_dma(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 1 if stalled, 0 if not stalled.
  */
-int usb_device_get_ep_stall(uint32_t husb, uint32_t ep_type);
+int usb_device_get_ep_stall(uint64_t husb, uint32_t ep_type);
 
 /**
  * Send a stall condition on an endpoint of the USB device.
@@ -1080,7 +1080,7 @@ int usb_device_get_ep_stall(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_ep_send_stall(uint32_t husb, uint32_t ep_type);
+int usb_device_ep_send_stall(uint64_t husb, uint32_t ep_type);
 
 /**
  * Clear the stall condition on an endpoint of the USB device.
@@ -1089,7 +1089,7 @@ int usb_device_ep_send_stall(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_ep_clear_stall(uint32_t husb, uint32_t ep_type);
+int usb_device_ep_clear_stall(uint64_t husb, uint32_t ep_type);
 
 /**
  * Get the setup end status of the control endpoint of the USB device.
@@ -1097,14 +1097,14 @@ int usb_device_ep_clear_stall(uint32_t husb, uint32_t ep_type);
  * @param husb The USB device handle.
  * @return The setup end status.
  */
-uint32_t usb_device_ctrl_get_setup_end(uint32_t husb);
+uint32_t usb_device_ctrl_get_setup_end(uint64_t husb);
 
 /**
  * Clear the setup end status of the control endpoint of the USB device.
  *
  * @param husb The USB device handle.
  */
-void usb_device_ctrl_clear_setup_end(uint32_t husb);
+void usb_device_ctrl_clear_setup_end(uint64_t husb);
 
 /**
  * Check the write data status of an endpoint of the USB device.
@@ -1114,7 +1114,7 @@ void usb_device_ctrl_clear_setup_end(uint32_t husb);
  * @param complete Whether the write operation is complete (1) or not (0).
  * @return 0 on success, -1 on failure.
  */
-int usb_device_write_data_status(uint32_t husb, uint32_t ep_type, uint32_t complete);
+int usb_device_write_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete);
 
 /**
  * Check the read data status of an endpoint of the USB device.
@@ -1124,7 +1124,7 @@ int usb_device_write_data_status(uint32_t husb, uint32_t ep_type, uint32_t compl
  * @param complete Whether the read operation is complete (1) or not (0).
  * @return 0 on success, -1 on failure.
  */
-int usb_device_read_data_status(uint32_t husb, uint32_t ep_type, uint32_t complete);
+int usb_device_read_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete);
 
 /**
  * Check if there is ready data to be read from an endpoint of the USB device.
@@ -1133,7 +1133,7 @@ int usb_device_read_data_status(uint32_t husb, uint32_t ep_type, uint32_t comple
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_read_data_ready(uint32_t husb, uint32_t ep_type);
+uint32_t usb_device_get_read_data_ready(uint64_t husb, uint32_t ep_type);
 
 /**
  * Check if an endpoint of the USB device is ready to write data.
@@ -1142,7 +1142,7 @@ uint32_t usb_device_get_read_data_ready(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_write_data_ready(uint32_t husb, uint32_t ep_type);
+uint32_t usb_device_get_write_data_ready(uint64_t husb, uint32_t ep_type);
 
 /**
  * Check if the FIFO of an endpoint of the USB device is empty and ready to write data.
@@ -1151,7 +1151,7 @@ uint32_t usb_device_get_write_data_ready(uint32_t husb, uint32_t ep_type);
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_write_data_ready_fifo_empty(uint32_t husb, uint32_t ep_type);
+uint32_t usb_device_get_write_data_ready_fifo_empty(uint64_t husb, uint32_t ep_type);
 
 /**
  * Enable ISO update for the USB device.
@@ -1159,7 +1159,7 @@ uint32_t usb_device_get_write_data_ready_fifo_empty(uint32_t husb, uint32_t ep_t
  * @param husb The USB device handle.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_iso_update_enable(uint32_t husb);
+int usb_device_iso_update_enable(uint64_t husb);
 
 /**
  * Flush the FIFO of an endpoint of the USB device.
@@ -1167,7 +1167,7 @@ int usb_device_iso_update_enable(uint32_t husb);
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  */
-void usb_device_flush_fifo(uint32_t husb, uint32_t ep_type);
+void usb_device_flush_fifo(uint64_t husb, uint32_t ep_type);
 
 
 #endif// __USB_DEVICE_H__

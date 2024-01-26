@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <log.h>
+#include <mmu.h>
 
 #include <sys-clk.h>
 
@@ -30,9 +31,9 @@
 
 static uint8_t sunxi_usb_ep0_buffer[SUNXI_USB_EP0_BUFFER_SIZE];
 
-static sunxi_udc_t sunxi_udc_source;
 static sunxi_ubuf_t sunxi_ubuf;
-static sunxi_usb_setup_req_t *sunxi_udev_active;
+sunxi_udc_t sunxi_udc_source;
+sunxi_usb_setup_req_t *sunxi_udev_active;
 
 static uint8_t usb_dma_trans_unaliged_bytes;
 static uint8_t *usb_dma_trans_unaligned_buf;
@@ -60,7 +61,7 @@ static void sunxi_usb_clear_all_irq(void) {
  * @param ep_type The type of endpoint where the read operation was performed.
  * @param complete A flag indicating whether the read operation completed successfully or not.
  */
-static void sunxi_usb_read_complete(uint32_t husb, uint32_t ep_type, uint32_t complete) {
+static void sunxi_usb_read_complete(uint64_t husb, uint32_t ep_type, uint32_t complete) {
     usb_device_read_data_status(husb, ep_type, complete);
     if (ep_type == USBC_EP_TYPE_EP0) {
         /* clear data end */
@@ -86,7 +87,7 @@ static void sunxi_usb_read_complete(uint32_t husb, uint32_t ep_type, uint32_t co
  * @param complete The completion status of the write operation
  * @return none
  */
-static void sunxi_usb_write_complete(uint32_t husb, uint32_t ep_type, uint32_t complete) {
+static void sunxi_usb_write_complete(uint64_t husb, uint32_t ep_type, uint32_t complete) {
     usb_device_write_data_status(husb, ep_type, complete);
 
     /* Wait for tx packet sent out */
@@ -250,10 +251,10 @@ static int ep0_recv_op(void) {
         }
     } else {
         /* This case is usually caused by sending an empty packet on EP0, can be ignored */
-        printk(LOG_LEVEL_TRACE, "USB: ep0 rx data is not ready\n");
+        printk(LOG_LEVEL_TRACE, "USB: ep0 rx data is not ready, sending an empty packet on EP0 ignored\n");
         if (sunxi_udc_source.address) {
             sunxi_usb_perform_set_address(sunxi_udc_source.address & 0xff);
-            printk(LOG_LEVEL_ERROR, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
+            printk(LOG_LEVEL_INFO, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
             sunxi_udc_source.address = 0;
         }
         goto ep0_recv_op_err;
@@ -306,7 +307,7 @@ static int ep0_recv_op(void) {
                 /* device-to-host */
                 if (USB_DIR_IN == (sunxi_udc_source.standard_reg.request_type & USB_REQ_DIRECTION_MASK)) {
                     if (USB_RECIP_DEVICE == (sunxi_udc_source.standard_reg.request_type & USB_REQ_RECIPIENT_MASK)) {
-                        ret = sunxi_udev_active->standard_req_op(USB_REQ_GET_DESCRIPTOR, &sunxi_udc_source.standard_reg, NULL);
+                        ret = sunxi_udev_active->standard_req_op(USB_REQ_GET_DESCRIPTOR, &sunxi_udc_source.standard_reg, sunxi_usb_ep0_buffer);
                     }
                 }
 
@@ -368,7 +369,7 @@ static int ep0_recv_op(void) {
 
                 break;
             }
-            case USB_REQ_SYNCH_FRAME: /*   0x0b*/
+            case USB_REQ_SYNCH_FRAME: /*   0x0c*/
             {
                 /* device-to-host */
                 if (USB_DIR_IN == (sunxi_udc_source.standard_reg.request_type & USB_REQ_DIRECTION_MASK)) {
@@ -560,6 +561,8 @@ int sunxi_usb_init() {
         return -1;
     }
 
+    irq_disable(AW_IRQ_USB_OTG);
+
     printk(LOG_LEVEL_TRACE, "Init udc controller source\n");
     /* Init udc controller source */
     memset(&sunxi_udc_source, 0, sizeof(sunxi_udc_t));
@@ -661,6 +664,9 @@ int sunxi_usb_init() {
     /* open usb device */
     usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_ON);
 
+    irq_install_handler(AW_IRQ_USB_OTG, sunxi_usb_irq, NULL);
+    irq_enable(AW_IRQ_USB_OTG);
+
     /* set bit 1  ->  0 */
     reg_val = readl(SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
     reg_val &= ~(0x01 << 1);
@@ -671,9 +677,7 @@ int sunxi_usb_init() {
     reg_val |= 0x01 << USBC_PHY_CTL_VBUSVLDEXT;
     writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
 
-    gic_enable(AW_IRQ_USB_OTG);
-
-    sunxi_usb_dump(sunxi_udc_source.address, 0);
+    // sunxi_usb_dump(SUNXI_USB0_BASE, 0);
 
     return 0;
 
@@ -803,17 +807,10 @@ void sunxi_usb_irq() {
 }
 
 void sunxi_usb_attach() {
-    int i = 0;
-    while (1) {
-        if (gic_is_pending(AW_IRQ_USB_OTG)) {
-            printk(LOG_LEVEL_TRACE, "USB: IRQ Pending...\n");
-            sunxi_usb_irq();
-        }
+    arm32_interrupt_enable();
 
-        i = 10;
-        while (i--) {
-            sunxi_udev_active->state_loop(&sunxi_ubuf);
-        }
+    while (1) {
+        sunxi_udev_active->state_loop(&sunxi_ubuf);
     }
 }
 
