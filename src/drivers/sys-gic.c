@@ -16,7 +16,14 @@
 
 static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
 
-/* get interrupts state */
+/**
+ * @brief Get interrupts state.
+ * 
+ * This inline function checks the state of interrupts. It reads the value of the CPSR register using assembly instructions 
+ * and returns 1 if interrupts are open (CPSR bit 7 is cleared), otherwise it returns 0.
+ * 
+ * @return int Returns 1 if interrupts are open, otherwise returns 0.
+ */
 static inline int interrupts_is_open(void) {
     uint64_t temp = 0;
     __asm__ __volatile__("mrs %0, cpsr\n"
@@ -26,6 +33,17 @@ static inline int interrupts_is_open(void) {
     return ((temp & 0x80) == 0) ? 1 : 0;
 }
 
+/**
+ * @brief Set the target CPU for a specific SPI interrupt.
+ * 
+ * This inline function sets the target CPU for a specific SPI interrupt. It calculates the address of the target register 
+ * based on the interrupt number, reads the current value of the register, modifies it to set the target CPU, and writes 
+ * the modified value back to the register. The function assumes that the interrupt number is offset by 32 and that the 
+ * maximum CPU ID is 15.
+ * 
+ * @param irq_no The interrupt number.
+ * @param cpu_id The CPU ID of the target CPU.
+ */
 static inline void gic_spi_set_target(int irq_no, int cpu_id) {
     uint32_t reg_val, addr, offset;
     irq_no -= 32;
@@ -39,6 +57,13 @@ static inline void gic_spi_set_target(int irq_no, int cpu_id) {
     return;
 }
 
+/**
+ * Initialize the GIC distributor controller
+ *
+ * @param void
+ *
+ * @return void
+ */
 static void gic_distributor_init(void) {
     uint32_t cpumask = 0x01010101;
     uint32_t gic_irqs;
@@ -122,6 +147,11 @@ static void gic_spi_handler(uint32_t irq_no) {
     }
 }
 
+/**
+ * @brief Clears the pending status of the specified IRQ in the GIC
+ * 
+ * @param irq_no IRQ number to clear pending status
+ */
 static void gic_clear_pending(uint32_t irq_no) {
     uint32_t offset = irq_no >> 5;
     uint32_t reg_val = (1 << (irq_no & 0x1f));
