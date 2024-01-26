@@ -82,7 +82,6 @@
 #define SRAM_CONTRL_REG0 (SUNXI_SYSCRL_BASE + 0x0)
 #define SRAM_CONTRL_REG1 (SUNXI_SYSCRL_BASE + 0x4)
 
-
 /* rtc check power off */
 #define FORCE_DETECTER_OUTPUT (1 << 7)
 #define VCCIO_THRESHOLD_VOLTAGE_2_5 (0 << 4)

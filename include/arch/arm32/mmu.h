@@ -11,6 +11,15 @@ extern "C" {
 
 #include "timer.h"
 
+struct arm_regs_t {
+    uint32_t esp;
+    uint32_t cpsr;
+    uint32_t r[13];
+    uint32_t sp;
+    uint32_t lr;
+    uint32_t pc;
+};
+
 static inline uint32_t arm32_read_p15_c1(void) {
     uint32_t value;
 
@@ -106,9 +115,9 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
 
 #ifdef CONFIG_CHIP_DCACHE
     /* enable smp */
-	asm volatile("mrc     p15, 0, r0, c1, c0, 1");
-	asm volatile("orr     r0, r0, #0x040");
-	asm volatile("mcr     p15, 0, r0, c1, c0, 1");
+    asm volatile("mrc     p15, 0, r0, c1, c0, 1");
+    asm volatile("orr     r0, r0, #0x040");
+    asm volatile("mcr     p15, 0, r0, c1, c0, 1");
 #endif
 
     /* and enable the mmu */

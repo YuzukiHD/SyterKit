@@ -5,6 +5,7 @@
 
 /*CPUX*/
 #define SUNXI_CPUXCFG_BASE (0x08100000)
+#define SUNXI_CCU_BASE (0x02001000)
 
 /*sys ctrl*/
 #define SUNXI_TIMER_BASE (0x02050000)
@@ -36,6 +37,9 @@
 
 #define SUNXI_TWI0_BASE (0x02502000)
 #define SUNXI_TWI1_BASE (0x02502400)
+
+#define SUNXI_GIC_BASE (0x03020000)
+#define SUNXI_USB0_BASE (0x04100000)
 
 #define SUNXI_SPI0_BASE (0x04025000)
 #define SUNXI_SPI1_BASE (0x04026000)
@@ -93,4 +97,14 @@
 #define VCCIO_THRESHOLD_VOLTAGE_3_0 (5 << 4)
 #define VCCIO_DET_BYPASS_EN (1 << 0)
 
-#endif // __SUN8IW21_REG_NCAT_H__
+/* IRQ */
+#define AW_IRQ_USB_OTG 61
+#define AW_IRQ_USB_EHCI0 62
+#define AW_IRQ_USB_OHCI0 63
+#define AW_IRQ_DMA 82
+#define AW_IRQ_TIMER0 91
+#define AW_IRQ_TIMER1 92
+#define AW_IRQ_NMI 168
+#define GIC_IRQ_NUM 223
+
+#endif// __SUN8IW21_REG_NCAT_H__
