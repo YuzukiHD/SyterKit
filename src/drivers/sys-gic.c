@@ -14,6 +14,8 @@
 
 #include "sys-gic.h"
 
+static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
+
 /* get interrupts state */
 static inline int interrupts_is_open(void) {
     uint64_t temp = 0;

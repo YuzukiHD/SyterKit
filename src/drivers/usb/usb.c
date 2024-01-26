@@ -251,7 +251,7 @@ static int ep0_recv_op(void) {
         }
     } else {
         /* This case is usually caused by sending an empty packet on EP0, can be ignored */
-        printk(LOG_LEVEL_TRACE, "USB: ep0 rx data is not ready, sending an empty packet on EP0 ignored\n");
+        printk(LOG_LEVEL_TRACE, "USB: ep0 rx non, set addr\n");
         if (sunxi_udc_source.address) {
             sunxi_usb_perform_set_address(sunxi_udc_source.address & 0xff);
             printk(LOG_LEVEL_INFO, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
