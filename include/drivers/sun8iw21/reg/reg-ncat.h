@@ -97,4 +97,14 @@
 #define VCCIO_THRESHOLD_VOLTAGE_3_0 (5 << 4)
 #define VCCIO_DET_BYPASS_EN (1 << 0)
 
-#endif // __SUN8IW21_REG_NCAT_H__
+/* IRQ */
+#define AW_IRQ_USB_OTG 61
+#define AW_IRQ_USB_EHCI0 62
+#define AW_IRQ_USB_OHCI0 63
+#define AW_IRQ_DMA 82
+#define AW_IRQ_TIMER0 91
+#define AW_IRQ_TIMER1 92
+#define AW_IRQ_NMI 168
+#define GIC_IRQ_NUM 223
+
+#endif// __SUN8IW21_REG_NCAT_H__
