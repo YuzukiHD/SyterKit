@@ -14,8 +14,8 @@
 #include "usb_defs.h"
 
 const uint8_t normal_lang_id[8] = {0x04, 0x03, 0x09, 0x04, '\0'};
-const uint8_t sunxi_usb_mass_serial_num0[32] = "20101201120001";
-const uint8_t sunxi_usb_mass_manufacturer[32] = "AllWinner Technology";
+const uint8_t sunxi_usb_mass_serial_num0[32] = "20240127003501";
+const uint8_t sunxi_usb_mass_manufacturer[32] = "Yuzuki HD";
 const uint8_t sunxi_usb_mass_product[32] = "USB Mass Storage";
 
 #define SUNXI_USB_STRING_LANGIDS (0)
@@ -232,8 +232,8 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             dev_dscrptr->bDeviceSubClass = 0;
             dev_dscrptr->bDeviceProtocol = 0;
             dev_dscrptr->bMaxPacketSize0 = 0x40;
-            dev_dscrptr->idVendor = 0xBB4;
-            dev_dscrptr->idProduct = 0xfff;
+            dev_dscrptr->idVendor = 0x7d4a;
+            dev_dscrptr->idProduct = 0x2b82;
             dev_dscrptr->bcdDevice = 0x200;
             dev_dscrptr->iManufacturer = SUNXI_USB_STRING_IMANUFACTURER;
             dev_dscrptr->iProduct = SUNXI_USB_STRING_IPRODUCT;

@@ -26,8 +26,6 @@ typedef struct _irq_handler {
     void (*func)(void *data);
 } irq_handler_t;
 
-irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
-
 typedef void(interrupt_handler_t)(void *);
 
 void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data);
