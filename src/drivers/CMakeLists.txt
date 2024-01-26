@@ -26,7 +26,6 @@ set(USB_DRIVER
     usb/usb_controller.c
     usb/usb_device.c
     usb/usb_dma.c
-    usb/gic.c
 
     usb/module/usb_detect.c
     usb/module/usb_mass.c
@@ -49,6 +48,7 @@ if (NOT CONFIG_CHIP_CLK_V1)
         sys-sdcard.c
         sys-dma.c
         sys-i2c.c
+        sys-gic.c
 
         ${USB_DRIVER}
     )
