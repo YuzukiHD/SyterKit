@@ -10,6 +10,6 @@
 #define KERNEL_CODE_OFFSET_IN_UIMAGE 0x40
 
 int uImage_loader(uint8_t *addr, uint32_t *entry) {
-    *entry = (uint32_t *) (addr + KERNEL_CODE_OFFSET_IN_UIMAGE);
+    *entry = (uint32_t) (addr + KERNEL_CODE_OFFSET_IN_UIMAGE);
     return 1;
 }

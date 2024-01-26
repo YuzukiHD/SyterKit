@@ -33,7 +33,7 @@ static uint32_t usb_dma_used[SUNXI_USB_DMA_MAX];
  * 
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_set_channal_para(uint32_t husb, uint32_t dma_chan, uint32_t trans_dir, uint32_t ep_type) {
+static int lowlevel_usb_dma_set_channal_para(uint64_t husb, uint32_t dma_chan, uint32_t trans_dir, uint32_t ep_type) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
     uint32_t reg_val = 0;                                           /**< The value to be written to the register */
     if (usbc_otg == NULL) {
@@ -58,7 +58,7 @@ static int lowlevel_usb_dma_set_channal_para(uint32_t husb, uint32_t dma_chan, u
  * 
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_set_packet_len(uint32_t husb, uint32_t dma_chan, uint32_t pkt_len) {
+static int lowlevel_usb_dma_set_packet_len(uint64_t husb, uint32_t dma_chan, uint32_t pkt_len) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
     uint32_t reg_val = 0;                                           /**< The value to be written to the register */
 
@@ -91,7 +91,7 @@ static int lowlevel_usb_dma_set_packet_len(uint32_t husb, uint32_t dma_chan, uin
  * 
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_start(uint32_t husb, uint32_t dma_chan, uint32_t addr, uint32_t pkt_len) {
+static int lowlevel_usb_dma_start(uint64_t husb, uint32_t dma_chan, uint32_t addr, uint32_t pkt_len) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
     uint32_t reg_val;
 
@@ -132,7 +132,7 @@ static int lowlevel_usb_dma_start(uint32_t husb, uint32_t dma_chan, uint32_t add
  * 
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_stop(uint32_t husb, uint32_t dma_chan) {
+static int lowlevel_usb_dma_int_stop(uint64_t husb, uint32_t dma_chan) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
     uint32_t reg_val;
 
@@ -156,7 +156,7 @@ static int lowlevel_usb_dma_int_stop(uint32_t husb, uint32_t dma_chan) {
  * 
  * @return The status of DMA transfers on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_query(uint32_t husb) {
+static int lowlevel_usb_dma_int_query(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 
     if (usbc_otg == NULL) {
@@ -175,7 +175,7 @@ static int lowlevel_usb_dma_int_query(uint32_t husb) {
  * 
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_clear(uint32_t husb) {
+static int lowlevel_usb_dma_int_clear(uint64_t husb) {
     usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 
     if (usbc_otg == NULL) {
@@ -208,7 +208,7 @@ static int usb_index_check(uint32_t dma_index) {
     return 0;
 }
 
-int usb_dma_init(uint32_t husb) {
+int usb_dma_init(uint64_t husb) {
     usb_hd = husb; /**< Set the USB handle */
 
     return 0;

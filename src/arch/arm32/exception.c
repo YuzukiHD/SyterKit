@@ -10,14 +10,7 @@
 
 #include <log.h>
 
-struct arm_regs_t {
-    uint32_t esp;
-    uint32_t cpsr;
-    uint32_t r[13];
-    uint32_t sp;
-    uint32_t lr;
-    uint32_t pc;
-};
+#include <sys-gic.h>
 
 static void show_regs(struct arm_regs_t *regs) {
     int i = 0;
@@ -27,33 +20,34 @@ static void show_regs(struct arm_regs_t *regs) {
     for (i = 12; i >= 0; i--)
         printk(LOG_LEVEL_ERROR, "r%-2d: 0x%08lx\n", i, regs->r[i]);
     printk(LOG_LEVEL_ERROR, "\n");
-
-    mdelay(1000);
 }
 
 void arm32_do_undefined_instruction(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "undefined_instruction\n");
     show_regs(regs);
+    mdelay(1000);
 }
 
 void arm32_do_software_interrupt(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "software_interrupt\n");
     show_regs(regs);
+    mdelay(1000);
 }
 
 void arm32_do_prefetch_abort(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "prefetch_abort\n");
     show_regs(regs);
+    mdelay(1000);
 }
 
 void arm32_do_data_abort(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "data_abort\n");
     show_regs(regs);
+    mdelay(1000);
 }
 
 void arm32_do_irq(struct arm_regs_t *regs) {
-    printk(LOG_LEVEL_ERROR, "undefined IRQ\n");
-    show_regs(regs);
+    do_irq(regs);
 }
 
 void arm32_do_fiq(struct arm_regs_t *regs) {

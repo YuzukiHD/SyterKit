@@ -20,7 +20,7 @@
  * 
  * @return 0 on success
  */
-int usb_dma_init(uint32_t husb);
+int usb_dma_init(uint64_t husb);
 
 /**
  * @brief Request a USB DMA channel
