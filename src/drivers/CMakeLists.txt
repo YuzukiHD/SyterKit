@@ -19,6 +19,19 @@ set(COMMON_DRIVER
     sys-gpio.c
 )
 
+if (CONFIG_CHIP_USB)
+set(USB_DRIVER
+    usb/usb_clk.c
+    usb/usb.c
+    usb/usb_controller.c
+    usb/usb_device.c
+    usb/usb_dma.c
+
+    usb/module/usb_detect.c
+    usb/module/usb_mass.c
+)
+endif()
+
 if (CONFIG_CHIP_WITHPMU)
     set(DRIVER_PMU 
         pmu/axp1530.c
@@ -35,6 +48,9 @@ if (NOT CONFIG_CHIP_CLK_V1)
         sys-sdcard.c
         sys-dma.c
         sys-i2c.c
+        sys-gic.c
+
+        ${USB_DRIVER}
     )
 endif()
 

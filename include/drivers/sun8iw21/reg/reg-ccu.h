@@ -3,7 +3,9 @@
 #ifndef __SUN8IW21_REG_CCU_H__
 #define __SUN8IW21_REG_CCU_H__
 
-#define CCU_BASE (0x02001000)
+#include <reg-ncat.h>
+
+#define CCU_BASE SUNXI_CCU_BASE
 
 #define CCU_PLL_CPU_CTRL_REG 0x0000      /* PLL_CPU Control Register */
 #define CCU_PLL_DDR_CTRL_REG 0x0010      /* PLL_DDR Control Register */
