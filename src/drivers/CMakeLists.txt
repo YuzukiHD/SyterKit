@@ -19,6 +19,7 @@ set(COMMON_DRIVER
     sys-gpio.c
 )
 
+set(USB_DRIVER "")
 if (CONFIG_CHIP_USB)
 set(USB_DRIVER
     usb/usb_clk.c
