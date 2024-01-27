@@ -33,6 +33,13 @@ set(USB_DRIVER
 )
 endif()
 
+set(GIC_DRIVER "")
+if (CONFIG_CHIP_GIC)
+set(GIC_DRIVER
+    sys-gic.c
+)
+endif()
+
 if (CONFIG_CHIP_WITHPMU)
     set(DRIVER_PMU 
         pmu/axp1530.c
@@ -49,9 +56,9 @@ if (NOT CONFIG_CHIP_CLK_V1)
         sys-sdcard.c
         sys-dma.c
         sys-i2c.c
-        sys-gic.c
 
         ${USB_DRIVER}
+        ${GIC_DRIVER}
     )
 endif()
 
