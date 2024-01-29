@@ -47,7 +47,14 @@ void arm32_do_data_abort(struct arm_regs_t *regs) {
 }
 
 void arm32_do_irq(struct arm_regs_t *regs) {
+
+#ifdef CONFIG_CHIP_GIC
     do_irq(regs);
+#else
+    printk(LOG_LEVEL_ERROR, "undefined IRQ\n");
+    show_regs(regs);
+#endif
+
 }
 
 void arm32_do_fiq(struct arm_regs_t *regs) {

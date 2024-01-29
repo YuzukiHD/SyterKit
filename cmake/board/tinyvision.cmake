@@ -6,7 +6,7 @@ set(CONFIG_BOARD_TINYVISION True)
 set(CONFIG_CHIP_USB True)
 set(CONFIG_CHIP_GIC True)
 
-add_definitions(-DCONFIG_CHIP_SUN8IW21)
+add_definitions(-DCONFIG_CHIP_SUN8IW21 -DCONFIG_CHIP_GIC)
 
 # Options
 
