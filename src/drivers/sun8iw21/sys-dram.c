@@ -597,6 +597,62 @@ static void mctl_com_init(dram_para_t *para) {
     }
 }
 
+static const uint8_t ac_remapping_tables[][22] = {
+        /* No Remap */
+        [0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /* V853 DDR3 */
+        [1] = {0x5, 0x13, 0x4, 0xF, 0xC, 0x3, 0xD, 0xE, 0x1, 0xA, 0x16,
+               0x14, 0x11, 0x10, 0x6, 0x8, 0x7, 0x9, 0x15, 0x2, 0xB, 0x12},
+};
+
+/*
+ * This routine chooses one of several remapping tables for 22 lines.
+ * It is unclear which lines are being remapped. It seems to pick
+ * table cfg7 for the Nezha board.
+ */
+static void mctl_phy_ac_remapping(dram_para_t *para) {
+    const uint8_t *cfg;
+    uint32_t fuse, val;
+
+    /*
+   * Only DDR2 and DDR3 Support Remap
+   */
+    if (para->dram_type != SUNXI_DRAM_TYPE_DDR2 &&
+        para->dram_type != SUNXI_DRAM_TYPE_DDR3)
+        return;
+
+    fuse = (readl(SYS_SID_BASE + SYS_EFUSE_REG) & 0xf00) >> 8;
+    printk(LOG_LEVEL_DEBUG, "DDR efuse: 0x%x\n", fuse);
+
+    if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
+        return;
+    } else {
+        cfg = ac_remapping_tables[1];
+    }
+
+    val = (cfg[1] << 10) | (32 * cfg[0]) | 1 | (cfg[2] << 15) | (cfg[3] << 20) |
+          (cfg[4] << 25);
+    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
+    val = (cfg[7] << 10) | (32 * cfg[6]) | cfg[5] | (cfg[8] << 15) |
+          (cfg[9] << 20) | (cfg[10] << 25);
+    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP1));
+    val = (cfg[13] << 10) | (32 * cfg[12]) | cfg[11] | (cfg[14] << 15) |
+          (cfg[15] << 20);
+    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP2));
+    val = (cfg[18] << 10) | (32 * cfg[17]) | cfg[16] | (cfg[19] << 15) |
+          (cfg[20] << 20) | (cfg[21] << 25);
+    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
+
+    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP0 = 0x%x\n",
+           readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
+    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP1 = 0x%x\n",
+           readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
+    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP2 = 0x%x\n",
+           readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
+    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP3 = 0x%x\n",
+           readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
+}
+
 // Init the controller channel. The key part is placing commands in the main
 // command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
 //
@@ -928,6 +984,8 @@ static int mctl_core_init(dram_para_t *para) {
     mctl_vrefzq_init(para);
 
     mctl_com_init(para);
+
+    mctl_phy_ac_remapping(para);
 
     mctl_set_timing_params(para);
 
