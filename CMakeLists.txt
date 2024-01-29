@@ -89,7 +89,7 @@ else ()
 endif ()
 
 # Define the project name and languages used
-project(SyterKit VERSION 0.2.3 LANGUAGES C CXX ASM)
+project(SyterKit VERSION 0.2.4 LANGUAGES C CXX ASM)
 
 # Include other CMake modules
 include(cmake/add_syterkit_app.cmake)
