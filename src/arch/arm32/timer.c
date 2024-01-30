@@ -14,7 +14,7 @@
 static uint32_t init_timestamp = 0;
 
 void set_timer_count() {
-    init_timestamp = time_ms();
+    init_timestamp = (uint32_t) time_us();
 }
 
 /*
