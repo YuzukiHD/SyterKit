@@ -1,29 +1,22 @@
-# SyterKit Common 
+# MYC-LT527核心板及开发板
 
-## start.S
+![image](https://github.com/YuzukiHD/SyterKit/assets/12003087/823c85ba-3f7a-4e8d-82ec-4c875b6e28a4)
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
+Myir debuts the whole T527, octa-core A55 enabled edge computing
+Full digital T527 processor, octa-core A55, efficient edge computing;
 
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
+Powerful multimedia functions: G57 GPU, 4K codec VPU, HiFi4 DSP, support 4~6 cameras;
 
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
+Support a variety of display interfaces: HDMI, DP, LVDS, MIPI-DSI and RGB parallel port, support 4K+1080P dual display;
 
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
+Rich communication interface: 2*GE, 2*CAN, PCIE/USB3.0, 2*USB2.0, 10*UART, 30*PWM, 4*SPI, 9*I2C, etc.
 
-4. Clear BSS Section: It zeroes out variables in the BSS section.
+T527 is the real industrial grade -40℃~+85℃;
 
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
+Ultra-compact LGA 381pin package.
 
-6. Set Timer Frequency: It sets the timer frequency to 24M.
+Applications: high-performance industrial robots, display and control machines, vehicle terminals, edge smart boxes
 
-7. Call the main Function: It jumps to the main function to execute the main logic.
+## T527 Brief
 
-## eabi_compat.c
-
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
-
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
-
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
-
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
+![image](https://github.com/YuzukiHD/SyterKit/assets/12003087/131a2982-c605-46f6-91cf-57d117b9a614)
