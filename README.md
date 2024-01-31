@@ -1,7 +1,6 @@
 # SyterKit
 
-![SyterKit LOGO](https://github.com/YuzukiHD/SyterKit/assets/12003087/c2d910b3-0483-4276-a52a-d7b90ccc84f0)
-
+![SyterKit LOGO_Thin](https://github.com/YuzukiHD/SyterKit/assets/12003087/e6135860-1a6a-4cb4-b0f6-71af8eca1509)
 
 SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 3s boot time).
 
