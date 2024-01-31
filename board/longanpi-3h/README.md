@@ -1,29 +1,31 @@
-# SyterKit Common 
+- Longanpi 3H
 
-## start.S
+Longan Pi 3H 是基于 Longan Module 3H 核心板的 ARM Linux 开发板，以 H618 (Quad core ARM Cortex-A53@1.5Ghz , 64-bit) 为主控核心，板载最大 4GB 64bit LPDDR4，支持 HDMI 4K 显示输出。支持千兆网口，板载 wifi6/BT。
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
-
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
-
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
-
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
-
-4. Clear BSS Section: It zeroes out variables in the BSS section.
-
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
-
-6. Set Timer Frequency: It sets the timer frequency to 24M.
-
-7. Call the main Function: It jumps to the main function to execute the main logic.
-
-## eabi_compat.c
-
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
-
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
-
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
-
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
+二、基础参数#
+主控参数
+主控芯片	H618
+CPU 处理器	ARM Cortex-A53@1.5Ghz
+· 每核支持 32 KB L1 I-cache + 32 KB L1 D-cache
+· 四核共享 1MB L2 Cache
+图形处理器	Arm Mali-G31
+· OpenCL 2.0
+· OpenGL ES 1.0/2.0/3.2
+· Vulkan 1.1
+视频解码器	· 支持 H.264 BP/MP/ HP@L4.2 解码，最大 4K 分辨率
+· 支持 AVS2 JiZhun 10bit 解码，最大 4K 分辨率
+· 解码性能最大 4K@60fps
+视频编码器	· 支持 H.264 BP/MP/HP 编码，最大 4K 分辨率
+· 仅支持 I 帧和 P 帧
+· 编码性能最大 4K@25fps
+硬件特性
+RAM	· 1/2/4 GB 64bits LPDDR4
+存储	· eMMC: 可选空贴、32G
+· 支持 TF 卡
+以太网	· 千兆以太网接口
+USB	· 2 x USBA Host
+· 1 x USBC OTG
+显示接口	· 1 x 标准 HDMI 接口
+GPIO	· UART
+· IIC
+· SPI
