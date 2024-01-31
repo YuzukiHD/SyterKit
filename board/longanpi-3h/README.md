@@ -1,4 +1,5 @@
-Translate into English
+# Longan Pi 3H 
+
 ## Introduction
 Longan Pi 3H is an ARM Linux development board based on Longan Module 3H core board, with H618 (Quad core ARM Cortex-A53@1.5Ghz, 64-bit) as the main control core. Onboard maximum 4GB 64bit LPDDR4, support HDMI 4K display output. Support Gigabit network port, onboard wifi6/BT.
 
