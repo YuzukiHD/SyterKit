@@ -24,6 +24,11 @@ static int cmd_echo(int argc, const char **argv) {
     return 0;
 }
 
+static int cmd_ls(int argc, const char **argv) {
+    uart_puts("SyterKit not Support ls command. No file system mounted\n");
+    return 0;
+}
+
 static int cmd_hexdump(int argc, const char **argv) {
     if (argc != 3) {
         printk(LOG_LEVEL_MUTE, "Usage: hexdump [address] [length]\n");
@@ -142,6 +147,7 @@ const msh_command_entry msh_builtin_commands[] = {
         {"hexdump", cmd_hexdump, "dumps memory region in hex", "Usage: hexdump [address] [length]\n"},
         {"read32", cmd_read32, "read 32-bits value from device reg", "Usage: read32 [address]\n"},
         {"write32", cmd_write32, "write 32-bits value to device reg", "Usage: write32 [address] [data]\n"},
+        {"ls", cmd_ls, "linux nerd compatible", "Usage: ls\n"},
         msh_command_end,
 };
 
