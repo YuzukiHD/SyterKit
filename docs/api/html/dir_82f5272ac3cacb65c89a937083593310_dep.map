@@ -1,0 +1,14 @@
+<map id="board/lt527x" name="board/lt527x">
+<area shape="rect" id="node2" href="dir_223ba0ba8c2482ea3c49ca3652aabeb0.html" title="hello_world" alt="" coords="479,63,577,111"/>
+<area shape="rect" id="node7" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="269,159,341,207"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000051_000163.html" title="2" alt="" coords="356,171,366,185"/>
+<area shape="rect" id="node3" href="dir_ec92e87b9844d938b8541f63a939baad.html" title="init_dram" alt="" coords="371,63,455,111"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000052_000163.html" title="4" alt="" coords="346,146,356,160"/>
+<area shape="rect" id="node4" href="dir_9956b3bdae8fa74fb41271f65201f879.html" title="payloads" alt="" coords="266,63,347,111"/>
+<area shape="rect" id="node5" href="dir_b9e0b4375ff8e2bda698246639d336aa.html" title="smhc_test" alt="" coords="153,63,242,111"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000053_000163.html" title="10" alt="" coords="262,133,279,148"/>
+<area shape="rect" id="node6" href="dir_e43545bbf1f3ccbc982a7fbaea3b5316.html" title="syter_boot" alt="" coords="37,63,128,111"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000054_000163.html" title="17" alt="" coords="244,155,262,169"/>
+<area shape="rect" id="clust2" href="dir_82f5272ac3cacb65c89a937083593310.html" alt="" coords="27,52,684,121"/>
+<area shape="rect" id="clust1" href="dir_7149141a7e3af1ee95dfb0598e371427.html" title="board" alt="" coords="16,16,695,132"/>
+</map>

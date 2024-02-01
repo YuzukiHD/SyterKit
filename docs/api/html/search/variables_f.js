@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['o_5fsize_9853',['o_size',['../df/d70/structalloc__struct__t.html#a218db135a6f15af5ad792838d254bdfc',1,'alloc_struct_t']]],
+  ['obj_9854',['obj',['../df/dab/structFIL.html#ad95b6e85106673b0d7a1855da4d264f4',1,'FIL::obj()'],['../dd/dfe/structDIR.html#a8fa2dfd8198410ea92a98281d982cf44',1,'DIR::obj()']]],
+  ['objsize_9855',['objsize',['../d0/db8/structFFOBJID.html#a83c51ba99687054f0cc653b45f195268',1,'FFOBJID']]],
+  ['ocr_9856',['ocr',['../da/d06/structsdmmc__t.html#a4f9299037b7bf53c19829521ee299970',1,'sdmmc_t']]],
+  ['odly_9857',['odly',['../d6/d3e/structsdhci__t.html#ac74cb1a9d2b454db1af46f90dfeaaffc',1,'sdhci_t::odly()'],['../d6/d3e/structsdhci__t.html#ac2b53e6564e27fd2ffc2b8a94e0f3338',1,'sdhci_t::odly()']]],
+  ['of_5fdest_9858',['of_dest',['../df/dbb/structimage__info__t.html#a449044f0ef729534c03b0347c559e4a1',1,'image_info_t::of_dest()'],['../df/dbb/structimage__info__t.html#ae9514da853580785b1158d16ba0840b5',1,'image_info_t::of_dest()']]],
+  ['of_5ffilename_9859',['of_filename',['../df/dbb/structimage__info__t.html#a5f9ae69092e35a1ddf0ad22a294399d5',1,'image_info_t']]],
+  ['of_5foffset_9860',['of_offset',['../df/dbb/structimage__info__t.html#a3eec9a276e05fad38b1ff7753f6b1e14',1,'image_info_t::of_offset()'],['../df/dbb/structimage__info__t.html#a0b7fd24997af7ce72bffc8f5629665d0',1,'image_info_t::of_offset()']]],
+  ['off_5fdt_5fstrings_9861',['off_dt_strings',['../d8/d85/structfdt__header.html#a4eb64188c5a8fecc9eb0acac4a0ac002',1,'fdt_header']]],
+  ['off_5fdt_5fstruct_9862',['off_dt_struct',['../d8/d85/structfdt__header.html#a350b29eb98ea9ab1df4379e19d9f6a08',1,'fdt_header']]],
+  ['off_5fmem_5frsvmap_9863',['off_mem_rsvmap',['../d8/d85/structfdt__header.html#aceb981c230e48eea58d9501b2a52fada',1,'fdt_header']]],
+  ['offset_9864',['offset',['../d1/dd6/structsid__section__t.html#a3f93af676493a0fe897e1006174e880d',1,'sid_section_t::offset()'],['../df/dbb/structimage__info__t.html#a8d7b1f8f974655ee599e59d970699b59',1,'image_info_t::offset()'],['../df/dbb/structimage__info__t.html#a4fcdf765d0ea04ac2a38bbfb735139cb',1,'image_info_t::offset()']]],
+  ['oled_5fgram_9865',['OLED_GRAM',['../d0/d86/yuzukilizard_2i2c__oled_2oled_8c.html#ae2148ad22b818b7d89f56349634c6da8',1,'OLED_GRAM():&#160;oled.c'],['../db/dbe/tinyvision_2i2c__oled_2oled_8c.html#ae2148ad22b818b7d89f56349634c6da8',1,'OLED_GRAM():&#160;oled.c'],['../de/d49/project-yosemite_2i2c__oled_2oled_8c.html#ae2148ad22b818b7d89f56349634c6da8',1,'OLED_GRAM():&#160;oled.c'],['../d4/d28/dongshanpi-aict_2i2c__oled_2oled_8c.html#ae2148ad22b818b7d89f56349634c6da8',1,'OLED_GRAM():&#160;oled.c']]],
+  ['online_9866',['online',['../df/db8/structsdmmc__pdata__t.html#acd3cbcb0744cddd4eb18b76818942be0',1,'sdmmc_pdata_t']]],
+  ['os_5fversion_9867',['os_version',['../dc/d00/bimage_8c.html#adbf4d9ec28ab63919c52a69ddc02930a',1,'os_version():&#160;bimage.c'],['../df/da8/structlinux__bimage__header.html#abfcfe6f8fad5968b32b42e23bde92b14',1,'linux_bimage_header::os_version()']]],
+  ['out_9868',['out',['../d4/dbf/structparam__s.html#a79a41a37c44aec50f5eb1f5cca447ca1',1,'param_s']]],
+  ['out_5fdeq_9869',['out_deq',['../dd/dc9/structtm__mdlbin__t.html#ac6640f080aceba5b7f647db62cc9ae77',1,'tm_mdlbin_t']]],
+  ['out_5fdims_9870',['out_dims',['../d6/d6d/structtml__head__t.html#ab59ca9e84a87a74884c921fd01b58011',1,'tml_head_t::out_dims()'],['../dd/dc9/structtm__mdlbin__t.html#aae5073967d7cc6a421847695ac21ef0a',1,'tm_mdlbin_t::out_dims()']]],
+  ['out_5foft_9871',['out_oft',['../d6/d6d/structtml__head__t.html#ab8a092564078cab185b546e5f75de73a',1,'tml_head_t']]],
+  ['out_5fs_9872',['out_s',['../d6/d6d/structtml__head__t.html#a477fabed5d8d99ae041f99ccdc43ff16',1,'tml_head_t']]],
+  ['out_5fzp_9873',['out_zp',['../d6/d6d/structtml__head__t.html#a20bde9e3b7630932afb977271572e0bb',1,'tml_head_t']]],
+  ['output_5fcnt_9874',['output_cnt',['../dd/dc9/structtm__mdlbin__t.html#a93b6ddcbdfc9ece56e5ac3c86a3d1e8b',1,'tm_mdlbin_t']]],
+  ['own_9875',['own',['../d7/d74/structsdhci__idma__desc__t.html#a1b9439eb3ece33f9461fb4af191d2871',1,'sdhci_idma_desc_t']]]
+];

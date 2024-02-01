@@ -1,0 +1,20 @@
+var searchData=
+[
+  ['sdhci_5fcmd_5ft_8232',['sdhci_cmd_t',['../d6/dea/structsdhci__cmd__t.html',1,'']]],
+  ['sdhci_5fdata_5ft_8233',['sdhci_data_t',['../d0/d5f/structsdhci__data__t.html',1,'']]],
+  ['sdhci_5fidma_5fdesc_5ft_8234',['sdhci_idma_desc_t',['../d7/d74/structsdhci__idma__desc__t.html',1,'']]],
+  ['sdhci_5freg_5ft_8235',['sdhci_reg_t',['../d5/d5a/structsdhci__reg__t.html',1,'']]],
+  ['sdhci_5ft_8236',['sdhci_t',['../d6/d3e/structsdhci__t.html',1,'']]],
+  ['sdmmc_5fpdata_5ft_8237',['sdmmc_pdata_t',['../df/db8/structsdmmc__pdata__t.html',1,'']]],
+  ['sdmmc_5ft_8238',['sdmmc_t',['../da/d06/structsdmmc__t.html',1,'']]],
+  ['sid_5fsection_5ft_8239',['sid_section_t',['../d1/dd6/structsid__section__t.html',1,'']]],
+  ['spi_5fnand_5finfo_5ft_8240',['spi_nand_info_t',['../d9/d4d/structspi__nand__info__t.html',1,'']]],
+  ['spinlock_5ft_8241',['spinlock_t',['../d9/dda/structspinlock__t.html',1,'']]],
+  ['sunxi_5fi2c_5ft_8242',['sunxi_i2c_t',['../da/dd2/structsunxi__i2c__t.html',1,'']]],
+  ['sunxi_5fserial_5ft_8243',['sunxi_serial_t',['../dd/d79/structsunxi__serial__t.html',1,'']]],
+  ['sunxi_5fspi_5ft_8244',['sunxi_spi_t',['../d3/d64/structsunxi__spi__t.html',1,'']]],
+  ['sunxi_5ftwi_5freg_8245',['sunxi_twi_reg',['../d7/d0b/structsunxi__twi__reg.html',1,'']]],
+  ['sunxi_5fubuf_8246',['sunxi_ubuf',['../df/df3/structsunxi__ubuf.html',1,'']]],
+  ['sunxi_5fudc_8247',['sunxi_udc',['../d9/dc1/structsunxi__udc.html',1,'']]],
+  ['sunxi_5fusb_5fsetup_5freq_5fs_8248',['sunxi_usb_setup_req_s',['../d1/d82/structsunxi__usb__setup__req__s.html',1,'']]]
+];

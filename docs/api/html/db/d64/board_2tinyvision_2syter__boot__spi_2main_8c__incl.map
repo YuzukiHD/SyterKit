@@ -1,0 +1,41 @@
+<map id="board/tinyvision/syter_boot_spi/main.c" name="board/tinyvision/syter_boot_spi/main.c">
+<area shape="rect" id="node1" title=" " alt="" coords="1139,5,1303,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="1669,393,1752,420"/>
+<area shape="rect" id="node3" title=" " alt="" coords="1017,393,1092,420"/>
+<area shape="rect" id="node4" title=" " alt="" coords="431,393,502,420"/>
+<area shape="rect" id="node5" title=" " alt="" coords="1687,543,1758,569"/>
+<area shape="rect" id="node6" title=" " alt="" coords="707,95,781,121"/>
+<area shape="rect" id="node7" href="$d7/d7f/log_8h.html" title=" " alt="" coords="1143,319,1198,345"/>
+<area shape="rect" id="node13" href="$d2/df1/mmu_8h.html" title=" " alt="" coords="402,169,470,196"/>
+<area shape="rect" id="node18" href="$dc/d54/common_8h.html" title=" " alt="" coords="589,319,680,345"/>
+<area shape="rect" id="node19" href="$d5/d2e/jmp_8h.html" title=" " alt="" coords="1159,95,1217,121"/>
+<area shape="rect" id="node20" href="$d6/d08/image__loader_8h.html" title=" " alt="" coords="443,319,565,345"/>
+<area shape="rect" id="node21" title=" " alt="" coords="1293,95,1387,121"/>
+<area shape="rect" id="node22" href="$d6/daf/sys-sdcard_8h.html" title=" " alt="" coords="1417,244,1521,271"/>
+<area shape="rect" id="node25" title=" " alt="" coords="1463,95,1543,121"/>
+<area shape="rect" id="node26" href="$dd/dc0/sys-spi_8h.html" title=" " alt="" coords="1809,169,1889,196"/>
+<area shape="rect" id="node29" href="$dc/dd0/sys-dma_8h.html" title=" " alt="" coords="975,244,1065,271"/>
+<area shape="rect" id="node31" href="$dd/d93/sys-spi-nand_8h.html" title=" " alt="" coords="1868,95,1985,121"/>
+<area shape="rect" id="node32" href="$d1/dcf/libfdt_8h.html" title=" " alt="" coords="2545,244,2613,271"/>
+<area shape="rect" id="node38" href="$da/db9/ff_8h.html" title=" " alt="" coords="2872,95,2915,121"/>
+<area shape="rect" id="node8" title=" " alt="" coords="1449,393,1517,420"/>
+<area shape="rect" id="node9" title=" " alt="" coords="1227,393,1314,420"/>
+<area shape="rect" id="node10" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="1117,393,1203,420"/>
+<area shape="rect" id="node11" title=" " alt="" coords="1572,468,1647,495"/>
+<area shape="rect" id="node12" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="1301,468,1371,495"/>
+<area shape="rect" id="node14" href="$df/ddb/arm32_2timer_8h.html" title=" " alt="" coords="707,244,775,271"/>
+<area shape="rect" id="node15" href="$d8/df5/include_2arch_2arm32_2io_8h.html" title=" " alt="" coords="857,319,903,345"/>
+<area shape="rect" id="node17" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="246,319,317,345"/>
+<area shape="rect" id="node16" title=" " alt="" coords="1338,393,1425,420"/>
+<area shape="rect" id="node23" title=" " alt="" coords="1749,319,1795,345"/>
+<area shape="rect" id="node24" href="$d1/d4b/sys-sdhci_8h.html" title=" " alt="" coords="1375,319,1470,345"/>
+<area shape="rect" id="node27" href="$d2/dae/sys-clk_8h.html" title=" " alt="" coords="2117,244,2197,271"/>
+<area shape="rect" id="node28" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="1843,244,1933,271"/>
+<area shape="rect" id="node30" title=" " alt="" coords="927,319,1017,345"/>
+<area shape="rect" id="node33" href="$d2/d70/libfdt__env_8h.html" title=" " alt="" coords="2529,319,2628,345"/>
+<area shape="rect" id="node37" href="$d8/d66/fdt_8h.html" title=" " alt="" coords="2653,319,2705,345"/>
+<area shape="rect" id="node34" title=" " alt="" coords="2530,393,2601,420"/>
+<area shape="rect" id="node35" title=" " alt="" coords="2625,393,2695,420"/>
+<area shape="rect" id="node36" title=" " alt="" coords="2719,393,2790,420"/>
+<area shape="rect" id="node39" href="$de/d51/ffconf_8h.html" title=" " alt="" coords="2866,169,2937,196"/>
+</map>
