@@ -676,7 +676,7 @@ int sunxi_usb_init() {
     reg_val |= 0x01 << USBC_PHY_CTL_VBUSVLDEXT;
     writel(reg_val, SUNXI_USB0_BASE + USBC_REG_o_PHYCTL);
 
-    // sunxi_usb_dump(SUNXI_USB0_BASE, 0);
+    // sunxi_usb_dump(SUNXI_USB0_BASE, 0); // for debug
 
     return 0;
 
