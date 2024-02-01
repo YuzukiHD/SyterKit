@@ -14,7 +14,6 @@
 
 #include <sys-clk.h>
 
-#include "gic.h"
 #include "usb.h"
 #include "usb_controller.h"
 #include "usb_defs.h"
