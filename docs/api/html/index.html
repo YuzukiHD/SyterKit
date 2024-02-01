@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SyterKit: Main Page</title>
+<title>SyterKit: SyterKit</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,6 +20,7 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
    &#160;<span id="projectnumber">0.2.4</span>
@@ -62,11 +63,97 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">SyterKit Documentation</div>  </div>
+<div class="title">SyterKit </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md_README"></a> <img src="https://github.com/YuzukiHD/SyterKit/assets/12003087/e6135860-1a6a-4cb4-b0f6-71af8eca1509" alt="SyterKit LOGO_Thin" class="inline"/></p>
+<p>SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality, which enables it to replace U-Boot for fast booting (standard Linux 6.7 mainline boot time of 1.02s, significantly faster than traditional U-Boot's 3s boot time).</p>
+<h1><a class="anchor" id="autotoc_md41"></a>
+Support list</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Board   </th><th class="markdownTableHeadNone">Manufacturer   </th><th class="markdownTableHeadNone">Platform   </th><th class="markdownTableHeadNone">Spec   </th><th class="markdownTableHeadNone">Details   </th><th class="markdownTableHeadNone">Config    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a href="https://github.com/YuzukiHD/Yuzukilizard">Yuzukilizard</a>   </td><td class="markdownTableBodyNone">YuzukiHD   </td><td class="markdownTableBodyNone">V851s   </td><td class="markdownTableBodyNone">Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/yuzukilizard">board/yuzukilizard</a>   </td><td class="markdownTableBodyNone"><code>yuzukilizard.cmake</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a href="https://github.com/YuzukiHD/TinyVision">TinyVision</a>   </td><td class="markdownTableBodyNone">YuzukiHD   </td><td class="markdownTableBodyNone">V851se   </td><td class="markdownTableBodyNone">Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/tinyvision">board/tinyvision</a>   </td><td class="markdownTableBodyNone"><code>tinyvision.cmake</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">100ask-t113s3   </td><td class="markdownTableBodyNone">100ask   </td><td class="markdownTableBodyNone">T113-S3   </td><td class="markdownTableBodyNone">Dual-Core Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/100ask-t113s3">board/100ask-t113s3</a>   </td><td class="markdownTableBodyNone"><code>100ask-t113s3.cmake</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">100ask-t113i   </td><td class="markdownTableBodyNone">100ask   </td><td class="markdownTableBodyNone">T113-I   </td><td class="markdownTableBodyNone">Dual-Core Cortex A7 + C906 RISC-V   </td><td class="markdownTableBodyNone"><a href="board/100ask-t113i">board/100ask-t113i</a>   </td><td class="markdownTableBodyNone"><code>100ask-t113i.cmake</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">dongshanpi-aict   </td><td class="markdownTableBodyNone">100ask   </td><td class="markdownTableBodyNone">V853   </td><td class="markdownTableBodyNone">Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/dongshanpi-aict">board/dongshanpi-aict</a>   </td><td class="markdownTableBodyNone"><code>dongshanpi-aict.cmake</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">project-yosemite   </td><td class="markdownTableBodyNone">YuzukiHD   </td><td class="markdownTableBodyNone">V853   </td><td class="markdownTableBodyNone">Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/project-yosemite">board/project-yosemite</a>   </td><td class="markdownTableBodyNone"><code>project-yosemite.cmake</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">100ask ROS   </td><td class="markdownTableBodyNone">100ask   </td><td class="markdownTableBodyNone">R818   </td><td class="markdownTableBodyNone">Quad-Core Cortex A53   </td><td class="markdownTableBodyNone"><a href="board/100ask-ros">board/100ask-ros</a>   </td><td class="markdownTableBodyNone"><code>100ask-ros.cmake</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a href="https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html">longanpi-3h</a>   </td><td class="markdownTableBodyNone">sipeed   </td><td class="markdownTableBodyNone">H618   </td><td class="markdownTableBodyNone">Quad-Core Cortex A53   </td><td class="markdownTableBodyNone"><a href="board/longanpi-3h">board/longanpi-3h</a>   </td><td class="markdownTableBodyNone"><code>longanpi-3h.cmake</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">longanpi-4b   </td><td class="markdownTableBodyNone">sipeed   </td><td class="markdownTableBodyNone">T527   </td><td class="markdownTableBodyNone">Octa-Core Cortex A55   </td><td class="markdownTableBodyNone"><a href="board/longanpi-4b">board/longanpi-4b</a>   </td><td class="markdownTableBodyNone"><code>longanpi-4b.cmake</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a href="https://www.myir.cn/shows/134/70.html">LT527X</a>   </td><td class="markdownTableBodyNone">myir-tech   </td><td class="markdownTableBodyNone">T527   </td><td class="markdownTableBodyNone">Octa-Core Cortex A55   </td><td class="markdownTableBodyNone"><a href="board/lt527x">board/lt527x</a>   </td><td class="markdownTableBodyNone"><code>lt527x.cmake</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">BingPi-M1   </td><td class="markdownTableBodyNone">BingPi   </td><td class="markdownTableBodyNone">V3s   </td><td class="markdownTableBodyNone">Cortex A7   </td><td class="markdownTableBodyNone"><a href="board/bingpi-m1">board/bingpi-m1</a>   </td><td class="markdownTableBodyNone"><code>bingpi-m1.cmake</code>   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md42"></a>
+Getting Started</h1>
+<h2><a class="anchor" id="autotoc_md43"></a>
+Building SyterKit From Scratch</h2>
+<p>Building SyterKit is a straightforward process that only requires setting up the environment for compilation on a Linux operating system. The software packages required by SyterKit include:</p>
+<ul>
+<li><code>gcc-arm-none-eabi</code></li>
+<li><code>CMake</code></li>
+</ul>
+<p>For commonly used Ubuntu systems, they can be installed using the following command:</p>
+<div class="fragment"><div class="line">sudo apt-get update</div>
+<div class="line">sudo apt-get install gcc-arm-none-eabi cmake build-essential -y</div>
+</div><!-- fragment --><p>Then create a folder to store the compiled output files and navigate to it:</p>
+<div class="fragment"><div class="line">mkdir build</div>
+<div class="line">cd build</div>
+</div><!-- fragment --><p>Finally, run the following commands to compile SyterKit:</p>
+<div class="fragment"><div class="line">cmake -DCMAKE_BOARD_FILE={Board_config_file.cmake} ..</div>
+<div class="line">make</div>
+</div><!-- fragment --><p>For example, if you want to compile SyterKit for the TinyVision platform, you need the following command:</p>
+<div class="fragment"><div class="line">cmake -DCMAKE_BOARD_FILE=tinyvision.cmake ..</div>
+<div class="line">make</div>
+</div><!-- fragment --><p>The compiled executable files will be located in <code>build/board/{board_name}/{app_name}</code>.</p>
+<p>The SyterKit project will compile two versions: firmware ending with <code>.elf</code> is for USB booting and requires bootloading by PC-side software, while firmware ending with <code>.bin</code> is for flashing and can be written into storage devices such as TF cards and SPI NAND.</p>
+<ul>
+<li>For SD Card, You need to flash the <code>xxx_card.bin</code></li>
+<li>For SPI NAND/SPI NOR, You need to flash the <code>xxx_spi.bin</code></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md44"></a>
+Creating TF Card Boot Firmware</h2>
+<p>After build the firmware, you can flash it into the TF card. For the V851s platform, you can write it to either an 8K offset or a 128K offset. Generally, if the TF card uses MBR format, write it with an 8K offset. If it uses GPT format, write it with a 128K offset. Assuming <code>/dev/sdb</code> is the target TF card, you can use the following command to write it with an 8K offset:</p>
+<div class="fragment"><div class="line">sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=8</div>
+</div><!-- fragment --><p>If it is a GPT partition table, you need to write it with a 128K offset:</p>
+<div class="fragment"><div class="line">sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md45"></a>
+Creating the Firmware for SPI NAND</h3>
+<p>For SPI NAND, we need to create the firmware for SPI NAND by writing SyterKit to the corresponding positions:</p>
+<div class="fragment"><div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k</div>
+<div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32</div>
+<div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64</div>
+</div><!-- fragment --><p>You can also include the Linux kernel and device tree in the firmware:</p>
+<div class="fragment"><div class="line">dd if=sunxi.dtb of=spi.img bs=2k seek=128     # DTB on page 128</div>
+<div class="line">dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256</div>
+</div><!-- fragment --><p>Use the xfel tool to flash the created firmware into SPI NAND:</p>
+<div class="fragment"><div class="line">xfel spinand write 0x0 spi.img</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md46"></a>
+Creating the Firmware for SPI NOR</h3>
+<p>For SPI NOR, we need to create the firmware for SPI NOR by writing SyterKit to the corresponding positions:</p>
+<div class="fragment"><div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k</div>
+<div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32</div>
+<div class="line">dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64</div>
+</div><!-- fragment --><p>You can also include the Linux kernel and device tree in the firmware:</p>
+<div class="fragment"><div class="line">dd if=sunxi.dtb of=spi.img bs=2k seek=128     # DTB on page 128</div>
+<div class="line">dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256</div>
+</div><!-- fragment --><p>Use the xfel tool to flash the created firmware into SPI NOR:</p>
+<div class="fragment"><div class="line">xfel spinor write 0x0 spi.img</div>
+</div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
