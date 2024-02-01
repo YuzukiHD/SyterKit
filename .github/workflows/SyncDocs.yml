@@ -1,0 +1,36 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Sync Documents
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: 📂 Sync Files
+        uses: SamKirkland/web-deploy@v1
+        with:
+          target-server: ${{ secrets.FTP_SERVER_IP }}
+          remote-user: ${{ secrets.FTP_SERVER_USERNAME }}
+          private-ssh-key: ${{ secrets.FTP_SERVER_PASSWD }}
+          destination-path: /www/wwwroot/syterkit.yuzukihd.top/
+          source-path: ${{ github.workspace }}/docs/
+          rsync-options: --archive -O --no-perms --compress --human-readable --progress --delete-after --exclude=.git* --exclude=.git/ --exclude=.gitignore
