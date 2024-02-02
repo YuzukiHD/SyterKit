@@ -35,7 +35,7 @@
 #include <sys-sdhci.h>
 #include <uart.h>
 
-#define CONFIG_BL31_FILENAME "monitor.fex"
+#define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
 #define CONFIG_DTB_FILENAME "sunxi.fex"
@@ -46,7 +46,7 @@
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-#define CONFIG_DEFAULT_BOOTDELAY 3
+#define CONFIG_DEFAULT_BOOTDELAY 0
 
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
