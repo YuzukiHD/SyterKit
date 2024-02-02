@@ -65,7 +65,7 @@ extern void sunxi_nsi_init();
 
 typedef struct atf_head {
     uint32_t jump_instruction; /* jumping to real code */
-    uint8_t magic[8];          /* ="u-boot" */
+    uint8_t magic[8];          /* magic */
     uint32_t scp_base;         /* scp openrisc core bin */
     uint32_t next_boot_base;   /* next boot base for uboot */
     uint32_t nos_base;         /* ARM SVC RUNOS base */
@@ -247,7 +247,7 @@ msh_define_help(boot, "boot to linux", "Usage: boot\n");
 int cmd_boot(int argc, const char **argv) {
     atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
-    atf_head->nos_base = CONFIG_KERNEL_LOAD_ADDR;
+    atf_head->next_boot_base = CONFIG_KERNEL_LOAD_ADDR;
     atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
 
     atf_head->platform[0] = 0x00;
@@ -259,7 +259,7 @@ int cmd_boot(int argc, const char **argv) {
     atf_head->platform[6] = 0x00;
     atf_head->platform[7] = 0x00;
 
-    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->next_boot_base);
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     clean_syterkit_data();
@@ -328,7 +328,7 @@ int main(void) {
     pmu_axp2202_dump(&i2c_pmu);
     pmu_axp1530_dump(&i2c_pmu);
 
-    // enable_sram_a3();
+    enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
