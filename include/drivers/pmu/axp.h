@@ -73,6 +73,14 @@ int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name);
 int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);
 
 /**
+ * Set the dual phase function on the AXP1530 PMU.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @return 0 if successful, -1 if an error occurred.
+ */
+int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev);
+
+/**
  * Dump the register values of the AXP1530 PMU.
  *
  * @param i2c_dev Pointer to the I2C device structure.

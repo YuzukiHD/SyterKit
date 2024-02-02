@@ -95,6 +95,31 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
     return 0;
 }
 
+int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev) {
+    uint8_t axp_val;
+    int ret;
+
+    if (ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val)) {
+        printk(LOG_LEVEL_WARNING, "PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
+        return -1;
+    }
+
+    axp_val &= 0xCF;
+    switch (axp_val) {
+        case AXP323_CHIP_ID: /* Only AXP323 Support Dual phase */
+            break;
+        default:
+            printk(LOG_LEVEL_INFO, "PMU: PMU not support dual phase\n");
+            return -1;
+    }
+
+    sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E);
+    sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_DCDC_MODE_CTRL2, 0x02);
+    sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, 0x22);
+
+    return 0;
+}
+
 int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
     uint8_t reg_value, i;
     axp_contrl_info *p_item = NULL;

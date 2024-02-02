@@ -123,3 +123,75 @@ void set_rpio_power_mode(void) {
         printk(LOG_LEVEL_DEBUG, "PL gpio voltage : 3.3V \n");
     }
 }
+
+int sunxi_nsi_init(void) {
+    /* IOMMU prio 3 */
+    writel(0x1, 0x02021418);
+    writel(0xf, 0x02021414);
+    /* DE prio 2 */
+    writel(0x1, 0x02021a18);
+    writel(0xa, 0x02021a14);
+    /* VE R prio 2 */
+    writel(0x1, 0x02021618);
+    writel(0xa, 0x02021614);
+    /* VE RW prio 2 */
+    writel(0x1, 0x02021818);
+    writel(0xa, 0x02021814);
+    /* ISP prio 2 */
+    writel(0x1, 0x02020c18);
+    writel(0xa, 0x02020c14);
+    /* CSI prio 2 */
+    writel(0x1, 0x02021c18);
+    writel(0xa, 0x02021c14);
+    /* NPU prio 2 */
+    writel(0x1, 0x02020a18);
+    writel(0xa, 0x02020a14);
+
+    /* close ra0 autogating */
+    writel(0x0, 0x02023c00);
+    /* close ta autogating */
+    writel(0x0, 0x02023e00);
+    /* close pcie autogating */
+    writel(0x0, 0x02020600);
+    return 0;
+}
+
+void enable_sram_a3() {
+    uint32_t reg_val;
+
+    /* De-assert PUBSRAM Clock and Gating */
+    reg_val = readl(RISCV_PUBSRAM_CFG_REG);
+    reg_val |= RISCV_PUBSRAM_RST;
+    reg_val |= RISCV_PUBSRAM_GATING;
+    writel(reg_val, RISCV_PUBSRAM_CFG_REG);
+
+    /* assert */
+    writel(0, RISCV_CFG_BGR_REG);
+}
+
+void show_chip() {
+    uint32_t chip_sid[4];
+    chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+    chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+    chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+    chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+    printk(LOG_LEVEL_INFO, "Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+
+    uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
+
+    switch (chip_markid_sid) {
+        case 0x5f30:
+            printk(LOG_LEVEL_INFO, "Chip type = T527M00X0DCH");
+            break;
+        case 0x5500:
+            printk(LOG_LEVEL_INFO, "Chip type = MR527M02X0D00");
+            break;
+        default:
+            printk(LOG_LEVEL_INFO, "Chip type = UNKNOW");
+            break;
+    }
+
+    uint32_t version = read32(SUNXI_SYSCTRL_BASE + 0x24) & 0x7;
+    printk(LOG_LEVEL_MUTE, "\tChip Version = %x \n", version);
+}
