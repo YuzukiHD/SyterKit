@@ -86,7 +86,7 @@ static int cmd_read32(int argc, const char **argv) {
     uint32_t ptr = (uint32_t) simple_strtoul(argv[1], NULL, 16);
     uint32_t value = read32(ptr);
 
-    printk(LOG_LEVEL_MUTE, "Value at address %s: %08X\n", ptr, value);
+    printk(LOG_LEVEL_MUTE, "Value at address 0x%08x: 0x%08X\n", ptr, value);
 
     return 0;
 }
