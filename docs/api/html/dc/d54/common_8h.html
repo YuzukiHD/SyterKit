@@ -75,7 +75,7 @@ $(function() {
 <div class="title">common.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -85,10 +85,12 @@ Include dependency graph for common.h:</div>
 <div class="center"><img src="../../d5/d4e/common_8h__incl.png" border="0" usemap="#ainclude_2common_8h" alt=""/></div>
 <map name="ainclude_2common_8h" id="ainclude_2common_8h">
 <area shape="rect" title=" " alt="" coords="126,5,269,32"/>
-<area shape="rect" title=" " alt="" coords="5,80,88,107"/>
+<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,80,88,107"/>
 <area shape="rect" title=" " alt="" coords="112,80,187,107"/>
 <area shape="rect" title=" " alt="" coords="211,80,282,107"/>
 <area shape="rect" title=" " alt="" coords="306,80,377,107"/>
+<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,155,82,181"/>
+<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,229,82,256"/>
 </map>
 </div>
 </div>
@@ -100,12 +102,8 @@ Macros</h2></td></tr>
 <tr class="separator:a70c57aae3eb654e205459b4362c8089a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72f2fad91c6891412d81671f5e021772"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#a72f2fad91c6891412d81671f5e021772">ALIGN</a>(size,  align)&#160;&#160;&#160;(((size) + (align) -1) &amp; (~((align) -1)))</td></tr>
 <tr class="separator:a72f2fad91c6891412d81671f5e021772"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a4a4855d36e1557a050fbc1488a6150"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#a0a4a4855d36e1557a050fbc1488a6150">OF_ALIGN</a>(size)&#160;&#160;&#160;<a class="el" href="../../d2/dd0/utils_2bl33_2include_2linkage_8h.html#ae4ff5a07c6ff43ed11a3887ef7d524f2">ALIGN</a>(size, 4)</td></tr>
+<tr class="memitem:a0a4a4855d36e1557a050fbc1488a6150"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#a0a4a4855d36e1557a050fbc1488a6150">OF_ALIGN</a>(size)&#160;&#160;&#160;<a class="el" href="../../dc/d5f/utils_2bl33__t527_2include_2linkage_8h.html#ae4ff5a07c6ff43ed11a3887ef7d524f2">ALIGN</a>(size, 4)</td></tr>
 <tr class="separator:a0a4a4855d36e1557a050fbc1488a6150"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6afabdc09a49a433ee19d8a9486056d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#ac6afabdc09a49a433ee19d8a9486056d">min</a>(a,  b)&#160;&#160;&#160;(((a) &lt; (b)) ? (a) : (b))</td></tr>
-<tr class="separator:ac6afabdc09a49a433ee19d8a9486056d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affe776513b24d84b39af8ab0930fef7f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#affe776513b24d84b39af8ab0930fef7f">max</a>(a,  b)&#160;&#160;&#160;(((a) &gt; (b)) ? (a) : (b))</td></tr>
-<tr class="separator:affe776513b24d84b39af8ab0930fef7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a070d2ce7b6bb7e5c05602aa8c308d0c4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:a070d2ce7b6bb7e5c05602aa8c308d0c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa93f0eb578d23995850d61f7d61c55c1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d54/common_8h.html#aa93f0eb578d23995850d61f7d61c55c1">FALSE</a>&#160;&#160;&#160;0</td></tr>
@@ -185,62 +183,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="affe776513b24d84b39af8ab0930fef7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#affe776513b24d84b39af8ab0930fef7f">&#9670;&nbsp;</a></span>max</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define max</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">a, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">b&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;(((a) &gt; (b)) ? (a) : (b))</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ac6afabdc09a49a433ee19d8a9486056d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6afabdc09a49a433ee19d8a9486056d">&#9670;&nbsp;</a></span>min</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define min</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">a, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">b&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;(((a) &lt; (b)) ? (a) : (b))</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a070d2ce7b6bb7e5c05602aa8c308d0c4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a070d2ce7b6bb7e5c05602aa8c308d0c4">&#9670;&nbsp;</a></span>NULL</h2>
 
@@ -266,7 +208,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">size</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="../../d2/dd0/utils_2bl33_2include_2linkage_8h.html#ae4ff5a07c6ff43ed11a3887ef7d524f2">ALIGN</a>(size, 4)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../dc/d5f/utils_2bl33__t527_2include_2linkage_8h.html#ae4ff5a07c6ff43ed11a3887ef7d524f2">ALIGN</a>(size, 4)</td>
         </tr>
       </table>
 </div><div class="memdoc">

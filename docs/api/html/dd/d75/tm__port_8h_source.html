@@ -128,57 +128,56 @@ $(function() {
 <div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a78dafc49abbbb850e5533a892e743d68">   54</a></span>&#160;<span class="preprocessor">#define TM_DBGL() TM_PRINTF(&quot;###L%d\n&quot;</span>, __LINE__);</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#include &lt;sys/time.h&gt;</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#include &lt;time.h&gt;</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">   59</a></span>&#160;<span class="preprocessor">#define TM_GET_US() time_us();</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a07559d9905f5d1b53cfa9b525cc3b0a7">   61</a></span>&#160;<span class="preprocessor">#define TM_DBGT_INIT()        \</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">    uint32_t _start, _finish; \</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor">    float _time;              \</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">    _start = TM_GET_US();</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a425295e1085e68a5a509808389156657">   65</a></span>&#160;<span class="preprocessor">#define TM_DBGT_START() _start = TM_GET_US();</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a194594899170ad01e14742bda37a5b2e">   66</a></span>&#160;<span class="preprocessor">#define TM_DBGT(x)                                    \</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">    {                                                 \</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">        _finish = TM_GET_US();                        \</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">        _time = (float) (_finish - _start) / 1000.0;  \</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">        TM_PRINTF(&quot;===%s use %.3f ms\n&quot;</span>, (x), _time); \</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        _start = TM_GET_US();                         \</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#include &lt;timer.h&gt;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">   58</a></span>&#160;<span class="preprocessor">#define TM_GET_US() time_us();</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a07559d9905f5d1b53cfa9b525cc3b0a7">   60</a></span>&#160;<span class="preprocessor">#define TM_DBGT_INIT()        \</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">    uint32_t _start, _finish; \</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">    float _time;              \</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor">    _start = TM_GET_US();</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a425295e1085e68a5a509808389156657">   64</a></span>&#160;<span class="preprocessor">#define TM_DBGT_START() _start = TM_GET_US();</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a194594899170ad01e14742bda37a5b2e">   65</a></span>&#160;<span class="preprocessor">#define TM_DBGT(x)                                    \</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">    {                                                 \</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">        _finish = TM_GET_US();                        \</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">        _time = (float) (_finish - _start) / 1000.0;  \</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">        TM_PRINTF(&quot;===%s use %.3f ms\n&quot;</span>, (x), _time); \</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        _start = TM_GET_US();                         \</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    }</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">//need clock tick to make accurate statistics</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a15d80728155285df53337b326def9cb6">   76</a></span>&#160;<span class="preprocessor">#define TM_EN_PERF 0</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="preprocessor">#if TM_EN_PERF</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#define TM_GET_TICK(x) __ASM volatile(&quot;csrr %0, mcycle&quot;</span> \</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                      : &quot;=r&quot;(x));<span class="comment">//edit your self</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#define TM_TICK_PERUS (380)</span><span class="comment">//sysconf(_SC_CLK_TCK)/1000000)</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#define TM_PERF_REG(x) uint64_t x = 0;</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#define TM_PERF_EXTREG(x) extern uint64_t x;</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#define TM_PERF_INIT(x) uint64_t _##x##_t0, _##x##_t1;</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#define TM_PERF_START(x) TM_GET_TICK(_##x##_t0);</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor">#define TM_PERF_ADD(x)                  \</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">    {                                   \</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">        TM_GET_TICK(_##x##_t1);         \</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">        (x) += (_##x##_t1 - _##x##_t0); \</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">        TM_GET_TICK(_##x##_t0);         \</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">    };</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="preprocessor">#define TM_PERF_PRINT(x) TM_PRINTF(&quot;PERF &quot;</span> #x &quot;: %ld us\r\n&quot;, (x) / TM_TICK_PERUS)</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a0cd410528594eb70d917593ee77c8402">   95</a></span>&#160;<span class="preprocessor">#define TM_GET_TICK(x)</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a84bb236e12f4994864a5b138a75f4b9d">   96</a></span>&#160;<span class="preprocessor">#define TM_TICK_PERUS</span></div>
-<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a02cdede3a125a7c98d5e047d7b472d7c">   97</a></span>&#160;<span class="preprocessor">#define TM_PERF_REG(x)</span></div>
-<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a0da21701aab095f5a161f37597ae7a75">   98</a></span>&#160;<span class="preprocessor">#define TM_PERF_EXTREG(x)</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#ac591f12a6ccd9976785f9a0080b88c1f">   99</a></span>&#160;<span class="preprocessor">#define TM_PERF_INIT(x)</span></div>
-<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#aa0e50302b9d75c6ee862112ad4b4eaef">  100</a></span>&#160;<span class="preprocessor">#define TM_PERF_START(x)</span></div>
-<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#ae4711e8294298bcab3a52a582e7ad4e0">  101</a></span>&#160;<span class="preprocessor">#define TM_PERF_ADD(x)</span></div>
-<div class="line"><a name="l00102"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#aeeef6961fe963662acce8619d7aa56eb">  102</a></span>&#160;<span class="preprocessor">#define TM_PERF_PRINT(x)</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">//need clock tick to make accurate statistics</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a15d80728155285df53337b326def9cb6">   75</a></span>&#160;<span class="preprocessor">#define TM_EN_PERF 0</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#if TM_EN_PERF</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="preprocessor">#define TM_GET_TICK(x) __ASM volatile(&quot;csrr %0, mcycle&quot;</span> \</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                                      : &quot;=r&quot;(x));<span class="comment">//edit your self</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#define TM_TICK_PERUS (380)</span><span class="comment">//sysconf(_SC_CLK_TCK)/1000000)</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#define TM_PERF_REG(x) uint64_t x = 0;</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#define TM_PERF_EXTREG(x) extern uint64_t x;</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#define TM_PERF_INIT(x) uint64_t _##x##_t0, _##x##_t1;</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#define TM_PERF_START(x) TM_GET_TICK(_##x##_t0);</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#define TM_PERF_ADD(x)                  \</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor">    {                                   \</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">        TM_GET_TICK(_##x##_t1);         \</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">        (x) += (_##x##_t1 - _##x##_t0); \</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">        TM_GET_TICK(_##x##_t0);         \</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">    };</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#define TM_PERF_PRINT(x) TM_PRINTF(&quot;PERF &quot;</span> #x &quot;: %ld us\r\n&quot;, (x) / TM_TICK_PERUS)</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a0cd410528594eb70d917593ee77c8402">   94</a></span>&#160;<span class="preprocessor">#define TM_GET_TICK(x)</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a84bb236e12f4994864a5b138a75f4b9d">   95</a></span>&#160;<span class="preprocessor">#define TM_TICK_PERUS</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a02cdede3a125a7c98d5e047d7b472d7c">   96</a></span>&#160;<span class="preprocessor">#define TM_PERF_REG(x)</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#a0da21701aab095f5a161f37597ae7a75">   97</a></span>&#160;<span class="preprocessor">#define TM_PERF_EXTREG(x)</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#ac591f12a6ccd9976785f9a0080b88c1f">   98</a></span>&#160;<span class="preprocessor">#define TM_PERF_INIT(x)</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#aa0e50302b9d75c6ee862112ad4b4eaef">   99</a></span>&#160;<span class="preprocessor">#define TM_PERF_START(x)</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#ae4711e8294298bcab3a52a582e7ad4e0">  100</a></span>&#160;<span class="preprocessor">#define TM_PERF_ADD(x)</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="../../dd/d75/tm__port_8h.html#aeeef6961fe963662acce8619d7aa56eb">  101</a></span>&#160;<span class="preprocessor">#define TM_PERF_PRINT(x)</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="alog_8h_html"><div class="ttname"><a href="../../d7/d7f/log_8h.html">log.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

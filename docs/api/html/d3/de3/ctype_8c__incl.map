@@ -1,8 +1,10 @@
 <map id="src/ctype.c" name="src/ctype.c">
 <area shape="rect" id="node1" title=" " alt="" coords="199,5,291,32"/>
 <area shape="rect" id="node2" href="$d7/d0d/ctype_8h.html" title=" " alt="" coords="5,80,76,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="101,80,183,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="207,80,282,107"/>
-<area shape="rect" id="node5" title=" " alt="" coords="307,80,377,107"/>
-<area shape="rect" id="node6" title=" " alt="" coords="401,80,472,107"/>
+<area shape="rect" id="node3" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="101,80,183,107"/>
+<area shape="rect" id="node6" title=" " alt="" coords="207,80,282,107"/>
+<area shape="rect" id="node7" title=" " alt="" coords="307,80,377,107"/>
+<area shape="rect" id="node8" title=" " alt="" coords="401,80,472,107"/>
+<area shape="rect" id="node4" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="107,155,177,181"/>
+<area shape="rect" id="node5" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="107,229,177,256"/>
 </map>

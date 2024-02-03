@@ -2,12 +2,14 @@
 <area shape="rect" id="node1" title=" " alt="" coords="245,5,396,47"/>
 <area shape="rect" id="node2" title=" " alt="" coords="5,169,52,196"/>
 <area shape="rect" id="node3" title=" " alt="" coords="183,169,258,196"/>
-<area shape="rect" id="node4" title=" " alt="" coords="77,169,159,196"/>
-<area shape="rect" id="node5" title=" " alt="" coords="282,169,357,196"/>
-<area shape="rect" id="node6" title=" " alt="" coords="712,169,783,196"/>
-<area shape="rect" id="node7" title=" " alt="" coords="807,169,877,196"/>
-<area shape="rect" id="node8" href="$d2/da5/sys-i2c_8h.html" title=" " alt="" coords="242,95,322,121"/>
-<area shape="rect" id="node9" href="$d0/d27/reg-axp_8h.html" title=" " alt="" coords="397,95,481,121"/>
-<area shape="rect" id="node10" href="$dd/d38/reg-axp1530_8h.html" title=" " alt="" coords="381,169,522,196"/>
-<area shape="rect" id="node11" href="$d7/d50/reg-axp2202_8h.html" title=" " alt="" coords="546,169,687,196"/>
+<area shape="rect" id="node4" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="77,169,159,196"/>
+<area shape="rect" id="node7" title=" " alt="" coords="282,169,357,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="712,169,783,196"/>
+<area shape="rect" id="node9" title=" " alt="" coords="807,169,877,196"/>
+<area shape="rect" id="node10" href="$d2/da5/sys-i2c_8h.html" title=" " alt="" coords="242,95,322,121"/>
+<area shape="rect" id="node11" href="$d0/d27/reg-axp_8h.html" title=" " alt="" coords="397,95,481,121"/>
+<area shape="rect" id="node5" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="83,244,153,271"/>
+<area shape="rect" id="node6" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="83,319,153,345"/>
+<area shape="rect" id="node12" href="$dd/d38/reg-axp1530_8h.html" title=" " alt="" coords="381,169,522,196"/>
+<area shape="rect" id="node13" href="$d7/d50/reg-axp2202_8h.html" title=" " alt="" coords="546,169,687,196"/>
 </map>

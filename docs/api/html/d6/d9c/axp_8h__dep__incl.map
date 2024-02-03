@@ -1,10 +1,11 @@
 <map id="include/drivers/pmu/axp.h" name="include/drivers/pmu/axp.h">
-<area shape="rect" id="node1" title=" " alt="" coords="613,5,763,47"/>
+<area shape="rect" id="node1" title=" " alt="" coords="709,5,859,47"/>
 <area shape="rect" id="node2" href="$d3/d67/board_2100ask-ros_2init__dram_2main_8c.html" title=" " alt="" coords="5,95,165,136"/>
 <area shape="rect" id="node3" href="$d2/d1f/board_2longanpi-3h_2init__dram_2main_8c.html" title=" " alt="" coords="189,95,355,136"/>
 <area shape="rect" id="node4" href="$da/dfc/board_2longanpi-3h_2tinymaix_2main_8c.html" title=" " alt="" coords="379,95,581,136"/>
 <area shape="rect" id="node5" href="$d8/d35/board_2longanpi-4b_2init__dram_2main_8c.html" title=" " alt="" coords="605,95,771,136"/>
 <area shape="rect" id="node6" href="$df/dfe/board_2lt527x_2init__dram_2main_8c.html" title=" " alt="" coords="795,95,965,136"/>
-<area shape="rect" id="node7" href="$de/d35/axp1530_8c.html" title=" " alt="" coords="989,102,1184,129"/>
-<area shape="rect" id="node8" href="$de/d59/axp2202_8c.html" title=" " alt="" coords="1208,102,1403,129"/>
+<area shape="rect" id="node7" href="$dc/d33/board_2lt527x_2syter__boot_2main_8c.html" title=" " alt="" coords="989,95,1131,136"/>
+<area shape="rect" id="node8" href="$de/d35/axp1530_8c.html" title=" " alt="" coords="1155,102,1349,129"/>
+<area shape="rect" id="node9" href="$de/d59/axp2202_8c.html" title=" " alt="" coords="1373,102,1568,129"/>
 </map>

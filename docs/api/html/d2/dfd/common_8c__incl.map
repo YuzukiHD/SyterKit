@@ -3,13 +3,15 @@
 <area shape="rect" id="node2" title=" " alt="" coords="165,80,238,107"/>
 <area shape="rect" id="node3" title=" " alt="" coords="262,80,309,107"/>
 <area shape="rect" id="node4" href="$d7/d7f/log_8h.html" title=" " alt="" coords="333,80,387,107"/>
-<area shape="rect" id="node9" title=" " alt="" coords="579,155,647,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="5,155,88,181"/>
-<area shape="rect" id="node6" title=" " alt="" coords="112,155,187,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="211,155,282,181"/>
-<area shape="rect" id="node8" title=" " alt="" coords="381,304,451,331"/>
-<area shape="rect" id="node10" title=" " alt="" coords="358,155,445,181"/>
-<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="469,155,555,181"/>
-<area shape="rect" id="node12" title=" " alt="" coords="377,229,452,256"/>
-<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="477,229,547,256"/>
+<area shape="rect" id="node11" title=" " alt="" coords="579,155,647,181"/>
+<area shape="rect" id="node5" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,155,88,181"/>
+<area shape="rect" id="node8" title=" " alt="" coords="112,155,187,181"/>
+<area shape="rect" id="node9" title=" " alt="" coords="211,155,282,181"/>
+<area shape="rect" id="node10" title=" " alt="" coords="381,304,451,331"/>
+<area shape="rect" id="node12" title=" " alt="" coords="358,155,445,181"/>
+<area shape="rect" id="node13" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="469,155,555,181"/>
+<area shape="rect" id="node6" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,229,82,256"/>
+<area shape="rect" id="node7" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,304,82,331"/>
+<area shape="rect" id="node14" title=" " alt="" coords="377,229,452,256"/>
+<area shape="rect" id="node15" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="477,229,547,256"/>
 </map>
