@@ -1,6 +1,4 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-
-#include <stdio.h>
 #include <string.h>
 #include <sstdlib.h>
 
@@ -93,7 +91,7 @@ static int cmd_read32(int argc, const char **argv) {
 
 static int cmd_write32(int argc, const char **argv) {
     if (argc < 3) {
-        printf("Usage: write32 [address] [data]\n");
+        printk(LOG_LEVEL_MUTE, "Usage: write32 [address] [data]\n");
         return -1;
     }
     uint32_t addr = (uint32_t) simple_strtoul(argv[1], NULL, 16);

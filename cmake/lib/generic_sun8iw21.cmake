@@ -22,9 +22,9 @@ set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 # Configure compiler flags based on ENABLE_HARDFP option
 if(ENABLE_HARDFP)
-    set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
+    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
 else()
-    set(CMAKE_COMMON_FLAGS "-nostdlib -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
+    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
 endif()
 
 # Disable specific warning flags for C and C++ compilers

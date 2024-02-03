@@ -9,16 +9,13 @@
 #include <types.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 #define ALIGN(size, align) (((size) + (align) -1) & (~((align) -1)))
 #define OF_ALIGN(size) ALIGN(size, 4)
-
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 #ifndef NULL
 #define NULL 0
@@ -46,6 +43,6 @@ void show_banner(void);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __COMMON_H__

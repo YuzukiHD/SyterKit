@@ -3,7 +3,6 @@
 #ifndef __SYS_GPIO_H__
 #define __SYS_GPIO_H__
 
-#include <inttypes.h>
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
