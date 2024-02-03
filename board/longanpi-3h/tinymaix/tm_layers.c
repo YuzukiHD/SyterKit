@@ -10,8 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 // It is default O0 implement
-#include "float.h"
-#include "math.h"
+#include "limits.h"
 #include "tinymaix.h"
 
 #if TM_OPT_LEVEL == TM_OPT0
