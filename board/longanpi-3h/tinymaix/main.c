@@ -2,9 +2,8 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
-%08x
 #include <types.h>
+#include <stdint.h>
 
 #include <log.h>
 
