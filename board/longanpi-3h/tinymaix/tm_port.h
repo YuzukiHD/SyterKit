@@ -55,7 +55,7 @@ limitations under the License.
 
 /******************************* DBG TIME CONFIG  ************************************/
 #include <sys/time.h>
-#include <time.h>
+%08x
 #define TM_GET_US() time_us();
 
 #define TM_DBGT_INIT()        \
