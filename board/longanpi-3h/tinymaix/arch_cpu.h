@@ -12,8 +12,6 @@ limitations under the License.
 
 #include "stdlib.h"
 #include "stdint.h"
-#include "math.h"
-#include "float.h"
 #include "tinymaix.h"
 
 #if (TM_MDL_TYPE != TM_MDL_FP8_143) && (TM_MDL_TYPE != TM_MDL_FP8_152)

@@ -20,8 +20,6 @@ mdwconv
 conv
 */
 
-#include "float.h"
-#include "math.h"
 #include "tinymaix.h"
 
 #if TM_OPT_LEVEL == TM_OPT1
