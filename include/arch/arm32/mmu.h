@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-
-
 #include "timer.h"
 
 struct arm_regs_t {
