@@ -15,7 +15,7 @@
 #include <sys-rtc.h>
 #include <reg-ncat.h>
 
-#define INIT_DRAM_BIN_BASE 0x4c000
+#define INIT_DRAM_BIN_BASE 0x07280000
 
 #define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
 #define RTC_FEL_INDEX 2
