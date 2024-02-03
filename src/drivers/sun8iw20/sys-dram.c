@@ -1292,7 +1292,7 @@ int init_DRAM(int type, dram_para_t *para) {
         udelay(10);
         setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 0));
         udelay(20);
-        printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%" PRIx32 "\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+        printk(LOG_LEVEL_DEBUG, "ZQ value = 0x%08x\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
     }
 
     dram_voltage_set(para);
@@ -1310,7 +1310,7 @@ int init_DRAM(int type, dram_para_t *para) {
     if ((rc & 0x44) == 0)
         printk(LOG_LEVEL_DEBUG, "DRAM ODT off\n");
     else
-        printk(LOG_LEVEL_DEBUG, "DRAM ODT value: 0x%" PRIx32 "\n", rc);
+        printk(LOG_LEVEL_DEBUG, "DRAM ODT value: 0x%08x\n", rc);
 
     /* Init core, final run */
     if (mctl_core_init(para) == 0) {
