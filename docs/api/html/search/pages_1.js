@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['myc_2dlt527核心板及开发板_16358',['MYC-LT527核心板及开发板',['../d5/d2a/md_board_lt527x_README.html',1,'']]]
+  ['longan_20pi_203h_16419',['Longan Pi 3H',['../d4/dfe/md_board_longanpi_3h_README.html',1,'']]]
 ];

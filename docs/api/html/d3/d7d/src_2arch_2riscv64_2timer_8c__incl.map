@@ -1,14 +1,16 @@
 <map id="src/arch/riscv64/timer.c" name="src/arch/riscv64/timer.c">
-<area shape="rect" id="node1" title=" " alt="" coords="277,5,450,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="281,5,454,32"/>
 <area shape="rect" id="node2" title=" " alt="" coords="5,80,52,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="147,229,222,256"/>
-<area shape="rect" id="node4" title=" " alt="" coords="127,155,210,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="234,155,309,181"/>
-<area shape="rect" id="node6" title=" " alt="" coords="607,155,677,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="423,304,493,331"/>
-<area shape="rect" id="node8" href="$d7/d7f/log_8h.html" title=" " alt="" coords="389,80,444,107"/>
-<area shape="rect" id="node9" title=" " alt="" coords="701,155,769,181"/>
-<area shape="rect" id="node10" title=" " alt="" coords="496,155,583,181"/>
-<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="333,155,420,181"/>
-<area shape="rect" id="node12" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="345,229,416,256"/>
+<area shape="rect" id="node3" title=" " alt="" coords="285,229,359,256"/>
+<area shape="rect" id="node4" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="127,155,210,181"/>
+<area shape="rect" id="node7" title=" " alt="" coords="234,155,309,181"/>
+<area shape="rect" id="node8" title=" " alt="" coords="607,155,677,181"/>
+<area shape="rect" id="node9" title=" " alt="" coords="533,304,604,331"/>
+<area shape="rect" id="node10" href="$d7/d7f/log_8h.html" title=" " alt="" coords="399,80,453,107"/>
+<area shape="rect" id="node11" title=" " alt="" coords="701,155,769,181"/>
+<area shape="rect" id="node5" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="133,229,204,256"/>
+<area shape="rect" id="node6" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="133,304,204,331"/>
+<area shape="rect" id="node12" title=" " alt="" coords="444,155,531,181"/>
+<area shape="rect" id="node13" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="333,155,420,181"/>
+<area shape="rect" id="node14" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="449,229,520,256"/>
 </map>

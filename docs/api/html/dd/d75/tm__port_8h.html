@@ -76,24 +76,22 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="../../d7/d7f/log_8h_source.html">log.h</a>&gt;</code><br />
 <code>#include &lt;timer.h&gt;</code><br />
-<code>#include &lt;sys/time.h&gt;</code><br />
-<code>#include &lt;time.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for tm_port.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d02/tm__port_8h__incl.png" border="0" usemap="#aboard_2longanpi-3h_2tinymaix_2tm__port_8h" alt=""/></div>
 <map name="aboard_2longanpi-3h_2tinymaix_2tm__port_8h" id="aboard_2longanpi-3h_2tinymaix_2tm__port_8h">
-<area shape="rect" title=" " alt="" coords="459,5,661,47"/>
+<area shape="rect" title=" " alt="" coords="291,5,493,47"/>
 <area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="333,95,387,121"/>
 <area shape="rect" title=" " alt="" coords="579,169,647,196"/>
-<area shape="rect" title=" " alt="" coords="556,95,647,121"/>
-<area shape="rect" title=" " alt="" coords="671,95,735,121"/>
-<area shape="rect" title=" " alt="" coords="5,169,88,196"/>
+<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,169,88,196"/>
 <area shape="rect" title=" " alt="" coords="112,169,187,196"/>
 <area shape="rect" title=" " alt="" coords="211,169,282,196"/>
 <area shape="rect" title=" " alt="" coords="381,319,451,345"/>
 <area shape="rect" title=" " alt="" coords="358,169,445,196"/>
 <area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="469,169,555,196"/>
+<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,244,82,271"/>
+<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,319,82,345"/>
 <area shape="rect" title=" " alt="" coords="377,244,452,271"/>
 <area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="477,244,547,271"/>
 </map>
@@ -167,13 +165,13 @@ Macros</h2></td></tr>
 <tr class="separator:a85564b7043706027ce7982bbff168979"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9a46431f542611b09efc02fdb43703e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#af9a46431f542611b09efc02fdb43703e">tm_free</a>(x)&#160;&#160;&#160;<a class="el" href="../../d0/da8/smalloc_8c.html#a8dfffe7aee3dac4db7e28c44f43afc54">sfree</a>(x)</td></tr>
 <tr class="separator:af9a46431f542611b09efc02fdb43703e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1abac194fb06848e5d09b84dc659bd93"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a1abac194fb06848e5d09b84dc659bd93">TM_PRINTF</a>(...)&#160;&#160;&#160;<a class="el" href="../../d7/df8/log_8c.html#a47506d86289e83be73b08be97c2b42ad">printk</a>(<a class="el" href="../../d7/d7f/log_8h.html#a94798fdadfbf49a7c658ace669a1d310a45f9716d8fd3b0d7594b694bceea6a3e">LOG_LEVEL_MUTE</a>, __VA_ARGS__)</td></tr>
+<tr class="memitem:a1abac194fb06848e5d09b84dc659bd93"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a1abac194fb06848e5d09b84dc659bd93">TM_PRINTF</a>(...)&#160;&#160;&#160;<a class="el" href="../../d7/df8/log_8c.html#a47506d86289e83be73b08be97c2b42ad">printk</a>(<a class="el" href="../../d7/d7f/log_8h.html#ae4d5251432e1a9e6803c0240cc492e18a45f9716d8fd3b0d7594b694bceea6a3e">LOG_LEVEL_MUTE</a>, __VA_ARGS__)</td></tr>
 <tr class="separator:a1abac194fb06848e5d09b84dc659bd93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac34da6c2162c80240aa2f603c4a816be"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#ac34da6c2162c80240aa2f603c4a816be">TM_DBG</a>(...)</td></tr>
 <tr class="separator:ac34da6c2162c80240aa2f603c4a816be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78dafc49abbbb850e5533a892e743d68"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a78dafc49abbbb850e5533a892e743d68">TM_DBGL</a>()&#160;&#160;&#160;<a class="el" href="../../dd/d75/tm__port_8h.html#a1abac194fb06848e5d09b84dc659bd93">TM_PRINTF</a>(&quot;###L%d\n&quot;, __LINE__);</td></tr>
 <tr class="separator:a78dafc49abbbb850e5533a892e743d68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29fb1bf0a9ba14072ae3abc841d2ea6e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">TM_GET_US</a>()&#160;&#160;&#160;<a class="el" href="../../d8/ddb/src_2arch_2riscv64_2timer_8c.html#a8c9f5ba63aabadf914f5dc427e3c5e38">time_us</a>();</td></tr>
+<tr class="memitem:a29fb1bf0a9ba14072ae3abc841d2ea6e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">TM_GET_US</a>()&#160;&#160;&#160;<a class="el" href="../../dd/d57/utils_2bl33__t527_2source_2timer_8c.html#a8c9f5ba63aabadf914f5dc427e3c5e38">time_us</a>();</td></tr>
 <tr class="separator:a29fb1bf0a9ba14072ae3abc841d2ea6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07559d9905f5d1b53cfa9b525cc3b0a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d75/tm__port_8h.html#a07559d9905f5d1b53cfa9b525cc3b0a7">TM_DBGT_INIT</a>()</td></tr>
 <tr class="separator:a07559d9905f5d1b53cfa9b525cc3b0a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -386,7 +384,7 @@ Macros</h2></td></tr>
 <div class="line">        TM_PRINTF(<span class="stringliteral">&quot;===%s use %.3f ms\n&quot;</span>, (x), _time); \</div>
 <div class="line">        _start = <a class="code" href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">TM_GET_US</a>();                         \</div>
 <div class="line">    }</div>
-<div class="ttc" id="atm__port_8h_html_a29fb1bf0a9ba14072ae3abc841d2ea6e"><div class="ttname"><a href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">TM_GET_US</a></div><div class="ttdeci">#define TM_GET_US()</div><div class="ttdef"><b>Definition:</b> tm_port.h:59</div></div>
+<div class="ttc" id="atm__port_8h_html_a29fb1bf0a9ba14072ae3abc841d2ea6e"><div class="ttname"><a href="../../dd/d75/tm__port_8h.html#a29fb1bf0a9ba14072ae3abc841d2ea6e">TM_GET_US</a></div><div class="ttdeci">#define TM_GET_US()</div><div class="ttdef"><b>Definition:</b> tm_port.h:58</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -516,7 +514,7 @@ Macros</h2></td></tr>
           <td class="memname">#define TM_GET_US</td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="../../d8/ddb/src_2arch_2riscv64_2timer_8c.html#a8c9f5ba63aabadf914f5dc427e3c5e38">time_us</a>();</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../dd/d57/utils_2bl33__t527_2source_2timer_8c.html#a8c9f5ba63aabadf914f5dc427e3c5e38">time_us</a>();</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -800,7 +798,7 @@ Macros</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="../../d7/df8/log_8c.html#a47506d86289e83be73b08be97c2b42ad">printk</a>(<a class="el" href="../../d7/d7f/log_8h.html#a94798fdadfbf49a7c658ace669a1d310a45f9716d8fd3b0d7594b694bceea6a3e">LOG_LEVEL_MUTE</a>, __VA_ARGS__)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../d7/df8/log_8c.html#a47506d86289e83be73b08be97c2b42ad">printk</a>(<a class="el" href="../../d7/d7f/log_8h.html#ae4d5251432e1a9e6803c0240cc492e18a45f9716d8fd3b0d7594b694bceea6a3e">LOG_LEVEL_MUTE</a>, __VA_ARGS__)</td>
         </tr>
       </table>
 </div><div class="memdoc">

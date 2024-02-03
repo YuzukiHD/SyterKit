@@ -1,19 +1,21 @@
 <map id="src/drivers/usb/usb_clk.c" name="src/drivers/usb/usb_clk.c">
-<area shape="rect" id="node1" title=" " alt="" coords="427,5,571,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="414,244,461,271"/>
-<area shape="rect" id="node3" title=" " alt="" coords="876,244,951,271"/>
-<area shape="rect" id="node4" title=" " alt="" coords="486,244,568,271"/>
-<area shape="rect" id="node5" title=" " alt="" coords="56,244,131,271"/>
-<area shape="rect" id="node6" title=" " alt="" coords="156,244,226,271"/>
-<area shape="rect" id="node7" title=" " alt="" coords="708,319,778,345"/>
-<area shape="rect" id="node8" href="$dc/d54/common_8h.html" title=" " alt="" coords="24,169,115,196"/>
-<area shape="rect" id="node9" href="$d7/d7f/log_8h.html" title=" " alt="" coords="505,95,560,121"/>
-<area shape="rect" id="node14" title=" " alt="" coords="942,95,1022,121"/>
-<area shape="rect" id="node15" href="$dc/de4/usb_8h.html" title=" " alt="" coords="329,95,386,121"/>
-<area shape="rect" id="node10" title=" " alt="" coords="526,169,594,196"/>
-<area shape="rect" id="node11" title=" " alt="" coords="618,169,705,196"/>
-<area shape="rect" id="node12" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="832,169,918,196"/>
-<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="781,244,852,271"/>
-<area shape="rect" id="node16" href="$d5/da3/reg-usb_8h.html" title=" " alt="" coords="292,169,400,196"/>
-<area shape="rect" id="node17" title=" " alt="" coords="302,244,390,271"/>
+<area shape="rect" id="node1" title=" " alt="" coords="432,5,576,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="775,244,822,271"/>
+<area shape="rect" id="node3" title=" " alt="" coords="847,244,921,271"/>
+<area shape="rect" id="node4" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,244,88,271"/>
+<area shape="rect" id="node7" title=" " alt="" coords="171,244,245,271"/>
+<area shape="rect" id="node8" title=" " alt="" coords="433,244,503,271"/>
+<area shape="rect" id="node9" title=" " alt="" coords="702,319,773,345"/>
+<area shape="rect" id="node10" href="$dc/d54/common_8h.html" title=" " alt="" coords="80,169,171,196"/>
+<area shape="rect" id="node11" href="$d7/d7f/log_8h.html" title=" " alt="" coords="510,95,565,121"/>
+<area shape="rect" id="node16" title=" " alt="" coords="968,95,1048,121"/>
+<area shape="rect" id="node17" href="$dc/de4/usb_8h.html" title=" " alt="" coords="334,95,391,121"/>
+<area shape="rect" id="node5" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,319,82,345"/>
+<area shape="rect" id="node6" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,393,82,420"/>
+<area shape="rect" id="node12" title=" " alt="" coords="531,169,599,196"/>
+<area shape="rect" id="node13" title=" " alt="" coords="623,169,710,196"/>
+<area shape="rect" id="node14" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="837,169,923,196"/>
+<area shape="rect" id="node15" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="946,244,1017,271"/>
+<area shape="rect" id="node18" href="$d5/da3/reg-usb_8h.html" title=" " alt="" coords="297,169,405,196"/>
+<area shape="rect" id="node19" title=" " alt="" coords="320,244,408,271"/>
 </map>

@@ -78,10 +78,9 @@ $(function() {
 <div class="title">sys-gpio.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;inttypes.h&gt;</code><br />
-<code>#include &lt;io.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -91,19 +90,20 @@ Include dependency graph for sys-gpio.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/de0/sys-gpio_8h__incl.png" border="0" usemap="#ainclude_2drivers_2sys-gpio_8h" alt=""/></div>
 <map name="ainclude_2drivers_2sys-gpio_8h" id="ainclude_2drivers_2sys-gpio_8h">
-<area shape="rect" title=" " alt="" coords="358,5,502,47"/>
-<area shape="rect" title=" " alt="" coords="5,95,92,121"/>
-<area shape="rect" title=" " alt="" coords="116,95,163,121"/>
-<area shape="rect" title=" " alt="" coords="310,244,385,271"/>
-<area shape="rect" title=" " alt="" coords="238,169,321,196"/>
-<area shape="rect" title=" " alt="" coords="710,169,785,196"/>
-<area shape="rect" title=" " alt="" coords="809,169,880,196"/>
-<area shape="rect" title=" " alt="" coords="637,319,708,345"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="504,95,559,121"/>
+<area shape="rect" title=" " alt="" coords="409,5,553,47"/>
+<area shape="rect" title=" " alt="" coords="5,95,52,121"/>
+<area shape="rect" title=" " alt="" coords="235,244,310,271"/>
+<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="127,169,210,196"/>
+<area shape="rect" title=" " alt="" coords="599,169,674,196"/>
+<area shape="rect" title=" " alt="" coords="699,169,769,196"/>
+<area shape="rect" title=" " alt="" coords="527,319,597,345"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="453,95,508,121"/>
+<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="133,244,204,271"/>
+<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="133,319,204,345"/>
 <area shape="rect" title=" " alt="" coords="345,169,413,196"/>
 <area shape="rect" title=" " alt="" coords="437,169,524,196"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="548,169,635,196"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="560,244,631,271"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="235,169,321,196"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="395,244,465,271"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -185,44 +185,44 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:abed82baf7f470b522273a3e37c24c600"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600aa1ea38ffc304a6c32480a65b5fec7302">GPIO_INPUT</a> = 0
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600aa248e73c1faee9c6f072fd91569cf516">GPIO_OUTPUT</a> = 1
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a6062360970874e786223814e97aa55b5">GPIO_PERIPH_MUX2</a> = 2
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a0c439f78800c4abffa7d9af3fa97fe76">GPIO_PERIPH_MUX3</a> = 3
-, <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a4e340ebdfe0629536b8d7ec2afb147ea">GPIO_PERIPH_MUX4</a> = 4
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600ab96a3467b3ad75461d424777597c35ae">GPIO_PERIPH_MUX5</a> = 5
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600acd14b8fb8a4f1c8a0220a6269d14a30e">GPIO_PERIPH_MUX6</a> = 6
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600aacb06e44c5a81e4b13e2cdf076373264">GPIO_PERIPH_MUX7</a> = 7
-, <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a> = 8
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a3e9371a2b1e2399d904848698bfb9e6a">GPIO_PERIPH_MUX14</a> = 14
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#abed82baf7f470b522273a3e37c24c600a744a267ba2a0371b4bf991dfa3f97832">GPIO_DISABLED</a> = 0xf
-<br />
- }</td></tr>
-<tr class="separator:abed82baf7f470b522273a3e37c24c600"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab04a0655cd1e3bcac5e8f48c18df1a57"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0d36b47f173bbc4bdced28d8a54fe4ac">GPIO_PORTA</a> = 0
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a258a8ca8e34cedcfba339d2463ae0c2a">GPIO_PORTB</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a3266325667899f8d82c0624c493fda51">GPIO_PORTC</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a4db7e328496cabe7a12e3879f7be8e39">GPIO_PORTD</a>
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57aa1ea38ffc304a6c32480a65b5fec7302">GPIO_INPUT</a> = 0
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57aa248e73c1faee9c6f072fd91569cf516">GPIO_OUTPUT</a> = 1
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a6062360970874e786223814e97aa55b5">GPIO_PERIPH_MUX2</a> = 2
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0c439f78800c4abffa7d9af3fa97fe76">GPIO_PERIPH_MUX3</a> = 3
 , <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a5dc105023eaf57bc980a4372ae35b94f">GPIO_PORTF</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57add0f532a6de2309badc195f0c3445461">GPIO_PORTG</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a637ffefd47a9b23a71e91070289107d5">GPIO_PORTH</a>
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a4e340ebdfe0629536b8d7ec2afb147ea">GPIO_PERIPH_MUX4</a> = 4
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ab96a3467b3ad75461d424777597c35ae">GPIO_PERIPH_MUX5</a> = 5
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57acd14b8fb8a4f1c8a0220a6269d14a30e">GPIO_PERIPH_MUX6</a> = 6
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57aacb06e44c5a81e4b13e2cdf076373264">GPIO_PERIPH_MUX7</a> = 7
 , <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a670ac34b1546b9e30ebb41f3b86341ab">GPIO_PORTI</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0b4151a4017108a91672483da53238fd">GPIO_PORTJ</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a25cc055258c15cf11d5493c459221fe8">GPIO_PORTK</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a37a40268d6768711b6ebea6871d81754">GPIO_PORTL</a>
-, <br />
-&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a4e770c9da9eb0bfa178d367f12812719">GPIO_PORTM</a>
-, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a9887a2c5a65da8487e38406ec1a7d925">GPIO_PORTN</a>
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a> = 8
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a3e9371a2b1e2399d904848698bfb9e6a">GPIO_PERIPH_MUX14</a> = 14
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a744a267ba2a0371b4bf991dfa3f97832">GPIO_DISABLED</a> = 0xf
 <br />
  }</td></tr>
 <tr class="separator:ab04a0655cd1e3bcac5e8f48c18df1a57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a385c44f6fb256e5716a2302a5b940388"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a0d36b47f173bbc4bdced28d8a54fe4ac">GPIO_PORTA</a> = 0
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a258a8ca8e34cedcfba339d2463ae0c2a">GPIO_PORTB</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a3266325667899f8d82c0624c493fda51">GPIO_PORTC</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a4db7e328496cabe7a12e3879f7be8e39">GPIO_PORTD</a>
+, <br />
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a5dc105023eaf57bc980a4372ae35b94f">GPIO_PORTF</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388add0f532a6de2309badc195f0c3445461">GPIO_PORTG</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a637ffefd47a9b23a71e91070289107d5">GPIO_PORTH</a>
+, <br />
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a670ac34b1546b9e30ebb41f3b86341ab">GPIO_PORTI</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a0b4151a4017108a91672483da53238fd">GPIO_PORTJ</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a25cc055258c15cf11d5493c459221fe8">GPIO_PORTK</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a37a40268d6768711b6ebea6871d81754">GPIO_PORTL</a>
+, <br />
+&#160;&#160;<a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a4e770c9da9eb0bfa178d367f12812719">GPIO_PORTM</a>
+, <a class="el" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388a9887a2c5a65da8487e38406ec1a7d925">GPIO_PORTN</a>
+<br />
+ }</td></tr>
+<tr class="separator:a385c44f6fb256e5716a2302a5b940388"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15988813fd44aa06a2300421601952f8"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/da9/sys-gpio_8h.html#a15988813fd44aa06a2300421601952f8">gpio_pull_t</a> { <a class="el" href="../../d3/da9/sys-gpio_8h.html#a15988813fd44aa06a2300421601952f8ae7d1b2a9078939dd744dd9a7cd61d9df">GPIO_PULL_UP</a> = 0
 , <a class="el" href="../../d3/da9/sys-gpio_8h.html#a15988813fd44aa06a2300421601952f8a93970a9b4ab92816371682f4e537a8e2">GPIO_PULL_DOWN</a> = 1
 , <a class="el" href="../../d3/da9/sys-gpio_8h.html#a15988813fd44aa06a2300421601952f8a30d0c1278ee190bdc8d66a3d95810728">GPIO_PULL_NONE</a> = 2
@@ -303,8 +303,8 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="abed82baf7f470b522273a3e37c24c600"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abed82baf7f470b522273a3e37c24c600">&#9670;&nbsp;</a></span>anonymous enum</h2>
+<a id="a385c44f6fb256e5716a2302a5b940388"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a385c44f6fb256e5716a2302a5b940388">&#9670;&nbsp;</a></span>anonymous enum</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -315,17 +315,20 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600aa1ea38ffc304a6c32480a65b5fec7302"></a>GPIO_INPUT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600aa248e73c1faee9c6f072fd91569cf516"></a>GPIO_OUTPUT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a6062360970874e786223814e97aa55b5"></a>GPIO_PERIPH_MUX2&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a0c439f78800c4abffa7d9af3fa97fe76"></a>GPIO_PERIPH_MUX3&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a4e340ebdfe0629536b8d7ec2afb147ea"></a>GPIO_PERIPH_MUX4&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600ab96a3467b3ad75461d424777597c35ae"></a>GPIO_PERIPH_MUX5&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600acd14b8fb8a4f1c8a0220a6269d14a30e"></a>GPIO_PERIPH_MUX6&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600aacb06e44c5a81e4b13e2cdf076373264"></a>GPIO_PERIPH_MUX7&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a0f0ec7074e2c88d45c1d15f3e219648b"></a>GPIO_PERIPH_MUX8&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a3e9371a2b1e2399d904848698bfb9e6a"></a>GPIO_PERIPH_MUX14&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abed82baf7f470b522273a3e37c24c600a744a267ba2a0371b4bf991dfa3f97832"></a>GPIO_DISABLED&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a0d36b47f173bbc4bdced28d8a54fe4ac"></a>GPIO_PORTA&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a258a8ca8e34cedcfba339d2463ae0c2a"></a>GPIO_PORTB&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a3266325667899f8d82c0624c493fda51"></a>GPIO_PORTC&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a4db7e328496cabe7a12e3879f7be8e39"></a>GPIO_PORTD&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3"></a>GPIO_PORTE&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a5dc105023eaf57bc980a4372ae35b94f"></a>GPIO_PORTF&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388add0f532a6de2309badc195f0c3445461"></a>GPIO_PORTG&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a637ffefd47a9b23a71e91070289107d5"></a>GPIO_PORTH&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a670ac34b1546b9e30ebb41f3b86341ab"></a>GPIO_PORTI&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a0b4151a4017108a91672483da53238fd"></a>GPIO_PORTJ&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a25cc055258c15cf11d5493c459221fe8"></a>GPIO_PORTK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a37a40268d6768711b6ebea6871d81754"></a>GPIO_PORTL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a4e770c9da9eb0bfa178d367f12812719"></a>GPIO_PORTM&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a385c44f6fb256e5716a2302a5b940388a9887a2c5a65da8487e38406ec1a7d925"></a>GPIO_PORTN&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -342,20 +345,17 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a0d36b47f173bbc4bdced28d8a54fe4ac"></a>GPIO_PORTA&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a258a8ca8e34cedcfba339d2463ae0c2a"></a>GPIO_PORTB&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a3266325667899f8d82c0624c493fda51"></a>GPIO_PORTC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a4db7e328496cabe7a12e3879f7be8e39"></a>GPIO_PORTD&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57ae00a95999282684e3c5d713937bc74e3"></a>GPIO_PORTE&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a5dc105023eaf57bc980a4372ae35b94f"></a>GPIO_PORTF&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57add0f532a6de2309badc195f0c3445461"></a>GPIO_PORTG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a637ffefd47a9b23a71e91070289107d5"></a>GPIO_PORTH&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a670ac34b1546b9e30ebb41f3b86341ab"></a>GPIO_PORTI&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a0b4151a4017108a91672483da53238fd"></a>GPIO_PORTJ&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a25cc055258c15cf11d5493c459221fe8"></a>GPIO_PORTK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a37a40268d6768711b6ebea6871d81754"></a>GPIO_PORTL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a4e770c9da9eb0bfa178d367f12812719"></a>GPIO_PORTM&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a9887a2c5a65da8487e38406ec1a7d925"></a>GPIO_PORTN&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57aa1ea38ffc304a6c32480a65b5fec7302"></a>GPIO_INPUT&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57aa248e73c1faee9c6f072fd91569cf516"></a>GPIO_OUTPUT&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a6062360970874e786223814e97aa55b5"></a>GPIO_PERIPH_MUX2&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a0c439f78800c4abffa7d9af3fa97fe76"></a>GPIO_PERIPH_MUX3&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a4e340ebdfe0629536b8d7ec2afb147ea"></a>GPIO_PERIPH_MUX4&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57ab96a3467b3ad75461d424777597c35ae"></a>GPIO_PERIPH_MUX5&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57acd14b8fb8a4f1c8a0220a6269d14a30e"></a>GPIO_PERIPH_MUX6&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57aacb06e44c5a81e4b13e2cdf076373264"></a>GPIO_PERIPH_MUX7&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b"></a>GPIO_PERIPH_MUX8&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a3e9371a2b1e2399d904848698bfb9e6a"></a>GPIO_PERIPH_MUX14&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab04a0655cd1e3bcac5e8f48c18df1a57a744a267ba2a0371b4bf991dfa3f97832"></a>GPIO_DISABLED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>

@@ -79,7 +79,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -94,26 +94,27 @@ Include dependency graph for sys-spi.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../dc/d58/sys-spi_8c__incl.png" border="0" usemap="#asrc_2drivers_2sys-spi_8c" alt=""/></div>
 <map name="asrc_2drivers_2sys-spi_8c" id="asrc_2drivers_2sys-spi_8c">
-<area shape="rect" title=" " alt="" coords="898,5,1049,32"/>
-<area shape="rect" title=" " alt="" coords="758,229,805,256"/>
-<area shape="rect" title=" " alt="" coords="1120,379,1195,405"/>
-<area shape="rect" title=" " alt="" coords="369,304,452,331"/>
-<area shape="rect" title=" " alt="" coords="809,304,884,331"/>
-<area shape="rect" title=" " alt="" coords="909,304,979,331"/>
-<area shape="rect" title=" " alt="" coords="514,453,585,480"/>
-<area shape="rect" title=" " alt="" coords="1449,304,1517,331"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="627,229,682,256"/>
-<area shape="rect" title=" " alt="" coords="1592,80,1672,107"/>
-<area shape="rect" href="../../dc/dd0/sys-dma_8h.html" title=" " alt="" coords="459,155,549,181"/>
-<area shape="rect" href="../../d3/da9/sys-gpio_8h.html" title=" " alt="" coords="982,155,1071,181"/>
-<area shape="rect" href="../../dd/dc0/sys-spi_8h.html" title=" " alt="" coords="867,80,947,107"/>
-<area shape="rect" title=" " alt="" coords="698,304,785,331"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="587,304,674,331"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="591,379,662,405"/>
-<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="461,229,552,256"/>
-<area shape="rect" title=" " alt="" coords="195,229,285,256"/>
-<area shape="rect" title=" " alt="" coords="1033,229,1119,256"/>
-<area shape="rect" href="../../d2/dae/sys-clk_8h.html" title=" " alt="" coords="776,155,856,181"/>
+<area shape="rect" title=" " alt="" coords="845,5,995,32"/>
+<area shape="rect" title=" " alt="" coords="939,229,986,256"/>
+<area shape="rect" title=" " alt="" coords="915,379,989,405"/>
+<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,304,88,331"/>
+<area shape="rect" title=" " alt="" coords="739,304,813,331"/>
+<area shape="rect" title=" " alt="" coords="370,304,441,331"/>
+<area shape="rect" title=" " alt="" coords="525,453,595,480"/>
+<area shape="rect" title=" " alt="" coords="1117,304,1185,331"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="606,229,661,256"/>
+<area shape="rect" title=" " alt="" coords="1059,80,1139,107"/>
+<area shape="rect" href="../../dc/dd0/sys-dma_8h.html" title=" " alt="" coords="389,155,480,181"/>
+<area shape="rect" href="../../d3/da9/sys-gpio_8h.html" title=" " alt="" coords="691,155,781,181"/>
+<area shape="rect" href="../../dd/dc0/sys-spi_8h.html" title=" " alt="" coords="804,80,884,107"/>
+<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,379,82,405"/>
+<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,453,82,480"/>
+<area shape="rect" title=" " alt="" coords="627,304,714,331"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="517,304,603,331"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="525,379,595,405"/>
+<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="339,229,429,256"/>
+<area shape="rect" title=" " alt="" coords="174,229,263,256"/>
+<area shape="rect" href="../../d2/dae/sys-clk_8h.html" title=" " alt="" coords="907,155,987,181"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -134,101 +135,101 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ab48899087cc647f0f791ed0c459adc53"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53af9fc21fd9a8a30968288ed52e99d47d4">SPI_GCR</a> = 0x04
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a2bca2d87f890fc1e12bd56191785d2b3">SPI_TCR</a> = 0x08
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a6c560ab7070e8855a4710296c4aa312f">SPI_IER</a> = 0x10
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a0f187f31f01e1cec984131f0a7bdee14">SPI_ISR</a> = 0x14
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53ab5ad0f3e13aa5ff50bc6babf4fa493f9">SPI_FCR</a> = 0x18
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a94f6b9c1c4df309b192d1c291e9a5496">SPI_FSR</a> = 0x1c
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a009eef742957414b005fe976f467af35">SPI_WCR</a> = 0x20
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53abdca3c7fa7e3a9086eec1b3a9c264050">SPI_CCR</a> = 0x24
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a74bde39aaec335b59baef76eb7a217bc">SPI_DLY</a> = 0x28
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53afbdea691f5552bdb038adffe43d7a543">SPI_MBC</a> = 0x30
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53ae20ab899f8100008e05185de3a404ae3">SPI_MTC</a> = 0x34
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a61bdef274216bcfe0125c1df18ae8421">SPI_BCC</a> = 0x38
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a48b38f61e31f85b60fbb4562d73ff8a1">SPI_TXD</a> = 0x200
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ab48899087cc647f0f791ed0c459adc53a782f0a64db9ba8f64679ffda3c2e0eed">SPI_RXD</a> = 0x300
-<br />
- }</td></tr>
-<tr class="separator:ab48899087cc647f0f791ed0c459adc53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a458e651af6690959efa2afb96be7d609"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a41a87108c3a1179a0032db9b4e81ab68">SPI_GCR_SRST_POS</a> = 31
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a77e591de1b784367ec68836751c2e743">SPI_GCR_SRST_MSK</a> = (1 &lt;&lt; SPI_GCR_SRST_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609ad9616ef30fed47bbd767072a4627d5da">SPI_GCR_TPEN_POS</a> = 7
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609aef8ce651b5465a49f16a3301e2550ba3">SPI_GCR_TPEN_MSK</a> = (1 &lt;&lt; SPI_GCR_TPEN_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609af9fc21fd9a8a30968288ed52e99d47d4">SPI_GCR</a> = 0x04
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a2bca2d87f890fc1e12bd56191785d2b3">SPI_TCR</a> = 0x08
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a6c560ab7070e8855a4710296c4aa312f">SPI_IER</a> = 0x10
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a0f187f31f01e1cec984131f0a7bdee14">SPI_ISR</a> = 0x14
 , <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a359b1f00832e065ec0a288acc33375c4">SPI_GCR_MODE_POS</a> = 1
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a6db4942667db5229bfe2a033571d40cb">SPI_GCR_MODE_MSK</a> = (1 &lt;&lt; SPI_GCR_MODE_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a5c4b2fc1703be86af1cb0667d2d4abf8">SPI_GCR_EN_POS</a> = 0
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609acef0d1d25c4002770ac58eaae73e26e9">SPI_GCR_EN_MSK</a> = (1 &lt;&lt; SPI_GCR_EN_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609ab5ad0f3e13aa5ff50bc6babf4fa493f9">SPI_FCR</a> = 0x18
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a94f6b9c1c4df309b192d1c291e9a5496">SPI_FSR</a> = 0x1c
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a009eef742957414b005fe976f467af35">SPI_WCR</a> = 0x20
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609abdca3c7fa7e3a9086eec1b3a9c264050">SPI_CCR</a> = 0x24
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a74bde39aaec335b59baef76eb7a217bc">SPI_DLY</a> = 0x28
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609afbdea691f5552bdb038adffe43d7a543">SPI_MBC</a> = 0x30
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609ae20ab899f8100008e05185de3a404ae3">SPI_MTC</a> = 0x34
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a61bdef274216bcfe0125c1df18ae8421">SPI_BCC</a> = 0x38
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a48b38f61e31f85b60fbb4562d73ff8a1">SPI_TXD</a> = 0x200
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a458e651af6690959efa2afb96be7d609a782f0a64db9ba8f64679ffda3c2e0eed">SPI_RXD</a> = 0x300
 <br />
  }</td></tr>
 <tr class="separator:a458e651af6690959efa2afb96be7d609"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f9aebf1de3ebbf4283a4dcf73308562"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562ae0c1ff4f30fadc245a63a56f266d5c03">SPI_BCC_DUAL_RX</a> = (1 &lt;&lt; 28)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562acd2b3cbd225a924a1707e31677af70e7">SPI_BCC_QUAD_IO</a> = (1 &lt;&lt; 29)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a6a19f0c096e793d9b3119346c9b81058">SPI_BCC_STC_MSK</a> = (0x00ffffff)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562acfe248a28b13cf705ff6df7f2bcea488">SPI_BCC_DUM_POS</a> = 24
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a41a87108c3a1179a0032db9b4e81ab68">SPI_GCR_SRST_POS</a> = 31
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a77e591de1b784367ec68836751c2e743">SPI_GCR_SRST_MSK</a> = (1 &lt;&lt; SPI_GCR_SRST_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562ad9616ef30fed47bbd767072a4627d5da">SPI_GCR_TPEN_POS</a> = 7
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562aef8ce651b5465a49f16a3301e2550ba3">SPI_GCR_TPEN_MSK</a> = (1 &lt;&lt; SPI_GCR_TPEN_POS)
 , <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562af62690a10a64db0c371f5548bc5a5231">SPI_BCC_DUM_MSK</a> = (0xf &lt;&lt; SPI_BCC_DUM_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a359b1f00832e065ec0a288acc33375c4">SPI_GCR_MODE_POS</a> = 1
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a6db4942667db5229bfe2a033571d40cb">SPI_GCR_MODE_MSK</a> = (1 &lt;&lt; SPI_GCR_MODE_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562a5c4b2fc1703be86af1cb0667d2d4abf8">SPI_GCR_EN_POS</a> = 0
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a1f9aebf1de3ebbf4283a4dcf73308562acef0d1d25c4002770ac58eaae73e26e9">SPI_GCR_EN_MSK</a> = (1 &lt;&lt; SPI_GCR_EN_POS)
 <br />
  }</td></tr>
 <tr class="separator:a1f9aebf1de3ebbf4283a4dcf73308562"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77867ab4129f63159b37bca3b652a798"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798aeaaeddb3ef5208c991a11becf2df05d3">SPI_MBC_CNT_MSK</a> = (0x00ffffff)
+<tr class="memitem:a77867ab4129f63159b37bca3b652a798"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798ae0c1ff4f30fadc245a63a56f266d5c03">SPI_BCC_DUAL_RX</a> = (1 &lt;&lt; 28)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798acd2b3cbd225a924a1707e31677af70e7">SPI_BCC_QUAD_IO</a> = (1 &lt;&lt; 29)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798a6a19f0c096e793d9b3119346c9b81058">SPI_BCC_STC_MSK</a> = (0x00ffffff)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798acfe248a28b13cf705ff6df7f2bcea488">SPI_BCC_DUM_POS</a> = 24
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a77867ab4129f63159b37bca3b652a798af62690a10a64db0c371f5548bc5a5231">SPI_BCC_DUM_MSK</a> = (0xf &lt;&lt; SPI_BCC_DUM_POS)
+<br />
  }</td></tr>
 <tr class="separator:a77867ab4129f63159b37bca3b652a798"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16685eea158879e41b101ca3634de462"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#a16685eea158879e41b101ca3634de462ad13232b0f79dff7712f8da7fe004732e">SPI_MTC_CNT_MSK</a> = (0x00ffffff)
+<tr class="memitem:a16685eea158879e41b101ca3634de462"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#a16685eea158879e41b101ca3634de462aeaaeddb3ef5208c991a11becf2df05d3">SPI_MBC_CNT_MSK</a> = (0x00ffffff)
  }</td></tr>
 <tr class="separator:a16685eea158879e41b101ca3634de462"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2970898e8a43ce21e1cc510d49f1b89d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89dad21b72a3993ccc0f17afe427fe25d731">SPI_TCR_SPOL_POS</a> = 2
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da0159b07eae7a19e0b7f3b1e719075121">SPI_TCR_SPOL_MSK</a> = (1 &lt;&lt; SPI_TCR_SPOL_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da18840d37127e3edf914df07c4610692c">SPI_TCR_SS_OWNER_POS</a> = 6
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da6f6f5085072f4414794ccbacc2a6123b">SPI_TCR_SS_OWNER_MSK</a> = (1 &lt;&lt; SPI_TCR_SS_OWNER_POS)
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da7964720783ea675dd9e4ab79f222e00f">SPI_TCR_DHB_POS</a> = 8
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89dac8772ea87cecf6ccfe917e692a4f58d2">SPI_TCR_DHB_MSK</a> = (1 &lt;&lt; SPI_TCR_DHB_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da4d3f45d2630bd03b22ea710137355d6a">SPI_TCR_SDC_POS</a> = 11
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89daf90c4bd5af1442624432cbd2d9765cf2">SPI_TCR_SDC_MSK</a> = (1 &lt;&lt; SPI_TCR_SDC_POS)
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da367f23d02e6f96bf8e487b66cd839184">SPI_TCR_SDM_POS</a> = 13
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89da67f763051197b895c95a11db048da14b">SPI_TCR_SDM_MSK</a> = (1 &lt;&lt; SPI_TCR_SDM_POS)
-<br />
+<tr class="memitem:a2970898e8a43ce21e1cc510d49f1b89d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#a2970898e8a43ce21e1cc510d49f1b89dad13232b0f79dff7712f8da7fe004732e">SPI_MTC_CNT_MSK</a> = (0x00ffffff)
  }</td></tr>
 <tr class="separator:a2970898e8a43ce21e1cc510d49f1b89d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa231099d07583c3ed0981e0bb665f55"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55af6b25d5cf449836fe16092914db27fd8">SPI_FCR_RX_LEVEL_POS</a> = 0
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a681d13c506ab232e1813cb4f0962b041">SPI_FCR_RX_LEVEL_MSK</a> = (0xff &lt; SPI_FCR_RX_LEVEL_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55aaebad7daef76874f6f86e9b4f0dc70e4">SPI_FCR_RX_DRQEN_POS</a> = 8
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a8b8aec2a6881583f4c76f331ddce53e9">SPI_FCR_RX_DRQEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_DRQEN_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ad21b72a3993ccc0f17afe427fe25d731">SPI_TCR_SPOL_POS</a> = 2
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a0159b07eae7a19e0b7f3b1e719075121">SPI_TCR_SPOL_MSK</a> = (1 &lt;&lt; SPI_TCR_SPOL_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a18840d37127e3edf914df07c4610692c">SPI_TCR_SS_OWNER_POS</a> = 6
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a6f6f5085072f4414794ccbacc2a6123b">SPI_TCR_SS_OWNER_MSK</a> = (1 &lt;&lt; SPI_TCR_SS_OWNER_POS)
 , <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a7c66b1fad9e8ae2ae0b7d989a4b91995">SPI_FCR_RX_TESTEN_POS</a> = 14
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a8517ff9760a15af2bd7ccf5a06422da2">SPI_FCR_RX_TESTEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_TESTEN_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a6c4fbe84c781f94972b840c211159031">SPI_FCR_RX_RST_POS</a> = 15
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a08f773b810cb07803b0329a7dad35a19">SPI_FCR_RX_RST_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_RST_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a7964720783ea675dd9e4ab79f222e00f">SPI_TCR_DHB_POS</a> = 8
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ac8772ea87cecf6ccfe917e692a4f58d2">SPI_TCR_DHB_MSK</a> = (1 &lt;&lt; SPI_TCR_DHB_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a4d3f45d2630bd03b22ea710137355d6a">SPI_TCR_SDC_POS</a> = 11
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55af90c4bd5af1442624432cbd2d9765cf2">SPI_TCR_SDC_MSK</a> = (1 &lt;&lt; SPI_TCR_SDC_POS)
 , <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55afb9d9824f7d41099c4c667569eb21d97">SPI_FCR_TX_LEVEL_POS</a> = 16
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ada0585f7f023f8e8bc3209f07b16d8a8">SPI_FCR_TX_LEVEL_MSK</a> = (0xff &lt;&lt; SPI_FCR_TX_LEVEL_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ae22133e99e6f04131cd33173cc61d839">SPI_FCR_TX_DRQEN_POS</a> = 24
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ad8e2dbc11d08cb7431a212d516f688f0">SPI_FCR_TX_DRQEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_DRQEN_POS)
-, <br />
-&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55aae2d8fb55f207c6a0d1d7a1174bb180f">SPI_FCR_TX_TESTEN_POS</a> = 30
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55aefd6f0d02e403b7e41e83b712c51f056">SPI_FCR_TX_TESTEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_TESTEN_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ab951f4562e200769464b659c840e4f2d">SPI_FCR_TX_RST_POS</a> = 31
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55ad91809b0a62e44b1ff9a7266d79c25e7">SPI_FCR_TX_RST_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_RST_POS)
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a367f23d02e6f96bf8e487b66cd839184">SPI_TCR_SDM_POS</a> = 13
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#afa231099d07583c3ed0981e0bb665f55a67f763051197b895c95a11db048da14b">SPI_TCR_SDM_MSK</a> = (1 &lt;&lt; SPI_TCR_SDM_POS)
 <br />
  }</td></tr>
 <tr class="separator:afa231099d07583c3ed0981e0bb665f55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a394b3903fbf00ba2b6243f60689a5a5f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa4c68db17b1e348cf013400464a77c5e9">SPI_FSR_RF_CNT_POS</a> = 0
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa6fb71b7c82607b1f2cd28c4c6ee43f3a">SPI_FSR_RF_CNT_MSK</a> = (0xff &lt;&lt; SPI_FSR_RF_CNT_POS)
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa04893b969ccd40a4303a8ebb7dda0cad">SPI_FSR_TF_CNT_POS</a> = 16
-, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa1f47df97cd0f82ebb156dccc64d5e3f4">SPI_FSR_TF_CNT_MSK</a> = (0xff &lt;&lt; SPI_FSR_TF_CNT_POS)
+<tr class="memitem:a394b3903fbf00ba2b6243f60689a5a5f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5faf6b25d5cf449836fe16092914db27fd8">SPI_FCR_RX_LEVEL_POS</a> = 0
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa681d13c506ab232e1813cb4f0962b041">SPI_FCR_RX_LEVEL_MSK</a> = (0xff &lt; SPI_FCR_RX_LEVEL_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5faaebad7daef76874f6f86e9b4f0dc70e4">SPI_FCR_RX_DRQEN_POS</a> = 8
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa8b8aec2a6881583f4c76f331ddce53e9">SPI_FCR_RX_DRQEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_DRQEN_POS)
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa7c66b1fad9e8ae2ae0b7d989a4b91995">SPI_FCR_RX_TESTEN_POS</a> = 14
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa8517ff9760a15af2bd7ccf5a06422da2">SPI_FCR_RX_TESTEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_TESTEN_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa6c4fbe84c781f94972b840c211159031">SPI_FCR_RX_RST_POS</a> = 15
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fa08f773b810cb07803b0329a7dad35a19">SPI_FCR_RX_RST_MSK</a> = (0x1 &lt;&lt; SPI_FCR_RX_RST_POS)
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fafb9d9824f7d41099c4c667569eb21d97">SPI_FCR_TX_LEVEL_POS</a> = 16
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fada0585f7f023f8e8bc3209f07b16d8a8">SPI_FCR_TX_LEVEL_MSK</a> = (0xff &lt;&lt; SPI_FCR_TX_LEVEL_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fae22133e99e6f04131cd33173cc61d839">SPI_FCR_TX_DRQEN_POS</a> = 24
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fad8e2dbc11d08cb7431a212d516f688f0">SPI_FCR_TX_DRQEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_DRQEN_POS)
+, <br />
+&#160;&#160;<a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5faae2d8fb55f207c6a0d1d7a1174bb180f">SPI_FCR_TX_TESTEN_POS</a> = 30
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5faefd6f0d02e403b7e41e83b712c51f056">SPI_FCR_TX_TESTEN_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_TESTEN_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fab951f4562e200769464b659c840e4f2d">SPI_FCR_TX_RST_POS</a> = 31
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#a394b3903fbf00ba2b6243f60689a5a5fad91809b0a62e44b1ff9a7266d79c25e7">SPI_FCR_TX_RST_MSK</a> = (0x1 &lt;&lt; SPI_FCR_TX_RST_POS)
+<br />
  }</td></tr>
 <tr class="separator:a394b3903fbf00ba2b6243f60689a5a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac205be2172292384dd687b5471a87edd"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="../../d3/dd8/sys-spi_8c.html#ac205be2172292384dd687b5471a87edda4c68db17b1e348cf013400464a77c5e9">SPI_FSR_RF_CNT_POS</a> = 0
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ac205be2172292384dd687b5471a87edda6fb71b7c82607b1f2cd28c4c6ee43f3a">SPI_FSR_RF_CNT_MSK</a> = (0xff &lt;&lt; SPI_FSR_RF_CNT_POS)
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ac205be2172292384dd687b5471a87edda04893b969ccd40a4303a8ebb7dda0cad">SPI_FSR_TF_CNT_POS</a> = 16
+, <a class="el" href="../../d3/dd8/sys-spi_8c.html#ac205be2172292384dd687b5471a87edda1f47df97cd0f82ebb156dccc64d5e3f4">SPI_FSR_TF_CNT_MSK</a> = (0xff &lt;&lt; SPI_FSR_TF_CNT_POS)
+ }</td></tr>
+<tr class="separator:ac205be2172292384dd687b5471a87edd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -367,36 +368,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="ab48899087cc647f0f791ed0c459adc53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab48899087cc647f0f791ed0c459adc53">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53af9fc21fd9a8a30968288ed52e99d47d4"></a>SPI_GCR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a2bca2d87f890fc1e12bd56191785d2b3"></a>SPI_TCR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a6c560ab7070e8855a4710296c4aa312f"></a>SPI_IER&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a0f187f31f01e1cec984131f0a7bdee14"></a>SPI_ISR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53ab5ad0f3e13aa5ff50bc6babf4fa493f9"></a>SPI_FCR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a94f6b9c1c4df309b192d1c291e9a5496"></a>SPI_FSR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a009eef742957414b005fe976f467af35"></a>SPI_WCR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53abdca3c7fa7e3a9086eec1b3a9c264050"></a>SPI_CCR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a74bde39aaec335b59baef76eb7a217bc"></a>SPI_DLY&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53afbdea691f5552bdb038adffe43d7a543"></a>SPI_MBC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53ae20ab899f8100008e05185de3a404ae3"></a>SPI_MTC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a61bdef274216bcfe0125c1df18ae8421"></a>SPI_BCC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a48b38f61e31f85b60fbb4562d73ff8a1"></a>SPI_TXD&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab48899087cc647f0f791ed0c459adc53a782f0a64db9ba8f64679ffda3c2e0eed"></a>SPI_RXD&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
 <a id="a458e651af6690959efa2afb96be7d609"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a458e651af6690959efa2afb96be7d609">&#9670;&nbsp;</a></span>anonymous enum</h2>
 
@@ -409,14 +380,20 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a41a87108c3a1179a0032db9b4e81ab68"></a>SPI_GCR_SRST_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a77e591de1b784367ec68836751c2e743"></a>SPI_GCR_SRST_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609ad9616ef30fed47bbd767072a4627d5da"></a>SPI_GCR_TPEN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609aef8ce651b5465a49f16a3301e2550ba3"></a>SPI_GCR_TPEN_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a359b1f00832e065ec0a288acc33375c4"></a>SPI_GCR_MODE_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a6db4942667db5229bfe2a033571d40cb"></a>SPI_GCR_MODE_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a5c4b2fc1703be86af1cb0667d2d4abf8"></a>SPI_GCR_EN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609acef0d1d25c4002770ac58eaae73e26e9"></a>SPI_GCR_EN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609af9fc21fd9a8a30968288ed52e99d47d4"></a>SPI_GCR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a2bca2d87f890fc1e12bd56191785d2b3"></a>SPI_TCR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a6c560ab7070e8855a4710296c4aa312f"></a>SPI_IER&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a0f187f31f01e1cec984131f0a7bdee14"></a>SPI_ISR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609ab5ad0f3e13aa5ff50bc6babf4fa493f9"></a>SPI_FCR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a94f6b9c1c4df309b192d1c291e9a5496"></a>SPI_FSR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a009eef742957414b005fe976f467af35"></a>SPI_WCR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609abdca3c7fa7e3a9086eec1b3a9c264050"></a>SPI_CCR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a74bde39aaec335b59baef76eb7a217bc"></a>SPI_DLY&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609afbdea691f5552bdb038adffe43d7a543"></a>SPI_MBC&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609ae20ab899f8100008e05185de3a404ae3"></a>SPI_MTC&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a61bdef274216bcfe0125c1df18ae8421"></a>SPI_BCC&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a48b38f61e31f85b60fbb4562d73ff8a1"></a>SPI_TXD&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a458e651af6690959efa2afb96be7d609a782f0a64db9ba8f64679ffda3c2e0eed"></a>SPI_RXD&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -433,11 +410,14 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562ae0c1ff4f30fadc245a63a56f266d5c03"></a>SPI_BCC_DUAL_RX&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562acd2b3cbd225a924a1707e31677af70e7"></a>SPI_BCC_QUAD_IO&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a6a19f0c096e793d9b3119346c9b81058"></a>SPI_BCC_STC_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562acfe248a28b13cf705ff6df7f2bcea488"></a>SPI_BCC_DUM_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562af62690a10a64db0c371f5548bc5a5231"></a>SPI_BCC_DUM_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a41a87108c3a1179a0032db9b4e81ab68"></a>SPI_GCR_SRST_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a77e591de1b784367ec68836751c2e743"></a>SPI_GCR_SRST_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562ad9616ef30fed47bbd767072a4627d5da"></a>SPI_GCR_TPEN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562aef8ce651b5465a49f16a3301e2550ba3"></a>SPI_GCR_TPEN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a359b1f00832e065ec0a288acc33375c4"></a>SPI_GCR_MODE_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a6db4942667db5229bfe2a033571d40cb"></a>SPI_GCR_MODE_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562a5c4b2fc1703be86af1cb0667d2d4abf8"></a>SPI_GCR_EN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a1f9aebf1de3ebbf4283a4dcf73308562acef0d1d25c4002770ac58eaae73e26e9"></a>SPI_GCR_EN_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -454,7 +434,11 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798aeaaeddb3ef5208c991a11becf2df05d3"></a>SPI_MBC_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798ae0c1ff4f30fadc245a63a56f266d5c03"></a>SPI_BCC_DUAL_RX&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798acd2b3cbd225a924a1707e31677af70e7"></a>SPI_BCC_QUAD_IO&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798a6a19f0c096e793d9b3119346c9b81058"></a>SPI_BCC_STC_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798acfe248a28b13cf705ff6df7f2bcea488"></a>SPI_BCC_DUM_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a77867ab4129f63159b37bca3b652a798af62690a10a64db0c371f5548bc5a5231"></a>SPI_BCC_DUM_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -471,7 +455,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a16685eea158879e41b101ca3634de462ad13232b0f79dff7712f8da7fe004732e"></a>SPI_MTC_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a16685eea158879e41b101ca3634de462aeaaeddb3ef5208c991a11becf2df05d3"></a>SPI_MBC_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -488,16 +472,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89dad21b72a3993ccc0f17afe427fe25d731"></a>SPI_TCR_SPOL_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da0159b07eae7a19e0b7f3b1e719075121"></a>SPI_TCR_SPOL_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da18840d37127e3edf914df07c4610692c"></a>SPI_TCR_SS_OWNER_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da6f6f5085072f4414794ccbacc2a6123b"></a>SPI_TCR_SS_OWNER_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da7964720783ea675dd9e4ab79f222e00f"></a>SPI_TCR_DHB_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89dac8772ea87cecf6ccfe917e692a4f58d2"></a>SPI_TCR_DHB_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da4d3f45d2630bd03b22ea710137355d6a"></a>SPI_TCR_SDC_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89daf90c4bd5af1442624432cbd2d9765cf2"></a>SPI_TCR_SDC_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da367f23d02e6f96bf8e487b66cd839184"></a>SPI_TCR_SDM_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89da67f763051197b895c95a11db048da14b"></a>SPI_TCR_SDM_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2970898e8a43ce21e1cc510d49f1b89dad13232b0f79dff7712f8da7fe004732e"></a>SPI_MTC_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -514,22 +489,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55af6b25d5cf449836fe16092914db27fd8"></a>SPI_FCR_RX_LEVEL_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a681d13c506ab232e1813cb4f0962b041"></a>SPI_FCR_RX_LEVEL_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55aaebad7daef76874f6f86e9b4f0dc70e4"></a>SPI_FCR_RX_DRQEN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a8b8aec2a6881583f4c76f331ddce53e9"></a>SPI_FCR_RX_DRQEN_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a7c66b1fad9e8ae2ae0b7d989a4b91995"></a>SPI_FCR_RX_TESTEN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a8517ff9760a15af2bd7ccf5a06422da2"></a>SPI_FCR_RX_TESTEN_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a6c4fbe84c781f94972b840c211159031"></a>SPI_FCR_RX_RST_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a08f773b810cb07803b0329a7dad35a19"></a>SPI_FCR_RX_RST_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55afb9d9824f7d41099c4c667569eb21d97"></a>SPI_FCR_TX_LEVEL_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ada0585f7f023f8e8bc3209f07b16d8a8"></a>SPI_FCR_TX_LEVEL_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ae22133e99e6f04131cd33173cc61d839"></a>SPI_FCR_TX_DRQEN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ad8e2dbc11d08cb7431a212d516f688f0"></a>SPI_FCR_TX_DRQEN_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55aae2d8fb55f207c6a0d1d7a1174bb180f"></a>SPI_FCR_TX_TESTEN_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55aefd6f0d02e403b7e41e83b712c51f056"></a>SPI_FCR_TX_TESTEN_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ab951f4562e200769464b659c840e4f2d"></a>SPI_FCR_TX_RST_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ad91809b0a62e44b1ff9a7266d79c25e7"></a>SPI_FCR_TX_RST_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ad21b72a3993ccc0f17afe427fe25d731"></a>SPI_TCR_SPOL_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a0159b07eae7a19e0b7f3b1e719075121"></a>SPI_TCR_SPOL_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a18840d37127e3edf914df07c4610692c"></a>SPI_TCR_SS_OWNER_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a6f6f5085072f4414794ccbacc2a6123b"></a>SPI_TCR_SS_OWNER_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a7964720783ea675dd9e4ab79f222e00f"></a>SPI_TCR_DHB_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55ac8772ea87cecf6ccfe917e692a4f58d2"></a>SPI_TCR_DHB_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a4d3f45d2630bd03b22ea710137355d6a"></a>SPI_TCR_SDC_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55af90c4bd5af1442624432cbd2d9765cf2"></a>SPI_TCR_SDC_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a367f23d02e6f96bf8e487b66cd839184"></a>SPI_TCR_SDM_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afa231099d07583c3ed0981e0bb665f55a67f763051197b895c95a11db048da14b"></a>SPI_TCR_SDM_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -546,10 +515,42 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa4c68db17b1e348cf013400464a77c5e9"></a>SPI_FSR_RF_CNT_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa6fb71b7c82607b1f2cd28c4c6ee43f3a"></a>SPI_FSR_RF_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa04893b969ccd40a4303a8ebb7dda0cad"></a>SPI_FSR_TF_CNT_POS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa1f47df97cd0f82ebb156dccc64d5e3f4"></a>SPI_FSR_TF_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5faf6b25d5cf449836fe16092914db27fd8"></a>SPI_FCR_RX_LEVEL_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa681d13c506ab232e1813cb4f0962b041"></a>SPI_FCR_RX_LEVEL_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5faaebad7daef76874f6f86e9b4f0dc70e4"></a>SPI_FCR_RX_DRQEN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa8b8aec2a6881583f4c76f331ddce53e9"></a>SPI_FCR_RX_DRQEN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa7c66b1fad9e8ae2ae0b7d989a4b91995"></a>SPI_FCR_RX_TESTEN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa8517ff9760a15af2bd7ccf5a06422da2"></a>SPI_FCR_RX_TESTEN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa6c4fbe84c781f94972b840c211159031"></a>SPI_FCR_RX_RST_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fa08f773b810cb07803b0329a7dad35a19"></a>SPI_FCR_RX_RST_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fafb9d9824f7d41099c4c667569eb21d97"></a>SPI_FCR_TX_LEVEL_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fada0585f7f023f8e8bc3209f07b16d8a8"></a>SPI_FCR_TX_LEVEL_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fae22133e99e6f04131cd33173cc61d839"></a>SPI_FCR_TX_DRQEN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fad8e2dbc11d08cb7431a212d516f688f0"></a>SPI_FCR_TX_DRQEN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5faae2d8fb55f207c6a0d1d7a1174bb180f"></a>SPI_FCR_TX_TESTEN_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5faefd6f0d02e403b7e41e83b712c51f056"></a>SPI_FCR_TX_TESTEN_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fab951f4562e200769464b659c840e4f2d"></a>SPI_FCR_TX_RST_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a394b3903fbf00ba2b6243f60689a5a5fad91809b0a62e44b1ff9a7266d79c25e7"></a>SPI_FCR_TX_RST_MSK&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="ac205be2172292384dd687b5471a87edd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac205be2172292384dd687b5471a87edd">&#9670;&nbsp;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac205be2172292384dd687b5471a87edda4c68db17b1e348cf013400464a77c5e9"></a>SPI_FSR_RF_CNT_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac205be2172292384dd687b5471a87edda6fb71b7c82607b1f2cd28c4c6ee43f3a"></a>SPI_FSR_RF_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac205be2172292384dd687b5471a87edda04893b969ccd40a4303a8ebb7dda0cad"></a>SPI_FSR_TF_CNT_POS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac205be2172292384dd687b5471a87edda1f47df97cd0f82ebb156dccc64d5e3f4"></a>SPI_FSR_TF_CNT_MSK&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>

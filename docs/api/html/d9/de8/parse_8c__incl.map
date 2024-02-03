@@ -1,10 +1,12 @@
 <map id="src/cli/parse.c" name="src/cli/parse.c">
 <area shape="rect" id="node1" title=" " alt="" coords="237,5,348,32"/>
 <area shape="rect" id="node2" href="$d7/d0d/ctype_8h.html" title=" " alt="" coords="5,80,76,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="101,80,183,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="207,80,282,107"/>
-<area shape="rect" id="node5" title=" " alt="" coords="307,80,377,107"/>
-<area shape="rect" id="node6" title=" " alt="" coords="401,80,472,107"/>
-<area shape="rect" id="node7" href="$d1/dc4/cli__config_8h.html" title=" " alt="" coords="496,80,591,107"/>
-<area shape="rect" id="node8" title=" " alt="" coords="513,155,573,181"/>
+<area shape="rect" id="node3" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="101,80,183,107"/>
+<area shape="rect" id="node6" title=" " alt="" coords="207,80,282,107"/>
+<area shape="rect" id="node7" title=" " alt="" coords="307,80,377,107"/>
+<area shape="rect" id="node8" title=" " alt="" coords="401,80,472,107"/>
+<area shape="rect" id="node9" href="$d1/dc4/cli__config_8h.html" title=" " alt="" coords="496,80,591,107"/>
+<area shape="rect" id="node4" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="107,155,177,181"/>
+<area shape="rect" id="node5" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="107,229,177,256"/>
+<area shape="rect" id="node10" title=" " alt="" coords="513,155,573,181"/>
 </map>
