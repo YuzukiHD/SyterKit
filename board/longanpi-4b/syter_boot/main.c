@@ -20,68 +20,80 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
-#include <image_loader.h>
+#include <sys-clk.h>
+#include <sys-dram.h>
+#include <sys-i2c.h>
+#include <sys-rtc.h>
+#include <sys-sdcard.h>
+#include <sys-sid.h>
+#include <sys-spi.h>
 
-#include "sys-dram.h"
-#include "sys-i2c.h"
-#include "sys-rtc.h"
-#include "sys-sdcard.h"
-#include "sys-sid.h"
-#include "sys-spi.h"
+#include <pmu/axp.h>
 
-#include "fdt_wrapper.h"
-#include "ff.h"
-#include "libfdt.h"
-#include "uart.h"
+#include <fdt_wrapper.h>
+#include <ff.h>
+#include <sys-sdhci.h>
+#include <uart.h>
 
-#define CONFIG_KERNEL_FILENAME "zImage"
+#define CONFIG_BL31_FILENAME "bl31.bin"
+#define CONFIG_BL31_LOAD_ADDR (0x48000000)
+
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_CONFIG_FILENAME "config.txt"
+#define CONFIG_DTB_LOAD_ADDR (0x4a200000)
+
+#define CONFIG_KERNEL_FILENAME "Image"
+#define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
+
+#define CONFIG_BL33_FILENAME "syter_bl33.bin"
+#define CONFIG_BL33_LOAD_ADDR (0x4a000000)
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
-#define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
-#define CONFIG_CONFIG_LOAD_ADDR (0x40008000)
+#define CONFIG_DEFAULT_BOOTDELAY 0
+
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
-
-#define CONFIG_DEFAULT_BOOTDELAY 5
-
-#define FILENAME_MAX_LEN 64
-typedef struct {
-    uint8_t *dest;
-
-    uint8_t *of_dest;
-
-    uint8_t *config_dest;
-    uint8_t is_config;
-
-    char filename[FILENAME_MAX_LEN];
-
-    char of_filename[FILENAME_MAX_LEN];
-
-    char config_filename[FILENAME_MAX_LEN];
-} image_info_t;
-
-#define MAX_SECTION_LEN 16
-#define MAX_KEY_LEN 16
-#define MAX_VALUE_LEN 512
-#define CONFIG_MAX_ENTRY 3
-
-typedef struct {
-    char section[MAX_SECTION_LEN];
-    char key[MAX_KEY_LEN];
-    char value[MAX_VALUE_LEN];
-} IniEntry;
-
-IniEntry entries[CONFIG_MAX_ENTRY];
 
 extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci0;
+
+extern void enable_sram_a3();
+extern void show_chip();
+extern void rtc_set_vccio_det_spare();
+extern void set_rpio_power_mode(void);
+extern void sunxi_nsi_init();
+
+typedef struct atf_head {
+    uint32_t jump_instruction; /* jumping to real code */
+    uint8_t magic[8];          /* magic */
+    uint32_t scp_base;         /* scp openrisc core bin */
+    uint32_t next_boot_base;   /* next boot base for uboot */
+    uint32_t nos_base;         /* ARM SVC RUNOS base */
+    uint32_t secureos_base;    /* optee base */
+    uint8_t version[8];        /* atf version */
+    uint8_t platform[8];       /* platform information */
+    uint32_t reserved[1];      /* stamp space, 16bytes align */
+    uint32_t dram_para[32];    /* the dram param */
+    uint64_t dtb_base;         /* the address of dtb */
+} atf_head_t;
+
+#define FILENAME_MAX_LEN 16
+typedef struct {
+    uint8_t *bl31_dest;
+    char bl31_filename[FILENAME_MAX_LEN];
+
+    uint8_t *kernel_dest;
+    char kernel_filename[FILENAME_MAX_LEN];
+
+    uint8_t *of_dest;
+    char of_filename[FILENAME_MAX_LEN];
+
+    uint8_t *bl33_dest;
+    char bl33_filename[FILENAME_MAX_LEN];
+} image_info_t;
 
 image_info_t image;
 
@@ -155,27 +167,25 @@ static int load_sdcard(image_info_t *image) {
         printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
     }
 
-    /* load DTB */
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
+    ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
+    if (ret)
+        return ret;
+
     printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
     if (ret)
         return ret;
 
-    /* load Kernel */
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
-    ret = fatfs_loadimage(image->filename, image->dest);
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
+    ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
     if (ret)
         return ret;
 
-    /* load config */
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->config_filename, (uint32_t) image->config_dest);
-    ret = fatfs_loadimage(image->config_filename, image->config_dest);
-    if (ret) {
-        printk(LOG_LEVEL_INFO, "CONFIG: Cannot find config file, Using default config.\n");
-        image->is_config = 0;
-    } else {
-        image->is_config = 1;
-    }
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->bl33_filename, (uint32_t) image->bl33_dest);
+    ret = fatfs_loadimage(image->bl33_filename, image->bl33_dest);
+    if (ret)
+        return ret;
 
     /* umount fs */
     fret = f_mount(0, "", 0);
@@ -185,9 +195,28 @@ static int load_sdcard(image_info_t *image) {
     } else {
         printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_INFO, "FATFS: done in %ums\n", time_ms() - start);
+    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
+}
+
+void jmp_to_arm64(uint32_t addr) {
+    /* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
+    rtc_set_start_time_ms();
+
+    /* set the cpu boot entry addr: */
+    write32(RVBARADDR0_L, addr);
+    write32(RVBARADDR0_H, 0);
+
+    /* set cpu to AA64 execution state when the cpu boots into after a warm reset */
+    asm volatile("mrc p15,0,r2,c12,c0,2");
+    asm volatile("orr r2,r2,#(0x3<<0)");
+    asm volatile("dsb");
+    asm volatile("mcr p15,0,r2,c12,c0,2");
+    asm volatile("isb");
+_loop:
+    asm volatile("wfi");
+    goto _loop;
 }
 
 static int abortboot_single_key(int bootdelay) {
@@ -220,23 +249,40 @@ static int abortboot_single_key(int bootdelay) {
     return abort;
 }
 
-static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
-    int set_vol = voltage;
-    int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, power_name);
-    if (src_vol > voltage) {
-        for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
-        }
-    } else if (src_vol < voltage) {
-        for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1);
-        }
-    }
-    mdelay(30); /* Delay 300ms for pmu bootup */
+msh_declare_command(boot);
+msh_define_help(boot, "boot to linux", "Usage: boot\n");
+int cmd_boot(int argc, const char **argv) {
+    atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
+
+    atf_head->next_boot_base = CONFIG_BL33_LOAD_ADDR;
+    atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
+
+    atf_head->platform[0] = 0x00;
+    atf_head->platform[1] = 0x52;
+    atf_head->platform[2] = 0x41;
+    atf_head->platform[3] = 0x57;
+    atf_head->platform[4] = 0xbe;
+    atf_head->platform[5] = 0xe9;
+    atf_head->platform[6] = 0x00;
+    atf_head->platform[7] = 0x00;
+
+    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->next_boot_base);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+
+    clean_syterkit_data();
+
+    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+
+    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
+
+    // if kernel boot not success, jump to fel.
+    jmp_to_fel();
+    return 0;
 }
 
 msh_declare_command(reload);
-msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
+msh_define_help(reload, "rescan TF Card and reload DTB",
+                "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
     if (sdmmc_init(&card0, &sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
@@ -250,103 +296,88 @@ int cmd_reload(int argc, const char **argv) {
     return 0;
 }
 
-msh_declare_command(boot);
-msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
-    /* Initialize variables for kernel entry point and SD card access. */
-    uint32_t entry_point = 0;
-    void (*kernel_entry)(int zero, int arch, uint32_t params);
-
-    /* Set up boot parameters for the kernel. */
-    if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
-        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
-        abort();
-    }
-
-    /* Disable MMU, data cache, instruction cache, interrupts */
-    clean_syterkit_data();
-    /* Debug message to indicate the kernel address that the system is jumping to. */
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
-
-    /* Jump to the kernel entry point. */
-    kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
-    kernel_entry(0, ~0, (uint32_t) image.of_dest);
-    return 0;
-}
-
 const msh_command_entry commands[] = {
-        msh_define_command(reload),
         msh_define_command(boot),
+        msh_define_command(reload),
         msh_command_end,
 };
 
-/* 
- * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
- * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
- */
 int main(void) {
-    /* Initialize the debug serial interface. */
     sunxi_serial_init(&uart_dbg);
 
-    /* Display the bootloader banner. */
     show_banner();
+    show_chip();
 
-	/* enbale rtc vccio detected */
     rtc_set_vccio_det_spare();
 
-    /* Initialize the system clock. */
     sunxi_clk_init();
 
-    /* Check rtc fel flag. if set flag, goto fel */
-    if (rtc_probe_fel_flag()) {
-        printk(LOG_LEVEL_INFO, "RTC: get fel flag, jump to fel mode.\n");
-        clean_syterkit_data();
-        rtc_clear_fel_flag();
-        sunxi_clk_reset();
-        mdelay(100);
-        goto _fel;
-    }
-
     set_rpio_power_mode();
-    
+
+    sunxi_clk_dump();
+
     sunxi_i2c_init(&i2c_pmu);
+
+    pmu_axp2202_init(&i2c_pmu);
 
     pmu_axp1530_init(&i2c_pmu);
 
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
+
+    pmu_axp1530_set_dual_phase(&i2c_pmu);
+    pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
+    pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1100, 1);
+
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", 920, 1);
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1160, 1);
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
+
+    pmu_axp2202_dump(&i2c_pmu);
+    pmu_axp1530_dump(&i2c_pmu);
+
+    enable_sram_a3();
+
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
+
+    sunxi_clk_dump();
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
+    sunxi_nsi_init();
+
     /* Clear the image_info_t struct. */
     memset(&image, 0, sizeof(image_info_t));
 
-    /* Set the destination address for the device tree binary (DTB), kernel image, and configuration data. */
+    image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-    image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-    image.config_dest = (uint8_t *) CONFIG_CONFIG_LOAD_ADDR;
-    image.is_config = 0;
+    image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+    image.bl33_dest = (uint8_t *) CONFIG_BL33_LOAD_ADDR;
 
-    /* Copy the filenames for the DTB, kernel image, and configuration data. */
-    strcpy(image.filename, CONFIG_KERNEL_FILENAME);
+    strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
-    strcpy(image.config_filename, CONFIG_CONFIG_FILENAME);
+    strcpy(image.kernel_filename, CONFIG_KERNEL_FILENAME);
+    strcpy(image.bl33_filename, CONFIG_BL33_FILENAME);
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
         goto _shell;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-        goto _shell;
+        printk(LOG_LEVEL_WARNING, "SMHC: init failed, Retrying...\n");
+        mdelay(30);
+        if (sdmmc_init(&card0, &sdhci0) != 0) {
+            printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+            goto _shell;
+        }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
@@ -354,7 +385,7 @@ int main(void) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
         goto _shell;
     }
-    
+
     int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
 
     /* Showing boot delays */
@@ -367,10 +398,5 @@ int main(void) {
 _shell:
     syterkit_shell_attach(commands);
 
-_fel:
-    /* If the kernel boot fails, jump to FEL mode. */
-    jmp_to_fel();
-
-    /* Return 0 to indicate successful execution. */
     return 0;
 }
