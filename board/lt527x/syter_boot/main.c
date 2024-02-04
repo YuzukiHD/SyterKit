@@ -44,12 +44,12 @@
 #define CONFIG_KERNEL_FILENAME "Image"
 #define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
 
-#define CONFIG_BL33_FILENAME "syter_bl33.bin"
-#define CONFIG_BL33_LOAD_ADDR (0x4a000000)
+#define CONFIG_SCP_FILENAME "scp.bin"
+#define CONFIG_SCP_LOAD_ADDR (0x48100000)
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-#define CONFIG_DEFAULT_BOOTDELAY 0
+#define CONFIG_DEFAULT_BOOTDELAY 3
 
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -91,8 +91,8 @@ typedef struct {
     uint8_t *of_dest;
     char of_filename[FILENAME_MAX_LEN];
 
-    uint8_t *bl33_dest;
-    char bl33_filename[FILENAME_MAX_LEN];
+    uint8_t *scp_dest;
+    char scp_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
 image_info_t image;
@@ -182,8 +182,8 @@ static int load_sdcard(image_info_t *image) {
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->bl33_filename, (uint32_t) image->bl33_dest);
-    ret = fatfs_loadimage(image->bl33_filename, image->bl33_dest);
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
+    ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
     if (ret)
         return ret;
 
@@ -254,8 +254,8 @@ msh_define_help(boot, "boot to linux", "Usage: boot\n");
 int cmd_boot(int argc, const char **argv) {
     atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
-    atf_head->next_boot_base = CONFIG_BL33_LOAD_ADDR;
     atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
+    atf_head->nos_base = CONFIG_KERNEL_LOAD_ADDR;
 
     atf_head->platform[0] = 0x00;
     atf_head->platform[1] = 0x52;
@@ -266,7 +266,7 @@ int cmd_boot(int argc, const char **argv) {
     atf_head->platform[6] = 0x00;
     atf_head->platform[7] = 0x00;
 
-    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->next_boot_base);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     clean_syterkit_data();
@@ -355,12 +355,12 @@ int main(void) {
     image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-    image.bl33_dest = (uint8_t *) CONFIG_BL33_LOAD_ADDR;
+    image.scp_dest = (uint8_t *) CONFIG_SCP_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
     strcpy(image.kernel_filename, CONFIG_KERNEL_FILENAME);
-    strcpy(image.bl33_filename, CONFIG_BL33_FILENAME);
+    strcpy(image.scp_filename, CONFIG_SCP_FILENAME);
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
