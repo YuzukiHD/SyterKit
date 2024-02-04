@@ -147,9 +147,9 @@ DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
-		   BYTE cmd, /* Control code */
-		   void *buff /* Buffer to send/receive control data */
+DRESULT disk_ioctl(BYTE	 pdrv, /* Physical drive nmuber (0..) */
+				   BYTE	 cmd, /* Control code */
+				   void *buff /* Buffer to send/receive control data */
 )
 {
 	return RES_PARERR;
