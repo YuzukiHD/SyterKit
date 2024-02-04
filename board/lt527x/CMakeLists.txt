@@ -11,4 +11,6 @@ add_subdirectory(init_dram)
 
 add_subdirectory(syter_boot)
 
+add_subdirectory(syter_boot_bl33)
+
 add_subdirectory(smhc_test)
