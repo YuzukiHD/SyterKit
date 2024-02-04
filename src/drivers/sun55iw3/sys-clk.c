@@ -321,7 +321,7 @@ uint32_t sunxi_clk_get_peri1x_rate() {
         pllm = (reg32 & 0x01) + 1;
         p0 = ((reg32 >> 16) & 0x03) + 1;
 
-        return ((((24 * plln) / (pllm * p0))) * 1000 * 1000);
+        return ((((24 * plln) / (pllm * p0))) * 1000 * 1000) >> 1;
     }
 
     return 0;
