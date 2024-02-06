@@ -14,11 +14,6 @@
 
 #include <sys-rtc.h>
 
-static inline void data_sync_barrier(void) {
-    asm volatile("DSB");
-    asm volatile("ISB");
-}
-
 void rtc_write_data(int index, uint32_t val) {
     writel(val, SUNXI_RTC_DATA_BASE + index * 4);
 }

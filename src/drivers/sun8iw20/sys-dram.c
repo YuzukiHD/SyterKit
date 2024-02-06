@@ -149,49 +149,49 @@ static void eye_delay_compensation(dram_para_t *para)// s1
  */
 static void mctl_set_timing_params(dram_para_t *para) {
     /* DRAM_TPR0 */
-    u8 tccd = 2;
-    u8 tfaw;
-    u8 trrd;
-    u8 trcd;
-    u8 trc;
+    uint8_t tccd = 2;
+    uint8_t tfaw;
+    uint8_t trrd;
+    uint8_t trcd;
+    uint8_t trc;
 
     /* DRAM_TPR1 */
-    u8 txp;
-    u8 twtr;
-    u8 trtp = 4;
-    u8 twr;
-    u8 trp;
-    u8 tras;
+    uint8_t txp;
+    uint8_t twtr;
+    uint8_t trtp = 4;
+    uint8_t twr;
+    uint8_t trp;
+    uint8_t tras;
 
     /* DRAM_TPR2 */
-    u16 trefi;
-    u16 trfc;
+    uint16_t trefi;
+    uint16_t trfc;
 
-    u8 tcksrx;
-    u8 tckesr;
-    u8 trd2wr;
-    u8 twr2rd;
-    u8 trasmax;
-    u8 twtp;
-    u8 tcke;
-    u8 tmod;
-    u8 tmrd;
-    u8 tmrw;
+    uint8_t tcksrx;
+    uint8_t tckesr;
+    uint8_t trd2wr;
+    uint8_t twr2rd;
+    uint8_t trasmax;
+    uint8_t twtp;
+    uint8_t tcke;
+    uint8_t tmod;
+    uint8_t tmrd;
+    uint8_t tmrw;
 
-    u8 tcl;
-    u8 tcwl;
-    u8 t_rdata_en;
-    u8 wr_latency;
+    uint8_t tcl;
+    uint8_t tcwl;
+    uint8_t t_rdata_en;
+    uint8_t wr_latency;
 
-    u32 mr0;
-    u32 mr1;
-    u32 mr2;
-    u32 mr3;
+    uint32_t mr0;
+    uint32_t mr1;
+    uint32_t mr2;
+    uint32_t mr3;
 
-    u32 tdinit0;
-    u32 tdinit1;
-    u32 tdinit2;
-    u32 tdinit3;
+    uint32_t tdinit0;
+    uint32_t tdinit1;
+    uint32_t tdinit2;
+    uint32_t tdinit3;
 
     switch (para->dram_type) {
         case SUNXI_DRAM_TYPE_DDR2:
@@ -1268,7 +1268,7 @@ static int auto_scan_dram_config(dram_para_t *para) {
 }
 
 int init_DRAM(int type, dram_para_t *para) {
-    u32 rc, mem_size_mb;
+    uint32_t rc, mem_size_mb;
 
     printk(LOG_LEVEL_DEBUG, "DRAM BOOT DRIVE INFO: %s\n", "V0.24");
     printk(LOG_LEVEL_DEBUG, "DRAM CLK = %d MHz\n", para->dram_clk);
