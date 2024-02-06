@@ -72,6 +72,7 @@
 #define CCU_SCR_BGR_REG (0x93C)
 #define CCU_SPI0_CLK_REG (0x940)
 #define CCU_SPI_BGR_REG (0x96c)
+#define CCU_RISCV_GATING_REG (0xd04)
 
 /* MMC clock bit field */
 #define CCU_MMC_CTRL_M(x) ((x) -1)
