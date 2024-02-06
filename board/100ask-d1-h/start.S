@@ -49,7 +49,7 @@ clear_bss:
 
 clbss_1:
 	sw zero, 0(t0)
-	addi t0, t0, REGBYTES
+	addi t0, t0, 4
 	blt t0, t1, clbss_1
 	ret
 
