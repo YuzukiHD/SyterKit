@@ -20,14 +20,10 @@ void set_pll_cpux_axi(void) {
     write32(CCU_BASE + CCU_CPU_AXI_CFG_REG, (4 << 24) | (1 << 0));
     sdelay(10);
 
-    printk(LOG_LEVEL_INFO, "sunxi_clk_init\n");
-
     /* Disable pll gating */
     val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
     val &= ~(1 << 27);
     write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
-
-    printk(LOG_LEVEL_INFO, "sunxi_clk_init\n");
 
     /* Enable pll ldo */
     val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
@@ -163,19 +159,12 @@ static void set_module(virtual_addr_t addr) {
 }
 
 void sunxi_clk_init(void) {
-    printk(LOG_LEVEL_INFO, "sunxi_clk_init\n");
     set_pll_cpux_axi();
-    printk(LOG_LEVEL_INFO, "set_pll_cpux_axi\n");
     set_pll_periph0();
-    printk(LOG_LEVEL_INFO, "set_pll_periph0\n");
     set_ahb();
-    printk(LOG_LEVEL_INFO, "set_ahb\n");
     set_apb();
-    printk(LOG_LEVEL_INFO, "set_apb\n");
     set_dma();
-    printk(LOG_LEVEL_INFO, "set_dma\n");
     set_mbus();
-    printk(LOG_LEVEL_INFO, "set_mbus\n");
     set_module(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
     set_module(CCU_BASE + CCU_PLL_VIDEO0_CTRL_REG);
     set_module(CCU_BASE + CCU_PLL_VIDEO1_CTRL_REG);
