@@ -9,6 +9,8 @@ extern "C" {
     #include <sun8iw21/sys-clk.h>
 #elif defined(CONFIG_CHIP_SUN8IW20)
     #include <sun8iw20/sys-clk.h>
+#elif defined(CONFIG_CHIP_SUN20IW1)
+    #include <sun20iw1/sys-clk.h>
 #elif defined(CONFIG_CHIP_SUN50IW9)
     #include <sun50iw9/sys-clk.h>
 #elif defined(CONFIG_CHIP_SUN55IW3)

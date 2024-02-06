@@ -2,10 +2,9 @@
 
 set(CONFIG_ARCH_RISCV64 True)
 set(CONFIG_CHIP_SUN20IW1 True)
-set(CONFIG_CHIP_SUN8IW20 True) # CONFIG_CHIP_SUN20IW1 share same pref driver as CONFIG_CHIP_SUN8IW20
 set(CONFIG_BOARD_100ASK_D1_H True)
 
-add_definitions(-DCONFIG_CHIP_SUN8IW20)
+add_definitions(-DCONFIG_CHIP_SUN20IW1)
 
 # Set the cross-compile toolchain
 if(DEFINED ENV{RISCV_ROOT_PATH})
@@ -16,7 +15,7 @@ endif()
 
 set(RISCV_ROOT_PATH ${RISCV_ROOT_PATH} CACHE STRING "root path to riscv toolchain")
 
-set(CROSS_COMPILE "${RISCV_ROOT_PATH}riscv64-unknown-elf-")
+set(CROSS_COMPILE "${RISCV_ROOT_PATH}/riscv64-unknown-elf-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
