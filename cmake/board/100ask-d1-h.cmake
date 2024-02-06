@@ -8,7 +8,14 @@ set(CONFIG_BOARD_100ASK_D1_H True)
 add_definitions(-DCONFIG_CHIP_SUN8IW20)
 
 # Set the cross-compile toolchain
-set(RISCV_ROOT_PATH "")
+if(DEFINED ENV{RISCV_ROOT_PATH})
+    file(TO_CMAKE_PATH $ENV{RISCV_ROOT_PATH} RISCV_ROOT_PATH)
+else()
+    message(FATAL_ERROR "RISCV_ROOT_PATH env must be defined")
+endif()
+
+set(RISCV_ROOT_PATH ${RISCV_ROOT_PATH} CACHE STRING "root path to riscv toolchain")
+
 set(CROSS_COMPILE "${RISCV_ROOT_PATH}riscv64-unknown-elf-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
