@@ -19,8 +19,8 @@ set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow -fno-stack-protector -mstrict-align")
 
 # Disable specific warning flags for C and C++ compilers
-set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
-set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
+set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
+set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-builtin-declaration-mismatch")
 
 set(ARCH_BIN_START_ADDRESS "0x00020000")
 set(ARCH_BIN_SRAM_LENGTH "128K")
