@@ -52,7 +52,7 @@ jobs:
             rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "*.cmake")
             rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "Makefile")
             rm -rf $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "CMakeFiles")
-            cd ${{github.workspace}}/build-$(basename "$file")/board/${boardname} && tar -zcvf ${{github.workspace}}/releases/${boardname}.tar.gz ./*
+            cd ${{github.workspace}}/build-$(basename "$file")/board/${boardname} && tar -zcvf ${{github.workspace}}/releases/${boardname}.tar.gz ./*.bin ./*.elf
           fi
         done
 
