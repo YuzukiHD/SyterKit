@@ -646,13 +646,13 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
           (cfg[20] << 20) | (cfg[21] << 25);
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
 
-    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP0 = 0x%x\n",
+    printk(LOG_LEVEL_TRACE, "MCTL_COM_REMAP0 = 0x%x\n",
            readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
-    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP1 = 0x%x\n",
+    printk(LOG_LEVEL_TRACE, "MCTL_COM_REMAP1 = 0x%x\n",
            readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
-    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP2 = 0x%x\n",
+    printk(LOG_LEVEL_TRACE, "MCTL_COM_REMAP2 = 0x%x\n",
            readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
-    printk(LOG_LEVEL_DEBUG, "MCTL_COM_REMAP3 = 0x%x\n",
+    printk(LOG_LEVEL_TRACE, "MCTL_COM_REMAP3 = 0x%x\n",
            readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
 }
 
