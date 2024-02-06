@@ -12,6 +12,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | [TinyVision](https://github.com/YuzukiHD/TinyVision)         | YuzukiHD     | V851se   | Cortex A7                         | [board/tinyvision](board/tinyvision)           | `tinyvision.cmake`      |
 | 100ask-t113s3                                                | 100ask       | T113-S3  | Dual-Core Cortex A7               | [board/100ask-t113s3](board/100ask-t113s3)     | `100ask-t113s3.cmake`   |
 | 100ask-t113i                                                 | 100ask       | T113-I   | Dual-Core Cortex A7 + C906 RISC-V | [board/100ask-t113i](board/100ask-t113i)       | `100ask-t113i.cmake`    |
+| 100ask-d1-h                                                  | 100ask       | D1-H     | C906 RISC-V                       | [board/100ask-d1-h](board/100ask-d1-h)         | `100ask-d1-h.cmake`     |
 | dongshanpi-aict                                              | 100ask       | V853     | Cortex A7                         | [board/dongshanpi-aict](board/dongshanpi-aict) | `dongshanpi-aict.cmake` |
 | project-yosemite                                             | YuzukiHD     | V853     | Cortex A7                         | [board/project-yosemite](board/project-yosemite) | `project-yosemite.cmake` |
 | 100ask ROS                                                   | 100ask       | R818     | Quad-Core Cortex A53              | [board/100ask-ros](board/100ask-ros)           | `100ask-ros.cmake`      |
