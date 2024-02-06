@@ -26,7 +26,7 @@ reset:
 	csrw mie, zero
 
 	/* enable theadisaee */
-	li t1, (0x1 << 22)
+	li t1, (0x1 << 22) | (1 << 21) | (1 << 15)
 	csrs mxstatus, t1
 
 	/* invaild ICACHE/DCACHE/BTB/BHT */
@@ -128,7 +128,7 @@ vectors:
 	li x5, -1
 	SREG x5, 36 * REGSZ(x2)
 	move a0, sp
-	// jal riscv64_handle_exception
+	jal riscv64_handle_exception
 	csrr a0, mscratch
 	LREG x1, 1 * REGSZ(a0)
 	LREG x2, 2 * REGSZ(a0)

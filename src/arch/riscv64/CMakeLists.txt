@@ -2,7 +2,9 @@
 
 add_library(arch-obj OBJECT
     timer.c
+    exception.c
     memcpy.S
     memset.S
+    fprw.S
     memcmp.c
 )
