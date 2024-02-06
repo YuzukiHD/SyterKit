@@ -16,7 +16,7 @@ jobs:
         with:
           repository: ${{ github.repository }}
     outputs:
-      release_id: ${{ steps.last-release.outputs.release }}
+      release_id: ${{ steps.last-release.outputs.id }}
 
   build:
     runs-on: ubuntu-latest
