@@ -8,7 +8,8 @@ set(CONFIG_BOARD_100ASK_D1_H True)
 add_definitions(-DCONFIG_CHIP_SUN8IW20)
 
 # Set the cross-compile toolchain
-set(CROSS_COMPILE "/home/yuzuki/sdk/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/riscv64-unknown-elf-")
+set(RISCV_ROOT_PATH "")
+set(CROSS_COMPILE "${RISCV_ROOT_PATH}/riscv64-unknown-elf-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
