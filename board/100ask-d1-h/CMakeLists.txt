@@ -9,3 +9,5 @@ add_subdirectory(hello_world)
 add_subdirectory(init_dram)
 
 add_subdirectory(hifi4_load)
+
+add_subdirectory(syter_boot)
