@@ -11,6 +11,12 @@
 
 #include <timer.h>
 
+static uint32_t init_timestamp = 0;
+
+void set_timer_count() {
+    init_timestamp = (uint32_t) time_us();
+}
+
 /*
  * 64bit arch timer.CNTPCT
  * Freq = 24000000Hz
@@ -67,4 +73,8 @@ void sdelay(uint32_t loops) {
             : "r"(loops)       // Input operand: loops
             : "t0"             // Clobbered registers: t0
     );
+}
+
+uint32_t get_init_timestamp() {
+    return init_timestamp;
 }

@@ -1,26 +1,26 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 #include <linkage.h>
+#include <csr.h>
 
-.globl _start
-.text
-
+	.text
+	.globl _start
 _start:
 	/* Boot head information for BROM */
-	.long 0xea000016
+	.long 0x0300006f
 	.byte 'e', 'G', 'O', 'N', '.', 'B', 'T', '0'
-	.long 0x12345678                                /* checksum */
-	.long __spl_size                                /* spl size */
-	.long 0x30                                      /* boot header size */
-	.long 0x30303033                                /* boot header version */
-	.long 0x00020000                                /* return value */
-	.long 0x00028000                                /* run address */
-	.long 0x0                                       /* eGON version */
-	.byte 0x00, 0x00, 0x00, 0x00    				/* platform information - 8byte */
+	.long 0x12345678				/* checksum */
+	.long __spl_size				/* spl size */
+	.long 0x30						/* boot header size */
+	.long 0x30303033				/* boot header version */
+	.long 0x00020000				/* return value */
+	.long 0x00028000				/* run address */
+	.long 0x0						/* eGON version */
+	.byte 0x00, 0x00, 0x00, 0x00	/* platform information - 8byte */
 	.byte 0x34, 0x2e, 0x30, 0x00
 
-	.align 5
-
+	.align 4
+	.globl reset
 reset:
 	/* disable interrupt */
 	csrw mie, zero
@@ -33,7 +33,32 @@ reset:
 	li t2, 0x30013
 	csrs mcor, t2
 
-	li sp, __stack_srv_end
+	/* Config pmp register */
+	li t0, (0xfffffffc >> 2)
+	csrw pmpaddr0, t0
+	li t0, ((0x0 << 7) | (0x1 << 3) | (0x1 << 2) | (0x1 << 1) | (0x1 << 0))
+	csrw pmpcfg0, t0
+
+	/* Mask all interrupts */
+	csrw mideleg, zero
+	csrw medeleg, zero
+	csrw mie, zero
+	csrw mip, zero
+
+	/* Setup exception vectors */
+	la t1, _image_start
+	LREG t1, (t1)
+	la t2, _start
+	sub t0, t1, t2
+	la a0, vectors
+	add a0, a0, t0
+	csrw mtvec, a0
+
+	/* Enable fpu and accelerator and vector if present */
+	li t0, MSTATUS_FS | MSTATUS_XS | (3 << 23)
+	csrs mstatus, t0
+
+	la sp, _stack_start
 
 	jal clear_bss
 
@@ -41,11 +66,9 @@ reset:
 
 	jal main
 
-	j .
-
 clear_bss:
-	la	t0, _sbss
-	la	t1, _ebss
+	la	t0, _s_bss
+	la	t1, _e_bss
 
 clbss_1:
 	sw zero, 0(t0)
@@ -139,3 +162,18 @@ vectors:
 	LREG x31, 31 * REGSZ(a0)
 	LREG x10, 10 * REGSZ(a0)
 	mret
+
+	/*
+	* The location of section
+	*/
+	.align 3
+_image_start:
+	RVPTR __image_start
+_s_bss:
+	RVPTR _sbss
+_e_bss:
+	RVPTR _ebss
+_stack_start:
+	RVPTR __stack_srv_start
+_stack_end:
+	RVPTR __stack_srv_end
