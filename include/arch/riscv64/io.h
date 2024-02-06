@@ -3,6 +3,8 @@
 #ifndef __IO_H__
 #define __IO_H__
 
+#include <stdint.h>
+
 #define BIT(x) (1 << x)
 #define clrsetbits_le32(addr, clear, set) \
     write32((addr), (read32(addr) & ~(clear)) | (set))
@@ -17,8 +19,6 @@
 
 #define readl(addr) read32(addr)
 #define writel(val, addr) write32((addr), (val))
-
-typedef uint32_t virtual_addr_t;
 
 static inline __attribute__((__always_inline__)) uint8_t read8(virtual_addr_t addr) {
     return (*((volatile uint8_t *) (addr)));

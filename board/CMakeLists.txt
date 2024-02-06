@@ -41,3 +41,7 @@ endif()
 if(CONFIG_BOARD_LT527X)
     add_subdirectory(lt527x)
 endif()
+
+if(CONFIG_BOARD_100ASK_D1_H)
+    add_subdirectory(100ask-d1-h)
+endif()
