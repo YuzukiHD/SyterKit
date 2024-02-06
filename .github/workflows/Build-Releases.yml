@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  prepare_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get time
+        id: time
+        uses: nanzm/get-time-action@v1.1
+        with:
+          format: 'YYYYMMDD-HHmm'
+      - name: Create empty release
+        id: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.time.outputs.time }}
+          body_path: README.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_commitish: main
+          draft: false
+    outputs:
+      release_id: ${{ steps.release.outputs.id }}
+  build:
+    runs-on: ubuntu-latest
+    needs: prepare_release
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup env
+      run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
+
+    - name: Find and build CMake files
+      run: |
+        find ./cmake/board/ -name "*.cmake" -type f | while read file; do
+          cmake -B ${{github.workspace}}/build-$(basename "$file") -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_BOARD_FILE=$(basename "$file")
+          cmake --build ${{github.workspace}}/build-$(basename "$file") --config ${{env.BUILD_TYPE}}
+        done
+    - name: Compress files
+      run: |
+        mkdir ${{github.workspace}}/releases
+        find ./cmake/board/ -name "*.cmake" -type f | while read file; do
+          cmakename=$(basename "$file")
+          boardname=${cmakename:0:-6}
+          if [ -d ${{github.workspace}}/build-$(basename "$file")/board/${boardname} ]; then
+            rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "*.cmake")
+            rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "Makefile")
+            rm -rf $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "CMakeFiles")
+            cd ${{github.workspace}}/build-$(basename "$file")/board/${boardname} && tar -zcvf ${{github.workspace}}/releases/${boardname}.tar.gz ./*
+          fi
+        done
+    - name: Upload
+      if: needs.prepare_release.outputs.release_id != ''
+      uses: xresloader/upload-to-github-release@v1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ needs.prepare_release.outputs.release_id }}
+        file: "${{github.workspace}}/releases/*.tar.gz"
+        draft: false
+    - name: Rollback release
+      if: failure() && needs.prepare_release.outputs.release_id != ''
+      uses: author/action-rollback@stable
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ needs.prepare_release.outputs.release_id }}
+     
