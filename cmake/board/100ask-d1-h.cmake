@@ -9,7 +9,7 @@ add_definitions(-DCONFIG_CHIP_SUN8IW20)
 
 # Set the cross-compile toolchain
 set(RISCV_ROOT_PATH "")
-set(CROSS_COMPILE "${RISCV_ROOT_PATH}/riscv64-unknown-elf-")
+set(CROSS_COMPILE "${RISCV_ROOT_PATH}riscv64-unknown-elf-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
