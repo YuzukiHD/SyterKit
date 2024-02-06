@@ -21,6 +21,13 @@ jobs:
     - name: Setup env
       run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
 
+    - name: Install RV64 Toolchain
+      run: |
+        wget https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+        tar -xf Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+        export RISCV_ROOT_PATH=${{github.workspace}}/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/
+      
+
     - name: Find and build CMake files
       run: |
         find ./cmake/board/ -name "*.cmake" -type f | while read file; do
