@@ -20,6 +20,7 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
+        PROVIDE(__image_start = .);
         PROVIDE(__spl_start = .);
         *(.text .text.*)
         PROVIDE(__ddr_bin_start = .);
@@ -28,6 +29,12 @@ SECTIONS
         KEEP(*(.note.gnu.build-id))
         . = ALIGN(4);
     } > ram
+
+	. = ALIGN(16);
+  	.rodata : { *(.rodata) }
+
+	. = ALIGN(16);
+  	.data : { *(.data) }
 
     . = ALIGN(4);
 

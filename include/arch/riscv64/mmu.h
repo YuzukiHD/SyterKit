@@ -10,6 +10,10 @@ extern "C" {
 #include "timer.h"
 
 
+static inline void data_sync_barrier(void) {
+    asm volatile("fence.i");
+}
+
 #ifdef __cplusplus
 }
 #endif
