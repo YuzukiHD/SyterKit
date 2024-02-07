@@ -61,7 +61,6 @@ extern sunxi_i2c_t i2c_pmu;
 extern sdhci_t sdhci0;
 
 extern void enable_sram_a3();
-extern void show_chip();
 extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
 extern void sunxi_nsi_init();
@@ -306,7 +305,6 @@ int main(void) {
     sunxi_serial_init(&uart_dbg);
 
     show_banner();
-    show_chip();
 
     rtc_set_vccio_det_spare();
 

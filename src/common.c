@@ -4,6 +4,9 @@
 #include <log.h>
 #include <timer.h>
 
+void __attribute__((weak)) show_chip(void) {
+}
+
 void show_banner(void) {
     printk(LOG_LEVEL_MUTE, "\n");
     printk(LOG_LEVEL_INFO, " _____     _           _____ _ _   \n");
@@ -17,4 +20,6 @@ void show_banner(void) {
     printk(LOG_LEVEL_INFO, "***********************************\n");
     printk(LOG_LEVEL_INFO, " Built by: %s\n", PROJECT_C_COMPILER);
     printk(LOG_LEVEL_INFO, "\n");
+
+    show_chip();
 }
