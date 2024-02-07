@@ -15,8 +15,8 @@
 #include "xformat.h"
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 enum {
     LOG_LEVEL_TRACE = 0,
@@ -28,8 +28,14 @@ enum {
 };
 
 #ifndef LOG_LEVEL_DEFAULT
+
+#ifdef DEBUG_MODE
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
-#endif
+#else
+#define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
+#endif// DEBUG_MODE
+
+#endif// LOG_LEVEL_DEFAULT
 
 void set_timer_count();
 
@@ -39,6 +45,6 @@ void uart_printf(const char *fmt, ...);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif
