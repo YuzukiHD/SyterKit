@@ -55,9 +55,6 @@ int main(void) {
 
     show_banner();
 
-    printk(LOG_LEVEL_INFO, "Board: Myir Tech LT527X-E, Chip: Allwinner T527\n");
-    printk(LOG_LEVEL_INFO, "SoC: Arm Octa-Core Cortex-A55 v65 r2p0\n");
-
     sunxi_clk_init();
 
     sunxi_clk_dump();
