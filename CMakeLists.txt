@@ -98,6 +98,10 @@ include(cmake/add_syterkit_app.cmake)
 string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)
 string(REGEX REPLACE ".*/" "" COMPILER_NAME ${COMPILER_NAME})
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    ADD_DEFINITIONS(-DDEBUG_MODE)
+endif()
+
 # Configure file as required
 configure_file(
     "${PROJECT_SOURCE_DIR}/config.h.in"
