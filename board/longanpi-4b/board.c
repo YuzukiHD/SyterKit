@@ -177,7 +177,7 @@ void show_chip() {
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
     printk(LOG_LEVEL_INFO, "Model: Sipeed LM4B Based board.\n");
-    printk(LOG_LEVEL_INFO, "SoC: Arm Octa-Core Cortex-A55 v65 r2p0\n");
+    printk(LOG_LEVEL_INFO, "Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");
     printk(LOG_LEVEL_INFO, "Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
     uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
@@ -195,5 +195,5 @@ void show_chip() {
     }
 
     uint32_t version = read32(SUNXI_SYSCTRL_BASE + 0x24) & 0x7;
-    printk(LOG_LEVEL_MUTE, "\tChip Version = %x \n", version);
+    printk(LOG_LEVEL_MUTE, " Chip Version = %x \n", version);
 }
