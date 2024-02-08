@@ -1,9 +1,7 @@
 <map id="include/common.h" name="include/common.h">
 <area shape="rect" id="node1" title=" " alt="" coords="126,5,269,32"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,80,88,107"/>
-<area shape="rect" id="node5" title=" " alt="" coords="112,80,187,107"/>
-<area shape="rect" id="node6" title=" " alt="" coords="211,80,282,107"/>
-<area shape="rect" id="node7" title=" " alt="" coords="306,80,377,107"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,155,82,181"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,229,82,256"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,80,88,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="112,80,187,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="211,80,282,107"/>
+<area shape="rect" id="node5" title=" " alt="" coords="306,80,377,107"/>
 </map>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -79,7 +79,7 @@ $(function() {
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;io.h&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;stdarg.h&gt;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="../../d9/d5e/stdbool_8h.html">stdbool.h</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;stdbool.h&gt;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;stddef.h&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;types.h&gt;</span></div>
@@ -96,8 +96,8 @@ $(function() {
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#endif</span><span class="comment">// __cplusplus</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
 <div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="../../dc/dfe/struct__irq__handler.html">   30</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="../../dc/dfe/struct__irq__handler.html">_irq_handler</a> {</div>
-<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="../../dc/dfe/struct__irq__handler.html#a6ccf658474283fd4fc591fc93cd3b6a2">   31</a></span>&#160;    <span class="keywordtype">void</span> *<a class="code" href="../../dc/dfe/struct__irq__handler.html#a6ccf658474283fd4fc591fc93cd3b6a2">data</a>;</div>
-<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="../../dc/dfe/struct__irq__handler.html#aabe3433d1d1d47aa06f600f7e93c6eb5">   32</a></span>&#160;    void (*<a class="code" href="../../dc/dfe/struct__irq__handler.html#aabe3433d1d1d47aa06f600f7e93c6eb5">func</a>)(<span class="keywordtype">void</span> *<a class="code" href="../../dc/dfe/struct__irq__handler.html#a6ccf658474283fd4fc591fc93cd3b6a2">data</a>);</div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="../../dc/dfe/struct__irq__handler.html#a0e8b327c40de9d67c14e9dec65344ca8">   31</a></span>&#160;    <span class="keywordtype">void</span> *<a class="code" href="../../dc/dfe/struct__irq__handler.html#a0e8b327c40de9d67c14e9dec65344ca8">data</a>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="../../dc/dfe/struct__irq__handler.html#ad09255c289d1d2fc6afa276ab7145a82">   32</a></span>&#160;    void (*<a class="code" href="../../dc/dfe/struct__irq__handler.html#ad09255c289d1d2fc6afa276ab7145a82">func</a>)(<span class="keywordtype">void</span> *<a class="code" href="../../dc/dfe/struct__irq__handler.html#a0e8b327c40de9d67c14e9dec65344ca8">data</a>);</div>
 <div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="../../d8/dcb/sys-gic_8h.html#ab8280495d46ea743f25f4836e32c3952">   33</a></span>&#160;} <a class="code" href="../../d8/dcb/sys-gic_8h.html#ab8280495d46ea743f25f4836e32c3952">irq_handler_t</a>;</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
 <div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="../../d8/dcb/sys-gic_8h.html#adfb0d9ffc816c22df60bdf423294ab15">   40</a></span>&#160;<span class="keyword">typedef</span> void(<a class="code" href="../../d8/dcb/sys-gic_8h.html#adfb0d9ffc816c22df60bdf423294ab15">interrupt_handler_t</a>)(<span class="keywordtype">void</span> *);</div>
@@ -128,10 +128,9 @@ $(function() {
 <div class="ttc" id="acommon_8h_html"><div class="ttname"><a href="../../dc/d54/common_8h.html">common.h</a></div></div>
 <div class="ttc" id="alog_8h_html"><div class="ttname"><a href="../../d7/d7f/log_8h.html">log.h</a></div></div>
 <div class="ttc" id="areg-gic_8h_html"><div class="ttname"><a href="../../d4/d70/reg-gic_8h.html">reg-gic.h</a></div></div>
-<div class="ttc" id="astdbool_8h_html"><div class="ttname"><a href="../../d9/d5e/stdbool_8h.html">stdbool.h</a></div></div>
 <div class="ttc" id="astruct__irq__handler_html"><div class="ttname"><a href="../../dc/dfe/struct__irq__handler.html">_irq_handler</a></div><div class="ttdoc">Structure for IRQ handler.</div><div class="ttdef"><b>Definition:</b> sys-gic.h:30</div></div>
-<div class="ttc" id="astruct__irq__handler_html_a6ccf658474283fd4fc591fc93cd3b6a2"><div class="ttname"><a href="../../dc/dfe/struct__irq__handler.html#a6ccf658474283fd4fc591fc93cd3b6a2">_irq_handler::data</a></div><div class="ttdeci">void * data</div><div class="ttdef"><b>Definition:</b> sys-gic.h:31</div></div>
-<div class="ttc" id="astruct__irq__handler_html_aabe3433d1d1d47aa06f600f7e93c6eb5"><div class="ttname"><a href="../../dc/dfe/struct__irq__handler.html#aabe3433d1d1d47aa06f600f7e93c6eb5">_irq_handler::func</a></div><div class="ttdeci">void(* func)(void *data)</div><div class="ttdef"><b>Definition:</b> sys-gic.h:32</div></div>
+<div class="ttc" id="astruct__irq__handler_html_a0e8b327c40de9d67c14e9dec65344ca8"><div class="ttname"><a href="../../dc/dfe/struct__irq__handler.html#a0e8b327c40de9d67c14e9dec65344ca8">_irq_handler::data</a></div><div class="ttdeci">void * data</div><div class="ttdef"><b>Definition:</b> sys-gic.h:31</div></div>
+<div class="ttc" id="astruct__irq__handler_html_ad09255c289d1d2fc6afa276ab7145a82"><div class="ttname"><a href="../../dc/dfe/struct__irq__handler.html#ad09255c289d1d2fc6afa276ab7145a82">_irq_handler::func</a></div><div class="ttdeci">void(* func)(void *data)</div><div class="ttdef"><b>Definition:</b> sys-gic.h:32</div></div>
 <div class="ttc" id="astructarm__regs__t_html"><div class="ttname"><a href="../../df/dce/structarm__regs__t.html">arm_regs_t</a></div><div class="ttdef"><b>Definition:</b> mmu.h:12</div></div>
 <div class="ttc" id="asys-gic_8h_html_a0887b9f1852bbd76d2accffdc174de50"><div class="ttname"><a href="../../d8/dcb/sys-gic_8h.html#a0887b9f1852bbd76d2accffdc174de50">arch_interrupt_exit</a></div><div class="ttdeci">int arch_interrupt_exit(void)</div><div class="ttdoc">Exits the interrupt mechanism.</div><div class="ttdef"><b>Definition:</b> sys-gic.c:170</div></div>
 <div class="ttc" id="asys-gic_8h_html_a2f04f2465eb710caeed3a470ef57365f"><div class="ttname"><a href="../../d8/dcb/sys-gic_8h.html#a2f04f2465eb710caeed3a470ef57365f">arch_interrupt_init</a></div><div class="ttdeci">int arch_interrupt_init(void)</div><div class="ttdoc">Initializes the interrupt mechanism.</div><div class="ttdef"><b>Definition:</b> sys-gic.c:162</div></div>

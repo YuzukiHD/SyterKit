@@ -1,19 +1,17 @@
 <map id="include/drivers/sys&#45;spi&#45;nand.h" name="include/drivers/sys&#45;spi&#45;nand.h">
-<area shape="rect" id="node1" title=" " alt="" coords="340,5,484,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="73,244,120,271"/>
-<area shape="rect" id="node3" title=" " alt="" coords="219,393,294,420"/>
-<area shape="rect" id="node4" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="22,319,104,345"/>
-<area shape="rect" id="node7" title=" " alt="" coords="672,319,747,345"/>
-<area shape="rect" id="node8" title=" " alt="" coords="772,319,842,345"/>
-<area shape="rect" id="node9" title=" " alt="" coords="600,468,670,495"/>
-<area shape="rect" id="node10" href="$d2/dae/sys-clk_8h.html" title=" " alt="" coords="680,169,760,196"/>
-<area shape="rect" id="node11" href="$dd/dc0/sys-spi_8h.html" title=" " alt="" coords="411,95,491,121"/>
-<area shape="rect" id="node12" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="194,169,284,196"/>
-<area shape="rect" id="node13" href="$d7/d7f/log_8h.html" title=" " alt="" coords="348,244,402,271"/>
-<area shape="rect" id="node5" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="28,393,98,420"/>
-<area shape="rect" id="node6" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="28,468,98,495"/>
-<area shape="rect" id="node14" title=" " alt="" coords="308,319,376,345"/>
-<area shape="rect" id="node15" title=" " alt="" coords="400,319,486,345"/>
-<area shape="rect" id="node16" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="510,319,597,345"/>
-<area shape="rect" id="node17" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="522,393,593,420"/>
+<area shape="rect" id="node1" title=" " alt="" coords="409,5,553,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="710,244,756,271"/>
+<area shape="rect" id="node3" title=" " alt="" coords="506,393,581,420"/>
+<area shape="rect" id="node4" title=" " alt="" coords="53,319,136,345"/>
+<area shape="rect" id="node5" title=" " alt="" coords="160,319,234,345"/>
+<area shape="rect" id="node6" title=" " alt="" coords="675,319,746,345"/>
+<area shape="rect" id="node7" title=" " alt="" coords="318,468,388,495"/>
+<area shape="rect" id="node8" href="$d2/dae/sys-clk_8h.html" title=" " alt="" coords="69,169,149,196"/>
+<area shape="rect" id="node9" href="$dd/dc0/sys-spi_8h.html" title=" " alt="" coords="310,95,390,121"/>
+<area shape="rect" id="node10" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="478,169,567,196"/>
+<area shape="rect" id="node11" href="$d7/d7f/log_8h.html" title=" " alt="" coords="427,244,482,271"/>
+<area shape="rect" id="node12" title=" " alt="" coords="420,319,488,345"/>
+<area shape="rect" id="node13" title=" " alt="" coords="512,319,599,345"/>
+<area shape="rect" id="node14" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="310,319,396,345"/>
+<area shape="rect" id="node15" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="318,393,388,420"/>
 </map>

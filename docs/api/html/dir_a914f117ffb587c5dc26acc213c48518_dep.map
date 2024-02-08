@@ -1,6 +1,6 @@
 <map id="board/tinyvision/hello_world" name="board/tinyvision/hello_world">
 <area shape="rect" id="node1" href="dir_a914f117ffb587c5dc26acc213c48518.html" title="hello_world" alt="" coords="27,52,125,100"/>
 <area shape="rect" id="node2" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="40,148,112,196"/>
-<area shape="rect" id="edge1-headlabel" href="dir_000073_000179.html" title="2" alt="" coords="80,122,89,137"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000081_000179.html" title="1" alt="" coords="80,122,89,137"/>
 <area shape="rect" id="clust1" href="dir_8cdbe1a1b73e9eeb7a2380c3dc6c5b74.html" title="tinyvision" alt="" coords="16,16,136,111"/>
 </map>

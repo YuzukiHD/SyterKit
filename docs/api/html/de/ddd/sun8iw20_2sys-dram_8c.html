@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -78,7 +78,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -91,23 +91,21 @@ Include dependency graph for sys-dram.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/df9/sun8iw20_2sys-dram_8c__incl.png" border="0" usemap="#asrc_2drivers_2sun8iw20_2sys-dram_8c" alt=""/></div>
 <map name="asrc_2drivers_2sun8iw20_2sys-dram_8c" id="asrc_2drivers_2sun8iw20_2sys-dram_8c">
-<area shape="rect" title=" " alt="" coords="519,5,675,47"/>
+<area shape="rect" title=" " alt="" coords="535,5,691,47"/>
 <area shape="rect" title=" " alt="" coords="5,95,52,121"/>
-<area shape="rect" title=" " alt="" coords="213,244,287,271"/>
-<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="789,169,871,196"/>
-<area shape="rect" title=" " alt="" coords="543,169,618,196"/>
-<area shape="rect" title=" " alt="" coords="643,169,713,196"/>
-<area shape="rect" title=" " alt="" coords="431,319,501,345"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="479,95,533,121"/>
-<area shape="rect" title=" " alt="" coords="825,95,905,121"/>
-<area shape="rect" title=" " alt="" coords="929,95,1024,121"/>
-<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="659,95,750,121"/>
-<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="795,244,865,271"/>
-<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="795,319,865,345"/>
-<area shape="rect" title=" " alt="" coords="179,169,247,196"/>
-<area shape="rect" title=" " alt="" coords="271,169,357,196"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="381,169,468,196"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="393,244,464,271"/>
+<area shape="rect" title=" " alt="" coords="146,244,221,271"/>
+<area shape="rect" title=" " alt="" coords="493,169,575,196"/>
+<area shape="rect" title=" " alt="" coords="599,169,674,196"/>
+<area shape="rect" title=" " alt="" coords="749,169,820,196"/>
+<area shape="rect" title=" " alt="" coords="548,319,619,345"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="428,95,483,121"/>
+<area shape="rect" title=" " alt="" coords="774,95,854,121"/>
+<area shape="rect" title=" " alt="" coords="879,95,973,121"/>
+<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="609,95,699,121"/>
+<area shape="rect" title=" " alt="" coords="128,169,196,196"/>
+<area shape="rect" title=" " alt="" coords="220,169,307,196"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="331,169,417,196"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="343,244,413,271"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -122,51 +120,51 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a160883def720fd0e583d7401a153aa4c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a160883def720fd0e583d7401a153aa4c">ns_to_t</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para, int nanoseconds)</td></tr>
+<tr class="memitem:a160883def720fd0e583d7401a153aa4c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a160883def720fd0e583d7401a153aa4c">ns_to_t</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para, int nanoseconds)</td></tr>
 <tr class="separator:a160883def720fd0e583d7401a153aa4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ddc5924f3d9c178b0ed2ccc2cf582d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ad5ddc5924f3d9c178b0ed2ccc2cf582d">sid_read_ldoB_cal</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:ad5ddc5924f3d9c178b0ed2ccc2cf582d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ad5ddc5924f3d9c178b0ed2ccc2cf582d">sid_read_ldoB_cal</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:ad5ddc5924f3d9c178b0ed2ccc2cf582d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e25c31c152f2f5d7d051cc056026df7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a7e25c31c152f2f5d7d051cc056026df7">dram_voltage_set</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a7e25c31c152f2f5d7d051cc056026df7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a7e25c31c152f2f5d7d051cc056026df7">dram_voltage_set</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a7e25c31c152f2f5d7d051cc056026df7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad44a52854c400a9e3cab763b4d02eb29"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ad44a52854c400a9e3cab763b4d02eb29">dram_enable_all_master</a> (void)</td></tr>
 <tr class="separator:ad44a52854c400a9e3cab763b4d02eb29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74c71bed7505dc94acadf57e6b45237f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a74c71bed7505dc94acadf57e6b45237f">dram_disable_all_master</a> (void)</td></tr>
 <tr class="separator:a74c71bed7505dc94acadf57e6b45237f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a09ce6784de1fe847821e04fe9be029"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a6a09ce6784de1fe847821e04fe9be029">eye_delay_compensation</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a6a09ce6784de1fe847821e04fe9be029"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a6a09ce6784de1fe847821e04fe9be029">eye_delay_compensation</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a6a09ce6784de1fe847821e04fe9be029"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62ddf38a540a558d148747b577c10391"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a62ddf38a540a558d148747b577c10391">mctl_set_timing_params</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a62ddf38a540a558d148747b577c10391"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a62ddf38a540a558d148747b577c10391">mctl_set_timing_params</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a62ddf38a540a558d148747b577c10391"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef2a1328a26b4bc08f92b96977b8a9c7"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aef2a1328a26b4bc08f92b96977b8a9c7">ccu_set_pll_ddr_clk</a> (int <a class="el" href="../../dc/de4/usb_8h.html#a852b86a2eaee9852ada7a43e61e311a2">index</a>, <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:aef2a1328a26b4bc08f92b96977b8a9c7"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aef2a1328a26b4bc08f92b96977b8a9c7">ccu_set_pll_ddr_clk</a> (int <a class="el" href="../../dc/de4/usb_8h.html#a852b86a2eaee9852ada7a43e61e311a2">index</a>, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:aef2a1328a26b4bc08f92b96977b8a9c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ba9acf9013927508e39ec2a053700ff"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a0ba9acf9013927508e39ec2a053700ff">mctl_sys_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a0ba9acf9013927508e39ec2a053700ff"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a0ba9acf9013927508e39ec2a053700ff">mctl_sys_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a0ba9acf9013927508e39ec2a053700ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77d07df38fa50a9a3e03e2bf058c52a0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a77d07df38fa50a9a3e03e2bf058c52a0">mctl_com_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a77d07df38fa50a9a3e03e2bf058c52a0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a77d07df38fa50a9a3e03e2bf058c52a0">mctl_com_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a77d07df38fa50a9a3e03e2bf058c52a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a659ee4d45d9f506448e318dd9a7c0962"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a659ee4d45d9f506448e318dd9a7c0962">mctl_phy_ac_remapping</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a659ee4d45d9f506448e318dd9a7c0962"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a659ee4d45d9f506448e318dd9a7c0962">mctl_phy_ac_remapping</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a659ee4d45d9f506448e318dd9a7c0962"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdcf95dc45c10d79f1c8ff182a5579dc"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#abdcf95dc45c10d79f1c8ff182a5579dc">mctl_channel_init</a> (unsigned int ch_index, <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:abdcf95dc45c10d79f1c8ff182a5579dc"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#abdcf95dc45c10d79f1c8ff182a5579dc">mctl_channel_init</a> (unsigned int ch_index, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:abdcf95dc45c10d79f1c8ff182a5579dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf201df6b48d593c39aa4a372933784e"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#abf201df6b48d593c39aa4a372933784e">calculate_rank_size</a> (<a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> regval)</td></tr>
 <tr class="separator:abf201df6b48d593c39aa4a372933784e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae758710460deef74548ff0674fabe7a1"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ae758710460deef74548ff0674fabe7a1">DRAMC_get_dram_size</a> (void)</td></tr>
 <tr class="separator:ae758710460deef74548ff0674fabe7a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae80cb028631e82df1c99ac0f99f9c7eb"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ae80cb028631e82df1c99ac0f99f9c7eb">dqs_gate_detect</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:ae80cb028631e82df1c99ac0f99f9c7eb"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ae80cb028631e82df1c99ac0f99f9c7eb">dqs_gate_detect</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:ae80cb028631e82df1c99ac0f99f9c7eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abec1982429a5eb1c6252b46ee056e185"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#abec1982429a5eb1c6252b46ee056e185">dramc_simple_wr_test</a> (unsigned int mem_mb, int len)</td></tr>
 <tr class="separator:abec1982429a5eb1c6252b46ee056e185"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c9cb7dec05593672466db19f861c604"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a2c9cb7dec05593672466db19f861c604">mctl_vrefzq_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a2c9cb7dec05593672466db19f861c604"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a2c9cb7dec05593672466db19f861c604">mctl_vrefzq_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a2c9cb7dec05593672466db19f861c604"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa637e8dfc5f20739fae15596bbc2ffed"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aa637e8dfc5f20739fae15596bbc2ffed">mctl_core_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:aa637e8dfc5f20739fae15596bbc2ffed"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aa637e8dfc5f20739fae15596bbc2ffed">mctl_core_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:aa637e8dfc5f20739fae15596bbc2ffed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa325ae323c560b485cb5f0b9462678f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#afa325ae323c560b485cb5f0b9462678f">auto_scan_dram_size</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:afa325ae323c560b485cb5f0b9462678f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#afa325ae323c560b485cb5f0b9462678f">auto_scan_dram_size</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:afa325ae323c560b485cb5f0b9462678f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1fa510ef578363884f1ed3d61b47c97"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ae1fa510ef578363884f1ed3d61b47c97">auto_scan_dram_rank_width</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:ae1fa510ef578363884f1ed3d61b47c97"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#ae1fa510ef578363884f1ed3d61b47c97">auto_scan_dram_rank_width</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:ae1fa510ef578363884f1ed3d61b47c97"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a59c78bdb24da5a763de547e46aa2e61f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a59c78bdb24da5a763de547e46aa2e61f">auto_scan_dram_config</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:a59c78bdb24da5a763de547e46aa2e61f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#a59c78bdb24da5a763de547e46aa2e61f">auto_scan_dram_config</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:a59c78bdb24da5a763de547e46aa2e61f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aadc877acf1f1d1db4285b5e03068bc5d">init_DRAM</a> (int type, <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#aadc877acf1f1d1db4285b5e03068bc5d">init_DRAM</a> (int type, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde55c326bd1410bc2aef315fce90d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#afde55c326bd1410bc2aef315fce90d96">sunxi_dram_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:afde55c326bd1410bc2aef315fce90d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ddd/sun8iw20_2sys-dram_8c.html#afde55c326bd1410bc2aef315fce90d96">sunxi_dram_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:afde55c326bd1410bc2aef315fce90d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
@@ -244,7 +242,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int auto_scan_dram_config </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -270,7 +268,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int auto_scan_dram_rank_width </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -296,7 +294,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int auto_scan_dram_size </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -354,7 +352,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em>&#160;</td>
         </tr>
         <tr>
@@ -384,7 +382,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int dqs_gate_detect </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -462,7 +460,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void dram_voltage_set </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -550,7 +548,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void eye_delay_compensation </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -579,7 +577,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em>&#160;</td>
         </tr>
         <tr>
@@ -610,7 +608,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em>&#160;</td>
         </tr>
         <tr>
@@ -640,7 +638,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void mctl_com_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -666,7 +664,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int mctl_core_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -692,7 +690,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void mctl_phy_ac_remapping </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -718,7 +716,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void mctl_set_timing_params </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -744,7 +742,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void mctl_sys_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -770,7 +768,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void mctl_vrefzq_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -796,7 +794,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static int ns_to_t </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em>, </td>
         </tr>
         <tr>
@@ -832,7 +830,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static void sid_read_ldoB_cal </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>
@@ -855,7 +853,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> sunxi_dram_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -80,7 +80,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -93,13 +93,11 @@ Include dependency graph for sys-dram.h:</div>
 <area shape="rect" title=" " alt="" coords="227,5,411,47"/>
 <area shape="rect" title=" " alt="" coords="5,95,52,121"/>
 <area shape="rect" title=" " alt="" coords="77,95,151,121"/>
-<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="175,95,258,121"/>
+<area shape="rect" title=" " alt="" coords="175,95,258,121"/>
 <area shape="rect" title=" " alt="" coords="282,95,357,121"/>
 <area shape="rect" title=" " alt="" coords="381,95,452,121"/>
 <area shape="rect" title=" " alt="" coords="476,95,547,121"/>
 <area shape="rect" href="../../df/ddb/sun8iw21_2reg_2reg-dram_8h.html" title=" " alt="" coords="571,95,689,121"/>
-<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="181,169,252,196"/>
-<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="181,244,252,271"/>
 </map>
 </div>
 </div>
@@ -123,6 +121,11 @@ Typedefs</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a7e7ac47b79524ebe494ecb17a88f67fd"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8e/sun8iw21_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fd">sunxi_dram_type</a> { <br />
+&#160;&#160;<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fda3c5ecb904a1191e5d0762a2d5bcd0b5a">SUNXI_DRAM_TYPE_DDR2</a> = 2
+, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fda2203e276517697e9f389a3e819609aff">SUNXI_DRAM_TYPE_DDR3</a> = 3
+, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fdabd47253c0f9ad9cd1835138f1cad2d3d">SUNXI_DRAM_TYPE_LPDDR2</a> = 6
+, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fdab23f5bbc259ea87a9bc48d38fa462b08">SUNXI_DRAM_TYPE_LPDDR3</a> = 7
+, <br />
 &#160;&#160;<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fda3c5ecb904a1191e5d0762a2d5bcd0b5a">SUNXI_DRAM_TYPE_DDR2</a> = 2
 , <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fda2203e276517697e9f389a3e819609aff">SUNXI_DRAM_TYPE_DDR3</a> = 3
 , <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fdabd47253c0f9ad9cd1835138f1cad2d3d">SUNXI_DRAM_TYPE_LPDDR2</a> = 6
@@ -140,9 +143,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8e/sun8iw21_2sys-dram_8h.html#aadc877acf1f1d1db4285b5e03068bc5d">init_DRAM</a> (int type, <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8e/sun8iw21_2sys-dram_8h.html#aadc877acf1f1d1db4285b5e03068bc5d">init_DRAM</a> (int type, <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:aadc877acf1f1d1db4285b5e03068bc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde55c326bd1410bc2aef315fce90d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8e/sun8iw21_2sys-dram_8h.html#afde55c326bd1410bc2aef315fce90d96">sunxi_dram_init</a> (<a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
+<tr class="memitem:afde55c326bd1410bc2aef315fce90d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8e/sun8iw21_2sys-dram_8h.html#afde55c326bd1410bc2aef315fce90d96">sunxi_dram_init</a> (<a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *para)</td></tr>
 <tr class="separator:afde55c326bd1410bc2aef315fce90d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -168,7 +171,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef struct <a class="el" href="../../d2/d7b/struct____DRAM__PARA.html">__DRAM_PARA</a> <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a></td>
+          <td class="memname">typedef struct <a class="el" href="../../d2/d7b/struct____DRAM__PARA.html">__DRAM_PARA</a> <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -183,12 +186,16 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fd">sunxi_dram_type</a></td>
+          <td class="memname">enum <a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a7e7ac47b79524ebe494ecb17a88f67fd">sunxi_dram_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fda3c5ecb904a1191e5d0762a2d5bcd0b5a"></a>SUNXI_DRAM_TYPE_DDR2&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fda2203e276517697e9f389a3e819609aff"></a>SUNXI_DRAM_TYPE_DDR3&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fdabd47253c0f9ad9cd1835138f1cad2d3d"></a>SUNXI_DRAM_TYPE_LPDDR2&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fdab23f5bbc259ea87a9bc48d38fa462b08"></a>SUNXI_DRAM_TYPE_LPDDR3&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fda3c5ecb904a1191e5d0762a2d5bcd0b5a"></a>SUNXI_DRAM_TYPE_DDR2&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fda2203e276517697e9f389a3e819609aff"></a>SUNXI_DRAM_TYPE_DDR3&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fdabd47253c0f9ad9cd1835138f1cad2d3d"></a>SUNXI_DRAM_TYPE_LPDDR2&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a7e7ac47b79524ebe494ecb17a88f67fdab23f5bbc259ea87a9bc48d38fa462b08"></a>SUNXI_DRAM_TYPE_LPDDR3&#160;</td><td class="fielddoc"></td></tr>
@@ -217,7 +224,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em>&#160;</td>
         </tr>
         <tr>
@@ -239,7 +246,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> sunxi_dram_init </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d3/df4/sun8iw20_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d1/dfa/sun20iw1_2sys-dram_8h.html#a8efb496f9f99b66025a90eb94004020c">dram_para_t</a> *&#160;</td>
           <td class="paramname"><em>para</em></td><td>)</td>
           <td></td>
         </tr>

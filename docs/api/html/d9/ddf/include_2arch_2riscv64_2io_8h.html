@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -70,20 +70,31 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">io.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><div class="dynheader">
+<div class="textblock"><code>#include &lt;<a class="el" href="../../d3/de5/include_2arch_2riscv64_2stdint_8h_source.html">stdint.h</a>&gt;</code><br />
+</div><div class="textblock"><div class="dynheader">
+Include dependency graph for io.h:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d9/dfd/include_2arch_2riscv64_2io_8h__incl.png" border="0" usemap="#ainclude_2arch_2riscv64_2io_8h" alt=""/></div>
+<map name="ainclude_2arch_2riscv64_2io_8h" id="ainclude_2arch_2riscv64_2io_8h">
+<area shape="rect" title=" " alt="" coords="5,5,185,32"/>
+<area shape="rect" href="../../d3/de5/include_2arch_2riscv64_2stdint_8h.html" title=" " alt="" coords="60,80,131,107"/>
+<area shape="rect" href="../../db/de7/include_2arch_2riscv64_2types_8h.html" title=" " alt="" coords="60,155,131,181"/>
+</map>
+</div>
+</div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d14/include_2arch_2riscv64_2io_8h__dep__incl.png" border="0" usemap="#ainclude_2arch_2riscv64_2io_8hdep" alt=""/></div>
 <map name="ainclude_2arch_2riscv64_2io_8hdep" id="ainclude_2arch_2riscv64_2io_8hdep">
 <area shape="rect" title=" " alt="" coords="5,5,185,32"/>
 <area shape="rect" href="../../de/d6c/riscv64_2timer_8h.html" title=" " alt="" coords="19,80,171,121"/>
+<area shape="rect" href="../../d6/d19/riscv64_2mmu_8h.html" title=" " alt="" coords="19,169,171,211"/>
 </map>
 </div>
 </div>
@@ -111,11 +122,6 @@ Macros</h2></td></tr>
 <tr class="separator:aed54ef84775a6b4184dbc8a5cfdce6eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81bfc278253d1610812d412a4c5579b0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a81bfc278253d1610812d412a4c5579b0">writel</a>(val,  addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#af4aa8e8a8923985d46146fbe16a71721">write32</a>((addr), (val))</td></tr>
 <tr class="separator:a81bfc278253d1610812d412a4c5579b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:ae38c0f7a35fbb5572c9433eff19908cd"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#ae38c0f7a35fbb5572c9433eff19908cd">virtual_addr_t</a></td></tr>
-<tr class="separator:ae38c0f7a35fbb5572c9433eff19908cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -368,21 +374,6 @@ Variables</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td>&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#ab4c9ade48e0c338d05baaf26e07d2295">write16</a>((addr), (val))</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Typedef Documentation</h2>
-<a id="ae38c0f7a35fbb5572c9433eff19908cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae38c0f7a35fbb5572c9433eff19908cd">&#9670;&nbsp;</a></span>virtual_addr_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> <a class="el" href="../../d3/da9/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2types_8h.html#a50f55700d2cf66e045d9b5c66f392408">virtual_addr_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">

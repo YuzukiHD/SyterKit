@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -80,7 +80,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -92,22 +92,20 @@ Include dependency graph for sys-sdhci.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d8/dd0/sun55iw3_2sys-sdhci_8h__incl.png" border="0" usemap="#ainclude_2drivers_2sun55iw3_2sys-sdhci_8h" alt=""/></div>
 <map name="ainclude_2drivers_2sun55iw3_2sys-sdhci_8h" id="ainclude_2drivers_2sun55iw3_2sys-sdhci_8h">
-<area shape="rect" title=" " alt="" coords="227,5,411,47"/>
-<area shape="rect" title=" " alt="" coords="32,169,78,196"/>
-<area shape="rect" title=" " alt="" coords="10,319,84,345"/>
-<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="255,244,338,271"/>
-<area shape="rect" title=" " alt="" coords="106,244,180,271"/>
-<area shape="rect" title=" " alt="" coords="728,244,798,271"/>
-<area shape="rect" title=" " alt="" coords="565,393,636,420"/>
-<area shape="rect" href="../../d4/df7/sun55iw3_2reg_2reg-smhc_8h.html" title=" " alt="" coords="874,95,994,121"/>
-<area shape="rect" href="../../d3/da9/sys-gpio_8h.html" title=" " alt="" coords="182,95,272,121"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="378,169,433,196"/>
-<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="109,319,180,345"/>
-<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="109,393,180,420"/>
-<area shape="rect" title=" " alt="" coords="584,244,652,271"/>
-<area shape="rect" title=" " alt="" coords="473,244,560,271"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="362,244,449,271"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="476,319,546,345"/>
+<area shape="rect" title=" " alt="" coords="226,5,410,47"/>
+<area shape="rect" title=" " alt="" coords="30,169,77,196"/>
+<area shape="rect" title=" " alt="" coords="104,319,179,345"/>
+<area shape="rect" title=" " alt="" coords="715,244,798,271"/>
+<area shape="rect" title=" " alt="" coords="54,244,128,271"/>
+<area shape="rect" title=" " alt="" coords="254,244,325,271"/>
+<area shape="rect" title=" " alt="" coords="501,393,572,420"/>
+<area shape="rect" href="../../d4/df7/sun55iw3_2reg_2reg-smhc_8h.html" title=" " alt="" coords="872,95,992,121"/>
+<area shape="rect" href="../../d3/da9/sys-gpio_8h.html" title=" " alt="" coords="181,95,270,121"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="365,169,420,196"/>
+<area shape="rect" title=" " alt="" coords="622,244,690,271"/>
+<area shape="rect" title=" " alt="" coords="460,244,546,271"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="349,244,436,271"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="405,319,476,345"/>
 </map>
 </div>
 </div>
@@ -134,73 +132,82 @@ Macros</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:ac6c192c816f2b7797bfdbeb5025e77cf"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a> { <br />
-&#160;&#160;<a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
-, <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a> = 1
+&#160;&#160;<a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
+, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
+, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
+, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
+, <br />
+&#160;&#160;<a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
+, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
+, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
+, <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
+, <br />
+&#160;&#160;<a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a> = 1
 , <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a> = 2
 , <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a> = 3
+, <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a> = 4
 , <br />
-&#160;&#160;<a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a> = 4
-, <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a> = 5
+&#160;&#160;<a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a> = 5
 , <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a> = 6
 , <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
+, <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a> = 1
 , <br />
-&#160;&#160;<a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a> = 1
-, <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a> = 2
+&#160;&#160;<a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a> = 2
 , <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a> = 3
 , <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a> = 4
+, <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a> = 5
 , <br />
-&#160;&#160;<a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a> = 5
-, <a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a> = 6
+&#160;&#160;<a class="el" href="../../d4/d99/sun50iw9_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a> = 6
 , <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
 , <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
+, <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
-, <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
+&#160;&#160;<a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
 , <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
 , <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
+, <a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
-, <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
+&#160;&#160;<a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
 , <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
 , <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
+, <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
-, <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
+&#160;&#160;<a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
 , <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
 , <a class="el" href="../../d6/d93/sun8iw20_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
+, <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
 , <br />
-&#160;&#160;<a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
-, <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
+&#160;&#160;<a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
 , <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
 , <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
+, <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
-, <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
+&#160;&#160;<a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
 , <a class="el" href="../../d3/d4f/sun8iw21_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
 , <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed">MMC_CLK_400K</a> = 0
+, <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc">MMC_CLK_25M</a>
-, <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
+&#160;&#160;<a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307">MMC_CLK_50M</a>
 , <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7">MMC_CLK_50M_DDR</a>
 , <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42">MMC_CLK_100M</a>
+, <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
 , <br />
-&#160;&#160;<a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0">MMC_CLK_150M</a>
-, <a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
+&#160;&#160;<a class="el" href="../../d4/d7d/sun8iw8_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258">MMC_CLK_200M</a>
 <br />
  }</td></tr>
 <tr class="separator:ac6c192c816f2b7797bfdbeb5025e77cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae14522f9ce22e8b39ca6827c949eec6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ae14522f9ce22e8b39ca6827c949eec6d">sdhci_reset</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci)</td></tr>
+<tr class="memitem:ae14522f9ce22e8b39ca6827c949eec6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#ae14522f9ce22e8b39ca6827c949eec6d">sdhci_reset</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci)</td></tr>
 <tr class="separator:ae14522f9ce22e8b39ca6827c949eec6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8530e252f428ad45a49ca9b67a433709"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a8530e252f428ad45a49ca9b67a433709">sdhci_set_voltage</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> voltage)</td></tr>
+<tr class="memitem:a8530e252f428ad45a49ca9b67a433709"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a8530e252f428ad45a49ca9b67a433709">sdhci_set_voltage</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> voltage)</td></tr>
 <tr class="separator:a8530e252f428ad45a49ca9b67a433709"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36c9330f2c8e832cf55880f7a1cdd0bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a36c9330f2c8e832cf55880f7a1cdd0bf">sdhci_set_width</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> width)</td></tr>
+<tr class="memitem:a36c9330f2c8e832cf55880f7a1cdd0bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a36c9330f2c8e832cf55880f7a1cdd0bf">sdhci_set_width</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> width)</td></tr>
 <tr class="separator:a36c9330f2c8e832cf55880f7a1cdd0bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ae1066018213169de23faa5593d8557"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a5ae1066018213169de23faa5593d8557">sdhci_set_clock</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a> hz)</td></tr>
+<tr class="memitem:a5ae1066018213169de23faa5593d8557"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a5ae1066018213169de23faa5593d8557">sdhci_set_clock</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a> hz)</td></tr>
 <tr class="separator:a5ae1066018213169de23faa5593d8557"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed21990a148d80e5cc4a1672d72f6ace"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#aed21990a148d80e5cc4a1672d72f6ace">sdhci_transfer</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d6/dea/structsdhci__cmd__t.html">sdhci_cmd_t</a> *cmd, <a class="el" href="../../d0/d5f/structsdhci__data__t.html">sdhci_data_t</a> *dat)</td></tr>
+<tr class="memitem:aed21990a148d80e5cc4a1672d72f6ace"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#aed21990a148d80e5cc4a1672d72f6ace">sdhci_transfer</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../d6/dea/structsdhci__cmd__t.html">sdhci_cmd_t</a> *cmd, <a class="el" href="../../d0/d5f/structsdhci__data__t.html">sdhci_data_t</a> *dat)</td></tr>
 <tr class="separator:aed21990a148d80e5cc4a1672d72f6ace"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a6e3a625d88525896274f677de8134e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d4e/sun55iw3_2sys-sdhci_8h.html#a4a6e3a625d88525896274f677de8134e">sunxi_sdhci_init</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci)</td></tr>
 <tr class="separator:a4a6e3a625d88525896274f677de8134e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -247,12 +254,19 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a></td>
+          <td class="memname">enum <a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed"></a>MMC_CLK_400K&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc"></a>MMC_CLK_25M&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307"></a>MMC_CLK_50M&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7"></a>MMC_CLK_50M_DDR&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfab07e8d40190440894f55827e2b3a4b42"></a>MMC_CLK_100M&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfadef856c1b735e6039c29da8dd28ce9b0"></a>MMC_CLK_150M&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa4e578a0f6b3286d3132124d273f6b258"></a>MMC_CLK_200M&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfad535e357b56875f315a719ce016440ed"></a>MMC_CLK_400K&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa6febb072475ec2f8c015ab9dbe7c69dc"></a>MMC_CLK_25M&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa7835227f884e13172c27f2effcccc307"></a>MMC_CLK_50M&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ac6c192c816f2b7797bfdbeb5025e77cfa9b1db0f9a276ea905139b7445f15f5e7"></a>MMC_CLK_50M_DDR&#160;</td><td class="fielddoc"></td></tr>
@@ -306,7 +320,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdhci_reset </td>
+          <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_reset </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em></td><td>)</td>
@@ -324,7 +338,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdhci_set_clock </td>
+          <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_set_clock </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -332,7 +346,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d7/d2a/sun50iw10_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d3/da0/sun20iw1_2sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a>&#160;</td>
           <td class="paramname"><em>hz</em>&#160;</td>
         </tr>
         <tr>
@@ -352,7 +366,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdhci_set_voltage </td>
+          <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_set_voltage </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -380,7 +394,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdhci_set_width </td>
+          <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_set_width </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -408,7 +422,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdhci_transfer </td>
+          <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_transfer </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>

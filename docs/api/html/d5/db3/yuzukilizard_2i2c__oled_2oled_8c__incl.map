@@ -1,19 +1,17 @@
 <map id="board/yuzukilizard/i2c_oled/oled.c" name="board/yuzukilizard/i2c_oled/oled.c">
-<area shape="rect" id="node1" title=" " alt="" coords="514,5,657,47"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="337,169,420,196"/>
-<area shape="rect" id="node5" title=" " alt="" coords="444,169,519,196"/>
-<area shape="rect" id="node6" title=" " alt="" coords="594,169,665,196"/>
-<area shape="rect" id="node7" title=" " alt="" coords="521,319,591,345"/>
-<area shape="rect" id="node8" href="$d7/d7f/log_8h.html" title=" " alt="" coords="279,95,334,121"/>
-<area shape="rect" id="node14" href="$dc/d54/common_8h.html" title=" " alt="" coords="499,95,589,121"/>
-<area shape="rect" id="node15" href="$d2/da5/sys-i2c_8h.html" title=" " alt="" coords="664,95,744,121"/>
-<area shape="rect" id="node17" href="$df/da6/yuzukilizard_2i2c__oled_2oledfont_8h.html" title=" " alt="" coords="913,95,1001,121"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="343,244,414,271"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="343,319,414,345"/>
-<area shape="rect" id="node9" title=" " alt="" coords="23,169,91,196"/>
-<area shape="rect" id="node10" title=" " alt="" coords="115,169,202,196"/>
-<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="226,169,313,196"/>
-<area shape="rect" id="node12" title=" " alt="" coords="441,244,516,271"/>
-<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="241,244,311,271"/>
-<area shape="rect" id="node16" title=" " alt="" coords="791,169,838,196"/>
+<area shape="rect" id="node1" title=" " alt="" coords="336,5,478,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="244,169,327,196"/>
+<area shape="rect" id="node3" title=" " alt="" coords="146,169,220,196"/>
+<area shape="rect" id="node4" title=" " alt="" coords="402,169,473,196"/>
+<area shape="rect" id="node5" title=" " alt="" coords="505,319,576,345"/>
+<area shape="rect" id="node6" href="$d7/d7f/log_8h.html" title=" " alt="" coords="500,95,554,121"/>
+<area shape="rect" id="node12" href="$dc/d54/common_8h.html" title=" " alt="" coords="320,95,411,121"/>
+<area shape="rect" id="node13" href="$d2/da5/sys-i2c_8h.html" title=" " alt="" coords="115,95,195,121"/>
+<area shape="rect" id="node15" href="$df/da6/yuzukilizard_2i2c__oled_2oledfont_8h.html" title=" " alt="" coords="914,95,1002,121"/>
+<area shape="rect" id="node7" title=" " alt="" coords="660,169,728,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="752,169,838,196"/>
+<area shape="rect" id="node9" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="497,169,584,196"/>
+<area shape="rect" id="node10" title=" " alt="" coords="162,244,236,271"/>
+<area shape="rect" id="node11" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="505,244,576,271"/>
+<area shape="rect" id="node14" title=" " alt="" coords="24,169,70,196"/>
 </map>
