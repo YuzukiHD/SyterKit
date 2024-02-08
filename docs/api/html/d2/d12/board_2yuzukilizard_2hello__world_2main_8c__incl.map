@@ -1,15 +1,13 @@
 <map id="board/yuzukilizard/hello_world/main.c" name="board/yuzukilizard/hello_world/main.c">
 <area shape="rect" id="node1" title=" " alt="" coords="172,5,321,47"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,169,88,196"/>
-<area shape="rect" id="node5" title=" " alt="" coords="112,169,187,196"/>
-<area shape="rect" id="node6" title=" " alt="" coords="211,169,282,196"/>
-<area shape="rect" id="node7" title=" " alt="" coords="573,319,643,345"/>
-<area shape="rect" id="node8" href="$d7/d7f/log_8h.html" title=" " alt="" coords="289,95,343,121"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,244,82,271"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,319,82,345"/>
-<area shape="rect" id="node9" title=" " alt="" coords="358,169,426,196"/>
-<area shape="rect" id="node10" title=" " alt="" coords="450,169,537,196"/>
-<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="561,169,647,196"/>
-<area shape="rect" id="node12" title=" " alt="" coords="473,244,548,271"/>
-<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="573,244,643,271"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,169,88,196"/>
+<area shape="rect" id="node3" title=" " alt="" coords="112,169,187,196"/>
+<area shape="rect" id="node4" title=" " alt="" coords="211,169,282,196"/>
+<area shape="rect" id="node5" title=" " alt="" coords="362,319,433,345"/>
+<area shape="rect" id="node6" href="$d7/d7f/log_8h.html" title=" " alt="" coords="289,95,343,121"/>
+<area shape="rect" id="node7" title=" " alt="" coords="469,169,537,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="561,169,647,196"/>
+<area shape="rect" id="node9" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="358,169,445,196"/>
+<area shape="rect" id="node10" title=" " alt="" coords="457,244,532,271"/>
+<area shape="rect" id="node11" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="362,244,433,271"/>
 </map>

@@ -1,13 +1,11 @@
 <map id="include/lib/fdt/libfdt.h" name="include/lib/fdt/libfdt.h">
 <area shape="rect" id="node1" title=" " alt="" coords="262,5,423,32"/>
 <area shape="rect" id="node2" href="$d2/d70/libfdt__env_8h.html" title=" " alt="" coords="244,80,343,107"/>
-<area shape="rect" id="node11" href="$d8/d66/fdt_8h.html" title=" " alt="" coords="367,80,419,107"/>
-<area shape="rect" id="node3" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,155,88,181"/>
-<area shape="rect" id="node6" title=" " alt="" coords="112,155,187,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="211,155,282,181"/>
-<area shape="rect" id="node8" title=" " alt="" coords="306,155,377,181"/>
-<area shape="rect" id="node9" title=" " alt="" coords="401,155,471,181"/>
-<area shape="rect" id="node10" href="$d9/d86/limits_8h.html" title=" " alt="" coords="495,155,566,181"/>
-<area shape="rect" id="node4" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,229,82,256"/>
-<area shape="rect" id="node5" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,304,82,331"/>
+<area shape="rect" id="node9" href="$d8/d66/fdt_8h.html" title=" " alt="" coords="367,80,419,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,155,88,181"/>
+<area shape="rect" id="node4" title=" " alt="" coords="112,155,187,181"/>
+<area shape="rect" id="node5" title=" " alt="" coords="211,155,282,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="306,155,377,181"/>
+<area shape="rect" id="node7" title=" " alt="" coords="401,155,471,181"/>
+<area shape="rect" id="node8" title=" " alt="" coords="495,155,566,181"/>
 </map>

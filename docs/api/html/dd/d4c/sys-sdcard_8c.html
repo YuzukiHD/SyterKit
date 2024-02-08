@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -78,7 +78,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;io.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -90,23 +90,21 @@ Include dependency graph for sys-sdcard.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../da/df5/sys-sdcard_8c__incl.png" border="0" usemap="#asrc_2drivers_2sys-sdcard_8c" alt=""/></div>
 <map name="asrc_2drivers_2sys-sdcard_8c" id="asrc_2drivers_2sys-sdcard_8c">
-<area shape="rect" title=" " alt="" coords="363,5,538,32"/>
-<area shape="rect" title=" " alt="" coords="43,155,90,181"/>
-<area shape="rect" title=" " alt="" coords="216,304,291,331"/>
-<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="877,229,960,256"/>
-<area shape="rect" title=" " alt="" coords="267,229,341,256"/>
-<area shape="rect" title=" " alt="" coords="731,229,802,256"/>
-<area shape="rect" title=" " alt="" coords="374,379,445,405"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="489,155,543,181"/>
-<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="721,155,812,181"/>
-<area shape="rect" href="../../d6/daf/sys-sdcard_8h.html" title=" " alt="" coords="309,80,413,107"/>
-<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="883,304,954,331"/>
-<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="883,379,954,405"/>
-<area shape="rect" title=" " alt="" coords="529,229,597,256"/>
-<area shape="rect" title=" " alt="" coords="621,229,707,256"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="366,229,453,256"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="374,304,445,331"/>
-<area shape="rect" href="../../d1/d4b/sys-sdhci_8h.html" title=" " alt="" coords="267,155,362,181"/>
+<area shape="rect" title=" " alt="" coords="351,5,525,32"/>
+<area shape="rect" title=" " alt="" coords="31,155,77,181"/>
+<area shape="rect" title=" " alt="" coords="54,304,129,331"/>
+<area shape="rect" title=" " alt="" coords="547,229,630,256"/>
+<area shape="rect" title=" " alt="" coords="301,229,375,256"/>
+<area shape="rect" title=" " alt="" coords="401,229,472,256"/>
+<area shape="rect" title=" " alt="" coords="663,379,733,405"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="692,155,747,181"/>
+<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="475,155,566,181"/>
+<area shape="rect" href="../../d6/daf/sys-sdcard_8h.html" title=" " alt="" coords="285,80,389,107"/>
+<area shape="rect" title=" " alt="" coords="817,229,885,256"/>
+<area shape="rect" title=" " alt="" coords="909,229,996,256"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="655,229,741,256"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="663,304,733,331"/>
+<area shape="rect" href="../../d1/d4b/sys-sdhci_8h.html" title=" " alt="" coords="204,155,299,181"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -305,19 +303,19 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a42b81b05dfcb721d8b698be3865a0c30"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a42b81b05dfcb721d8b698be3865a0c30">go_idle_state</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci)</td></tr>
+<tr class="memitem:a42b81b05dfcb721d8b698be3865a0c30"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a42b81b05dfcb721d8b698be3865a0c30">go_idle_state</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci)</td></tr>
 <tr class="separator:a42b81b05dfcb721d8b698be3865a0c30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47b91653c4338233170ae8d1c32ab6ef"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a47b91653c4338233170ae8d1c32ab6ef">sd_send_if_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
+<tr class="memitem:a47b91653c4338233170ae8d1c32ab6ef"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a47b91653c4338233170ae8d1c32ab6ef">sd_send_if_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
 <tr class="separator:a47b91653c4338233170ae8d1c32ab6ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3fc7759db1ac1ef1efc0534fe57bbf6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#af3fc7759db1ac1ef1efc0534fe57bbf6">sd_send_op_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
+<tr class="memitem:af3fc7759db1ac1ef1efc0534fe57bbf6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#af3fc7759db1ac1ef1efc0534fe57bbf6">sd_send_op_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
 <tr class="separator:af3fc7759db1ac1ef1efc0534fe57bbf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1397a8f37a642e9a6143e73e875f9d68"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a1397a8f37a642e9a6143e73e875f9d68">mmc_send_op_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
+<tr class="memitem:a1397a8f37a642e9a6143e73e875f9d68"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a1397a8f37a642e9a6143e73e875f9d68">mmc_send_op_cond</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
 <tr class="separator:a1397a8f37a642e9a6143e73e875f9d68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad749a4a80933347e9877c67ed540eec8"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#ad749a4a80933347e9877c67ed540eec8">sdmmc_status</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
 <tr class="separator:ad749a4a80933347e9877c67ed540eec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4595c642b774731b4f9019015642df9c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a4595c642b774731b4f9019015642df9c">sdmmc_read_blocks</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#af7aa217d9ae1abca94f93e4052ee9689">uint8_t</a> *buf, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> start, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> blkcnt)</td></tr>
 <tr class="separator:a4595c642b774731b4f9019015642df9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a806ebbbd035418c2758d1b66feb0ffb8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a806ebbbd035418c2758d1b66feb0ffb8">sdmmc_detect</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
+<tr class="memitem:a806ebbbd035418c2758d1b66feb0ffb8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a806ebbbd035418c2758d1b66feb0ffb8">sdmmc_detect</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *hci, <a class="el" href="../../da/d06/structsdmmc__t.html">sdmmc_t</a> *card)</td></tr>
 <tr class="separator:a806ebbbd035418c2758d1b66feb0ffb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a013b944b4b33db9ee7a80845c276b727"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4c/sys-sdcard_8c.html#a013b944b4b33db9ee7a80845c276b727">sdmmc_blk_read</a> (<a class="el" href="../../df/db8/structsdmmc__pdata__t.html">sdmmc_pdata_t</a> *data, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#af7aa217d9ae1abca94f93e4052ee9689">uint8_t</a> *buf, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> blkno, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> blkcnt)</td></tr>
 <tr class="memdesc:a013b944b4b33db9ee7a80845c276b727"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read data from the SDMMC card into the provided buffer.  <a href="../../dd/d4c/sys-sdcard_8c.html#a013b944b4b33db9ee7a80845c276b727">More...</a><br /></td></tr>
@@ -1711,7 +1709,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> go_idle_state </td>
+          <td class="memname">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> go_idle_state </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em></td><td>)</td>
@@ -1737,7 +1735,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> mmc_send_op_cond </td>
+          <td class="memname">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> mmc_send_op_cond </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -1773,7 +1771,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sd_send_if_cond </td>
+          <td class="memname">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sd_send_if_cond </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -1809,7 +1807,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sd_send_op_cond </td>
+          <td class="memname">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sd_send_op_cond </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
@@ -1897,7 +1895,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="../../d9/d5e/stdbool_8h.html#a0ecf26b576b9a54eca656b9be7ba6a06">bool</a> sdmmc_detect </td>
+          <td class="memname">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdmmc_detect </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
           <td class="paramname"><em>hci</em>, </td>
