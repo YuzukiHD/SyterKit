@@ -1,17 +1,15 @@
 <map id="include/drivers/sys&#45;uart.h" name="include/drivers/sys&#45;uart.h">
-<area shape="rect" id="node1" title=" " alt="" coords="20,5,164,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="481,393,551,420"/>
-<area shape="rect" id="node3" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="247,95,337,121"/>
-<area shape="rect" id="node4" title=" " alt="" coords="43,169,90,196"/>
-<area shape="rect" id="node5" title=" " alt="" coords="201,319,276,345"/>
-<area shape="rect" id="node6" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="689,244,772,271"/>
-<area shape="rect" id="node9" title=" " alt="" coords="129,244,204,271"/>
-<area shape="rect" id="node10" title=" " alt="" coords="594,244,665,271"/>
-<area shape="rect" id="node11" href="$d7/d7f/log_8h.html" title=" " alt="" coords="386,169,441,196"/>
-<area shape="rect" id="node7" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="695,319,766,345"/>
-<area shape="rect" id="node8" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="695,393,766,420"/>
-<area shape="rect" id="node12" title=" " alt="" coords="229,244,297,271"/>
-<area shape="rect" id="node13" title=" " alt="" coords="321,244,407,271"/>
-<area shape="rect" id="node14" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="431,244,518,271"/>
-<area shape="rect" id="node15" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="443,319,514,345"/>
+<area shape="rect" id="node1" title=" " alt="" coords="663,5,807,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="549,393,619,420"/>
+<area shape="rect" id="node3" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="603,95,693,121"/>
+<area shape="rect" id="node4" title=" " alt="" coords="773,169,819,196"/>
+<area shape="rect" id="node5" title=" " alt="" coords="495,319,569,345"/>
+<area shape="rect" id="node6" title=" " alt="" coords="5,244,88,271"/>
+<area shape="rect" id="node7" title=" " alt="" coords="112,244,187,271"/>
+<area shape="rect" id="node8" title=" " alt="" coords="575,244,646,271"/>
+<area shape="rect" id="node9" href="$d7/d7f/log_8h.html" title=" " alt="" coords="349,169,403,196"/>
+<area shape="rect" id="node10" title=" " alt="" coords="373,244,441,271"/>
+<area shape="rect" id="node11" title=" " alt="" coords="465,244,551,271"/>
+<area shape="rect" id="node12" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="262,244,349,271"/>
+<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="334,319,405,345"/>
 </map>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -85,23 +85,26 @@ $(function() {
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d2/d80/sun8iw21_2sys-sid_8h.html">sun8iw21/sys-sid.h</a>&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN8IW20)</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d8/dc6/sun8iw20_2sys-sid_8h.html">sun8iw20/sys-sid.h</a>&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN50IW9)</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d7/d79/sun50iw9_2sys-sid_8h.html">sun50iw9/sys-sid.h</a>&gt;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN55IW3)</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../df/d14/sun55iw3_2sys-sid_8h.html">sun55iw3/sys-sid.h</a>&gt;</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN8IW8)</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d0/d8d/sun8iw8_2sys-sid_8h.html">sun8iw8/sys-sid.h</a>&gt;</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN50IW10)</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d9/dea/sun50iw10_2sys-sid_8h.html">sun50iw10/sys-sid.h</a>&gt;</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">    #error &quot;Unsupported chip&quot;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;}</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// __cplusplus</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif</span><span class="comment">// _SYS_SID_H_</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN20IW1)</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d6/d67/sun20iw1_2sys-sid_8h.html">sun20iw1/sys-sid.h</a>&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN50IW9)</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d7/d79/sun50iw9_2sys-sid_8h.html">sun50iw9/sys-sid.h</a>&gt;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN55IW3)</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../df/d14/sun55iw3_2sys-sid_8h.html">sun55iw3/sys-sid.h</a>&gt;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN8IW8)</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d0/d8d/sun8iw8_2sys-sid_8h.html">sun8iw8/sys-sid.h</a>&gt;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#elif defined(CONFIG_CHIP_SUN50IW10)</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">    #include &lt;<a class="code" href="../../d9/dea/sun50iw10_2sys-sid_8h.html">sun50iw10/sys-sid.h</a>&gt;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">    #error &quot;Unsupported chip&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// __cplusplus</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#endif</span><span class="comment">// _SYS_SID_H_</span></div>
+<div class="ttc" id="asun20iw1_2sys-sid_8h_html"><div class="ttname"><a href="../../d6/d67/sun20iw1_2sys-sid_8h.html">sys-sid.h</a></div></div>
 <div class="ttc" id="asun50iw10_2sys-sid_8h_html"><div class="ttname"><a href="../../d9/dea/sun50iw10_2sys-sid_8h.html">sys-sid.h</a></div></div>
 <div class="ttc" id="asun50iw9_2sys-sid_8h_html"><div class="ttname"><a href="../../d7/d79/sun50iw9_2sys-sid_8h.html">sys-sid.h</a></div></div>
 <div class="ttc" id="asun55iw3_2sys-sid_8h_html"><div class="ttname"><a href="../../df/d14/sun55iw3_2sys-sid_8h.html">sys-sid.h</a></div></div>

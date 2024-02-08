@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -76,7 +76,7 @@ $(function() {
 <div class="title">oled.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="../../d9/d5e/stdbool_8h_source.html">stdbool.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;types.h&gt;</code><br />
@@ -89,23 +89,21 @@ Include dependency graph for oled.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d6/da5/dongshanpi-aict_2i2c__oled_2oled_8c__incl.png" border="0" usemap="#aboard_2dongshanpi-aict_2i2c__oled_2oled_8c" alt=""/></div>
 <map name="aboard_2dongshanpi-aict_2i2c__oled_2oled_8c" id="aboard_2dongshanpi-aict_2i2c__oled_2oled_8c">
-<area shape="rect" title=" " alt="" coords="502,5,669,47"/>
-<area shape="rect" href="../../d9/d5e/stdbool_8h.html" title=" " alt="" coords="337,169,420,196"/>
-<area shape="rect" title=" " alt="" coords="444,169,519,196"/>
-<area shape="rect" title=" " alt="" coords="594,169,665,196"/>
-<area shape="rect" title=" " alt="" coords="521,319,591,345"/>
-<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="279,95,334,121"/>
-<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="499,95,589,121"/>
-<area shape="rect" href="../../d2/da5/sys-i2c_8h.html" title=" " alt="" coords="664,95,744,121"/>
-<area shape="rect" href="../../db/d64/dongshanpi-aict_2i2c__oled_2oledfont_8h.html" title=" " alt="" coords="913,95,1001,121"/>
-<area shape="rect" href="../../d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="343,244,414,271"/>
-<area shape="rect" href="../../d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="343,319,414,345"/>
-<area shape="rect" title=" " alt="" coords="23,169,91,196"/>
-<area shape="rect" title=" " alt="" coords="115,169,202,196"/>
-<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="226,169,313,196"/>
-<area shape="rect" title=" " alt="" coords="441,244,516,271"/>
-<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="241,244,311,271"/>
-<area shape="rect" title=" " alt="" coords="791,169,838,196"/>
+<area shape="rect" title=" " alt="" coords="324,5,490,47"/>
+<area shape="rect" title=" " alt="" coords="244,169,327,196"/>
+<area shape="rect" title=" " alt="" coords="146,169,220,196"/>
+<area shape="rect" title=" " alt="" coords="402,169,473,196"/>
+<area shape="rect" title=" " alt="" coords="505,319,576,345"/>
+<area shape="rect" href="../../d7/d7f/log_8h.html" title=" " alt="" coords="500,95,554,121"/>
+<area shape="rect" href="../../dc/d54/common_8h.html" title=" " alt="" coords="320,95,411,121"/>
+<area shape="rect" href="../../d2/da5/sys-i2c_8h.html" title=" " alt="" coords="115,95,195,121"/>
+<area shape="rect" href="../../db/d64/dongshanpi-aict_2i2c__oled_2oledfont_8h.html" title=" " alt="" coords="914,95,1002,121"/>
+<area shape="rect" title=" " alt="" coords="660,169,728,196"/>
+<area shape="rect" title=" " alt="" coords="752,169,838,196"/>
+<area shape="rect" href="../../d8/df2/include_2xformat_8h.html" title=" " alt="" coords="497,169,584,196"/>
+<area shape="rect" title=" " alt="" coords="162,244,236,271"/>
+<area shape="rect" href="../../d7/de6/include_2string_8h.html" title=" " alt="" coords="505,244,576,271"/>
+<area shape="rect" title=" " alt="" coords="24,169,70,196"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -664,11 +662,11 @@ Variables</h2></td></tr>
 <div class="line">        .base = 0x02502000,</div>
 <div class="line">        .id = 0,</div>
 <div class="line">        .speed = 4000000,</div>
-<div class="line">        .gpio_scl = {<a class="code" href="../../d3/da9/sys-gpio_8h.html#ae29846b3ecd19a0b7c44ff80a37ae7c1">GPIO_PIN</a>(<a class="code" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>, 4), <a class="code" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a>},</div>
-<div class="line">        .gpio_sda = {<a class="code" href="../../d3/da9/sys-gpio_8h.html#ae29846b3ecd19a0b7c44ff80a37ae7c1">GPIO_PIN</a>(<a class="code" href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>, 5), <a class="code" href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a>},</div>
+<div class="line">        .gpio_scl = {<a class="code" href="../../d3/da9/sys-gpio_8h.html#ae29846b3ecd19a0b7c44ff80a37ae7c1">GPIO_PIN</a>(<a class="code" href="../../d3/da9/sys-gpio_8h.html#ac36f475ca5b446f4fde4c9b90bec77c8ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>, 4), <a class="code" href="../../d3/da9/sys-gpio_8h.html#abc5c98fcc1211af2b80116dd6e0a035da0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a>},</div>
+<div class="line">        .gpio_sda = {<a class="code" href="../../d3/da9/sys-gpio_8h.html#ae29846b3ecd19a0b7c44ff80a37ae7c1">GPIO_PIN</a>(<a class="code" href="../../d3/da9/sys-gpio_8h.html#ac36f475ca5b446f4fde4c9b90bec77c8ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a>, 5), <a class="code" href="../../d3/da9/sys-gpio_8h.html#abc5c98fcc1211af2b80116dd6e0a035da0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a>},</div>
 <div class="line">}</div>
-<div class="ttc" id="asys-gpio_8h_html_a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3"><div class="ttname"><a href="../../d3/da9/sys-gpio_8h.html#a385c44f6fb256e5716a2302a5b940388ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a></div><div class="ttdeci">@ GPIO_PORTE</div><div class="ttdef"><b>Definition:</b> sys-gpio.h:38</div></div>
-<div class="ttc" id="asys-gpio_8h_html_ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b"><div class="ttname"><a href="../../d3/da9/sys-gpio_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57a0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a></div><div class="ttdeci">@ GPIO_PERIPH_MUX8</div><div class="ttdef"><b>Definition:</b> sys-gpio.h:28</div></div>
+<div class="ttc" id="asys-gpio_8h_html_abc5c98fcc1211af2b80116dd6e0a035da0f0ec7074e2c88d45c1d15f3e219648b"><div class="ttname"><a href="../../d3/da9/sys-gpio_8h.html#abc5c98fcc1211af2b80116dd6e0a035da0f0ec7074e2c88d45c1d15f3e219648b">GPIO_PERIPH_MUX8</a></div><div class="ttdeci">@ GPIO_PERIPH_MUX8</div><div class="ttdef"><b>Definition:</b> sys-gpio.h:28</div></div>
+<div class="ttc" id="asys-gpio_8h_html_ac36f475ca5b446f4fde4c9b90bec77c8ae00a95999282684e3c5d713937bc74e3"><div class="ttname"><a href="../../d3/da9/sys-gpio_8h.html#ac36f475ca5b446f4fde4c9b90bec77c8ae00a95999282684e3c5d713937bc74e3">GPIO_PORTE</a></div><div class="ttdeci">@ GPIO_PORTE</div><div class="ttdef"><b>Definition:</b> sys-gpio.h:38</div></div>
 <div class="ttc" id="asys-gpio_8h_html_ae29846b3ecd19a0b7c44ff80a37ae7c1"><div class="ttname"><a href="../../d3/da9/sys-gpio_8h.html#ae29846b3ecd19a0b7c44ff80a37ae7c1">GPIO_PIN</a></div><div class="ttdeci">#define GPIO_PIN(x, y)</div><div class="ttdef"><b>Definition:</b> sys-gpio.h:59</div></div>
 </div><!-- fragment -->
 </div>

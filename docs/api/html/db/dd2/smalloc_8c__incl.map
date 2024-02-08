@@ -1,11 +1,9 @@
 <map id="src/smalloc.c" name="src/smalloc.c">
 <area shape="rect" id="node1" title=" " alt="" coords="211,5,317,32"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,80,88,107"/>
-<area shape="rect" id="node5" title=" " alt="" coords="112,80,187,107"/>
-<area shape="rect" id="node6" title=" " alt="" coords="229,155,299,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="403,155,474,181"/>
-<area shape="rect" id="node8" title=" " alt="" coords="371,80,442,107"/>
-<area shape="rect" id="node9" href="$d1/d13/smalloc_8h.html" title=" " alt="" coords="261,80,347,107"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,155,82,181"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,229,82,256"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,80,88,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="112,80,187,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="229,155,299,181"/>
+<area shape="rect" id="node5" title=" " alt="" coords="383,155,454,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="371,80,442,107"/>
+<area shape="rect" id="node7" href="$d1/d13/smalloc_8h.html" title=" " alt="" coords="261,80,347,107"/>
 </map>
