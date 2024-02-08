@@ -1,18 +1,16 @@
 <map id="src/drivers/sys&#45;gpio.c" name="src/drivers/sys&#45;gpio.c">
-<area shape="rect" id="node1" title=" " alt="" coords="239,5,399,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="32,155,78,181"/>
-<area shape="rect" id="node3" title=" " alt="" coords="10,304,84,331"/>
-<area shape="rect" id="node4" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="255,229,338,256"/>
-<area shape="rect" id="node7" title=" " alt="" coords="106,229,180,256"/>
-<area shape="rect" id="node8" title=" " alt="" coords="728,229,798,256"/>
-<area shape="rect" id="node9" title=" " alt="" coords="565,379,636,405"/>
-<area shape="rect" id="node10" href="$d7/d7f/log_8h.html" title=" " alt="" coords="378,155,433,181"/>
-<area shape="rect" id="node15" title=" " alt="" coords="874,80,962,107"/>
-<area shape="rect" id="node16" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="182,80,272,107"/>
-<area shape="rect" id="node5" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="109,304,180,331"/>
-<area shape="rect" id="node6" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="109,379,180,405"/>
-<area shape="rect" id="node11" title=" " alt="" coords="584,229,652,256"/>
-<area shape="rect" id="node12" title=" " alt="" coords="473,229,560,256"/>
-<area shape="rect" id="node13" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="362,229,449,256"/>
-<area shape="rect" id="node14" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="476,304,546,331"/>
+<area shape="rect" id="node1" title=" " alt="" coords="240,5,400,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="32,155,79,181"/>
+<area shape="rect" id="node3" title=" " alt="" coords="106,304,181,331"/>
+<area shape="rect" id="node4" title=" " alt="" coords="717,229,800,256"/>
+<area shape="rect" id="node5" title=" " alt="" coords="56,229,130,256"/>
+<area shape="rect" id="node6" title=" " alt="" coords="256,229,327,256"/>
+<area shape="rect" id="node7" title=" " alt="" coords="503,379,574,405"/>
+<area shape="rect" id="node8" href="$d7/d7f/log_8h.html" title=" " alt="" coords="367,155,422,181"/>
+<area shape="rect" id="node13" title=" " alt="" coords="874,80,962,107"/>
+<area shape="rect" id="node14" href="$d3/da9/sys-gpio_8h.html" title=" " alt="" coords="183,80,272,107"/>
+<area shape="rect" id="node9" title=" " alt="" coords="624,229,692,256"/>
+<area shape="rect" id="node10" title=" " alt="" coords="462,229,548,256"/>
+<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="351,229,438,256"/>
+<area shape="rect" id="node12" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="407,304,478,331"/>
 </map>

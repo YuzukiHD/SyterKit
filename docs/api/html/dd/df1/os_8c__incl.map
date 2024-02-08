@@ -1,11 +1,9 @@
 <map id="src/os.c" name="src/os.c">
 <area shape="rect" id="node1" title=" " alt="" coords="217,5,287,32"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="5,155,88,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="112,155,187,181"/>
-<area shape="rect" id="node6" title=" " alt="" coords="211,155,282,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="306,155,377,181"/>
-<area shape="rect" id="node8" title=" " alt="" coords="401,155,469,181"/>
-<area shape="rect" id="node9" href="$d0/dff/os_8h.html" title=" " alt="" coords="197,80,246,107"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="11,229,82,256"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="11,304,82,331"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,155,88,181"/>
+<area shape="rect" id="node3" title=" " alt="" coords="112,155,187,181"/>
+<area shape="rect" id="node4" title=" " alt="" coords="211,155,282,181"/>
+<area shape="rect" id="node5" title=" " alt="" coords="306,155,377,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="401,155,469,181"/>
+<area shape="rect" id="node7" href="$d0/dff/os_8h.html" title=" " alt="" coords="197,80,246,107"/>
 </map>

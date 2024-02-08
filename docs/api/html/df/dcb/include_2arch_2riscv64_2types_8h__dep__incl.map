@@ -1,0 +1,8 @@
+<map id="include/arch/riscv64/types.h" name="include/arch/riscv64/types.h">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,157,47"/>
+<area shape="rect" id="node2" href="$d3/de5/include_2arch_2riscv64_2stdint_8h.html" title=" " alt="" coords="95,95,247,136"/>
+<area shape="rect" id="node4" href="$de/d6c/riscv64_2timer_8h.html" title=" " alt="" coords="95,273,247,315"/>
+<area shape="rect" id="node3" href="$d9/ddf/include_2arch_2riscv64_2io_8h.html" title=" " alt="" coords="81,191,261,218"/>
+<area shape="rect" id="node5" href="$d6/d19/riscv64_2mmu_8h.html" title=" " alt="" coords="247,363,399,404"/>
+<area shape="rect" id="node6" href="$da/dcc/riscv64_2stdbool_8h.html" title=" " alt="" coords="285,184,437,225"/>
+</map>

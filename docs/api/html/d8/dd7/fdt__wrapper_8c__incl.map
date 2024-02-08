@@ -1,23 +1,21 @@
 <map id="src/fdt_wrapper.c" name="src/fdt_wrapper.c">
-<area shape="rect" id="node1" title=" " alt="" coords="416,5,549,32"/>
-<area shape="rect" id="node2" href="$d9/d5e/stdbool_8h.html" title=" " alt="" coords="604,229,687,256"/>
-<area shape="rect" id="node5" title=" " alt="" coords="409,229,484,256"/>
-<area shape="rect" id="node6" title=" " alt="" coords="509,229,579,256"/>
-<area shape="rect" id="node7" title=" " alt="" coords="133,379,203,405"/>
-<area shape="rect" id="node8" href="$d7/d7f/log_8h.html" title=" " alt="" coords="314,155,369,181"/>
-<area shape="rect" id="node14" href="$d7/d0d/ctype_8h.html" title=" " alt="" coords="546,80,617,107"/>
-<area shape="rect" id="node15" href="$d1/d8e/fdt__wrapper_8h.html" title=" " alt="" coords="641,80,751,107"/>
-<area shape="rect" id="node16" href="$d1/dcf/libfdt_8h.html" title=" " alt="" coords="775,80,843,107"/>
-<area shape="rect" id="node3" href="$d8/d31/include_2arch_2arm32_2stdint_8h.html" title=" " alt="" coords="610,304,681,331"/>
-<area shape="rect" id="node4" href="$d6/dfc/include_2arch_2arm32_2types_8h.html" title=" " alt="" coords="610,379,681,405"/>
-<area shape="rect" id="node9" title=" " alt="" coords="206,229,274,256"/>
-<area shape="rect" id="node10" title=" " alt="" coords="43,229,130,256"/>
-<area shape="rect" id="node11" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="298,229,385,256"/>
-<area shape="rect" id="node12" title=" " alt="" coords="207,304,281,331"/>
-<area shape="rect" id="node13" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="306,304,377,331"/>
-<area shape="rect" id="node17" href="$d2/d70/libfdt__env_8h.html" title=" " alt="" coords="728,155,827,181"/>
-<area shape="rect" id="node21" href="$d8/d66/fdt_8h.html" title=" " alt="" coords="651,155,703,181"/>
-<area shape="rect" id="node18" title=" " alt="" coords="711,229,782,256"/>
-<area shape="rect" id="node19" title=" " alt="" coords="806,229,877,256"/>
-<area shape="rect" id="node20" href="$d9/d86/limits_8h.html" title=" " alt="" coords="901,229,971,256"/>
+<area shape="rect" id="node1" title=" " alt="" coords="459,5,592,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="408,229,491,256"/>
+<area shape="rect" id="node3" title=" " alt="" coords="515,229,589,256"/>
+<area shape="rect" id="node4" title=" " alt="" coords="614,229,685,256"/>
+<area shape="rect" id="node5" title=" " alt="" coords="21,379,91,405"/>
+<area shape="rect" id="node6" href="$d7/d7f/log_8h.html" title=" " alt="" coords="334,155,389,181"/>
+<area shape="rect" id="node12" href="$d7/d0d/ctype_8h.html" title=" " alt="" coords="681,80,751,107"/>
+<area shape="rect" id="node13" href="$d1/d8e/fdt__wrapper_8h.html" title=" " alt="" coords="775,80,886,107"/>
+<area shape="rect" id="node14" href="$d1/dcf/libfdt_8h.html" title=" " alt="" coords="589,80,657,107"/>
+<area shape="rect" id="node7" title=" " alt="" coords="315,229,383,256"/>
+<area shape="rect" id="node8" title=" " alt="" coords="94,229,181,256"/>
+<area shape="rect" id="node9" href="$d8/df2/include_2xformat_8h.html" title=" " alt="" coords="205,229,291,256"/>
+<area shape="rect" id="node10" title=" " alt="" coords="211,304,285,331"/>
+<area shape="rect" id="node11" href="$d7/de6/include_2string_8h.html" title=" " alt="" coords="105,304,175,331"/>
+<area shape="rect" id="node15" href="$d2/d70/libfdt__env_8h.html" title=" " alt="" coords="669,155,768,181"/>
+<area shape="rect" id="node19" href="$d8/d66/fdt_8h.html" title=" " alt="" coords="593,155,645,181"/>
+<area shape="rect" id="node16" title=" " alt="" coords="898,229,969,256"/>
+<area shape="rect" id="node17" title=" " alt="" coords="709,229,779,256"/>
+<area shape="rect" id="node18" title=" " alt="" coords="803,229,874,256"/>
 </map>

@@ -1,7 +1,6 @@
 <map id="include/arch" name="include/arch">
-<area shape="rect" id="node2" href="dir_7cfe2cf6a789cad3bf0f3a33af1044fa.html" title="arm32" alt="" coords="37,159,109,207"/>
+<area shape="rect" id="node2" href="dir_7cfe2cf6a789cad3bf0f3a33af1044fa.html" title="arm32" alt="" coords="133,63,205,111"/>
 <area shape="rect" id="node3" href="dir_36677c31d938bededfe53fa1136edb82.html" title="riscv64" alt="" coords="37,63,109,111"/>
-<area shape="rect" id="edge1-headlabel" href="dir_000182_000181.html" title="1" alt="" coords="77,133,86,148"/>
-<area shape="rect" id="clust2" href="dir_7c40e03ac1dfef8b430578d46da2b8fd.html" alt="" coords="27,52,216,217"/>
-<area shape="rect" id="clust1" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="16,16,227,228"/>
+<area shape="rect" id="clust2" href="dir_7c40e03ac1dfef8b430578d46da2b8fd.html" alt="" coords="27,52,312,121"/>
+<area shape="rect" id="clust1" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="16,16,323,132"/>
 </map>

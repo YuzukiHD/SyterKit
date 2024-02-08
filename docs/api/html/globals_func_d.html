@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.4</span>
+   &#160;<span id="projectnumber">0.2.5</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -68,13 +68,16 @@ $(function() {
 
 <h3><a id="index_d"></a>- d -</h3><ul>
 <li>data_sync_barrier()
-: <a class="el" href="d8/d3f/sys-rtc_8c.html#abbf84e54d8eae2581211899bc1540dd9">sys-rtc.c</a>
+: <a class="el" href="d6/d19/riscv64_2mmu_8h.html#abbf84e54d8eae2581211899bc1540dd9">mmu.h</a>
 </li>
 <li>dbc_1st()
 : <a class="el" href="db/d89/ff_8c.html#a2c5f3b093781d610ede2762365b97922">ff.c</a>
 </li>
 <li>dbc_2nd()
 : <a class="el" href="db/d89/ff_8c.html#aeca4a7f8eda7516a9fc978337214a499">ff.c</a>
+</li>
+<li>dcache_enable()
+: <a class="el" href="d6/d19/riscv64_2mmu_8h.html#a7df489b69957f594fd334421a3ba0620">mmu.h</a>
 </li>
 <li>decode_digit()
 : <a class="el" href="d3/d33/sstdlib_8c.html#ae52e15e2d8d3c27553134a99976a6f0e">sstdlib.c</a>
@@ -151,8 +154,8 @@ $(function() {
 , <a class="el" href="d7/d4d/sys-dma_8c.html#a8c9127e0e9add5c281066db0a402629b">sys-dma.c</a>
 </li>
 <li>dma_setting()
-: <a class="el" href="dc/dd0/sys-dma_8h.html#ad82033fdac35eb504c440fcf68d63af7">sys-dma.h</a>
-, <a class="el" href="d7/d4d/sys-dma_8c.html#ad82033fdac35eb504c440fcf68d63af7">sys-dma.c</a>
+: <a class="el" href="d7/d4d/sys-dma_8c.html#ad82033fdac35eb504c440fcf68d63af7">sys-dma.c</a>
+, <a class="el" href="dc/dd0/sys-dma_8h.html#ad82033fdac35eb504c440fcf68d63af7">sys-dma.h</a>
 </li>
 <li>dma_start()
 : <a class="el" href="dc/dd0/sys-dma_8h.html#acf6fffb06e86b925563b418d77fb7c7b">sys-dma.h</a>
@@ -174,38 +177,43 @@ $(function() {
 : <a class="el" href="de/ddd/sun8iw20_2sys-dram_8c.html#ae80cb028631e82df1c99ac0f99f9c7eb">sys-dram.c</a>
 </li>
 <li>dram_disable_all_master()
-: <a class="el" href="de/ddd/sun8iw20_2sys-dram_8c.html#a74c71bed7505dc94acadf57e6b45237f">sys-dram.c</a>
+: <a class="el" href="d2/d2a/sun20iw1_2sys-dram_8c.html#a74c71bed7505dc94acadf57e6b45237f">sys-dram.c</a>
 </li>
 <li>dram_enable_all_master()
-: <a class="el" href="d2/d8f/sun8iw21_2sys-dram_8c.html#ad44a52854c400a9e3cab763b4d02eb29">sys-dram.c</a>
+: <a class="el" href="d2/d2a/sun20iw1_2sys-dram_8c.html#ad44a52854c400a9e3cab763b4d02eb29">sys-dram.c</a>
 </li>
 <li>dram_voltage_set()
 : <a class="el" href="de/ddd/sun8iw20_2sys-dram_8c.html#a7e25c31c152f2f5d7d051cc056026df7">sys-dram.c</a>
 </li>
+<li>DRAMC_get_dram_size()
+: <a class="el" href="d2/d2a/sun20iw1_2sys-dram_8c.html#ae758710460deef74548ff0674fabe7a1">sys-dram.c</a>
+</li>
 <li>dramc_get_dram_size()
 : <a class="el" href="d2/d8f/sun8iw21_2sys-dram_8c.html#a33c0807e063bd038b8dbfa473d5eb5ca">sys-dram.c</a>
 </li>
-<li>DRAMC_get_dram_size()
-: <a class="el" href="de/ddd/sun8iw20_2sys-dram_8c.html#ae758710460deef74548ff0674fabe7a1">sys-dram.c</a>
-</li>
 <li>dramc_simple_wr_test()
-: <a class="el" href="de/ddd/sun8iw20_2sys-dram_8c.html#abec1982429a5eb1c6252b46ee056e185">sys-dram.c</a>
+: <a class="el" href="d2/d2a/sun20iw1_2sys-dram_8c.html#abec1982429a5eb1c6252b46ee056e185">sys-dram.c</a>
 </li>
 <li>Draw_Circle()
-: <a class="el" href="d7/d59/dongshanpi-aict_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
-, <a class="el" href="d3/dfe/dongshanpi-aict_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
-, <a class="el" href="d9/da8/project-yosemite_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
-, <a class="el" href="da/df8/project-yosemite_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
-, <a class="el" href="dc/d74/tinyvision_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
-, <a class="el" href="d4/dec/tinyvision_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
-, <a class="el" href="d5/dc0/yuzukilizard_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
+: <a class="el" href="d9/da8/project-yosemite_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
 , <a class="el" href="de/dbd/yuzukilizard_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
+, <a class="el" href="d5/dc0/yuzukilizard_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
+, <a class="el" href="d4/dec/tinyvision_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
+, <a class="el" href="dc/d74/tinyvision_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
+, <a class="el" href="da/df8/project-yosemite_2spi__lcd_2lcd_8h.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.h</a>
+, <a class="el" href="d7/d59/dongshanpi-aict_2spi__lcd_2lcd_8c.html#a522f79796cabd20555ae4dbf50acf6d4">lcd.c</a>
+</li>
+<li>dummy_interrupt_function()
+: <a class="el" href="df/d6a/riscv64_2exception_8c.html#aec40e8f392f4131612f98065508b5816">exception.c</a>
 </li>
 <li>dump_c906_clock()
 : <a class="el" href="df/dff/sun8iw20_2sys-rproc_8c.html#ad5763f3a9955507ad6d5f48cbe8dd2a2">sys-rproc.c</a>
 </li>
 <li>dump_e907_clock()
 : <a class="el" href="d1/d7c/sun8iw21_2sys-rproc_8c.html#aefe26d90387b07784b8c3299312f2825">sys-rproc.c</a>
+</li>
+<li>dump_hifi4_clock()
+: <a class="el" href="d8/d99/sun20iw1_2sys-rproc_8c.html#a23542ee62eb48ca3121140dd0c2c2133">sys-rproc.c</a>
 </li>
 </ul>
 </div><!-- contents -->
