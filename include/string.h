@@ -17,7 +17,7 @@ extern "C" {
  * @param cnt The number of bytes to copy.
  * @return A pointer to the destination memory area.
  */
-void *memcpy(void *dst, const void *src, int cnt);
+void *memcpy(void *dst, const void *src, int cnt) __attribute__((optimize("O0")));
 
 /**
  * Sets the first 'cnt' bytes of the memory area pointed to by 'dst' to the specified value 'val'.
@@ -27,7 +27,7 @@ void *memcpy(void *dst, const void *src, int cnt);
  * @param cnt The number of bytes to be set to the value.
  * @return A pointer to the destination memory area.
  */
-void *memset(void *dst, int val, int cnt);
+void *memset(void *dst, int val, int cnt) __attribute__((optimize("O0")));
 
 /**
  * Compares the first 'cnt' bytes of the memory areas 'dst' and 'src'.
@@ -37,7 +37,7 @@ void *memset(void *dst, int val, int cnt);
  * @param cnt The number of bytes to compare.
  * @return An integer less than, equal to, or greater than zero if 'dst' is found, respectively, to be less than, to match, or be greater than 'src'.
  */
-int memcmp(const void *dst, const void *src, unsigned int cnt);
+int memcmp(const void *dst, const void *src, unsigned int cnt) __attribute__((optimize("O0")));
 
 /**
  * Calculates the length of the string 'str', excluding the terminating null byte.
@@ -45,7 +45,7 @@ int memcmp(const void *dst, const void *src, unsigned int cnt);
  * @param str The input string.
  * @return The length of the input string.
  */
-unsigned int strlen(const char *str);
+unsigned int strlen(const char *str) __attribute__((optimize("O0")));
 
 /**
  * Calculates the length of the string 's', but not more than 'n' characters.
@@ -54,7 +54,7 @@ unsigned int strlen(const char *str);
  * @param n The maximum number of characters to examine.
  * @return The length of the input string, but not more than 'n'.
  */
-unsigned int strnlen(const char *s, unsigned int n);
+unsigned int strnlen(const char *s, unsigned int n) __attribute__((optimize("O0")));
 
 /**
  * Copies the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dst'.
@@ -63,7 +63,7 @@ unsigned int strnlen(const char *s, unsigned int n);
  * @param src The source string.
  * @return A pointer to the destination buffer.
  */
-char *strcpy(char *dst, const char *src);
+char *strcpy(char *dst, const char *src) __attribute__((optimize("O0")));
 
 /**
  * Copies up to 'n' characters from the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dest'.
@@ -73,7 +73,7 @@ char *strcpy(char *dst, const char *src);
  * @param n The maximum number of characters to be copied.
  * @return A pointer to the destination buffer.
  */
-char *strncpy(char *dest, const char *src, unsigned int n);
+char *strncpy(char *dest, const char *src, unsigned int n) __attribute__((optimize("O0")));
 
 /**
  * Appends the string pointed to by 'src', including the terminating null byte, to the end of the string pointed to by 'dst'.
@@ -82,7 +82,7 @@ char *strncpy(char *dest, const char *src, unsigned int n);
  * @param src The source string.
  * @return A pointer to the destination string.
  */
-char *strcat(char *dst, const char *src);
+char *strcat(char *dst, const char *src) __attribute__((optimize("O0")));
 
 /**
  * Compares the string pointed to by 'p1' to the string pointed to by 'p2'.
@@ -91,7 +91,7 @@ char *strcat(char *dst, const char *src);
  * @param p2 The second string to compare.
  * @return An integer less than, equal to, or greater than zero if 'p1' is found, respectively, to be less than, to match, or be greater than 'p2'.
  */
-int strcmp(const char *p1, const char *p2);
+int strcmp(const char *p1, const char *p2) __attribute__((optimize("O0")));
 
 /**
  * Compares at most the first 'cnt' characters of the string pointed to by 'p1' to the string pointed to by 'p2'.
@@ -101,7 +101,7 @@ int strcmp(const char *p1, const char *p2);
  * @param cnt The maximum number of characters to compare.
  * @return An integer less than, equal to, or greater than zero if 'p1' is found, respectively, to be less than, to match, or be greater than 'p2'.
  */
-int strncmp(const char *p1, const char *p2, unsigned int cnt);
+int strncmp(const char *p1, const char *p2, unsigned int cnt) __attribute__((optimize("O0")));
 
 /**
  * Finds the first occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
@@ -110,7 +110,7 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt);
  * @param c The character to search for.
  * @return A pointer to the located character, or NULL if the character does not occur in the string.
  */
-char *strchr(const char *s, int c);
+char *strchr(const char *s, int c) __attribute__((optimize("O0")));
 
 /**
  * Finds the last occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
@@ -119,7 +119,7 @@ char *strchr(const char *s, int c);
  * @param c The character to search for.
  * @return A pointer to the located character, or NULL if the character does not occur in the string.
  */
-char *strrchr(const char *s, int c);
+char *strrchr(const char *s, int c) __attribute__((optimize("O0")));
 
 /**
  * Finds the first occurrence of the substring 'what' in the string 's'.
@@ -128,7 +128,7 @@ char *strrchr(const char *s, int c);
  * @param what The substring to search for.
  * @return A pointer to the beginning of the located substring, or NULL if the substring does not occur in the string.
  */
-char *strstr(const char *s, const char *what);
+char *strstr(const char *s, const char *what) __attribute__((optimize("O0")));
 
 /**
  * Locates the first occurrence of the character 'value' (converted to an unsigned char) in the first 'num' bytes of the memory area pointed to by 'ptr'.
@@ -138,7 +138,7 @@ char *strstr(const char *s, const char *what);
  * @param num The number of bytes to examine.
  * @return A pointer to the located character, or NULL if the character does not occur in the memory area.
  */
-void *memchr(void *ptr, int value, unsigned int num);
+void *memchr(void *ptr, int value, unsigned int num) __attribute__((optimize("O0")));
 
 /**
  * Copies 'count' bytes from the memory area 'src' to the memory area 'dest'. The memory areas may overlap.
@@ -148,7 +148,7 @@ void *memchr(void *ptr, int value, unsigned int num);
  * @param count The number of bytes to copy.
  * @return A pointer to the destination memory area.
  */
-void *memmove(void *dest, const void *src, unsigned int count);
+void *memmove(void *dest, const void *src, unsigned int count) __attribute__((optimize("O0")));
 
 #ifdef __cplusplus
 }
