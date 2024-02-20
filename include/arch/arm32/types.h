@@ -59,6 +59,8 @@ typedef unsigned long phys_addr_t;
 typedef unsigned long phys_size_t;
 #endif
 
+typedef unsigned long virtual_addr_t;
+
 /*
  * A dma_addr_t can hold any valid DMA address, i.e., any address returned
  * by the DMA API.
