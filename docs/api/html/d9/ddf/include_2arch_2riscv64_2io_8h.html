@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.5</span>
+   &#160;<span id="projectnumber">0.2.5.2</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -103,29 +103,40 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ad27cc17b25bb93134368d5eb21126eae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#ad27cc17b25bb93134368d5eb21126eae">BIT</a>(x)&#160;&#160;&#160;(1 &lt;&lt; x)</td></tr>
+<tr class="memdesc:ad27cc17b25bb93134368d5eb21126eae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define a bit mask for the specified bit position.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#ad27cc17b25bb93134368d5eb21126eae">More...</a><br /></td></tr>
 <tr class="separator:ad27cc17b25bb93134368d5eb21126eae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12af0b12a4d90ad898f495f8a4947750"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a12af0b12a4d90ad898f495f8a4947750">clrsetbits_le32</a>(addr,  clear,  set)&#160;&#160;&#160;    <a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#af4aa8e8a8923985d46146fbe16a71721">write32</a>((addr), (<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#aa61c7f79198aca04b99add20b5e74742">read32</a>(addr) &amp; ~(clear)) | (set))</td></tr>
+<tr class="memdesc:a12af0b12a4d90ad898f495f8a4947750"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear and set bits in a 32-bit address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a12af0b12a4d90ad898f495f8a4947750">More...</a><br /></td></tr>
 <tr class="separator:a12af0b12a4d90ad898f495f8a4947750"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8295fb45d4d58db2732df94b2bd4d7fc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a8295fb45d4d58db2732df94b2bd4d7fc">setbits_le32</a>(addr,  set)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#af4aa8e8a8923985d46146fbe16a71721">write32</a>((addr), <a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#aa61c7f79198aca04b99add20b5e74742">read32</a>(addr) | (set))</td></tr>
+<tr class="memdesc:a8295fb45d4d58db2732df94b2bd4d7fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set bits in a 32-bit address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a8295fb45d4d58db2732df94b2bd4d7fc">More...</a><br /></td></tr>
 <tr class="separator:a8295fb45d4d58db2732df94b2bd4d7fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1bf7aca78205231685c36649e1c0e92"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#aa1bf7aca78205231685c36649e1c0e92">clrbits_le32</a>(addr,  clear)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#af4aa8e8a8923985d46146fbe16a71721">write32</a>((addr), <a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#aa61c7f79198aca04b99add20b5e74742">read32</a>(addr) &amp; ~(clear))</td></tr>
+<tr class="memdesc:aa1bf7aca78205231685c36649e1c0e92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear bits in a 32-bit address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#aa1bf7aca78205231685c36649e1c0e92">More...</a><br /></td></tr>
 <tr class="separator:aa1bf7aca78205231685c36649e1c0e92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6867d069f2c804eca9d7be12a085e99c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a6867d069f2c804eca9d7be12a085e99c">readb</a>(addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#afcff4bfaa5fdaf1068086eef0d275fc4">read8</a>(addr)</td></tr>
+<tr class="memdesc:a6867d069f2c804eca9d7be12a085e99c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a byte from the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a6867d069f2c804eca9d7be12a085e99c">More...</a><br /></td></tr>
 <tr class="separator:a6867d069f2c804eca9d7be12a085e99c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b3dc1fc941e8adad75c7e9f4dba3c24"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a3b3dc1fc941e8adad75c7e9f4dba3c24">writeb</a>(val,  addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#a9aad03f4d8bdf310c2c0418fad94eb8f">write8</a>((addr), (val))</td></tr>
+<tr class="memdesc:a3b3dc1fc941e8adad75c7e9f4dba3c24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a byte value to the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a3b3dc1fc941e8adad75c7e9f4dba3c24">More...</a><br /></td></tr>
 <tr class="separator:a3b3dc1fc941e8adad75c7e9f4dba3c24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796d827159598fa38b4d1a03e807a292"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a796d827159598fa38b4d1a03e807a292">readw</a>(addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#a6011e1151c0f9f68f2232ebc33cccda8">read16</a>(addr)</td></tr>
+<tr class="memdesc:a796d827159598fa38b4d1a03e807a292"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a 16-bit word from the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a796d827159598fa38b4d1a03e807a292">More...</a><br /></td></tr>
 <tr class="separator:a796d827159598fa38b4d1a03e807a292"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a181c780ac391b5154f2c51d98d37181f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a181c780ac391b5154f2c51d98d37181f">writew</a>(val,  addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#ab4c9ade48e0c338d05baaf26e07d2295">write16</a>((addr), (val))</td></tr>
+<tr class="memdesc:a181c780ac391b5154f2c51d98d37181f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a 16-bit word value to the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a181c780ac391b5154f2c51d98d37181f">More...</a><br /></td></tr>
 <tr class="separator:a181c780ac391b5154f2c51d98d37181f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed54ef84775a6b4184dbc8a5cfdce6eb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#aed54ef84775a6b4184dbc8a5cfdce6eb">readl</a>(addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#aa61c7f79198aca04b99add20b5e74742">read32</a>(addr)</td></tr>
+<tr class="memdesc:aed54ef84775a6b4184dbc8a5cfdce6eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a 32-bit double word from the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#aed54ef84775a6b4184dbc8a5cfdce6eb">More...</a><br /></td></tr>
 <tr class="separator:aed54ef84775a6b4184dbc8a5cfdce6eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81bfc278253d1610812d412a4c5579b0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a81bfc278253d1610812d412a4c5579b0">writel</a>(val,  addr)&#160;&#160;&#160;<a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#af4aa8e8a8923985d46146fbe16a71721">write32</a>((addr), (val))</td></tr>
+<tr class="memdesc:a81bfc278253d1610812d412a4c5579b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a 32-bit double word value to the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a81bfc278253d1610812d412a4c5579b0">More...</a><br /></td></tr>
 <tr class="separator:a81bfc278253d1610812d412a4c5579b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a96081d6bf6058db85c90533efc81b358"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a96081d6bf6058db85c90533efc81b358">__attribute__</a> ((__always_inline__)) <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#af7aa217d9ae1abca94f93e4052ee9689">uint8_t</a> <a class="el" href="../../d0/df3/utils_2bl33__t527_2include_2io_8h.html#afcff4bfaa5fdaf1068086eef0d275fc4">read8</a>(<a class="el" href="../../d3/da9/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2types_8h.html#a50f55700d2cf66e045d9b5c66f392408">virtual_addr_t</a> addr)</td></tr>
+<tr class="memdesc:a96081d6bf6058db85c90533efc81b358"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inline function to read an 8-bit value from the specified address.  <a href="../../d9/ddf/include_2arch_2riscv64_2io_8h.html#a96081d6bf6058db85c90533efc81b358">More...</a><br /></td></tr>
 <tr class="separator:a96081d6bf6058db85c90533efc81b358"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
@@ -149,6 +160,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Define a bit mask for the specified bit position. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>The bit position to generate the bit mask for. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -177,6 +196,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Clear bits in a 32-bit address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to perform the operation on. </td></tr>
+    <tr><td class="paramname">clear</td><td>The bits to clear. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -212,6 +240,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Clear and set bits in a 32-bit address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to perform the operation on. </td></tr>
+    <tr><td class="paramname">clear</td><td>The bits to clear. </td></tr>
+    <tr><td class="paramname">set</td><td>The bits to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a6867d069f2c804eca9d7be12a085e99c"></a>
@@ -229,6 +267,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Read a byte from the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -248,6 +294,14 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Read a 32-bit double word from the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a796d827159598fa38b4d1a03e807a292"></a>
@@ -265,6 +319,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Read a 16-bit word from the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -294,6 +356,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set bits in a 32-bit address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to perform the operation on. </td></tr>
+    <tr><td class="paramname">set</td><td>The bits to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a3b3dc1fc941e8adad75c7e9f4dba3c24"></a>
@@ -321,6 +392,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write a byte value to the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">val</td><td>The value to write. </td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -350,6 +430,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write a 32-bit double word value to the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">val</td><td>The value to write. </td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a181c780ac391b5154f2c51d98d37181f"></a>
@@ -378,6 +467,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write a 16-bit word value to the specified address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">val</td><td>The value to write. </td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
@@ -405,6 +503,56 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Inline function to read an 8-bit value from the specified address. </p>
+<p>Inline function to write a 64-bit value to the specified address.</p>
+<p>Inline function to write a 32-bit value to the specified address.</p>
+<p>Inline function to write a 16-bit value to the specified address.</p>
+<p>Inline function to write an 8-bit value to the specified address.</p>
+<p>Inline function to read a 64-bit value from the specified address.</p>
+<p>Inline function to read a 32-bit value from the specified address.</p>
+<p>Inline function to read a 16-bit value from the specified address.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The 8-bit value read from the address.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The 16-bit value read from the address.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The 32-bit value read from the address.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to read from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The 64-bit value read from the address.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+    <tr><td class="paramname">value</td><td>The 8-bit value to write.</td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+    <tr><td class="paramname">value</td><td>The 16-bit value to write.</td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+    <tr><td class="paramname">value</td><td>The 32-bit value to write.</td></tr>
+    <tr><td class="paramname">addr</td><td>The address to write to. </td></tr>
+    <tr><td class="paramname">value</td><td>The 64-bit value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -422,7 +570,7 @@ Variables</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line">{</div>
 <div class="line">    *((<span class="keyword">volatile</span> <a class="code" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#af7aa217d9ae1abca94f93e4052ee9689">uint8_t</a> *) (addr)) = <a class="code" href="../../d8/df5/include_2arch_2arm32_2io_8h.html#aed94f80ce5200614d57753772d7c7968">value</a></div>
 <div class="ttc" id="aboard_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h_html_af7aa217d9ae1abca94f93e4052ee9689"><div class="ttname"><a href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#af7aa217d9ae1abca94f93e4052ee9689">uint8_t</a></div><div class="ttdeci">u8_t uint8_t</div><div class="ttdef"><b>Definition:</b> stdint.h:7</div></div>
-<div class="ttc" id="ainclude_2arch_2arm32_2io_8h_html_aed94f80ce5200614d57753772d7c7968"><div class="ttname"><a href="../../d8/df5/include_2arch_2arm32_2io_8h.html#aed94f80ce5200614d57753772d7c7968">value</a></div><div class="ttdeci">static uint8_t value</div><div class="ttdef"><b>Definition:</b> io.h:41</div></div>
+<div class="ttc" id="ainclude_2arch_2arm32_2io_8h_html_aed94f80ce5200614d57753772d7c7968"><div class="ttname"><a href="../../d8/df5/include_2arch_2arm32_2io_8h.html#aed94f80ce5200614d57753772d7c7968">value</a></div><div class="ttdeci">static uint8_t value</div><div class="ttdef"><b>Definition:</b> io.h:132</div></div>
 </div><!-- fragment -->
 </div>
 </div>

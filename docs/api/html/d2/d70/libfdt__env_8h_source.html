@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.5</span>
+   &#160;<span id="projectnumber">0.2.5.2</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -162,7 +162,7 @@ $(function() {
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">size_t</span> fdt_strnlen(<span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keywordtype">string</span>, <span class="keywordtype">size_t</span> max_count)</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;{</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span> *p = <a class="code" href="../../d7/de6/include_2string_8h.html#ab968027994dd4a3bcbb1c57c660c83fb">memchr</a>(<span class="keywordtype">string</span>, 0, max_count);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span> *p = <a class="code" href="../../d7/de6/include_2string_8h.html#a4dd3c092a6a243ef31b82f1d89a5fe7f">memchr</a>(<span class="keywordtype">string</span>, 0, max_count);</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordflow">return</span> p ? p - string : max_count;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;}</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
@@ -179,7 +179,7 @@ $(function() {
 <div class="ttc" id="aboard_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h_html_a6d57c383c80c05cc98c05d6dfec72756"><div class="ttname"><a href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a></div><div class="ttdeci">u64_t uint64_t</div><div class="ttdef"><b>Definition:</b> stdint.h:16</div></div>
 <div class="ttc" id="aboard_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h_html_a80a9c870f4d95f081766ab33e8f001ee"><div class="ttname"><a href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a></div><div class="ttdeci">u32_t uint32_t</div><div class="ttdef"><b>Definition:</b> stdint.h:13</div></div>
 <div class="ttc" id="aboard_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h_html_afc23773e8ed50ce689108ff24259ace0"><div class="ttname"><a href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#afc23773e8ed50ce689108ff24259ace0">uint16_t</a></div><div class="ttdeci">u16_t uint16_t</div><div class="ttdef"><b>Definition:</b> stdint.h:10</div></div>
-<div class="ttc" id="ainclude_2string_8h_html_ab968027994dd4a3bcbb1c57c660c83fb"><div class="ttname"><a href="../../d7/de6/include_2string_8h.html#ab968027994dd4a3bcbb1c57c660c83fb">memchr</a></div><div class="ttdeci">void * memchr(void *ptr, int value, unsigned int num)</div><div class="ttdoc">Locates the first occurrence of the character 'value' (converted to an unsigned char) in the first 'n...</div><div class="ttdef"><b>Definition:</b> string.c:120</div></div>
+<div class="ttc" id="ainclude_2string_8h_html_a4dd3c092a6a243ef31b82f1d89a5fe7f"><div class="ttname"><a href="../../d7/de6/include_2string_8h.html#a4dd3c092a6a243ef31b82f1d89a5fe7f">memchr</a></div><div class="ttdeci">void * memchr(void *ptr, int value, unsigned int num) __attribute__((optimize(&quot;O0&quot;)))</div><div class="ttdoc">Locates the first occurrence of the character 'value' (converted to an unsigned char) in the first 'n...</div><div class="ttdef"><b>Definition:</b> string.c:120</div></div>
 <div class="ttc" id="alibfdt__env_8h_html_a06ce41f441b8a56710000af3c3e516e5"><div class="ttname"><a href="../../d2/d70/libfdt__env_8h.html#a06ce41f441b8a56710000af3c3e516e5">cpu_to_fdt32</a></div><div class="ttdeci">static fdt32_t cpu_to_fdt32(uint32_t x)</div><div class="ttdef"><b>Definition:</b> libfdt_env.h:55</div></div>
 <div class="ttc" id="alibfdt__env_8h_html_a4c4ebf681c2d259b45fd08763dfbdb12"><div class="ttname"><a href="../../d2/d70/libfdt__env_8h.html#a4c4ebf681c2d259b45fd08763dfbdb12">cpu_to_fdt16</a></div><div class="ttdeci">static fdt16_t cpu_to_fdt16(uint16_t x)</div><div class="ttdef"><b>Definition:</b> libfdt_env.h:46</div></div>
 <div class="ttc" id="alibfdt__env_8h_html_a4f89bfb3087f9d97db82d77616931e16"><div class="ttname"><a href="../../d2/d70/libfdt__env_8h.html#a4f89bfb3087f9d97db82d77616931e16">FDT_BITWISE</a></div><div class="ttdeci">#define FDT_BITWISE</div><div class="ttdef"><b>Definition:</b> libfdt_env.h:26</div></div>
