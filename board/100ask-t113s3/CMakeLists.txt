@@ -5,3 +5,5 @@ set(APP_COMMON_SOURCE
 )
 
 add_subdirectory(hello_world)
+
+add_subdirectory(load_hifi4)
