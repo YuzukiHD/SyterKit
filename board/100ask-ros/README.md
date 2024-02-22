@@ -1,29 +1,42 @@
-# SyterKit Common 
+# DongshanPI-ROSx
 
-## start.S
+## Specifications
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
+![DongshanPI-ROSx](https://github.com/YuzukiHD/SyterKit/assets/12003087/c3d08e65-71a7-4b18-aa5e-0dd7a055483d)
 
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
+- Main control: Allwinner  R818  4x Arm Cortex A53  + GPU
+- DRAM: LPDDR4 2GB/4GB
+- Storage: Onboard 16GB/32GB Emmc, support USB external U disk and SD card to expand storage
+- Network: Support 2.4G/5.8Ghz  WiFi and Bluetooth, onboard antenna
+- Display: Support MIPI-DSI+TP screen interface, support SPI screen
+- Audio: Microphone daughter board interface * 1
+- Board size: length 75mm *width 100mm* thickness 1.7mm
+- PCB layer: 4+4 layers
+- Support Tina Linux，based on Linux 5.4 kernel, Android System.
 
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
+## Application
 
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
+| Name        | Function                                                     | Path          |
+| ----------- | ------------------------------------------------------------ | ------------- |
+| hello world | Minimal program example, prints Hello World                  | `hello_world` |
+| init dram   | Initializes the serial port and DRAM                         | `init_dram`   |
+| syter boot  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `syter_boot`  |
+| payloads    |                                                              | `payloads`    |
+| smhc test   | Initialize the SD card and check if initialization           | `smhc_test`   |
 
-4. Clear BSS Section: It zeroes out variables in the BSS section.
 
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
 
-6. Set Timer Frequency: It sets the timer frequency to 24M.
+## Buy Now
 
-7. Call the main Function: It jumps to the main function to execute the main logic.
+### DongshanPI-ROSx
 
-## eabi_compat.c
+Tabao: [https://item.taobao.com/item.htm?&id=742752349507](https://item.taobao.com/item.htm?&id=742752349507)
 
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
 
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
 
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
+### Accessories
 
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
+mCore 2+16 : https://item.taobao.com/item.htm?id=742752349507&skuId=5295912083676
+
+mCore 4+32: https://item.taobao.com/item.htm?id=742752349507&skuId=5295912083677
+
