@@ -1,29 +1,42 @@
-# SyterKit Common 
+# T113i-Industrial DevKit
 
-## start.S
+## Specifications
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
+- Main control: Allwinner T113i   Dual-core ARM Cortex -A7 + 64-bit Xuantie C906 RISC-V
+- DRAM: DDR3 512MB
+- Storage: Onboard 128MB spi-nand, support USB external U disk and SD card to expand storage
+- Debug: Onboard TypeC usb to serial ttl debug
+- Network:  Support Gigabit Ethernet,  Support USB 100M Ethernet,Support 2.4G/5.8G WiFi and Bluetooth, onboard antenna
+- Display: Support RGB+TP screen interface,  support SPI screen
+- Audio:  3.5mm headphone jack * 1 
+- Power: 12V/2A  DC-5.5/2.1
+- Connectivity: CANx2 RS485 x 6
+- Pinout: 40Pin x2.54 IO
+- Board size: length 125mm *width 125mm* thickness 1.7mm
+- PCB layer: 4+4 layers
+- Support Tina Linux，based on Linux 5.4 kernel
 
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
 
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
 
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
+## Application
 
-4. Clear BSS Section: It zeroes out variables in the BSS section.
+| Name        | Function                                                     | Path             |
+| ----------- | ------------------------------------------------------------ | ---------------- |
+| sys_info    | The system initializes necessary functions and prints hello word | `sys_info`       |
+| hello world | Minimal program example, prints Hello World                  | `hello_world`    |
+| load c906   | Start and initialize the tf card through the C906 CPU, read the hifi4 dsp firmware from it, and load it for execution | `load_c906`      |
+| syter boot  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot` |
+| os test     | The system initializes the serial port information and prints hello word to verify whether the system starts normally. | `os_test`        |
 
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
+## Buy Now
 
-6. Set Timer Frequency: It sets the timer frequency to 24M.
+### T113i-Industrial
 
-7. Call the main Function: It jumps to the main function to execute the main logic.
+Tabao:  https://item.taobao.com/item.htm?id=756032410469
 
-## eabi_compat.c
+### Accessories
 
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
+RGB-1024x600: https://item.taobao.com/item.htm?id=611156659477&
 
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
 
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
 
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
