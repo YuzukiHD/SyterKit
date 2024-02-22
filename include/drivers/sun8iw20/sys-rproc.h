@@ -5,7 +5,6 @@
 
 #include "reg/reg-rproc.h"
 
-```
 /**
  * Initialize the clock for the sunxi hifi4 module.
  *
@@ -34,6 +33,5 @@ void sunxi_c906_clock_init(uint32_t addr);
  * Reset the clock for the sunxi c906 module.
  */
 void sunxi_c906_clock_reset(void);
-```
 
 #endif// __SUN8IW20_SYS_RPROC_H__
