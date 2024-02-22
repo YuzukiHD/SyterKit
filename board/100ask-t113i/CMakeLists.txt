@@ -12,4 +12,6 @@ add_subdirectory(syter_boot)
 
 add_subdirectory(load_c906)
 
+add_subdirectory(load_hifi4)
+
 add_subdirectory(os_test)
