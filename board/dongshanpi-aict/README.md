@@ -1,29 +1,56 @@
-# SyterKit Common 
+# DongshanPI-AICT
 
-## start.S
+## Specifications
 
-This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:
+![100ask-v853-pro_top](https://github.com/YuzukiHD/SyterKit/assets/12003087/0240756e-d8cc-4240-9486-6ba3b2d55d56)
 
-1. Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.
 
-2. Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.
+- Based on Allwinner V853
+- Cortex-A7 Core up to 1200MHz 
+- RISC-V E907GC@600MHz
+- 1Tops@int8 NPU
+- Built in 512MB/1GB DDR3  memory
+- One TF Card Slot, Support UHS-SDR104
+- On board SPI NAND /  8/32G Emmc
+- On board USB&UART Combo
+- Supports one 2/4-lane MIPI CSI inputs 
+- Supports 1 individual ISP, with maximum resolution of 2560 x 1440
+- H.264/H.265 decoding at 4096x4096
+- H.264/H.265 encoder supports 3840x2160@20fps
+- Online Video encode
+- RISC-V E907 RTOS Support, Based on RT-Thread + RTOS-HAL
 
-3. Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.
+## Application
 
-4. Clear BSS Section: It zeroes out variables in the BSS section.
+| Name            | Function                                                     | Path              |
+| --------------- | ------------------------------------------------------------ | ----------------- |
+| hello world     | Minimal program example, prints Hello World                  | `hello_world`     |
+| init dram       | Initializes the serial port and DRAM                         | `init_dram`       |
+| read chip efuse | Reads chip efuse information                                 | `read_chip_efuse` |
+| read chipsid    | Reads the unique ID of the chip                              | `read_chipsid`    |
+| load e907       | Reads the e907 core firmware, starts the e907 core, and uses V851s as a large RISC-V microcontroller (E907 @ 600 MHz with 64MB memory) | `load_e907`       |
+| syter boot      | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `syter_boot`      |
+| syter boot_spi  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux for SPI NAND, SPI NOR | `syter_boot_spi`  |
+| syter amp       | Reads the e907 core firmware, starts the e907 core, loads the kernel, and runs Linux simultaneously on both e907 and a7 systems, which are heterogeneously integrated | `syter_amp`       |
+| fdt parser      | Reads the DTB and Parser Print out                           | `fdt_parser`      |
+| fdt cli         | Reads the DTB with a CLI support uboot fdt command           | `fdt_cli`         |
+| syter bootargs  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux, Within a CLI to change bootargs | `syter_bootargs`  |
+| cli test        | Test baisc CLI function                                      | `cli_test`        |
+| i2c oled        |                                                              | `i2c_oled`        |
+| i2c test        |                                                              | `i2c_test`        |
+| spi lcd         |                                                              | `spi_lcd`         |
+| syter boot spi  |                                                              | `syter_boot_spi`  |
 
-5. Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.
+## Buy Now
 
-6. Set Timer Frequency: It sets the timer frequency to 24M.
+### DongshanPI-AICT
 
-7. Call the main Function: It jumps to the main function to execute the main logic.
+- Taobao:  https://item.taobao.com/item.htm?id=706864521673
 
-## eabi_compat.c
+### Accessories
 
-This code snippet appears to be providing implementations for the functions `abort`, `raise`, and `__aeabi_unwind_cpp_pr0`. Here's a breakdown of their functionalities:
+- MIPI GC2053 Camera: [https://item.taobao.com/item.htm?id=706864521673&skuId=5213471339193](https://item.taobao.com/item.htm?id=706864521673&skuId=5213471339193)
 
-1. `void abort(void)`: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.
+- MIPI DSI 800x480 Display:  https://item.taobao.com/item.htm?id=706091265930
 
-2. `int raise(int signum)`: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.
-
-3. `void __aeabi_unwind_cpp_pr0(void)`: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality.
+  
