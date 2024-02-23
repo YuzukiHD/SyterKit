@@ -5,8 +5,21 @@
 
 #include "reg/reg-rproc.h"
 
+/**
+ * Initialize the clock for the sunxi hifi4 module.
+ *
+ * @param addr The address of the hifi4 code.
+ */
 void sunxi_hifi4_clock_init(uint32_t addr);
 
+/**
+ * Start the sunxi hifi4 module.
+ */
+void sunxi_hifi4_start(void);
+
+/**
+ * Reset the clock for the sunxi hifi4.
+ */
 void sunxi_hifi4_clock_reset(void);
 
 #endif// __SUN20IW1_SYS_RPROC_H__

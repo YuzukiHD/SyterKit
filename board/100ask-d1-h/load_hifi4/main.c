@@ -11,15 +11,22 @@
 #include <common.h>
 #include <mmu.h>
 
-#include "sys-dram.h"
-#include "sys-sdcard.h"
-#include "sys-sid.h"
-#include "sys-spi.h"
+#include <sys-clk.h>
+#include <sys-dram.h>
+#include <sys-i2c.h>
+#include <sys-rtc.h>
+#include <sys-sdcard.h>
+#include <sys-sid.h>
+#include <sys-spi.h>
 
-#include "elf_loader.h"
-#include "ff.h"
+#include <cli.h>
+#include <cli_shell.h>
+#include <cli_termesc.h>
 
-#define CONFIG_HIFI4_ELF_FILENAME "c906.elf"
+#include <elf_loader.h>
+#include <ff.h>
+
+#define CONFIG_HIFI4_ELF_FILENAME "dsp.elf"
 #define CONFIG_HIFI4_ELF_LOADADDR (0x45000000)
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
@@ -30,7 +37,7 @@ extern sdhci_t sdhci0;
 
 extern dram_para_t dram_para;
 
-#define FILENAME_MAX_LEN 64
+#define FILENAME_MAX_LEN 32
 typedef struct {
     uint8_t *dest;
     char filename[FILENAME_MAX_LEN];
@@ -51,9 +58,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\n", filename,
-               fret);
+        printk(LOG_LEVEL_ERROR, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -79,8 +84,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
-           (f32) (total_read / time) / 1024.0f);
+    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
@@ -94,7 +98,8 @@ static int load_sdcard(image_info_t *image) {
 
     uint32_t test_time;
     start = time_ms();
-    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0,
+                   CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
     printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
@@ -128,6 +133,20 @@ static int load_sdcard(image_info_t *image) {
     return 0;
 }
 
+msh_declare_command(boot);
+msh_define_help(boot, "boot HIFI4", "Usage: boot\n");
+int cmd_boot(int argc, const char **argv) {
+    sunxi_hifi4_start();
+
+    abort();
+    return 0;
+}
+
+const msh_command_entry commands[] = {
+        msh_define_command(boot),
+        msh_command_end,
+};
+
 int main(void) {
     sunxi_serial_init(&uart_dbg);// Initialize the serial interface for debugging
 
@@ -135,7 +154,7 @@ int main(void) {
 
     sunxi_clk_init();// Initialize clock configurations
 
-    sunxi_dram_init(&dram_para);// Initialize DRAM parameters
+    sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();// Dump clock information
 
@@ -167,24 +186,35 @@ int main(void) {
         return 0;
     }
 
-    sunxi_hifi4_clock_reset();// Reset C906 clock
+    sunxi_hifi4_clock_reset();
 
-    // Get entry address of RISC-V ELF
-    uint32_t elf_run_addr = elf64_get_entry_addr((phys_addr_t) image.dest);
-    printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
+    /* HIFI4 need to remap addresses for some addr. */
+    vaddr_range_t hifi4_addr_mapping_range[] = {
+            {0x10000000, 0x1fffffff, 0x30000000},
+            {0x30000000, 0x3fffffff, 0x10000000},
+    };
 
-    // Load RISC-V ELF image
-    if (load_elf64_image((phys_addr_t) image.dest)) {
-        printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\n");
+    vaddr_map_t hifi4_addr_mapping = {
+            .range = hifi4_addr_mapping_range,
+            .range_size = sizeof(hifi4_addr_mapping_range) / sizeof(vaddr_range_t),
+    };
+
+    // Get entry address of HIFI4 ELF
+    uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
+    printk(LOG_LEVEL_INFO, "HIFI4 ELF run addr: 0x%08x\n", elf_run_addr);
+
+    sunxi_hifi4_clock_init(elf_run_addr);// Initialize clock with entry address
+
+    // Load HIFI4 ELF image
+    if (load_elf32_image_remap((phys_addr_t) image.dest, &hifi4_addr_mapping)) {
+        printk(LOG_LEVEL_ERROR, "HIFI4 ELF load FAIL\n");
     }
 
-    printk(LOG_LEVEL_INFO, "RISC-V C906 Core now Running... \n");
+    printk(LOG_LEVEL_INFO, "HIFI4 Core now Running... \n");
 
-    mdelay(100);// Delay for 100 milliseconds
+    cmd_boot(0, NULL);
 
-    sunxi_hifi4_clock_init(elf_run_addr);// Initialize C906 clock with entry address
-
-    abort();// Abort A7 execution, loop forever
+    syterkit_shell_attach(commands);
 
     jmp_to_fel();// Jump to FEL mode
 
