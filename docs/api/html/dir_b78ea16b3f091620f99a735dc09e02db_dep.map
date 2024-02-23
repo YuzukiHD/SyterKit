@@ -1,18 +1,18 @@
 <map id="board/longanpi&#45;4b" name="board/longanpi&#45;4b">
 <area shape="rect" id="node2" href="dir_601ab71f83af6af4edfe3b42a50b1bd9.html" title="extlinux_boot" alt="" coords="753,63,863,111"/>
 <area shape="rect" id="node9" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="421,159,493,207"/>
-<area shape="rect" id="edge6-headlabel" href="dir_000052_000179.html" title="16" alt="" coords="504,180,521,194"/>
+<area shape="rect" id="edge6-headlabel" href="dir_000054_000169.html" title="16" alt="" coords="504,180,521,194"/>
 <area shape="rect" id="node3" href="dir_a3eb83d2b601287ad406af9407a47611.html" title="hello_world" alt="" coords="631,63,729,111"/>
-<area shape="rect" id="edge5-headlabel" href="dir_000053_000179.html" title="2" alt="" coords="508,171,518,185"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000055_000169.html" title="2" alt="" coords="508,171,518,185"/>
 <area shape="rect" id="node4" href="dir_26b4b3ded9f581fe707317d6daf23892.html" title="init_dram" alt="" coords="523,63,607,111"/>
-<area shape="rect" id="edge1-headlabel" href="dir_000054_000179.html" title="4" alt="" coords="498,146,508,160"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000056_000169.html" title="4" alt="" coords="498,146,508,160"/>
 <area shape="rect" id="node5" href="dir_42b885265eb8f6ba68b48ca9a22d7ddc.html" title="payloads" alt="" coords="418,63,499,111"/>
 <area shape="rect" id="node6" href="dir_6d4e7a975dd880d3c6f470c055e5da43.html" title="smhc_test" alt="" coords="305,63,394,111"/>
-<area shape="rect" id="edge2-headlabel" href="dir_000055_000179.html" title="9" alt="" coords="418,133,427,148"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000057_000169.html" title="9" alt="" coords="418,133,427,148"/>
 <area shape="rect" id="node7" href="dir_093cebca4b2ae46ea51beb034a66499c.html" title="syter_boot" alt="" coords="189,63,280,111"/>
-<area shape="rect" id="edge4-headlabel" href="dir_000056_000179.html" title="15" alt="" coords="396,155,414,169"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000058_000169.html" title="15" alt="" coords="396,155,414,169"/>
 <area shape="rect" id="node8" href="dir_08aeb972a1f452a43191c741e6c05d61.html" title="syter_boot_bl33" alt="" coords="38,63,165,111"/>
-<area shape="rect" id="edge3-headlabel" href="dir_000057_000179.html" title="15" alt="" coords="395,162,412,176"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000059_000169.html" title="15" alt="" coords="395,162,412,176"/>
 <area shape="rect" id="clust2" href="dir_b78ea16b3f091620f99a735dc09e02db.html" alt="" coords="27,52,997,121"/>
 <area shape="rect" id="clust1" href="dir_7149141a7e3af1ee95dfb0598e371427.html" title="board" alt="" coords="16,16,1008,132"/>
 </map>
