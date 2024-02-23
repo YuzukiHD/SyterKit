@@ -577,7 +577,10 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
         card->capacity = (csize + 1) << (cmult + 2);
     }
     card->capacity *= 1 << UNSTUFF_BITS(card->csd, 80, 4);
-    printk(LOG_LEVEL_INFO, "SMHC: capacity %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
+    if (card->capacity / (f64) 1000000000.0 < 4)
+        printk(LOG_LEVEL_INFO, "SMHC: capacity %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
+    else
+        printk(LOG_LEVEL_INFO, "SMHC: capacity %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
 
     if (hci->isspi) {
         if (!sdhci_set_clock(hci, min(card->tran_speed, hci->clock)) ||
@@ -586,6 +589,7 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
                    "SMHC: set clock/width failed\n");
             return FALSE;
         }
+
     } else {
         if (card->version & SD_VERSION_SD) {
             if (hci->width == MMC_BUS_WIDTH_4)
