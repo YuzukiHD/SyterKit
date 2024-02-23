@@ -1,0 +1,4 @@
+<map id="vaddr_map" name="vaddr_map">
+<area shape="rect" id="node1" title="The structure vaddr_map_t represents the mapping between a virtual address range and the starting phy..." alt="" coords="9,95,104,121"/>
+<area shape="rect" id="node2" href="$d1/d78/structvaddr__range.html" title="The structure vaddr_range_t represents the mapping between a virtual address range and the starting p..." alt="" coords="5,5,108,32"/>
+</map>
