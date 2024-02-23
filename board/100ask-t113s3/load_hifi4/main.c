@@ -217,6 +217,7 @@ int main(void) {
 
     cmd_boot(0, NULL);
 
+    // if boot failed, attach the shell for debug
     syterkit_shell_attach(commands);
 
     jmp_to_fel();// Jump to FEL mode
