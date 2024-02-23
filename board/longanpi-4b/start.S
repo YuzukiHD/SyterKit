@@ -70,22 +70,10 @@
 .text
 
 _start:
-	/* Boot head information for BROM */
-	.long 0xea000016
-	.byte 'e', 'G', 'O', 'N', '.', 'B', 'T', '0'
-	.long 0x12345678                                /* checksum */
-	.long __spl_size                                /* spl size */
-	.long 0x30                                      /* boot header size */
-	.long 0x30303033                                /* boot header version */
-	.long 0x00044000                                /* return value */
-	.long 0x00044000                                /* run address */
-	.long 0x0                                       /* eGON version */
-	.byte 0x00, 0x00, 0x00, 0x00    				/* platform information - 8byte */
-	.byte 0x34, 0x2e, 0x30, 0x00
-
+	b reset
+	
 	.align 5
 _vector:
-	b reset
 	ldr pc, _undefined_instruction
 	ldr pc, _software_interrupt
 	ldr pc, _prefetch_abort

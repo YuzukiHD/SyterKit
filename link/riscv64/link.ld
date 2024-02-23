@@ -16,12 +16,12 @@ STACK_SIZE = 0x1000; /* 4KB */
 /* Section Definitions */
 SECTIONS
 {
-
     .text :
     {
         . = ALIGN(4);
         PROVIDE(__image_start = .);
         PROVIDE(__spl_start = .);
+        KEEP(*(.boot0_head))
         *(.text .text.*)
         PROVIDE(__ddr_bin_start = .);
         KEEP(*(.init_dram_bin))
@@ -40,6 +40,7 @@ SECTIONS
 
     PROVIDE(__spl_end = .);
     PROVIDE(__spl_size = __spl_end - __spl_start);
+    PROVIDE(__code_start_address = @ARCH_START_ADDRESS@);
 
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :

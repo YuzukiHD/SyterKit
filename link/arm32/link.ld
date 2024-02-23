@@ -16,20 +16,29 @@ STACK_SIZE = 0x1000; /* 4KB */
 /* Section Definitions */
 SECTIONS
 {
-
+    . = ALIGN(4);
     .text :
     {
-        . = ALIGN(4);
         PROVIDE(__spl_start = .);
+        KEEP(*(.boot0_head))
         *(.text .text.*)
         PROVIDE(__ddr_bin_start = .);
         KEEP(*(.init_dram_bin))
         PROVIDE(__ddr_bin_end = .);
         KEEP(*(.note.gnu.build-id))
-        . = ALIGN(4);
     } > ram
 
-    . = ALIGN(4);
+    . = ALIGN(16);
+  	.rodata : 
+    {
+        *(.rodata) 
+    } > ram
+
+	. = ALIGN(16);
+  	.data : 
+    { 
+        *(.data) 
+    } > ram
 
     .ARM.exidx : {
         __exidx_start = .;
@@ -39,6 +48,7 @@ SECTIONS
 
     PROVIDE(__spl_end = .);
     PROVIDE(__spl_size = __spl_end - __spl_start);
+    PROVIDE(__code_start_address = @ARCH_START_ADDRESS@);
 
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :

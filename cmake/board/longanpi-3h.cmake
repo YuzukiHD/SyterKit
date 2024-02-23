@@ -17,7 +17,7 @@ set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/longanpi-3h/pay
 set(CONFIG_USE_DRAM_PAYLOAD_SECTION "init_dram_bin")
 
 # Set the cross-compile toolchain
-set(CROSS_COMPILE "arm-linux-gnueabi-")
+set(CROSS_COMPILE "arm-none-eabi-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers
