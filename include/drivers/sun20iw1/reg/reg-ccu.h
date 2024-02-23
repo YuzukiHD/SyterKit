@@ -95,6 +95,25 @@
 #define CCU_MMC_BGR_SMHC1_RST (1 << 17)
 #define CCU_MMC_BGR_SMHC2_RST (1 << 18)
 
+/* DSP base */
+#define CCU_DSP_CLK_REG (0xc70)
+#define CCU_BIT_DSP_SCLK_GATING (31)
+#define CCU_DSP_CLK_M_MASK (0x1f << 0)
+#define CCU_DSP_CLK_SRC_MASK (0x7 << 24)
+#define CCU_DSP_CLK_SRC_HOSC (0)
+#define CCU_DSP_CLK_SRC_32K (0x1 << 24)
+#define CCU_DSP_CLK_SRC_16M (0x2 << 24)
+#define CCU_DSP_CLK_SRC_PERI2X (0x3 << 24)
+#define CCU_DSP_CLK_SRC_AUDIO1_DIV2 (0x4 << 24)
+/* x must be 1 - 32 */
+#define CCU_DSP_CLK_FACTOR_M(x) (((x)-1) << 0)
+
+#define CCU_DSP_BGR_REG (0xc7c)
+#define CCU_BIT_DSP0_CFG_GATING (1)
+#define CCU_BIT_DSP0_RST (16)
+#define CCU_BIT_DSP0_CFG_RST (17)
+#define CCU_BIT_DSP0_DBG_RST (18)
+
 /* RISC-V base */
 #define CCU_RISCV_GATING_RST_REG (CCU_BASE + 0x0d04)
 #define CCU_RISCV_CLK_GATING (0x1 << 31)
