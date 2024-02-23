@@ -31,11 +31,11 @@ void set_pll_cpux_axi(void) {
     write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
     sdelay(5);
 
-    /* Set clk to 1008mhz (default) or CONFIG_CPU_FREQ */
+    /* Set clk to 1200 MHz */
     /* PLL_CPUX = 24 MHz*N/P */
     val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
     val &= ~((0x3 << 16) | (0xff << 8) | (0x3 << 0));
-    val |= (41 << 8);
+    val |= (50 << 8);
     write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
     /* Lock enable */
@@ -165,7 +165,7 @@ void sunxi_clk_init(void) {
     set_apb();
     set_dma();
     set_mbus();
-    set_module(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
+    //set_module(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
     set_module(CCU_BASE + CCU_PLL_VIDEO0_CTRL_REG);
     set_module(CCU_BASE + CCU_PLL_VIDEO1_CTRL_REG);
     set_module(CCU_BASE + CCU_PLL_VE_CTRL);
