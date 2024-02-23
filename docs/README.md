@@ -283,7 +283,7 @@ Based on this explanation, the highest 8 bits of the instruction encoding are: 0
 
 #### About the jump_instruction for RISC-V
 
-The jump_instruction field stores a jump instruction: (B  BACK_OF_boot_file_head). When this jump instruction is executed, the program will jump to the first instruction after the boot_file_head.
+The jump_instruction field stores a jump instruction: (J  BACK_OF_boot_file_head). When this jump instruction is executed, the program will jump to the first instruction after the boot_file_head.
 
 The Unconditional Jumps instruction encoding in RISC-V instructions is as follows:
 
