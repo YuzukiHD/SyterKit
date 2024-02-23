@@ -138,6 +138,8 @@ msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
 int cmd_boot(int argc, const char **argv) {
     sunxi_hifi4_start();
+
+    abort();
     return 0;
 }
 
@@ -153,8 +155,7 @@ int main(void) {
 
     sunxi_clk_init();// Initialize clock configurations
 
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
-    arm32_mmu_enable(SDRAM_BASE, dram_size);
+    sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();// Dump clock information
 
@@ -186,7 +187,7 @@ int main(void) {
         return 0;
     }
 
-    // sunxi_hifi4_clock_reset();
+    sunxi_hifi4_clock_reset();
 
     /* HIFI4 need to remap addresses for some addr. */
     vaddr_range_t hifi4_addr_mapping_range[] = {
@@ -210,8 +211,13 @@ int main(void) {
         printk(LOG_LEVEL_ERROR, "HIFI4 ELF load FAIL\n");
     }
 
+    dump_c906_clock();
+
     printk(LOG_LEVEL_INFO, "HIFI4 Core now Running... \n");
 
+    cmd_boot(0, NULL);
+
+    // if boot failed, attach the shell for debug
     syterkit_shell_attach(commands);
 
     jmp_to_fel();// Jump to FEL mode
