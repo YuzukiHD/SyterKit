@@ -588,6 +588,13 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 }
 
 int sunxi_sdhci_init(sdhci_t *sdhci) {
+
+    /* Check controller id correct */
+    if (sdhci->id > MMC_CONTROLLER_2) {
+        printk(LOG_LEVEL_ERROR, "SMHC: Unsupported MAX Controller reached\n");
+        return -1;
+    }
+
     sunxi_gpio_init(sdhci->gpio_clk.pin, sdhci->gpio_clk.mux);
     sunxi_gpio_set_pull(sdhci->gpio_clk.pin, GPIO_PULL_UP);
 
