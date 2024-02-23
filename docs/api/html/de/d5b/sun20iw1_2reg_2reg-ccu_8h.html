@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.5.2</span>
+   &#160;<span id="projectnumber">0.2.6</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -300,12 +300,6 @@ Macros</h2></td></tr>
 <tr class="separator:a76172d74ad332d703f68410eb37268e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74d5fee3aa8d7303946ac6febb8d57fc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d5b/sun20iw1_2reg_2reg-ccu_8h.html#a74d5fee3aa8d7303946ac6febb8d57fc">CCU_RISCV_CFG_GATING</a>&#160;&#160;&#160;(0x1 &lt;&lt; 0)</td></tr>
 <tr class="separator:a74d5fee3aa8d7303946ac6febb8d57fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8822aae654b36d345a6ec9800b2c41f1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d5b/sun20iw1_2reg_2reg-ccu_8h.html#a8822aae654b36d345a6ec9800b2c41f1">CCU_RISCV_CFG_BASE</a>&#160;&#160;&#160;(0x06010000)</td></tr>
-<tr class="separator:a8822aae654b36d345a6ec9800b2c41f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a817a26e2e67b816f25217b387cfd903a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d5b/sun20iw1_2reg_2reg-ccu_8h.html#a817a26e2e67b816f25217b387cfd903a">CCU_RISCV_STA_ADD_L_REG</a>&#160;&#160;&#160;(<a class="el" href="../../df/d54/sun8iw20_2reg_2reg-ccu_8h.html#a8822aae654b36d345a6ec9800b2c41f1">CCU_RISCV_CFG_BASE</a> + 0x0004)</td></tr>
-<tr class="separator:a817a26e2e67b816f25217b387cfd903a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7f49d13a4fbbe2d37575ab2126eaca9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d5b/sun20iw1_2reg_2reg-ccu_8h.html#ab7f49d13a4fbbe2d37575ab2126eaca9">CCU_RISCV_STA_ADD_H_REG</a>&#160;&#160;&#160;(<a class="el" href="../../df/d54/sun8iw20_2reg_2reg-ccu_8h.html#a8822aae654b36d345a6ec9800b2c41f1">CCU_RISCV_CFG_BASE</a> + 0x0008)</td></tr>
-<tr class="separator:ab7f49d13a4fbbe2d37575ab2126eaca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a73469aa9b83fff9687beca2909cc2550"></a>
@@ -1374,20 +1368,6 @@ Macros</h2></td></tr>
 
 </div>
 </div>
-<a id="a8822aae654b36d345a6ec9800b2c41f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8822aae654b36d345a6ec9800b2c41f1">&#9670;&nbsp;</a></span>CCU_RISCV_CFG_BASE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define CCU_RISCV_CFG_BASE&#160;&#160;&#160;(0x06010000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="acb741f7ebcefb6634584d2ef20f50269"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb741f7ebcefb6634584d2ef20f50269">&#9670;&nbsp;</a></span>CCU_RISCV_CFG_BGR_REG</h2>
 
@@ -1648,34 +1628,6 @@ Macros</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">#define CCU_RISCV_RST_SOFT_RSTN&#160;&#160;&#160;(0x1 &lt;&lt; 0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ab7f49d13a4fbbe2d37575ab2126eaca9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7f49d13a4fbbe2d37575ab2126eaca9">&#9670;&nbsp;</a></span>CCU_RISCV_STA_ADD_H_REG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define CCU_RISCV_STA_ADD_H_REG&#160;&#160;&#160;(<a class="el" href="../../df/d54/sun8iw20_2reg_2reg-ccu_8h.html#a8822aae654b36d345a6ec9800b2c41f1">CCU_RISCV_CFG_BASE</a> + 0x0008)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a817a26e2e67b816f25217b387cfd903a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a817a26e2e67b816f25217b387cfd903a">&#9670;&nbsp;</a></span>CCU_RISCV_STA_ADD_L_REG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define CCU_RISCV_STA_ADD_L_REG&#160;&#160;&#160;(<a class="el" href="../../df/d54/sun8iw20_2reg_2reg-ccu_8h.html#a8822aae654b36d345a6ec9800b2c41f1">CCU_RISCV_CFG_BASE</a> + 0x0004)</td>
         </tr>
       </table>
 </div><div class="memdoc">

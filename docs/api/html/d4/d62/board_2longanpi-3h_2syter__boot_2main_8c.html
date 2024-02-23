@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.5.2</span>
+   &#160;<span id="projectnumber">0.2.6</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -158,8 +158,6 @@ Include dependency graph for main.c:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/dbb/structimage__info__t.html">image_info_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
@@ -185,14 +183,6 @@ Macros</h2></td></tr>
 <tr class="separator:a3bf2198ac1a749914efd7f6995bac030"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a733cac5291dfeb37c70016d83efed505"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a733cac5291dfeb37c70016d83efed505">FILENAME_MAX_LEN</a>&#160;&#160;&#160;64</td></tr>
 <tr class="separator:a733cac5291dfeb37c70016d83efed505"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb057850ee66302542a6c15c5ac050e8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#afb057850ee66302542a6c15c5ac050e8">MAX_SECTION_LEN</a>&#160;&#160;&#160;16</td></tr>
-<tr class="separator:afb057850ee66302542a6c15c5ac050e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad91bfaf106e42aa552f1605c5b8a9ef2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#ad91bfaf106e42aa552f1605c5b8a9ef2">MAX_KEY_LEN</a>&#160;&#160;&#160;16</td></tr>
-<tr class="separator:ad91bfaf106e42aa552f1605c5b8a9ef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00a29850f2b5b985f776f864d83e5ac3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a00a29850f2b5b985f776f864d83e5ac3">MAX_VALUE_LEN</a>&#160;&#160;&#160;512</td></tr>
-<tr class="separator:a00a29850f2b5b985f776f864d83e5ac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05a6f9b86e1d8cb7f27fc6fb8adf3dbb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a05a6f9b86e1d8cb7f27fc6fb8adf3dbb">CONFIG_MAX_ENTRY</a>&#160;&#160;&#160;3</td></tr>
-<tr class="separator:a05a6f9b86e1d8cb7f27fc6fb8adf3dbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea3cfda4f3a9f978ec759f206cf186fe"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#aea3cfda4f3a9f978ec759f206cf186fe">CHUNK_SIZE</a>&#160;&#160;&#160;0x20000</td></tr>
 <tr class="separator:aea3cfda4f3a9f978ec759f206cf186fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -202,22 +192,8 @@ Functions</h2></td></tr>
 <tr class="separator:a7ac1a3f8519d9248338409aed7233bab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a163778b521adb7effa8ae1c257c2cf92"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a163778b521adb7effa8ae1c257c2cf92">load_sdcard</a> (<a class="el" href="../../df/dbb/structimage__info__t.html">image_info_t</a> *<a class="el" href="../../d1/d88/board_2yuzukilizard_2syter__bootargs_2main_8c.html#aa55c1bf49065a26bad4bac0e9cebf5bb">image</a>)</td></tr>
 <tr class="separator:a163778b521adb7effa8ae1c257c2cf92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1326429ee84fb3c0408537b03c067e9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#ac1326429ee84fb3c0408537b03c067e9">trim</a> (char *str)</td></tr>
-<tr class="separator:ac1326429ee84fb3c0408537b03c067e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0215537d3c06f1178d4e7ea91bff9e5c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a0215537d3c06f1178d4e7ea91bff9e5c">parse_ini_data</a> (const char *data, <a class="el" href="../../d3/da9/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2types_8h.html#a1e1f4fe6f57edbe9d428d8fd39beb87a">size_t</a> size, <a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a> *<a class="el" href="../../da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html#acb30a4443a5c067509443210077f97dd">entries</a>, int max_entries)</td></tr>
-<tr class="separator:a0215537d3c06f1178d4e7ea91bff9e5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec1ac078b784ad24ce460e962a7d84d0"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#aec1ac078b784ad24ce460e962a7d84d0">find_entry_value</a> (const <a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a> *<a class="el" href="../../da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html#acb30a4443a5c067509443210077f97dd">entries</a>, int entry_count, const char *section, const char *key)</td></tr>
-<tr class="separator:aec1ac078b784ad24ce460e962a7d84d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a47faf865ad0f20f38958d5e1617ee4"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a2a47faf865ad0f20f38958d5e1617ee4">update_bootargs_from_config</a> (<a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a> dram_size)</td></tr>
-<tr class="separator:a2a47faf865ad0f20f38958d5e1617ee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa549dd138fadf1589d2a2dc7a7de0519"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#aa549dd138fadf1589d2a2dc7a7de0519">abortboot_single_key</a> (int bootdelay)</td></tr>
 <tr class="separator:aa549dd138fadf1589d2a2dc7a7de0519"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a41dd4564021305ddc4aca2ddfede75"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a9a41dd4564021305ddc4aca2ddfede75">msh_declare_command</a> (bootargs)</td></tr>
-<tr class="separator:a9a41dd4564021305ddc4aca2ddfede75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afccc8ee4c45f587e55597b9863e08e27"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#afccc8ee4c45f587e55597b9863e08e27">msh_define_help</a> (bootargs, &quot;get/set bootargs for kernel&quot;, &quot;Usage: bootargs set \&quot;bootargs\&quot; - set new bootargs for zImage\n&quot; &quot;       bootargs get            - get current bootargs\n&quot;)</td></tr>
-<tr class="separator:afccc8ee4c45f587e55597b9863e08e27"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6f841ee7e003a268179d3a6e43f647f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#ae6f841ee7e003a268179d3a6e43f647f">cmd_bootargs</a> (int argc, const char **argv)</td></tr>
-<tr class="separator:ae6f841ee7e003a268179d3a6e43f647f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fca4c4b82ddeab05a3a9e86c9d41c5b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a2fca4c4b82ddeab05a3a9e86c9d41c5b">set_pmu_fin_voltage</a> (char *power_name, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> voltage)</td></tr>
 <tr class="separator:a2fca4c4b82ddeab05a3a9e86c9d41c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0e11a75ca270cb94183a9301a62f858"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#ab0e11a75ca270cb94183a9301a62f858">msh_declare_command</a> (reload)</td></tr>
@@ -226,12 +202,6 @@ Functions</h2></td></tr>
 <tr class="separator:a548f362bfec0154ffc098fa8d985c8fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab079ff914c1b6d0f2482ce61e5136966"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#ab079ff914c1b6d0f2482ce61e5136966">cmd_reload</a> (int argc, const char **argv)</td></tr>
 <tr class="separator:ab079ff914c1b6d0f2482ce61e5136966"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3529bd575fef94c13fb3880b8970d062"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a3529bd575fef94c13fb3880b8970d062">msh_declare_command</a> (print)</td></tr>
-<tr class="separator:a3529bd575fef94c13fb3880b8970d062"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80f1b013b735e21315492810b6929264"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a80f1b013b735e21315492810b6929264">msh_define_help</a> (print, &quot;print out env config&quot;, &quot;Usage: print\n&quot;)</td></tr>
-<tr class="separator:a80f1b013b735e21315492810b6929264"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa24e8a59ed0b7a6a1ed773e8db68f45b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#aa24e8a59ed0b7a6a1ed773e8db68f45b">cmd_print</a> (int argc, const char **argv)</td></tr>
-<tr class="separator:aa24e8a59ed0b7a6a1ed773e8db68f45b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af09a7b9d117fe9a060a2bce6959a09f9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#af09a7b9d117fe9a060a2bce6959a09f9">msh_declare_command</a> (boot)</td></tr>
 <tr class="separator:af09a7b9d117fe9a060a2bce6959a09f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a611655129856495eae32aefcbcf1359e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a611655129856495eae32aefcbcf1359e">msh_define_help</a> (boot, &quot;boot to linux&quot;, &quot;Usage: boot\n&quot;)</td></tr>
@@ -243,8 +213,6 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:acb30a4443a5c067509443210077f97dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#acb30a4443a5c067509443210077f97dd">entries</a> [<a class="el" href="../../da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html#a05a6f9b86e1d8cb7f27fc6fb8adf3dbb">CONFIG_MAX_ENTRY</a>]</td></tr>
-<tr class="separator:acb30a4443a5c067509443210077f97dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a235ee482ae2e2d909c02be678176fb11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d79/structsunxi__serial__t.html">sunxi_serial_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a235ee482ae2e2d909c02be678176fb11">uart_dbg</a></td></tr>
 <tr class="separator:a235ee482ae2e2d909c02be678176fb11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64552f6516060337b7a5df37f970458f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/dd2/structsunxi__i2c__t.html">sunxi_i2c_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d62/board_2longanpi-3h_2syter__boot_2main_8c.html#a64552f6516060337b7a5df37f970458f">i2c_pmu</a></td></tr>
@@ -397,20 +365,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a05a6f9b86e1d8cb7f27fc6fb8adf3dbb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a05a6f9b86e1d8cb7f27fc6fb8adf3dbb">&#9670;&nbsp;</a></span>CONFIG_MAX_ENTRY</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define CONFIG_MAX_ENTRY&#160;&#160;&#160;3</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a95583617dd3cf881a52511e1cd58ae9a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a95583617dd3cf881a52511e1cd58ae9a">&#9670;&nbsp;</a></span>CONFIG_SDMMC_SPEED_TEST_SIZE</h2>
 
@@ -433,48 +387,6 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">#define FILENAME_MAX_LEN&#160;&#160;&#160;64</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad91bfaf106e42aa552f1605c5b8a9ef2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad91bfaf106e42aa552f1605c5b8a9ef2">&#9670;&nbsp;</a></span>MAX_KEY_LEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAX_KEY_LEN&#160;&#160;&#160;16</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="afb057850ee66302542a6c15c5ac050e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb057850ee66302542a6c15c5ac050e8">&#9670;&nbsp;</a></span>MAX_SECTION_LEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAX_SECTION_LEN&#160;&#160;&#160;16</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a00a29850f2b5b985f776f864d83e5ac3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00a29850f2b5b985f776f864d83e5ac3">&#9670;&nbsp;</a></span>MAX_VALUE_LEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAX_VALUE_LEN&#160;&#160;&#160;512</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -516,62 +428,6 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">int cmd_boot </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char **&#160;</td>
-          <td class="paramname"><em>argv</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae6f841ee7e003a268179d3a6e43f647f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6f841ee7e003a268179d3a6e43f647f">&#9670;&nbsp;</a></span>cmd_bootargs()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int cmd_bootargs </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char **&#160;</td>
-          <td class="paramname"><em>argv</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa24e8a59ed0b7a6a1ed773e8db68f45b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa24e8a59ed0b7a6a1ed773e8db68f45b">&#9670;&nbsp;</a></span>cmd_print()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int cmd_print </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
@@ -656,54 +512,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aec1ac078b784ad24ce460e962a7d84d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aec1ac078b784ad24ce460e962a7d84d0">&#9670;&nbsp;</a></span>find_entry_value()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const char* find_entry_value </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a> *&#160;</td>
-          <td class="paramname"><em>entries</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>entry_count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>section</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>key</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a163778b521adb7effa8ae1c257c2cf92"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a163778b521adb7effa8ae1c257c2cf92">&#9670;&nbsp;</a></span>load_sdcard()</h2>
 
@@ -749,7 +557,7 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a id="af09a7b9d117fe9a060a2bce6959a09f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af09a7b9d117fe9a060a2bce6959a09f9">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[1/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af09a7b9d117fe9a060a2bce6959a09f9">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -766,44 +574,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a9a41dd4564021305ddc4aca2ddfede75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a41dd4564021305ddc4aca2ddfede75">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[2/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">msh_declare_command </td>
-          <td>(</td>
-          <td class="paramtype">bootargs&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3529bd575fef94c13fb3880b8970d062"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3529bd575fef94c13fb3880b8970d062">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[3/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">msh_declare_command </td>
-          <td>(</td>
-          <td class="paramtype">print&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="ab0e11a75ca270cb94183a9301a62f858"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0e11a75ca270cb94183a9301a62f858">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[4/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0e11a75ca270cb94183a9301a62f858">&#9670;&nbsp;</a></span>msh_declare_command() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -821,7 +593,7 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a id="a611655129856495eae32aefcbcf1359e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a611655129856495eae32aefcbcf1359e">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[1/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a611655129856495eae32aefcbcf1359e">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -854,76 +626,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="afccc8ee4c45f587e55597b9863e08e27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afccc8ee4c45f587e55597b9863e08e27">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[2/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">msh_define_help </td>
-          <td>(</td>
-          <td class="paramtype">bootargs&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;get/set bootargs for kernel&quot;&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;Usage: bootargs set \&quot;bootargs\&quot; - set new bootargs for zImage\n&quot; &quot; bootargs get - get current bootargs\n&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a80f1b013b735e21315492810b6929264"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80f1b013b735e21315492810b6929264">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[3/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">msh_define_help </td>
-          <td>(</td>
-          <td class="paramtype">print&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;print out env config&quot;&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;Usage: print\n&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a548f362bfec0154ffc098fa8d985c8fc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a548f362bfec0154ffc098fa8d985c8fc">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[4/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a548f362bfec0154ffc098fa8d985c8fc">&#9670;&nbsp;</a></span>msh_define_help() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -958,54 +662,6 @@ Variables</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0215537d3c06f1178d4e7ea91bff9e5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0215537d3c06f1178d4e7ea91bff9e5c">&#9670;&nbsp;</a></span>parse_ini_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int parse_ini_data </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/da9/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2types_8h.html#a1e1f4fe6f57edbe9d428d8fd39beb87a">size_t</a>&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a> *&#160;</td>
-          <td class="paramname"><em>entries</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>max_entries</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>
@@ -1046,58 +702,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ac1326429ee84fb3c0408537b03c067e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1326429ee84fb3c0408537b03c067e9">&#9670;&nbsp;</a></span>trim()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void trim </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2a47faf865ad0f20f38958d5e1617ee4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a47faf865ad0f20f38958d5e1617ee4">&#9670;&nbsp;</a></span>update_bootargs_from_config()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int update_bootargs_from_config </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a6d57c383c80c05cc98c05d6dfec72756">uint64_t</a>&#160;</td>
-          <td class="paramname"><em>dram_size</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a16e6fbaef4ccac0398827de0332b7638"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a16e6fbaef4ccac0398827de0332b7638">&#9670;&nbsp;</a></span>commands</h2>
@@ -1111,29 +715,13 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">        <a class="code" href="../../dc/db0/cli_8h.html#a7ddaf495e3d1158a301da8709517565b">msh_define_command</a>(bootargs),</div>
 <div class="line">        <a class="code" href="../../dc/db0/cli_8h.html#a7ddaf495e3d1158a301da8709517565b">msh_define_command</a>(reload),</div>
 <div class="line">        <a class="code" href="../../dc/db0/cli_8h.html#a7ddaf495e3d1158a301da8709517565b">msh_define_command</a>(boot),</div>
-<div class="line">        <a class="code" href="../../dc/db0/cli_8h.html#a7ddaf495e3d1158a301da8709517565b">msh_define_command</a>(print),</div>
 <div class="line">        <a class="code" href="../../dc/db0/cli_8h.html#a3973dc488e2974b5b4842c1391fc2524">msh_command_end</a>,</div>
 <div class="line">}</div>
 <div class="ttc" id="acli_8h_html_a3973dc488e2974b5b4842c1391fc2524"><div class="ttname"><a href="../../dc/db0/cli_8h.html#a3973dc488e2974b5b4842c1391fc2524">msh_command_end</a></div><div class="ttdeci">#define msh_command_end</div><div class="ttdef"><b>Definition:</b> cli.h:22</div></div>
 <div class="ttc" id="acli_8h_html_a7ddaf495e3d1158a301da8709517565b"><div class="ttname"><a href="../../dc/db0/cli_8h.html#a7ddaf495e3d1158a301da8709517565b">msh_define_command</a></div><div class="ttdeci">#define msh_define_command(name)</div><div class="ttdef"><b>Definition:</b> cli.h:33</div></div>
 </div><!-- fragment -->
-</div>
-</div>
-<a id="acb30a4443a5c067509443210077f97dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb30a4443a5c067509443210077f97dd">&#9670;&nbsp;</a></span>entries</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/dd2/structIniEntry.html">IniEntry</a> entries[<a class="el" href="../../da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html#a05a6f9b86e1d8cb7f27fc6fb8adf3dbb">CONFIG_MAX_ENTRY</a>]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
 </div>
 </div>
 <a id="a64552f6516060337b7a5df37f970458f"></a>
