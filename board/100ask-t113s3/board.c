@@ -39,12 +39,15 @@ sunxi_spi_t sunxi_spi0 = {
 
 sdhci_t sdhci0 = {
         .name = "sdhci0",
-        .reg = (sdhci_reg_t *) SUNXI_SMHC0_BASE,
+        .id = 0,
+        .reg = (sdhci_reg_t *) 0x04020000,
         .voltage = MMC_VDD_27_36,
         .width = MMC_BUS_WIDTH_4,
         .clock = MMC_CLK_50M,
         .removable = 0,
         .isspi = FALSE,
+        .skew_auto_mode = TRUE,
+        .sdhci_pll = CCU_MMC_CTRL_PLL_PERIPH1X,
         .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
         .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
         .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},

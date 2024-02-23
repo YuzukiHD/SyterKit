@@ -58,6 +58,7 @@ if (NOT CONFIG_CHIP_CLK_V1)
         sys-sdcard.c
         sys-dma.c
         sys-i2c.c
+        sys-sdhci.c
 
         ${USB_DRIVER}
         ${GIC_DRIVER}
