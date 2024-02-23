@@ -148,6 +148,12 @@ enum {
 };
 
 enum {
+    MMC_CONTROLLER_0 = 0,
+    MMC_CONTROLLER_1 = 1,
+    MMC_CONTROLLER_2 = 2,
+};
+
+enum {
     SD_VERSION_SD = 0x20000,
     SD_VERSION_3 = (SD_VERSION_SD | 0x300),
     SD_VERSION_2 = (SD_VERSION_SD | 0x200),
