@@ -127,7 +127,7 @@ xfel spinor write 0x0 spi.img
 
 # Development
 
-## How Hell the device boot up
+## How `HELL` the device boot up
 
 The device boot as noted over several places, BROM is the first step in booting and is baked into chip itself. Moving from the BROM, Allwinner boots something called boot0 from a storage device such as TF Card, SPI NAND, SPI NOR and so on. The magicvalue for the AllWinner bootloader in various places is 'eGON' and thus the bootloader shall be known as such. The chip will read the valided code from storage device to SRAM and execute the code in SRAM, the load lenth and start address in SRAM are defined in `boot_file_head`.
 
