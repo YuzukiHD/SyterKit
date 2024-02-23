@@ -285,7 +285,7 @@ Based on this explanation, the highest 8 bits of the instruction encoding are: 0
 
 The jump_instruction field stores a jump instruction: (B  BACK_OF_boot_file_head). When this jump instruction is executed, the program will jump to the first instruction after the boot_file_head.
 
-The B instruction encoding in ARM instructions is as follows:
+The Unconditional Jumps instruction encoding in RISC-V instructions is as follows:
 
 ```c
 #define BROM_FILE_HEAD_SIZE (sizeof(boot_file_head_t) & 0x00FFFFF)
