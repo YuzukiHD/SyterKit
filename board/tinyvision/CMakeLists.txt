@@ -15,6 +15,8 @@ add_subdirectory(read_chip_efuse)
 
 add_subdirectory(syter_boot)
 
+add_subdirectory(syter_boot_sdnand)
+
 add_subdirectory(syter_bootargs)
 
 add_subdirectory(load_e907)

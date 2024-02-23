@@ -34,6 +34,7 @@
  */
 #define SMHC_WIDTH_1BIT (0)
 #define SMHC_WIDTH_4BIT (1)
+#define SMHC_WIDTH_8BIT (2)
 
 /*
  * Smc command bits
