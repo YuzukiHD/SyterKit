@@ -629,6 +629,12 @@ int sunxi_sdhci_init(sdhci_t *sdhci) {
 
         sunxi_gpio_init(sdhci->gpio_d7.pin, sdhci->gpio_d7.mux);
         sunxi_gpio_set_pull(sdhci->gpio_d7.pin, GPIO_PULL_UP);
+
+        sunxi_gpio_init(sdhci->gpio_ds.pin, sdhci->gpio_ds.mux);
+        sunxi_gpio_set_pull(sdhci->gpio_ds.pin, GPIO_PULL_DOWN);
+
+        sunxi_gpio_init(sdhci->gpio_rst.pin, sdhci->gpio_rst.mux);
+        sunxi_gpio_set_pull(sdhci->gpio_rst.pin, GPIO_PULL_UP);
     }
 
     init_default_timing(sdhci);

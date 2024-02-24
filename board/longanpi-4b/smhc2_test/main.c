@@ -18,22 +18,37 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sid.h>
 #include <sys-sdcard.h>
+#include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024
 
 extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
+extern sdhci_t sdhci2;
+
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
-    if (sdmmc_init(&card0, &sdhci0) != 0) {
+    uint32_t start;
+    uint32_t test_time;
+
+    if (sdmmc_init(&card0, &sdhci2) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
         return 0;
     }
+
+    start = time_ms();
+    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    test_time = time_ms() - start;
+    printk(LOG_LEVEL_INFO, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+
     return 0;
 }
 
@@ -70,14 +85,14 @@ int main(void) {
     sunxi_clk_dump();
 
     /* Initialize the SD host controller. */
-    if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+    if (sunxi_sdhci_init(&sdhci2) != 0) {
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci2.name);
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci2.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
-    if (sdmmc_init(&card0, &sdhci0) != 0) {
+    if (sdmmc_init(&card0, &sdhci2) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
     } else {
         printk(LOG_LEVEL_DEBUG, "Card OK!\n");
