@@ -14,4 +14,6 @@ add_subdirectory(syter_boot)
 
 add_subdirectory(smhc_test)
 
+add_subdirectory(smhc2_test)
+
 add_subdirectory(extlinux_boot)
