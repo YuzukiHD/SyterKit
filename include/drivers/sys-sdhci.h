@@ -89,6 +89,8 @@ typedef struct {
     gpio_mux_t gpio_d7;
     gpio_mux_t gpio_cmd;
     gpio_mux_t gpio_clk;
+    gpio_mux_t gpio_ds;
+    gpio_mux_t gpio_rst;
 } sdhci_t;
 
 extern sdhci_t sdhci0;
