@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SyterKit: SyterKit Common</title>
+<title>SyterKit: 100ASK D1-H Dual Display DevKit</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -65,29 +65,45 @@ $(function() {
 </div><!-- top -->
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">SyterKit Common </div>  </div>
+<div class="title">100ASK D1-H Dual Display DevKit </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="autotoc_md1"></a>
-start.S</h1>
-<p>This code snippet is an ARM assembly language program that includes initialization settings and exception handlers. Here's a breakdown of its functionalities:</p>
-<ol type="1">
-<li>Initialization Settings: It sets registers and writes specific values to configure the processor's working mode, interrupt enable, etc.</li>
-<li>Set Vector Table: It writes the address of the vector table to the Vector Base Address Register, which is used for handling exceptions and interrupts.</li>
-<li>Enable NEON/VFP Unit: It configures the processor to enable the NEON (Advanced SIMD) and VFP (Floating-Point) units.</li>
-<li>Clear BSS Section: It zeroes out variables in the BSS section.</li>
-<li>Disable Interrupts: It disables FIQ and IRQ interrupts and switches the processor to SVC32 mode.</li>
-<li>Set Timer Frequency: It sets the timer frequency to 24M.</li>
-<li>Call the main Function: It jumps to the main function to execute the main logic.</li>
-</ol>
+Specifications</h1>
+<p><img src="https://github.com/YuzukiHD/SyterKit/assets/12003087/00975cce-f95d-4706-9042-fc80486c1c75" alt="D1h-DualDisplay-Devkit_top" class="inline"/></p>
+<ul>
+<li>Main control: Allwinner D1-H C906 RISC-V 1GHz</li>
+<li>DRAM: DDR3 512MB</li>
+<li>Storage: Onboard 128MB spi-nand, support USB external U disk and SD card to expand storage</li>
+<li>Network: Support 2.4G WiFi and Bluetooth, onboard antenna</li>
+<li>Display: Support MIPI-DSI+TP screen interface, support HDMI output, support SPI screen</li>
+<li>Audio: Microphone daughter board interface * 1, 3.5mm headphone jack * 1</li>
+<li>Board size: length 90mm <em>width 105mm</em> thickness 1.7mm</li>
+<li>PCB layer: 4+4 layers</li>
+<li>Support Tina Linux，based on Linux 5.4 kernel</li>
+</ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
-eabi_compat.c</h1>
-<p>This code snippet appears to be providing implementations for the functions <code>abort</code>, <code>raise</code>, and <code>__aeabi_unwind_cpp_pr0</code>. Here's a breakdown of their functionalities:</p>
-<ol type="1">
-<li><code>void <a class="el" href="../../dc/d54/common_8h.html#a8dec7c95227ff149687066cf04029191">abort(void)</a></code>: This function creates an infinite loop, causing the program to hang indefinitely. It is typically used to indicate a critical error or unrecoverable condition in a program.</li>
-<li><code>int <a class="el" href="../../dd/d57/utils_2bl33__t527_2source_2timer_8c.html#a350675984ca13ce9b056e69098bda5c6">raise(int signum)</a></code>: This function is a placeholder and always returns 0. In standard C, this function is used to raise a signal and initiate the corresponding signal handler. However, in this implementation, it does nothing and simply returns 0.</li>
-<li><code>void <a class="el" href="../../de/da6/yuzukilizard_2eabi__compat_8c.html#aaeccbb617ec98f16b2eb96e84566062b">__aeabi_unwind_cpp_pr0(void)</a></code>: This is a dummy function that serves as a placeholder to avoid linker complaints. Its purpose is to satisfy the linker when using C++ exceptions and unwinding, but it does not contain any actual functionality. </li>
-</ol>
+Application</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Name   </th><th class="markdownTableHeadNone">Function   </th><th class="markdownTableHeadNone">Path    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">hello world   </td><td class="markdownTableBodyNone">Minimal program example, prints Hello World   </td><td class="markdownTableBodyNone"><code>app/hello_world</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">init dram   </td><td class="markdownTableBodyNone">Initializes the serial port and DRAM   </td><td class="markdownTableBodyNone"><code>app/init_dram</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">load hifi4   </td><td class="markdownTableBodyNone">Start and initialize the tf card through the C906 CPU, read the hifi4 dsp firmware from it, and load it for execution   </td><td class="markdownTableBodyNone"><code>app/load_hifi4</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">syter boot   </td><td class="markdownTableBodyNone">Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux   </td><td class="markdownTableBodyNone"><code>app/syter_boot</code>   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Buy Now</h1>
+<h2><a class="anchor" id="autotoc_md4"></a>
+DualDisplay DevKit</h2>
+<p>Tabao: <a href="https://item.taobao.com/item.htm?id=761073687978">https://item.taobao.com/item.htm?id=761073687978</a></p>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Accessories</h2>
+<p>NezhaCore: <a href="https://item.taobao.com/item.htm?id=761073687978&amp;skuId=5247201813557">https://item.taobao.com/item.htm?id=761073687978&amp;skuId=5247201813557</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
