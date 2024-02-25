@@ -176,14 +176,7 @@ var menudata={children:[
 {text:"v",url:"globals_type_v.html#index_v"},
 {text:"w",url:"globals_type_w.html#index_w"},
 {text:"z",url:"globals_type_z.html#index_z"}]},
-{text:"Enumerations",url:"globals_enum.html",children:[
-{text:"c",url:"globals_enum.html#index_c"},
-{text:"d",url:"globals_enum.html#index_d"},
-{text:"f",url:"globals_enum.html#index_f"},
-{text:"g",url:"globals_enum.html#index_g"},
-{text:"s",url:"globals_enum.html#index_s"},
-{text:"t",url:"globals_enum.html#index_t"},
-{text:"u",url:"globals_enum.html#index_u"}]},
+{text:"Enumerations",url:"globals_enum.html"},
 {text:"Enumerator",url:"globals_eval.html",children:[
 {text:"a",url:"globals_eval.html#index_a"},
 {text:"c",url:"globals_eval_c.html#index_c"},
