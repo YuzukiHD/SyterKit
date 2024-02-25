@@ -23,7 +23,7 @@
 #include <sys-spi.h>
 #include <sys-uart.h>
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 10240
 
 extern sunxi_serial_t uart_dbg;
 
@@ -31,21 +31,23 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci2;
 
-msh_declare_command(reload);
-msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+msh_declare_command(speedtest);
+msh_define_help(speedtest, "Do speed test", "Usage: speedtest\n");
+int cmd_speedtest(int argc, const char **argv) {
     uint32_t start;
     uint32_t test_time;
 
-    if (sdmmc_init(&card0, &sdhci2) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
-        return 0;
-    }
+    // start = time_ms();
+    // sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    // test_time = time_ms() - start;
+    // printk(LOG_LEVEL_INFO, "SDMMC: Write speedtest %uKB in %ums at %uKB/S\n",
+    //        (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+    //        (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_INFO, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk(LOG_LEVEL_INFO, "SDMMC: Read speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -60,7 +62,7 @@ int cmd_swi(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-        msh_define_command(reload),
+        msh_define_command(speedtest),
         msh_define_command(swi),
         msh_command_end,
 };
