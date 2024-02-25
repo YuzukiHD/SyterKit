@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['myc_2dlt527核心板及开发板_16796',['MYC-LT527核心板及开发板',['../d3/dc9/md_board_longanpi_4b_README.html',1,'(Global Namespace)'],['../d5/d2a/md_board_lt527x_README.html',1,'(Global Namespace)']]]
+  ['dongshanpi_2daict_16843',['DongshanPI-AICT',['../d9/de2/md_board_dongshanpi_aict_README.html',1,'']]],
+  ['dongshanpi_2drosx_16844',['DongshanPI-ROSx',['../dd/d1b/md_board_100ask_ros_README.html',1,'']]]
 ];

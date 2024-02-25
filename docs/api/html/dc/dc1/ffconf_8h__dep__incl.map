@@ -1,7 +1,7 @@
 <map id="include/lib/fatfs/ffconf.h" name="include/lib/fatfs/ffconf.h">
-<area shape="rect" id="node1" title=" " alt="" coords="4301,5,4475,32"/>
-<area shape="rect" id="node2" href="$da/db9/ff_8h.html" title=" " alt="" coords="4314,80,4462,107"/>
-<area shape="rect" id="node3" href="$d3/dd1/board_2100ask-d1-h_2hifi4__load_2main_8c.html" title=" " alt="" coords="5,155,181,196"/>
+<area shape="rect" id="node1" title=" " alt="" coords="4401,5,4575,32"/>
+<area shape="rect" id="node2" href="$da/db9/ff_8h.html" title=" " alt="" coords="4414,80,4562,107"/>
+<area shape="rect" id="node3" href="$d9/d94/board_2100ask-d1-h_2load__hifi4_2main_8c.html" title=" " alt="" coords="5,155,181,196"/>
 <area shape="rect" id="node4" href="$db/daa/board_2100ask-d1-h_2syter__boot_2main_8c.html" title=" " alt="" coords="205,155,387,196"/>
 <area shape="rect" id="node5" href="$dd/d5f/board_2100ask-ros_2syter__boot_2main_8c.html" title=" " alt="" coords="411,155,583,196"/>
 <area shape="rect" id="node6" href="$d2/ddd/board_2100ask-t113i_2load__c906_2main_8c.html" title=" " alt="" coords="607,155,755,196"/>
@@ -34,17 +34,18 @@
 <area shape="rect" id="node33" href="$dc/df6/board_2tinyvision_2load__e907_2main_8c.html" title=" " alt="" coords="5742,155,5901,196"/>
 <area shape="rect" id="node34" href="$da/df5/board_2tinyvision_2syter__amp_2main_8c.html" title=" " alt="" coords="5925,155,6089,196"/>
 <area shape="rect" id="node35" href="$d9/d6b/board_2tinyvision_2syter__boot_2main_8c.html" title=" " alt="" coords="6113,155,6277,196"/>
-<area shape="rect" id="node36" href="$d4/d54/board_2tinyvision_2syter__boot__spi_2main_8c.html" title=" " alt="" coords="6301,155,6465,196"/>
-<area shape="rect" id="node37" href="$d1/d3a/board_2tinyvision_2syter__bootargs_2main_8c.html" title=" " alt="" coords="6489,155,6653,196"/>
-<area shape="rect" id="node38" href="$d4/de9/board_2yuzukilizard_2fdt__cli_2main_8c.html" title=" " alt="" coords="6677,155,6819,196"/>
-<area shape="rect" id="node39" href="$de/d17/board_2yuzukilizard_2fdt__parser_2main_8c.html" title=" " alt="" coords="6843,155,6986,196"/>
-<area shape="rect" id="node40" href="$d1/dec/board_2yuzukilizard_2load__e907_2main_8c.html" title=" " alt="" coords="7010,155,7153,196"/>
-<area shape="rect" id="node41" href="$de/df3/board_2yuzukilizard_2syter__amp_2main_8c.html" title=" " alt="" coords="7177,155,7319,196"/>
-<area shape="rect" id="node42" href="$da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html" title=" " alt="" coords="7343,155,7486,196"/>
-<area shape="rect" id="node43" href="$d8/d01/board_2yuzukilizard_2syter__boot__spi_2main_8c.html" title=" " alt="" coords="7510,155,7679,196"/>
-<area shape="rect" id="node44" href="$d1/d88/board_2yuzukilizard_2syter__bootargs_2main_8c.html" title=" " alt="" coords="7704,155,7875,196"/>
-<area shape="rect" id="node45" href="$d2/df1/diskio_8c.html" title=" " alt="" coords="7899,162,8026,189"/>
-<area shape="rect" id="node46" href="$db/d89/ff_8c.html" title=" " alt="" coords="8051,162,8147,189"/>
-<area shape="rect" id="node47" href="$de/d82/ffsystem_8c.html" title=" " alt="" coords="8171,162,8315,189"/>
-<area shape="rect" id="node48" href="$d8/dbc/ffunicode_8c.html" title=" " alt="" coords="8339,162,8485,189"/>
+<area shape="rect" id="node36" href="$dd/d36/board_2tinyvision_2syter__boot__sdnand_2main_8c.html" title=" " alt="" coords="6301,155,6465,196"/>
+<area shape="rect" id="node37" href="$d4/d54/board_2tinyvision_2syter__boot__spi_2main_8c.html" title=" " alt="" coords="6489,155,6653,196"/>
+<area shape="rect" id="node38" href="$d1/d3a/board_2tinyvision_2syter__bootargs_2main_8c.html" title=" " alt="" coords="6677,155,6841,196"/>
+<area shape="rect" id="node39" href="$d4/de9/board_2yuzukilizard_2fdt__cli_2main_8c.html" title=" " alt="" coords="6865,155,7007,196"/>
+<area shape="rect" id="node40" href="$de/d17/board_2yuzukilizard_2fdt__parser_2main_8c.html" title=" " alt="" coords="7031,155,7174,196"/>
+<area shape="rect" id="node41" href="$d1/dec/board_2yuzukilizard_2load__e907_2main_8c.html" title=" " alt="" coords="7198,155,7341,196"/>
+<area shape="rect" id="node42" href="$de/df3/board_2yuzukilizard_2syter__amp_2main_8c.html" title=" " alt="" coords="7365,155,7507,196"/>
+<area shape="rect" id="node43" href="$da/d65/board_2yuzukilizard_2syter__boot_2main_8c.html" title=" " alt="" coords="7531,155,7674,196"/>
+<area shape="rect" id="node44" href="$d8/d01/board_2yuzukilizard_2syter__boot__spi_2main_8c.html" title=" " alt="" coords="7698,155,7867,196"/>
+<area shape="rect" id="node45" href="$d1/d88/board_2yuzukilizard_2syter__bootargs_2main_8c.html" title=" " alt="" coords="7892,155,8063,196"/>
+<area shape="rect" id="node46" href="$d2/df1/diskio_8c.html" title=" " alt="" coords="8087,162,8214,189"/>
+<area shape="rect" id="node47" href="$db/d89/ff_8c.html" title=" " alt="" coords="8239,162,8335,189"/>
+<area shape="rect" id="node48" href="$de/d82/ffsystem_8c.html" title=" " alt="" coords="8359,162,8503,189"/>
+<area shape="rect" id="node49" href="$d8/dbc/ffunicode_8c.html" title=" " alt="" coords="8527,162,8673,189"/>
 </map>
