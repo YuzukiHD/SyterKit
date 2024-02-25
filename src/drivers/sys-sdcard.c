@@ -163,6 +163,54 @@ static const unsigned char tran_speed_time[] = {
         80,
 };
 
+static uint32_t extract_mid(sdmmc_t *card) {
+    if ((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4))
+        return UNSTUFF_BITS(card->cid, 104, 24);
+    else
+        return UNSTUFF_BITS(card->cid, 120, 8);
+}
+
+static uint32_t extract_oid(sdmmc_t *card) {
+    return (card->cid[0] >> 8) & 0xffff;
+}
+
+static uint32_t extract_prv(sdmmc_t *card) {
+    return (card->cid[2] >> 24);
+}
+
+static uint32_t extract_psn(sdmmc_t *card) {
+    if (card->version & SD_VERSION_SD) {
+        return UNSTUFF_BITS(card->csd, 24, 32);
+    } else {
+        if (card->version > MMC_VERSION_1_4)
+            return UNSTUFF_BITS(card->cid, 16, 32);
+        else
+            return UNSTUFF_BITS(card->cid, 16, 24);
+    }
+}
+
+static uint32_t extract_month(sdmmc_t *card) {
+    if (card->version & SD_VERSION_SD)
+        return UNSTUFF_BITS(card->cid, 8, 4);
+    else
+        return UNSTUFF_BITS(card->cid, 12, 4);
+}
+
+static uint32_t extract_year(sdmmc_t *card) {
+    uint32_t year;
+
+    if (card->version & SD_VERSION_SD)
+        year = UNSTUFF_BITS(card->cid, 12, 8) + 2000;
+    else if (card->version < MMC_VERSION_4_41)
+        return UNSTUFF_BITS(card->cid, 8, 4) + 1997;
+    else {
+        year = UNSTUFF_BITS(card->cid, 8, 4) + 1997;
+        if (year < 2010)
+            year += 16;
+    }
+    return year;
+}
+
 static bool go_idle_state(sdhci_t *hci) {
     sdhci_cmd_t cmd = {0};
 
@@ -314,8 +362,7 @@ static int sdmmc_status(sdhci_t *hci, sdmmc_t *card) {
     return -1;
 }
 
-static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf,
-                                  uint64_t start, uint64_t blkcnt) {
+static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uint64_t start, uint64_t blkcnt) {
     sdhci_cmd_t cmd = {0};
     sdhci_data_t dat = {0};
     int status;
@@ -356,6 +403,49 @@ static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf,
             printk(LOG_LEVEL_WARNING, "SMHC: transfer stop failed\n");
             return 0;
         }
+    }
+    return blkcnt;
+}
+
+static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uint64_t start, uint64_t blkcnt) {
+    sdhci_cmd_t cmd = {0};
+    sdhci_data_t dat = {0};
+    int status;
+
+    if (blkcnt > 1)
+        cmd.idx = MMC_WRITE_MULTIPLE_BLOCK;
+    else
+        cmd.idx = MMC_WRITE_SINGLE_BLOCK;
+    if (card->high_capacity)
+        cmd.arg = start;
+    else
+        cmd.arg = start * card->write_bl_len;
+    cmd.resptype = MMC_RSP_R1;
+    dat.buf = buf;
+    dat.flag = MMC_DATA_WRITE;
+    dat.blksz = card->write_bl_len;
+    dat.blkcnt = blkcnt;
+
+    if (!sdhci_transfer(hci, &cmd, &dat)) {
+        printk(LOG_LEVEL_WARNING, "SMHC: write failed\n");
+        return 0;
+    }
+
+    if (!hci->isspi) {
+        do {
+            status = sdmmc_status(hci, card);
+            if (status < 0)
+                return 0;
+        } while ((status != MMC_STATUS_TRAN) && (status != MMC_STATUS_RCV));
+    }
+
+    if (blkcnt > 1) {
+        cmd.idx = MMC_STOP_TRANSMISSION;
+        cmd.arg = 0;
+        cmd.resptype = MMC_RSP_R1B;
+        if (!sdhci_transfer(hci, &cmd, NULL))
+            printk(LOG_LEVEL_WARNING, "SMHC: transfer stop failed\n");
+        return 0;
     }
     return blkcnt;
 }
@@ -571,10 +661,6 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
         card->capacity = (csize + 1) << (cmult + 2);
     }
     card->capacity *= 1 << UNSTUFF_BITS(card->csd, 80, 4);
-    if (card->capacity / (f64) 1000000000.0 < 4)
-        printk(LOG_LEVEL_INFO, "SMHC: capacity %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
-    else
-        printk(LOG_LEVEL_INFO, "SMHC: capacity %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
 
     if (hci->isspi) {
         if (!sdhci_set_clock(hci, min(card->tran_speed, hci->clock)) ||
@@ -602,14 +688,14 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
                 return FALSE;
         } else if (card->version & MMC_VERSION_MMC) {
             switch (hci->width) {
+                case MMC_BUS_WIDTH_8:
+                    width = EXT_CSD_BUS_WIDTH_8;
+                    break;
                 case MMC_BUS_WIDTH_4:
                     if (hci->clock == MMC_CLK_50M_DDR)
                         width = EXT_CSD_DDR_BUS_WIDTH_4;
                     else
                         width = EXT_CSD_BUS_WIDTH_4;
-                    break;
-                case MMC_BUS_WIDTH_8:
-                    width = EXT_CSD_BUS_WIDTH_8;
                     break;
                 default:
                     width = EXT_CSD_BUS_WIDTH_1;
@@ -649,6 +735,24 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     if (!sdhci_transfer(hci, &cmd, NULL))
         return FALSE;
 
+    printk(LOG_LEVEL_DEBUG, "SD/MMC card at the '%s' host controller:\r\n", hci->name);
+    printk(LOG_LEVEL_DEBUG, "  Attached is a %s card\r\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
+    if (card->capacity / (f64) 1000000000.0 < 4)
+        printk(LOG_LEVEL_INFO, "  Capacity: %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
+    else
+        printk(LOG_LEVEL_INFO, "  Capacity: %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
+    if (card->high_capacity)
+        printk(LOG_LEVEL_DEBUG, "  High capacity card\r\n");
+    printk(LOG_LEVEL_DEBUG, "  CID: %08X-%08X-%08X-%08X\r\n", card->cid[0], card->cid[1], card->cid[2], card->cid[3]);
+    printk(LOG_LEVEL_DEBUG, "  CSD: %08X-%08X-%08X-%08X\r\n", card->csd[0], card->csd[1], card->csd[2], card->csd[3]);
+    printk(LOG_LEVEL_DEBUG, "  Max transfer speed: %u HZ\r\n", card->tran_speed);
+    printk(LOG_LEVEL_DEBUG, "  Manufacturer ID: %02X\r\n", extract_mid(card));
+    printk(LOG_LEVEL_DEBUG, "  OEM/Application ID: %04X\r\n", extract_oid(card));
+    printk(LOG_LEVEL_DEBUG, "  Product name: '%c%c%c%c%c'\r\n", card->cid[0] & 0xff, (card->cid[1] >> 24), (card->cid[1] >> 16) & 0xff, (card->cid[1] >> 8) & 0xff, card->cid[1] & 0xff);
+    printk(LOG_LEVEL_DEBUG, "  Product revision: %u.%u\r\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
+    printk(LOG_LEVEL_DEBUG, "  Serial no: %0u\r\n", extract_psn(card));
+    printk(LOG_LEVEL_DEBUG, "  Manufacturing date: %u.%u\r\n", extract_year(card), extract_month(card));
+
     return TRUE;
 }
 
@@ -664,6 +768,23 @@ uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno,
         blks -= cnt;
         blkno += cnt;
         buf += cnt * sdcard->read_bl_len;
+    }
+    return blkcnt;
+}
+
+// TODO: time out bug fix
+uint64_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno,
+                         uint64_t blkcnt) {
+    uint64_t cnt, blks = blkcnt;
+    sdmmc_t *sdcard = &data->card;
+
+    while (blks > 0) {
+        cnt = (blks > 127) ? 127 : blks;
+        if (sdmmc_write_blocks(data->hci, sdcard, buf, blkno, cnt) != cnt)
+            return 0;
+        blks -= cnt;
+        blkno += cnt;
+        buf += cnt * sdcard->write_bl_len;
     }
     return blkcnt;
 }
