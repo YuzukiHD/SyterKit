@@ -5,24 +5,46 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <mmu.h>
 #include <log.h>
+#include <mmu.h>
+
+#define __SYTERKIT__ 1
+#define __arm__ 1
+#define __thumb__ 1
+#define RUAPU_IMPLEMENTATION 1
+#define RUAPU_BAREMETAL 1
+
+#include "ruapu.h"
+
+#define PRINT_ISA_SUPPORT(isa) printk(LOG_LEVEL_INFO, "%s = %d\n", #isa, ruapu_supports(#isa));
 
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
+    show_banner();
+
     sunxi_clk_init();
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
-    asm volatile("swi 0x1");
+    printk(LOG_LEVEL_INFO, "Hello World! Now Running RUAPU Test!\n");
 
-    // dump_hex(0x000287e0, 0x2000);
+    ruapu_init();
 
-    asm volatile(".word 0xfea00a00");
+    PRINT_ISA_SUPPORT(edsp)
+    PRINT_ISA_SUPPORT(neon)
+    PRINT_ISA_SUPPORT(vfpv4)
+    PRINT_ISA_SUPPORT(idiv)
 
-    printk(LOG_LEVEL_INFO, "Hello World! OFF\n");
+
+    printk(LOG_LEVEL_INFO, "Ruapu Supported:\n");
+    const char *const *supported = ruapu_rua();
+    while (*supported) {
+        printk(LOG_LEVEL_INFO, "%s\n", *supported);
+        supported++;
+    }
+
+    printk(LOG_LEVEL_INFO, "RUAPU Test done!\n");
 
     return 0;
 }
