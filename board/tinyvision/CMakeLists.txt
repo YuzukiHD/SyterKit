@@ -7,6 +7,8 @@ set(APP_COMMON_SOURCE
 
 add_subdirectory(hello_world)
 
+add_subdirectory(ruapu_test)
+
 add_subdirectory(read_chipsid)
 
 add_subdirectory(init_dram)
