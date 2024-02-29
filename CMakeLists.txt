@@ -128,10 +128,16 @@ set(CMAKE_SIZE "${CROSS_COMPILE}size")
 set(LINK_SCRIPT_FEL ${PROJECT_BINARY_DIR}/link_elf.ld)
 set(LINK_SCRIPT_BIN ${PROJECT_BINARY_DIR}/link_bin.ld)
 
+# For Some platform need to reduce stack size, config MINSTACK to zero
+if(CONFIG_CHIP_MINSTACK)
+    set(MIN_STACK_SIZE "0x0")
+else()
+    set(MIN_STACK_SIZE "0x100")
+endif()
+
 # If the CONFIG_ARCH_ARM32 variable is defined, execute the following content
 if (CONFIG_ARCH_ARM32)
 set(ARCH_INCLUDE include/arch/arm32)
-
 
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
 set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")

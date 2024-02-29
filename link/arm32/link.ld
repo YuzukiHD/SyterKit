@@ -11,6 +11,7 @@ MEMORY
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
+MIN_STACK_SIZE = @MIN_STACK_SIZE@; /* 4B */
 STACK_SIZE = 0x1000; /* 4KB */
 
 /* Section Definitions */
@@ -64,21 +65,21 @@ SECTIONS
     .stack (NOLOAD):
     {
         . = ALIGN(8);
-        /* SRV stack section */
+        /* UND stack section */
         __stack_und_start = .;
-        . += STACK_SIZE;
+        . += MIN_STACK_SIZE;
         __stack_und_end = .;
         /* ABT stack section */
         __stack_abt_start = .;
-        . += STACK_SIZE;
+        . += MIN_STACK_SIZE;
         __stack_abt_end = .;
         /* IRQ stack section */
         __stack_irq_start = .;
-        . += STACK_SIZE;
+        . += MIN_STACK_SIZE;
         __stack_irq_end = .;
         /* FIQ stack section */
         __stack_fiq_start = .;
-        . += STACK_SIZE;
+        . += MIN_STACK_SIZE;
         __stack_fiq_end = .;
         /* SRV stack section */
         __stack_srv_start = .;
