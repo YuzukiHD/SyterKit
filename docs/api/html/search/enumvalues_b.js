@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['usb_5fspeed_5ffull_10950',['USB_SPEED_FULL',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a0f17d0b9928086c6114fea73e08f1780',1,'usb.h']]],
-  ['usb_5fspeed_5fhigh_10951',['USB_SPEED_HIGH',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a57eeede6d769b09c01ac9c9c62fef8c9',1,'usb.h']]],
-  ['usb_5fspeed_5flow_10952',['USB_SPEED_LOW',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a0ec4f8f66feaf7ee8f2ee618302e9470',1,'usb.h']]],
-  ['usb_5fspeed_5freserved_10953',['USB_SPEED_RESERVED',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a61358599f51ba2100b4b1e1f2bd8ed06',1,'usb.h']]]
+  ['usb_5fspeed_5ffull_10973',['USB_SPEED_FULL',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a0f17d0b9928086c6114fea73e08f1780',1,'usb.h']]],
+  ['usb_5fspeed_5fhigh_10974',['USB_SPEED_HIGH',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a57eeede6d769b09c01ac9c9c62fef8c9',1,'usb.h']]],
+  ['usb_5fspeed_5flow_10975',['USB_SPEED_LOW',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a0ec4f8f66feaf7ee8f2ee618302e9470',1,'usb.h']]],
+  ['usb_5fspeed_5freserved_10976',['USB_SPEED_RESERVED',['../dc/de4/usb_8h.html#a59ba7bbb99177a622f3c073fc48b7bc5a61358599f51ba2100b4b1e1f2bd8ed06',1,'usb.h']]]
 ];

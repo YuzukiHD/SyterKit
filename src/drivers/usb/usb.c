@@ -253,7 +253,7 @@ static int ep0_recv_op(void) {
         printk(LOG_LEVEL_TRACE, "USB: ep0 rx non, set addr\n");
         if (sunxi_udc_source.address) {
             sunxi_usb_perform_set_address(sunxi_udc_source.address & 0xff);
-            printk(LOG_LEVEL_INFO, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
+            printk(LOG_LEVEL_DEBUG, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
             sunxi_udc_source.address = 0;
         }
         goto ep0_recv_op_err;

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.6</span>
+   &#160;<span id="projectnumber">0.2.6.1</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -99,11 +99,23 @@ $(function() {
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">    .type name, % function; \</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">    END(name)</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* __ARM32_LINKAGE_H__ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a972e1cd36591242fb9b969ffb76c1056">   28</a></span>&#160;<span class="preprocessor">#define  ARMV7_USR_MODE        0x10</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a9f432b9f0e055ee5e1fd044beec9b854">   29</a></span>&#160;<span class="preprocessor">#define  ARMV7_FIQ_MODE        0x11</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#aa62f6f90084fd13f60abe42b8feb4d3b">   30</a></span>&#160;<span class="preprocessor">#define  ARMV7_IRQ_MODE        0x12</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#ab99b043bed800b90d8f0e961c3764f43">   31</a></span>&#160;<span class="preprocessor">#define  ARMV7_SVC_MODE        0x13</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a30229004647c0ac283a872b542b380e4">   32</a></span>&#160;<span class="preprocessor">#define  ARMV7_MON_MODE        0x16</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#adbadca544f4c684c1b4ff334d50c20d1">   33</a></span>&#160;<span class="preprocessor">#define  ARMV7_ABT_MODE        0x17</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a7a6c846e32bf194cbff8cfb42ebaf061">   34</a></span>&#160;<span class="preprocessor">#define  ARMV7_UND_MODE        0x1b</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a78b5a5c8e9b58404e628c4b5418e76ed">   35</a></span>&#160;<span class="preprocessor">#define  ARMV7_SYSTEM_MODE     0x1f</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a604ade2889f4406e40f65e2ff6efcdbb">   36</a></span>&#160;<span class="preprocessor">#define  ARMV7_MODE_MASK       0x1f</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#a1f6e19984f480ef44e8a7d2eaa36ddce">   37</a></span>&#160;<span class="preprocessor">#define  ARMV7_FIQ_MASK        0x40</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="../../d7/da4/include_2arch_2arm32_2linkage_8h.html#aa25272b1a06bfe07fcce809be39240a8">   38</a></span>&#160;<span class="preprocessor">#define  ARMV7_IRQ_MASK        0x80</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;}</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* __ARM32_LINKAGE_H__ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

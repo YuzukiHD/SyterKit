@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 #include <timer.h>
+#include <types.h>
 
 #include "log.h"
 #include "uart.h"
@@ -55,4 +55,42 @@ void uart_printf(const char *fmt, ...) {
     xvformat(uart_log_putchar, NULL, fmt, args_copy);
     va_end(args);
     va_end(args_copy);
+}
+
+void dump_hex(uint32_t start_addr, uint32_t count) {
+    uint8_t *ptr = (uint8_t *) start_addr;
+    uint32_t end_addr = start_addr + count;
+
+    while (ptr < (uint8_t *) end_addr) {
+        printk(LOG_LEVEL_MUTE, "%08X: ", (uint32_t) ptr);
+
+        // Print hexadecimal bytes for each line
+        for (int i = 0; i < 16; i++) {
+            if (ptr < (uint8_t *) end_addr) {
+                printk(LOG_LEVEL_MUTE, "%02X ", *ptr);
+                ptr++;
+            } else {
+                printk(LOG_LEVEL_MUTE, "   ");// Pad with spaces for incomplete bytes
+            }
+        }
+
+        // Print corresponding printable ASCII characters for each line
+        ptr -= 16;
+        printk(LOG_LEVEL_MUTE, " ");
+        for (int i = 0; i < 16; i++) {
+            if (ptr < (uint8_t *) end_addr) {
+                char c = *ptr;
+                if (c >= 32 && c <= 126) {
+                    printk(LOG_LEVEL_MUTE, "%c", c);// Printable character
+                } else {
+                    printk(LOG_LEVEL_MUTE, ".");// Replace non-printable character with dot
+                }
+                ptr++;
+            } else {
+                break;
+            }
+        }
+
+        printk(LOG_LEVEL_MUTE, "\n");
+    }
 }
