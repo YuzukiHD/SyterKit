@@ -10,6 +10,8 @@
 #include <common.h>
 #include <log.h>
 
+#include <sys-sdcard.h>
+
 #include "usb.h"
 #include "usb_defs.h"
 
@@ -178,7 +180,6 @@ static int usb_mass_usb_set_interface(struct usb_device_request *req) {
  */
 static int usb_mass_usb_set_address(struct usb_device_request *req) {
     uint8_t address = req->value & 0x7f;
-    printk(LOG_LEVEL_TRACE, "set address 0x%x\n", address);
     sunxi_usb_set_address(address);
     return SUNXI_USB_REQ_SUCCESSED;
 }
@@ -724,13 +725,17 @@ static int sunxi_mass_state_loop(void *buffer) {
 
                         trans_data.send_size = min(cbw->dCBWDataTransferLength, sectors * 512);
                         trans_data.act_send_buffer = (uint32_t) trans_data.base_send_buffer;
-                        // TODO: Host Read
-                        ret = 0;
-                        if (!ret) {
+                        if (!card0.online) {
+                            if (sdmmc_blk_read(&card0, trans_data.base_send_buffer, start, sectors) != sectors) {
+                                printk(LOG_LEVEL_ERROR, "USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
+                                csw.bCSWStatus = 1;
+                            } else {
+                                csw.bCSWStatus = 0;
+                                ret = 1;
+                            }
+                        } else {
                             printk(LOG_LEVEL_ERROR, "USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
                             csw.bCSWStatus = 1;
-                        } else {
-                            csw.bCSWStatus = 0;
                         }
                         sunxi_usb_mass_status = SUNXI_USB_MASS_SEND_DATA;
                     }
