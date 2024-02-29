@@ -18,7 +18,7 @@ int main(void) {
     printk(LOG_LEVEL_INFO, "Hello World!\n");
     asm volatile("swi 0x1");
 
-    dump_hex(0x000287e0, 0x2000);
+    // dump_hex(0x000287e0, 0x2000);
 
     asm volatile(".word 0xfea00a00");
 
