@@ -7,7 +7,7 @@ set(CONFIG_CHIP_USB True)
 set(CONFIG_CHIP_GIC True)
 #set(CONFIG_FATFS_CACHE_SIZE "0xa0000000")
 
-add_definitions(-DCONFIG_CHIP_SUN8IW21 -DCONFIG_CHIP_GIC) #-DCONFIG_FATFS_CACHE_SIZE=${CONFIG_FATFS_CACHE_SIZE})
+add_definitions(-DCONFIG_CHIP_SUN8IW21) #-DCONFIG_FATFS_CACHE_SIZE=${CONFIG_FATFS_CACHE_SIZE})
 
 # Options
 
@@ -26,9 +26,9 @@ set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 # Configure compiler flags based on ENABLE_HARDFP option
 if(ENABLE_HARDFP)
-    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
+    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -mcpu=cortex-a7 -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=hard")
 else()
-    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -g -ggdb -O3 -mcpu=cortex-a7 -mthumb-interwork -mthumb -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
+    set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -mcpu=cortex-a7 -mno-unaligned-access -mfpu=neon-vfpv4 -mfloat-abi=softfp")
 endif()
 
 # Disable specific warning flags for C and C++ compilers
