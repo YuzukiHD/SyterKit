@@ -72,6 +72,7 @@ _start:
 	
 	.align 5
 _vector:
+	b reset
 	ldr pc, _undefined_instruction
 	ldr pc, _software_interrupt
 	ldr pc, _prefetch_abort
