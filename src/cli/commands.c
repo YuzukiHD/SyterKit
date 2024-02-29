@@ -36,41 +36,7 @@ static int cmd_hexdump(int argc, const char **argv) {
     uint32_t start_addr = strtol(argv[1], NULL, 0);
     uint32_t len = strtol(argv[2], NULL, 0);
 
-    uint8_t *ptr = (uint8_t *) start_addr;
-    uint32_t end_addr = start_addr + len;
-
-    while (ptr < (uint8_t *) end_addr) {
-        printk(LOG_LEVEL_MUTE, "%08X: ", (uint32_t) ptr);
-
-        // Print hexadecimal bytes for each line
-        for (int i = 0; i < 16; i++) {
-            if (ptr < (uint8_t *) end_addr) {
-                printk(LOG_LEVEL_MUTE, "%02X ", *ptr);
-                ptr++;
-            } else {
-                printk(LOG_LEVEL_MUTE, "   ");// Pad with spaces for incomplete bytes
-            }
-        }
-
-        // Print corresponding printable ASCII characters for each line
-        ptr -= 16;
-        printk(LOG_LEVEL_MUTE, " ");
-        for (int i = 0; i < 16; i++) {
-            if (ptr < (uint8_t *) end_addr) {
-                char c = *ptr;
-                if (c >= 32 && c <= 126) {
-                    printk(LOG_LEVEL_MUTE, "%c", c);// Printable character
-                } else {
-                    printk(LOG_LEVEL_MUTE, ".");// Replace non-printable character with dot
-                }
-                ptr++;
-            } else {
-                break;
-            }
-        }
-
-        printk(LOG_LEVEL_MUTE, "\n");
-    }
+    dump_hex(start_addr, len);
 
     return 0;
 }
