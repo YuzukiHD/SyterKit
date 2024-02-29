@@ -95,11 +95,58 @@ typedef struct {
 
 extern sdhci_t sdhci0;
 
+/**
+ * @brief Reset the SD card controller.
+ * 
+ * @param hci A pointer to the SD card controller structure.
+ * @return True if the reset is successful, false otherwise.
+ */
 bool sdhci_reset(sdhci_t *hci);
+
+/**
+ * @brief Set the voltage for the SD card controller.
+ * 
+ * @param hci A pointer to the SD card controller structure.
+ * @param voltage The voltage value to be set.
+ * @return True if the voltage setting is successful, false otherwise.
+ */
 bool sdhci_set_voltage(sdhci_t *hci, uint32_t voltage);
+
+/**
+ * @brief Set the data bus width for the SD card controller.
+ * 
+ * @param hci A pointer to the SD card controller structure.
+ * @param width The data bus width value to be set.
+ * @return True if the data bus width setting is successful, false otherwise.
+ */
 bool sdhci_set_width(sdhci_t *hci, uint32_t width);
+
+/**
+ * @brief Set the clock frequency for the SD card controller.
+ * 
+ * @param hci A pointer to the SD card controller structure.
+ * @param hz The clock frequency value to be set.
+ * @return True if the clock frequency setting is successful, false otherwise.
+ */
 bool sdhci_set_clock(sdhci_t *hci, smhc_clk_t hz);
+
+/**
+ * @brief Perform a data transfer operation with the SD card controller.
+ * 
+ * @param hci A pointer to the SD card controller structure.
+ * @param cmd Pointer to the SD command structure.
+ * @param dat Pointer to the SD data structure.
+ * @return True if the transfer is successful, false otherwise.
+ */
 bool sdhci_transfer(sdhci_t *hci, sdhci_cmd_t *cmd, sdhci_data_t *dat);
+
+/**
+ * @brief Initialize the SD card controller for Sunxi platform.
+ * 
+ * @param sdhci A pointer to the SD card controller structure.
+ * @return 0 if initialization is successful, an error code otherwise.
+ */
 int sunxi_sdhci_init(sdhci_t *sdhci);
+
 
 #endif /* __SDHCI_H__ */

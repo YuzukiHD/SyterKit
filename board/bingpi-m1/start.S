@@ -51,18 +51,6 @@
 	mov r0, r0
 .endm
 
-#define  ARMV7_USR_MODE        0x10
-#define  ARMV7_FIQ_MODE        0x11
-#define  ARMV7_IRQ_MODE        0x12
-#define  ARMV7_SVC_MODE        0x13
-#define  ARMV7_MON_MODE        0x16
-#define  ARMV7_ABT_MODE        0x17
-#define  ARMV7_UND_MODE        0x1b
-#define  ARMV7_SYSTEM_MODE     0x1f
-#define  ARMV7_MODE_MASK       0x1f
-#define  ARMV7_FIQ_MASK        0x40
-#define  ARMV7_IRQ_MASK        0x80
-
 .arm
 .globl _start
 .text
@@ -72,6 +60,7 @@ _start:
 	
 	.align 5
 _vector:
+	b reset
 	ldr pc, _undefined_instruction
 	ldr pc, _software_interrupt
 	ldr pc, _prefetch_abort
@@ -127,7 +116,40 @@ reset:
 	vmsr fpexc, r0
 
 	/* Set stack pointer */
-	ldr sp, =__stack_srv_end
+	/* Initialize UND stacks */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r1, r0, #ARMV7_UND_MODE
+	msr cpsr_cxsf, r1
+	ldr sp, _stack_und_end
+
+	/* Initialize ABT stacks */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r1, r0, #ARMV7_ABT_MODE
+	msr cpsr_cxsf, r1
+	ldr sp, _stack_abt_end
+
+	/* Initialize IRQ stacks */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r1, r0, #ARMV7_IRQ_MODE
+	msr cpsr_cxsf, r1
+	ldr sp, _stack_irq_end
+
+	/* Initialize FIQ stacks */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r1, r0, #ARMV7_FIQ_MODE
+	msr cpsr_cxsf, r1
+	ldr sp, _stack_fiq_end
+
+	/* Initialize SVC stacks */
+	mrs r0, cpsr
+	bic r0, r0, #ARMV7_MODE_MASK
+	orr r1, r0, #ARMV7_SVC_MODE
+	msr cpsr_cxsf, r1
+	ldr sp, _stack_srv_end
 
 	bl  clear_bss
 
@@ -136,14 +158,14 @@ reset:
 	* except if in HYP mode already
 	*/
 	mrs     r0, cpsr
-	and     r1, r0, #0x1f           @ mask mode bits
+	and     r1, r0, #ARMV7_MODE_MASK           @ mask mode bits
 	teq     r1, #0x1a               @ test for HYP mode
-	bicne   r0, r0, #0x1f           @ clear all mode bits
-	orrne   r0, r0, #0x13           @ set SVC mode
+	bicne   r0, r0, #ARMV7_MODE_MASK           @ clear all mode bits
+	orrne   r0, r0, #ARMV7_SVC_MODE           @ set SVC mode
 	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
 	msr     cpsr,r0
 
-	@set cntfrq to 24M
+	/* set cntfrq to 24M */
 	ldr r0, =24000000
 	mcr p15, 0, r0, c14, c0, 0
 
@@ -211,3 +233,18 @@ fiq:
 	save_regs
 	bl arm32_do_fiq
 	restore_regs
+
+	/*
+	* The location of section
+	*/
+ 	.align 4
+_stack_und_end:
+	.long __stack_und_end
+_stack_abt_end:
+	.long __stack_abt_end
+_stack_irq_end:
+	.long __stack_irq_end
+_stack_fiq_end:
+	.long __stack_fiq_end
+_stack_srv_end:
+	.long __stack_srv_end
