@@ -14,6 +14,11 @@
 #define RUAPU_IMPLEMENTATION 1
 #define RUAPU_BAREMETAL 1
 
+// Hack for arm-linux-gnueabi
+#ifdef __linux__
+#undef __linux__
+#endif
+
 #include "ruapu.h"
 
 #define PRINT_ISA_SUPPORT(isa) printk(LOG_LEVEL_INFO, "%s = %d\n", #isa, ruapu_supports(#isa));
