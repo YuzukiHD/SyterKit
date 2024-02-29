@@ -14,6 +14,7 @@
 
 #include <log.h>
 
+#include <sys-sdcard.h>
 #include <sys-dram.h>
 #include <sys-rtc.h>
 #include <usb.h>
@@ -22,8 +23,12 @@
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 extern sunxi_serial_t uart_dbg;
-
+extern sdhci_t sdhci0;
 extern dram_para_t dram_para;
+
+void arm32_do_irq(struct arm_regs_t *regs) {
+    do_irq(regs);
+}
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
@@ -57,6 +62,15 @@ int main(void) {
     dma_init();
 
     dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000);
+
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+    } else {
+        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+    }
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+    }
 
     sunxi_usb_attach_module(SUNXI_USB_DEVICE_MASS);
 
