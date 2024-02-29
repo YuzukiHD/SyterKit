@@ -65,6 +65,22 @@ SECTIONS
     {
         . = ALIGN(8);
         /* SRV stack section */
+        __stack_und_start = .;
+        . += STACK_SIZE;
+        __stack_und_end = .;
+        /* ABT stack section */
+        __stack_abt_start = .;
+        . += STACK_SIZE;
+        __stack_abt_end = .;
+        /* IRQ stack section */
+        __stack_irq_start = .;
+        . += STACK_SIZE;
+        __stack_irq_end = .;
+        /* FIQ stack section */
+        __stack_fiq_start = .;
+        . += STACK_SIZE;
+        __stack_fiq_end = .;
+        /* SRV stack section */
         __stack_srv_start = .;
         . += STACK_SIZE;
         __stack_srv_end = .;
