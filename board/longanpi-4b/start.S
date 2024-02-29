@@ -109,14 +109,6 @@ reset:
 	bic r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
 	mcr p15, 0, r0, c1, c0, 0
 
-	/* Enable neon/vfp unit */
-	mrc p15, 0, r0, c1, c0, 2
-	orr r0, r0, #(0xf << 20)
-	mcr p15, 0, r0, c1, c0, 2
-	isb
-	mov r0, #0x40000000
-	vmsr fpexc, r0
-
 	/* Set stack pointer */
 	/* Initialize UND stacks */
 	mrs r0, cpsr
@@ -167,7 +159,6 @@ reset:
 	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
 	msr     cpsr,r0
 	
-
 	bl set_timer_count
 
 	bl main
