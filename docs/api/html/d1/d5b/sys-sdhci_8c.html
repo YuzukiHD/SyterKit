@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../SyterKit LOGO_SMALL.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SyterKit
-   &#160;<span id="projectnumber">0.2.6</span>
+   &#160;<span id="projectnumber">0.2.6.1</span>
    </div>
    <div id="projectbrief">SyterKit is a bare-metal framework designed for Allwinner platform</div>
   </td>
@@ -134,10 +134,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a22602f7a9501caa85934898e9f6f19e5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#a22602f7a9501caa85934898e9f6f19e5">write_bytes</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci, <a class="el" href="../../d0/d5f/structsdhci__data__t.html">sdhci_data_t</a> *dat)</td></tr>
 <tr class="separator:a22602f7a9501caa85934898e9f6f19e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab98033c8c4823093b05b9f03ad15ef57"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#ab98033c8c4823093b05b9f03ad15ef57">sdhci_transfer</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci, <a class="el" href="../../d6/dea/structsdhci__cmd__t.html">sdhci_cmd_t</a> *cmd, <a class="el" href="../../d0/d5f/structsdhci__data__t.html">sdhci_data_t</a> *dat)</td></tr>
+<tr class="memdesc:ab98033c8c4823093b05b9f03ad15ef57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a data transfer operation with the SD card controller.  <a href="../../d1/d5b/sys-sdhci_8c.html#ab98033c8c4823093b05b9f03ad15ef57">More...</a><br /></td></tr>
 <tr class="separator:ab98033c8c4823093b05b9f03ad15ef57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa05e5aac4d4e51d327b7d570ee6f847c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#aa05e5aac4d4e51d327b7d570ee6f847c">sdhci_reset</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci)</td></tr>
+<tr class="memdesc:aa05e5aac4d4e51d327b7d570ee6f847c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the SD card controller.  <a href="../../d1/d5b/sys-sdhci_8c.html#aa05e5aac4d4e51d327b7d570ee6f847c">More...</a><br /></td></tr>
 <tr class="separator:aa05e5aac4d4e51d327b7d570ee6f847c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10e1175a196b731a3e38ae7c71de926d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#a10e1175a196b731a3e38ae7c71de926d">sdhci_set_width</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci, <a class="el" href="../../d2/d3e/board_2100ask-t113i_2load__c906_2c906__firmware_2include_2stdint_8h.html#a80a9c870f4d95f081766ab33e8f001ee">uint32_t</a> width)</td></tr>
+<tr class="memdesc:a10e1175a196b731a3e38ae7c71de926d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the data bus width for the SD card controller.  <a href="../../d1/d5b/sys-sdhci_8c.html#a10e1175a196b731a3e38ae7c71de926d">More...</a><br /></td></tr>
 <tr class="separator:a10e1175a196b731a3e38ae7c71de926d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65c477c089416e2c77267c297db7b1ef"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#a65c477c089416e2c77267c297db7b1ef">init_default_timing</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci)</td></tr>
 <tr class="separator:a65c477c089416e2c77267c297db7b1ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,8 +149,10 @@ Functions</h2></td></tr>
 <tr class="memitem:aeb93acb28451bdf44944d32679d8ab14"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#aeb93acb28451bdf44944d32679d8ab14">update_card_clock</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci)</td></tr>
 <tr class="separator:aeb93acb28451bdf44944d32679d8ab14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1550bb4eaf20d1c53db6321d52df5a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#af1550bb4eaf20d1c53db6321d52df5a2">sdhci_set_clock</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci, <a class="el" href="../../d1/d4b/sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a> clock)</td></tr>
+<tr class="memdesc:af1550bb4eaf20d1c53db6321d52df5a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clock frequency for the SD card controller.  <a href="../../d1/d5b/sys-sdhci_8c.html#af1550bb4eaf20d1c53db6321d52df5a2">More...</a><br /></td></tr>
 <tr class="separator:af1550bb4eaf20d1c53db6321d52df5a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a6e3a625d88525896274f677de8134e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d5b/sys-sdhci_8c.html#a4a6e3a625d88525896274f677de8134e">sunxi_sdhci_init</a> (<a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *sdhci)</td></tr>
+<tr class="memdesc:a4a6e3a625d88525896274f677de8134e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the SD card controller for Sunxi platform.  <a href="../../d1/d5b/sys-sdhci_8c.html#a4a6e3a625d88525896274f677de8134e">More...</a><br /></td></tr>
 <tr class="separator:a4a6e3a625d88525896274f677de8134e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -314,11 +319,20 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_reset </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
-          <td class="paramname"><em>sdhci</em></td><td>)</td>
+          <td class="paramname"><em>hci</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Reset the SD card controller. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hci</td><td>A pointer to the SD card controller structure. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the reset is successful, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -332,13 +346,13 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_set_clock </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
-          <td class="paramname"><em>sdhci</em>, </td>
+          <td class="paramname"><em>hci</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d1/d4b/sys-sdhci_8h.html#ac6c192c816f2b7797bfdbeb5025e77cf">smhc_clk_t</a>&#160;</td>
-          <td class="paramname"><em>clock</em>&#160;</td>
+          <td class="paramname"><em>hz</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -347,6 +361,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Set the clock frequency for the SD card controller. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hci</td><td>A pointer to the SD card controller structure. </td></tr>
+    <tr><td class="paramname">hz</td><td>The clock frequency value to be set. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the clock frequency setting is successful, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -360,7 +384,7 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_set_width </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
-          <td class="paramname"><em>sdhci</em>, </td>
+          <td class="paramname"><em>hci</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -376,6 +400,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set the data bus width for the SD card controller. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hci</td><td>A pointer to the SD card controller structure. </td></tr>
+    <tr><td class="paramname">width</td><td>The data bus width value to be set. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the data bus width setting is successful, false otherwise. </dd></dl>
+
 </div>
 </div>
 <a id="ab98033c8c4823093b05b9f03ad15ef57"></a>
@@ -388,7 +422,7 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../df/dbb/arm32_2stdbool_8h.html#a6156fe0b594c9754f386f6c6a30c8165">bool</a> sdhci_transfer </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/d3e/structsdhci__t.html">sdhci_t</a> *&#160;</td>
-          <td class="paramname"><em>sdhci</em>, </td>
+          <td class="paramname"><em>hci</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -409,6 +443,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Perform a data transfer operation with the SD card controller. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hci</td><td>A pointer to the SD card controller structure. </td></tr>
+    <tr><td class="paramname">cmd</td><td>Pointer to the SD command structure. </td></tr>
+    <tr><td class="paramname">dat</td><td>Pointer to the SD data structure. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the transfer is successful, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -463,6 +508,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Initialize the SD card controller for Sunxi platform. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sdhci</td><td>A pointer to the SD card controller structure. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if initialization is successful, an error code otherwise. </dd></dl>
 
 </div>
 </div>
