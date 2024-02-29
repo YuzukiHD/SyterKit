@@ -22,40 +22,36 @@ static void show_regs(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "\n");
 }
 
-void arm32_do_undefined_instruction(struct arm_regs_t *regs) {
+void __attribute__((weak)) arm32_do_undefined_instruction(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "undefined_instruction\n");
     show_regs(regs);
-    mdelay(1000);
+    regs->pc += 4;
 }
 
-void arm32_do_software_interrupt(struct arm_regs_t *regs) {
+void __attribute__((weak)) arm32_do_software_interrupt(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "software_interrupt\n");
     show_regs(regs);
-    mdelay(1000);
+    regs->pc += 4;
 }
 
-void arm32_do_prefetch_abort(struct arm_regs_t *regs) {
+void __attribute__((weak)) arm32_do_prefetch_abort(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "prefetch_abort\n");
     show_regs(regs);
-    mdelay(1000);
+    regs->pc += 4;
 }
 
-void arm32_do_data_abort(struct arm_regs_t *regs) {
+void __attribute__((weak)) arm32_do_data_abort(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "data_abort\n");
     show_regs(regs);
-    mdelay(1000);
+    regs->pc += 4;
 }
 
-void arm32_do_irq(struct arm_regs_t *regs) {
-#ifdef CONFIG_CHIP_GIC
-    do_irq(regs);
-#else
+void __attribute__((weak)) arm32_do_irq(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "undefined IRQ\n");
     show_regs(regs);
-#endif
 }
 
-void arm32_do_fiq(struct arm_regs_t *regs) {
+void __attribute__((weak)) arm32_do_fiq(struct arm_regs_t *regs) {
     printk(LOG_LEVEL_ERROR, "undefined FIQ\n");
     show_regs(regs);
 }
