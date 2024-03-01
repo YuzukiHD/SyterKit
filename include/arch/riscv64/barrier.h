@@ -8,18 +8,36 @@ extern "C" {
 #endif
 
 /* Read and write memory barrier */
-#define mb()		__asm__ __volatile__ ("fence iorw, iorw" : : : "memory");
+#define mb() __asm__ __volatile__("fence iorw, iorw" \
+                                  :                  \
+                                  :                  \
+                                  : "memory");
 /* Read memory barrier */
-#define rmb()		__asm__ __volatile__ ("fence ir, ir" : : : "memory");
+#define rmb() __asm__ __volatile__("fence ir, ir" \
+                                   :              \
+                                   :              \
+                                   : "memory");
 /* Write memory barrier */
-#define wmb()		__asm__ __volatile__ ("fence ow, ow" : : : "memory");
+#define wmb() __asm__ __volatile__("fence ow, ow" \
+                                   :              \
+                                   :              \
+                                   : "memory");
 
 /* SMP read and write memory barrier */
-#define smp_mb()	__asm__ __volatile__ ("fence rw, rw" : : : "memory");
+#define smp_mb() __asm__ __volatile__("fence rw, rw" \
+                                      :              \
+                                      :              \
+                                      : "memory");
 /* SMP read memory barrier */
-#define smp_rmb()	__asm__ __volatile__ ("fence r, r" : : : "memory");
+#define smp_rmb() __asm__ __volatile__("fence r, r" \
+                                       :            \
+                                       :            \
+                                       : "memory");
 /* SMP write memory barrier */
-#define smp_wmb()	__asm__ __volatile__ ("fence w, w" : : : "memory");
+#define smp_wmb() __asm__ __volatile__("fence w, w" \
+                                       :            \
+                                       :            \
+                                       : "memory");
 
 #ifdef __cplusplus
 }
