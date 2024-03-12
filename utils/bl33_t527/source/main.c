@@ -32,8 +32,8 @@
 #define ARM_SVC_EFUSE_PROBE_SECURE_ENABLE_AARCH32 (0x8000fe03)
 #define ARM_SVC_EFUSE_CUSTOMER_RESERVED_HANDLE (0x8000fe05)
 
-#define CONFIG_DTB_LOAD_ADDR (0x4a200000)
-#define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
+#define CONFIG_DTB_LOAD_ADDR (0x40400000)
+#define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
 extern uint32_t __sunxi_smc_call(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3);
 
@@ -61,7 +61,7 @@ void print_banner(void) {
     mdelay(10);
 }
 
-
 void sys_boot() {
+    sunxi_smc_call_atf(ARM_SVC_ARISC_STARTUP, (uint64_t) CONFIG_DTB_LOAD_ADDR, 0, 0, 0);
     arm_svc_run_os(CONFIG_KERNEL_LOAD_ADDR, CONFIG_DTB_LOAD_ADDR, 1);
 }

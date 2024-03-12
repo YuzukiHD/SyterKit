@@ -312,3 +312,17 @@ int fdt_increase_size(void *fdt, int add_len) {
     /* Open in place with a new len */
     return fdt_open_into(fdt, fdt, newlen);
 }
+
+int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name) {
+    int offset;
+
+    offset = fdt_subnode_offset(fdt, parent_offset, name);
+
+    if (offset == -FDT_ERR_NOTFOUND)
+        offset = fdt_add_subnode(fdt, parent_offset, name);
+
+    if (offset < 0)
+        printk(LOG_LEVEL_WARNING, "FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
+
+    return offset;
+}

@@ -48,6 +48,18 @@ int fdt_parse_prop(char const **newval, int count, char *data, int *len);
  */
 int fdt_increase_size(void *fdt, int add_len);
 
+/**
+ * fdt_find_or_add_subnode() - find or possibly add a subnode of a given node
+ *
+ * @fdt: pointer to the device tree blob
+ * @parentoffset: structure block offset of a node
+ * @name: name of the subnode to locate
+ *
+ * fdt_subnode_offset() finds a subnode of the node with a given name.
+ * If the subnode does not exist, it will be created.
+ */
+int fdt_find_or_add_subnode(void *fdt, int parentoffset, const char *name);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
