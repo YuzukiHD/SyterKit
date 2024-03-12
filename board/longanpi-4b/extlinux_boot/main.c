@@ -39,9 +39,9 @@
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_DTB_LOAD_ADDR (0x4a200000)
-#define CONFIG_INITRD_LOAD_ADDR (0x4b200000)
-#define CONFIG_KERNEL_LOAD_ADDR (0x40400000)
+#define CONFIG_DTB_LOAD_ADDR (0x40400000)
+#define CONFIG_INITRD_LOAD_ADDR (0x45000000)
+#define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
 #define CONFIG_SCP_FILENAME "scp.bin"
 #define CONFIG_SCP_LOAD_ADDR (0x48100000)
@@ -224,36 +224,6 @@ _loop:
     goto _loop;
 }
 
-static int abortboot_single_key(int bootdelay) {
-    int abort = 0;
-    unsigned long ts;
-
-    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
-
-    /* Check if key already pressed */
-    if (tstc()) {       /* we got a key press */
-        uart_getchar(); /* consume input */
-        printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
-        abort = 1; /* don't auto boot */
-    }
-
-    while ((bootdelay > 0) && (!abort)) {
-        --bootdelay;
-        /* delay 1000 ms */
-        ts = time_ms();
-        do {
-            if (tstc()) {  /* we got a key press */
-                abort = 1; /* don't auto boot */
-                break;
-            }
-            udelay(10000);
-        } while (!abort && time_ms() - ts < 1000);
-        printk(LOG_LEVEL_MUTE, "\b\b\b%2d ", bootdelay);
-    }
-    uart_putchar('\n');
-    return abort;
-}
-
 static char *skip_spaces(char *str) {
     while (*str == ' ') str++;
     return str;
@@ -306,7 +276,28 @@ static void parse_extlinux_data(char *config, ext_linux_data_t *data) {
     data->append = copy_until_newline_or_end(start);
 }
 
-static int load_extlinux(image_info_t *image) {
+static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size) {
+    int i;
+    int address_cells = fdt_address_cells(fdt, 0);
+    int size_cells = fdt_size_cells(fdt, 0);
+    char *p = buf;
+
+    if (address_cells == 2)
+        *(fdt64_t *) p = cpu_to_fdt64(address);
+    else
+        *(fdt32_t *) p = cpu_to_fdt32(address);
+    p += 4 * address_cells;
+
+    if (size_cells == 2)
+        *(fdt64_t *) p = cpu_to_fdt64(size);
+    else
+        *(fdt32_t *) p = cpu_to_fdt32(size);
+    p += 4 * size_cells;
+
+    return p - (char *) buf;
+}
+
+static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     FATFS fs;
     FRESULT fret;
     ext_linux_data_t data = {0};
@@ -347,7 +338,7 @@ static int load_extlinux(image_info_t *image) {
         printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.initrd, (uint32_t) image->ramdisk_dest);
         ret = fatfs_loadimage(data.initrd, image->ramdisk_dest);
         if (ret)
-            return ret;
+            printk(LOG_LEVEL_WARNING, "Initrd not find, ramdisk not load.\n");
     }
 
     /* umount fs */
@@ -360,7 +351,7 @@ static int load_extlinux(image_info_t *image) {
     }
     printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
 
-    /* Force image.dest to be a pointer to fdt_header structure */
+    /* Force image.of_dest to be a pointer to fdt_header structure */
     struct fdt_header *dtb_header = (struct fdt_header *) image->of_dest;
 
     /* Check if DTB header is valid */
@@ -372,23 +363,50 @@ static int load_extlinux(image_info_t *image) {
     /* Get the total size of DTB */
     uint32_t size = fdt_totalsize(image->of_dest);
 
-    int len = 0;
-    /* Get the offset of "/chosen" node */
-    uint32_t chosen_node = fdt_path_offset(image->of_dest, "/chosen");
+    printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", size);
 
+    if ((ret = fdt_increase_size(image->of_dest, 512)) != 0) {
+        printk(LOG_LEVEL_ERROR, "FDT: device tree increase error: %s\n", fdt_strerror(ret));
+    }
+
+    printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
+
+    int memory_node = fdt_find_or_add_subnode(image->of_dest, 0, "memory");
+
+    if ((ret = fdt_setprop_string(image->of_dest, memory_node, "device_type", "memory")) != 0) {
+        printk(LOG_LEVEL_ERROR, "Can't change memory size node: %s\n", fdt_strerror(ret));
+        return -1;
+    }
+
+    uint8_t *tmp_buf = (uint8_t *) smalloc(16 * sizeof(uint8_t));
+
+    /* fix up memory region */
+    int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
+
+    if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
+        printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
+        return -1;
+    }
+
+    /* Get the offset of "/chosen" node */
+    int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
+
+    len = 0;
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
     if (bootargs_str == NULL) {
-        printk(LOG_LEVEL_ERROR, "FDT: cannot find /chosen bootargs\n");
+        printk(LOG_LEVEL_WARNING, "FDT: bootargs is null, using extlinux.conf append.\n");
+        bootargs_str = "";
     }
 
+    strcat(bootargs_str, " ");
     strcat(bootargs_str, data.append);
 
-    printk(LOG_LEVEL_DEBUG, "Kernel fdt = %s\n", bootargs_str);
+    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", skip_spaces(bootargs_str));
 
 _add_dts_size:
     /* Modify bootargs string */
-    ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", bootargs_str);
+    ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
     if (ret == -FDT_ERR_NOSPACE) {
         printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image->of_dest, 512);
@@ -414,6 +432,7 @@ _add_dts_size:
     sfree(data.initrd);
     sfree(data.fdt);
     sfree(data.append);
+    sfree(tmp_buf);
     return 0;
 _err_size:
     printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
@@ -422,6 +441,7 @@ _err_size:
     sfree(data.initrd);
     sfree(data.fdt);
     sfree(data.append);
+    sfree(tmp_buf);
     return -1;
 }
 
@@ -460,6 +480,36 @@ const msh_command_entry commands[] = {
         msh_define_command(boot),
         msh_command_end,
 };
+
+static int abortboot_single_key(int bootdelay) {
+    int abort = 0;
+    unsigned long ts;
+
+    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
+
+    /* Check if key already pressed */
+    if (tstc()) {       /* we got a key press */
+        uart_getchar(); /* consume input */
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
+        abort = 1; /* don't auto boot */
+    }
+
+    while ((bootdelay > 0) && (!abort)) {
+        --bootdelay;
+        /* delay 1000 ms */
+        ts = time_ms();
+        do {
+            if (tstc()) {  /* we got a key press */
+                abort = 1; /* don't auto boot */
+                break;
+            }
+            udelay(10000);
+        } while (!abort && time_ms() - ts < 1000);
+        printk(LOG_LEVEL_MUTE, "\b\b\b%2d ", bootdelay);
+    }
+    uart_putchar('\n');
+    return abort;
+}
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
@@ -545,10 +595,12 @@ int main(void) {
         goto _shell;
     }
 
-    if (load_extlinux(&image) != 0) {
+    if (load_extlinux(&image, dram_size) != 0) {
         printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
         goto _shell;
     }
+
+    printk(LOG_LEVEL_INFO, "EXTLINUX: load extlinux done, now booting...\n");
 
     int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
 
