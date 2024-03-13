@@ -487,11 +487,17 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
     if (bootargs_str == NULL) {
         printk(LOG_LEVEL_WARNING, "FDT: bootargs is null, using extlinux.conf append.\n");
+        bootargs_str = (char *) smalloc(strlen(data.append) + 1);
+        bootargs_str[0] = '\0';
     } else {
+        size_t str_len = strlen(bootargs_str);
+        bootargs_str = (char *) srealloc(bootargs_str, str_len + strlen(data.append) + 2);
         strcat(bootargs_str, " ");
     }
 
     strcat(bootargs_str, data.append);
+
+    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
 
 _add_dts_size:
     /* Modify bootargs string */
@@ -503,11 +509,11 @@ _add_dts_size:
             goto _add_dts_size;
         } else {
             printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
-            goto _error;
+            goto _bootargs_error;
         }
     } else if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
-        goto _error;
+        goto _bootargs_error;
     }
 
     /* Get the total size of DTB */
@@ -515,17 +521,20 @@ _add_dts_size:
 
     if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-        goto _error;
+        goto _bootargs_error;
     }
 
     err = 0;
+_bootargs_error:
+    if (bootargs_str != NULL)
+        sfree(bootargs_str);
+
 _error:
     sfree(data.os);
     sfree(data.kernel);
     sfree(data.initrd);
     sfree(data.fdt);
     sfree(data.append);
-    sfree(bootargs_str);
     return err;
 }
 
