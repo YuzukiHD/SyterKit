@@ -297,6 +297,41 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
     return p - (char *) buf;
 }
 
+int update_pmu_ext_info_dtb(image_info_t *image) {
+    int nodeoffset, pmu_ext_type, err, i;
+    uint32_t phandle = 0;
+
+    /* get used pmu_ext node */
+    nodeoffset = fdt_path_offset(image->of_dest, "reg-axp1530");
+    if (nodeoffset < 0) {
+        printk(LOG_LEVEL_ERROR, "FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
+        return -1;
+    }
+    /* get used pmu_ext phandle */
+    phandle = fdt_get_phandle(image->of_dest, nodeoffset);
+    if (!phandle) {
+        printk(LOG_LEVEL_ERROR, "FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
+        return -1;
+    }
+    printk(LOG_LEVEL_DEBUG, "get ext power phandle %d\n", phandle);
+
+    /* get cpu@4 node */
+    nodeoffset = fdt_path_offset(image->of_dest, "cpu-ext");
+    if (nodeoffset < 0) {
+        printk(LOG_LEVEL_ERROR, "FDT: cannot get cpu@4 node\n");
+        return -1;
+    }
+
+    /* Change cpu-supply to ext dcdc*/
+    err = fdt_setprop_u32(image->of_dest, nodeoffset, "cpu-supply", phandle);
+    if (err < 0) {
+        printk(LOG_LEVEL_WARNING, "WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
+        return -1;
+    }
+
+    return 0;
+}
+
 static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     FATFS fs;
     FRESULT fret;
@@ -368,6 +403,8 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     if ((ret = fdt_increase_size(image->of_dest, 512)) != 0) {
         printk(LOG_LEVEL_ERROR, "FDT: device tree increase error: %s\n", fdt_strerror(ret));
     }
+    
+    update_pmu_ext_info_dtb(image);
 
     printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
 
