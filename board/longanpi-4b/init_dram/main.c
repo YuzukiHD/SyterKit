@@ -75,6 +75,8 @@ int main(void) {
 
     pmu_axp2202_dump(&i2c_pmu);
 
+    enable_sram_a3();
+
     printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
