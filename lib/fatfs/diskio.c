@@ -17,13 +17,13 @@
 static DSTATUS Stat = STA_NOINIT; /* Disk status */
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
-/* we can consume up to CONFIG_FATFS_CACHE_SIZE of SDRAM starting at SDRAM_BASE */
+/* we can consume up to CONFIG_FATFS_CACHE_SIZE of SDRAM starting at CONFIG_FATFS_CACHE_ADDR */
 #define FATFS_CACHE_CHUNK_SIZE (32 * 1024)
 #define FATFS_CACHE_SECTORS (CONFIG_FATFS_CACHE_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_SECTORS_PER_BIT (FATFS_CACHE_CHUNK_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_CHUNKS (FATFS_CACHE_SECTORS / FATFS_CACHE_SECTORS_PER_BIT)
 
-static uint8_t *const cache_data = (uint8_t *) SDRAM_BASE; /* in SDRAM */
+static uint8_t *const cache_data = (uint8_t *) CONFIG_FATFS_CACHE_ADDR; /* in CONFIG_FATFS_CACHE_ADDR */
 static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];  /* in SRAM */
 static BYTE cache_pdrv = -1;
 

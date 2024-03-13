@@ -62,6 +62,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_DISABLE_WARN_FLAGS} ${CMAKE_C_FLAGS} ${CMAKE_COMMON
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_DISABLE_WARN_FLAGS} ${CMAKE_CXX_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "c++ flags")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_DISABLE_WARN_FLAGS} ${CMAKE_ASM_FLAGS} ${CMAKE_COMMON_FLAGS}" CACHE STRING "asm flags")
 
+# Disable CMAKE built-in flags
+set(CMAKE_C_FLAGS_RELEASE " ")
+set(CMAKE_CXX_FLAGS_RELEASE " ")
+set(CMAKE_ASM_FLAGS_RELEASE " ")
+
 # Define the major and minor version numbers of the project
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 2)
@@ -98,6 +103,15 @@ include(cmake/add_syterkit_app.cmake)
 string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)
 string(REGEX REPLACE ".*/" "" COMPILER_NAME ${COMPILER_NAME})
 
+# Set debug Mode
+# Trace: display all log, auto objdump file
+# Debug: display debug log
+# Other: Release, info log
+
+if (CMAKE_BUILD_TYPE STREQUAL Trace)
+    ADD_DEFINITIONS(-DTRACE_MODE)
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     ADD_DEFINITIONS(-DDEBUG_MODE)
 endif()
@@ -110,8 +124,8 @@ configure_file(
 
 # Create an external project and build it
 ExternalProject_Add(
-    mksunxi
-    PREFIX mksunxi
+    SyterKitTools
+    PREFIX SyterKitTools
     SOURCE_DIR "${PROJECT_SOURCE_DIR}/tools"
     INSTALL_COMMAND ""
     CONFIGURE_COMMAND ""
