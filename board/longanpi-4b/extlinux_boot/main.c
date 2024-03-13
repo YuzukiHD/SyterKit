@@ -40,7 +40,7 @@
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
 #define CONFIG_DTB_LOAD_ADDR (0x40400000)
-#define CONFIG_INITRD_LOAD_ADDR (0x45000000)
+#define CONFIG_INITRD_LOAD_ADDR (0x43000000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
 #define CONFIG_SCP_FILENAME "scp.bin"
@@ -48,6 +48,8 @@
 
 #define CONFIG_EXTLINUX_FILENAME "extlinux/extlinux.conf"
 #define CONFIG_EXTLINUX_LOAD_ADDR (0x40020000)
+
+#define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
@@ -109,7 +111,7 @@ image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size) {
     FIL file;
     UINT byte_to_read = CHUNK_SIZE;
     UINT byte_read;
@@ -142,6 +144,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
         goto read_fail;
     }
     ret = 0;
+    *file_size = total_read;
 
 read_fail:
     fret = f_close(&file);
@@ -151,6 +154,10 @@ read_fail:
 
 open_fail:
     return ret;
+}
+
+static int fatfs_loadimage(char *filename, BYTE *dest) {
+    return fatfs_loadimage_size(filename, dest, NULL);
 }
 
 static int load_sdcard(image_info_t *image) {
@@ -336,7 +343,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     FATFS fs;
     FRESULT fret;
     ext_linux_data_t data = {0};
-    int ret;
+    int ret, err = -1;
     uint32_t start;
 
     uint32_t test_time;
@@ -353,7 +360,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
         printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
-        return -1;
+        goto _error;
     } else {
         printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
     }
@@ -361,26 +368,31 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.kernel, (uint32_t) image->kernel_dest);
     ret = fatfs_loadimage(data.kernel, image->kernel_dest);
     if (ret)
-        return ret;
+        goto _error;
 
     printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.fdt, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(data.fdt, image->of_dest);
     if (ret)
-        return ret;
+        goto _error;
 
     /* Check and load ramdisk */
+    uint32_t ramdisk_size = 0;
     if (data.initrd != NULL) {
         printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.initrd, (uint32_t) image->ramdisk_dest);
-        ret = fatfs_loadimage(data.initrd, image->ramdisk_dest);
-        if (ret)
+        ret = fatfs_loadimage_size(data.initrd, image->ramdisk_dest, &ramdisk_size);
+        if (ret) {
             printk(LOG_LEVEL_WARNING, "Initrd not find, ramdisk not load.\n");
+            ramdisk_size = 0;
+        } else {
+            printk(LOG_LEVEL_INFO, "Initrd load 0x%08x, Size 0x%08x\n", image->ramdisk_dest, ramdisk_size);
+        }
     }
 
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
         printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
-        return -1;
+        goto _error;
     } else {
         printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
     }
@@ -392,7 +404,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     /* Check if DTB header is valid */
     if ((ret = fdt_check_header(dtb_header)) != 0) {
         printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     /* Get the total size of DTB */
@@ -402,8 +414,9 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 
     if ((ret = fdt_increase_size(image->of_dest, 512)) != 0) {
         printk(LOG_LEVEL_ERROR, "FDT: device tree increase error: %s\n", fdt_strerror(ret));
+        goto _error;
     }
-    
+
     update_pmu_ext_info_dtb(image);
 
     printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
@@ -412,7 +425,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 
     if ((ret = fdt_setprop_string(image->of_dest, memory_node, "device_type", "memory")) != 0) {
         printk(LOG_LEVEL_ERROR, "Can't change memory size node: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     uint8_t *tmp_buf = (uint8_t *) smalloc(16 * sizeof(uint8_t));
@@ -422,24 +435,63 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 
     if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
         printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
+    /* clean tmp_buf */
+    sfree(tmp_buf);
+    tmp_buf = NULL;
 
     /* Get the offset of "/chosen" node */
     int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
+
+    uint64_t ramdisk_start = (uint64_t) (uintptr_t) image->ramdisk_dest;
+    uint64_t ramdisk_end = ramdisk_start + ramdisk_size;
+    if (ramdisk_size > 0) {
+        uint64_t addr, size;
+
+        printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+        int total = fdt_num_mem_rsv(image->of_dest);
+
+        printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
+
+        /* Look for an existing entry and update it.  If we don't find the entry, we will add a available slot. */
+        for (int j = 0; j < total; j++) {
+            ret = fdt_get_mem_rsv(image->of_dest, j, &addr, &size);
+            if (addr == ramdisk_start) {
+                fdt_del_mem_rsv(image->of_dest, j);
+                break;
+            }
+        }
+
+        ret = fdt_add_mem_rsv(image->of_dest, ramdisk_start, ramdisk_end - ramdisk_start);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "fdt_initrd: %s\n", fdt_strerror(ret));
+            goto _error;
+        }
+
+        ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t) ramdisk_start);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
+            goto _error;
+        }
+
+        ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t) ramdisk_end);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
+            goto _error;
+        }
+    }
 
     len = 0;
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
     if (bootargs_str == NULL) {
         printk(LOG_LEVEL_WARNING, "FDT: bootargs is null, using extlinux.conf append.\n");
-        bootargs_str = "";
+    } else {
+        strcat(bootargs_str, " ");
     }
 
-    strcat(bootargs_str, " ");
     strcat(bootargs_str, data.append);
-
-    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", skip_spaces(bootargs_str));
 
 _add_dts_size:
     /* Modify bootargs string */
@@ -447,13 +499,15 @@ _add_dts_size:
     if (ret == -FDT_ERR_NOSPACE) {
         printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image->of_dest, 512);
-        if (!ret)
+        if (!ret) {
             goto _add_dts_size;
-        else
-            goto _err_size;
+        } else {
+            printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+            goto _error;
+        }
     } else if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     /* Get the total size of DTB */
@@ -461,25 +515,18 @@ _add_dts_size:
 
     if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
+    err = 0;
+_error:
     sfree(data.os);
     sfree(data.kernel);
     sfree(data.initrd);
     sfree(data.fdt);
     sfree(data.append);
-    sfree(tmp_buf);
-    return 0;
-_err_size:
-    printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
-    sfree(data.os);
-    sfree(data.kernel);
-    sfree(data.initrd);
-    sfree(data.fdt);
-    sfree(data.append);
-    sfree(tmp_buf);
-    return -1;
+    sfree(bootargs_str);
+    return err;
 }
 
 msh_declare_command(boot);
@@ -490,14 +537,8 @@ int cmd_boot(int argc, const char **argv) {
     atf_head->dtb_base = (uint32_t) image.of_dest;
     atf_head->nos_base = (uint32_t) image.kernel_dest;
 
-    atf_head->platform[0] = 0x00;
-    atf_head->platform[1] = 0x52;
-    atf_head->platform[2] = 0x41;
-    atf_head->platform[3] = 0x57;
-    atf_head->platform[4] = 0xbe;
-    atf_head->platform[5] = 0xe9;
-    atf_head->platform[6] = 0x00;
-    atf_head->platform[7] = 0x00;
+    /* Fill platform magic */
+    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
     printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
@@ -528,7 +569,7 @@ static int abortboot_single_key(int bootdelay) {
     if (tstc()) {       /* we got a key press */
         uart_getchar(); /* consume input */
         printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
-        abort = 1; /* don't auto boot */
+        abort = 0; /* auto boot */
     }
 
     while ((bootdelay > 0) && (!abort)) {
