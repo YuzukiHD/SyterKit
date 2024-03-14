@@ -490,8 +490,6 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
         bootargs_str = (char *) smalloc(strlen(data.append) + 1);
         bootargs_str[0] = '\0';
     } else {
-        size_t str_len = strlen(bootargs_str);
-        bootargs_str = (char *) srealloc(bootargs_str, str_len + strlen(data.append) + 2);
         strcat(bootargs_str, " ");
     }
 
