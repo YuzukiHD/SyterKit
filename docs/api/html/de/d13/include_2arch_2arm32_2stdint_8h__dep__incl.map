@@ -1,7 +1,0 @@
-<map id="include/arch/arm32/stdint.h" name="include/arch/arm32/stdint.h">
-<area shape="rect" id="node1" title=" " alt="" coords="111,5,258,47"/>
-<area shape="rect" id="node2" href="$d8/df5/include_2arch_2arm32_2io_8h.html" title=" " alt="" coords="5,102,180,129"/>
-<area shape="rect" id="node5" href="$df/dbb/arm32_2stdbool_8h.html" title=" " alt="" coords="205,95,351,136"/>
-<area shape="rect" id="node3" href="$df/ddb/arm32_2timer_8h.html" title=" " alt="" coords="111,184,258,225"/>
-<area shape="rect" id="node4" href="$d1/dde/arm32_2mmu_8h.html" title=" " alt="" coords="111,273,258,315"/>
-</map>

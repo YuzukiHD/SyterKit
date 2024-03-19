@@ -1,8 +1,0 @@
-<map id="include/drivers/reg/reg&#45;ncat.h" name="include/drivers/reg/reg&#45;ncat.h">
-<area shape="rect" id="node1" title=" " alt="" coords="88,5,231,47"/>
-<area shape="rect" id="node2" href="$d4/df6/reg_2reg-dma_8h.html" title=" " alt="" coords="5,95,148,136"/>
-<area shape="rect" id="node3" href="$d4/d70/reg-gic_8h.html" title=" " alt="" coords="172,95,315,136"/>
-<area shape="rect" id="node4" href="$d8/dcb/sys-gic_8h.html" title=" " alt="" coords="171,184,315,225"/>
-<area shape="rect" id="node5" href="$d0/ddf/arm32_2exception_8c.html" title=" " alt="" coords="45,273,244,300"/>
-<area shape="rect" id="node6" href="$d4/d1a/sys-gic_8c.html" title=" " alt="" coords="268,273,419,300"/>
-</map>

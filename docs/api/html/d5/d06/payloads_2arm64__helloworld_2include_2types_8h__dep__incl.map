@@ -1,9 +1,0 @@
-<map id="payloads/arm64_helloworld/include/types.h" name="payloads/arm64_helloworld/include/types.h">
-<area shape="rect" id="node1" title=" " alt="" coords="459,5,661,47"/>
-<area shape="rect" id="node2" href="$d7/df0/payloads_2arm64__helloworld_2include_2byteorder_8h.html" title=" " alt="" coords="5,95,208,136"/>
-<area shape="rect" id="node3" href="$dd/d5f/payloads_2arm64__helloworld_2include_2io_8h.html" title=" " alt="" coords="232,95,435,136"/>
-<area shape="rect" id="node4" href="$d0/de9/payloads_2arm64__helloworld_2include_2stdint_8h.html" title=" " alt="" coords="459,95,661,136"/>
-<area shape="rect" id="node5" href="$d8/dac/payloads_2arm64__helloworld_2include_2stdlib_8h.html" title=" " alt="" coords="685,95,888,136"/>
-<area shape="rect" id="node6" href="$de/d7b/payloads_2arm64__helloworld_2include_2string_8h.html" title=" " alt="" coords="912,95,1115,136"/>
-<area shape="rect" id="node7" href="$de/df8/payloads_2arm64__helloworld_2include_2xformat_8h.html" title=" " alt="" coords="912,184,1115,225"/>
-</map>

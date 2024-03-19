@@ -1,7 +1,0 @@
-<map id="include/drivers/usb/usb_controller.h" name="include/drivers/usb/usb_controller.h">
-<area shape="rect" id="node1" title=" " alt="" coords="267,5,413,47"/>
-<area shape="rect" id="node2" href="$d9/db4/usb_8c.html" title=" " alt="" coords="5,102,160,129"/>
-<area shape="rect" id="node3" href="$d2/d22/usb__controller_8c.html" title=" " alt="" coords="184,95,328,136"/>
-<area shape="rect" id="node4" href="$d4/d42/usb__device_8c.html" title=" " alt="" coords="352,95,496,136"/>
-<area shape="rect" id="node5" href="$d2/dd8/usb__dma_8c.html" title=" " alt="" coords="520,95,664,136"/>
-</map>
