@@ -25,6 +25,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: Download doxygen docs
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+      - name: Build Docs
+        run: doxygen
+
       - name: 📂 Sync Files
         uses: SamKirkland/web-deploy@v1
         with:
