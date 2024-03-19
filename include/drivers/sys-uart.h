@@ -28,7 +28,6 @@ typedef enum {
     UART_BAUDRATE_MAX,
 } sunxi_serial_baudrate_t;
 
-
 /* UART Line Control Parameter */
 typedef enum {
     UART_PARITY_NO = 0,
@@ -50,31 +49,34 @@ typedef enum {
     UART_DLEN_8,
 } sunxi_serial_dlen_t;
 
+/* Define a structure sunxi_serial_reg_t for accessing serial registers */
 typedef struct {
-    volatile uint32_t rbr; /* 0 */
-    volatile uint32_t ier; /* 1 */
-    volatile uint32_t fcr; /* 2 */
-    volatile uint32_t lcr; /* 3 */
-    volatile uint32_t mcr; /* 4 */
-    volatile uint32_t lsr; /* 5 */
-    volatile uint32_t msr; /* 6 */
-    volatile uint32_t sch; /* 7 */
+    volatile uint32_t rbr; /* Receiver Buffer Register (offset 0) */
+    volatile uint32_t ier; /* Interrupt Enable Register (offset 1) */
+    volatile uint32_t fcr; /* FIFO Control Register (offset 2) */
+    volatile uint32_t lcr; /* Line Control Register (offset 3) */
+    volatile uint32_t mcr; /* Modem Control Register (offset 4) */
+    volatile uint32_t lsr; /* Line Status Register (offset 5) */
+    volatile uint32_t msr; /* Modem Status Register (offset 6) */
+    volatile uint32_t sch; /* Scratch Register (offset 7) */
 } sunxi_serial_reg_t;
 
+/* Define macros for register aliasing */
 #define thr rbr
 #define dll rbr
 #define dlh ier
 #define iir fcr
 
+/* Define a structure sunxi_serial_t for serial configuration */
 typedef struct {
-    uint32_t base;
-    uint8_t id;
-    sunxi_serial_baudrate_t baud_rate;
-    sunxi_serial_parity_t parity;
-    sunxi_serial_stop_bit_t stop;
-    sunxi_serial_dlen_t dlen;
-    gpio_mux_t gpio_tx;
-    gpio_mux_t gpio_rx;
+    uint32_t base;                     /* Base address of the serial device */
+    uint8_t id;                        /* ID of the serial device */
+    sunxi_serial_baudrate_t baud_rate; /* Baud rate configuration */
+    sunxi_serial_parity_t parity;      /* Parity configuration */
+    sunxi_serial_stop_bit_t stop;      /* Stop bit configuration */
+    sunxi_serial_dlen_t dlen;          /* Data length configuration */
+    gpio_mux_t gpio_tx;                /* GPIO pin for data transmission */
+    gpio_mux_t gpio_rx;                /* GPIO pin for data reception */
 } sunxi_serial_t;
 
 /**
