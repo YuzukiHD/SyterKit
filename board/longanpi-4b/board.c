@@ -27,6 +27,17 @@ sunxi_serial_t uart_dbg = {
         .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
 };
 
+sunxi_serial_t uart_dbg_15m = {
+        .base = SUNXI_UART0_BASE,
+        .id = 0,
+        .baud_rate = UART_BAUDRATE_1500000,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+};
+
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,
         .id = 0,
