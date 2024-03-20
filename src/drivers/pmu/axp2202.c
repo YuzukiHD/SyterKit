@@ -163,21 +163,7 @@ int pmu_axp2202_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 }
 
 void pmu_axp2202_dump(sunxi_i2c_t *i2c_dev) {
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 DCDC1 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "dcdc1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 DCDC2 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "dcdc2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 DCDC3 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "dcdc3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 DCDC4 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "dcdc4"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 ALDO1 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "aldo1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 ALDO2 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "aldo2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 ALDO3 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "aldo3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 ALDO4 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "aldo4"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 BLDO1 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "bldo1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 BLDO2 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "bldo2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 BLDO3 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "bldo3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 BLDO4 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "bldo4"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 CLDO1 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "cldo1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 CLDO2 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "cldo2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 CLDO3 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "cldo3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 CLDO4 = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "cldo4"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 CPUSLDO = %dmv\n", pmu_axp2202_get_vol(i2c_dev, "cpusldo"));
+    for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
+        printk(LOG_LEVEL_DEBUG, "PMU: AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
+    }
 }

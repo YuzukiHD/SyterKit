@@ -20,19 +20,19 @@ void printk(int level, const char *fmt, ...) {
 
     switch (level) {
         case LOG_LEVEL_TRACE:
-            uart_printf("[%5lu.%06lu][T] ", seconds, milliseconds);
+            uart_printf("[%5lu.%06lu][\033[30mT\033[37m] ", seconds, milliseconds);
             break;
         case LOG_LEVEL_DEBUG:
-            uart_printf("[%5lu.%06lu][D] ", seconds, milliseconds);
+            uart_printf("[%5lu.%06lu][\033[32mD\033[37m] ", seconds, milliseconds);
             break;
         case LOG_LEVEL_INFO:
-            uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
+            uart_printf("[%5lu.%06lu][\033[36mI\033[37m] ", seconds, milliseconds);
             break;
         case LOG_LEVEL_WARNING:
-            uart_printf("[%5lu.%06lu][W] ", seconds, milliseconds);
+            uart_printf("[%5lu.%06lu][\033[33mW\033[37m] ", seconds, milliseconds);
             break;
         case LOG_LEVEL_ERROR:
-            uart_printf("[%5lu.%06lu][E] ", seconds, milliseconds);
+            uart_printf("[%5lu.%06lu][\033[31mE\033[37m] ", seconds, milliseconds);
             break;
         case LOG_LEVEL_MUTE:
         default:
