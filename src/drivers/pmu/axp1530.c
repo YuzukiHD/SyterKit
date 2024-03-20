@@ -108,9 +108,7 @@ int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 }
 
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev) {
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC2 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc2"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DCDC3 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dcdc3"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 ALDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "aldo1"));
-    printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 DLDO1 = %dmv\n", pmu_axp1530_get_vol(i2c_dev, "dldo1"));
+    for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
+        printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
+    }
 }
