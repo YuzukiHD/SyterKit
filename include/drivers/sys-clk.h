@@ -13,19 +13,17 @@ extern "C" {
 #endif// __cplusplus
 
 #if defined(CONFIG_CHIP_SUN8IW21)
-    #include <sun8iw21/sys-clk.h>
+    #include <sun8iw21/reg/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN8IW20)
-    #include <sun8iw20/sys-clk.h>
+    #include <sun8iw20/reg/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN20IW1)
-    #include <sun20iw1/sys-clk.h>
+    #include <sun20iw1/reg/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN50IW9)
-    #include <sun50iw9/sys-clk.h>
+    #include <sun50iw9/reg/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN55IW3)
-    #include <sun55iw3/sys-clk.h>
-#elif defined(CONFIG_CHIP_SUN8IW8)
-    #include <sun8iw8/sys-clk.h>
+    #include <sun55iw3/reg/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN50IW10)
-    #include <sun50iw10/sys-clk.h>
+    #include <sun50iw10/reg/reg-ccu.h>
 #else
     #error "Unsupported chip"
 #endif
