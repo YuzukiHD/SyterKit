@@ -41,6 +41,33 @@ typedef struct _axp_contrl_info {
     axp_step_info_t axp_step_tbl[4];// Voltage step table for the domain.
 } axp_contrl_info;
 
+/* Common function */
+
+/**
+ * @brief Set the voltage for a specific power domain controlled by AXP.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @param name Name of the power domain.
+ * @param set_vol Voltage value to set.
+ * @param onoff Whether to turn on or off the power domain (1 for on, 0 for off).
+ * @param axp_ctrl_tbl Pointer to the AXP control information table.
+ * @param axp_ctrl_tbl_size Size of the AXP control information table.
+ * @param axp_addr AXP device address.
+ * @return Integer indicating the success status of the operation.
+ */
+int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr);
+
+/**
+ * @brief Get the voltage value for a specific power domain controlled by AXP.
+ *
+ * @param i2c_dev Pointer to the I2C device structure.
+ * @param name Name of the power domain.
+ * @param axp_ctrl_tbl Pointer to the AXP control information table.
+ * @param axp_ctrl_tbl_size Size of the AXP control information table.
+ * @param axp_addr AXP device address.
+ * @return The voltage value of the specified power domain.
+ */
+int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr);
 
 /* AXP1530 */
 
