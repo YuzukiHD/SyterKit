@@ -42,6 +42,7 @@ endif()
 
 if (CONFIG_CHIP_WITHPMU)
     set(DRIVER_PMU 
+        pmu/axp.c
         pmu/axp1530.c
         pmu/axp2202.c
     )
@@ -51,6 +52,7 @@ if (NOT CONFIG_CHIP_CLK_V1)
     set(COMMON_DRIVER
         ${COMMON_DRIVER}
         sys-clk.c
+        sys-dram.c
         sys-rtc.c
         sys-spi-nand.c
         sys-spi.c
