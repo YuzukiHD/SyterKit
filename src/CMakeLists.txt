@@ -42,7 +42,12 @@ add_library(SyterKit STATIC
     # ctype
     ctype.c
 
-    $<TARGET_OBJECTS:arch-obj>
-    $<TARGET_OBJECTS:drivers-obj>
+    # chip driver
     $<TARGET_OBJECTS:chip_drivers-obj>
+
+    # arch driver
+    $<TARGET_OBJECTS:arch-obj>
+
+    # common driver
+    $<TARGET_OBJECTS:drivers-obj>
 )
