@@ -51,6 +51,7 @@ if (NOT CONFIG_CHIP_CLK_V1)
     set(COMMON_DRIVER
         ${COMMON_DRIVER}
         sys-clk.c
+        sys-dram.c
         sys-rtc.c
         sys-spi-nand.c
         sys-spi.c
