@@ -17,8 +17,7 @@ extern "C" {
     #include <sun50iw9/sys-sid.h>
 #elif defined(CONFIG_CHIP_SUN55IW3)
     #include <sun55iw3/sys-sid.h>
-#elif defined(CONFIG_CHIP_SUN8IW8)
-    #include <sun8iw8/sys-sid.h>
+
 #elif defined(CONFIG_CHIP_SUN50IW10)
     #include <sun50iw10/sys-sid.h>
 #else
