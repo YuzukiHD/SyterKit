@@ -17,8 +17,10 @@ static void sram_remap_set(int value) {
     uint32_t val = 0;
 
     val = readl(SUNXI_SYSCRL_BASE + SRAMC_SRAM_REMAP_REG);
-    val &= ~(1 << BIT_SRAM_REMAP_ENABLE);
-    val |= (value << BIT_SRAM_REMAP_ENABLE);
+    if (value)
+        val &= ~(1 << BIT_SRAM_REMAP_ENABLE);
+    else
+        val |= (1 << BIT_SRAM_REMAP_ENABLE);
     writel(val, SUNXI_SYSCRL_BASE + SRAMC_SRAM_REMAP_REG);
 }
 
@@ -34,7 +36,7 @@ static void sunxi_hifi4_set_run_stall(uint32_t value) {
 void sunxi_hifi4_clock_init(uint32_t addr) {
     uint32_t reg_val = 0;
 
-    sram_remap_set(1);
+    sram_remap_set(0);
 
     reg_val |= CCU_DSP_CLK_SRC_PERI2X;
     reg_val |= CCU_DSP_CLK_FACTOR_M(2);
@@ -74,7 +76,7 @@ void sunxi_hifi4_clock_init(uint32_t addr) {
     reg_val |= (1 << CCU_BIT_DSP0_RST);
     writel(reg_val, CCU_BASE + CCU_DSP_BGR_REG);
 
-/*
+    /*
     reg_val = readl(CCU_BASE + CCU_DSP_CLK_REG);
     printk(LOG_LEVEL_INFO, "CCU_DSP_CLK_REG = %x\n", reg_val);
     reg_val = readl(CCU_BASE + CCU_DSP_BGR_REG);
@@ -86,7 +88,7 @@ void sunxi_hifi4_clock_init(uint32_t addr) {
 
 void sunxi_hifi4_start(void) {
     /* set dsp use local ram */
-    sram_remap_set(0);
+    sram_remap_set(1);
 
     /* clear runstall */
     sunxi_hifi4_set_run_stall(0);
