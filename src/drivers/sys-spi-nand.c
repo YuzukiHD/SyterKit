@@ -98,6 +98,7 @@ static const spi_nand_info_t spi_nand_infos[] = {
         {"MT29F4G01ADAGD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x36, 1}, 2048, 128, 64, 2048, 2, 2, SPI_IO_DUAL_RX},
         {"MT29F8G01ADAFD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x46, 1}, 4096, 256, 64, 2048, 1, 2, SPI_IO_DUAL_RX},
 
+        /* FORESEE */
         {"FS35SQA001G", {.mfr = SPI_NAND_MFR_FORESEE, .dev = 0x7171, 2}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
 };
 
