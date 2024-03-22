@@ -27,7 +27,7 @@ sunxi_serial_t uart_dbg = {
         .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
 };
 
-sunxi_serial_t uart_dbg_15m = {
+sunxi_serial_t uart_dbg_1m5 = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
         .baud_rate = UART_BAUDRATE_1500000,
@@ -57,6 +57,7 @@ sdhci_t sdhci0 = {
         .voltage = MMC_VDD_27_36,
         .width = MMC_BUS_WIDTH_4,
         .clock = MMC_CLK_100M,
+        .sdio_type = SDHCI_TYPE_SD,
         .removable = 0,
         .isspi = FALSE,
         .skew_auto_mode = TRUE,
@@ -76,6 +77,7 @@ sdhci_t sdhci2 = {
         .voltage = MMC_VDD_27_36,
         .width = MMC_BUS_WIDTH_4,
         .clock = MMC_CLK_50M,
+        .sdio_type = SDHCI_TYPE_MMC,
         .removable = 0,
         .isspi = FALSE,
         .skew_auto_mode = TRUE,

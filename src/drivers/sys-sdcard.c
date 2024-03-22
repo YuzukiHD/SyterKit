@@ -471,23 +471,37 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     }
     udelay(2000);// 1ms + 74 clocks @ 400KHz (185us)
 
-    // Both SD & MMC: try SD first
-    // Otherwise there's only one media type if enabled
-    if (!sd_send_op_cond(hci, card)) {
-        printk(LOG_LEVEL_INFO, "SMHC: SD detect failed, trying MMC\n");
-        sdhci_reset(hci);
-        sdhci_set_clock(hci, MMC_CLK_400K);
-        sdhci_set_width(hci, MMC_BUS_WIDTH_1);
-
-        if (!go_idle_state(hci)) {
-            printk(LOG_LEVEL_ERROR, "SMHC: set idle state failed\n");
+    // if set the sdio type, use it
+    if (hci->sdio_type == SDHCI_TYPE_SD) {
+        if (!sd_send_op_cond(hci, card)) {
+            printk(LOG_LEVEL_INFO, "SMHC: SD detect failed\n");
             return FALSE;
         }
-        udelay(2000);// 1ms + 74 clocks @ 400KHz (185us)
 
+    } else if (hci->sdio_type == SDHCI_TYPE_MMC) {
         if (!mmc_send_op_cond(hci, card)) {
-            printk(LOG_LEVEL_INFO, "SMHC: SD/MMC detect failed\n");
+            printk(LOG_LEVEL_INFO, "SMHC: MMC detect failed\n");
             return FALSE;
+        }
+    } else {
+        // Not set sdio_type, SD & MMC: try SD first
+        // Otherwise there's only one media type if enabled
+        if (!sd_send_op_cond(hci, card)) {
+            printk(LOG_LEVEL_INFO, "SMHC: SD detect failed, retrying MMC\n");
+            sdhci_reset(hci);
+            sdhci_set_clock(hci, MMC_CLK_400K);
+            sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+
+            if (!go_idle_state(hci)) {
+                printk(LOG_LEVEL_ERROR, "SMHC: set idle state failed\n");
+                return FALSE;
+            }
+            udelay(2000);// 1ms + 74 clocks @ 400KHz (185us)
+
+            if (!mmc_send_op_cond(hci, card)) {
+                printk(LOG_LEVEL_INFO, "SMHC: SD/MMC detect failed\n");
+                return FALSE;
+            }
         }
     }
 
