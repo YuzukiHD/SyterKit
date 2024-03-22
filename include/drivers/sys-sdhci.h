@@ -59,6 +59,11 @@ typedef struct {
 
 } sdhci_idma_desc_t __attribute__((aligned(8)));
 
+typedef enum {
+    SDHCI_TYPE_SD = 1,
+    SDHCI_TYPE_MMC,
+} sdhci_type_t;
+
 typedef struct {
     char *name;
     uint32_t id;
@@ -77,8 +82,9 @@ typedef struct {
 
     bool removable;
     bool isspi;
+    sdhci_type_t sdio_type;
     bool skew_auto_mode;
-    
+
     gpio_mux_t gpio_d0;
     gpio_mux_t gpio_d1;
     gpio_mux_t gpio_d2;

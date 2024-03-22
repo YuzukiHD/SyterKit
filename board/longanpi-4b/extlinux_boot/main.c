@@ -304,7 +304,7 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
     return p - (char *) buf;
 }
 
-int update_pmu_ext_info_dtb(image_info_t *image) {
+static int update_pmu_ext_info_dtb(image_info_t *image) {
     int nodeoffset, pmu_ext_type, err, i;
     uint32_t phandle = 0;
 
