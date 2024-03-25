@@ -17,7 +17,6 @@ extern "C" {
     #include <sun50iw9/reg/reg-ncat.h>
 #elif defined(CONFIG_CHIP_SUN55IW3)
     #include <sun55iw3/reg/reg-ncat.h>
-
 #elif defined(CONFIG_CHIP_SUN50IW10)
     #include <sun50iw10/reg/reg-ncat.h>
 #else
