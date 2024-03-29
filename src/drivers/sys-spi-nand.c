@@ -65,6 +65,7 @@ static const spi_nand_info_t spi_nand_infos[] = {
         {"GD5F1GQ4UAWxx", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x10, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
         {"GD5F1GQ5UExxG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x51, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
         {"GD5F1GQ4UExIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd1, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"GD5F2GQ4xFxxG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1}, 2048, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
         {"GD5F1GQ4UExxH", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd9, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
         {"GD5F1GQ4xAYIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf1, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
         {"GD5F2GQ4UExIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
@@ -97,6 +98,7 @@ static const spi_nand_info_t spi_nand_infos[] = {
         {"MT29F4G01ADAGD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x36, 1}, 2048, 128, 64, 2048, 2, 2, SPI_IO_DUAL_RX},
         {"MT29F8G01ADAFD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x46, 1}, 4096, 256, 64, 2048, 1, 2, SPI_IO_DUAL_RX},
 
+        /* FORESEE */
         {"FS35SQA001G", {.mfr = SPI_NAND_MFR_FORESEE, .dev = 0x7171, 2}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
 };
 

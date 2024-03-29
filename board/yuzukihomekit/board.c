@@ -7,16 +7,18 @@
 
 #include <common.h>
 
-#include <sys-clk.h>
 #include <reg-ncat.h>
+#include <sys-clk.h>
 
 #include <mmu.h>
 
+#include <sys-dram.h>
 #include <sys-gpio.h>
+#include <sys-i2c.h>
+#include <sys-sdcard.h>
+#include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
-#include <sys-dram.h>
-#include <sys-sdcard.h>
 
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART3_BASE,
@@ -54,6 +56,14 @@ sdhci_t sdhci0 = {
         .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
         .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
         .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+};
+
+sunxi_i2c_t i2c_pmu = {
+        .base = SUNXI_TWI0_BASE,
+        .id = SUNXI_I2C0,
+        .speed = 4000000,
+        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX3},
+        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX3},
 };
 
 dram_para_t dram_para = {
