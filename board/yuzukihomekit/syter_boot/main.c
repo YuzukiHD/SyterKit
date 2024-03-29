@@ -253,7 +253,7 @@ static int abortboot_single_key(int bootdelay) {
     if (tstc()) {       /* we got a key press */
         uart_getchar(); /* consume input */
         printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
-        abort = 1; /* don't auto boot */
+        abort = 0; /* auto boot */
     }
 
     while ((bootdelay > 0) && (!abort)) {
