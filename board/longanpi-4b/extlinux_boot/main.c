@@ -444,8 +444,8 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     /* Get the offset of "/chosen" node */
     int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
 
-    uint64_t ramdisk_start = (uint64_t) (uintptr_t) image->ramdisk_dest;
-    uint64_t ramdisk_end = ramdisk_start + ramdisk_size;
+    uint32_t ramdisk_start = (uint32_t) (uintptr_t) image->ramdisk_dest;
+    uint32_t ramdisk_end = (uint32_t) ramdisk_start + (uint32_t) ramdisk_size;
     if (ramdisk_size > 0) {
         uint64_t addr, size;
 
