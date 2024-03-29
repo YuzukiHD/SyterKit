@@ -444,43 +444,43 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     /* Get the offset of "/chosen" node */
     int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
 
-    uint64_t ramdisk_start = (uint64_t) (uintptr_t) image->ramdisk_dest;
-    uint64_t ramdisk_end = ramdisk_start + ramdisk_size;
-    // if (ramdisk_size > 0) {
-    //     uint64_t addr, size;
+    uint32_t ramdisk_start = (uint32_t) (uintptr_t) image->ramdisk_dest;
+    uint32_t ramdisk_end = (uint32_t) ramdisk_start + (uint32_t) ramdisk_size;
+    if (ramdisk_size > 0) {
+        uint64_t addr, size;
 
-    //     printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
-    //     int total = fdt_num_mem_rsv(image->of_dest);
+        printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+        int total = fdt_num_mem_rsv(image->of_dest);
 
-    //     printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
+        printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
 
-    //     /* Look for an existing entry and update it.  If we don't find the entry, we will add a available slot. */
-    //     for (int j = 0; j < total; j++) {
-    //         ret = fdt_get_mem_rsv(image->of_dest, j, &addr, &size);
-    //         if (addr == ramdisk_start) {
-    //             fdt_del_mem_rsv(image->of_dest, j);
-    //             break;
-    //         }
-    //     }
+        /* Look for an existing entry and update it.  If we don't find the entry, we will add a available slot. */
+        for (int j = 0; j < total; j++) {
+            ret = fdt_get_mem_rsv(image->of_dest, j, &addr, &size);
+            if (addr == ramdisk_start) {
+                fdt_del_mem_rsv(image->of_dest, j);
+                break;
+            }
+        }
 
-    //     ret = fdt_add_mem_rsv(image->of_dest, ramdisk_start, ramdisk_end - ramdisk_start);
-    //     if (ret < 0) {
-    //         printk(LOG_LEVEL_DEBUG, "fdt_initrd: %s\n", fdt_strerror(ret));
-    //         goto _error;
-    //     }
+        ret = fdt_add_mem_rsv(image->of_dest, ramdisk_start, ramdisk_end - ramdisk_start);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "fdt_initrd: %s\n", fdt_strerror(ret));
+            goto _error;
+        }
 
-    //     ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t) ramdisk_start);
-    //     if (ret < 0) {
-    //         printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
-    //         goto _error;
-    //     }
+        ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t) ramdisk_start);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
+            goto _error;
+        }
 
-    //     ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t) ramdisk_end);
-    //     if (ret < 0) {
-    //         printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
-    //         goto _error;
-    //     }
-    // }
+        ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t) ramdisk_end);
+        if (ret < 0) {
+            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
+            goto _error;
+        }
+    }
 
     len = 0;
     /* Get bootargs string */
@@ -496,11 +496,6 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     }
 
     strcat(bootargs_str, data.append);
-
-    /* initrd small fix */
-    if (ramdisk_size > 0) {
-        strcat(bootargs_str, " initrd=0x43000000,8M");
-    }
 
     printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
 
