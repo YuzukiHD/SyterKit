@@ -7,8 +7,6 @@ on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
     branches: [ "main" ]
-    paths:
-      - 'docs/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,6 +22,12 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+
+      - name: Download doxygen docs
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+      - name: Build Docs
+        run: doxygen
 
       - name: 📂 Sync Files
         uses: SamKirkland/web-deploy@v1
