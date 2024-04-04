@@ -45,3 +45,7 @@ endif()
 if(CONFIG_BOARD_YUZUKIHOMEKIT)
     add_subdirectory(yuzukihomekit)
 endif()
+
+if(CONFIG_BOARD_AVAOTA-A1)
+    add_subdirectory(avaota-a1)
+endif()
