@@ -689,7 +689,7 @@ int main(void) {
     printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
-    LCD_ShowString(0, 0, "SyterKit Now Booting", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 0, "SyterKit Now Booting Linux", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 12, "Kernel addr: 0x40800000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 24, "DTB addr: 0x40400000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 
