@@ -16,10 +16,6 @@
 #include <sstdlib.h>
 #include <string.h>
 
-#include <cli.h>
-#include <cli_shell.h>
-#include <cli_termesc.h>
-
 #include <sys-clk.h>
 #include <sys-dram.h>
 #include <sys-i2c.h>
@@ -35,6 +31,11 @@
 #include <libfdt.h>
 #include <sys-sdhci.h>
 #include <uart.h>
+
+#include "spi_lcd.c"
+
+#define CONFIG_SPLASH_LOAD_ADDR (0x40080000)
+#define CONFIG_SPLASH_FILENAME "splash.bin"
 
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
@@ -52,8 +53,6 @@
 #define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
-
-#define CONFIG_DEFAULT_BOOTDELAY 3
 
 #define CONFIG_HEAP_BASE (0x50800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -98,6 +97,9 @@ typedef struct {
 
     uint8_t *scp_dest;
     char scp_filename[FILENAME_MAX_LEN];
+
+    uint8_t *splash_dest;
+    char splash_filename[FILENAME_MAX_LEN];
 
     uint8_t *kernel_dest;
     uint8_t *ramdisk_dest;
@@ -198,6 +200,11 @@ static int load_sdcard(image_info_t *image) {
     ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
     if (ret)
         return ret;
+
+    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
+    ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
+    if (ret)
+        printk(LOG_LEVEL_INFO, "FATFS: Splash load fail, Leave Black Screen.\n");
 
     /* umount fs */
     fret = f_mount(0, "", 0);
@@ -536,36 +543,6 @@ _error:
     return err;
 }
 
-msh_declare_command(boot);
-msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
-    atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
-
-    atf_head->dtb_base = (uint32_t) image.of_dest;
-    atf_head->nos_base = (uint32_t) image.kernel_dest;
-
-    /* Fill platform magic */
-    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
-
-    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
-    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
-
-    clean_syterkit_data();
-
-    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
-
-    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
-
-    // if kernel boot not success, jump to fel.
-    jmp_to_fel();
-    return 0;
-}
-
-const msh_command_entry commands[] = {
-        msh_define_command(boot),
-        msh_command_end,
-};
-
 static int abortboot_single_key(int bootdelay) {
     int abort = 0;
     unsigned long ts;
@@ -640,6 +617,8 @@ int main(void) {
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
+    LCD_Init();
+
     sunxi_nsi_init();
 
     /* Clear the image_info_t struct. */
@@ -651,15 +630,18 @@ int main(void) {
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.ramdisk_dest = (uint8_t *) CONFIG_INITRD_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+    image.splash_dest = (uint8_t *) CONFIG_SPLASH_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.scp_filename, CONFIG_SCP_FILENAME);
     strcpy(image.extlinux_filename, CONFIG_EXTLINUX_FILENAME);
+    strcpy(image.splash_filename, CONFIG_SPLASH_FILENAME);
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
-        goto _shell;
+        LCD_ShowString(0, 80, "SMHC: controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        goto _fail;
     } else {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
     }
@@ -670,34 +652,61 @@ int main(void) {
         mdelay(30);
         if (sdmmc_init(&card0, &sdhci0) != 0) {
             printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-            goto _shell;
+            LCD_ShowString(0, 80, "SMHC: init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+            goto _fail;
         }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
-        goto _shell;
+        LCD_ShowString(0, 80, "SMHC: loading failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        goto _fail;
     }
+
+    LCD_Show_Splash(image.splash_dest);
+
+    LCD_Open_BLK();
 
     if (load_extlinux(&image, dram_size) != 0) {
         printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
-        goto _shell;
+        LCD_ShowString(0, 80, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        goto _fail;
     }
 
     printk(LOG_LEVEL_INFO, "EXTLINUX: load extlinux done, now booting...\n");
 
-    int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
+    atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
-    /* Showing boot delays */
-    if (abortboot_single_key(bootdelay)) {
-        goto _shell;
-    }
+    atf_head->dtb_base = (uint32_t) image.of_dest;
+    atf_head->nos_base = (uint32_t) image.kernel_dest;
 
-    cmd_boot(0, NULL);
+    /* Fill platform magic */
+    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
-_shell:
-    syterkit_shell_attach(commands);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+
+    LCD_ShowString(0, 0, "SyterKit Now Booting", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 12, "Kernel addr: 0x40800000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 24, "DTB addr: 0x40400000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+
+    clean_syterkit_data();
+
+    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+
+    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
+
+    // if kernel boot not success, jump to fel.
+    jmp_to_fel();
+
+_fail:
+    LCD_ShowString(0, 0, "SyterKit Boot Failed", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 12, "Please Connect UART for Debug info", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 24, "Error Info:", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
+    LCD_Open_BLK();
+
+    abort();
 
     return 0;
 }

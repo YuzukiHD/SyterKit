@@ -227,4 +227,8 @@
 #define VCCIO_DET_BYPASS_EN		(1 << 0)
 #define VDD_OFF_GATING_CTRL_REG		0x1f4
 
+/* R SPI */
+#define SUNXI_S_SPI_CLK_REG 0x0150
+#define SUNXI_S_SPI_BGR_REG 0x015C
+
 #endif// __SUN55IW3_REG_NCAT_H__
