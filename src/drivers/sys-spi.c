@@ -150,7 +150,7 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
     return freq;
 }
 
-static int spi_clk_init(uint32_t mod_clk) {
+static int spi_clk_init(sunxi_spi_t *spi, uint32_t mod_clk) {
     uint32_t rval;
 
     /* we use PERIPH_200M clock source */
@@ -164,7 +164,11 @@ static int spi_clk_init(uint32_t mod_clk) {
     }
     printk(LOG_LEVEL_TRACE, "SPI: parent_clk=%dMHz\n", SPI_MOD_CLK);
 
-    write32(CCU_BASE + CCU_SPI0_CLK_REG, rval);
+    if (spi->clk_reg.ccu_base != 0) {
+        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_clk_reg_offest, rval);
+    } else {
+        write32(CCU_BASE + CCU_SPI0_CLK_REG, rval);
+    }
 
     return 0;
 }
@@ -250,22 +254,40 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
     sunxi_gpio_set_pull(spi->gpio_wp.pin, GPIO_PULL_UP);
     sunxi_gpio_set_pull(spi->gpio_hold.pin, GPIO_PULL_UP);
 
-    /* Deassert spi0 reset */
-    val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val |= (1 << 16);
-    write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+    /* check if defined clk regs */
+    if (spi->clk_reg.ccu_base != 0) {
+        /* Deassert spi reset */
+        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
+        val |= (1 << (16 + spi->id));
+        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
 
-    /* Open the spi0 gate */
-    val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val |= (1 << 31);
-    write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+        /* Open the spi gate */
+        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
+        val |= (1 << 31);
+        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
 
-    /* Open the spi0 bus gate */
-    val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val |= (1 << 0);
-    write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+        /* Open the spi bus gate */
+        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
+        val |= (1 << spi->id);
+        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
+    } else {
+        /* Deassert spi reset */
+        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
+        val |= (1 << (16 + spi->id));
+        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
 
-    spi_clk_init(SPI_MOD_CLK);
+        /* Open the spi gate */
+        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
+        val |= (1 << 31);
+        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+
+        /* Open the spi bus gate */
+        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
+        val |= (1 << spi->id);
+        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+    }
+
+    spi_clk_init(spi, SPI_MOD_CLK);
 
     freq = spi_set_clk(spi, spi->clk_rate, SPI_MOD_CLK, 1);
 
@@ -303,12 +325,12 @@ void sunxi_spi_disable(sunxi_spi_t *spi) {
 
     /* close the spi0 bus gate */
     val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val &= ~((1 << 0) | (1 << 31));
+    val &= ~((1 << spi->id) | (1 << 31));
     write32(CCU_BASE + CCU_SPI_BGR_REG, val);
 
     /* Assert spi0 reset */
     val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val &= ~(1 << 16);
+    val &= ~(1 << (16 + spi->id));
     write32(CCU_BASE + CCU_SPI_BGR_REG, val);
 }
 
