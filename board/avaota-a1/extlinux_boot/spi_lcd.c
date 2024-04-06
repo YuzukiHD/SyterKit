@@ -36,18 +36,7 @@
 #include <sys-sdhci.h>
 #include <uart.h>
 
-#define CONFIG_HEAP_BASE (0x40800000)
-#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
-
-extern sunxi_serial_t uart_dbg;
-
-extern sunxi_i2c_t i2c_pmu;
-
-extern void set_rpio_power_mode(void);
-
-extern void rtc_set_vccio_det_spare(void);
-
-sunxi_spi_t sunxi_spi0_lcd = {
+static sunxi_spi_t sunxi_spi0_lcd = {
         .base = SUNXI_R_SPI_BASE,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
@@ -85,45 +74,74 @@ static void LCD_Set_RES(uint8_t val) {
 
 static void LCD_Write_Bus(uint8_t dat) {
     uint8_t tx[1]; /* Transmit buffer */
-    
     tx[0] = dat;
-    int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
-    if (r < 0)
+    /* Perform SPI transfer */
+    if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0) < 0)
         printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
 }
 
-void LCD_Write_Data_Bus(void *dat, uint32_t len) {
-    int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
-    if (r < 0)
+static void LCD_Write_Data_Bus(void *dat, uint32_t len) {
+    if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0) < 0)
         printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
 }
 
-void LCD_WR_DATA(uint16_t dat) {
+static void LCD_WR_DATA(uint16_t dat) {
     LCD_Write_Bus(dat >> 8);
     LCD_Write_Bus(dat);
 }
 
-void LCD_WR_DATA8(uint8_t dat) {
+static void LCD_WR_DATA8(uint8_t dat) {
     LCD_Write_Bus(dat);
 }
 
-void LCD_WR_REG(uint8_t dat) {
+static void LCD_WR_REG(uint8_t dat) {
     LCD_Set_DC(0);
     LCD_Write_Bus(dat);
     LCD_Set_DC(1);
 }
 
-void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+static void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
     LCD_WR_REG(0x2a);
-    LCD_WR_DATA(x1 + 52);
-    LCD_WR_DATA(x2 + 52);
+    LCD_WR_DATA(x1 + 40);
+    LCD_WR_DATA(x2 + 40);
     LCD_WR_REG(0x2b);
-    LCD_WR_DATA(y1 + 40);
-    LCD_WR_DATA(y2 + 40);
+    LCD_WR_DATA(y1 + 52);
+    LCD_WR_DATA(y2 + 52);
     LCD_WR_REG(0x2c);
 }
 
+static void LCD_Open_BLK() {
+    sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
+}
+
+#define LCD_W 240
+#define LCD_H 135
+
+static void LCD_Fill_All(uint16_t color) {
+    uint16_t i, j;
+    LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1);// 设置显示范围
+    uint16_t *video_mem = smalloc(LCD_W * LCD_H);
+
+    for (uint32_t i = 0; i < LCD_W * LCD_H; i++) {
+        video_mem[i] = color;
+    }
+
+    LCD_Write_Data_Bus(video_mem, LCD_W * LCD_H * (sizeof(uint16_t) / sizeof(uint8_t)));
+
+    sfree(video_mem);
+}
+
 static void LCD_Init(void) {
+    sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
+    sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
+    sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
+
+    dma_init();
+
+    if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
+        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+    }
+
     LCD_Set_RES(0);//复位
     mdelay(100);
     LCD_Set_RES(1);
@@ -132,7 +150,7 @@ static void LCD_Init(void) {
     LCD_WR_REG(0x11);
     mdelay(120);
     LCD_WR_REG(0x36);
-    LCD_WR_DATA8(0x00);
+    LCD_WR_DATA8(0xA0);
 
     LCD_WR_REG(0x3A);
     LCD_WR_DATA8(0x05);
@@ -204,97 +222,29 @@ static void LCD_Init(void) {
     LCD_WR_REG(0x21);
 
     LCD_WR_REG(0x29);
+
+    LCD_Fill_All(0x0000);
 }
 
-#define LCD_W 135
-#define LCD_H 240
+#define SPLASH_START_X 52
+#define SPLASH_START_Y 43
+#define SPLASH_W 135
+#define SPLASH_H 48
 
-void LCD_Fill_All(uint16_t color) {
-    uint16_t i, j;
-    LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1);// 设置显示范围
-    uint16_t *video_mem = smalloc(LCD_W * LCD_H);
+static void LCD_Show_Splash(uint8_t *splash_dest) {
+    uint16_t i, j, k = 0;
+    LCD_Address_Set(SPLASH_START_X, SPLASH_START_Y, SPLASH_START_X + SPLASH_W - 1, SPLASH_START_Y + SPLASH_H - 1);// 设置显示范围
 
-    for (uint32_t i = 0; i < LCD_W * LCD_H; i++) {
-        video_mem[i] = color;
+    uint16_t *video_mem = smalloc(SPLASH_W * SPLASH_H);
+
+    for (i = 0; i < SPLASH_W; i++) {
+        for (j = 0; j < SPLASH_H; j++) {
+            video_mem[k] = (splash_dest[k * 2] << 8) | splash_dest[k * 2 + 1];
+            k++;
+        }
     }
 
-    LCD_Write_Data_Bus(video_mem, LCD_W * LCD_H * (sizeof(uint16_t) / sizeof(uint8_t)));
+    LCD_Write_Data_Bus(video_mem, SPLASH_W * SPLASH_H * (sizeof(uint16_t) / sizeof(uint8_t)));
 
     sfree(video_mem);
-}
-
-int main(void) {
-    sunxi_serial_init(&uart_dbg);
-
-    show_banner();
-
-    sunxi_clk_init();
-
-    sunxi_clk_dump();
-
-    rtc_set_vccio_det_spare();
-
-    set_rpio_power_mode();
-
-    sunxi_i2c_init(&i2c_pmu);
-
-    pmu_axp2202_init(&i2c_pmu);
-
-    pmu_axp1530_init(&i2c_pmu);
-
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-
-    pmu_axp1530_set_dual_phase(&i2c_pmu);
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1100, 1);
-
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", 920, 1);
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1160, 1);
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
-
-    pmu_axp2202_dump(&i2c_pmu);
-    pmu_axp1530_dump(&i2c_pmu);
-
-    enable_sram_a3();
-
-    /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
-
-    sunxi_clk_dump();
-
-    arm32_mmu_enable(SDRAM_BASE, dram_size);
-
-    /* Initialize the small memory allocator. */
-    smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
-
-    sunxi_nsi_init();
-
-    sunxi_clk_dump();
-
-    sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
-    sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
-    sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
-
-    dma_init();
-
-    if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
-    }
-
-    LCD_Init();
-
-    printk(LOG_LEVEL_ERROR, "SPI LCD done\n");
-
-    LCD_Fill_All(0xFFFF);
-
-    sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
-
-    mdelay(100);
-
-    while (1) {
-        printk(LOG_LEVEL_ERROR, "SPI LCD done\n");
-        mdelay(10000);
-    }
-
-    return 0;
 }
