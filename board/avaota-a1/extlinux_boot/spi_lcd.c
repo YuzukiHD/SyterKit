@@ -50,16 +50,17 @@
 
 static sunxi_spi_t sunxi_spi0_lcd = {
         .base = SUNXI_R_SPI_BASE,
+        .clk_reg = {
+                .ccu_base = SUNXI_R_PRCM_BASE,
+                .spi_clk_reg_offest = SUNXI_S_SPI_CLK_REG,
+                .spi_bgr_reg_offset = SUNXI_S_SPI_BGR_REG,
+        },
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
         .gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
         .gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
         .gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
-        .clk_reg = {
-                .ccu_base = SUNXI_R_PRCM_BASE,
-                .spi_clk_reg_offest = SUNXI_S_SPI_CLK_REG,
-                .spi_bgr_reg_offset = SUNXI_S_SPI_BGR_REG,
-        }};
+};
 
 static gpio_mux_t lcd_dc_pins = {
         .pin = GPIO_PIN(GPIO_PORTL, 13),
@@ -131,7 +132,7 @@ static void LCD_Open_BLK() {
 
 static void LCD_Fill_All(uint16_t color) {
     uint16_t i, j;
-    LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1);// 设置显示范围
+    LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1);
     uint16_t *video_mem = smalloc(LCD_W * LCD_H);
 
     for (uint32_t i = 0; i < LCD_W * LCD_H; i++) {
@@ -154,7 +155,7 @@ static void LCD_Init(void) {
         printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
     }
 
-    LCD_Set_RES(0);//复位
+    LCD_Set_RES(0);
     mdelay(100);
     LCD_Set_RES(1);
     mdelay(100);
@@ -245,7 +246,7 @@ static void LCD_Init(void) {
 
 static void LCD_Show_Splash(uint8_t *splash_dest) {
     uint16_t i, j, k = 0;
-    LCD_Address_Set(SPLASH_START_X, SPLASH_START_Y, SPLASH_START_X + SPLASH_W - 1, SPLASH_START_Y + SPLASH_H - 1);// 设置显示范围
+    LCD_Address_Set(SPLASH_START_X, SPLASH_START_Y, SPLASH_START_X + SPLASH_W - 1, SPLASH_START_Y + SPLASH_H - 1);
 
     uint16_t *video_mem = smalloc(SPLASH_W * SPLASH_H);
 
