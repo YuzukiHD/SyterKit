@@ -26,9 +26,16 @@ typedef enum {
     SPI_IO_QUAD_IO,
 } spi_io_mode_t;
 
+typedef struct spi_clk_reg {
+    uint32_t ccu_base;
+    uint32_t spi_clk_reg_offest;
+    uint32_t spi_bgr_reg_offset;
+} spi_clk_reg_t;
+
 typedef struct {
     uint32_t base;
     uint8_t id;
+    spi_clk_reg_t clk_reg;
     uint32_t clk_rate;
     gpio_mux_t gpio_cs;
     gpio_mux_t gpio_sck;
@@ -68,6 +75,6 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif

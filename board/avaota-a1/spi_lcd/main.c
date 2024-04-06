@@ -20,6 +20,7 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
+#include <reg-ncat.h>
 #include <sys-clk.h>
 #include <sys-dram.h>
 #include <sys-i2c.h>
@@ -47,12 +48,17 @@ extern void set_rpio_power_mode(void);
 extern void rtc_set_vccio_det_spare(void);
 
 sunxi_spi_t sunxi_spi0_lcd = {
-        .base = 0x07092000,
-        .id = 3,
-        .clk_rate = 10 * 1000 * 1000,
+        .base = SUNXI_R_SPI_BASE,
+        .id = 0,
+        .clk_rate = 75 * 1000 * 1000,
+        .gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
         .gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
         .gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
-};
+        .clk_reg = {
+                .ccu_base = SUNXI_R_PRCM_BASE,
+                .spi_clk_reg_offest = SUNXI_S_SPI_CLK_REG,
+                .spi_bgr_reg_offset = SUNXI_S_SPI_BGR_REG,
+        }};
 
 static gpio_mux_t lcd_dc_pins = {
         .pin = GPIO_PIN(GPIO_PORTL, 13),
@@ -69,11 +75,6 @@ static gpio_mux_t lcd_blk_pins = {
         .mux = GPIO_OUTPUT,
 };
 
-static gpio_mux_t lcd_cs_pins = {
-        .pin = GPIO_PIN(GPIO_PORTL, 10),
-        .mux = GPIO_OUTPUT,
-};
-
 static void LCD_Set_DC(uint8_t val) {
     sunxi_gpio_set_value(lcd_dc_pins.pin, val);
 }
@@ -84,10 +85,9 @@ static void LCD_Set_RES(uint8_t val) {
 
 static void LCD_Write_Bus(uint8_t dat) {
     uint8_t tx[1]; /* Transmit buffer */
-    int r;         /* Return value */
-    printk(LOG_LEVEL_INFO, "SPI Xfer: %08x\n", dat);
+    
     tx[0] = dat;
-    r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
+    int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
         printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
 }
@@ -115,11 +115,11 @@ void LCD_WR_REG(uint8_t dat) {
 
 void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
     LCD_WR_REG(0x2a);
-    LCD_WR_DATA(x1);
-    LCD_WR_DATA(x2);
+    LCD_WR_DATA(x1 + 52);
+    LCD_WR_DATA(x2 + 52);
     LCD_WR_REG(0x2b);
-    LCD_WR_DATA(y1);
-    LCD_WR_DATA(y2);
+    LCD_WR_DATA(y1 + 40);
+    LCD_WR_DATA(y2 + 40);
     LCD_WR_REG(0x2c);
 }
 
@@ -274,10 +274,6 @@ int main(void) {
     sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
     sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
     sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
-    sunxi_gpio_init(lcd_cs_pins.pin, lcd_cs_pins.mux);
-
-    sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
-    sunxi_gpio_set_value(lcd_cs_pins.pin, 0);
 
     dma_init();
 
@@ -291,20 +287,14 @@ int main(void) {
 
     LCD_Fill_All(0xFFFF);
 
+    sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
+
     mdelay(100);
 
     while (1) {
         printk(LOG_LEVEL_ERROR, "SPI LCD done\n");
         mdelay(10000);
     }
-
-
-    mdelay(100);
-    mdelay(100);
-    mdelay(100);
-    mdelay(100);
-
-    abort();
 
     return 0;
 }
