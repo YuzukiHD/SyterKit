@@ -125,6 +125,8 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
         printk(LOG_LEVEL_ERROR, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
+        LCD_ShowString(0, 96, "WARN: Open file fail, filename:", SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(10, 108, filename, SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
         ret = -1;
         goto open_fail;
     }
