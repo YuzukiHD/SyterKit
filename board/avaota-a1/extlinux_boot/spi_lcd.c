@@ -384,7 +384,7 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
     }
 }
 
-void LCD_ShowString(uint16_t x, uint16_t y, const uint8_t *p, uint16_t fc, uint16_t bc, uint8_t sizey) {
+static void LCD_ShowString(uint16_t x, uint16_t y, const uint8_t *p, uint16_t fc, uint16_t bc, uint8_t sizey) {
     printk(LOG_LEVEL_DEBUG, "LCD: Show String: \"%s\"\n", p);
     while (*p != '\0') {
         LCD_ShowChar(x, y, *p, fc, bc, sizey);
