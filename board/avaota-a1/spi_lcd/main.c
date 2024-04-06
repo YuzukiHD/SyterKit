@@ -49,7 +49,7 @@ extern void rtc_set_vccio_det_spare(void);
 sunxi_spi_t sunxi_spi0_lcd = {
         .base = 0x07092000,
         .id = 3,
-        .clk_rate = 2 * 1000 * 1000,
+        .clk_rate = 10 * 1000 * 1000,
         .gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
         .gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
 };
@@ -85,7 +85,7 @@ static void LCD_Set_RES(uint8_t val) {
 static void LCD_Write_Bus(uint8_t dat) {
     uint8_t tx[1]; /* Transmit buffer */
     int r;         /* Return value */
-
+    printk(LOG_LEVEL_INFO, "SPI Xfer: %08x\n", dat);
     tx[0] = dat;
     r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
@@ -129,81 +129,81 @@ static void LCD_Init(void) {
     LCD_Set_RES(1);
     mdelay(100);
 
-	LCD_WR_REG(0x11); 
-	mdelay(120); 
-	LCD_WR_REG(0x36); 
-	LCD_WR_DATA8(0x00);
+    LCD_WR_REG(0x11);
+    mdelay(120);
+    LCD_WR_REG(0x36);
+    LCD_WR_DATA8(0x00);
 
-	LCD_WR_REG(0x3A);
-	LCD_WR_DATA8(0x05);
+    LCD_WR_REG(0x3A);
+    LCD_WR_DATA8(0x05);
 
-	LCD_WR_REG(0xB2);
-	LCD_WR_DATA8(0x0C);
-	LCD_WR_DATA8(0x0C);
-	LCD_WR_DATA8(0x00);
-	LCD_WR_DATA8(0x33);
-	LCD_WR_DATA8(0x33); 
+    LCD_WR_REG(0xB2);
+    LCD_WR_DATA8(0x0C);
+    LCD_WR_DATA8(0x0C);
+    LCD_WR_DATA8(0x00);
+    LCD_WR_DATA8(0x33);
+    LCD_WR_DATA8(0x33);
 
-	LCD_WR_REG(0xB7); 
-	LCD_WR_DATA8(0x35);  
+    LCD_WR_REG(0xB7);
+    LCD_WR_DATA8(0x35);
 
-	LCD_WR_REG(0xBB);
-	LCD_WR_DATA8(0x19);
+    LCD_WR_REG(0xBB);
+    LCD_WR_DATA8(0x19);
 
-	LCD_WR_REG(0xC0);
-	LCD_WR_DATA8(0x2C);
+    LCD_WR_REG(0xC0);
+    LCD_WR_DATA8(0x2C);
 
-	LCD_WR_REG(0xC2);
-	LCD_WR_DATA8(0x01);
+    LCD_WR_REG(0xC2);
+    LCD_WR_DATA8(0x01);
 
-	LCD_WR_REG(0xC3);
-	LCD_WR_DATA8(0x12);   
+    LCD_WR_REG(0xC3);
+    LCD_WR_DATA8(0x12);
 
-	LCD_WR_REG(0xC4);
-	LCD_WR_DATA8(0x20);  
+    LCD_WR_REG(0xC4);
+    LCD_WR_DATA8(0x20);
 
-	LCD_WR_REG(0xC6); 
-	LCD_WR_DATA8(0x0F);    
+    LCD_WR_REG(0xC6);
+    LCD_WR_DATA8(0x0F);
 
-	LCD_WR_REG(0xD0); 
-	LCD_WR_DATA8(0xA4);
-	LCD_WR_DATA8(0xA1);
+    LCD_WR_REG(0xD0);
+    LCD_WR_DATA8(0xA4);
+    LCD_WR_DATA8(0xA1);
 
-	LCD_WR_REG(0xE0);
-	LCD_WR_DATA8(0xD0);
-	LCD_WR_DATA8(0x04);
-	LCD_WR_DATA8(0x0D);
-	LCD_WR_DATA8(0x11);
-	LCD_WR_DATA8(0x13);
-	LCD_WR_DATA8(0x2B);
-	LCD_WR_DATA8(0x3F);
-	LCD_WR_DATA8(0x54);
-	LCD_WR_DATA8(0x4C);
-	LCD_WR_DATA8(0x18);
-	LCD_WR_DATA8(0x0D);
-	LCD_WR_DATA8(0x0B);
-	LCD_WR_DATA8(0x1F);
-	LCD_WR_DATA8(0x23);
+    LCD_WR_REG(0xE0);
+    LCD_WR_DATA8(0xD0);
+    LCD_WR_DATA8(0x04);
+    LCD_WR_DATA8(0x0D);
+    LCD_WR_DATA8(0x11);
+    LCD_WR_DATA8(0x13);
+    LCD_WR_DATA8(0x2B);
+    LCD_WR_DATA8(0x3F);
+    LCD_WR_DATA8(0x54);
+    LCD_WR_DATA8(0x4C);
+    LCD_WR_DATA8(0x18);
+    LCD_WR_DATA8(0x0D);
+    LCD_WR_DATA8(0x0B);
+    LCD_WR_DATA8(0x1F);
+    LCD_WR_DATA8(0x23);
 
-	LCD_WR_REG(0xE1);
-	LCD_WR_DATA8(0xD0);
-	LCD_WR_DATA8(0x04);
-	LCD_WR_DATA8(0x0C);
-	LCD_WR_DATA8(0x11);
-	LCD_WR_DATA8(0x13);
-	LCD_WR_DATA8(0x2C);
-	LCD_WR_DATA8(0x3F);
-	LCD_WR_DATA8(0x44);
-	LCD_WR_DATA8(0x51);
-	LCD_WR_DATA8(0x2F);
-	LCD_WR_DATA8(0x1F);
-	LCD_WR_DATA8(0x1F);
-	LCD_WR_DATA8(0x20);
-	LCD_WR_DATA8(0x23);
+    LCD_WR_REG(0xE1);
+    LCD_WR_DATA8(0xD0);
+    LCD_WR_DATA8(0x04);
+    LCD_WR_DATA8(0x0C);
+    LCD_WR_DATA8(0x11);
+    LCD_WR_DATA8(0x13);
+    LCD_WR_DATA8(0x2C);
+    LCD_WR_DATA8(0x3F);
+    LCD_WR_DATA8(0x44);
+    LCD_WR_DATA8(0x51);
+    LCD_WR_DATA8(0x2F);
+    LCD_WR_DATA8(0x1F);
+    LCD_WR_DATA8(0x1F);
+    LCD_WR_DATA8(0x20);
+    LCD_WR_DATA8(0x23);
 
-	LCD_WR_REG(0x21); 
+    LCD_WR_REG(0x21);
 
-	LCD_WR_REG(0x29); 
+    LCD_WR_REG(0x29);
 }
 
 #define LCD_W 135
@@ -292,6 +292,12 @@ int main(void) {
     LCD_Fill_All(0xFFFF);
 
     mdelay(100);
+
+    while (1) {
+        printk(LOG_LEVEL_ERROR, "SPI LCD done\n");
+        mdelay(10000);
+    }
+
 
     mdelay(100);
     mdelay(100);
