@@ -152,18 +152,18 @@ static int load_sdcard(image_info_t *image) {
     return 0;
 }
 
-int main(void) {
-    sunxi_serial_init(&uart_dbg); // Initialize the serial interface for debugging
+int main_load(void) {
+    sunxi_serial_init(&uart_dbg);// Initialize the serial interface for debugging
 
-    show_banner(); // Display a banner
+    show_banner();// Display a banner
 
-    sunxi_clk_init(); // Initialize clock configurations
+    sunxi_clk_init();// Initialize clock configurations
 
-    sunxi_dram_init(&dram_para); // Initialize DRAM parameters
+    sunxi_dram_init(&dram_para);// Initialize DRAM parameters
 
-    sunxi_clk_dump(); // Dump clock information
+    sunxi_clk_dump();// Dump clock information
 
-    memset(&image, 0, sizeof(image_info_t)); // Clear the image structure
+    memset(&image, 0, sizeof(image_info_t));// Clear the image structure
 
     // Set destination addresses for different images
     image.dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
@@ -195,7 +195,7 @@ int main(void) {
         return 0;
     }
 
-    sunxi_c906_clock_reset(); // Reset C906 clock
+    sunxi_c906_clock_reset();// Reset C906 clock
 
     // Get entry address of RISC-V ELF
     uint32_t elf_run_addr = elf64_get_entry_addr((phys_addr_t) image.dest);
@@ -208,13 +208,18 @@ int main(void) {
 
     printk(LOG_LEVEL_INFO, "RISC-V C906 Core now Running... \n");
 
-    mdelay(100); // Delay for 100 milliseconds
+    mdelay(100);// Delay for 100 milliseconds
 
-    sunxi_c906_clock_init(elf_run_addr); // Initialize C906 clock with entry address
+    sunxi_c906_clock_init(elf_run_addr);// Initialize C906 clock with entry address
 
-    abort(); // Abort A7 execution, loop forever
+    abort();// Abort A7 execution, loop forever
 
-    jmp_to_fel(); // Jump to FEL mode
+    jmp_to_fel();// Jump to FEL mode
 
     return 0;
+}
+
+void main() {
+    main_load();
+    abort();
 }
