@@ -1,4 +1,5 @@
 build/
+build-*
 test/
 tools/*.bin
 mksunxi
