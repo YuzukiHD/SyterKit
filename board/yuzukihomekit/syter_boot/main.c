@@ -37,6 +37,10 @@
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_CMDLINE "earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
+                       "console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
+                       "root=/dev/mmcblk0p2 init=/init rdinit=/rdinit"        \
+                       "partitions=boot@mmcblk0p1:rootfs@mmcblk0p2:rootfs_data@mmcblk0p3:UDISK@mmcblk0p4"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
@@ -46,7 +50,7 @@
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
-#define CONFIG_DEFAULT_BOOTDELAY 5
+#define CONFIG_DEFAULT_BOOTDELAY 0
 
 #define FILENAME_MAX_LEN 16
 typedef struct {
@@ -55,19 +59,6 @@ typedef struct {
     char filename[FILENAME_MAX_LEN];
     char of_filename[FILENAME_MAX_LEN];
 } image_info_t;
-
-#define MAX_SECTION_LEN 16
-#define MAX_KEY_LEN 16
-#define MAX_VALUE_LEN 512
-#define CONFIG_MAX_ENTRY 3
-
-typedef struct {
-    char section[MAX_SECTION_LEN];
-    char key[MAX_KEY_LEN];
-    char value[MAX_VALUE_LEN];
-} IniEntry;
-
-IniEntry entries[CONFIG_MAX_ENTRY];
 
 extern sunxi_serial_t uart_dbg;
 
@@ -197,6 +188,11 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
     return p - (char *) buf;
 }
 
+static char *skip_spaces(char *str) {
+    while (*str == ' ') str++;
+    return str;
+}
+
 static int update_dtb_for_linux(uint64_t dram_size) {
     int ret = 0;
 
@@ -234,6 +230,48 @@ static int update_dtb_for_linux(uint64_t dram_size) {
     if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
         printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
         sfree(tmp_buf);
+        goto _error;
+    }
+
+    /* Get the offset of "/chosen" node */
+    int chosen_node = fdt_find_or_add_subnode(image.of_dest, 0, "chosen");
+
+    len = 0;
+    /* Get bootargs string */
+    char *bootargs_str = (void *) fdt_getprop(image.of_dest, chosen_node, "bootargs", &len);
+    if (bootargs_str == NULL) {
+        bootargs_str = (char *) smalloc(strlen(CONFIG_CMDLINE) + 1);
+        bootargs_str[0] = '\0';
+    } else {
+        strcat(bootargs_str, " ");
+    }
+
+    strcat(bootargs_str, CONFIG_CMDLINE);
+
+    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
+
+_add_dts_size:
+    /* Modify bootargs string */
+    ret = fdt_setprop_string(image.of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
+    if (ret == -FDT_ERR_NOSPACE) {
+        printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+        ret = fdt_increase_size(image.of_dest, 512);
+        if (!ret) {
+            goto _add_dts_size;
+        } else {
+            printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+            goto _error;
+        }
+    } else if (ret < 0) {
+        printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
+        goto _error;
+    }
+
+    /* Get the total size of DTB */
+    printk(LOG_LEVEL_DEBUG, "Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+
+    if (ret < 0) {
+        printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -323,17 +361,6 @@ int main(void) {
     /* Initialize the system clock. */
     sunxi_clk_init();
 
-    /* Init IIC for PMU */
-    sunxi_i2c_init(&i2c_pmu);
-
-    pmu_axp1530_init(&i2c_pmu);
-    /* Init DRAM 1.5v */
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1500, 1);
-    /* Init PERF 3.3v */
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", 3300, 1);
-    /* Dump the voltage */
-    pmu_axp1530_dump(&i2c_pmu);
-
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
@@ -365,8 +392,10 @@ int main(void) {
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-        goto _shell;
+        printk(LOG_LEVEL_WARNING, "SMHC: init failed, retry...\n");
+        if (sdmmc_init(&card0, &sdhci0) != 0) {
+            goto _shell;
+        }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */

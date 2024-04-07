@@ -6,3 +6,5 @@ set(APP_COMMON_SOURCE
 )
 
 add_subdirectory(syter_boot)
+
+add_subdirectory(load_c906)
