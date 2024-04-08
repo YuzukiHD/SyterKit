@@ -104,6 +104,7 @@
 #define ZQ_RES_STATUS_REG (0x16c)
 
 #define SYS_SID_BASE (0x3006000)
+#define SYS_CHIP_ID (0x200)
 #define SYS_EFUSE_REG (0x228)
 #define SYS_LDOB_SID (0x21c)
 

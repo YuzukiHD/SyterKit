@@ -45,7 +45,7 @@ sdhci_t sdhci0 = {
         .reg = (sdhci_reg_t *) 0x04020000,
         .voltage = MMC_VDD_27_36,
         .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_50M,
+        .clock = MMC_CLK_200M,
         .removable = 0,
         .isspi = FALSE,
         .skew_auto_mode = TRUE,
@@ -103,4 +103,31 @@ void clean_syterkit_data(void) {
     printk(LOG_LEVEL_INFO, "disable icache ok...\n");
     arm32_interrupt_disable();
     printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+}
+
+void show_chip() {
+    uint32_t chip_sid[4];
+    chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+    chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+    chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+    chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+    printk(LOG_LEVEL_INFO, "Model: Yuzuki Home Kit\n");
+    printk(LOG_LEVEL_INFO, "Host Core: Arm Dual-Core Cortex-A7 R2P0\n");
+    printk(LOG_LEVEL_INFO, "AMP Core: Xuantie C906 RISC-V RV64IMAFDCVX R1S0P2 Vlen=128\n");
+    printk(LOG_LEVEL_INFO, "Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+
+    uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
+
+    switch (chip_markid_sid) {
+        case 0x7200:
+            printk(LOG_LEVEL_INFO, "Chip type = T113M4020DC0");
+            break;
+        default:
+            printk(LOG_LEVEL_INFO, "Chip type = UNKNOW");
+            break;
+    }
+
+    uint32_t version = read32(SUNXI_SYSCRL_BASE + 0x24) & 0x7;
+    printk(LOG_LEVEL_MUTE, " Chip Version = %x \n", version);
 }
