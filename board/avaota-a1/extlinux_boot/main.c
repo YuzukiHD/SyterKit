@@ -109,6 +109,26 @@ typedef struct {
     char extlinux_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
+#define IH_COMP_NONE 0      /*  No	 Compression Used	*/
+#define IH_COMP_GZIP 1      /* gzip	 Compression Used	*/
+#define IH_COMP_BZIP2 2     /* bzip2 Compression Used	*/
+#define IH_MAGIC 0x56190527 /* mkimage magic for uinitrd */
+#define IH_NMLEN 32         /* Image Name Length	*/
+typedef struct image_header {
+    uint32_t ih_magic;         /* Image Header Magic Number	*/
+    uint32_t ih_hcrc;          /* Image Header CRC Checksum	*/
+    uint32_t ih_time;          /* Image Creation Timestamp	*/
+    uint32_t ih_size;          /* Image Data Size		*/
+    uint32_t ih_load;          /* Data	 Load  Address		*/
+    uint32_t ih_ep;            /* Entry Point Address		*/
+    uint32_t ih_dcrc;          /* Image Data CRC Checksum	*/
+    uint8_t ih_os;             /* Operating System		*/
+    uint8_t ih_arch;           /* CPU architecture		*/
+    uint8_t ih_type;           /* Image Type			*/
+    uint8_t ih_comp;           /* Compression Type		*/
+    uint8_t ih_name[IH_NMLEN]; /* Image Name		*/
+} image_header_t;
+
 image_info_t image;
 
 #define CHUNK_SIZE 0x20000
@@ -207,6 +227,8 @@ static int load_sdcard(image_info_t *image) {
     ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
     if (ret)
         printk(LOG_LEVEL_INFO, "FATFS: Splash load fail, Leave Black Screen.\n");
+    else
+        LCD_Show_Splash(image->splash_dest);
 
     /* umount fs */
     fret = f_mount(0, "", 0);
@@ -458,7 +480,15 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     if (ramdisk_size > 0) {
         uint64_t addr, size;
 
+        /* Check if using uinitrd */
+        image_header_t *ramdisk_header = (image_header_t *) image->ramdisk_dest;
+
+        if (ramdisk_header->ih_magic == IH_MAGIC) {
+            ramdisk_start += 0x40;
+        }
+
         printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+
         int total = fdt_num_mem_rsv(image->of_dest);
 
         printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
@@ -491,6 +521,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
         }
     }
 
+_set_bootargs:
     len = 0;
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
@@ -666,8 +697,6 @@ int main(void) {
         goto _fail;
     }
 
-    LCD_Show_Splash(image.splash_dest);
-
     LCD_Open_BLK();
 
     if (load_extlinux(&image, dram_size) != 0) {
@@ -690,7 +719,7 @@ int main(void) {
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     /* flush buffer */
-    LCD_ShowString(0, 0,  "SyterKit Now Booting Linux                    ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 0, "SyterKit Now Booting Linux                    ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 12, "Kernel Addr: 0x40800000                       ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 24, "DTB Addr: 0x40400000                          ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 

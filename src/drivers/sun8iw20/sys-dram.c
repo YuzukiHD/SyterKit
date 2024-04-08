@@ -663,7 +663,7 @@ static const uint8_t ac_remapping_tables[][22] =
  */
 static void mctl_phy_ac_remapping(dram_para_t *para) {
     const uint8_t *cfg;
-    uint32_t fuse, val;
+    uint32_t fuse, mask, val;
 
     /*
    * Only DDR2 and DDR3 Support Remap
@@ -674,6 +674,10 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
 
     fuse = (readl(SYS_SID_BASE + SYS_EFUSE_REG) & 0xf00) >> 8;
     printk(LOG_LEVEL_DEBUG, "DDR efuse: 0x%x\n", fuse);
+
+    mask = (readl(SYS_SID_BASE + SYS_CHIP_ID) & 0xffff);
+    printk(LOG_LEVEL_DEBUG, "Chip MASK = 0x%08x\n", mask);
+
 
     if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
         /* if fuse is 0xa then D1s -> no remap*/
@@ -686,7 +690,10 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
         printk(LOG_LEVEL_DEBUG, "DDR Using MAP: 6 \n");
         cfg = ac_remapping_tables[6];
     } else {
-        if (para->dram_tpr13 & 0xc0000) {
+        if (mask == 0x7200) {
+            printk(LOG_LEVEL_DEBUG, "DDR Using MAP: 0 \n");
+            cfg = ac_remapping_tables[0];
+        } else if (para->dram_tpr13 & 0xc0000) {
             printk(LOG_LEVEL_DEBUG, "DDR Using MAP: 7 \n");
             cfg = ac_remapping_tables[7];
         } else {
