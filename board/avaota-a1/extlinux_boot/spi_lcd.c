@@ -360,19 +360,19 @@ const unsigned char ascii_1206[][12] = {
         {0x16, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /*"~",94*/
 };
 
-void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc, uint8_t sizey) {
+static void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc, uint8_t sizey) {
     uint8_t temp, sizex, t, m = 0;
-    uint16_t i, TypefaceNum;//一个字符所占字节大小
+    uint16_t i, TypefaceNum;// Number of bytes for one character
     uint16_t x0 = x;
     sizex = sizey / 2;
     TypefaceNum = (sizex / 8 + ((sizex % 8) ? 1 : 0)) * sizey;
-    num = num - ' ';                                    //得到偏移后的值
-    LCD_Address_Set(x, y, x + sizex - 1, y + sizey - 1);//设置光标位置
+    num = num - ' ';                                    // Get the offset value
+    LCD_Address_Set(x, y, x + sizex - 1, y + sizey - 1);// Set the cursor position
     for (i = 0; i < TypefaceNum; i++) {
-        temp = ascii_1206[num][i];//调用6x12字体
+        temp = ascii_1206[num][i];// Call 6x12 font
         for (t = 0; t < 8; t++) {
-
-            if (temp & (0x01 << t)) LCD_WR_DATA(fc);
+            if (temp & (0x01 << t))
+                LCD_WR_DATA(fc);
             else
                 LCD_WR_DATA(bc);
             m++;
@@ -383,6 +383,7 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
         }
     }
 }
+
 
 static void LCD_ShowString(uint16_t x, uint16_t y, const uint8_t *p, uint16_t fc, uint16_t bc, uint8_t sizey) {
     printk(LOG_LEVEL_DEBUG, "LCD: Show String: \"%s\"\n", p);
