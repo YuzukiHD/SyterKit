@@ -280,6 +280,43 @@ static void set_platform_config(void) {
     set_iommu_auto_gating();
 }
 
+static void set_modules_clock(void) {
+    uint32_t reg_val, i;
+    uint32_t ccmu_pll_addr[] = {
+            CCU_BASE + CCU_PLL_PERI0_CTRL_REG,
+            CCU_BASE + CCU_PLL_PERI1_CTRL_REG,
+            CCU_BASE + CCU_PLL_GPU_CTRL_REG,
+            CCU_BASE + CCU_PLL_VIDE00_CTRL_REG,
+            CCU_BASE + CCU_PLL_VIDE01_CTRL_REG,
+            CCU_BASE + CCU_PLL_VIDE02_CTRL_REG,
+            CCU_BASE + CCU_PLL_VIDE03_CTRL_REG,
+            CCU_BASE + CCU_PLL_VE_CTRL_REG,
+            CCU_BASE + CCU_PLL_AUDIO_CTRL_REG,
+    };
+
+    for (i = 0; i < sizeof(ccmu_pll_addr) / sizeof(ccmu_pll_addr[0]); i++) {
+        reg_val = readl(ccmu_pll_addr[i]);
+        if (!(reg_val & (1 << 31))) {
+            writel(reg_val, ccmu_pll_addr[i]);
+
+            reg_val = readl(ccmu_pll_addr[i]);
+            writel(reg_val | (1 << 31), ccmu_pll_addr[i]);
+            /* lock enable */
+            reg_val = readl(ccmu_pll_addr[i]);
+            reg_val |= (1 << 29);
+            writel(reg_val, ccmu_pll_addr[i]);
+
+            while (!(readl(ccmu_pll_addr[i]) & (0x1 << 28)))
+                ;
+            udelay(20);
+
+            reg_val = readl(ccmu_pll_addr[i]);
+            reg_val &= ~(1 << 29);
+            writel(reg_val, ccmu_pll_addr[i]);
+        }
+    }
+}
+
 void sunxi_clk_init(void) {
     printk(LOG_LEVEL_DEBUG, "Set SoC 1890 (A523/A527/MR527/T527) CLK Start.\n");
     set_platform_config();
@@ -290,6 +327,7 @@ void sunxi_clk_init(void) {
     set_apb();
     set_pll_dma();
     set_pll_mbus();
+    set_modules_clock();
     printk(LOG_LEVEL_DEBUG, "Set pll done\n");
     return;
 }
