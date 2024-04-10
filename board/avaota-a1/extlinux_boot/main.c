@@ -636,6 +636,7 @@ int main(void) {
     pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
 
     pmu_axp2202_set_vol(&i2c_pmu, "bldo3", 1800, 1);
+    pmu_axp2202_set_vol(&i2c_pmu, "bldo1", 1800, 1);
 
     pmu_axp2202_dump(&i2c_pmu);
     pmu_axp1530_dump(&i2c_pmu);
