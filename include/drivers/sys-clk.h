@@ -68,6 +68,13 @@ uint32_t sunxi_clk_get_peri1x_rate();
  */
 void sunxi_usb_clk_deinit();
 
+/**
+ * @brief Change the cpu freq
+ * 
+ * @param freq The freq of cpu want to set.
+ */
+void sunxi_clk_set_cpu_pll(uint32_t freq);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

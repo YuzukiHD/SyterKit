@@ -638,6 +638,8 @@ int main(void) {
     pmu_axp2202_dump(&i2c_pmu);
     pmu_axp1530_dump(&i2c_pmu);
 
+    sunxi_clk_set_cpu_pll(1224);
+
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */

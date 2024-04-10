@@ -87,8 +87,6 @@ static void set_pll_cpux_axi(void) {
     writel((0), CCU_PLL_DSU_CLK_REG);
     sdelay(20);
 
-    printk(LOG_LEVEL_DEBUG, "periph0 has been enabled\n");
-
     cpu_pll.FactorM0 = 0;
     cpu_pll.FactorN = 0x2a; /*1008M*/
     cpu_pll.FactorM1 = 0;
@@ -102,7 +100,7 @@ static void set_pll_cpux_axi(void) {
     enable_pll(CCU_PLL_CPU3_CTRL_REG, &cpu_pll, 0x48801400);
 
     cpu_pll.FactorM0 = 0;
-    cpu_pll.FactorN = 0x27; /*936M*/
+    cpu_pll.FactorN = 0x1d; /*696M*/
     cpu_pll.FactorM1 = 0;
     cpu_pll.FactorP = 0;
     enable_pll(CCU_PLL_CPU2_CTRL_REG, &cpu_pll, 0x48801400);
@@ -111,9 +109,9 @@ static void set_pll_cpux_axi(void) {
 	 * PLL_CPU1/P ,P = 1,  */
     /*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
     reg_val = readl(CCU_PLL_CPUA_CLK_REG);
-    reg_val &= ~(0x07 << 24);
+    reg_val &= ~(0x03 << 24);
     reg_val |= (0x03 << 24);
-    reg_val &= ~(0x03 << 16);// P = 1
+    reg_val &= ~(0x01 << 16);// P = 1
     reg_val |= (0x00 << 16);
     writel(reg_val, CCU_PLL_CPUA_CLK_REG);
     sdelay(20);
@@ -122,18 +120,18 @@ static void set_pll_cpux_axi(void) {
 	 * PLL_CPU3/P ,P = 1,  */
     /*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
     reg_val = readl(CCU_PLL_CPUB_CLK_REG);
-    reg_val &= ~(0x07 << 24);
+    reg_val &= ~(0x03 << 24);
     reg_val |= (0x03 << 24);
-    reg_val &= ~(0x03 << 16);// P = 1
+    reg_val &= ~(0x01 << 16);// P = 1
     reg_val |= (0x00 << 16);
     writel(reg_val, CCU_PLL_CPUB_CLK_REG);
     sdelay(20);
 
     /*dsu clk src to PLL_CPU2,  PLL_CPU2/P*/
     reg_val = readl(CCU_PLL_DSU_CLK_REG);
-    reg_val &= ~(0x07 << 24);
+    reg_val &= ~(0x03 << 24);
     reg_val |= (0x03 << 24);
-    reg_val &= ~(0x03 << 16);// P = 1
+    reg_val &= ~(0x01 << 16);// P = 1
     reg_val |= (0x00 << 16);
     writel(reg_val, CCU_PLL_DSU_CLK_REG);
     sdelay(20);
@@ -349,40 +347,95 @@ void sunxi_clk_reset(void) {
 }
 
 uint32_t sunxi_clk_get_peri1x_rate() {
-    uint32_t reg32;
-    uint8_t plln, pllm, p0;
+    uint32_t reg_val;
+    uint32_t factor_n, factor_p0, factor_m1, pll6;
 
-    /* PLL PERI */
-    reg32 = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
-    if (reg32 & (1 << 31)) {
-        plln = ((reg32 >> 8) & 0xff) + 1;
-        pllm = (reg32 & 0x01) + 1;
-        p0 = ((reg32 >> 16) & 0x03) + 1;
+    reg_val = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 
-        return ((((24 * plln) / (pllm * p0))) * 1000 * 1000) >> 1;
-    }
+    factor_n = ((reg_val >> 8) & 0xff) + 1;
+    factor_p0 = ((reg_val >> 16) & 0x03) + 1;
+    factor_m1 = ((reg_val >> 1) & 0x01) + 1;
+    pll6 = (24 * factor_n / factor_p0 / factor_m1) >> 1;
 
-    return 0;
+    return pll6 * 1000 * 1000;
+}
+
+void sunxi_clk_set_cpu_pll(uint32_t freq) {
+    uint32_t reg_val = 0;
+    core_pll_freq_fact cpu_pll;
+
+    /* switch to 24M*/
+    writel(0x0305, CCU_PLL_CPUA_CLK_REG);
+    udelay(20);
+    writel(0, CCU_PLL_DSU_CLK_REG);
+    udelay(20);
+
+    cpu_pll.FactorM0 = 0;
+    cpu_pll.FactorN = freq / 24;
+    cpu_pll.FactorM1 = 0;
+    cpu_pll.FactorP = 0;
+    enable_pll(CCU_PLL_CPU1_CTRL_REG, &cpu_pll, 0x48801400);
+
+    cpu_pll.FactorM0 = 0;
+    cpu_pll.FactorN = 0x27; /*936M*/
+    cpu_pll.FactorM1 = 0;
+    cpu_pll.FactorP = 0;
+    enable_pll(CCU_PLL_CPU2_CTRL_REG, &cpu_pll, 0x48801400);
+
+    /* PLL_CPU1 is core0~core3 clock,  select PLL_CPU1  clock src:
+	 * PLL_CPU1/P ,P = 1,  */
+    /*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
+    reg_val = readl(CCU_PLL_CPUA_CLK_REG);
+    reg_val &= ~(0x03 << 24);
+    reg_val |= (0x03 << 24);
+    reg_val &= ~(0x01 << 16);// P = 1
+    reg_val |= (0x00 << 16);
+    writel(reg_val, CCU_PLL_CPUA_CLK_REG);
+    sdelay(20);
+
+    /*dsu clk src to PLL_CPU2,  PLL_CPU2/P*/
+    reg_val = readl(CCU_PLL_DSU_CLK_REG);
+    reg_val &= ~(0x03 << 24);
+    reg_val |= (0x03 << 24);
+    reg_val &= ~(0x01 << 16);// P = 1
+    reg_val |= (0x00 << 16);
+    writel(reg_val, CCU_PLL_DSU_CLK_REG);
+    sdelay(20);
 }
 
 static void sunxi_cpux_clk_dump(uint8_t cpuid, uint32_t cpu_reg) {
-    uint32_t reg32;
-    uint8_t p0;
-    uint8_t p1;
+    uint32_t reg_val;
+    uint32_t div_m, div_p, div_m1;
+    uint32_t factor_n, factor_p;
+    uint32_t clock, clock_src;
 
-    reg32 = read32(cpu_reg);
-    p0 = (reg32 >> 16) & 0x03;
-    if (p0 == 0) {
-        p1 = 1;
-    } else if (p0 == 1) {
-        p1 = 2;
-    } else if (p0 == 2) {
-        p1 = 4;
-    } else {
-        p1 = 1;
+    reg_val = readl(CCU_PLL_CPUA_CLK_REG);
+    clock_src = (reg_val >> 24) & 0x03;
+    factor_p = 1 << ((reg_val >> 16) & 0x3);
+
+    switch (clock_src) {
+        case 0://OSC24M
+            clock = 24;
+            break;
+        case 1://RTC32K
+            clock = 32 / 1000;
+            break;
+        case 2://RC16M
+            clock = 16;
+            break;
+        case 3://PLL_CPU1
+            reg_val = read32(cpu_reg);
+            div_p = ((reg_val >> 16) & 0xf) + 1;
+            factor_n = ((reg_val >> 8) & 0xff);
+            div_m = ((reg_val >> 0) & 0xf) + 1;
+            div_m1 = ((reg_val >> 20) & 0x3) + 1;
+
+            clock = 24 * factor_n / div_p / (div_m * div_m1);
+            break;
+        default:
+            printk(LOG_LEVEL_DEBUG, "CLK: CPU CLK Disable\r\n");
     }
-
-    printk(LOG_LEVEL_DEBUG, "CLK: CPU%d FREQ=%luMHz\r\n", cpuid, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
+    printk(LOG_LEVEL_DEBUG, "CLK: CPU%d FREQ=%luMHz\r\n", cpuid, clock / factor_p);
 }
 
 void sunxi_clk_dump() {
