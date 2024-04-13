@@ -63,6 +63,10 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci0;
 
+extern uint32_t dram_para[32];
+
+extern char *dram_para_name[32];
+
 extern void enable_sram_a3();
 extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
@@ -536,6 +540,11 @@ _set_bootargs:
     strcat(bootargs_str, data.append);
 
     printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
+
+    int dram_node = fdt_find_or_add_subnode(image->of_dest, 0, "dram");
+    for (int i = 0; i < 32; i++) {
+        fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[i], dram_para[i]);
+    }
 
 _add_dts_size:
     /* Modify bootargs string */

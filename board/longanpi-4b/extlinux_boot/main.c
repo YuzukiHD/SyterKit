@@ -671,7 +671,7 @@ int main(void) {
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
         goto _fail;
-    }-
+    }
 
     if (load_extlinux(&image, dram_size) != 0) {
         printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
