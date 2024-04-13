@@ -22,7 +22,6 @@ set(COMMON_DRIVER
 set(USB_DRIVER "")
 if (CONFIG_CHIP_USB)
 set(USB_DRIVER
-    usb/usb_clk.c
     usb/usb.c
     usb/usb_controller.c
     usb/usb_device.c

@@ -13,11 +13,6 @@
 
 #include <io.h>
 
-/* CCU Define */
-#define CCU_USB0_CLK_REG 0x0A70       /* USB0 Clock Register */
-#define CCU_USB_BGR_REG 0x0A8C        /* USB Bus Gating Reset Register */
-#define CCU_CLK24M_GATE_EN_REG 0x0E0C /* CLK24M Gate Enable Register */
-
 /* USB PHY Define */
 #define USB_PHY_SEL 0x0420
 #define USB_PHY_CTL 0x0410
