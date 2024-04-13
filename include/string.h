@@ -3,11 +3,12 @@
 #ifndef __STRING_H__
 #define __STRING_H__
 
+#include <stdarg.h>
 #include <types.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 /**
  * Copies the values of 'cnt' bytes from memory area 'src' to memory area 'dst'.
@@ -150,8 +151,43 @@ void *memchr(void *ptr, int value, unsigned int num) __attribute__((optimize("O0
  */
 void *memmove(void *dest, const void *src, unsigned int count) __attribute__((optimize("O0")));
 
+#ifdef CONFIG_SPRINTF
+/**
+ * @brief Writes formatted data to a string.
+ * @param buf Pointer to the destination string where the formatted data will be stored.
+ * @param fmt Format string containing the data formats to be written.
+ * @param ... Variable number of arguments to be formatted and written into buf according to fmt.
+ * @return Returns the number of characters written to buf (excluding the null terminator).
+ */
+int sprintf(char *buf, const char *fmt, ...);
+
+/**
+ * @brief Safely writes formatted data to a string, limiting the number of characters written.
+ * @param buf Pointer to the destination string where the formatted data will be stored.
+ * @param n Maximum number of characters allowed to be written (including the null terminator).
+ * @param fmt Format string containing the data formats to be written.
+ * @param ... Variable number of arguments to be formatted and written into buf according to fmt. 
+ *            It will not exceed n-1 characters, and a null terminator will be added at the end.
+ * @return Returns the number of characters written to buf (excluding the null terminator).
+ *         If the output is truncated, it returns the total number of characters attempted to be written.
+ */
+int snprintf(char *buf, size_t n, const char *fmt, ...);
+
+/**
+ * @brief Similar to snprintf, but takes a va_list type parameter list for handling variable arguments.
+ * @param buf Pointer to the destination string where the formatted data will be stored.
+ * @param n Maximum number of characters allowed to be written (including the null terminator).
+ * @param fmt Format string containing the data formats to be written.
+ * @param ap va_list type parameter list for passing variable number of arguments.
+ * @return Returns the number of characters written to buf (excluding the null terminator).
+ *         If the output is truncated, it returns the total number of characters attempted to be written.
+ */
+int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap);
+
+#endif // CONFIG_SPRINTF
+
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif /* #ifndef __STRING_H__ */
