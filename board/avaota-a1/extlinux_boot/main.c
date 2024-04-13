@@ -472,9 +472,6 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
         printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
         goto _error;
     }
-    /* clean tmp_buf */
-    sfree(tmp_buf);
-    tmp_buf = NULL;
 
     /* Get the offset of "/chosen" node */
     int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
@@ -524,8 +521,6 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
             goto _error;
         }
     }
-
-_set_bootargs:
     len = 0;
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
@@ -539,12 +534,10 @@ _set_bootargs:
 
     strcat(bootargs_str, data.append);
 
-    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
-
     int dram_node = fdt_find_or_add_subnode(image->of_dest, 0, "dram");
-    for (int i = 0; i < 32; i++) {
-        fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[i], dram_para[i]);
-    }
+    /* Kernel only need 0: DRAM_CLK, 24: DRAM_DIV */
+    fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[0], dram_para[0]);
+    fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[24], dram_para[24]);
 
 _add_dts_size:
     /* Modify bootargs string */
@@ -556,11 +549,11 @@ _add_dts_size:
             goto _add_dts_size;
         } else {
             printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
-            goto _bootargs_error;
+            goto _error;
         }
     } else if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
-        goto _bootargs_error;
+        goto _error;
     }
 
     /* Get the total size of DTB */
@@ -568,20 +561,11 @@ _add_dts_size:
 
     if (ret < 0) {
         printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-        goto _bootargs_error;
+        goto _error;
     }
 
     err = 0;
-_bootargs_error:
-    if (bootargs_str != NULL)
-        sfree(bootargs_str);
-
 _error:
-    sfree(data.os);
-    sfree(data.kernel);
-    sfree(data.initrd);
-    sfree(data.fdt);
-    sfree(data.append);
     return err;
 }
 
@@ -618,6 +602,9 @@ static int abortboot_single_key(int bootdelay) {
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
+    arm32_dcache_enable();
+    arm32_icache_enable();
+
     show_banner();
 
     rtc_set_vccio_det_spare();
@@ -650,7 +637,7 @@ int main(void) {
     pmu_axp2202_dump(&i2c_pmu);
     pmu_axp1530_dump(&i2c_pmu);
 
-    sunxi_clk_set_cpu_pll(1224);
+    sunxi_clk_set_cpu_pll(1416);
 
     enable_sram_a3();
 
@@ -687,7 +674,7 @@ int main(void) {
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
-        LCD_ShowString(0, 80, "SMHC: controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(0, 92, "SMHC: controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     } else {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
@@ -699,7 +686,7 @@ int main(void) {
         mdelay(30);
         if (sdmmc_init(&card0, &sdhci0) != 0) {
             printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-            LCD_ShowString(0, 80, "SMHC: init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+            LCD_ShowString(0, 92, "SMHC: init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
             goto _fail;
         }
     }
@@ -707,7 +694,7 @@ int main(void) {
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
-        LCD_ShowString(0, 80, "SMHC: loading failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(0, 92, "SMHC: loading failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     }
 
@@ -715,7 +702,7 @@ int main(void) {
 
     if (load_extlinux(&image, dram_size) != 0) {
         printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
-        LCD_ShowString(0, 80, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(0, 92, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     }
 
