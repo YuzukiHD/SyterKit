@@ -38,11 +38,9 @@ extern "C" {
 #define XCFG_FORMAT_FLOAT 1
 
 /**
- * Define to 0 to support long long type (prefix ll)
+ * Define to 1 to support long long type (prefix ll)
  */
-#ifndef XCFG_FORMAT_LONGLONG
-#define XCFG_FORMAT_LONGLONG 0
-#endif
+#define XCFG_FORMAT_LONGLONG 1
 
 /**
  * Formats and outputs a string according to a format string 'fmt' and a variable argument list 'args'.
