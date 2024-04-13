@@ -16,10 +16,6 @@
 #include <sstdlib.h>
 #include <string.h>
 
-#include <cli.h>
-#include <cli_shell.h>
-#include <cli_termesc.h>
-
 #include <sys-clk.h>
 #include <sys-dram.h>
 #include <sys-i2c.h>
@@ -52,8 +48,6 @@
 #define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
-
-#define CONFIG_DEFAULT_BOOTDELAY 3
 
 #define CONFIG_HEAP_BASE (0x50800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -106,6 +100,26 @@ typedef struct {
     uint8_t *extlinux_dest;
     char extlinux_filename[FILENAME_MAX_LEN];
 } image_info_t;
+
+#define IH_COMP_NONE 0      /*  No	 Compression Used	*/
+#define IH_COMP_GZIP 1      /* gzip	 Compression Used	*/
+#define IH_COMP_BZIP2 2     /* bzip2 Compression Used	*/
+#define IH_MAGIC 0x56190527 /* mkimage magic for uinitrd */
+#define IH_NMLEN 32         /* Image Name Length	*/
+typedef struct image_header {
+    uint32_t ih_magic;         /* Image Header Magic Number	*/
+    uint32_t ih_hcrc;          /* Image Header CRC Checksum	*/
+    uint32_t ih_time;          /* Image Creation Timestamp	*/
+    uint32_t ih_size;          /* Image Data Size		*/
+    uint32_t ih_load;          /* Data	 Load  Address		*/
+    uint32_t ih_ep;            /* Entry Point Address		*/
+    uint32_t ih_dcrc;          /* Image Data CRC Checksum	*/
+    uint8_t ih_os;             /* Operating System		*/
+    uint8_t ih_arch;           /* CPU architecture		*/
+    uint8_t ih_type;           /* Image Type			*/
+    uint8_t ih_comp;           /* Compression Type		*/
+    uint8_t ih_name[IH_NMLEN]; /* Image Name		*/
+} image_header_t;
 
 image_info_t image;
 
@@ -449,7 +463,15 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     if (ramdisk_size > 0) {
         uint64_t addr, size;
 
+        /* Check if using uinitrd */
+        image_header_t *ramdisk_header = (image_header_t *) image->ramdisk_dest;
+
+        if (ramdisk_header->ih_magic == IH_MAGIC) {
+            ramdisk_start += 0x40;
+        }
+
         printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+
         int total = fdt_num_mem_rsv(image->of_dest);
 
         printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
@@ -482,6 +504,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
         }
     }
 
+_set_bootargs:
     len = 0;
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
@@ -535,36 +558,6 @@ _error:
     sfree(data.append);
     return err;
 }
-
-msh_declare_command(boot);
-msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
-    atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
-
-    atf_head->dtb_base = (uint32_t) image.of_dest;
-    atf_head->nos_base = (uint32_t) image.kernel_dest;
-
-    /* Fill platform magic */
-    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
-
-    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
-    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
-
-    clean_syterkit_data();
-
-    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
-
-    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
-
-    // if kernel boot not success, jump to fel.
-    jmp_to_fel();
-    return 0;
-}
-
-const msh_command_entry commands[] = {
-        msh_define_command(boot),
-        msh_command_end,
-};
 
 static int abortboot_single_key(int bootdelay) {
     int abort = 0;
@@ -659,7 +652,7 @@ int main(void) {
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
-        goto _shell;
+        goto _fail;
     } else {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
     }
@@ -670,34 +663,47 @@ int main(void) {
         mdelay(30);
         if (sdmmc_init(&card0, &sdhci0) != 0) {
             printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-            goto _shell;
+            goto _fail;
         }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
         printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
-        goto _shell;
-    }
+        goto _fail;
+    }-
 
     if (load_extlinux(&image, dram_size) != 0) {
         printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
-        goto _shell;
+        goto _fail;
     }
 
     printk(LOG_LEVEL_INFO, "EXTLINUX: load extlinux done, now booting...\n");
 
-    int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
+    atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
-    /* Showing boot delays */
-    if (abortboot_single_key(bootdelay)) {
-        goto _shell;
-    }
+    atf_head->dtb_base = (uint32_t) image.of_dest;
+    atf_head->nos_base = (uint32_t) image.kernel_dest;
 
-    cmd_boot(0, NULL);
+    /* Fill platform magic */
+    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
-_shell:
-    syterkit_shell_attach(commands);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
+    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+
+    clean_syterkit_data();
+
+    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+
+    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
+
+    // if kernel boot not success, jump to fel.
+    jmp_to_fel();
+
+_fail:
+    LCD_Open_BLK();
+
+    abort();
 
     return 0;
 }

@@ -33,3 +33,7 @@ uint32_t __attribute__((weak)) sunxi_clk_get_peri1x_rate() {
     printk(LOG_LEVEL_WARNING, "sunxi_clk_get_peri1x_rate: not impl\n");
     return 0;
 }
+
+void __attribute__((weak)) sunxi_clk_set_cpu_pll(uint32_t freq) {
+    printk(LOG_LEVEL_WARNING, "sunxi_clk_set_cpu_pll: not impl\n");
+}
