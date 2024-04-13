@@ -701,8 +701,6 @@ int main(void) {
     jmp_to_fel();
 
 _fail:
-    LCD_Open_BLK();
-
     abort();
 
     return 0;
