@@ -62,6 +62,7 @@ extern sunxi_serial_t uart_dbg;
 extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci0;
+extern sdhci_t sdhci2;
 
 extern uint32_t dram_para[32];
 
@@ -148,9 +149,9 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
-        LCD_ShowString(0, 0, "WARN: Open file fail, filename:", SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
-        LCD_ShowString(10, 12, filename, SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
+        printk(LOG_LEVEL_WARNING, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
+        LCD_ShowString(0, 104, "WARN: Open file fail, filename:", SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(10, 116, filename, SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
         ret = -1;
         goto open_fail;
     }
@@ -674,7 +675,7 @@ int main(void) {
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
-        LCD_ShowString(0, 92, "SMHC: controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     } else {
         printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
@@ -682,11 +683,18 @@ int main(void) {
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed, Retrying...\n");
-        mdelay(30);
-        if (sdmmc_init(&card0, &sdhci0) != 0) {
-            printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
-            LCD_ShowString(0, 92, "SMHC: init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+        printk(LOG_LEVEL_WARNING, "SMHC: SDC0 init failed, init SDC2...\n");
+        /* Initialize the SD host controller. */
+        if (sunxi_sdhci_init(&sdhci2) != 0) {
+            printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci2.name);
+            LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+            goto _fail;
+        } else {
+            printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci2.name);
+        }
+
+        if (sdmmc_init(&card0, &sdhci2) != 0) {
+            printk(LOG_LEVEL_WARNING, "SMHC: SDC2 init failed.\n");
             goto _fail;
         }
     }
@@ -720,9 +728,9 @@ int main(void) {
     printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     /* flush buffer */
-    LCD_ShowString(0, 0, "SyterKit Now Booting Linux                    ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
-    LCD_ShowString(0, 12, "Kernel Addr: 0x40800000                       ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
-    LCD_ShowString(0, 24, "DTB Addr: 0x40400000                          ", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 0, "SyterKit Now Booting Linux", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 12, "Kernel Addr: 0x40800000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+    LCD_ShowString(0, 24, "DTB Addr: 0x40400000", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 
     clean_syterkit_data();
 
