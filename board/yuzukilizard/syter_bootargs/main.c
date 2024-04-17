@@ -74,9 +74,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\n", filename,
-               fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -175,14 +173,14 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     }
 
     size = fdt_totalsize(image->of_dest);
-    printk(LOG_LEVEL_DEBUG,
+    printk_debug(
            "SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
            CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
     start = time_us();
     spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR,
                   (uint32_t) size);
     time = time_us() - start;
-    printk(LOG_LEVEL_INFO,
+    printk_info(
            "SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size,
            (f32) (size / time));
 
@@ -191,19 +189,19 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
                   (uint32_t) sizeof(linux_zimage_header_t));
     hdr = (linux_zimage_header_t *) image->dest;
     if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
-        printk(LOG_LEVEL_DEBUG,
+        printk_debug(
                "SPI-NAND: zImage verification failed\n");
         return -1;
     }
     size = hdr->end - hdr->start;
-    printk(LOG_LEVEL_DEBUG,
+    printk_debug(
            "SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
            CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
     start = time_us();
     spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR,
                   (uint32_t) size);
     time = time_us() - start;
-    printk(LOG_LEVEL_INFO,
+    printk_info(
            "SPI-NAND: read Image of size %u at %.2fMB/S\n", size,
            (f32) (size / time));
 

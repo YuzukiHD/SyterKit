@@ -141,9 +141,8 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
     }
 
     printk_debug("SPI: clock div=%u \n", div);
-    printk(LOG_LEVEL_DEBUG,
-           "SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
-           spi_clk / 1000000, freq / 1000000, mclk / 1000000);
+    printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
+                 spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
     write32(spi->base + SPI_CCR, reg);
 
@@ -415,8 +414,7 @@ static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
 
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
     uint32_t stxlen, fcr;
-    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode,
-           txlen, rxlen);
+    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
 
     spi_set_io_mode(spi, mode);
 

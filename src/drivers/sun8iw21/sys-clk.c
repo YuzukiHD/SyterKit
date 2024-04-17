@@ -93,7 +93,7 @@ void sunxi_clk_init(void) {
 
     printk_debug("sunxi clock init end\n");
     printk_debug("cpu clk reg (#0x%x): 0x%08x\n",
-           CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
+                 CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
 
     return;
 }
@@ -183,9 +183,7 @@ void sunxi_clk_dump() {
         p1 = 1;
     }
 
-    printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str,
-           ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) *
-            24 / p1));
+    printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
 
     /* PLL PERI */
     reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
@@ -195,11 +193,10 @@ void sunxi_clk_dump() {
         p0 = ((reg32 >> 16) & 0x03) + 1;
         p1 = ((reg32 >> 20) & 0x03) + 1;
 
-        printk(LOG_LEVEL_DEBUG,
-               "CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n",
-               (24 * plln) / (pllm * p0),
-               (24 * plln) / (pllm * p0) >> 1,
-               (24 * plln) / (pllm * p1));
+        printk_debug("CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n",
+                     (24 * plln) / (pllm * p0),
+                     (24 * plln) / (pllm * p0) >> 1,
+                     (24 * plln) / (pllm * p1));
     } else {
         printk_debug("CLK: PLL_peri disabled\n");
     }
@@ -214,7 +211,7 @@ void sunxi_clk_dump() {
         p0 = (reg32 & 0x01) + 1;
 
         printk_debug("CLK: PLL_ddr=%uMHz\n",
-               (24 * plln) / (p0 * p1));
+                     (24 * plln) / (p0 * p1));
     } else {
         printk_debug("CLK: PLL_ddr disabled\n");
     }
@@ -258,7 +255,7 @@ void sunxi_usb_clk_init(void) {
 
 void sunxi_usb_clk_deinit(void) {
     uint32_t reg_val = 0;
-    
+
     /* USB BUS Gating Reset Reg: USB_OTG reset */
     reg_val = readl(SUNXI_CCU_BASE + CCU_USB_BGR_REG);
     reg_val &= ~(1 << 24);
