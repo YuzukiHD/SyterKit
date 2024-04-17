@@ -91,7 +91,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -100,7 +100,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -118,7 +118,7 @@ static int load_sdcard(image_info_t *image) {
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0,
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -126,19 +126,19 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename,
+    printk_info("FATFS: read %s addr=%x\n", image->of_filename,
            (unsigned int) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename,
+    printk_info("FATFS: read %s addr=%x\n", image->filename,
            (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
@@ -147,12 +147,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -168,7 +168,7 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     /* get dtb size and read */
     spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
     if (fdt_check_header(image->of_dest)) {
-        printk(LOG_LEVEL_ERROR, "SPI-NAND: DTB verification failed\n");
+        printk_error("SPI-NAND: DTB verification failed\n");
         return -1;
     }
 
@@ -233,7 +233,7 @@ int main(void) {
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n",
+        printk_error("SMHC: %s controller init failed\n",
                sdhci0.name);
     } else {
         printk(LOG_LEVEL_INFO,
@@ -241,7 +241,7 @@ int main(void) {
                sdhci0.reg->vers);
     }
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed, trying SPI\n");
+        printk_warning("SMHC: init failed, trying SPI\n");
         goto _spi;
     }
 
@@ -256,13 +256,13 @@ _spi:
     dma_init();
     dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
              (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
-    printk(LOG_LEVEL_DEBUG, "SPI: init\n");
+    printk_debug("SPI: init\n");
     if (sunxi_spi_init(&sunxi_spi0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        printk_error("SPI: init failed\n");
     }
 
     if (load_spi_nand(&sunxi_spi0, &image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI-NAND: loading failed\n");
+        printk_error("SPI-NAND: loading failed\n");
     }
 
     sunxi_spi_disable(&sunxi_spi0);
@@ -270,24 +270,24 @@ _spi:
 
 _boot:
     if (zImage_loader((unsigned char *) image.dest, &entry_point)) {
-        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
+        printk_error("boot setup failed\n");
         abort();
     }
 
-    printk(LOG_LEVEL_INFO, "booting linux...\n");
+    printk_info("booting linux...\n");
 
     arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    printk_info("disable mmu ok...\n");
     arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    printk_info("disable dcache ok...\n");
     arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    printk_info("disable icache ok...\n");
     arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+    printk_info("free interrupt ok...\n");
     enable_kernel_smp();
-    printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
+    printk_info("enable kernel smp ok...\n");
 
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
+    printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
     kernel_entry = (void (*)(int, int, unsigned int)) entry_point;
     kernel_entry(0, ~0, (unsigned int) image.of_dest);

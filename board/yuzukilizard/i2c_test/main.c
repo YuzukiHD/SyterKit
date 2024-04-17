@@ -29,15 +29,15 @@ int main(void) {
 
     sunxi_i2c_init(&i2c_0);
 
-    printk(LOG_LEVEL_INFO, "Hello World\n");
+    printk_info("Hello World\n");
 
     int ret = 0;
 
     while (1) {
-        printk(LOG_LEVEL_INFO, "sunxi_i2c_write\n");
+        printk_info("sunxi_i2c_write\n");
         ret = sunxi_i2c_write(&i2c_0, 0x32, 0x11, 0x11);
         mdelay(100);
-        printk(LOG_LEVEL_INFO, "sunxi_i2c_write done, ret = %08x\n", ret);
+        printk_info("sunxi_i2c_write done, ret = %08x\n", ret);
     }
 
     return 0;

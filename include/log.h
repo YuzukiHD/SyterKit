@@ -18,14 +18,12 @@
 extern "C" {
 #endif// __cplusplus
 
-enum {
-    LOG_LEVEL_TRACE = 0,
-    LOG_LEVEL_DEBUG = 1,
-    LOG_LEVEL_INFO = 2,
-    LOG_LEVEL_WARNING = 3,
-    LOG_LEVEL_ERROR = 4,
-    LOG_LEVEL_MUTE = 5,
-};
+#define LOG_LEVEL_TRACE 0
+#define LOG_LEVEL_DEBUG 1
+#define LOG_LEVEL_INFO 2
+#define LOG_LEVEL_WARNING 3
+#define LOG_LEVEL_ERROR 4
+#define LOG_LEVEL_MUTE 5
 
 #ifndef LOG_LEVEL_DEFAULT
 
@@ -39,10 +37,68 @@ enum {
 
 #endif// LOG_LEVEL_DEFAULT
 
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
+#define printk_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#else
+#define printk_trace(fmt, ...) ((void) 0)
+#endif
+
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
+#define printk_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#else
+#define printk_debug(fmt, ...) ((void) 0)
+#endif
+
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_INFO
+#define printk_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
+#else
+#define printk_info(fmt, ...) ((void) 0)
+#endif
+
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_WARNING
+#define printk_warning(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
+#else
+#define printk_warning(fmt, ...) ((void) 0)
+#endif
+
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_ERROR
+#define printk_error(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+#else
+#define printk_error(fmt, ...) ((void) 0)
+#endif
+
+/**
+ * @brief Set timer count
+ * 
+ * This function is used to set the count value of the timer.
+ * 
+ * @note Before calling this function, timer-related hardware configuration should be initialized.
+ */
 void set_timer_count();
 
+/**
+ * @brief Print message to kernel log
+ * 
+ * This function is used to print the message with specified level to the kernel log.
+ * 
+ * @param level Information level, typically used to specify the importance or type of the message.
+ * @param fmt   Format string describing the format of the message to print.
+ * @param ...   Variable argument list used to fill placeholders in the format string.
+ * 
+ * @note This function should be used within the kernel to record important system information or debug messages.
+ */
 void printk(int level, const char *fmt, ...);
 
+/**
+ * @brief Print message via UART
+ * 
+ * This function is used to print formatted message to the terminal via UART serial port.
+ * 
+ * @param fmt Format string describing the format of the message to print.
+ * @param ... Variable argument list used to fill placeholders in the format string.
+ * 
+ * @note This function is typically used in embedded systems for debugging and outputting system status information.
+ */
 void uart_printf(const char *fmt, ...);
 
 #ifdef __cplusplus

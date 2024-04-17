@@ -12,7 +12,7 @@ extern sunxi_serial_t uart_dbg;
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    printk_info("Hello World!\n");
 
     sunxi_clk_dump();
 
@@ -20,7 +20,7 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    printk_info("Hello World!\n");
 
     return 0;
 }

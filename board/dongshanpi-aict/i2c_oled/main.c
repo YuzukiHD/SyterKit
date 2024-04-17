@@ -20,7 +20,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    printk(LOG_LEVEL_INFO, "Hello World\n");
+    printk_info("Hello World\n");
 
     OLED_Init();
 

@@ -81,11 +81,11 @@ DRESULT disk_read(BYTE pdrv,    /* Physical drive nmuber to identify the drive *
     if (Stat & STA_NOINIT)
         return RES_NOTRDY;
 
-    printk(LOG_LEVEL_TRACE, "FATFS: read %u sectors at %llu\r\n", count, sector);
+    printk_trace("FATFS: read %u sectors at %llu\r\n", count, sector);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
     if (pdrv != cache_pdrv) {
-        printk(LOG_LEVEL_DEBUG, "FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
+        printk_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
         if (cache_pdrv != -1)
             memset(cache_bitmap, 0, sizeof(cache_bitmap));
         cache_pdrv = pdrv;
@@ -93,10 +93,10 @@ DRESULT disk_read(BYTE pdrv,    /* Physical drive nmuber to identify the drive *
 
     while (count) {
         if (sector >= FATFS_CACHE_SECTORS) {
-            printk(LOG_LEVEL_TRACE, "FATFS: beyond cache %llu count %u\r\n", sector, count);
+            printk_trace("FATFS: beyond cache %llu count %u\r\n", sector, count);
             /* beyond end of cache, read remaining */
             if (sdmmc_blk_read(&card0, buff, sector, count) != count) {
-                printk(LOG_LEVEL_WARNING, "FATFS: read failed %llu count %u\r\n", sector, count);
+                printk_warning("FATFS: read failed %llu count %u\r\n", sector, count);
                 return RES_ERROR;
             }
             return RES_OK;
@@ -104,14 +104,14 @@ DRESULT disk_read(BYTE pdrv,    /* Physical drive nmuber to identify the drive *
 
         if (!CACHE_IS_VALID(sector)) {
             LBA_t chunk = sector & ~(FATFS_CACHE_SECTORS_PER_BIT - 1);
-            printk(LOG_LEVEL_TRACE, "FATFS: cache miss %llu, loading %llu count %u\r\n", sector, chunk, FATFS_CACHE_SECTORS_PER_BIT);
+            printk_trace("FATFS: cache miss %llu, loading %llu count %u\r\n", sector, chunk, FATFS_CACHE_SECTORS_PER_BIT);
             if (sdmmc_blk_read(&card0, &cache_data[chunk * FF_MIN_SS], chunk, FATFS_CACHE_SECTORS_PER_BIT) != FATFS_CACHE_SECTORS_PER_BIT) {
-                printk(LOG_LEVEL_WARNING, "FATFS: read failed %llu count %u\r\n", sector, FATFS_CACHE_SECTORS_PER_BIT);
+                printk_warning("FATFS: read failed %llu count %u\r\n", sector, FATFS_CACHE_SECTORS_PER_BIT);
                 return RES_ERROR;
             }
             CACHE_SET_VALID(sector);
         } else {
-            printk(LOG_LEVEL_TRACE, "FATFS: cache hit %llu\r\n", sector);
+            printk_trace("FATFS: cache hit %llu\r\n", sector);
         }
         memcpy(buff, &cache_data[sector * FF_MIN_SS], FF_MIN_SS);
 

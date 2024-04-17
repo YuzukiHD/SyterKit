@@ -17,24 +17,24 @@ static vaddr_map_t default_addr_mapping = {
 };
 
 void print_elf32_ehdr(Elf32_Ehdr *header) {
-    printk(LOG_LEVEL_INFO, "e_ident: ");
+    printk_info("e_ident: ");
     for (int i = 0; i < EI_NIDENT; i++) {
         printk(LOG_LEVEL_MUTE, "%02x ", header->e_ident[i]);
     }
     printk(LOG_LEVEL_MUTE, "\n");
-    printk(LOG_LEVEL_DEBUG, "e_type: 0x%08x\n", header->e_type);
-    printk(LOG_LEVEL_DEBUG, "e_machine: 0x%08x\n", header->e_machine);
-    printk(LOG_LEVEL_DEBUG, "e_version: 0x%08x\n", header->e_version);
-    printk(LOG_LEVEL_DEBUG, "e_entry: 0x%08x\n", header->e_entry);
-    printk(LOG_LEVEL_DEBUG, "e_phoff: 0x%08x\n", header->e_phoff);
-    printk(LOG_LEVEL_DEBUG, "e_shoff: 0x%08x\n", header->e_shoff);
-    printk(LOG_LEVEL_DEBUG, "e_flags: 0x%08x\n", header->e_flags);
-    printk(LOG_LEVEL_DEBUG, "e_ehsize: 0x%08x\n", header->e_ehsize);
-    printk(LOG_LEVEL_DEBUG, "e_phentsize: 0x%08x\n", header->e_phentsize);
-    printk(LOG_LEVEL_DEBUG, "e_phnum: 0x%08x\n", header->e_phnum);
-    printk(LOG_LEVEL_DEBUG, "e_shentsize: 0x%08x\n", header->e_shentsize);
-    printk(LOG_LEVEL_DEBUG, "e_shnum: 0x%08x\n", header->e_shnum);
-    printk(LOG_LEVEL_DEBUG, "e_shstrndx: 0x%08x\n", header->e_shstrndx);
+    printk_debug("e_type: 0x%08x\n", header->e_type);
+    printk_debug("e_machine: 0x%08x\n", header->e_machine);
+    printk_debug("e_version: 0x%08x\n", header->e_version);
+    printk_debug("e_entry: 0x%08x\n", header->e_entry);
+    printk_debug("e_phoff: 0x%08x\n", header->e_phoff);
+    printk_debug("e_shoff: 0x%08x\n", header->e_shoff);
+    printk_debug("e_flags: 0x%08x\n", header->e_flags);
+    printk_debug("e_ehsize: 0x%08x\n", header->e_ehsize);
+    printk_debug("e_phentsize: 0x%08x\n", header->e_phentsize);
+    printk_debug("e_phnum: 0x%08x\n", header->e_phnum);
+    printk_debug("e_shentsize: 0x%08x\n", header->e_shentsize);
+    printk_debug("e_shnum: 0x%08x\n", header->e_shnum);
+    printk_debug("e_shstrndx: 0x%08x\n", header->e_shstrndx);
 }
 
 /**
@@ -90,7 +90,7 @@ int load_elf32_image_remap(phys_addr_t img_addr, vaddr_map_t *map) {
         dst = (void *) (phys_addr_t) set_img_va_to_pa((phys_addr_t) phdr->p_paddr, map->range, map->range_size);
         src = (void *) (img_addr + phdr->p_offset);
 
-        printk(LOG_LEVEL_DEBUG, "ELF: Loading phdr %i from 0x%x to 0x%x (%i bytes)\n", i, phdr->p_paddr, dst, phdr->p_filesz);
+        printk_debug("ELF: Loading phdr %i from 0x%x to 0x%x (%i bytes)\n", i, phdr->p_paddr, dst, phdr->p_filesz);
 
         if (phdr->p_type != PT_LOAD)
             continue;

@@ -59,7 +59,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -76,7 +76,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -85,7 +85,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+    printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
@@ -102,7 +102,7 @@ static int load_sdcard(image_info_t *image) {
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0,
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -110,13 +110,13 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
+    printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
         return ret;
@@ -124,12 +124,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -169,21 +169,21 @@ int main(void) {
 
     // Initialize SDHCI controller
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         return 0;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
     // Initialize SD/MMC card
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
+        printk_error("SMHC: init failed\n");
         return 0;
     }
 
     // Load image from SD card
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: loading failed\n");
+        printk_error("SMHC: loading failed\n");
         return 0;
     }
 
@@ -202,18 +202,18 @@ int main(void) {
 
     // Get entry address of HIFI4 ELF
     uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
-    printk(LOG_LEVEL_INFO, "HIFI4 ELF run addr: 0x%08x\n", elf_run_addr);
+    printk_info("HIFI4 ELF run addr: 0x%08x\n", elf_run_addr);
 
     sunxi_hifi4_clock_init(elf_run_addr);// Initialize clock with entry address
 
     // Load HIFI4 ELF image
     if (load_elf32_image_remap((phys_addr_t) image.dest, &hifi4_addr_mapping)) {
-        printk(LOG_LEVEL_ERROR, "HIFI4 ELF load FAIL\n");
+        printk_error("HIFI4 ELF load FAIL\n");
     }
 
     dump_c906_clock();
 
-    printk(LOG_LEVEL_INFO, "HIFI4 Core now Running... \n");
+    printk_info("HIFI4 Core now Running... \n");
 
     cmd_boot(0, NULL);
 

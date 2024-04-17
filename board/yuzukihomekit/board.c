@@ -96,13 +96,13 @@ dram_para_t dram_para = {
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    printk_info("disable mmu ok...\n");
     arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    printk_info("disable dcache ok...\n");
     arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    printk_info("disable icache ok...\n");
     arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+    printk_info("free interrupt ok...\n");
 }
 
 void show_chip() {
@@ -112,19 +112,19 @@ void show_chip() {
     chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
-    printk(LOG_LEVEL_INFO, "Model: Yuzuki Home Kit\n");
-    printk(LOG_LEVEL_INFO, "Host Core: Arm Dual-Core Cortex-A7 R2P0\n");
-    printk(LOG_LEVEL_INFO, "AMP Core: Xuantie C906 RISC-V RV64IMAFDCVX R1S0P2 Vlen=128\n");
-    printk(LOG_LEVEL_INFO, "Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+    printk_info("Model: Yuzuki Home Kit\n");
+    printk_info("Host Core: Arm Dual-Core Cortex-A7 R2P0\n");
+    printk_info("AMP Core: Xuantie C906 RISC-V RV64IMAFDCVX R1S0P2 Vlen=128\n");
+    printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
     uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
     switch (chip_markid_sid) {
         case 0x7200:
-            printk(LOG_LEVEL_INFO, "Chip type = T113M4020DC0");
+            printk_info("Chip type = T113M4020DC0");
             break;
         default:
-            printk(LOG_LEVEL_INFO, "Chip type = UNKNOW");
+            printk_info("Chip type = UNKNOW");
             break;
     }
 

@@ -198,11 +198,11 @@ static int lowlevel_usb_dma_int_clear(uint64_t husb) {
  */
 static int usb_index_check(uint32_t dma_index) {
     if (dma_index > SUNXI_USB_DMA_MAX) { /**< Check if the DMA index is within range */
-        printk(LOG_LEVEL_ERROR, "USB: dma %d is overrange\n", dma_index);
+        printk_error("USB: dma %d is overrange\n", dma_index);
         return -1;
     }
     if (!usb_dma_used[dma_index]) { /**< Check if the DMA index is currently in use */
-        printk(LOG_LEVEL_ERROR, "USB: dma %d is not used\n", dma_index);
+        printk_error("USB: dma %d is not used\n", dma_index);
         return -1;
     }
     return 0;

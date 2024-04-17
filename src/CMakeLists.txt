@@ -51,3 +51,5 @@ add_library(SyterKit STATIC
     # common driver
     $<TARGET_OBJECTS:drivers-obj>
 )
+
+target_link_libraries(SyterKit PRIVATE fatfs fdt elf gcc)

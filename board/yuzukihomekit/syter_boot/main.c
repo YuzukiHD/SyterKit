@@ -85,7 +85,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -102,7 +102,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -111,7 +111,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_INFO, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk_info("FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -128,7 +128,7 @@ static int load_sdcard(image_info_t *image) {
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -136,20 +136,20 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
     /* load DTB */
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
     if (ret)
         return ret;
 
     /* load Kernel */
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
+    printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
         return ret;
@@ -157,12 +157,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_INFO, "FATFS: done in %ums\n", time_ms() - start);
+    printk_info("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -201,24 +201,24 @@ static int update_dtb_for_linux(uint64_t dram_size) {
 
     /* Check if DTB header is valid */
     if ((ret = fdt_check_header(dtb_header)) != 0) {
-        printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
+        printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     /* Get the total size of DTB */
     uint32_t size = fdt_totalsize(image.of_dest);
 
-    printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", size);
+    printk_debug("FDT dtb size = %d\n", size);
 
     if ((ret = fdt_increase_size(image.of_dest, 512)) != 0) {
-        printk(LOG_LEVEL_ERROR, "FDT: device tree increase error: %s\n", fdt_strerror(ret));
+        printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     int memory_node = fdt_find_or_add_subnode(image.of_dest, 0, "memory");
 
     if ((ret = fdt_setprop_string(image.of_dest, memory_node, "device_type", "memory")) != 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change memory size node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change memory size node: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -228,7 +228,7 @@ static int update_dtb_for_linux(uint64_t dram_size) {
     int len = fdt_pack_reg(image.of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
 
     if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
         sfree(tmp_buf);
         goto _error;
     }
@@ -248,30 +248,30 @@ static int update_dtb_for_linux(uint64_t dram_size) {
 
     strcat(bootargs_str, CONFIG_CMDLINE);
 
-    printk(LOG_LEVEL_INFO, "Kernel cmdline = [%s]\n", bootargs_str);
+    printk_info("Kernel cmdline = [%s]\n", bootargs_str);
 
 _add_dts_size:
     /* Modify bootargs string */
     ret = fdt_setprop_string(image.of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
     if (ret == -FDT_ERR_NOSPACE) {
-        printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+        printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image.of_dest, 512);
         if (!ret) {
             goto _add_dts_size;
         } else {
-            printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+            printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
             goto _error;
         }
     } else if (ret < 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     /* Get the total size of DTB */
-    printk(LOG_LEVEL_DEBUG, "Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+    printk_debug("Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
 
     if (ret < 0) {
-        printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+        printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -285,7 +285,7 @@ static int abortboot_single_key(int bootdelay) {
     int abort = 0;
     unsigned long ts;
 
-    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
+    printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
     /* Check if key already pressed */
     if (tstc()) {       /* we got a key press */
@@ -320,7 +320,7 @@ int cmd_boot(int argc, const char **argv) {
 
     /* Set up boot parameters for the kernel. */
     if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
-        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
+        printk_error("boot setup failed\n");
         abort();
     }
 
@@ -328,10 +328,10 @@ int cmd_boot(int argc, const char **argv) {
     clean_syterkit_data();
 
     enable_kernel_smp();
-    printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
+    printk_info("enable kernel smp ok...\n");
 
     /* Debug message to indicate the kernel address that the system is jumping to. */
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
+    printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
     /* Jump to the kernel entry point. */
     kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
@@ -384,15 +384,15 @@ int main(void) {
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         goto _shell;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed, retry...\n");
+        printk_warning("SMHC: init failed, retry...\n");
         if (sdmmc_init(&card0, &sdhci0) != 0) {
             goto _shell;
         }
@@ -400,7 +400,7 @@ int main(void) {
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
+        printk_warning("SMHC: loading failed\n");
         goto _shell;
     }
 
