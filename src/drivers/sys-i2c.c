@@ -35,16 +35,16 @@
 
 __attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev) {
     struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
-    printk(LOG_LEVEL_DEBUG, "i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
-    printk(LOG_LEVEL_DEBUG, "i2c->xaddr :\t0x%x:0x%x\n", &i2c->xaddr, i2c->xaddr);
-    printk(LOG_LEVEL_DEBUG, "i2c->data  :\t0x%x:0x%x\n", &i2c->data, i2c->data);
-    printk(LOG_LEVEL_DEBUG, "i2c->ctl   :\t0x%x:0x%x\n", &i2c->ctl, i2c->ctl);
-    printk(LOG_LEVEL_DEBUG, "i2c->status:\t0x%x:0x%x\n", &i2c->status, i2c->status);
-    printk(LOG_LEVEL_DEBUG, "i2c->clk   :\t0x%x:0x%x\n", &i2c->clk, i2c->clk);
-    printk(LOG_LEVEL_DEBUG, "i2c->srst  :\t0x%x:0x%x\n", &i2c->srst, i2c->srst);
-    printk(LOG_LEVEL_DEBUG, "i2c->eft   :\t0x%x:0x%x\n", &i2c->eft, i2c->eft);
-    printk(LOG_LEVEL_DEBUG, "i2c->lcr   :\t0x%x:0x%x\n", &i2c->lcr, i2c->lcr);
-    printk(LOG_LEVEL_DEBUG, "i2c->dvfs  :\t0x%x:0x%x\n", &i2c->dvfs, i2c->dvfs);
+    printk_debug("i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
+    printk_debug("i2c->xaddr :\t0x%x:0x%x\n", &i2c->xaddr, i2c->xaddr);
+    printk_debug("i2c->data  :\t0x%x:0x%x\n", &i2c->data, i2c->data);
+    printk_debug("i2c->ctl   :\t0x%x:0x%x\n", &i2c->ctl, i2c->ctl);
+    printk_debug("i2c->status:\t0x%x:0x%x\n", &i2c->status, i2c->status);
+    printk_debug("i2c->clk   :\t0x%x:0x%x\n", &i2c->clk, i2c->clk);
+    printk_debug("i2c->srst  :\t0x%x:0x%x\n", &i2c->srst, i2c->srst);
+    printk_debug("i2c->eft   :\t0x%x:0x%x\n", &i2c->eft, i2c->eft);
+    printk_debug("i2c->lcr   :\t0x%x:0x%x\n", &i2c->lcr, i2c->lcr);
+    printk_debug("i2c->dvfs  :\t0x%x:0x%x\n", &i2c->dvfs, i2c->dvfs);
 }
 
 static int32_t sunxi_i2c_send_byteaddr(sunxi_i2c_t *i2c_dev, uint32_t byteaddr) {
@@ -499,11 +499,11 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
     sunxi_gpio_init(i2c_dev->gpio_scl.pin, i2c_dev->gpio_scl.mux);
     sunxi_gpio_init(i2c_dev->gpio_sda.pin, i2c_dev->gpio_sda.mux);
 
-    printk(LOG_LEVEL_DEBUG, "I2C: Init GPIO for I2C, base = 0x%08x, id = %d\n", i2c_dev->base, i2c_dev->id);
+    printk_debug("I2C: Init GPIO for I2C, base = 0x%08x, id = %d\n", i2c_dev->base, i2c_dev->id);
 
     sunxi_i2c_bus_open(i2c_dev);
 
-    printk(LOG_LEVEL_DEBUG, "I2C: Bus open done.\n");
+    printk_debug("I2C: Bus open done.\n");
     sunxi_i2c_set_clock(i2c_dev);
 
     i2c_dev->status = true;

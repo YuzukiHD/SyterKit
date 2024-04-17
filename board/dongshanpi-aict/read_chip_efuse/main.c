@@ -23,7 +23,7 @@ int main(void) {
     id[2] = read32(0x03006200 + 0x8);
     id[3] = read32(0x03006200 + 0xc);
 
-    printk(LOG_LEVEL_INFO, "Chip ID is: %08x%08x%08x%08x\n", id[0], id[1],
+    printk_info("Chip ID is: %08x%08x%08x%08x\n", id[0], id[1],
            id[2], id[3]);
 
     return 0;

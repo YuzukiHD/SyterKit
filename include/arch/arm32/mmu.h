@@ -128,7 +128,7 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size
     reg |= ((1 << 0) | (1 << 12));// enable mmu, icache
     reg &= ~(1 << 2);             // disable dcache
 
-    printk(LOG_LEVEL_TRACE, "MMU: CR = 0x%08x\n", reg);
+    printk_trace("MMU: CR = 0x%08x\n", reg);
     asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR"
                  :
                  : "r"(reg)

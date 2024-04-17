@@ -78,11 +78,11 @@ void sunxi_hifi4_clock_init(uint32_t addr) {
 
     /*
     reg_val = readl(CCU_BASE + CCU_DSP_CLK_REG);
-    printk(LOG_LEVEL_INFO, "CCU_DSP_CLK_REG = %x\n", reg_val);
+    printk_info("CCU_DSP_CLK_REG = %x\n", reg_val);
     reg_val = readl(CCU_BASE + CCU_DSP_BGR_REG);
-    printk(LOG_LEVEL_INFO, "CCU_DSP_BGR_REG = %x\n", reg_val);
+    printk_info("CCU_DSP_BGR_REG = %x\n", reg_val);
     reg_val = readl(DSP0_CFG_BASE + DSP_CTRL_REG0);
-    printk(LOG_LEVEL_INFO, "DSP_CTRL_REG0 = %x\n", reg_val);
+    printk_info("DSP_CTRL_REG0 = %x\n", reg_val);
 */
 }
 
@@ -160,7 +160,7 @@ void dump_c906_clock(void) {
 
         pll_perf = (24 * plln) / (pllm * p1);
     } else {
-        printk(LOG_LEVEL_INFO, "CLK: PLL_peri disabled\n");
+        printk_info("CLK: PLL_peri disabled\n");
         return;
     }
 
@@ -169,8 +169,8 @@ void dump_c906_clock(void) {
     factor_n = ((reg_val >> 8) & 0x3) + 1;
     pll_riscv = pll_perf / factor_m;
 
-    printk(LOG_LEVEL_INFO, "CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
-    printk(LOG_LEVEL_INFO, "CLK: RISC-V AXI FREQ=%uMHz\n",
+    printk_info("CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
+    printk_info("CLK: RISC-V AXI FREQ=%uMHz\n",
            pll_riscv / factor_n);
-    printk(LOG_LEVEL_INFO, "CLK: PERI1X = %uMHz\n", sunxi_clk_get_peri1x_rate() / (1000 * 1000));
+    printk_info("CLK: PERI1X = %uMHz\n", sunxi_clk_get_peri1x_rate() / (1000 * 1000));
 }

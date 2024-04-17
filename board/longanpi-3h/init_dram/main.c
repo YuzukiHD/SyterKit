@@ -55,7 +55,7 @@ int main(void) {
 
     pmu_axp1530_dump(&i2c_pmu);
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
 
@@ -63,7 +63,7 @@ int main(void) {
 
     while (1) {
         i++;
-        printk(LOG_LEVEL_INFO, "Count: %d\n", i);
+        printk_info("Count: %d\n", i);
         mdelay(1000);
     }
 

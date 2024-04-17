@@ -36,31 +36,31 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
     int ret;
 
     if (!i2c_dev->status) {
-        printk(LOG_LEVEL_WARNING, "PMU: I2C not init\n");
+        printk_warning("PMU: I2C not init\n");
         return -1;
     }
 
     if (ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val)) {
-        printk(LOG_LEVEL_WARNING, "PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
+        printk_warning("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
         return -1;
     }
 
     axp_val &= 0xCF;
     switch (axp_val) {
         case AXP1530_CHIP_ID:
-            printk(LOG_LEVEL_INFO, "PMU: Found AXP1530 PMU\n");
+            printk_info("PMU: Found AXP1530 PMU\n");
             break;
         case AXP313A_CHIP_ID:
-            printk(LOG_LEVEL_INFO, "PMU: Found AXP313A PMU\n");
+            printk_info("PMU: Found AXP313A PMU\n");
             break;
         case AXP313B_CHIP_ID:
-            printk(LOG_LEVEL_INFO, "PMU: Found AXP313B PMU\n");
+            printk_info("PMU: Found AXP313B PMU\n");
             break;
         case AXP323_CHIP_ID:
-            printk(LOG_LEVEL_INFO, "PMU: Found AXP323 PMU\n");
+            printk_info("PMU: Found AXP323 PMU\n");
             break;
         default:
-            printk(LOG_LEVEL_INFO, "PMU: Cannot found match PMU\n");
+            printk_info("PMU: Cannot found match PMU\n");
             return -1;
     }
 
@@ -79,7 +79,7 @@ int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev) {
     int ret;
 
     if (ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val)) {
-        printk(LOG_LEVEL_WARNING, "PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
+        printk_warning("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
         return -1;
     }
 
@@ -88,7 +88,7 @@ int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev) {
         case AXP323_CHIP_ID: /* Only AXP323 Support Dual phase */
             break;
         default:
-            printk(LOG_LEVEL_INFO, "PMU: PMU not support dual phase\n");
+            printk_info("PMU: PMU not support dual phase\n");
             return -1;
     }
 
@@ -109,6 +109,6 @@ int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev) {
     for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-        printk(LOG_LEVEL_DEBUG, "PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
+        printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
     }
 }

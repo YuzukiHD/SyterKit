@@ -119,7 +119,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -128,7 +128,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -145,7 +145,7 @@ static int load_sdcard(image_info_t *image) {
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -155,28 +155,28 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
     ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
     if (ret)
         return ret;
 
-    // printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
+    // printk_info("FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
     // ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
     // if (ret)
     //     return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(image->of_filename, image->of_dest);
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
     ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
     if (ret)
         return ret;
@@ -184,12 +184,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -268,21 +268,21 @@ int main(void) {
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         goto _shell;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+        printk_warning("SMHC: init failed\n");
         goto _shell;
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
+        printk_warning("SMHC: loading failed\n");
         goto _shell;
     }
 
@@ -291,16 +291,16 @@ int main(void) {
     atf_head->next_boot_base = CONFIG_UBOOT_LOAD_ADDR;
     atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
 
-    printk(LOG_LEVEL_INFO, "ATF: jump_instruction: 0x%08x\n", atf_head->jump_instruction);
-    printk(LOG_LEVEL_INFO, "ATF: magic: %s\n", atf_head->magic);
-    printk(LOG_LEVEL_INFO, "ATF: scp_base: 0x%08x\n", atf_head->scp_base);
-    printk(LOG_LEVEL_INFO, "ATF: next_boot_base: 0x%08x\n", atf_head->next_boot_base);
+    printk_info("ATF: jump_instruction: 0x%08x\n", atf_head->jump_instruction);
+    printk_info("ATF: magic: %s\n", atf_head->magic);
+    printk_info("ATF: scp_base: 0x%08x\n", atf_head->scp_base);
+    printk_info("ATF: next_boot_base: 0x%08x\n", atf_head->next_boot_base);
 
     clean_syterkit_data();
 
     jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
 
-    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
+    printk_info("Back to SyterKit\n");
 
 _shell:
     abort();

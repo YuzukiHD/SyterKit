@@ -40,14 +40,14 @@ int cmd_speedtest(int argc, const char **argv) {
     // start = time_ms();
     // sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     // test_time = time_ms() - start;
-    // printk(LOG_LEVEL_INFO, "SDMMC: Write speedtest %uKB in %ums at %uKB/S\n",
+    // printk_info("SDMMC: Write speedtest %uKB in %ums at %uKB/S\n",
     //        (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
     //        (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_INFO, "SDMMC: Read speedtest %uKB in %ums at %uKB/S\n",
+    printk_info("SDMMC: Read speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -82,22 +82,22 @@ int main(void) {
 
     enable_sram_a3();
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci2) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci2.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci2.name);
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci2.name);
+        printk_info("SMHC: %s controller initialized\n", sdhci2.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci2) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+        printk_warning("SMHC: init failed\n");
     } else {
-        printk(LOG_LEVEL_DEBUG, "Card OK!\n");
+        printk_debug("Card OK!\n");
     }
 
     syterkit_shell_attach(commands);

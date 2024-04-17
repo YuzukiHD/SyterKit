@@ -64,18 +64,18 @@ int pmu_axp2101_init(sunxi_i2c_t *i2c_dev) {
     int ret;
 
     if (!i2c_dev->status) {
-        printk(LOG_LEVEL_WARNING, "PMU: I2C not init\n");
+        printk_warning("PMU: I2C not init\n");
         return -1;
     }
 
     if (ret = sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VERSION, &axp_val)) {
-        printk(LOG_LEVEL_WARNING, "PMU: Probe target device AXP2101 failed. ret = %d\n", ret);
+        printk_warning("PMU: Probe target device AXP2101 failed. ret = %d\n", ret);
         return -1;
     }
 
     axp_val &= 0xCF;
     if (axp_val == AXP2101_CHIP_ID || axp_val == AXP2101_CHIP_ID_B) {
-        printk(LOG_LEVEL_INFO, "PMU: Found AXP2101 PMU\n");
+        printk_info("PMU: Found AXP2101 PMU\n");
 
         /* limit charge current to 300mA */
         reg_value = 0x9;
@@ -154,6 +154,6 @@ int pmu_axp2101_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 
 void pmu_axp2101_dump(sunxi_i2c_t *i2c_dev) {
     for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-        printk(LOG_LEVEL_DEBUG, "PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
+        printk_debug("PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
     }
 }

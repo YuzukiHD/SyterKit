@@ -323,7 +323,7 @@ static bool mmc_send_op_cond(sdhci_t *hci, sdmmc_t *card) {
         }
         udelay(5000);
     } while (!(cmd.response[0] & OCR_BUSY) && retries--);
-    printk(LOG_LEVEL_TRACE, "SHMC: op_cond 0x%x, retries = %d\n", cmd.response[0], retries);
+    printk_trace("SHMC: op_cond 0x%x, retries = %d\n", cmd.response[0], retries);
 
     if (retries <= 0)
         return FALSE;
@@ -358,7 +358,7 @@ static int sdmmc_status(sdhci_t *hci, sdmmc_t *card) {
     } while (retries-- > 0);
     if (retries > 0)
         return ((cmd.response[0] >> 9) & 0xf);
-    printk(LOG_LEVEL_WARNING, "SMHC: status error\n");
+    printk_warning("SMHC: status error\n");
     return -1;
 }
 
@@ -382,7 +382,7 @@ static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uin
     dat.blkcnt = blkcnt;
 
     if (!sdhci_transfer(hci, &cmd, &dat)) {
-        printk(LOG_LEVEL_WARNING, "SMHC: read failed\n");
+        printk_warning("SMHC: read failed\n");
         return 0;
     }
 
@@ -400,7 +400,7 @@ static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uin
         cmd.arg = 0;
         cmd.resptype = MMC_RSP_R1B;
         if (!sdhci_transfer(hci, &cmd, NULL)) {
-            printk(LOG_LEVEL_WARNING, "SMHC: transfer stop failed\n");
+            printk_warning("SMHC: transfer stop failed\n");
             return 0;
         }
     }
@@ -427,7 +427,7 @@ static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, ui
     dat.blkcnt = blkcnt;
 
     if (!sdhci_transfer(hci, &cmd, &dat)) {
-        printk(LOG_LEVEL_WARNING, "SMHC: write failed\n");
+        printk_warning("SMHC: write failed\n");
         return 0;
     }
 
@@ -444,7 +444,7 @@ static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, ui
         cmd.arg = 0;
         cmd.resptype = MMC_RSP_R1B;
         if (!sdhci_transfer(hci, &cmd, NULL))
-            printk(LOG_LEVEL_WARNING, "SMHC: transfer stop failed\n");
+            printk_warning("SMHC: transfer stop failed\n");
         return 0;
     }
     return blkcnt;
@@ -461,12 +461,12 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     sdhci_reset(hci);
     if (!sdhci_set_clock(hci, MMC_CLK_400K) ||
         !sdhci_set_width(hci, MMC_BUS_WIDTH_1)) {
-        printk(LOG_LEVEL_ERROR, "SMHC: set clock/width failed\n");
+        printk_error("SMHC: set clock/width failed\n");
         return FALSE;
     }
 
     if (!go_idle_state(hci)) {
-        printk(LOG_LEVEL_ERROR, "SMHC: set idle state failed\n");
+        printk_error("SMHC: set idle state failed\n");
         return FALSE;
     }
     udelay(2000);// 1ms + 74 clocks @ 400KHz (185us)
@@ -474,32 +474,32 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     // if set the sdio type, use it
     if (hci->sdio_type == SDHCI_TYPE_SD) {
         if (!sd_send_op_cond(hci, card)) {
-            printk(LOG_LEVEL_INFO, "SMHC: SD detect failed\n");
+            printk_info("SMHC: SD detect failed\n");
             return FALSE;
         }
 
     } else if (hci->sdio_type == SDHCI_TYPE_MMC) {
         if (!mmc_send_op_cond(hci, card)) {
-            printk(LOG_LEVEL_INFO, "SMHC: MMC detect failed\n");
+            printk_info("SMHC: MMC detect failed\n");
             return FALSE;
         }
     } else {
         // Not set sdio_type, SD & MMC: try SD first
         // Otherwise there's only one media type if enabled
         if (!sd_send_op_cond(hci, card)) {
-            printk(LOG_LEVEL_INFO, "SMHC: SD detect failed, retrying MMC\n");
+            printk_info("SMHC: SD detect failed, retrying MMC\n");
             sdhci_reset(hci);
             sdhci_set_clock(hci, MMC_CLK_400K);
             sdhci_set_width(hci, MMC_BUS_WIDTH_1);
 
             if (!go_idle_state(hci)) {
-                printk(LOG_LEVEL_ERROR, "SMHC: set idle state failed\n");
+                printk_error("SMHC: set idle state failed\n");
                 return FALSE;
             }
             udelay(2000);// 1ms + 74 clocks @ 400KHz (185us)
 
             if (!mmc_send_op_cond(hci, card)) {
-                printk(LOG_LEVEL_INFO, "SMHC: SD/MMC detect failed\n");
+                printk_info("SMHC: SD/MMC detect failed\n");
                 return FALSE;
             }
         }
@@ -656,7 +656,7 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
             default:
                 break;
         }
-        printk(LOG_LEVEL_INFO, "SMHC: MMC version %s\n", strver);
+        printk_info("SMHC: MMC version %s\n", strver);
     }
 
     if (card->high_capacity) {
@@ -679,7 +679,7 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     if (hci->isspi) {
         if (!sdhci_set_clock(hci, min(card->tran_speed, hci->clock)) ||
             !sdhci_set_width(hci, MMC_BUS_WIDTH_1)) {
-            printk(LOG_LEVEL_ERROR, "SMHC: set clock/width failed\n");
+            printk_error("SMHC: set clock/width failed\n");
             return FALSE;
         }
     } else {
@@ -738,7 +738,7 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
             udelay(1000);
         }
         if (!sdhci_set_clock(hci, hci->clock) || !sdhci_set_width(hci, hci->width)) {
-            printk(LOG_LEVEL_ERROR, "SMHC: set clock/width failed\n");
+            printk_error("SMHC: set clock/width failed\n");
             return FALSE;
         }
     }
@@ -749,23 +749,23 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
     if (!sdhci_transfer(hci, &cmd, NULL))
         return FALSE;
 
-    printk(LOG_LEVEL_DEBUG, "SD/MMC card at the '%s' host controller:\r\n", hci->name);
-    printk(LOG_LEVEL_DEBUG, "  Attached is a %s card\r\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
+    printk_debug("SD/MMC card at the '%s' host controller:\r\n", hci->name);
+    printk_debug("  Attached is a %s card\r\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
     if (card->capacity / (f64) 1000000000.0 < 4)
-        printk(LOG_LEVEL_INFO, "  Capacity: %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
+        printk_info("  Capacity: %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
     else
-        printk(LOG_LEVEL_INFO, "  Capacity: %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
+        printk_info("  Capacity: %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
     if (card->high_capacity)
-        printk(LOG_LEVEL_DEBUG, "  High capacity card\r\n");
-    printk(LOG_LEVEL_DEBUG, "  CID: %08X-%08X-%08X-%08X\r\n", card->cid[0], card->cid[1], card->cid[2], card->cid[3]);
-    printk(LOG_LEVEL_DEBUG, "  CSD: %08X-%08X-%08X-%08X\r\n", card->csd[0], card->csd[1], card->csd[2], card->csd[3]);
-    printk(LOG_LEVEL_DEBUG, "  Max transfer speed: %u HZ\r\n", card->tran_speed);
-    printk(LOG_LEVEL_DEBUG, "  Manufacturer ID: %02X\r\n", extract_mid(card));
-    printk(LOG_LEVEL_DEBUG, "  OEM/Application ID: %04X\r\n", extract_oid(card));
-    printk(LOG_LEVEL_DEBUG, "  Product name: '%c%c%c%c%c'\r\n", card->cid[0] & 0xff, (card->cid[1] >> 24), (card->cid[1] >> 16) & 0xff, (card->cid[1] >> 8) & 0xff, card->cid[1] & 0xff);
-    printk(LOG_LEVEL_DEBUG, "  Product revision: %u.%u\r\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
-    printk(LOG_LEVEL_DEBUG, "  Serial no: %0u\r\n", extract_psn(card));
-    printk(LOG_LEVEL_DEBUG, "  Manufacturing date: %u.%u\r\n", extract_year(card), extract_month(card));
+        printk_debug("  High capacity card\r\n");
+    printk_debug("  CID: %08X-%08X-%08X-%08X\r\n", card->cid[0], card->cid[1], card->cid[2], card->cid[3]);
+    printk_debug("  CSD: %08X-%08X-%08X-%08X\r\n", card->csd[0], card->csd[1], card->csd[2], card->csd[3]);
+    printk_debug("  Max transfer speed: %u HZ\r\n", card->tran_speed);
+    printk_debug("  Manufacturer ID: %02X\r\n", extract_mid(card));
+    printk_debug("  OEM/Application ID: %04X\r\n", extract_oid(card));
+    printk_debug("  Product name: '%c%c%c%c%c'\r\n", card->cid[0] & 0xff, (card->cid[1] >> 24), (card->cid[1] >> 16) & 0xff, (card->cid[1] >> 8) & 0xff, card->cid[1] & 0xff);
+    printk_debug("  Product revision: %u.%u\r\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
+    printk_debug("  Serial no: %0u\r\n", extract_psn(card));
+    printk_debug("  Manufacturing date: %u.%u\r\n", extract_year(card), extract_month(card));
 
     return TRUE;
 }
@@ -808,7 +808,7 @@ int sdmmc_init(sdmmc_pdata_t *data, sdhci_t *hci) {
     data->online = FALSE;
 
     if (sdmmc_detect(data->hci, &data->card) == TRUE) {
-        printk(LOG_LEVEL_INFO, "SHMC: %s card detected\n", data->card.version & SD_VERSION_SD ? "SD" : "MMC");
+        printk_info("SHMC: %s card detected\n", data->card.version & SD_VERSION_SD ? "SD" : "MMC");
         return 0;
     }
 
