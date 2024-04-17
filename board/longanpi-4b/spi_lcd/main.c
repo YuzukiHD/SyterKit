@@ -89,13 +89,13 @@ static void LCD_Write_Bus(uint8_t dat) {
     tx[0] = dat;
     r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
-        printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
+        printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len) {
     int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
     if (r < 0)
-        printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
+        printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_WR_DATA(uint16_t dat) {
@@ -282,12 +282,12 @@ int main(void) {
     dma_init();
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        printk_error("SPI: init failed\n");
     }
 
     LCD_Init();
 
-    printk(LOG_LEVEL_ERROR, "SPI LCD done\n");
+    printk_error("SPI LCD done\n");
 
     LCD_Fill_All(0xFFFF);
 

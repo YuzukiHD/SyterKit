@@ -149,7 +149,7 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_WARNING, "FATFS: open, filename: [%s]: error %d\n", filename, fret);
+        printk_warning("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         LCD_ShowString(0, 104, "WARN: Open file fail, filename:", SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
         LCD_ShowString(10, 116, filename, SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
         ret = -1;
@@ -168,7 +168,7 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -178,7 +178,7 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_INFO, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk_info("FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -199,7 +199,7 @@ static int load_sdcard(image_info_t *image) {
     start = time_ms();
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -207,43 +207,43 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
     ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
     ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t) image->extlinux_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t) image->extlinux_dest);
     ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
     if (ret)
         return ret;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
+    printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
     ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
     if (ret)
-        printk(LOG_LEVEL_INFO, "FATFS: Splash load fail, Leave Black Screen.\n");
+        printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
     else
         LCD_Show_Splash(image->splash_dest);
 
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -347,28 +347,28 @@ static int update_pmu_ext_info_dtb(image_info_t *image) {
     /* get used pmu_ext node */
     nodeoffset = fdt_path_offset(image->of_dest, "reg-axp1530");
     if (nodeoffset < 0) {
-        printk(LOG_LEVEL_ERROR, "FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
+        printk_error("FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
         return -1;
     }
     /* get used pmu_ext phandle */
     phandle = fdt_get_phandle(image->of_dest, nodeoffset);
     if (!phandle) {
-        printk(LOG_LEVEL_ERROR, "FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
+        printk_error("FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
         return -1;
     }
-    printk(LOG_LEVEL_DEBUG, "get ext power phandle %d\n", phandle);
+    printk_debug("get ext power phandle %d\n", phandle);
 
     /* get cpu@4 node */
     nodeoffset = fdt_path_offset(image->of_dest, "cpu-ext");
     if (nodeoffset < 0) {
-        printk(LOG_LEVEL_ERROR, "FDT: cannot get cpu@4 node\n");
+        printk_error("FDT: cannot get cpu@4 node\n");
         return -1;
     }
 
     /* Change cpu-supply to ext dcdc*/
     err = fdt_setprop_u32(image->of_dest, nodeoffset, "cpu-supply", phandle);
     if (err < 0) {
-        printk(LOG_LEVEL_WARNING, "WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
+        printk_warning("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
         return -1;
     }
 
@@ -386,27 +386,27 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 
     parse_extlinux_data(image->extlinux_dest, &data);
 
-    printk(LOG_LEVEL_DEBUG, "os: %s\n", data.os);
-    printk(LOG_LEVEL_DEBUG, "%s: kernel -> %s\n", data.os, data.kernel);
-    printk(LOG_LEVEL_DEBUG, "%s: initrd -> %s\n", data.os, data.initrd);
-    printk(LOG_LEVEL_DEBUG, "%s: fdt -> %s\n", data.os, data.fdt);
-    printk(LOG_LEVEL_DEBUG, "%s: append -> %s\n", data.os, data.append);
+    printk_debug("os: %s\n", data.os);
+    printk_debug("%s: kernel -> %s\n", data.os, data.kernel);
+    printk_debug("%s: initrd -> %s\n", data.os, data.initrd);
+    printk_debug("%s: fdt -> %s\n", data.os, data.fdt);
+    printk_debug("%s: append -> %s\n", data.os, data.append);
 
     start = time_ms();
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         goto _error;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.kernel, (uint32_t) image->kernel_dest);
+    printk_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t) image->kernel_dest);
     ret = fatfs_loadimage(data.kernel, image->kernel_dest);
     if (ret)
         goto _error;
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.fdt, (uint32_t) image->of_dest);
+    printk_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t) image->of_dest);
     ret = fatfs_loadimage(data.fdt, image->of_dest);
     if (ret)
         goto _error;
@@ -414,53 +414,53 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     /* Check and load ramdisk */
     uint32_t ramdisk_size = 0;
     if (data.initrd != NULL) {
-        printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", data.initrd, (uint32_t) image->ramdisk_dest);
+        printk_info("FATFS: read %s addr=%x\n", data.initrd, (uint32_t) image->ramdisk_dest);
         ret = fatfs_loadimage_size(data.initrd, image->ramdisk_dest, &ramdisk_size);
         if (ret) {
-            printk(LOG_LEVEL_WARNING, "Initrd not find, ramdisk not load.\n");
+            printk_warning("Initrd not find, ramdisk not load.\n");
             ramdisk_size = 0;
         } else {
-            printk(LOG_LEVEL_INFO, "Initrd load 0x%08x, Size 0x%08x\n", image->ramdisk_dest, ramdisk_size);
+            printk_info("Initrd load 0x%08x, Size 0x%08x\n", image->ramdisk_dest, ramdisk_size);
         }
     }
 
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         goto _error;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     /* Force image.of_dest to be a pointer to fdt_header structure */
     struct fdt_header *dtb_header = (struct fdt_header *) image->of_dest;
 
     /* Check if DTB header is valid */
     if ((ret = fdt_check_header(dtb_header)) != 0) {
-        printk(LOG_LEVEL_ERROR, "Invalid device tree blob: %s\n", fdt_strerror(ret));
+        printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     /* Get the total size of DTB */
     uint32_t size = fdt_totalsize(image->of_dest);
 
-    printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", size);
+    printk_debug("FDT dtb size = %d\n", size);
 
     if ((ret = fdt_increase_size(image->of_dest, 512)) != 0) {
-        printk(LOG_LEVEL_ERROR, "FDT: device tree increase error: %s\n", fdt_strerror(ret));
+        printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     update_pmu_ext_info_dtb(image);
 
-    printk(LOG_LEVEL_DEBUG, "FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
+    printk_debug("FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
 
     int memory_node = fdt_find_or_add_subnode(image->of_dest, 0, "memory");
 
     if ((ret = fdt_setprop_string(image->of_dest, memory_node, "device_type", "memory")) != 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change memory size node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change memory size node: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -470,7 +470,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
 
     if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change memory base node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -489,11 +489,11 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
             ramdisk_start += 0x40;
         }
 
-        printk(LOG_LEVEL_DEBUG, "initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+        printk_debug("initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
 
         int total = fdt_num_mem_rsv(image->of_dest);
 
-        printk(LOG_LEVEL_DEBUG, "Look for an existing entry %d\n", total);
+        printk_debug("Look for an existing entry %d\n", total);
 
         /* Look for an existing entry and update it.  If we don't find the entry, we will add a available slot. */
         for (int j = 0; j < total; j++) {
@@ -506,19 +506,19 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 
         ret = fdt_add_mem_rsv(image->of_dest, ramdisk_start, ramdisk_end - ramdisk_start);
         if (ret < 0) {
-            printk(LOG_LEVEL_DEBUG, "fdt_initrd: %s\n", fdt_strerror(ret));
+            printk_debug("fdt_initrd: %s\n", fdt_strerror(ret));
             goto _error;
         }
 
         ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t) ramdisk_start);
         if (ret < 0) {
-            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
+            printk_debug("WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
             goto _error;
         }
 
         ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t) ramdisk_end);
         if (ret < 0) {
-            printk(LOG_LEVEL_DEBUG, "WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
+            printk_debug("WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
             goto _error;
         }
     }
@@ -526,7 +526,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     /* Get bootargs string */
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
     if (bootargs_str == NULL) {
-        printk(LOG_LEVEL_WARNING, "FDT: bootargs is null, using extlinux.conf append.\n");
+        printk_warning("FDT: bootargs is null, using extlinux.conf append.\n");
         bootargs_str = (char *) smalloc(strlen(data.append) + 1);
         bootargs_str[0] = '\0';
     } else {
@@ -544,24 +544,24 @@ _add_dts_size:
     /* Modify bootargs string */
     ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
     if (ret == -FDT_ERR_NOSPACE) {
-        printk(LOG_LEVEL_DEBUG, "FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+        printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image->of_dest, 512);
         if (!ret) {
             goto _add_dts_size;
         } else {
-            printk(LOG_LEVEL_ERROR, "DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+            printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
             goto _error;
         }
     } else if (ret < 0) {
-        printk(LOG_LEVEL_ERROR, "Can't change bootargs node: %s\n", fdt_strerror(ret));
+        printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
     /* Get the total size of DTB */
-    printk(LOG_LEVEL_DEBUG, "Modify FDT Size = %d\n", fdt_totalsize(image->of_dest));
+    printk_debug("Modify FDT Size = %d\n", fdt_totalsize(image->of_dest));
 
     if (ret < 0) {
-        printk(LOG_LEVEL_ERROR, "libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+        printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
         goto _error;
     }
 
@@ -574,7 +574,7 @@ static int abortboot_single_key(int bootdelay) {
     int abort = 0;
     unsigned long ts;
 
-    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
+    printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
     /* Check if key already pressed */
     if (tstc()) {       /* we got a key press */
@@ -674,34 +674,34 @@ int main(void) {
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: SDC0 init failed, init SDC2...\n");
+        printk_warning("SMHC: SDC0 init failed, init SDC2...\n");
         /* Initialize the SD host controller. */
         if (sunxi_sdhci_init(&sdhci2) != 0) {
-            printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci2.name);
+            printk_error("SMHC: %s controller init failed\n", sdhci2.name);
             LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
             goto _fail;
         } else {
-            printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci2.name);
+            printk_info("SMHC: %s controller initialized\n", sdhci2.name);
         }
 
         if (sdmmc_init(&card0, &sdhci2) != 0) {
-            printk(LOG_LEVEL_WARNING, "SMHC: SDC2 init failed.\n");
+            printk_warning("SMHC: SDC2 init failed.\n");
             goto _fail;
         }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: loading failed\n");
+        printk_warning("SMHC: loading failed\n");
         LCD_ShowString(0, 92, "SMHC: loading failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     }
@@ -709,12 +709,12 @@ int main(void) {
     LCD_Open_BLK();
 
     if (load_extlinux(&image, dram_size) != 0) {
-        printk(LOG_LEVEL_ERROR, "EXTLINUX: load extlinux failed\n");
+        printk_error("EXTLINUX: load extlinux failed\n");
         LCD_ShowString(0, 92, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     }
 
-    printk(LOG_LEVEL_INFO, "EXTLINUX: load extlinux done, now booting...\n");
+    printk_info("EXTLINUX: load extlinux done, now booting...\n");
 
     atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
 
@@ -724,8 +724,8 @@ int main(void) {
     /* Fill platform magic */
     memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
-    printk(LOG_LEVEL_INFO, "ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
-    printk(LOG_LEVEL_INFO, "ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+    printk_info("ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
+    printk_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     /* flush buffer */
     LCD_ShowString(0, 0, "SyterKit Now Booting Linux", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
@@ -736,7 +736,7 @@ int main(void) {
 
     jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
 
-    printk(LOG_LEVEL_INFO, "Back to SyterKit\n");
+    printk_info("Back to SyterKit\n");
 
     // if kernel boot not success, jump to fel.
     jmp_to_fel();

@@ -22,7 +22,7 @@ int main(void) {
 
     sunxi_dram_init(&dram_para);
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    printk_info("Hello World!\n");
 
     syter_efuse_dump();
 

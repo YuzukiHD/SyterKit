@@ -157,12 +157,12 @@ static mass_trans_set_t trans_data;
  * @return SUNXI_USB_REQ_SUCCESSED on success, SUNXI_USB_REQ_OP_ERR on error
  */
 static int usb_mass_usb_set_interface(struct usb_device_request *req) {
-    printk(LOG_LEVEL_TRACE, "USB MASS: set interface\n");
+    printk_trace("USB MASS: set interface\n");
     /* Only support interface 0, alternate 0 */
     if ((0 == req->index) && (0 == req->value)) {
         sunxi_usb_ep_reset();
     } else {
-        printk(LOG_LEVEL_ERROR, "USB MASS: invalid index and value, (0, %d), (0, %d)\n", req->index, req->value);
+        printk_error("USB MASS: invalid index and value, (0, %d), (0, %d)\n", req->index, req->value);
         return SUNXI_USB_REQ_OP_ERR;
     }
     return SUNXI_USB_REQ_SUCCESSED;
@@ -195,12 +195,12 @@ static int usb_mass_usb_set_address(struct usb_device_request *req) {
  * @return SUNXI_USB_REQ_SUCCESSED on success, SUNXI_USB_REQ_OP_ERR on error
  */
 static int usb_mass_usb_set_configuration(struct usb_device_request *req) {
-    printk(LOG_LEVEL_TRACE, "set configuration\n");
+    printk_trace("set configuration\n");
     /* Only support 1 configuration so nak anything else */
     if (1 == req->value) {
         sunxi_usb_ep_reset();
     } else {
-        printk(LOG_LEVEL_ERROR, "err: invalid wValue, (0, %d)\n", req->value);
+        printk_error("err: invalid wValue, (0, %d)\n", req->value);
         return SUNXI_USB_REQ_OP_ERR;
     }
     return SUNXI_USB_REQ_SUCCESSED;
@@ -223,7 +223,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
     switch (req->value >> 8) {
         case USB_DT_DEVICE: {
             struct usb_device_descriptor *dev_dscrptr;
-            printk(LOG_LEVEL_TRACE, "USB MASS: get device descriptor\n");
+            printk_trace("USB MASS: get device descriptor\n");
             dev_dscrptr = (struct usb_device_descriptor *) buffer;
             memset((void *) dev_dscrptr, 0, sizeof(struct usb_device_descriptor));
             dev_dscrptr->bLength = min(req->length, sizeof(struct usb_device_descriptor));
@@ -250,7 +250,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             uint8_t bytes_remaining = req->length;
             uint8_t bytes_total = 0;
 
-            printk(LOG_LEVEL_TRACE, "USB MASS: get config descriptor\n");
+            printk_trace("USB MASS: get config descriptor\n");
 
             bytes_total = sizeof(struct usb_configuration_descriptor) + sizeof(struct usb_interface_descriptor) + sizeof(struct usb_endpoint_descriptor) + sizeof(struct usb_endpoint_descriptor);
 
@@ -308,7 +308,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             uint8_t bLength = 0;
             uint8_t string_index = req->value & 0xff;
 
-            printk(LOG_LEVEL_TRACE, "USB MASS: get string descriptor\n");
+            printk_trace("USB MASS: get string descriptor\n");
 
             /* Language ID */
             if (string_index == 0) {
@@ -332,13 +332,13 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
                 bLength = min(bLength, req->length);
                 sunxi_usb_send_setup(bLength, buffer);
             } else {
-                printk(LOG_LEVEL_ERROR, "USB MASS: string line %d is not supported\n", string_index);
+                printk_error("USB MASS: string line %d is not supported\n", string_index);
             }
         } break;
 
         case USB_DT_DEVICE_QUALIFIER: {
             struct usb_qualifier_descriptor *qua_dscrpt;
-            printk(LOG_LEVEL_TRACE, "USB MASS: get qualifier descriptor\n");
+            printk_trace("USB MASS: get qualifier descriptor\n");
             qua_dscrpt = (struct usb_qualifier_descriptor *) buffer;
             memset(&buffer, 0, sizeof(struct usb_qualifier_descriptor));
             qua_dscrpt->bLength = min(req->length, sizeof(sizeof(struct usb_qualifier_descriptor)));
@@ -353,7 +353,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
             sunxi_usb_send_setup(qua_dscrpt->bLength, buffer);
         } break;
         default:
-            printk(LOG_LEVEL_ERROR, "USB MASS: unkown value(%d)\n", req->value);
+            printk_error("USB MASS: unkown value(%d)\n", req->value);
 
             ret = SUNXI_USB_REQ_OP_ERR;
     }
@@ -375,7 +375,7 @@ static int usb_mass_usb_get_descriptor(struct usb_device_request *req, uint8_t *
  */
 static int usb_mass_usb_get_status(struct usb_device_request *req, uint8_t *buffer) {
     uint8_t bLength = 0;
-    printk(LOG_LEVEL_TRACE, "USB MASS: get status\n");
+    printk_trace("USB MASS: get status\n");
     if (0 == req->length) {
         /* sent zero packet */
         sunxi_usb_send_setup(0, NULL);
@@ -402,7 +402,7 @@ static int usb_mass_usb_get_status(struct usb_device_request *req, uint8_t *buff
  * @return: 0 if initialization is successful, otherwise -1
  */
 static int sunxi_usb_mass_init(void) {
-    printk(LOG_LEVEL_TRACE, "USB MASS: sunxi_mass_init\n");
+    printk_trace("USB MASS: sunxi_mass_init\n");
 
     // Reset the transmission data structure
     memset(&trans_data, 0, sizeof(mass_trans_set_t));
@@ -414,20 +414,20 @@ static int sunxi_usb_mass_init(void) {
     // Allocate memory for receive buffer
     trans_data.base_recv_buffer = (uint8_t *) smalloc(SUNXI_MASS_RECV_MEM_SIZE);
     if (!trans_data.base_recv_buffer) {
-        printk(LOG_LEVEL_ERROR, "USB MASS: unable to malloc memory for mass receive\n");
+        printk_error("USB MASS: unable to malloc memory for mass receive\n");
         return -1;
     }
 
     // Allocate memory for send buffer
     trans_data.base_send_buffer = (uint8_t *) smalloc(SUNXI_MASS_SEND_MEM_SIZE);
     if (!trans_data.base_send_buffer) {
-        printk(LOG_LEVEL_ERROR, "USB MASS: unable to malloc memory for mass send\n");
+        printk_error("USB MASS: unable to malloc memory for mass send\n");
         sfree(trans_data.base_recv_buffer);
         return -1;
     }
 
-    printk(LOG_LEVEL_TRACE, "USB MASS: recv addr 0x%x\n", (uint32_t) trans_data.base_recv_buffer);
-    printk(LOG_LEVEL_TRACE, "USB MASS: send addr 0x%x\n", (uint32_t) trans_data.base_send_buffer);
+    printk_trace("USB MASS: recv addr 0x%x\n", (uint32_t) trans_data.base_recv_buffer);
+    printk_trace("USB MASS: send addr 0x%x\n", (uint32_t) trans_data.base_send_buffer);
 
     return 0;
 }
@@ -440,7 +440,7 @@ static int sunxi_usb_mass_init(void) {
  * @return: 0 if exit is successful, otherwise an error code
  */
 static int sunxi_mass_exit(void) {
-    printk(LOG_LEVEL_TRACE, "USB MASS: sunxi_mass_exit\n");
+    printk_trace("USB MASS: sunxi_mass_exit\n");
 
     // Free receive buffer memory
     if (trans_data.base_recv_buffer) {
@@ -473,7 +473,7 @@ static void sunxi_mass_reset(void) {
  * @param p_arg: Pointer to a void argument (not used)
  */
 static void sunxi_mass_usb_rx_dma_isr(void *p_arg) {
-    printk(LOG_LEVEL_TRACE, "USB MASS: dma int for usb rx occur\n");
+    printk_trace("USB MASS: dma int for usb rx occur\n");
     sunxi_usb_mass_write_enable = 1;
 }
 
@@ -485,7 +485,7 @@ static void sunxi_mass_usb_rx_dma_isr(void *p_arg) {
  * @param p_arg: Pointer to a void argument (not used)
  */
 static void sunxi_mass_usb_tx_dma_isr(void *p_arg) {
-    printk(LOG_LEVEL_TRACE, "USB MASS: dma int for usb tx occur\n");
+    printk_trace("USB MASS: dma int for usb tx occur\n");
 }
 /**
  * sunxi_mass_standard_req_op - Handle standard USB Mass Storage requests
@@ -523,7 +523,7 @@ static int sunxi_mass_standard_req_op(uint32_t cmd, struct usb_device_request *r
             break;
         }
         default: {
-            printk(LOG_LEVEL_ERROR, "USB MASS: standard req is not supported\n");
+            printk_error("USB MASS: standard req is not supported\n");
             ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
             break;
         }
@@ -548,16 +548,16 @@ static int sunxi_mass_nonstandard_req_op(uint32_t cmd, struct usb_device_request
     switch (req->request_type) {
         case 161:
             if (req->request == 0xFE) {
-                printk(LOG_LEVEL_TRACE, "USB MASS: mass ask for max lun\n");
+                printk_trace("USB MASS: mass ask for max lun\n");
                 buffer[0] = 0;
                 sunxi_usb_send_setup(1, buffer);
             } else {
-                printk(LOG_LEVEL_ERROR, "USB MASS: unknown ep0 req in mass\n");
+                printk_error("USB MASS: unknown ep0 req in mass\n");
                 ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
             }
             break;
         default:
-            printk(LOG_LEVEL_ERROR, "USB MASS: unknown non standard ep0 req\n");
+            printk_error("USB MASS: unknown non standard ep0 req\n");
             ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
             break;
     }
@@ -589,9 +589,9 @@ static int sunxi_mass_state_loop(void *buffer) {
             }
             break;
         case SUNXI_USB_MASS_SETUP:
-            printk(LOG_LEVEL_TRACE, "USB MASS: SUNXI_USB_MASS_SETUP\n");
+            printk_trace("USB MASS: SUNXI_USB_MASS_SETUP\n");
             if (sunxi_ubuf->rx_req_length != sizeof(struct umass_bbb_cbw_t)) {
-                printk(LOG_LEVEL_ERROR, "USB MASS: sunxi usb error: received bytes 0x%x is not equal cbw struct size 0x%x\n", sunxi_ubuf->rx_req_length, sizeof(struct umass_bbb_cbw_t));
+                printk_error("USB MASS: sunxi usb error: received bytes 0x%x is not equal cbw struct size 0x%x\n", sunxi_ubuf->rx_req_length, sizeof(struct umass_bbb_cbw_t));
                 sunxi_ubuf->rx_ready_for_data = 0;
                 sunxi_usb_mass_status = SUNXI_USB_MASS_IDLE;
                 break;
@@ -599,7 +599,7 @@ static int sunxi_mass_state_loop(void *buffer) {
 
             cbw = (struct umass_bbb_cbw_t *) sunxi_ubuf->rx_req_buffer;
             if (CBWSIGNATURE != cbw->dCBWSignature) {
-                printk(LOG_LEVEL_ERROR, "USB MASS: sunxi usb error: the cbw signature 0x%x is bad, need 0x%x\n", cbw->dCBWSignature, CBWSIGNATURE);
+                printk_error("USB MASS: sunxi usb error: the cbw signature 0x%x is bad, need 0x%x\n", cbw->dCBWSignature, CBWSIGNATURE);
                 sunxi_ubuf->rx_ready_for_data = 0;
                 sunxi_usb_mass_status = SUNXI_USB_MASS_IDLE;
                 break;
@@ -608,18 +608,18 @@ static int sunxi_mass_state_loop(void *buffer) {
             csw.dCSWSignature = CSWSIGNATURE;
             csw.dCSWTag = cbw->dCBWTag;
 
-            printk(LOG_LEVEL_TRACE, "USB MASS: usb cbw command = 0x%x\n", cbw->CBWCDB[0]);
+            printk_trace("USB MASS: usb cbw command = 0x%x\n", cbw->CBWCDB[0]);
 
             switch (cbw->CBWCDB[0]) {
                 case SCSI_TST_U_RDY:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_TST_U_RDY\n");
+                    printk_trace("USB MASS: SCSI_TST_U_RDY\n");
                     csw.bCSWStatus = 0;
                     sunxi_usb_mass_status = SUNXI_USB_MASS_STATUS;
                     break;
 
                 case SCSI_REQ_SENSE:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_REQ_SENSE\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_REQ_SENSE\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
 
                     trans_data.send_size = min(cbw->dCBWDataTransferLength, 18);
                     trans_data.act_send_buffer = (uint32_t) request_sense;
@@ -630,8 +630,8 @@ static int sunxi_mass_state_loop(void *buffer) {
                     break;
 
                 case SCSI_VERIFY:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_VERIFY\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_VERIFY\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
 
                     csw.bCSWStatus = 0;
                     sunxi_usb_mass_status = SUNXI_USB_MASS_STATUS;
@@ -639,8 +639,8 @@ static int sunxi_mass_state_loop(void *buffer) {
                     break;
 
                 case SCSI_INQUIRY:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_INQUIRY\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_INQUIRY\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
 
                     trans_data.send_size = min(cbw->dCBWDataTransferLength, 36);
                     trans_data.act_send_buffer = (uint32_t) inquiry_data;
@@ -651,8 +651,8 @@ static int sunxi_mass_state_loop(void *buffer) {
                     break;
 
                 case SCSI_MODE_SEN6:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_MODE_SEN6\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_MODE_SEN6\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     {
                         trans_data.base_send_buffer[0] = 3;
                         trans_data.base_send_buffer[1] = 0;
@@ -669,8 +669,8 @@ static int sunxi_mass_state_loop(void *buffer) {
                     break;
 
                 case SCSI_RD_CAPAC:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_RD_CAPAC\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_RD_CAPAC\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     {
                         memset(trans_data.base_send_buffer, 0, 8);
 
@@ -687,8 +687,8 @@ static int sunxi_mass_state_loop(void *buffer) {
                     break;
 
                 case SCSI_RD_FMT_CAPAC:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_RD_FMT_CAPAC\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_RD_FMT_CAPAC\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     {
                         memset(trans_data.base_send_buffer, 0, 12);
 
@@ -706,35 +706,35 @@ static int sunxi_mass_state_loop(void *buffer) {
 
                     break;
                 case SCSI_MED_REMOVL:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_MED_REMOVL\n");
+                    printk_trace("USB MASS: SCSI_MED_REMOVL\n");
                     csw.bCSWStatus = 0;
                     sunxi_usb_mass_status = SUNXI_USB_MASS_STATUS;
 
                     break;
                 case SCSI_READ6:
                 case SCSI_READ10://HOST READ, not this device read
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_READ\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_READ\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     {
                         uint32_t start, sectors;
                         uint32_t offset;
 
                         start = (cbw->CBWCDB[2] << 24) | cbw->CBWCDB[3] << 16 | cbw->CBWCDB[4] << 8 | cbw->CBWCDB[5] << 0;
                         sectors = (cbw->CBWCDB[7] << 8) | cbw->CBWCDB[8];
-                        printk(LOG_LEVEL_TRACE, "USB MASS: read start: 0x%x, sectors 0x%x\n", start, sectors);
+                        printk_trace("USB MASS: read start: 0x%x, sectors 0x%x\n", start, sectors);
 
                         trans_data.send_size = min(cbw->dCBWDataTransferLength, sectors * 512);
                         trans_data.act_send_buffer = (uint32_t) trans_data.base_send_buffer;
                         if (!card0.online) {
                             if (sdmmc_blk_read(&card0, trans_data.base_send_buffer, start, sectors) != sectors) {
-                                printk(LOG_LEVEL_ERROR, "USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
+                                printk_error("USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
                                 csw.bCSWStatus = 1;
                             } else {
                                 csw.bCSWStatus = 0;
                                 ret = 1;
                             }
                         } else {
-                            printk(LOG_LEVEL_ERROR, "USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
+                            printk_error("USB MASS: sunxi flash read err: start,0x%x sectors 0x%x\n", start, sectors);
                             csw.bCSWStatus = 1;
                         }
                         sunxi_usb_mass_status = SUNXI_USB_MASS_SEND_DATA;
@@ -744,41 +744,41 @@ static int sunxi_mass_state_loop(void *buffer) {
 
                 case SCSI_WRITE6:
                 case SCSI_WRITE10://HOST WRITE, not this device write
-                    printk(LOG_LEVEL_TRACE, "USB MASS: SCSI_WRITE\n");
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: SCSI_WRITE\n");
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     mass_flash_start = (cbw->CBWCDB[2] << 24) | cbw->CBWCDB[3] << 16 | cbw->CBWCDB[4] << 8 | cbw->CBWCDB[5] << 0;
                     mass_flash_sectors = (cbw->CBWCDB[7] << 8) | cbw->CBWCDB[8];
-                    printk(LOG_LEVEL_TRACE, "USB MASS: command write start: 0x%x, sectors 0x%x\n", mass_flash_start, mass_flash_sectors);
+                    printk_trace("USB MASS: command write start: 0x%x, sectors 0x%x\n", mass_flash_start, mass_flash_sectors);
                     trans_data.recv_size = min(cbw->dCBWDataTransferLength, mass_flash_sectors * 512);
                     trans_data.act_recv_buffer = (uint32_t) trans_data.base_recv_buffer;
                     // TODO Write function
                     mass_flash_start += (0);
-                    printk(LOG_LEVEL_TRACE, "USB MASS: try to receive data 0x%x\n", trans_data.recv_size);
+                    printk_trace("USB MASS: try to receive data 0x%x\n", trans_data.recv_size);
                     sunxi_usb_mass_write_enable = 0;
                     sunxi_usb_start_recv_by_dma((void *) trans_data.act_recv_buffer, trans_data.recv_size);//start dma to receive data
                     sunxi_usb_mass_status = SUNXI_USB_MASS_RECEIVE_DATA;
                     break;
                 default:
-                    printk(LOG_LEVEL_TRACE, "USB MASS: not supported command 0x%x now\n", cbw->CBWCDB[0]);
-                    printk(LOG_LEVEL_TRACE, "USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
+                    printk_trace("USB MASS: not supported command 0x%x now\n", cbw->CBWCDB[0]);
+                    printk_trace("USB MASS: asked size 0x%x\n", cbw->dCBWDataTransferLength);
                     csw.bCSWStatus = 1;
                     sunxi_usb_mass_status = SUNXI_USB_MASS_STATUS;
                     break;
             }
             break;
         case SUNXI_USB_MASS_SEND_DATA:
-            printk(LOG_LEVEL_TRACE, "USB MASS: SUNXI_USB_SEND_DATA\n");
+            printk_trace("USB MASS: SUNXI_USB_SEND_DATA\n");
             sunxi_usb_mass_status = SUNXI_USB_MASS_STATUS;
             sunxi_usb_send_data((void *) trans_data.act_send_buffer, trans_data.send_size);
             break;
 
         case SUNXI_USB_MASS_RECEIVE_DATA:
-            printk(LOG_LEVEL_TRACE, "USB MASS: SUNXI_USB_RECEIVE_DATA\n");
+            printk_trace("USB MASS: SUNXI_USB_RECEIVE_DATA\n");
             // TODO Flash Write
             break;
 
         case SUNXI_USB_MASS_STATUS:
-            printk(LOG_LEVEL_TRACE, "USB MASS: SUNXI_USB_MASS_STATUS\n");
+            printk_trace("USB MASS: SUNXI_USB_MASS_STATUS\n");
             {
                 sunxi_usb_mass_status = SUNXI_USB_MASS_IDLE;
                 sunxi_ubuf->rx_ready_for_data = 0;

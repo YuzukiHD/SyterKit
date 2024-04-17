@@ -78,7 +78,7 @@ static void gic_distributor_init(void) {
     }
 
     if (gic_irqs < GIC_IRQ_NUM) {
-        printk(LOG_LEVEL_ERROR, "GIC: parameter config error, only support %d irqs < %d(spec define)!!\n", gic_irqs, GIC_IRQ_NUM);
+        printk_error("GIC: parameter config error, only support %d irqs < %d(spec define)!!\n", gic_irqs, GIC_IRQ_NUM);
         return;
     }
 
@@ -129,16 +129,16 @@ static void gic_cpuif_init(void) {
 }
 
 static void default_isr(void *data) {
-    printk(LOG_LEVEL_DEBUG, "default_isr():  called from IRQ %d\n", (uint32_t) data);
+    printk_debug("default_isr():  called from IRQ %d\n", (uint32_t) data);
     while (1)
         ;
 }
 static void gic_sgi_handler(uint32_t irq_no) {
-    printk(LOG_LEVEL_DEBUG, "GIC: SGI irq %d coming... \n", irq_no);
+    printk_debug("GIC: SGI irq %d coming... \n", irq_no);
 }
 
 static void gic_ppi_handler(uint32_t irq_no) {
-    printk(LOG_LEVEL_DEBUG, "GIC: PPI irq %d coming... \n", irq_no);
+    printk_debug("GIC: PPI irq %d coming... \n", irq_no);
 }
 
 static void gic_spi_handler(uint32_t irq_no) {
@@ -187,11 +187,11 @@ void do_irq(struct arm_regs_t *regs) {
     uint32_t idnum = readl(GIC_INT_ACK_REG);
     
     if ((idnum == 1022) || (idnum == 1023)) {
-        printk(LOG_LEVEL_ERROR, "GIC: spurious irq !!\n");
+        printk_error("GIC: spurious irq !!\n");
         return;
     }
     if (idnum >= GIC_IRQ_NUM) {
-        printk(LOG_LEVEL_DEBUG, "GIC: irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", idnum, GIC_IRQ_NUM - 32);
+        printk_debug("GIC: irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", idnum, GIC_IRQ_NUM - 32);
         return;
     }
     if (idnum < 16)
@@ -222,7 +222,7 @@ int irq_enable(int irq_no) {
     uint32_t offset;
 
     if (irq_no >= GIC_IRQ_NUM) {
-        printk(LOG_LEVEL_ERROR, "irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
+        printk_error("irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
         return -1;
     }
 
@@ -238,7 +238,7 @@ int irq_disable(int irq_no) {
     uint32_t offset;
 
     if (irq_no >= GIC_IRQ_NUM) {
-        printk(LOG_LEVEL_ERROR, "irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
+        printk_error("irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
         return -1;
     }
 
@@ -255,7 +255,7 @@ void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
     //when irq_handler call this function , irq enable bit has already disabled in irq_mode,so don't need to enable I bit
     if (flag) {
         arm32_interrupt_disable();
-        printk(LOG_LEVEL_ERROR, "IRQ OPEN\n");
+        printk_error("IRQ OPEN\n");
     }
 
     if (irq >= GIC_IRQ_NUM || !handle_irq) {
@@ -268,6 +268,6 @@ void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
 fail:
     if (flag) {
         arm32_interrupt_enable();
-        printk(LOG_LEVEL_ERROR, "IRQ OPEN\n");
+        printk_error("IRQ OPEN\n");
     }
 }

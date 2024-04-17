@@ -165,7 +165,7 @@ static int sunxi_usb_read_ep0_data(void *buffer, uint32_t data_type) {
     fifo_count = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
     if (!data_type) {
         if (fifo_count != 8) {
-            printk(LOG_LEVEL_ERROR, "USB: ep0 fifo_count %d is not 8\n", fifo_count);
+            printk_error("USB: ep0 fifo_count %d is not 8\n", fifo_count);
             return -1;
         }
     }
@@ -190,11 +190,11 @@ static int sunxi_usb_perform_set_address(uint8_t address) {
     if (usb_device_query_transfer_mode(sunxi_udc_source.usbc_hd) == USBC_TS_MODE_HS) {
         sunxi_udc_source.speed = USB_SPEED_HIGH;
         sunxi_udc_source.fifo_size = HIGH_SPEED_EP_MAX_PACKET_SIZE;
-        printk(LOG_LEVEL_TRACE, "USB: usb speed: HIGH\n");
+        printk_trace("USB: usb speed: HIGH\n");
     } else {
         sunxi_udc_source.speed = USB_SPEED_FULL;
         sunxi_udc_source.fifo_size = FULL_SPEED_EP_MAX_PACKET_SIZE;
-        printk(LOG_LEVEL_TRACE, "USB: usb speed: FULL\n");
+        printk_trace("USB: usb speed: FULL\n");
     }
     return SUNXI_USB_REQ_SUCCESSED;
 }
@@ -223,7 +223,7 @@ static int ep0_recv_op(void) {
 
     /* clear stall status */
     if (usb_device_get_ep_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0)) {
-        printk(LOG_LEVEL_ERROR, "USB: handle_ep0: ep0 stall\n");
+        printk_error("USB: handle_ep0: ep0 stall\n");
         usb_device_ep_clear_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
         ret = -1;
         goto ep0_recv_op_err;
@@ -244,16 +244,16 @@ static int ep0_recv_op(void) {
             status = sunxi_usb_read_ep0_data(sunxi_usb_ep0_buffer, ep0_stage);
         }
         if (status != 0) {
-            printk(LOG_LEVEL_ERROR, "USB: read_request failed\n");
+            printk_error("USB: read_request failed\n");
             ret = -1;
             goto ep0_recv_op_err;
         }
     } else {
         /* This case is usually caused by sending an empty packet on EP0, can be ignored */
-        printk(LOG_LEVEL_TRACE, "USB: ep0 rx non, set addr\n");
+        printk_trace("USB: ep0 rx non, set addr\n");
         if (sunxi_udc_source.address) {
             sunxi_usb_perform_set_address(sunxi_udc_source.address & 0xff);
-            printk(LOG_LEVEL_DEBUG, "USB: set address 0x%x ok\n", sunxi_udc_source.address);
+            printk_debug("USB: set address 0x%x ok\n", sunxi_udc_source.address);
             sunxi_udc_source.address = 0;
         }
         goto ep0_recv_op_err;
@@ -386,7 +386,7 @@ static int ep0_recv_op(void) {
                 break;
             }
             default: {
-                printk(LOG_LEVEL_ERROR, "USB: sunxi usb err: unknown usb out request to device\n");
+                printk_error("USB: sunxi usb err: unknown usb out request to device\n");
                 usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
                 ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
                 ep0_stage = 0;
@@ -395,7 +395,7 @@ static int ep0_recv_op(void) {
         }
     } else {
         /* Non-Standard Req */
-        printk(LOG_LEVEL_ERROR, "USB: non standard req\n");
+        printk_error("USB: non standard req\n");
         ret = sunxi_udev_active->nonstandard_req_op(USB_REQ_GET_STATUS, &sunxi_udc_source.standard_reg, sunxi_usb_ep0_buffer, ep0_stage);
         if (ret == SUNXI_USB_REQ_DATA_HUNGRY) {
             ep0_stage = 1;
@@ -403,7 +403,7 @@ static int ep0_recv_op(void) {
             ep0_stage = 0;
         } else if (ret < 0) {
             ep0_stage = 0;
-            printk(LOG_LEVEL_ERROR, "USB: unkown request_type(%d)\n", sunxi_udc_source.standard_reg.request_type);
+            printk_error("USB: unkown request_type(%d)\n", sunxi_udc_source.standard_reg.request_type);
             usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
         }
     }
@@ -442,7 +442,7 @@ static void sunxi_usb_recv_by_dma_isr(void *p_arg) {
     usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX); /* Select RXEP */
 
     /* Select IO mode for the data transfer */
-    printk(LOG_LEVEL_TRACE, "USB: select io mode to transfer data\n");
+    printk_trace("USB: select io mode to transfer data\n");
     usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
 
     if (usb_dma_trans_unaliged_bytes) {
@@ -502,7 +502,7 @@ static int eprx_recv_op(void) {
 
     if (usb_device_get_ep_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX)) {
         usb_device_ep_clear_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
-        printk(LOG_LEVEL_ERROR, "sunxi ubs read error: usb rx ep is busy already\n");
+        printk_error("sunxi ubs read error: usb rx ep is busy already\n");
     } else {
         if (usb_device_get_read_data_ready(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX)) {
             this_len = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
@@ -513,7 +513,7 @@ static int eprx_recv_op(void) {
                 if (len_left) {
                     sunxi_ubuf.rx_req_length = usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer);
                 }
-                printk(LOG_LEVEL_TRACE, "USB: fake rx dma\n");
+                printk_trace("USB: fake rx dma\n");
                 sunxi_usb_recv_by_dma_isr(NULL);
 
                 dma_rec_flag = 0;
@@ -524,13 +524,13 @@ static int eprx_recv_op(void) {
                 sunxi_ubuf.rx_req_length = usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer);
                 sunxi_ubuf.rx_ready_for_data = 1;
 
-                printk(LOG_LEVEL_TRACE, "USB: read ep bytes 0x%x\n", sunxi_ubuf.rx_req_length);
+                printk_trace("USB: read ep bytes 0x%x\n", sunxi_ubuf.rx_req_length);
                 sunxi_usb_read_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1); /*返回状态*/
             } else {
-                printk(LOG_LEVEL_TRACE, "USB: eprx do nothing and left it to dma\n");
+                printk_trace("USB: eprx do nothing and left it to dma\n");
             }
         } else {
-            printk(LOG_LEVEL_TRACE, "USB: sunxi usb rxdata not ready\n");
+            printk_trace("USB: sunxi usb rxdata not ready\n");
         }
     }
     usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
@@ -546,7 +546,7 @@ void sunxi_usb_attach_module(uint32_t device_type) {
             sunxi_usb_module_reg(SUNXI_USB_DEVICE_MASS);
             break;
         default:
-            printk(LOG_LEVEL_ERROR, "USB: unknown device, type id = %d\n", device_type);
+            printk_error("USB: unknown device, type id = %d\n", device_type);
             break;
     }
 }
@@ -556,20 +556,20 @@ int sunxi_usb_init() {
     static uint8_t rx_base_buffer[RX_BUFF_SIZE];
 
     if (sunxi_udev_active->state_init()) {
-        printk(LOG_LEVEL_ERROR, "USB: fail to init usb device\n");
+        printk_error("USB: fail to init usb device\n");
         return -1;
     }
 
     irq_disable(AW_IRQ_USB_OTG);
 
-    printk(LOG_LEVEL_TRACE, "Init udc controller source\n");
+    printk_trace("Init udc controller source\n");
     /* Init udc controller source */
     memset(&sunxi_udc_source, 0, sizeof(sunxi_udc_t));
 
     sunxi_udc_source.usbc_hd = usb_controller_open_otg(0);
 
     if (sunxi_udc_source.usbc_hd == 0) {
-        printk(LOG_LEVEL_ERROR, "USB: usb_controller_open_otg failed\n");
+        printk_error("USB: usb_controller_open_otg failed\n");
         return -1;
     }
 
@@ -583,16 +583,16 @@ int sunxi_usb_init() {
     /* request dma channal for usb send and recv */
     sunxi_udc_source.dma_send_channal = usb_dma_request();
     if (!sunxi_udc_source.dma_send_channal) {
-        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb send data\n");
+        printk_error("USB: unable to request dma for usb send data\n");
         goto sunxi_usb_init_fail;
     }
-    printk(LOG_LEVEL_TRACE, "USB: dma send ch %d\n", sunxi_udc_source.dma_send_channal);
+    printk_trace("USB: dma send ch %d\n", sunxi_udc_source.dma_send_channal);
     sunxi_udc_source.dma_recv_channal = usb_dma_request();
     if (!sunxi_udc_source.dma_recv_channal) {
-        printk(LOG_LEVEL_ERROR, "USB: unable to request dma for usb receive data\n");
+        printk_error("USB: unable to request dma for usb receive data\n");
         goto sunxi_usb_init_fail;
     }
-    printk(LOG_LEVEL_TRACE, "USB: dma recv ch %d\n", sunxi_udc_source.dma_recv_channal);
+    printk_trace("USB: dma recv ch %d\n", sunxi_udc_source.dma_recv_channal);
 
     /* init usb info */
     sunxi_udc_source.address = 0;
@@ -608,7 +608,7 @@ int sunxi_usb_init() {
     /* We use static memory for this moment */
     sunxi_ubuf.rx_base_buffer = rx_base_buffer;
     if (!sunxi_ubuf.rx_base_buffer) {
-        printk(LOG_LEVEL_ERROR, "USB: %s:alloc memory fail\n");
+        printk_error("USB: %s:alloc memory fail\n");
         goto sunxi_usb_init_fail;
     }
     sunxi_ubuf.rx_req_buffer = sunxi_ubuf.rx_base_buffer;
@@ -715,7 +715,7 @@ void sunxi_usb_irq() {
 
     /* RESET */
     if (misc_irq & USBC_INTUSB_RESET) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: reset\n");
+        printk_trace("USB: IRQ: reset\n");
         usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_RESET);
 
         sunxi_usb_clear_all_irq();
@@ -740,35 +740,35 @@ void sunxi_usb_irq() {
 
     /* RESUME ont handle, just clear interrupt */
     if (misc_irq & USBC_INTUSB_RESUME) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: resume\n");
+        printk_trace("USB: IRQ: resume\n");
         /* clear interrupt */
         usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_RESUME);
     }
 
     /* SUSPEND */
     if (misc_irq & USBC_INTUSB_SUSPEND) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: suspend\n");
+        printk_trace("USB: IRQ: suspend\n");
         /* clear interrupt */
         usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_SUSPEND);
     }
 
     /* DISCONNECT */
     if (misc_irq & USBC_INTUSB_DISCONNECT) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: disconnect\n");
+        printk_trace("USB: IRQ: disconnect\n");
         usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_DISCONNECT);
         return;
     }
 
     /* SOF */
     if (misc_irq & USBC_INTUSB_SOF) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: SOF\n");
+        printk_trace("USB: IRQ: SOF\n");
         usb_controller_int_disable_usb_misc_uint(sunxi_udc_source.usbc_hd, USBC_INTUSB_SOF);
         usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_SOF);
     }
 
     /* ep0 */
     if (tx_irq & (1 << SUNXI_USB_CTRL_EP_INDEX)) {
-        printk(LOG_LEVEL_TRACE, "USB: IRQ: EP0\n");
+        printk_trace("USB: IRQ: EP0\n");
         usb_controller_int_clear_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
         /* handle ep0 ops */
         ep0_recv_op();
@@ -776,7 +776,7 @@ void sunxi_usb_irq() {
 
     /* tx endpoint data transfers */
     if (tx_irq & (1 << SUNXI_USB_BULK_IN_EP_INDEX)) {
-        printk(LOG_LEVEL_TRACE, "USB: tx irq occur\n");
+        printk_trace("USB: tx irq occur\n");
         /* Clear the interrupt bit by setting it to 1 */
         usb_controller_int_clear_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_BULK_IN_EP_INDEX);
         eptx_send_op();
@@ -784,19 +784,19 @@ void sunxi_usb_irq() {
 
     /* rx endpoint data transfers */
     if (rx_irq & (1 << SUNXI_USB_BULK_OUT_EP_INDEX)) {
-        printk(LOG_LEVEL_TRACE, "USB: rx irq occur\n");
+        printk_trace("USB: rx irq occur\n");
         /* Clear the interrupt bit by setting it to 1 */
         usb_controller_int_clear_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, SUNXI_USB_BULK_OUT_EP_INDEX);
         eprx_recv_op();
     }
 
     if (dma_irq & (1 << SUNXI_USB_BULK_IN_EP_INDEX)) {
-        printk(LOG_LEVEL_TRACE, "USB: tx dma\n");
+        printk_trace("USB: tx dma\n");
         sunxi_usb_send_by_dma_isr(NULL);
     }
 
     if (dma_irq & (1 << SUNXI_USB_BULK_OUT_EP_INDEX)) {
-        printk(LOG_LEVEL_TRACE, "USB: rx dma\n");
+        printk_trace("USB: rx dma\n");
         sunxi_usb_recv_by_dma_isr(NULL);
     }
 
@@ -848,7 +848,7 @@ int sunxi_usb_start_recv_by_dma(void *mem_base, uint32_t length) {
     usb_device_config_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
 
     sunxi_ubuf.request_size = length;
-    printk(LOG_LEVEL_TRACE, "USB: dma start 0x%lx, length 0x%x\n", mem_buf, length);
+    printk_trace("USB: dma start 0x%lx, length 0x%x\n", mem_buf, length);
     usb_dma_start(sunxi_udc_source.dma_recv_channal, mem_buf, length);
 
     usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
@@ -897,53 +897,53 @@ void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {
     if (ep_index >= 0) {
         old_ep_index = readw(usbc_base + USBC_REG_o_EPIND);
         writew(ep_index, (usbc_base + USBC_REG_o_EPIND));
-        printk(LOG_LEVEL_TRACE, "old_ep_index = %d, ep_index = %d\n", old_ep_index, ep_index);
+        printk_trace("old_ep_index = %d, ep_index = %d\n", old_ep_index, ep_index);
     }
 
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_FADDR         = 0x%08x\n", readb(usbc_base + USBC_REG_o_FADDR));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_PCTL          = 0x%08x\n", readb(usbc_base + USBC_REG_o_PCTL));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTTx         = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTTx));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTRx         = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTRx));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTTxE        = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTTxE));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTRxE        = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTRxE));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTUSB        = 0x%08x\n", readb(usbc_base + USBC_REG_o_INTUSB));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_INTUSBE       = 0x%08x\n", readb(usbc_base + USBC_REG_o_INTUSBE));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_EPIND         = 0x%08x\n", readw(usbc_base + USBC_REG_o_EPIND));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXMAXP        = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXMAXP));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_CSR0          = 0x%08x\n", readw(usbc_base + USBC_REG_o_CSR0));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXCSR         = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXCSR));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXMAXP        = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXMAXP));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXCSR         = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXCSR));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_COUNT0        = 0x%08x\n", readw(usbc_base + USBC_REG_o_COUNT0));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXCOUNT       = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXCOUNT));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXTYPE        = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXTYPE));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_NAKLIMIT0     = 0x%08x\n", readb(usbc_base + USBC_REG_o_NAKLIMIT0));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXINTERVAL    = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXINTERVAL));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXTYPE        = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXTYPE));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXINTERVAL    = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXINTERVAL));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_CONFIGDATA    = 0x%08x\n", readb(usbc_base + USBC_REG_o_CONFIGDATA));
+    printk_trace("USBC_REG_o_FADDR         = 0x%08x\n", readb(usbc_base + USBC_REG_o_FADDR));
+    printk_trace("USBC_REG_o_PCTL          = 0x%08x\n", readb(usbc_base + USBC_REG_o_PCTL));
+    printk_trace("USBC_REG_o_INTTx         = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTTx));
+    printk_trace("USBC_REG_o_INTRx         = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTRx));
+    printk_trace("USBC_REG_o_INTTxE        = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTTxE));
+    printk_trace("USBC_REG_o_INTRxE        = 0x%08x\n", readw(usbc_base + USBC_REG_o_INTRxE));
+    printk_trace("USBC_REG_o_INTUSB        = 0x%08x\n", readb(usbc_base + USBC_REG_o_INTUSB));
+    printk_trace("USBC_REG_o_INTUSBE       = 0x%08x\n", readb(usbc_base + USBC_REG_o_INTUSBE));
+    printk_trace("USBC_REG_o_EPIND         = 0x%08x\n", readw(usbc_base + USBC_REG_o_EPIND));
+    printk_trace("USBC_REG_o_TXMAXP        = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXMAXP));
+    printk_trace("USBC_REG_o_CSR0          = 0x%08x\n", readw(usbc_base + USBC_REG_o_CSR0));
+    printk_trace("USBC_REG_o_TXCSR         = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXCSR));
+    printk_trace("USBC_REG_o_RXMAXP        = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXMAXP));
+    printk_trace("USBC_REG_o_RXCSR         = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXCSR));
+    printk_trace("USBC_REG_o_COUNT0        = 0x%08x\n", readw(usbc_base + USBC_REG_o_COUNT0));
+    printk_trace("USBC_REG_o_RXCOUNT       = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXCOUNT));
+    printk_trace("USBC_REG_o_TXTYPE        = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXTYPE));
+    printk_trace("USBC_REG_o_NAKLIMIT0     = 0x%08x\n", readb(usbc_base + USBC_REG_o_NAKLIMIT0));
+    printk_trace("USBC_REG_o_TXINTERVAL    = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXINTERVAL));
+    printk_trace("USBC_REG_o_RXTYPE        = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXTYPE));
+    printk_trace("USBC_REG_o_RXINTERVAL    = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXINTERVAL));
+    printk_trace("USBC_REG_o_CONFIGDATA    = 0x%08x\n", readb(usbc_base + USBC_REG_o_CONFIGDATA));
 
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_DEVCTL        = 0x%08x\n", readb(usbc_base + USBC_REG_o_DEVCTL));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXFIFOSZ      = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXFIFOSZ));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXFIFOSZ      = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXFIFOSZ));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_TXFIFOAD      = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXFIFOAD));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_RXFIFOAD      = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXFIFOAD));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_VEND0         = 0x%08x\n", readb(usbc_base + USBC_REG_o_VEND0));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_VEND1         = 0x%08x\n", readb(usbc_base + USBC_REG_o_VEND1));
+    printk_trace("USBC_REG_o_DEVCTL        = 0x%08x\n", readb(usbc_base + USBC_REG_o_DEVCTL));
+    printk_trace("USBC_REG_o_TXFIFOSZ      = 0x%08x\n", readb(usbc_base + USBC_REG_o_TXFIFOSZ));
+    printk_trace("USBC_REG_o_RXFIFOSZ      = 0x%08x\n", readb(usbc_base + USBC_REG_o_RXFIFOSZ));
+    printk_trace("USBC_REG_o_TXFIFOAD      = 0x%08x\n", readw(usbc_base + USBC_REG_o_TXFIFOAD));
+    printk_trace("USBC_REG_o_RXFIFOAD      = 0x%08x\n", readw(usbc_base + USBC_REG_o_RXFIFOAD));
+    printk_trace("USBC_REG_o_VEND0         = 0x%08x\n", readb(usbc_base + USBC_REG_o_VEND0));
+    printk_trace("USBC_REG_o_VEND1         = 0x%08x\n", readb(usbc_base + USBC_REG_o_VEND1));
 
-    printk(LOG_LEVEL_TRACE, "=====================================\n");
-    printk(LOG_LEVEL_TRACE, "TXFADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXFADDRx));
-    printk(LOG_LEVEL_TRACE, "TXHADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXHADDRx));
-    printk(LOG_LEVEL_TRACE, "TXHPORTx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXHPORTx));
-    printk(LOG_LEVEL_TRACE, "RXFADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXFADDRx));
-    printk(LOG_LEVEL_TRACE, "RXHADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXHADDRx));
-    printk(LOG_LEVEL_TRACE, "RXHPORTx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXHPORTx));
-    printk(LOG_LEVEL_TRACE, "RPCOUNTx(%d)              = 0x%08x\n", ep_index, (uint32_t) readw(usbc_base + USBC_REG_o_RPCOUNT));
-    printk(LOG_LEVEL_TRACE, "=====================================\n");
+    printk_trace("=====================================\n");
+    printk_trace("TXFADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXFADDRx));
+    printk_trace("TXHADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXHADDRx));
+    printk_trace("TXHPORTx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_TXHPORTx));
+    printk_trace("RXFADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXFADDRx));
+    printk_trace("RXHADDRx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXHADDRx));
+    printk_trace("RXHPORTx(%d)              = 0x%08x\n", ep_index, readb(usbc_base + USBC_REG_o_RXHPORTx));
+    printk_trace("RPCOUNTx(%d)              = 0x%08x\n", ep_index, (uint32_t) readw(usbc_base + USBC_REG_o_RPCOUNT));
+    printk_trace("=====================================\n");
 
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_ISCR          = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_ISCR));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_PHYCTL        = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYCTL));
-    printk(LOG_LEVEL_TRACE, "USBC_REG_o_PHYBIST       = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYBIST));
+    printk_trace("USBC_REG_o_ISCR          = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_ISCR));
+    printk_trace("USBC_REG_o_PHYCTL        = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYCTL));
+    printk_trace("USBC_REG_o_PHYBIST       = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYBIST));
 
     if (ep_index >= 0) {
         writew(old_ep_index, (usbc_base + USBC_REG_o_EPIND));

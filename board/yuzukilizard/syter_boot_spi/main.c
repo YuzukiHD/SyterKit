@@ -76,7 +76,7 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     /* get dtb size and read */
     spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
     if (fdt_check_header(image->of_dest)) {
-        printk(LOG_LEVEL_ERROR, "SPI-NAND: DTB verification failed\n");
+        printk_error("SPI-NAND: DTB verification failed\n");
         return -1;
     }
 
@@ -120,7 +120,7 @@ static int abortboot_single_key(int bootdelay) {
     int abort = 0;
     unsigned long ts;
 
-    printk(LOG_LEVEL_INFO, "Hit any key to stop autoboot: %2d ", bootdelay);
+    printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
     /* Check if key already pressed */
     if (tstc()) {       /* we got a key press */
@@ -150,12 +150,12 @@ msh_declare_command(reload);
 msh_define_help(reload, "rescan SPI NAND and reload DTB, Kernel zImage", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
     if (sunxi_spi_init(&sunxi_spi0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        printk_error("SPI: init failed\n");
         return 0;
     }
 
     if (load_spi_nand(&sunxi_spi0, &image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI-NAND: loading failed\n");
+        printk_error("SPI-NAND: loading failed\n");
         return 0;
     }
     return 0;
@@ -174,7 +174,7 @@ int cmd_boot(int argc, const char **argv) {
 
     /* Set up boot parameters for the kernel. */
     if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
-        printk(LOG_LEVEL_ERROR, "boot setup failed\n");
+        printk_error("boot setup failed\n");
         abort();
     }
 
@@ -182,10 +182,10 @@ int cmd_boot(int argc, const char **argv) {
     clean_syterkit_data();
 
     enable_kernel_smp();
-    printk(LOG_LEVEL_INFO, "enable kernel smp ok...\n");
+    printk_info("enable kernel smp ok...\n");
 
     /* Debug message to indicate the kernel address that the system is jumping to. */
-    printk(LOG_LEVEL_INFO, "jump to kernel address: 0x%x\n\n", image.dest);
+    printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
     /* Jump to the kernel entry point. */
     kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
@@ -214,7 +214,7 @@ int main(void) {
 
     /* Check rtc fel flag. if set flag, goto fel */
     if (rtc_probe_fel_flag()) {
-        printk(LOG_LEVEL_INFO, "RTC: get fel flag, jump to fel mode.\n");
+        printk_info("RTC: get fel flag, jump to fel mode.\n");
         clean_syterkit_data();
         rtc_clear_fel_flag();
         sunxi_clk_reset();
@@ -227,7 +227,7 @@ int main(void) {
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Debug message to indicate that MMU is enabled. */
-    printk(LOG_LEVEL_DEBUG, "enable mmu ok\n");
+    printk_debug("enable mmu ok\n");
 
     /* Set up Real-Time Clock (RTC) hardware. */
     rtc_set_vccio_det_spare();
@@ -256,15 +256,15 @@ int main(void) {
 
     /* Initialize the SPI controller. */
     if (sunxi_spi_init(&sunxi_spi0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        printk_error("SPI: init failed\n");
         goto _shell;
     } else {
-        printk(LOG_LEVEL_INFO, "SPI: spi0 controller initialized\n");
+        printk_info("SPI: spi0 controller initialized\n");
     }
 
     /* Load the DTB, kernel image from the SPI NAND. */
     if (load_spi_nand(&sunxi_spi0, &image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI-NAND: loading failed\n");
+        printk_error("SPI-NAND: loading failed\n");
         goto _shell;
     }
 

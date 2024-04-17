@@ -26,7 +26,7 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
 
     sunxi_clk_dump();
 
@@ -34,7 +34,7 @@ int main(void) {
 
     while (1) {
         i++;
-        printk(LOG_LEVEL_INFO, "Count: %d\n", i);
+        printk_info("Count: %d\n", i);
         mdelay(1000);
     }
 

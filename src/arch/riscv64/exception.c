@@ -259,20 +259,20 @@ static const char *mstatus_to_previous_mode(unsigned long ms) {
 static void show_regs(struct pt_regs_t *regs) {
     if (regs->cause & (1UL << 63)) {
         if ((regs->cause & ~(1UL << 63)) < ARRAY_SIZE(interrupt_names))
-            printk(LOG_LEVEL_ERROR, "Interrupt:          %s\r\n", interrupt_names[regs->cause & ~(1UL << 63)]);
+            printk_error("Interrupt:          %s\r\n", interrupt_names[regs->cause & ~(1UL << 63)]);
         else
-            printk(LOG_LEVEL_ERROR, "Trap:               Unknown cause %p\r\n", (void *) regs->cause);
+            printk_error("Trap:               Unknown cause %p\r\n", (void *) regs->cause);
     } else {
         if (regs->cause < ARRAY_SIZE(exception_names))
-            printk(LOG_LEVEL_ERROR, "Exception:          %s\r\n", exception_names[regs->cause]);
+            printk_error("Exception:          %s\r\n", exception_names[regs->cause]);
         else
-            printk(LOG_LEVEL_ERROR, "Trap:               Unknown cause %p\r\n", (void *) regs->cause);
+            printk_error("Trap:               Unknown cause %p\r\n", (void *) regs->cause);
     }
-    printk(LOG_LEVEL_ERROR, "Previous mode:      %s%s\r\n", mstatus_to_previous_mode(csr_read(mstatus)), (regs->status & (1 << 17)) ? " (MPRV)" : "");
-    printk(LOG_LEVEL_ERROR, "Bad instruction pc: %p\r\n", (void *) regs->epc);
-    printk(LOG_LEVEL_ERROR, "Bad address:        %p\r\n", (void *) regs->badvaddr);
-    printk(LOG_LEVEL_ERROR, "Stored ra:          %p\r\n", (void *) regs->x[1]);
-    printk(LOG_LEVEL_ERROR, "Stored sp:          %p\r\n", (void *) regs->x[2]);
+    printk_error("Previous mode:      %s%s\r\n", mstatus_to_previous_mode(csr_read(mstatus)), (regs->status & (1 << 17)) ? " (MPRV)" : "");
+    printk_error("Bad instruction pc: %p\r\n", (void *) regs->epc);
+    printk_error("Bad address:        %p\r\n", (void *) regs->badvaddr);
+    printk_error("Stored ra:          %p\r\n", (void *) regs->x[1]);
+    printk_error("Stored sp:          %p\r\n", (void *) regs->x[2]);
 }
 
 static struct instruction_info_t *match_instruction(unsigned long insn) {
