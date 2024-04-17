@@ -100,9 +100,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\n", filename,
-               fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }

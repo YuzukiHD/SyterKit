@@ -64,9 +64,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\n", filename,
-               fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -93,7 +91,7 @@ read_fail:
     fret = f_close(&file);
 
     printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
-           (f32) (total_read / time) / 1024.0f);
+                 (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
@@ -111,8 +109,8 @@ static int load_sdcard(image_info_t *image) {
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
 
@@ -153,17 +151,17 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg); // Initialize the serial interface for debugging
+    sunxi_serial_init(&uart_dbg);// Initialize the serial interface for debugging
 
-    show_banner(); // Display a banner
+    show_banner();// Display a banner
 
-    sunxi_clk_init(); // Initialize clock configurations
+    sunxi_clk_init();// Initialize clock configurations
 
-    sunxi_dram_init(&dram_para); // Initialize DRAM parameters
+    sunxi_dram_init(&dram_para);// Initialize DRAM parameters
 
-    sunxi_clk_dump(); // Dump clock information
+    sunxi_clk_dump();// Dump clock information
 
-    memset(&image, 0, sizeof(image_info_t)); // Clear the image structure
+    memset(&image, 0, sizeof(image_info_t));// Clear the image structure
 
     // Set destination addresses for different images
     image.dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
@@ -195,7 +193,7 @@ int main(void) {
         return 0;
     }
 
-    sunxi_c906_clock_reset(); // Reset C906 clock
+    sunxi_c906_clock_reset();// Reset C906 clock
 
     // Get entry address of RISC-V ELF
     uint32_t elf_run_addr = elf64_get_entry_addr((phys_addr_t) image.dest);
@@ -208,13 +206,13 @@ int main(void) {
 
     printk_info("RISC-V C906 Core now Running... \n");
 
-    mdelay(100); // Delay for 100 milliseconds
+    mdelay(100);// Delay for 100 milliseconds
 
-    sunxi_c906_clock_init(elf_run_addr); // Initialize C906 clock with entry address
+    sunxi_c906_clock_init(elf_run_addr);// Initialize C906 clock with entry address
 
-    abort(); // Abort A7 execution, loop forever
+    abort();// Abort A7 execution, loop forever
 
-    jmp_to_fel(); // Jump to FEL mode
+    jmp_to_fel();// Jump to FEL mode
 
     return 0;
 }

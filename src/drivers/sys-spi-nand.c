@@ -123,7 +123,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
         return r;
 
     printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
-           rx[1], rx[2], rx[3]);
+                 rx[1], rx[2], rx[3]);
 
     /* Check if the first byte of the received data is 0xff */
     if (rx[0] == 0xff) {
@@ -281,16 +281,14 @@ int spi_nand_detect(sunxi_spi_t *spi) {
             if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) ==
                  0) &&
                 !(val & 0x01)) {
-                printk(LOG_LEVEL_DEBUG,
-                       "SPI-NAND: enable Quad mode\n");
+                printk_debug("SPI-NAND: enable Quad mode\n");
                 val |= (1 << 0);
                 spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
                 spi_nand_wait_while_busy(spi);
             }
         }
 
-        printk_info("SPI-NAND: %s detected\n",
-               info.name);
+        printk_info("SPI-NAND: %s detected\n", info.name);
 
         return 0; /* Return success */
     }

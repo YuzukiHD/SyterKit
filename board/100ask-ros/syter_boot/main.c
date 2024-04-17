@@ -102,9 +102,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR,
-               "FATFS: open, filename: [%s]: error %d\n", filename,
-               fret);
+        printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
         ret = -1;
         goto open_fail;
     }
@@ -131,7 +129,7 @@ read_fail:
     fret = f_close(&file);
 
     printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
-           (f32) (total_read / time) / 1024.0f);
+                 (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
