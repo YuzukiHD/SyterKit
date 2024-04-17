@@ -19,12 +19,12 @@
 
 #include <image_loader.h>
 
+#include "sys-dma.h"
 #include "sys-dram.h"
 #include "sys-rtc.h"
 #include "sys-sid.h"
-#include "sys-spi.h"
-#include "sys-dma.h"
 #include "sys-spi-nand.h"
+#include "sys-spi.h"
 
 #include "ff.h"
 #include "libfdt.h"
@@ -81,37 +81,32 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
     }
 
     size = fdt_totalsize(image->of_dest);
-    printk(LOG_LEVEL_DEBUG,
-           "SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
-           CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
+    printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
+                 CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
     start = time_us();
     spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR,
                   (uint32_t) size);
     time = time_us() - start;
-    printk(LOG_LEVEL_INFO,
-           "SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size,
-           (f32) (size / time));
+    printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size,
+                (f32) (size / time));
 
     /* get kernel size and read */
     spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR,
                   (uint32_t) sizeof(linux_zimage_header_t));
     hdr = (linux_zimage_header_t *) image->dest;
     if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
-        printk(LOG_LEVEL_DEBUG,
-               "SPI-NAND: zImage verification failed\n");
+        printk_debug("SPI-NAND: zImage verification failed\n");
         return -1;
     }
     size = hdr->end - hdr->start;
-    printk(LOG_LEVEL_DEBUG,
-           "SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
-           CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
+    printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n",
+                 CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
     start = time_us();
     spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR,
                   (uint32_t) size);
     time = time_us() - start;
-    printk(LOG_LEVEL_INFO,
-           "SPI-NAND: read Image of size %u at %.2fMB/S\n", size,
-           (f32) (size / time));
+    printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size,
+                (f32) (size / time));
 
     return 0;
 }

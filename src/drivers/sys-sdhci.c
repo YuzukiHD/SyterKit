@@ -48,10 +48,9 @@ static void set_read_timeout(sdhci_t *sdhci, uint32_t timeout) {
     rval |= (rdto_clk << 8);
     sdhci->reg->timeout = rval;
 
-    printk(LOG_LEVEL_TRACE,
-           "rdtoclk:%u, reg-tmout:%u, gctl:%x, clock:%u, nstr:%x\n",
-           rdto_clk, sdhci->reg->timeout, sdhci->reg->gctrl, sdhci->clock,
-           sdhci->reg->ntsr);
+    printk_trace("rdtoclk:%u, reg-tmout:%u, gctl:%x, clock:%u, nstr:%x\n",
+                 rdto_clk, sdhci->reg->timeout, sdhci->reg->gctrl, sdhci->clock,
+                 sdhci->reg->ntsr);
 }
 
 static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
@@ -92,14 +91,13 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
         } else {
             pdes[des_idx].next_desc_addr = ((uint32_t) &pdes[des_idx + 1]) >> 2;
         }
-        printk(LOG_LEVEL_TRACE,
-               "SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
-               "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
-               i, remain, des_idx, (uint32_t) (&pdes[des_idx]),
-               (uint32_t) ((uint32_t *) &pdes[des_idx])[0],
-               (uint32_t) ((uint32_t *) &pdes[des_idx])[1],
-               (uint32_t) ((uint32_t *) &pdes[des_idx])[2],
-               (uint32_t) ((uint32_t *) &pdes[des_idx])[3]);
+        printk_trace("SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
+                     "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
+                     i, remain, des_idx, (uint32_t) (&pdes[des_idx]),
+                     (uint32_t) ((uint32_t *) &pdes[des_idx])[0],
+                     (uint32_t) ((uint32_t *) &pdes[des_idx])[1],
+                     (uint32_t) ((uint32_t *) &pdes[des_idx])[2],
+                     (uint32_t) ((uint32_t *) &pdes[des_idx])[3]);
     }
 
     wmb();
