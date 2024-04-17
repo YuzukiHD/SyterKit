@@ -62,7 +62,7 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
             if (p_item->axp_step_tbl[i].step_max_vol >= set_vol) {
                 reg_value |= ((base_step + ((set_vol - p_item->axp_step_tbl[i].step_min_vol) / p_item->axp_step_tbl[i].step_val)) << p_item->reg_addr_offset);
                 if (p_item->axp_step_tbl[i].regation) {
-                    u8 reg_value_temp = (~reg_value & p_item->cfg_reg_mask);
+                    uint8_t reg_value_temp = (~reg_value & p_item->cfg_reg_mask);
                     reg_value &= ~p_item->cfg_reg_mask;
                     reg_value |= reg_value_temp;
                 }
