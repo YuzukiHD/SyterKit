@@ -67,10 +67,38 @@ extern "C" {
 #define printk_error(fmt, ...) ((void) 0)
 #endif
 
+/**
+ * @brief Set timer count
+ * 
+ * This function is used to set the count value of the timer.
+ * 
+ * @note Before calling this function, timer-related hardware configuration should be initialized.
+ */
 void set_timer_count();
 
+/**
+ * @brief Print message to kernel log
+ * 
+ * This function is used to print the message with specified level to the kernel log.
+ * 
+ * @param level Information level, typically used to specify the importance or type of the message.
+ * @param fmt   Format string describing the format of the message to print.
+ * @param ...   Variable argument list used to fill placeholders in the format string.
+ * 
+ * @note This function should be used within the kernel to record important system information or debug messages.
+ */
 void printk(int level, const char *fmt, ...);
 
+/**
+ * @brief Print message via UART
+ * 
+ * This function is used to print formatted message to the terminal via UART serial port.
+ * 
+ * @param fmt Format string describing the format of the message to print.
+ * @param ... Variable argument list used to fill placeholders in the format string.
+ * 
+ * @note This function is typically used in embedded systems for debugging and outputting system status information.
+ */
 void uart_printf(const char *fmt, ...);
 
 #ifdef __cplusplus
