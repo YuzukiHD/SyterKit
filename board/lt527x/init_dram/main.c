@@ -55,8 +55,8 @@ int main(void) {
 
     show_banner();
 
-    printk(LOG_LEVEL_INFO, "Board: Myir Tech LT527X-E, Chip: Allwinner T527\n");
-    printk(LOG_LEVEL_INFO, "SoC: Arm Octa-Core Cortex-A55 v65 r2p0\n");
+    printk_info("Board: Myir Tech LT527X-E, Chip: Allwinner T527\n");
+    printk_info("SoC: Arm Octa-Core Cortex-A55 v65 r2p0\n");
 
     sunxi_clk_init();
 
@@ -80,7 +80,7 @@ int main(void) {
 
     enable_sram_a3();
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
 
@@ -88,7 +88,7 @@ int main(void) {
 
     while (1) {
         i++;
-        printk(LOG_LEVEL_INFO, "Count: %d\n", i);
+        printk_info("Count: %d\n", i);
         mdelay(1000);
     }
 

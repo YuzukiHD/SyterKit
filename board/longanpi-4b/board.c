@@ -121,13 +121,13 @@ void neon_enable(void) {
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    printk_info("disable mmu ok...\n");
     arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    printk_info("disable dcache ok...\n");
     arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    printk_info("disable icache ok...\n");
     arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+    printk_info("free interrupt ok...\n");
 }
 
 void rtc_set_vccio_det_spare(void) {
@@ -158,10 +158,10 @@ void rtc_set_vccio_det_spare(void) {
 void set_rpio_power_mode(void) {
     uint32_t reg_val = read32(SUNXI_R_GPIO_BASE + 0x348);
     if (reg_val & 0x1) {
-        printk(LOG_LEVEL_DEBUG, "PL gpio voltage : 1.8V \n");
+        printk_debug("PL gpio voltage : 1.8V \n");
         write32(SUNXI_R_GPIO_BASE + 0x340, 0x1);
     } else {
-        printk(LOG_LEVEL_DEBUG, "PL gpio voltage : 3.3V \n");
+        printk_debug("PL gpio voltage : 3.3V \n");
     }
 }
 
@@ -217,24 +217,24 @@ void show_chip() {
     chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
-    printk(LOG_LEVEL_INFO, "Model: Sipeed LM4B Based board.\n");
-    printk(LOG_LEVEL_INFO, "Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");
-    printk(LOG_LEVEL_INFO, "Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+    printk_info("Model: Sipeed LM4B Based board.\n");
+    printk_info("Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");
+    printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
     uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
     switch (chip_markid_sid) {
         case 0x5f10:
-            printk(LOG_LEVEL_INFO, "Chip type = T527M02X0DCH");
+            printk_info("Chip type = T527M02X0DCH");
             break;
         case 0x5f30:
-            printk(LOG_LEVEL_INFO, "Chip type = T527M00X0DCH");
+            printk_info("Chip type = T527M00X0DCH");
             break;
         case 0x5500:
-            printk(LOG_LEVEL_INFO, "Chip type = MR527M02X0D00");
+            printk_info("Chip type = MR527M02X0D00");
             break;
         default:
-            printk(LOG_LEVEL_INFO, "Chip type = UNKNOW");
+            printk_info("Chip type = UNKNOW");
             break;
     }
 

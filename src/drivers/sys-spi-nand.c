@@ -122,7 +122,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     if (r < 0)
         return r;
 
-    printk(LOG_LEVEL_DEBUG, "rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
            rx[1], rx[2], rx[3]);
 
     /* Check if the first byte of the received data is 0xff */
@@ -156,7 +156,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
         }
     }
 
-    printk(LOG_LEVEL_ERROR, "SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
+    printk_error("SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
 
     return -1; /* Return failure */
 }
@@ -289,13 +289,13 @@ int spi_nand_detect(sunxi_spi_t *spi) {
             }
         }
 
-        printk(LOG_LEVEL_INFO, "SPI-NAND: %s detected\n",
+        printk_info("SPI-NAND: %s detected\n",
                info.name);
 
         return 0; /* Return success */
     }
 
-    printk(LOG_LEVEL_ERROR, "SPI-NAND: flash not found\n");
+    printk_error("SPI-NAND: flash not found\n");
     return -1; /* Return failure */
 }
 
@@ -357,12 +357,12 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
             txlen = 5; /* Quad IO has 2 dummy bytes */
             break;
         default:
-            printk(LOG_LEVEL_ERROR, "spi_nand: invalid mode\n");
+            printk_error("spi_nand: invalid mode\n");
             return -1;
     };
 
     if (addr % info.page_size) {
-        printk(LOG_LEVEL_ERROR, "spi_nand: address is not page-aligned\n");
+        printk_error("spi_nand: address is not page-aligned\n");
         return -1;
     }
 

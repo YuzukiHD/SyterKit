@@ -584,7 +584,7 @@ uint32_t usb_controller_write_packet(uint64_t husb, uint32_t fifo, uint32_t cnt,
     i32 = len >> 2;
     i8 = len & 0x03;
 
-    printk(LOG_LEVEL_TRACE, "USB: buf addr:0x%x\n", buff);
+    printk_trace("USB: buf addr:0x%x\n", buff);
     while (i32--) {
         writel(*buf32++, a64_fifo);
     }
@@ -657,10 +657,10 @@ uint32_t usb_controller_get_port_fifo_start_addr(uint64_t husb) {
     if (usbc_otg->port_num == 0) {
         return usbc_info_g.port0_fifo_addr;
     } else if (usbc_otg->port_num == 1) {
-        printk(LOG_LEVEL_WARNING, "USB: unsupported usb port 1, using port 0\n");
+        printk_warning("USB: unsupported usb port 1, using port 0\n");
         return usbc_info_g.port0_fifo_addr;
     } else {
-        printk(LOG_LEVEL_WARNING, "USB: unsupported usb port 2, using port 0\n");
+        printk_warning("USB: unsupported usb port 2, using port 0\n");
         return usbc_info_g.port0_fifo_addr;
     }
 }
@@ -675,10 +675,10 @@ uint32_t usb_controller_get_port_fifo_size(uint64_t husb) {
     if (usbc_otg->port_num == 0) {
         return usbc_info_g.port0_fifo_size;
     } else if (usbc_otg->port_num == 1) {
-        printk(LOG_LEVEL_WARNING, "USB: unsupported usb port 1, using port 0\n");
+        printk_warning("USB: unsupported usb port 1, using port 0\n");
         return usbc_info_g.port0_fifo_size;
     } else {
-        printk(LOG_LEVEL_WARNING, "USB: unsupported usb port 2, using port 0\n");
+        printk_warning("USB: unsupported usb port 2, using port 0\n");
         return usbc_info_g.port0_fifo_size;
     }
 }

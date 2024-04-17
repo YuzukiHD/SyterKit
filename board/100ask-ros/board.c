@@ -69,13 +69,13 @@ sunxi_i2c_t i2c_pmu = {
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
-    printk(LOG_LEVEL_INFO, "disable mmu ok...\n");
+    printk_info("disable mmu ok...\n");
     arm32_dcache_disable();
-    printk(LOG_LEVEL_INFO, "disable dcache ok...\n");
+    printk_info("disable dcache ok...\n");
     arm32_icache_disable();
-    printk(LOG_LEVEL_INFO, "disable icache ok...\n");
+    printk_info("disable icache ok...\n");
     arm32_interrupt_disable();
-    printk(LOG_LEVEL_INFO, "free interrupt ok...\n");
+    printk_info("free interrupt ok...\n");
 }
 
 #define RTC_DATA_COLD_START (7)
@@ -88,7 +88,7 @@ extern uint32_t ar100code_bin_len;
 int ar100s_gpu_fix(void) {
     uint32_t value;
     uint32_t id = (readl(SUNXI_SYSCRL_BASE + 0x24)) & 0x07;
-    printk(LOG_LEVEL_DEBUG, "SUNXI_SYSCRL_BASE + 0x24 = 0x%08x, id = %d, RTC_DATA_COLD_START = %d\n",
+    printk_debug("SUNXI_SYSCRL_BASE + 0x24 = 0x%08x, id = %d, RTC_DATA_COLD_START = %d\n",
            readl(SUNXI_SYSCRL_BASE + 0x24), id, rtc_read_data(RTC_DATA_COLD_START));
     if (((id == 0) || (id == 3) || (id == 4) || (id == 5))) {
         if (rtc_read_data(RTC_DATA_COLD_START) == 0) {

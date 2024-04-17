@@ -74,7 +74,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
     time = time_ms() - start + 1;
 
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: read: error %d\n", fret);
+        printk_error("FATFS: read: error %d\n", fret);
         ret = -1;
         goto read_fail;
     }
@@ -83,7 +83,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
     fret = f_close(&file);
 
-    printk(LOG_LEVEL_DEBUG, "FATFS: read in %ums at %.2fMB/S\n", time,
+    printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
            (f32) (total_read / time) / 1024.0f);
 
 open_fail:
@@ -101,7 +101,7 @@ static int load_sdcard(image_info_t *image) {
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0,
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
-    printk(LOG_LEVEL_DEBUG, "SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
            (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -109,13 +109,13 @@ static int load_sdcard(image_info_t *image) {
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: mount error: %d\n", fret);
+        printk_error("FATFS: mount error: %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: mount OK\n");
+        printk_debug("FATFS: mount OK\n");
     }
 
-    printk(LOG_LEVEL_INFO, "FATFS: read %s addr=%x\n", image->filename,
+    printk_info("FATFS: read %s addr=%x\n", image->filename,
            (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
@@ -124,12 +124,12 @@ static int load_sdcard(image_info_t *image) {
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
-        printk(LOG_LEVEL_ERROR, "FATFS: unmount error %d\n", fret);
+        printk_error("FATFS: unmount error %d\n", fret);
         return -1;
     } else {
-        printk(LOG_LEVEL_DEBUG, "FATFS: unmount OK\n");
+        printk_debug("FATFS: unmount OK\n");
     }
-    printk(LOG_LEVEL_DEBUG, "FATFS: done in %ums\n", time_ms() - start);
+    printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
     return 0;
 }
@@ -152,36 +152,36 @@ int main(void) {
     strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         return 0;
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
     }
 
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
+        printk_error("SMHC: init failed\n");
         return 0;
     }
 
     if (load_sdcard(&image) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: loading failed\n");
+        printk_error("SMHC: loading failed\n");
         return 0;
     }
 
     sunxi_e907_clock_reset();
 
     uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
-    printk(LOG_LEVEL_INFO, "RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
+    printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
     if (load_elf32_image((phys_addr_t) image.dest)) {
-        printk(LOG_LEVEL_ERROR, "RISC-V ELF load FAIL\n");
+        printk_error("RISC-V ELF load FAIL\n");
     }
 
     sunxi_e907_clock_init(elf_run_addr);
 
     dump_e907_clock();
 
-    printk(LOG_LEVEL_INFO, "RISC-V E907 Core now Running... \n");
+    printk_info("RISC-V E907 Core now Running... \n");
 
     abort();
 

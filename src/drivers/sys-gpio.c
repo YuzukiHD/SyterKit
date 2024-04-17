@@ -77,7 +77,7 @@ void sunxi_gpio_init(gpio_t pin, int cfg) {
     val |= ((cfg & GPIO_CFG_MASK) << ((pin_num & 0x7) << 2));
     write32(addr, val);
 
-    printk(LOG_LEVEL_TRACE, "GPIO: MUX pin = %d, num in bank = %d, addr = 0x%08x, val = 0x%08x, set cfg = %d\n",
+    printk_trace("GPIO: MUX pin = %d, num in bank = %d, addr = 0x%08x, val = 0x%08x, set cfg = %d\n",
            pin, pin_num, addr, read32(addr), cfg);
 }
 
@@ -131,6 +131,6 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
     val |= (v << ((pin_num & 0xf) << 1));
     write32(addr, val);
 
-    printk(LOG_LEVEL_TRACE, "GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
+    printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
            pin_num, addr, read32(addr), v);
 }

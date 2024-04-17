@@ -127,7 +127,7 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
         if (cdr2) {
             div = mclk / (spi_clk * 2) - 1;
             reg |= SPI_CLK_CTL_CDR2(div) | SPI_CLK_CTL_DRS;
-            printk(LOG_LEVEL_DEBUG, "SPI: CDR2 - n = %lu\n", div);
+            printk_debug("SPI: CDR2 - n = %lu\n", div);
             freq = mclk / (2 * ((div + 1)));
         } else { /* CDR1 */
             while (src_clk > spi_clk) {
@@ -135,12 +135,12 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
                 src_clk >>= 1;
             }
             reg |= SPI_CLK_CTL_CDR1(div);
-            printk(LOG_LEVEL_DEBUG, "SPI: CDR1 - n = %lu\n", div);
+            printk_debug("SPI: CDR1 - n = %lu\n", div);
             freq = src_clk;
         }
     }
 
-    printk(LOG_LEVEL_DEBUG, "SPI: clock div=%u \n", div);
+    printk_debug("SPI: clock div=%u \n", div);
     printk(LOG_LEVEL_DEBUG,
            "SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
            spi_clk / 1000000, freq / 1000000, mclk / 1000000);
@@ -162,7 +162,7 @@ static int spi_clk_init(sunxi_spi_t *spi, uint32_t mod_clk) {
         rval = (1U << 31) | (0x1 << 24) | (0 << 8) |
                0; /* gate enable | use PERIPH_300M */
     }
-    printk(LOG_LEVEL_TRACE, "SPI: parent_clk=%dMHz\n", SPI_MOD_CLK);
+    printk_trace("SPI: parent_clk=%dMHz\n", SPI_MOD_CLK);
 
     if (spi->clk_reg.ccu_base != 0) {
         write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_clk_reg_offest, rval);
@@ -204,7 +204,7 @@ static int spi_dma_cfg(void) {
     spi_rx_dma_hd = dma_request(DMAC_DMATYPE_NORMAL);
 
     if ((spi_rx_dma_hd == 0)) {
-        printk(LOG_LEVEL_ERROR, "SPI: DMA request failed\n");
+        printk_error("SPI: DMA request failed\n");
         return -1;
     }
     /* config spi rx dma */
@@ -415,7 +415,7 @@ static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
 
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
     uint32_t stxlen, fcr;
-    printk(LOG_LEVEL_TRACE, "SPI: tsfr mode=%u tx=%u rx=%u\n", mode,
+    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode,
            txlen, rxlen);
 
     spi_set_io_mode(spi, mode);
@@ -455,7 +455,7 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
         if (rxlen > 64) {
             write32(spi->base + SPI_FCR, (fcr | SPI_FCR_RX_DRQEN_MSK));// Enable RX FIFO DMA request
             if (dma_start(spi_rx_dma_hd, spi->base + SPI_RXD, (u32) rxbuf, rxlen) != 0) {
-                printk(LOG_LEVEL_ERROR, "SPI: DMA transfer failed\n");
+                printk_error("SPI: DMA transfer failed\n");
                 return -1;
             }
             while (dma_querystatus(spi_rx_dma_hd))
@@ -465,7 +465,7 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
         }
     }
 
-    printk(LOG_LEVEL_TRACE, "SPI: ISR=0x%x\n", read32(spi->base + SPI_ISR));
+    printk_trace("SPI: ISR=0x%x\n", read32(spi->base + SPI_ISR));
 
     return txlen + rxlen;
 }

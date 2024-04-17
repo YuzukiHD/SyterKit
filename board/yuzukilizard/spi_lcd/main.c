@@ -63,13 +63,13 @@ static void LCD_Write_Bus(uint8_t dat) {
     tx[0] = dat;
     r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
-        printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
+        printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len) {
     int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
     if (r < 0)
-        printk(LOG_LEVEL_ERROR, "SPI: SPI Xfer error!\n");
+        printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_WR_DATA(uint16_t dat) {
@@ -196,11 +196,11 @@ int main(void) {
     uint64_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
-    printk(LOG_LEVEL_DEBUG, "enable mmu ok\n");
+    printk_debug("enable mmu ok\n");
 
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-    printk(LOG_LEVEL_INFO, "Hello World!\n");
+    printk_info("Hello World!\n");
 
     sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
     sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
@@ -208,7 +208,7 @@ int main(void) {
     dma_init();
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
-        printk(LOG_LEVEL_ERROR, "SPI: init failed\n");
+        printk_error("SPI: init failed\n");
     }
 
     LCD_Init();

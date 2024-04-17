@@ -76,11 +76,11 @@ void sunxi_hifi4_clock_init(uint32_t addr) {
 
 /*
     reg_val = readl(CCU_BASE + CCU_DSP_CLK_REG);
-    printk(LOG_LEVEL_INFO, "CCU_DSP_CLK_REG = %x\n", reg_val);
+    printk_info("CCU_DSP_CLK_REG = %x\n", reg_val);
     reg_val = readl(CCU_BASE + CCU_DSP_BGR_REG);
-    printk(LOG_LEVEL_INFO, "CCU_DSP_BGR_REG = %x\n", reg_val);
+    printk_info("CCU_DSP_BGR_REG = %x\n", reg_val);
     reg_val = readl(DSP0_CFG_BASE + DSP_CTRL_REG0);
-    printk(LOG_LEVEL_INFO, "DSP_CTRL_REG0 = %x\n", reg_val);
+    printk_info("DSP_CTRL_REG0 = %x\n", reg_val);
 */
 }
 

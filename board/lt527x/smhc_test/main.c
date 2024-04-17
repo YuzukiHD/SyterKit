@@ -31,7 +31,7 @@ msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: init failed\n");
+        printk_error("SMHC: init failed\n");
         return 0;
     }
     return 0;
@@ -63,22 +63,22 @@ int main(void) {
 
     pmu_axp1530_init(&i2c_pmu);
 
-    printk(LOG_LEVEL_INFO, "DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
 
     sunxi_clk_dump();
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk(LOG_LEVEL_ERROR, "SMHC: %s controller init failed\n", sdhci0.name);
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
     } else {
-        printk(LOG_LEVEL_INFO, "SMHC: %s controller initialized\n", sdhci0.name);
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk(LOG_LEVEL_WARNING, "SMHC: init failed\n");
+        printk_warning("SMHC: init failed\n");
     } else {
-        printk(LOG_LEVEL_DEBUG, "Card OK!\n");
+        printk_debug("Card OK!\n");
     }
 
     syterkit_shell_attach(commands);

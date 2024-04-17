@@ -322,7 +322,7 @@ int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name) {
         offset = fdt_add_subnode(fdt, parent_offset, name);
 
     if (offset < 0)
-        printk(LOG_LEVEL_WARNING, "FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
+        printk_warning("FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
 
     return offset;
 }
