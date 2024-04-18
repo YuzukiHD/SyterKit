@@ -18,8 +18,9 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | 100ask ROS                                                   | 100ask       | R818     | Quad-Core Cortex A53              | [board/100ask-ros](board/100ask-ros)           | `100ask-ros.cmake`      |
 | [longanpi-3h](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | sipeed       | H618     | Quad-Core Cortex A53              | [board/longanpi-3h](board/longanpi-3h)         | `longanpi-3h.cmake`     |
 | longanpi-4b                                                  | sipeed       | T527     | Octa-Core Cortex A55              | [board/longanpi-4b](board/longanpi-4b)         | `longanpi-4b.cmake`     |
-| [LT527X](https://www.myir.cn/shows/134/70.html)              | myir-tech    | T527 | Octa-Core Cortex A55 | [board/lt527x](board/lt527x) | `lt527x.cmake` |
-| BingPi-M1                                                    | BingPi       | V3s      | Cortex A7                         | [board/bingpi-m1](board/bingpi-m1)             | `bingpi-m1.cmake`       |
+| [LT527X](https://www.myir.cn/shows/134/70.html)              | myir-tech    | T527     | Octa-Core Cortex A55 | [board/lt527x](board/lt527x) | `lt527x.cmake` |
+|  Avaota A1                                                   | YuzukiHD     | T527     | Octa-Core Cortex A55 | [board/avaota-a1](board/avaota-a1) | `avaota-a1.cmake` |
+| OrangePi 4A | OrangePi | A527 | Octa-Core Cortex A55 | (可以嫖个板子吗) | - |
 
 # Getting Started
 
