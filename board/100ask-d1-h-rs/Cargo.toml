@@ -1,0 +1,18 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name = "syterkit-100ask-d1-h"
+version = "0.1.0"
+edition = "2021"
+default-target = "riscv64imac-unknown-none-elf"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+naked-function = "0.1.5"
+panic-halt = "0.2.0"
+
+[[bin]]
+name = "syterkit-100ask-d1-h"
+test = false
+bench = false
