@@ -259,7 +259,7 @@ int cmd_boot(int argc, const char **argv) {
 
     clean_syterkit_data();
 
-    jmp_to_arm64(CONFIG_UBOOT_LOAD_ADDR);
+    jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
 
     printk_info("Back to SyterKit\n");
 
