@@ -214,11 +214,6 @@ void rtc_set_vccio_det_spare(void) {
     val |= DEBOUNCE_NO_BYPASS;
     writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
 
-    /* enable vccio detecter output */
-    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-    val |= FORCE_DETECTER_OUTPUT;
-    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-
     /* enbale vccio detect */
     val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
     val &= ~VCCIO_DET_BYPASS_EN;
