@@ -289,6 +289,9 @@ void show_chip() {
     uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
     switch (chip_markid_sid) {
+        case 0x5200:
+            printk_info("Chip type = A523M00X0000");
+            break;
         case 0x5f10:
             printk_info("Chip type = T527M02X0DCH");
             break;
