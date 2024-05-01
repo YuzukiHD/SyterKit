@@ -655,7 +655,13 @@ static int abortboot_single_key(int bootdelay) {
     return abort;
 }
 
-int main(void) {
+void arm32_do_prefetch_abort(struct arm_regs_t *regs) {
+    main();
+}
+
+static int boot_dram_init_status = 0;
+
+void board_init() {
     sunxi_serial_init(&uart_dbg);
 
     arm32_dcache_enable();
@@ -697,8 +703,19 @@ int main(void) {
 
     enable_sram_a3();
 
+    boot_dram_init_status = 1;
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    sunxi_dram_init(NULL);
+}
+
+int main(void) {
+    if (boot_dram_init_status == 0) {
+        board_init();
+    }
+
+    uint64_t dram_size = sunxi_get_dram_size();
+
+    printk_debug("DRAM Size = %dM\n", dram_size);
 
     sunxi_clk_dump();
 

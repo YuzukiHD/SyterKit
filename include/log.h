@@ -101,6 +101,18 @@ void printk(int level, const char *fmt, ...);
  */
 void uart_printf(const char *fmt, ...);
 
+/**
+ * @brief Print message via UART
+ * 
+ * This function is used to print formatted message to the terminal via UART serial port.
+ * 
+ * @param fmt Format string describing the format of the message to print.
+ * @param ... Variable argument list used to fill placeholders in the format string.
+ * 
+ * @note This function is typically used in embedded systems for debugging and outputting system status information.
+ */
+int printf(const char *fmt, ...);
+
 #ifdef __cplusplus
 }
 #endif// __cplusplus
