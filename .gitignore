@@ -9,3 +9,5 @@ bin2array
 .vscode/settings.json
 prebuilt/
 .vscode/c_cpp_properties.json
+
+target/
