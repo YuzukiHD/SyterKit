@@ -161,7 +161,7 @@ reset:
 	
 	bl set_timer_count
 
-    bl neon_enable
+	bl neon_enable
 
 	bl main
 
