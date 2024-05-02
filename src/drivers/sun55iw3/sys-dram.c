@@ -23,15 +23,6 @@
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
-uint64_t sunxi_get_dram_size() {
-    uint32_t dram_size = rtc_read_data(RTC_FEL_INDEX);
-
-    /* And Restore RTC Flag */
-    rtc_clear_fel_flag();
-
-    return dram_size;
-}
-
 uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
@@ -58,6 +49,10 @@ uint64_t sunxi_dram_init(void *para) {
                          : "memory");
     ((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
 
-    // not to this line
-    return 0;
+    uint32_t dram_size = rtc_read_data(RTC_FEL_INDEX);
+
+    /* And Restore RTC Flag */
+    rtc_clear_fel_flag();
+
+    return dram_size;
 }
