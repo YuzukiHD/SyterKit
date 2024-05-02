@@ -11,9 +11,9 @@
 #include <jmp.h>
 #include <log.h>
 
+#include <reg-ncat.h>
 #include <sys-dram.h>
 #include <sys-rtc.h>
-#include <reg-ncat.h>
 
 #define INIT_DRAM_BIN_BASE 0x07280000
 
@@ -47,7 +47,7 @@ uint64_t sunxi_dram_init(void *para) {
                          :
                          :
                          : "memory");
-    ((void (*)(void)) ((void *) INIT_DRAM_BIN_BASE))();
+    ((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
 
     uint32_t dram_size = rtc_read_data(RTC_FEL_INDEX);
 

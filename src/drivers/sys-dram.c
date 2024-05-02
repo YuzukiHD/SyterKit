@@ -9,6 +9,11 @@
 
 #include <log.h>
 
+uint64_t __attribute__((weak)) sunxi_get_dram_size() {
+    printk_warning("DRAM: dram driver not impl\n");
+    return 0;
+}
+
 uint64_t __attribute__((weak)) sunxi_dram_init(void *para) {
     printk_warning("DRAM: dram driver not impl\n");
     return 0;

@@ -54,6 +54,18 @@ void uart_printf(const char *fmt, ...) {
     va_end(args_copy);
 }
 
+int printf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    va_list args_copy;
+    va_copy(args_copy, args);
+    xvformat(uart_log_putchar, NULL, fmt, args_copy);
+    va_end(args);
+    va_end(args_copy);
+
+    return 0;
+}
+
 void dump_hex(uint32_t start_addr, uint32_t count) {
     uint8_t *ptr = (uint8_t *) start_addr;
     uint32_t end_addr = start_addr + count;
