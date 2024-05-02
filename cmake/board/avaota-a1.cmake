@@ -5,8 +5,9 @@ set(CONFIG_ARCH_ARM32_ARM64 True)
 set(CONFIG_CHIP_SUN55IW3 True)
 set(CONFIG_CHIP_WITHPMU True)
 set(CONFIG_CHIP_DCACHE True)
-set(CONFIG_CHIP_MINSTACK True)
 set(CONFIG_BOARD_AVAOTA-A1 True)
+
+set(CONIFG_SPECIAL_LD_PATH  "${CMAKE_SOURCE_DIR}/board/avaota-a1/")
 
 add_definitions(-DCONFIG_CHIP_SUN55IW3) 
 add_definitions(-DCONFIG_CHIP_DCACHE)
@@ -28,7 +29,7 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
-set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -mthumb-interwork -mthumb -mcpu=cortex-a55")
+set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -march=armv8.2-a -mthumb-interwork -fno-common -ffunction-sections -fno-builtin -fno-stack-protector -ffreestanding -mthumb -mfpu=neon -mfloat-abi=softfp -pipe")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")

@@ -700,6 +700,8 @@ int main(void) {
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
 
+    printk_debug("DRAM Size = %dM\n", dram_size);
+
     sunxi_clk_dump();
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);

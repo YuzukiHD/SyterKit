@@ -64,6 +64,9 @@ typedef struct {
     uint32_t dram_tpr13;
 } dram_para_t;
 
+
+uint64_t sunxi_get_dram_size();
+
 uint64_t sunxi_dram_init(void *para);
 
 #ifdef __cplusplus
