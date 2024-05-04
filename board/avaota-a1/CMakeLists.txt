@@ -21,3 +21,5 @@ add_subdirectory(smhc2_test)
 add_subdirectory(extlinux_boot)
 
 add_subdirectory(spi_lcd)
+
+add_subdirectory(load_e906)
