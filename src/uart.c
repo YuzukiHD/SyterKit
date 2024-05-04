@@ -94,3 +94,7 @@ int tstc() {
 int puts(const char *s) {
     return uart_puts(s);
 }
+
+int putc(const char *s) {
+    return uart_puts(s);
+}
