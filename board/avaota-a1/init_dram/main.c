@@ -21,6 +21,9 @@ extern sunxi_i2c_t i2c_pmu;
 extern void set_rpio_power_mode(void);
 extern void rtc_set_vccio_det_spare(void);
 
+#include "memtester.c"
+
+
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
@@ -50,9 +53,13 @@ int main(void) {
 
     enable_sram_a3();
 
-    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    uint64_t dram_size = sunxi_dram_init(NULL);
+
+    printk_info("DRAM: DRAM Size = %dMB\n", dram_size);
 
     sunxi_clk_dump();
+
+    do_memtester(SDRAM_BASE, dram_size * 1024 * 1024);
 
     int i = 0;
 
