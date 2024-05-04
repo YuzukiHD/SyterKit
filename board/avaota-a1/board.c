@@ -105,7 +105,7 @@ sunxi_i2c_t i2c_pmu = {
 };
 
 const uint32_t dram_para[32] = {
-        924,
+        1200,
         0x8,
         0x7070707,
         0xd0d0d0d,
@@ -139,39 +139,9 @@ const uint32_t dram_para[32] = {
         0x48484848,
 };
 
-const char *dram_para_name[32] = {
+const char *dram_para_name[2] = {
         "dram_para00",
-        "dram_para01",
-        "dram_para02",
-        "dram_para03",
-        "dram_para04",
-        "dram_para05",
-        "dram_para06",
-        "dram_para07",
-        "dram_para08",
-        "dram_para09",
-        "dram_para10",
-        "dram_para11",
-        "dram_para12",
-        "dram_para13",
-        "dram_para14",
-        "dram_para15",
-        "dram_para16",
-        "dram_para17",
-        "dram_para18",
-        "dram_para19",
-        "dram_para20",
-        "dram_para21",
-        "dram_para22",
-        "dram_para23",
         "dram_para24",
-        "dram_para25",
-        "dram_para26",
-        "dram_para27",
-        "dram_para28",
-        "dram_para29",
-        "dram_para30",
-        "dram_para31",
 };
 
 void neon_enable(void) {

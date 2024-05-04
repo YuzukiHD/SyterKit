@@ -53,7 +53,6 @@ void udelay(uint64_t us) {
 }
 
 void mdelay(uint32_t ms) {
-    udelay(ms * 1000);
     uint32_t now;
 
     now = time_ms();
