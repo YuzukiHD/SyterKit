@@ -58,7 +58,15 @@ int tstc();
  * @param s The string to be written.
  * @return The number of characters written, excluding the terminating null byte.
  */
-extern int puts(const char *);
+extern int puts(const char *s);
+
+/**
+ * Writes the null-terminated string 's' to the standard output.
+ *
+ * @param s The string to be written.
+ * @return The number of characters written, excluding the terminating null byte.
+ */
+extern int putc(const char *s);
 
 #ifdef __cplusplus
 }
