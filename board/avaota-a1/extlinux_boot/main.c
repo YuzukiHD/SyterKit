@@ -577,7 +577,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     int dram_node = fdt_find_or_add_subnode(image->of_dest, 0, "dram");
     /* Kernel only need 0: DRAM_CLK, 24: DRAM_DIV */
     fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[0], dram_para[0]);
-    fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[24], dram_para[24]);
+    fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[1], dram_para[24]);
 
     /* Append bootargs mac address */
     uint32_t chip_sid[4];
