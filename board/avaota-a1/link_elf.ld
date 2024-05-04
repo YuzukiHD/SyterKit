@@ -61,7 +61,7 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         _ebss = . ;
-    } > ram_a2
+    } > ram_a1
 
     .stack (NOLOAD):
     {
