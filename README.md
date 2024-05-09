@@ -24,6 +24,9 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 
 # Getting Started
 
+## SyterKit Architecture
+![SyterKit_Arch](https://github.com/YuzukiHD/SyterKit/assets/12003087/f6ffe47e-6274-43ff-9a74-4a5b7b81083e)
+
 ## Building SyterKit From Scratch
 
 Building SyterKit is a straightforward process that only requires setting up the environment for compilation on a Linux operating system. The software packages required by SyterKit include:
