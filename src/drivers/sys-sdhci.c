@@ -283,6 +283,9 @@ bool sdhci_transfer(sdhci_t *sdhci, sdhci_cmd_t *cmd, sdhci_data_t *dat) {
         return TRUE;
     }
 
+    if (cmd->idx == MMC_GO_IDLE_STATE)
+        cmdval |= SMHC_CMD_SEND_INIT_SEQUENCE;
+
     if (cmd->resptype & MMC_RSP_PRESENT) {
         cmdval |= SMHC_CMD_RESP_EXPIRE;
         if (cmd->resptype & MMC_RSP_136)
@@ -334,9 +337,7 @@ bool sdhci_transfer(sdhci_t *sdhci, sdhci_cmd_t *cmd, sdhci_data_t *dat) {
         return FALSE;
     }
 
-    if (dat && wait_done(sdhci, dat, 6000,
-                         dat->blkcnt > 1 ? SMHC_RINT_AUTO_COMMAND_DONE : SMHC_RINT_DATA_OVER,
-                         dma)) {
+    if (dat && wait_done(sdhci, dat, 6000, dat->blkcnt > 1 ? SMHC_RINT_AUTO_COMMAND_DONE : SMHC_RINT_DATA_OVER, dma)) {
         printk_warning("SMHC: data timeout\n");
         return FALSE;
     }
