@@ -20,6 +20,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | longanpi-4b                                                  | sipeed       | T527     | Octa-Core Cortex A55              | [board/longanpi-4b](board/longanpi-4b)         | `longanpi-4b.cmake`     |
 | [LT527X](https://www.myir.cn/shows/134/70.html)              | myir-tech    | T527     | Octa-Core Cortex A55 | [board/lt527x](board/lt527x) | `lt527x.cmake` |
 |  Avaota A1                                                   | YuzukiHD     | T527     | Octa-Core Cortex A55 | [board/avaota-a1](board/avaota-a1) | `avaota-a1.cmake` |
+| Yuzukihomekit                                                | YuzukiHD     | T113-M4020DC0    | Dual-Core Cortex A7 + C906 RISC-V + HIFI4 DSP                        | [board/yuzukihomekit](board/yuzukihomekit)       | `yuzukihomekit.cmake`    |
 | OrangePi 4A | OrangePi | A527 | Octa-Core Cortex A55 | (可以嫖个板子吗) | - |
 
 # Getting Started
