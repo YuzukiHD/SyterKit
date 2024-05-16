@@ -10,6 +10,8 @@
 
 #include <common.h>
 
+#define putc puts
+
 #define rand_ul() rand32()
 #define UL_ONEBITS 0xffffffff
 #define UL_LEN 32
