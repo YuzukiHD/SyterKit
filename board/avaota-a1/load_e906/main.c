@@ -31,6 +31,7 @@
 #include <pmu/axp.h>
 
 #include <fdt_wrapper.h>
+#include <elf_loader.h>
 #include <ff.h>
 #include <sys-sdhci.h>
 #include <uart.h>
@@ -243,10 +244,21 @@ int main(void) {
 
     sunxi_e906_clock_reset();
 
+    /* E906 need to remap addresses for some addr. */
+    vaddr_range_t e906_addr_mapping_range[] = {
+            {0x3FFC0000, 0x4003FFFF, 0x07280000},
+            {0x40400000, 0x7FFFFFFF, 0x40400000},
+    };
+
+    vaddr_map_t e906_addr_mapping = {
+            .range = e906_addr_mapping_range,
+            .range_size = sizeof(e906_addr_mapping_range) / sizeof(vaddr_range_t),
+    };
+
     uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.e906_dest);
     printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
-    if (load_elf32_image((phys_addr_t) image.e906_dest)) {
+    if (load_elf32_image_remap((phys_addr_t) image.e906_dest, &e906_addr_mapping)) {
         printk_error("RISC-V ELF load FAIL\n");
     }
 

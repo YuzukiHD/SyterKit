@@ -58,12 +58,79 @@ sdhci_t sdhci0 = {
         .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
 };
 
+
+sdhci_t sdhci2 = {
+        .name = "sdhci2",
+        .id = 2,
+        .reg = (sdhci_reg_t *) SUNXI_SMHC2_BASE,
+        .voltage = MMC_VDD_27_36,
+        .width = MMC_BUS_WIDTH_4,
+        .clock = MMC_CLK_50M,
+        .sdio_type = SDHCI_TYPE_MMC,
+        .removable = 0,
+        .isspi = FALSE,
+        .skew_auto_mode = TRUE,
+        .sdhci_pll = CCU_MMC_CTRL_PLL6X2,
+        .gpio_clk = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
+        .gpio_cmd = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
+        .gpio_d0 = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
+        .gpio_d1 = {GPIO_PIN(GPIO_PORTC, 13), GPIO_PERIPH_MUX3},
+        .gpio_d2 = {GPIO_PIN(GPIO_PORTC, 15), GPIO_PERIPH_MUX3},
+        .gpio_d3 = {GPIO_PIN(GPIO_PORTC, 8), GPIO_PERIPH_MUX3},
+        .gpio_d4 = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
+        .gpio_d5 = {GPIO_PIN(GPIO_PORTC, 11), GPIO_PERIPH_MUX3},
+        .gpio_d6 = {GPIO_PIN(GPIO_PORTC, 14), GPIO_PERIPH_MUX3},
+        .gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
+        .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
+        .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
+};
+
 sunxi_i2c_t i2c_pmu = {
         .base = SUNXI_R_TWI0_BASE,
         .id = SUNXI_R_I2C0,
         .speed = 4000000,
         .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
         .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+};
+
+const uint32_t dram_para[32] = {
+        1200,
+        0x8,
+        0x7070707,
+        0xd0d0d0d,
+        0xe0e,
+        0x84848484,
+        0x310a,
+        0x8000000,
+        0x0,
+        0x34,
+        0x1b,
+        0x33,
+        0x3,
+        0x0,
+        0x0,
+        0x4,
+        0x72,
+        0x0,
+        0x8,
+        0x0,
+        0x0,
+        0x26,
+        0x80808080,
+        0x6060606,
+        0x0,
+        0x74000000,
+        0x38000000,
+        0x802f3333,
+        0xc7c5c4c2,
+        0x3533302f,
+        0x060,
+        0x48484848,
+};
+
+const char *dram_para_name[2] = {
+        "dram_para00",
+        "dram_para24",
 };
 
 void neon_enable(void) {
