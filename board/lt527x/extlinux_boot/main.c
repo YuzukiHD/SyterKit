@@ -32,9 +32,6 @@
 #include <sys-sdhci.h>
 #include <uart.h>
 
-#define CONFIG_SPLASH_LOAD_ADDR (0x40080000)
-#define CONFIG_SPLASH_FILENAME "splash.bin"
-
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
@@ -102,9 +99,6 @@ typedef struct {
 
     uint8_t *scp_dest;
     char scp_filename[FILENAME_MAX_LEN];
-
-    uint8_t *splash_dest;
-    char splash_filename[FILENAME_MAX_LEN];
 
     uint8_t *kernel_dest;
     uint8_t *ramdisk_dest;
@@ -226,11 +220,6 @@ static int load_sdcard(image_info_t *image) {
     ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
     if (ret)
         return ret;
-
-    printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
-    ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
-    if (ret)
-        printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
 
     /* umount fs */
     fret = f_mount(0, "", 0);
@@ -743,13 +732,11 @@ int main(void) {
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.ramdisk_dest = (uint8_t *) CONFIG_INITRD_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-    image.splash_dest = (uint8_t *) CONFIG_SPLASH_LOAD_ADDR;
     image.of_overlay_dest = (uint8_t *) CONFIG_DTBO_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.scp_filename, CONFIG_SCP_FILENAME);
     strcpy(image.extlinux_filename, CONFIG_EXTLINUX_FILENAME);
-    strcpy(image.splash_filename, CONFIG_SPLASH_FILENAME);
 
     /* Initialize the SD host controller. */
     if (sunxi_sdhci_init(&sdhci0) != 0) {
