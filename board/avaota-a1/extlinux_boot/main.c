@@ -41,6 +41,7 @@
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
 #define CONFIG_DTB_LOAD_ADDR (0x40400000)
+#define CONFIG_DTBO_LOAD_ADDR (0x50400000)
 #define CONFIG_INITRD_LOAD_ADDR (0x43000000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
@@ -92,6 +93,7 @@ typedef struct ext_linux_data {
     char *kernel;
     char *initrd;
     char *fdt;
+    char *dtbo;
     char *append;
 } ext_linux_data_t;
 
@@ -109,6 +111,7 @@ typedef struct {
     uint8_t *kernel_dest;
     uint8_t *ramdisk_dest;
     uint8_t *of_dest;
+    uint8_t *of_overlay_dest;
 
     uint8_t *extlinux_dest;
     char extlinux_filename[FILENAME_MAX_LEN];
@@ -315,6 +318,9 @@ static void parse_extlinux_data(char *config, ext_linux_data_t *data) {
     start = find_substring(config, "fdt ");
     data->fdt = copy_until_newline_or_end(start);
 
+    start = find_substring(config, "fdtoverlay ");
+    data->dtbo = copy_until_newline_or_end(start);
+
     start = find_substring(config, "append ");
     data->append = copy_until_newline_or_end(start);
 }
@@ -427,6 +433,7 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     printk_debug("%s: kernel -> %s\n", data.os, data.kernel);
     printk_debug("%s: initrd -> %s\n", data.os, data.initrd);
     printk_debug("%s: fdt -> %s\n", data.os, data.fdt);
+    printk_debug("%s: dtbo -> %s\n", data.os, data.dtbo);
     printk_debug("%s: append -> %s\n", data.os, data.append);
 
     start = time_ms();
@@ -620,6 +627,28 @@ _add_dts_size:
         goto _error;
     }
 
+    /* Check and load dtbo */
+    if (data.dtbo != NULL) {
+        printk_info("FATFS: read %s addr=%x\n", data.dtbo, (uint32_t) image->of_overlay_dest);
+        ret = fatfs_loadimage(data.dtbo, image->of_overlay_dest);
+        if (ret) {
+            printk_warning("dtb overlay not find, overlay not applied.\n");
+            goto _error;
+        } else {
+            printk_info("dtbo load 0x%08x\n", image->of_overlay_dest);
+        }
+
+        if (!fdt_check_header(image->of_overlay_dest)) {
+            printk_warning("dtb overlay not valid, error = %s, overlay not applyed.\n", fdt_strerror(err));
+            goto _error;
+        } else {
+            ret = fdt_overlay_apply_verbose(image->of_dest, image->of_overlay_dest);
+            if (ret) {
+                printk_warning("dtb overlay not success applied, overlay not applied.\n");
+            }
+        }
+    }
+
     err = 0;
 _error:
     return err;
@@ -723,6 +752,7 @@ int main(void) {
     image.ramdisk_dest = (uint8_t *) CONFIG_INITRD_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
     image.splash_dest = (uint8_t *) CONFIG_SPLASH_LOAD_ADDR;
+    image.of_overlay_dest = (uint8_t *) CONFIG_DTBO_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
     strcpy(image.scp_filename, CONFIG_SCP_FILENAME);

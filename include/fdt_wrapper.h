@@ -2,15 +2,15 @@
 #define __FDT_WRAPPER_H__
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 #ifndef __packed
-#define __packed	__attribute__((__packed__))
+#define __packed __attribute__((__packed__))
 #endif
 
 #ifndef __aligned
-#define __aligned(x)	__attribute__((__aligned__(x)))
+#define __aligned(x) __attribute__((__aligned__(x)))
 #endif
 
 #define MAX_LEVEL 32    /* how deeply nested we will go */
@@ -60,8 +60,19 @@ int fdt_increase_size(void *fdt, int add_len);
  */
 int fdt_find_or_add_subnode(void *fdt, int parentoffset, const char *name);
 
+/**
+ * fdt_overlay_apply_verbose - Apply an overlay with verbose error reporting
+ *
+ * @fdt: ptr to device tree
+ * @fdto: ptr to device tree overlay
+ *
+ * Convenience function to apply an overlay and display helpful messages
+ * in the case of an error
+ */
+int fdt_overlay_apply_verbose(void *fdt, void *fdto);
+
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
-#endif //__FDT_WRAPPER_H__
+#endif//__FDT_WRAPPER_H__
