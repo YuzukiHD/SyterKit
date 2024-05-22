@@ -31,6 +31,7 @@
 #include <pmu/axp.h>
 
 #include <fdt_wrapper.h>
+#include <elf_loader.h>
 #include <ff.h>
 #include <sys-sdhci.h>
 #include <uart.h>
