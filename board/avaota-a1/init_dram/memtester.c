@@ -512,7 +512,7 @@ static int do_memtester(uint32_t start_addr, uint64_t dram_size) {
     int memshift;
     ulv *bufa, *bufb;
 
-    wantbytes = 4096 * 1024 * 1024;
+    wantbytes = 1024 * 1024;
     wantmb = (wantbytes >> 20);
     halflen = wantbytes / 2;
     count = halflen / sizeof(ul);

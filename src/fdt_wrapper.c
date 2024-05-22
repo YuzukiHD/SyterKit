@@ -326,3 +326,21 @@ int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name) {
 
     return offset;
 }
+
+int fdt_overlay_apply_verbose(void *fdt, void *fdto) {
+    int err;
+    bool has_symbols;
+
+    err = fdt_path_offset(fdt, "/__symbols__");
+    has_symbols = err >= 0;
+
+    err = fdt_overlay_apply(fdt, fdto);
+    if (err < 0) {
+        printk_warning("failed on fdt_overlay_apply(): %s\n", fdt_strerror(err));
+        if (!has_symbols) {
+            printk_warning("base fdt does not have a /__symbols__ node\n");
+            printk_warning("make sure you've compiled with -@\n");
+        }
+    }
+    return err;
+}
