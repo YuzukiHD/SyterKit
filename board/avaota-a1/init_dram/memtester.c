@@ -10,6 +10,8 @@
 
 #include <common.h>
 
+#define putc puts
+
 #define rand_ul() rand32()
 #define UL_ONEBITS 0xffffffff
 #define UL_LEN 32
@@ -511,7 +513,7 @@ static int do_memtester(uint32_t start_addr, uint64_t dram_size) {
     char *memsuffix;
     int memshift;
     ulv *bufa, *bufb;
-
+  
     wantbytes = 1024 * 1024;
     wantmb = (wantbytes >> 20);
     halflen = wantbytes / 2;
