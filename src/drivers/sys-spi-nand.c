@@ -122,8 +122,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     if (r < 0)
         return r;
 
-    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
-                 rx[1], rx[2], rx[3]);
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3]);
 
     /* Check if the first byte of the received data is 0xff */
     if (rx[0] == 0xff) {
@@ -156,14 +155,13 @@ static int spi_nand_info(sunxi_spi_t *spi) {
         }
     }
 
-    tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
+    tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
     tx[1] = 0x0;
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
 
-    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
-                 rx[1], rx[2], rx[3]);
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3]);
 
     /* Check if the first byte of the received data is 0xff */
     if (rx[0] == 0xff) {
