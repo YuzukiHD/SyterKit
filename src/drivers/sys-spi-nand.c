@@ -113,12 +113,52 @@ static spi_nand_info_t info; /* Static variable to store SPI NAND information */
 static int spi_nand_info(sunxi_spi_t *spi) {
     spi_nand_info_t *info_table; /* Pointer to the SPI NAND information table */
     spi_nand_id_t id;            /* Structure to store the SPI NAND ID */
-    uint8_t tx[1];               /* Transmit buffer */
+    uint8_t tx[2];               /* Transmit buffer */
     uint8_t rx[4], *rxp;         /* Receive buffer and pointer */
     int i, r;                    /* Loop counter and return value */
 
     tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
+    if (r < 0)
+        return r;
+
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0],
+                 rx[1], rx[2], rx[3]);
+
+    /* Check if the first byte of the received data is 0xff */
+    if (rx[0] == 0xff) {
+        rxp = rx + 1; /* If yes, shift the receive pointer by one byte (dummy data) */
+    } else {
+        rxp = rx;
+    }
+
+    id.mfr = rxp[0]; /* Set the manufacturer ID */
+    for (i = 0; i < ARRAY_SIZE(spi_nand_infos); i++) {
+        info_table = (spi_nand_info_t *) &spi_nand_infos[i]; /* Get a pointer to the current info table entry */
+        if (info_table->id.dlen == 2) {
+            id.dev = (((uint16_t) rxp[1]) << 8 | rxp[2]); /* Set the device ID (16-bit) */
+        } else {
+            id.dev = rxp[1]; /* Set the device ID (8-bit) */
+        }
+        /* Check if the manufacturer ID and device ID match the current info table entry */
+        if (info_table->id.mfr == id.mfr && info_table->id.dev == id.dev) {
+            /* If matched, store the SPI NAND information */
+            info.name = info_table->name;
+            info.id = info_table->id;
+            info.page_size = info_table->page_size;
+            info.spare_size = info_table->spare_size;
+            info.pages_per_block = info_table->pages_per_block;
+            info.blocks_per_die = info_table->blocks_per_die;
+            info.planes_per_die = info_table->planes_per_die;
+            info.ndies = info_table->ndies;
+            info.mode = info_table->mode;
+            return 0; /* Return success */
+        }
+    }
+
+    tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
+    tx[1] = 0x0;
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
 
