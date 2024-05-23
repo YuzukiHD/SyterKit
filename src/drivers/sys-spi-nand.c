@@ -52,6 +52,7 @@ typedef enum {
     SPI_NAND_MFR_MACRONIX = 0xc2,
     SPI_NAND_MFR_MICRON = 0x2c,
     SPI_NAND_MFR_FORESEE = 0xcd,
+    SPI_NAND_MFR_ETRON = 0xd5,
 } spi_mfr_id;
 
 static const spi_nand_info_t spi_nand_infos[] = {
@@ -88,6 +89,41 @@ static const spi_nand_info_t spi_nand_infos[] = {
         {"MX35LF4G24AD", {.mfr = SPI_NAND_MFR_MACRONIX, .dev = 0x35, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_DUAL_RX},
         {"MX35LF4GE4AD", {.mfr = SPI_NAND_MFR_MACRONIX, .dev = 0x37, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_DUAL_RX},
 
+        /* Etron */
+        {"EM73B044VCA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x01, 1}, 2048, 64, 64, 512, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SNB", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x11, 1}, 2048, 120, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SNF", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x09, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044VCA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x18, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SNA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x19, 1}, 2048, 64, 128, 512, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044VCD", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1c, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SND", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1d, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SND", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1e, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044VCC", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x22, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044VCF", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x25, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SNC", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x31, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SNC", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x0a, 1}, 2048, 120, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SNA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x12, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SNF", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x10, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x13, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCB", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x14, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCD", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x17, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCH", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1b, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SND", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1d, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCG", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x1f, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCE", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x20, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCL", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x2e, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044SNB", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x32, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044SNA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x03, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044SND", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x0b, 1}, 4096, 240, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044SNB", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x23, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044VCA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x2c, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044VCB", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x2f, 1}, 2048, 128, 64, 4096, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73F044SNA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x24, 1}, 4096, 256, 64, 4096, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73F044VCA", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x2d, 1}, 4096, 256, 64, 4096, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73E044SNE", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x0e, 1}, 4096, 256, 64, 4096, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73C044SNG", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x0c, 1}, 2048, 120, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"EM73D044VCN", {.mfr = SPI_NAND_MFR_ETRON, .dev = 0x0f, 1}, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+
         /* Micron */
         {"MT29F1G01AAADD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x12, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_DUAL_RX},
         {"MT29F1G01ABAFD", {.mfr = SPI_NAND_MFR_MICRON, .dev = 0x14, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_DUAL_RX},
@@ -117,7 +153,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     uint8_t rx[4], *rxp;         /* Receive buffer and pointer */
     int i, r;                    /* Loop counter and return value */
 
-    tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
+    tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
     tx[1] = 0x0;
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
     if (r < 0)
@@ -156,7 +192,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
         }
     }
 
-    tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
+    tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
