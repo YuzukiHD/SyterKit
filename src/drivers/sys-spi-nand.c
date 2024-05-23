@@ -118,6 +118,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     int i, r;                    /* Loop counter and return value */
 
     tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
+    tx[1] = 0x0;
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
@@ -156,7 +157,6 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     }
 
     tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
-    tx[1] = 0x0;
     r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 4); /* Perform SPI transfer */
     if (r < 0)
         return r;
