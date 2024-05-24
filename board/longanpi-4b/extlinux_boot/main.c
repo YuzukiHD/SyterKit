@@ -353,6 +353,43 @@ static int update_pmu_ext_info_dtb(image_info_t *image) {
     return 0;
 }
 
+static char to_hex_char(uint8_t value) {
+    return (value < 10) ? ('0' + value) : ('A' + value - 10);
+}
+
+static void chip_sid_to_mac(uint32_t chip_sid[4], uint8_t mac_address[6]) {
+    mac_address[3] = chip_sid[0] & 0xFF;
+    mac_address[2] = (chip_sid[1] >> 8) & 0xFF;
+    mac_address[1] = chip_sid[1] & 0xFF;
+    mac_address[0] = (chip_sid[2] >> 8) & 0xFF;
+    mac_address[4] = chip_sid[2] & 0xFF;
+    mac_address[5] = 0xFF;
+}
+
+static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str[18]) {
+    uint8_t mac_address[6];
+    chip_sid_to_mac(chip_sid, mac_address);
+    mac_address_str[0] = to_hex_char(mac_address[0] >> 4);
+    mac_address_str[1] = to_hex_char(mac_address[0] & 0x0F);
+    mac_address_str[2] = ':';
+    mac_address_str[3] = to_hex_char(mac_address[1] >> 4);
+    mac_address_str[4] = to_hex_char(mac_address[1] & 0x0F);
+    mac_address_str[5] = ':';
+    mac_address_str[6] = to_hex_char(mac_address[2] >> 4);
+    mac_address_str[7] = to_hex_char(mac_address[2] & 0x0F);
+    mac_address_str[8] = ':';
+    mac_address_str[9] = to_hex_char(mac_address[3] >> 4);
+    mac_address_str[10] = to_hex_char(mac_address[3] & 0x0F);
+    mac_address_str[11] = ':';
+    mac_address_str[12] = to_hex_char(mac_address[4] >> 4);
+    mac_address_str[13] = to_hex_char(mac_address[4] & 0x0F);
+    mac_address_str[14] = ':';
+    mac_address_str[15] = to_hex_char(mac_address[5] >> 4);
+    mac_address_str[16] = to_hex_char(mac_address[5] & 0x0F);
+    mac_address_str[17] = '\0';
+    return mac_address_str;
+}
+
 static int load_extlinux(image_info_t *image, uint64_t dram_size) {
     FATFS fs;
     FRESULT fret;
@@ -507,22 +544,40 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
 _set_bootargs:
     len = 0;
     /* Get bootargs string */
+    char *bootargs = (char *) smalloc(4096);
+    memset(bootargs, 0, 4096);
     char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
     if (bootargs_str == NULL) {
         printk_warning("FDT: bootargs is null, using extlinux.conf append.\n");
-        bootargs_str = (char *) smalloc(strlen(data.append) + 1);
-        bootargs_str[0] = '\0';
     } else {
-        strcat(bootargs_str, " ");
+        strcat(bootargs, " ");
+        strcat(bootargs, bootargs_str);
     }
 
-    strcat(bootargs_str, data.append);
+    /* Append bootargs */
+    strcat(bootargs, data.append);
 
     printk_info("Kernel cmdline = [%s]\n", bootargs_str);
+    
+    /* Append bootargs mac address */
+    uint32_t chip_sid[4];
+    chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+    chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+    chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+    chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+    char mac_address_str[18];
+    char *mac0_address = get_mac_address_from_sid(chip_sid, mac_address_str);
+    strcat(bootargs, " mac0_addr=");
+    strcat(bootargs, mac0_address);
+    chip_sid[2]++;
+    char *mac1_address = get_mac_address_from_sid(chip_sid, mac_address_str);
+    strcat(bootargs, " mac1_addr=");
+    strcat(bootargs, mac1_address);
 
 _add_dts_size:
     /* Modify bootargs string */
-    ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
+    ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", skip_spaces(bootargs));
     if (ret == -FDT_ERR_NOSPACE) {
         printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image->of_dest, 512);
