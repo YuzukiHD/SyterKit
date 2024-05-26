@@ -2,6 +2,7 @@
 
 #include <barrier.h>
 #include <io.h>
+#include <mmu.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,14 +19,36 @@
 #define INIT_DRAM_BIN_BASE 0x07280000
 
 #define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
+
 #define RTC_FEL_INDEX 2
+#define DRAM_PARA_CLK 3
+#define DRAM_PARA_TPR13 4
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
+void rtc_set_dram_para(uint32_t dram_clk, uint32_t dram_training) {
+    do {
+        rtc_write_data(DRAM_PARA_CLK, dram_clk);
+        data_sync_barrier();
+    } while (rtc_read_data(DRAM_PARA_CLK) != dram_clk);
+
+    do {
+        rtc_write_data(DRAM_PARA_TPR13, dram_training);
+        data_sync_barrier();
+    } while (rtc_read_data(DRAM_PARA_TPR13) != dram_training);
+}
+
 uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
+
+    uint32_t *para_data = (uint32_t *) para;
+
+    /* Set DRAM driver clk and training data to */
+    if (para_data[0] != 0x0) {
+        rtc_set_dram_para(para_data[0], para_data[30]);
+    }
 
     printk_debug("DRAM: load dram init from 0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);
     memcpy(dst, src, __ddr_bin_end - __ddr_bin_start);
