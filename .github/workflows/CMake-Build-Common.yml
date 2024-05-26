@@ -11,9 +11,24 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  store_cmake_files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find and store CMake files
+        id: find_cmake
+        run: |
+          files=$(find ./cmake/board/ -name "*.cmake" -type f)
+          echo "::set-output name=cmake_files::$files"
+
+      - name: Print the board file
+        run: |
+          echo "Found board files: ${{ steps.find_cmake.outputs.cmake_files }}"
+
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        board: ${{ steps.find_cmake.outputs.cmake_files }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
