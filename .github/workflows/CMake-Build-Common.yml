@@ -11,7 +11,15 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+    
+
   store_cmake_files:
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - name: Find and store CMake files
@@ -26,7 +34,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: store_cmake_files
+    needs: [store_cmake_files]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
