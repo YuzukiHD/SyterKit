@@ -9,6 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  RISCV_TOOLCHAIN: 'RISCV_ROOT_PATH=${{github.workspace}}/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/'
 
 jobs:
   setup:
@@ -16,7 +17,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-    
+        
+      - name: Setup env
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
+  
+      - name: Install RV64 Toolchain
+        run: |
+          wget https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+          tar -xf Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 
   store_cmake_files:
     needs: [setup]
@@ -36,20 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [store_cmake_files]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Setup env
-      run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
-
-    - name: Install RV64 Toolchain
-      run: |
-        wget https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
-        tar -xf Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
-
     - name: Find and build CMake files
       run: |
-        export RISCV_ROOT_PATH=${{github.workspace}}/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/
+        export ${{ env.RISCV_TOOLCHAIN }}
         find ./cmake/board/ -name "*.cmake" -type f | while read file; do
           cmake -B ${{github.workspace}}/build-$(basename "$file") -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_BOARD_FILE=$(basename "$file")
           cmake --build ${{github.workspace}}/build-$(basename "$file") --config ${{env.BUILD_TYPE}}
