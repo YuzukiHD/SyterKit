@@ -104,6 +104,12 @@ sunxi_i2c_t i2c_pmu = {
         .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
 };
 
+enum dram_training_type {
+    DRAM_TRAINING_OFF = 0x60,
+    DRAM_TRAINING_HALF = 0x860,
+    DRAM_TRAINING_FULL = 0xc60,
+};
+
 const uint32_t dram_para[32] = {
         1200,
         0x8,
@@ -135,7 +141,7 @@ const uint32_t dram_para[32] = {
         0x802f3333,
         0xc7c5c4c2,
         0x3533302f,
-        0x060,
+        DRAM_TRAINING_HALF,
         0x48484848,
 };
 
