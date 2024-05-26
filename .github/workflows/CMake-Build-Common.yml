@@ -27,9 +27,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: store_cmake_files
-    strategy:
-      matrix:
-        board: ${{ steps.find_cmake.outputs.cmake_files }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
