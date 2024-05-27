@@ -381,7 +381,7 @@ static int update_pmu_ext_info_dtb(image_info_t *image) {
     return 0;
 }
 
-static char to_hex_char(uint8_t value) {
+static inline char to_hex_char(uint8_t value) {
     return (value < 10) ? ('0' + value) : ('A' + value - 10);
 }
 
