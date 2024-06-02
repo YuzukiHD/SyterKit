@@ -116,37 +116,48 @@ typedef struct sdhci {
 /**
  * @brief Initialize the SDHC controller.
  * 
- * This function initializes the given SDHC controller.
+ * This function initializes the SDHC controller by configuring its parameters,
+ * capabilities, and features based on the provided SDHC structure. It sets up
+ * the controller's timing mode, supported voltages, host capabilities, clock
+ * frequency limits, and register addresses. Additionally, it configures pin
+ * settings and enables clocks for the SDHC controller.
  * 
- * @param sdhci Pointer to the SDHC controller to initialize.
+ * @param sdhci Pointer to the SDHC structure.
  * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_init(sdhci_t *sdhci);
 
 /**
- * @brief Initialize the core functionality of the SDHC.
+ * @brief Initialize the core functionality of the SDHC controller.
  * 
- * This function initializes the core functionality of the given SDHC controller.
+ * This function initializes the core functionality of the SDHC controller,
+ * including resetting the controller, setting timeout values, configuring
+ * thresholds and debug parameters, and releasing the eMMC reset signal.
  * 
- * @param sdhci Pointer to the SDHC controller to initialize.
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_core_init(sdhci_t *sdhci);
 
 /**
- * @brief Set the I/O parameters of the SDHC controller.
+ * @brief Set the I/O settings for the SDHC controller.
  * 
- * This function sets the I/O parameters of the given SDHC controller.
+ * This function configures the I/O settings for the SDHC controller based on the
+ * provided MMC clock, bus width, and speed mode.
  * 
- * @param sdhci Pointer to the SDHC controller to set I/O parameters for.
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return void
  */
 void sunxi_sdhci_set_ios(sdhci_t *sdhci);
 
 /**
- * @brief Perform data transfer operation for the SDHC controller.
+ * @brief Perform a data transfer operation on the SDHC controller.
  * 
- * This function performs the data transfer operation for the given SDHC controller.
+ * This function performs a data transfer operation on the SDHC controller,
+ * including sending a command and managing data transfer if present. It also
+ * handles error conditions such as fatal errors and card busy status.
  * 
- * @param sdhci Pointer to the SDHC controller to perform data transfer operation.
+ * @param sdhci Pointer to the SDHC controller structure.
  * @param cmd Pointer to the MMC command structure.
  * @param data Pointer to the MMC data structure.
  * @return Returns 0 on success, -1 on failure.
