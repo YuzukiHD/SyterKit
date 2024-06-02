@@ -213,6 +213,8 @@ enum {
 #define PART_ACCESS_MASK (0x7)
 #define PART_SUPPORT (0x1)
 
+#define be32_to_cpu(x) ((0x000000ff & ((x) >> 24)) | (0x0000ff00 & ((x) >> 8)) | (0x00ff0000 & ((x) << 8)) | (0xff000000 & ((x) << 24)))
+
 typedef enum {
     MMC_DS26_SDR12 = 0,
     MMC_HSSDR52_SDR25 = 1,

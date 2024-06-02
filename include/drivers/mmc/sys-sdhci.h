@@ -148,6 +148,16 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci);
 void sunxi_sdhci_set_ios(sdhci_t *sdhci);
 
 /**
+ * @brief Update phase for the SDHC controller.
+ * 
+ * This function updates the phase for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success.
+ */
+int sunxi_sdhci_update_phase(sdhci_t *sdhci);
+
+/**
  * @brief Perform a data transfer operation on the SDHC controller.
  * 
  * This function performs a data transfer operation on the SDHC controller,
