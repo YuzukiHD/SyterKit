@@ -20,34 +20,49 @@
 #include <mmc/sys-mmc.h>
 #include <mmc/sys-sdhci.h>
 
-
+/**
+ * @brief Enable clock for the SDHC controller.
+ * 
+ * This function enables clock for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success.
+ */
 static int sunxi_sdhci_clk_enable(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
 
-    uint32_t rval;
-    /* config ahb clock */
-    rval = readl(mmc_host->hclkbase);
-    rval |= (1 << (sdhci->id));
-    writel(rval, mmc_host->hclkbase);
+    uint32_t reg_val;
+    /* Configure AHB clock */
+    reg_val = readl(mmc_host->hclkbase);
+    reg_val |= (1 << (sdhci->id));
+    writel(reg_val, mmc_host->hclkbase);
 
-    rval = readl(mmc_host->hclkrst);
-    rval |= (1 << (16 + sdhci->id));
-    writel(rval, mmc_host->hclkrst);
+    reg_val = readl(mmc_host->hclkrst);
+    reg_val |= (1 << (16 + sdhci->id));
+    writel(reg_val, mmc_host->hclkrst);
 
-    /* config mod clock */
+    /* Configure module clock */
     writel(0x80000000, mmc_host->mclkbase);
     mmc_host->mod_clk = 24000000;
     return 0;
 }
 
+/**
+ * @brief Update clock for the SDHC controller.
+ * 
+ * This function updates the clock for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_update_clk(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
 
     uint32_t cmd = 0x0;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
 
-    mmc_host->reg->clkcr |= (0x1U << 31);
-    mmc_host->reg->cmd = (1U << 31) | (1 << 21) | (1 << 13);
+    mmc_host->reg->clkcr |= SMHC_CLKCR_MASK_D0;
+    mmc_host->reg->cmd = SMHC_CMD_START | SMHC_CMD_UPCLK_ONLY | SMHC_CMD_WAIT_PRE_OVER;
 
     /* Wait for process done */
     while ((mmc_host->reg->cmd & MMC_CMD_CMDVAL_MASK) && (time_us() < timeout)) {
@@ -59,62 +74,97 @@ static int sunxi_sdhci_update_clk(sdhci_t *sdhci) {
         return -1;
     }
 
-    mmc_host->reg->clkcr &= (~(0x1U << 31));
+    mmc_host->reg->clkcr &= ~SMHC_CLKCR_MASK_D0;
     mmc_host->reg->rint = mmc_host->reg->rint;
     return 0;
 }
 
+/**
+ * @brief Update phase for the SDHC controller.
+ * 
+ * This function updates the phase for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success.
+ */
 static int sunxi_sdhci_update_phase(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+
+    // Check if timing mode is mode 1
     if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
         printk_trace("SMHC: mmc update phase.\n");
+        // Call function to update clock
         return sunxi_sdhci_update_clk(sdhci);
     }
+
     return 0;
 }
+
 
 static int sunxi_sdhci_get_timing_config_timing_4(sdhci_t *sdhci) {
     /* TODO: eMMC Timing set */
 }
 
+/**
+ * @brief Get timing configuration for the SDHC controller.
+ * 
+ * This function retrieves the timing configuration for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_get_timing_config(sdhci_t *sdhci) {
     int ret = 0;
 
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
 
+    // Check for specific conditions based on the controller ID and timing mode
     if ((sdhci->id == 2) && mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
-        /* When using eMMC and SMHC2, we config it as timging 4 */
+        /* When using eMMC and SMHC2, config it as timing 4 */
         ret = sunxi_sdhci_get_timing_config_timing_4(sdhci);
     } else if ((sdhci->id == 0) && (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1)) {
+        // Check timing data and adjust configuration if necessary
         if ((timing_data->spd_md_id <= MMC_HSSDR52_SDR25) && (timing_data->freq_id <= MMC_CLK_50M)) {
-            /* if timing less then SDR25 using default odly */
+            /* if timing less than SDR25, use default odly */
             timing_data->odly = 0;
             timing_data->sdly = 0;
             ret = 0;
         } else {
-            printk_warning("SMHC: SMHC0 do not support input spd mode %d\n", timing_data->spd_md_id);
+            printk_warning("SMHC: SMHC0 does not support input spd mode %d\n", timing_data->spd_md_id);
             ret = -1;
         }
     } else {
-        printk_error("SMHC: timing setting fail, param error\n");
+        printk_error("SMHC: timing setting failed, parameter error\n");
         ret = -1;
     }
+
     return ret;
 }
 
+/**
+ * @brief Set the SDHC controller's clock frequency.
+ * 
+ * This function sets the clock frequency for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param clk_hz Desired clock frequency in Hertz.
+ * @return Returns 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_set_mclk(sdhci_t *sdhci, uint32_t clk_hz) {
     uint32_t n, m, src;
     uint32_t reg_val = 0x0;
 
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
 
+    // Determine the clock source based on the requested frequency
     if (clk_hz <= 4000000) {
-        src = 0; /* SCLK = 24000000 OSC CLK */
+        src = 0; // SCLK = 24000000 OSC CLK
     } else {
-        src = 2; /* SCLK = AHB PLL */
+        src = 2; // SCLK = AHB PLL
     }
 
+    // Set the clock divider values based on the requested frequency
     switch (clk_hz) {
         case 400000:
             n = 1;
@@ -131,34 +181,46 @@ static int sunxi_sdhci_set_mclk(sdhci_t *sdhci, uint32_t clk_hz) {
             m = 2;
             break;
         case 200000000:
-            src = 1;// PERI0_800M
+            src = 1; // PERI0_800M
             n = 0;
             m = 1;
             break;
         default:
             n = 0;
             m = 0;
-            printk_error("SMHC: request freq not match freq=%d\n", clk_hz);
+            printk_error("SMHC: requested frequency does not match: freq=%d\n", clk_hz);
             break;
     }
 
+    // Configure the clock register value
     reg_val = (src << 24) | (n << 8) | m;
     writel(reg_val, mmc_host->mclkbase);
 
     return 0;
 }
 
+/**
+ * @brief Get the current clock frequency of the SDHC controller.
+ * 
+ * This function retrieves the current clock frequency of the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Current clock frequency in Hertz.
+ */
 static uint32_t sunxi_sdhci_get_mclk(sdhci_t *sdhci) {
     uint32_t n, m, src, clk_hz;
     uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
 
+    // Read the clock register value
     reg_val = readl(mmc_host->mclkbase);
 
+    // Extract the divider values and clock source from the register value
     m = reg_val & 0xf;
     n = (reg_val >> 8) & 0x3;
     src = (reg_val >> 24) & 0x3;
 
+    // Calculate the current clock frequency based on the source and divider values
     switch (src) {
         case 0:
             clk_hz = 24000000;
@@ -176,9 +238,18 @@ static uint32_t sunxi_sdhci_get_mclk(sdhci_t *sdhci) {
             break;
     }
 
+    // Calculate the actual clock frequency based on the divider values
     return clk_hz / (n + 1) / (m + 1);
 }
 
+/**
+ * @brief Configure the delay for the SDHC controller based on timing mode.
+ * 
+ * This function configures the delay for the SDHC controller based on the timing mode.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_config_delay(sdhci_t *sdhci) {
     int ret = 0;
     uint32_t reg_val = 0x0;
@@ -275,6 +346,15 @@ static int sunxi_sdhci_config_delay(sdhci_t *sdhci) {
     }
 }
 
+/**
+ * @brief Set the clock mode for the SDHC controller based on timing mode and other parameters.
+ * 
+ * This function sets the clock mode for the SDHC controller based on the timing mode and other parameters.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param clk Clock frequency.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_clock_mode(sdhci_t *sdhci, uint32_t clk) {
     int ret = 0;
     uint32_t reg_val = 0x0;
@@ -380,92 +460,148 @@ static int sunxi_sdhci_clock_mode(sdhci_t *sdhci, uint32_t clk) {
     return 0;
 }
 
+/**
+ * @brief Configure the clock for the SDHC controller.
+ * 
+ * This function configures the clock for the SDHC controller based on the specified clock frequency
+ * and other parameters.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param clk Clock frequency.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_config_clock(sdhci_t *sdhci, uint32_t clk) {
-    uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = mmc_host->mmc;
 
-    if ((mmc->speed_mode == MMC_HSDDR52_DDR50) || (mmc->speed_mode == MMC_HS400)) {
-        if (clk > mmc->f_max_ddr) {
-            clk = mmc->f_max_ddr;
-        }
+    // Adjust clock frequency if it exceeds the maximum supported frequency for certain speed modes
+    if ((mmc->speed_mode == MMC_HSDDR52_DDR50 || mmc->speed_mode == MMC_HS400) && clk > mmc->f_max_ddr) {
+        clk = mmc->f_max_ddr;
     }
 
-    /* disable clock */
-    mmc_host->reg->clkcr &= ~(0x1 << 16);
+    // Disable clock before configuration
+    mmc_host->reg->clkcr &= ~SMHC_CLKCR_CARD_CLOCK_ON;
 
+    // Update clock settings
     if (sunxi_sdhci_update_clk(sdhci)) {
+        printk_error("SMHC: Failed to update clock settings\n");
         return -1;
     }
 
-    if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4)) {
-        sunxi_sdhci_clock_mode(sdhci, clk);
+    // Configure clock mode based on timing mode
+    if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3 ||
+        mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
+        if (sunxi_sdhci_clock_mode(sdhci, clk)) {
+            printk_error("SMHC: Failed to configure clock mode\n");
+            return -1;
+        }
     } else {
-        printk_error("SMHC: Timing mode not supported!\n");
+        printk_error("SMHC: Timing mode not supported\n");
         return -1;
     }
 
-    /* enable clock */
+    // Enable clock after configuration
     mmc_host->reg->clkcr |= (0x1 << 16);
 
+    // Check if clock update after configuration fails
     if (sunxi_sdhci_update_clk(sdhci)) {
-        printk_error("SMHC: reconfigure clk failed\n");
+        printk_error("SMHC: Failed to update clock settings after configuration\n");
         return -1;
     }
 
-    return 0;
+    return 0; // Success
 }
 
+/**
+ * @brief Set DDR mode for the SDHC controller.
+ * 
+ * This function sets the DDR mode for the SDHC controller based on the specified status.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param status Boolean indicating whether to enable (true) or disable (false) DDR mode.
+ */
 static void sunxi_sdhci_ddr_mode_set(sdhci_t *sdhci, bool status) {
     uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+
+    // Read current value of gctrl register
     reg_val = mmc_host->reg->gctrl;
-    reg_val &= ~(0x1 << 10);
-    /*  disable ccu clock */
+
+    // Disable CCU clock
     writel(readl(mmc_host->mclkbase) & (~(1 << 31)), mmc_host->mclkbase);
 
+    // Set or clear DDR mode bit based on status
     if (status) {
-        reg_val |= (0x1 << 10);
+        reg_val |= SMHC_GCTRL_DDR_MODE;  // Set DDR mode bit
+    } else {
+        reg_val &= ~SMHC_GCTRL_DDR_MODE; // Clear DDR mode bit
     }
 
+    // Write updated value back to gctrl register
     mmc_host->reg->gctrl = reg_val;
 
-    /*  enable ccu clock */
+    // Enable CCU clock
     writel(readl(mmc_host->mclkbase) | (1 << 31), mmc_host->mclkbase);
 
-    printk_trace("SMHC: set to %s ddr mode\n", status ? "enable" : "disable");
+    // Log DDR mode status
+    printk_trace("SMHC: DDR mode %s\n", status ? "enabled" : "disabled");
 }
 
+/**
+ * @brief Set HS400 mode for the SDHC controller.
+ * 
+ * This function sets the HS400 mode for the SDHC controller based on the specified status.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param status Boolean indicating whether to enable (true) or disable (false) HS400 mode.
+ */
 static void sunxi_sdhci_hs400_mode_set(sdhci_t *sdhci, bool status) {
     uint32_t reg_dsbd_val = 0x0, reg_csdc_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
 
+    // Check if the SDHC controller ID is 2
     if (sdhci->id != 2) {
+        // HS400 mode setting is not applicable, return
         return;
     }
 
+    // Read current values of dsbd and csdc registers
     reg_dsbd_val = mmc_host->reg->dsbd;
-    reg_dsbd_val &= ~(0x1 << 31);
-
     reg_csdc_val = mmc_host->reg->csdc;
-    reg_csdc_val &= ~0xf;
 
+    // Clear existing bits related to HS400 mode
+    reg_dsbd_val &= ~(0x1 << 31); // Clear HS400EN bit
+    reg_csdc_val &= ~0xf;         // Clear HSSDR bit and HS400DS bit
+
+    // Configure HS400 mode based on status
     if (status) {
+        // Set HS400EN bit and configure HS400DS to 6 (HS400 mode)
         reg_dsbd_val |= (0x1 << 31);
         reg_csdc_val |= 0x6;
     } else {
+        // Configure HS400DS to 3 (backward compatibility mode)
         reg_csdc_val |= 0x3;
     }
 
+    // Write updated values back to dsbd and csdc registers
     mmc_host->reg->dsbd = reg_dsbd_val;
     mmc_host->reg->csdc = reg_csdc_val;
 
-    printk_trace("SMHC: set to %s HS400 mode\n", status ? "enable" : "disable");
+    // Log HS400 mode status
+    printk_trace("SMHC: HS400 mode %s\n", status ? "enabled" : "disabled");
 }
 
+/**
+ * @brief Configure GPIO pins for the SDHC controller.
+ * 
+ * This function initializes and configures the GPIO pins used by the SDHC controller based on the provided configuration.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ */
 static void sunxi_sdhci_pin_config(sdhci_t *sdhci) {
     sunxi_sdhci_pinctrl_t *sdhci_pins = sdhci->pinctrl;
 
+    // Initialize and configure GPIO pins for clock, command, and data lines
     sunxi_gpio_init(sdhci_pins->gpio_clk.pin, sdhci_pins->gpio_clk.mux);
     sunxi_gpio_set_pull(sdhci_pins->gpio_clk.pin, GPIO_PULL_UP);
 
@@ -475,7 +611,7 @@ static void sunxi_sdhci_pin_config(sdhci_t *sdhci) {
     sunxi_gpio_init(sdhci_pins->gpio_d0.pin, sdhci_pins->gpio_d0.mux);
     sunxi_gpio_set_pull(sdhci_pins->gpio_d0.pin, GPIO_PULL_UP);
 
-    /* Init GPIO for 4bit MMC */
+    // Initialize and configure GPIO pins for 4-bit MMC data bus if applicable
     if (sdhci->width > SMHC_WIDTH_1BIT) {
         sunxi_gpio_init(sdhci_pins->gpio_d1.pin, sdhci_pins->gpio_d1.mux);
         sunxi_gpio_set_pull(sdhci_pins->gpio_d1.pin, GPIO_PULL_UP);
@@ -487,7 +623,7 @@ static void sunxi_sdhci_pin_config(sdhci_t *sdhci) {
         sunxi_gpio_set_pull(sdhci_pins->gpio_d3.pin, GPIO_PULL_UP);
     }
 
-    /* Init GPIO for 8bit MMC */
+    // Initialize and configure GPIO pins for 8-bit MMC data bus if applicable
     if (sdhci->width > SMHC_WIDTH_4BIT) {
         sunxi_gpio_init(sdhci_pins->gpio_d4.pin, sdhci_pins->gpio_d4.mux);
         sunxi_gpio_set_pull(sdhci_pins->gpio_d4.pin, GPIO_PULL_UP);
@@ -501,6 +637,7 @@ static void sunxi_sdhci_pin_config(sdhci_t *sdhci) {
         sunxi_gpio_init(sdhci_pins->gpio_d7.pin, sdhci_pins->gpio_d7.mux);
         sunxi_gpio_set_pull(sdhci_pins->gpio_d7.pin, GPIO_PULL_UP);
 
+        // Additional GPIO pins for 8-bit MMC configuration
         sunxi_gpio_init(sdhci_pins->gpio_ds.pin, sdhci_pins->gpio_ds.mux);
         sunxi_gpio_set_pull(sdhci_pins->gpio_ds.pin, GPIO_PULL_DOWN);
 
@@ -509,43 +646,67 @@ static void sunxi_sdhci_pin_config(sdhci_t *sdhci) {
     }
 }
 
+/**
+ * @brief Transfer data between SDHC controller and host CPU.
+ * 
+ * This function handles the data transfer between the SDHC controller and the host CPU.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param data Pointer to the MMC data structure containing transfer information.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_sdhci_trans_data_cpu(sdhci_t *sdhci, mmc_data_t *data) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
     uint32_t *buff;
 
+    // Determine the buffer based on the direction of data transfer
     if (data->flags * MMC_DATA_READ) {
-        buff = (uint32_t *) data->b.dest;
-        for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
-            while ((mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) && (time_us() < timeout)) {
-            }
-            if (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) {
-                if (time_us() >= timeout) {
-                    printk_error("SMHC: tranfer read by cpu failed, timeout\n");
-                    return -1;
-                }
-            }
-            buff[i] = readl(mmc_host->database);
-            timeout = time_us() + SMHC_TIMEOUT;
-        }
+        buff = (uint32_t *) data->b.dest;  // Destination buffer for read operation
     } else {
-        buff = (uint32_t *) data->b.src;
-        for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
-            while (((mmc_host->reg->status) & SMHC_STATUS_FIFO_FULL) && (time_us() < timeout)) {
-            }
-            if (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL) {
-                if (time_us() >= timeout) {
-                    printk_error("SMHC: tranfer write by cpu failed, timeout\n");
-                    return -1;
-                }
-            }
-            writel(buff[i], mmc_host->database);
-            timeout = time_us() + SMHC_TIMEOUT;
-        }
+        buff = (uint32_t *) data->b.src;   // Source buffer for write operation
     }
-    return 0;
+
+    // Iterate over blocks of data to be transferred
+    for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
+        // Wait until FIFO is empty for read operation, or full for write operation
+        while (((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : 
+               (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) && (time_us() < timeout)) {
+        }
+
+        // Check for timeout
+        if ((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) :
+                                           (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) {
+            if (time_us() >= timeout) {
+                printk_error("SMHC: transfer %s by CPU failed, timeout\n", 
+                              (data->flags * MMC_DATA_READ) ? "read" : "write");
+                return -1;  // Return failure indication
+            }
+        }
+
+        // Perform read or write operation based on the direction of data transfer
+        if (data->flags * MMC_DATA_READ) {
+            buff[i] = readl(mmc_host->database);  // Read data from FIFO to buffer
+        } else {
+            writel(buff[i], mmc_host->database);  // Write data from buffer to FIFO
+        }
+
+        timeout = time_us() + SMHC_TIMEOUT;  // Update timeout for next iteration
+    }
+
+    return 0;  // Return success indication
 }
 
+/**
+ * @brief Transfer data between SDHC controller and host CPU using DMA.
+ * 
+ * This function handles the data transfer between the SDHC controller and the host CPU
+ * using Direct Memory Access (DMA).
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param data Pointer to the MMC data structure containing transfer information.
+ * @return void
+ */
 static int sunxi_sdhci_trans_data_dma(sdhci_t *sdhci, mmc_data_t *data) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     sunxi_sdhci_desc_t *pdes = mmc_host->sdhci_desc;
@@ -656,17 +817,27 @@ static int sunxi_sdhci_trans_data_dma(sdhci_t *sdhci, mmc_data_t *data) {
     return 0;
 }
 
+/**
+ * @brief Set the I/O settings for the SDHC controller.
+ * 
+ * This function configures the I/O settings for the SDHC controller based on the
+ * provided MMC clock, bus width, and speed mode.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return void
+ */
 void sunxi_sdhci_set_ios(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = mmc_host->mmc;
 
+    // Configure clock and handle errors
     if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
         printk_error("SMHC: update clock failed\n");
         mmc_host->fatal_err = 1;
         return;
     }
 
-    /* change bus width */
+    /* Change bus width */
     switch (sdhci->width) {
         case SMHC_WIDTH_8BIT:
             mmc_host->reg->width = 2;
@@ -693,6 +864,16 @@ void sunxi_sdhci_set_ios(sdhci_t *sdhci) {
     }
 }
 
+/**
+ * @brief Initialize the core functionality of the SDHC controller.
+ * 
+ * This function initializes the core functionality of the SDHC controller,
+ * including resetting the controller, setting timeout values, configuring
+ * thresholds and debug parameters, and releasing the eMMC reset signal.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success, -1 on failure.
+ */
 int sunxi_sdhci_core_init(sdhci_t *sdhci) {
     uint32_t reg_val = 0x0;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
@@ -715,7 +896,7 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci) {
     mmc_host->reg->csdc = 0x3;
     mmc_host->reg->dbgc = 0xdeb;
 
-    /* Release emmc RST */
+    /* Release eMMC RST */
     mmc_host->reg->hwrst = 1;
     mmc_host->reg->hwrst = 0;
     mdelay(1);
@@ -723,10 +904,10 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci) {
     mdelay(1);
 
     if (sdhci->id == 0) {
-        /* enable 2xclk mode, and use default input phase */
+        /* Enable 2xclk mode, and use default input phase */
         mmc_host->reg->ntsr |= (0x1 << 31);
     } else {
-        /* configure input delay time to 0, use default input phase */
+        /* Configure input delay time to 0, use default input phase */
         reg_val = mmc_host->reg->samp_dl;
         reg_val &= ~(0x3f);
         reg_val |= (0x1 << 7);
@@ -736,6 +917,18 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci) {
     return 0;
 }
 
+/**
+ * @brief Perform a data transfer operation on the SDHC controller.
+ * 
+ * This function performs a data transfer operation on the SDHC controller,
+ * including sending a command and managing data transfer if present. It also
+ * handles error conditions such as fatal errors and card busy status.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param cmd Pointer to the MMC command structure.
+ * @param data Pointer to the MMC data structure.
+ * @return Returns 0 on success, -1 on failure.
+ */
 int sunxi_sdhci_xfer(sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     uint32_t cmdval = MMC_CMD_CMDVAL_MASK;
@@ -968,11 +1161,23 @@ out:
     return 0;
 }
 
+/**
+ * @brief Initialize the SDHC controller.
+ * 
+ * This function initializes the SDHC controller by configuring its parameters,
+ * capabilities, and features based on the provided SDHC structure. It sets up
+ * the controller's timing mode, supported voltages, host capabilities, clock
+ * frequency limits, and register addresses. Additionally, it configures pin
+ * settings and enables clocks for the SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC structure.
+ * @return Returns 0 on success, -1 on failure.
+ */
 int sunxi_sdhci_init(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = mmc_host->mmc;
 
-    /* Check controller id correct */
+    /* Check if controller ID is correct */
     if (sdhci->id > MMC_CONTROLLER_2) {
         printk_error("SMHC: Unsupported MAX Controller reached\n");
         return -1;
@@ -980,35 +1185,41 @@ int sunxi_sdhci_init(sdhci_t *sdhci) {
 
     memset(mmc_host, 0, sizeof(sunxi_sdhci_host_t));
     memset(mmc, 0, sizeof(mmc_t));
+
+    /* Set timing mode based on controller ID */
     if (sdhci->id == MMC_CONTROLLER_0) {
         mmc_host->timing_mode = SUNXI_MMC_TIMING_MODE_1;
     } else if (sdhci->id == MMC_CONTROLLER_2) {
         mmc_host->timing_mode = SUNXI_MMC_TIMING_MODE_4;
     }
 
+    /* Set supported voltages and host capabilities */
     mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 |
                     MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 |
                     MMC_VDD_35_36;
     mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
 
+    /* Set host capabilities for bus width */
     if (sdhci->width >= SMHC_WIDTH_4BIT) {
         mmc->host_caps |= MMC_MODE_4BIT;
     }
-
     if ((sdhci->id == MMC_CONTROLLER_2) && (sdhci->width == SMHC_WIDTH_8BIT)) {
         mmc->host_caps |= MMC_MODE_8BIT | MMC_MODE_4BIT;
     }
 
+    /* Set clock frequency limits */
     mmc->f_min = 400000;
     mmc->f_max = sdhci->max_clk;
     mmc->f_max_ddr = sdhci->max_clk;
 
+    /* Set register addresses */
     mmc_host->reg = (sdhci_reg_t *) sdhci->reg_base;
     mmc_host->database = (uint32_t) sdhci->reg_base + MMC_REG_FIFO_OS;
     mmc_host->hclkbase = sdhci->clk_ctrl_base;
     mmc_host->hclkrst = sdhci->clk_ctrl_base;
     mmc_host->mclkbase = sdhci->clk_base;
 
+    /* Configure pins and enable clocks */
     sunxi_sdhci_pin_config(sdhci);
     sunxi_sdhci_clk_enable(sdhci);
 
