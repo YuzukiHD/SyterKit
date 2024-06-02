@@ -3,6 +3,10 @@
 #ifndef __SDHCI_H__
 #define __SDHCI_H__
 
+#ifdef CONFIG_CHIP_MMC_V2
+#include <mmc/sys-sdhci.h>
+#else
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +18,10 @@
 #include <sys-gpio.h>
 
 #include <log.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 typedef enum {
     MMC_CLK_400K = 0,
@@ -51,8 +59,7 @@ typedef struct {
             : 25, err_flag : 1, /* transfer error flag */
             own : 1;            /* des owner:1-idma owns it, 0-host owns it */
 
-    uint32_t data_buf_sz : SMHC_DES_NUM_SHIFT,
-                           data_buf_dummy : (32 - SMHC_DES_NUM_SHIFT);
+    uint32_t data_buf_sz : SMHC_DES_NUM_SHIFT, data_buf_dummy : (32 - SMHC_DES_NUM_SHIFT);
 
     uint32_t buf_addr;
     uint32_t next_desc_addr;
@@ -154,5 +161,10 @@ bool sdhci_transfer(sdhci_t *hci, sdhci_cmd_t *cmd, sdhci_data_t *dat);
  */
 int sunxi_sdhci_init(sdhci_t *sdhci);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif /* CONFIG_CHIP_MMC_V2 */
 
 #endif /* __SDHCI_H__ */
