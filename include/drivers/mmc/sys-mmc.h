@@ -1,7 +1,4 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
-/* MMC driver for General mmc operations 
- * Original https://github.com/smaeul/sun20i_d1_spl/blob/mainline/drivers/mmc/sun20iw1p1/
- */
 
 #ifndef _SYS_MMC_H_
 #define _SYS_MMC_H_

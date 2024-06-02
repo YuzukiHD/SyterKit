@@ -1,7 +1,4 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
-/* MMC driver for General mmc operations 
- * Original https://github.com/smaeul/sun20i_d1_spl/blob/mainline/drivers/mmc/sun20iw1p1/
- */
 
 #ifndef _SYS_SDHCI_H_
 #define _SYS_SDHCI_H_
@@ -72,7 +69,6 @@ typedef struct sunxi_sdhci_host {
     uint32_t fatal_err;
     sunxi_sdhci_desc_t sdhci_desc[32];
     uint32_t timing_mode;
-    mmc_t *mmc;
     uint32_t mod_clk;
     uint32_t clock;
 } sunxi_sdhci_host_t;
@@ -107,6 +103,7 @@ typedef struct sdhci {
     uint32_t clk_ctrl_base;
     uint32_t clk_base;
     uint32_t max_clk;
+    mmc_t *mmc;
     sunxi_sdhci_type_t type;
     sunxi_sdhci_host_t *mmc_host;
     sunxi_sdhci_pinctrl_t *pinctrl;

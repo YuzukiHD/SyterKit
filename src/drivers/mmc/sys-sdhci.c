@@ -1,7 +1,4 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
-/* MMC driver for General mmc operations 
- * Original https://github.com/smaeul/sun20i_d1_spl/blob/mainline/drivers/mmc/sun20iw1p1/
- */
 
 #include <barrier.h>
 #include <io.h>
@@ -360,7 +357,7 @@ static int sunxi_sdhci_clock_mode(sdhci_t *sdhci, uint32_t clk) {
     uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
-    mmc_t *mmc = mmc_host->mmc;
+    mmc_t *mmc = sdhci->mmc;
 
     /* disable mclk */
     writel(0x0, mmc_host->mclkbase);
@@ -472,7 +469,7 @@ static int sunxi_sdhci_clock_mode(sdhci_t *sdhci, uint32_t clk) {
  */
 static int sunxi_sdhci_config_clock(sdhci_t *sdhci, uint32_t clk) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-    mmc_t *mmc = mmc_host->mmc;
+    mmc_t *mmc = sdhci->mmc;
 
     // Adjust clock frequency if it exceeds the maximum supported frequency for certain speed modes
     if ((mmc->speed_mode == MMC_HSDDR52_DDR50 || mmc->speed_mode == MMC_HS400) && clk > mmc->f_max_ddr) {
@@ -828,7 +825,7 @@ static int sunxi_sdhci_trans_data_dma(sdhci_t *sdhci, mmc_data_t *data) {
  */
 void sunxi_sdhci_set_ios(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-    mmc_t *mmc = mmc_host->mmc;
+    mmc_t *mmc = sdhci->mmc;
 
     // Configure clock and handle errors
     if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
@@ -878,7 +875,7 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci) {
     uint32_t reg_val = 0x0;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-    mmc_t *mmc = mmc_host->mmc;
+    mmc_t *mmc = sdhci->mmc;
 
     /* Reset controller */
     mmc_host->reg->gctrl = 0x7;
@@ -1175,7 +1172,7 @@ out:
  */
 int sunxi_sdhci_init(sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-    mmc_t *mmc = mmc_host->mmc;
+    mmc_t *mmc = sdhci->mmc;
 
     /* Check if controller ID is correct */
     if (sdhci->id > MMC_CONTROLLER_2) {
