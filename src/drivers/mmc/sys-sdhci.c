@@ -77,30 +77,72 @@ static int sunxi_sdhci_update_clk(sdhci_t *sdhci) {
 }
 
 /**
- * @brief Update phase for the SDHC controller.
+ * @brief Configure timing settings for timing mode 4 in the SDHC controller.
  * 
- * This function updates the phase for the specified SDHC controller.
+ * This function configures timing settings for timing mode 4 in the SDHC controller.
+ * It calculates the delay based on the speed mode and frequency parameters and sets
+ * the appropriate values in the timing data structure. Additionally, it sets the
+ * output delay (`odly`) based on the speed mode and returns 0 on success or -1 on failure.
  * 
- * @param sdhci Pointer to the SDHC controller structure.
- * @return Returns 0 on success.
+ * @param sdhci Pointer to the SDHC structure.
+ * @return 0 on success, -1 on failure.
  */
-static int sunxi_sdhci_update_phase(sdhci_t *sdhci) {
-    sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+static int sunxi_sdhci_get_timing_config_timing_4(sdhci_t *sdhci) {
+    sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
+    uint32_t spd_md_sdly = 0, dly = 0;
+    int ret = 0;
 
-    // Check if timing mode is mode 1
-    if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
-        printk_trace("SMHC: mmc update phase.\n");
-        // Call function to update clock
-        return sunxi_sdhci_update_clk(sdhci);
+    /* Check if the controller ID is MMC_CONTROLLER_2 and if timing mode and frequency ID are valid */
+    if ((sdhci->id != MMC_CONTROLLER_2) || (timing_data->spd_md_id > MMC_TIMING_MODE_4) || (timing_data->freq_id > MMC_MAX_SPD_MD_NUM)) {
+        printk_error("SMHC: timing 4 not supported for this configuration\n");
+        return -1;
     }
 
-    return 0;
+    /* Calculate delay based on speed mode and frequency */
+    dly = ((spd_md_sdly >> ((timing_data->freq_id % 4) * 8)) & 0xff);
+    if ((dly == 0xff) || (dly == 0)) {
+        if (timing_data->spd_md_id == MMC_DS26_SDR12) {
+            if (timing_data->freq_id <= MMC_CLK_25M) {
+                dly = 0;
+            } else {
+                printk_error("SMHC: wrong frequency %d at speed mode %d\n", timing_data->freq_id, timing_data->spd_md_id);
+                ret = -1;
+            }
+        } else if (timing_data->spd_md_id == MMC_HSSDR52_SDR25) {
+            if (timing_data->freq_id <= MMC_CLK_25M) {
+                dly = 0;
+            } else if (timing_data->freq_id == MMC_CLK_50M) {
+                dly = 15;
+            } else {
+                printk_error("SMHC: wrong frequency %d at speed mode %d\n", timing_data->freq_id, timing_data->spd_md_id);
+                ret = -1;
+            }
+        } else if (timing_data->spd_md_id == MMC_HSDDR52_DDR50) {
+            if (timing_data->freq_id <= MMC_CLK_25M) {
+                dly = 0;
+            } else {
+                printk_error("SMHC: wrong frequency %d at speed mode %d\n", timing_data->freq_id, timing_data->spd_md_id);
+                ret = -1;
+            }
+        } else {
+            printk_error("SMHC: wrong speed mode %d\n", timing_data->spd_md_id);
+            ret = -1;
+        }
+    }
+
+    /* Set output delay based on speed mode */
+    if (timing_data->spd_md_id == MMC_HSDDR52_DDR50) {
+        timing_data->odly = 1;
+    } else {
+        timing_data->odly = 0;
+    }
+
+    /* Set the calculated delay */
+    timing_data->sdly = dly;
+
+    return ret;
 }
 
-
-static int sunxi_sdhci_get_timing_config_timing_4(sdhci_t *sdhci) {
-    /* TODO: eMMC Timing set */
-}
 
 /**
  * @brief Get timing configuration for the SDHC controller.
@@ -120,6 +162,9 @@ static int sunxi_sdhci_get_timing_config(sdhci_t *sdhci) {
     if ((sdhci->id == 2) && mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
         /* When using eMMC and SMHC2, config it as timing 4 */
         ret = sunxi_sdhci_get_timing_config_timing_4(sdhci);
+        if (ret) {
+            printk_error("SMHC: Config timing TM4 fail\n");
+        }
     } else if ((sdhci->id == 0) && (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1)) {
         // Check timing data and adjust configuration if necessary
         if ((timing_data->spd_md_id <= MMC_HSSDR52_SDR25) && (timing_data->freq_id <= MMC_CLK_50M)) {
@@ -156,9 +201,9 @@ static int sunxi_sdhci_set_mclk(sdhci_t *sdhci, uint32_t clk_hz) {
 
     // Determine the clock source based on the requested frequency
     if (clk_hz <= 4000000) {
-        src = 0; // SCLK = 24000000 OSC CLK
+        src = 0;// SCLK = 24000000 OSC CLK
     } else {
-        src = 2; // SCLK = AHB PLL
+        src = 2;// SCLK = AHB PLL
     }
 
     // Set the clock divider values based on the requested frequency
@@ -178,7 +223,7 @@ static int sunxi_sdhci_set_mclk(sdhci_t *sdhci, uint32_t clk_hz) {
             m = 2;
             break;
         case 200000000:
-            src = 1; // PERI0_800M
+            src = 1;// PERI0_800M
             n = 0;
             m = 1;
             break;
@@ -506,7 +551,7 @@ static int sunxi_sdhci_config_clock(sdhci_t *sdhci, uint32_t clk) {
         return -1;
     }
 
-    return 0; // Success
+    return 0;// Success
 }
 
 /**
@@ -529,9 +574,9 @@ static void sunxi_sdhci_ddr_mode_set(sdhci_t *sdhci, bool status) {
 
     // Set or clear DDR mode bit based on status
     if (status) {
-        reg_val |= SMHC_GCTRL_DDR_MODE;  // Set DDR mode bit
+        reg_val |= SMHC_GCTRL_DDR_MODE;// Set DDR mode bit
     } else {
-        reg_val &= ~SMHC_GCTRL_DDR_MODE; // Clear DDR mode bit
+        reg_val &= ~SMHC_GCTRL_DDR_MODE;// Clear DDR mode bit
     }
 
     // Write updated value back to gctrl register
@@ -567,8 +612,8 @@ static void sunxi_sdhci_hs400_mode_set(sdhci_t *sdhci, bool status) {
     reg_csdc_val = mmc_host->reg->csdc;
 
     // Clear existing bits related to HS400 mode
-    reg_dsbd_val &= ~(0x1 << 31); // Clear HS400EN bit
-    reg_csdc_val &= ~0xf;         // Clear HSSDR bit and HS400DS bit
+    reg_dsbd_val &= ~(0x1 << 31);// Clear HS400EN bit
+    reg_csdc_val &= ~0xf;        // Clear HSSDR bit and HS400DS bit
 
     // Configure HS400 mode based on status
     if (status) {
@@ -659,39 +704,37 @@ static int sunxi_sdhci_trans_data_cpu(sdhci_t *sdhci, mmc_data_t *data) {
 
     // Determine the buffer based on the direction of data transfer
     if (data->flags * MMC_DATA_READ) {
-        buff = (uint32_t *) data->b.dest;  // Destination buffer for read operation
+        buff = (uint32_t *) data->b.dest;// Destination buffer for read operation
     } else {
-        buff = (uint32_t *) data->b.src;   // Source buffer for write operation
+        buff = (uint32_t *) data->b.src;// Source buffer for write operation
     }
 
     // Iterate over blocks of data to be transferred
     for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
         // Wait until FIFO is empty for read operation, or full for write operation
-        while (((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : 
-               (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) && (time_us() < timeout)) {
+        while (((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) && (time_us() < timeout)) {
         }
 
         // Check for timeout
-        if ((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) :
-                                           (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) {
+        if ((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) {
             if (time_us() >= timeout) {
-                printk_error("SMHC: transfer %s by CPU failed, timeout\n", 
-                              (data->flags * MMC_DATA_READ) ? "read" : "write");
-                return -1;  // Return failure indication
+                printk_error("SMHC: transfer %s by CPU failed, timeout\n",
+                             (data->flags * MMC_DATA_READ) ? "read" : "write");
+                return -1;// Return failure indication
             }
         }
 
         // Perform read or write operation based on the direction of data transfer
         if (data->flags * MMC_DATA_READ) {
-            buff[i] = readl(mmc_host->database);  // Read data from FIFO to buffer
+            buff[i] = readl(mmc_host->database);// Read data from FIFO to buffer
         } else {
-            writel(buff[i], mmc_host->database);  // Write data from buffer to FIFO
+            writel(buff[i], mmc_host->database);// Write data from buffer to FIFO
         }
 
-        timeout = time_us() + SMHC_TIMEOUT;  // Update timeout for next iteration
+        timeout = time_us() + SMHC_TIMEOUT;// Update timeout for next iteration
     }
 
-    return 0;  // Return success indication
+    return 0;// Return success indication
 }
 
 /**
@@ -1153,6 +1196,27 @@ out:
 
     if (error_code) {
         return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Update phase for the SDHC controller.
+ * 
+ * This function updates the phase for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Returns 0 on success.
+ */
+int sunxi_sdhci_update_phase(sdhci_t *sdhci) {
+    sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+
+    // Check if timing mode is mode 1
+    if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
+        printk_trace("SMHC: mmc update phase.\n");
+        // Call function to update clock
+        return sunxi_sdhci_update_clk(sdhci);
     }
 
     return 0;
