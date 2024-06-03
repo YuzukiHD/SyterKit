@@ -18,7 +18,11 @@
 #include <mmc/sys-sdhci.h>
 
 static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) {
-    return (mmc->host_caps & MMC_MODE_SPI);
+    return mmc->host_caps & MMC_MODE_SPI;
+}
+
+static inline int sunxi_mmc_device_is_sd(mmc_t *mmc) {
+    return mmc->version & SD_VERSION_SD;
 }
 
 static int sunxi_mmc_send_status(sdhci_t *sdhci, uint32_t timeout) {
@@ -800,4 +804,22 @@ static int sunxi_mmc_mmc_switch_bus_width(sdhci_t *sdhci, uint32_t spd_mode, uin
     sunxi_mmc_set_bus_width(sdhci, width);
 
     return err;
+}
+
+static int sunxi_mmc_mmc_switch_bus_mode(sdhci_t *sdhci, uint32_t spd_mode, uint32_t width) {
+    mmc_t *mmc = sdhci->mmc;
+    int err = 0;
+    int spd_mode_backup = 0;
+
+    if (sunxi_mmc_device_is_sd(mmc)) {
+        return 0;
+    }
+
+    if (spd_md == MMC_HSDDR52_DDR50) {
+        spd_mode_backup = MMC_HSSDR52_SDR25;
+    } else {
+        spd_mode_backup = spd_mode;
+    }
+
+    err = 
 }
