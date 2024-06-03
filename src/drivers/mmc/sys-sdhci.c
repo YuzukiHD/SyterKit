@@ -703,7 +703,7 @@ static int sunxi_sdhci_trans_data_cpu(sdhci_t *sdhci, mmc_data_t *data) {
     uint32_t *buff;
 
     // Determine the buffer based on the direction of data transfer
-    if (data->flags * MMC_DATA_READ) {
+    if (data->flags & MMC_DATA_READ) {
         buff = (uint32_t *) data->b.dest;// Destination buffer for read operation
     } else {
         buff = (uint32_t *) data->b.src;// Source buffer for write operation
@@ -712,11 +712,11 @@ static int sunxi_sdhci_trans_data_cpu(sdhci_t *sdhci, mmc_data_t *data) {
     // Iterate over blocks of data to be transferred
     for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
         // Wait until FIFO is empty for read operation, or full for write operation
-        while (((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) && (time_us() < timeout)) {
+        while (((data->flags & MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) && (time_us() < timeout)) {
         }
 
         // Check for timeout
-        if ((data->flags * MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) {
+        if ((data->flags & MMC_DATA_READ) ? (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) : (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL)) {
             if (time_us() >= timeout) {
                 printk_error("SMHC: transfer %s by CPU failed, timeout\n",
                              (data->flags * MMC_DATA_READ) ? "read" : "write");
@@ -725,7 +725,7 @@ static int sunxi_sdhci_trans_data_cpu(sdhci_t *sdhci, mmc_data_t *data) {
         }
 
         // Perform read or write operation based on the direction of data transfer
-        if (data->flags * MMC_DATA_READ) {
+        if (data->flags & MMC_DATA_READ) {
             buff[i] = readl(mmc_host->database);// Read data from FIFO to buffer
         } else {
             writel(buff[i], mmc_host->database);// Write data from buffer to FIFO
