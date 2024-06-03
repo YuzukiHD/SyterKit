@@ -49,8 +49,6 @@ enum {
 
 #define SD_DATA_4BIT 0x00040000
 
-#define IS_SD(x) (x->version & SD_VERSION_SD)
-
 #define MMC_DATA_READ (1U << 0)
 #define MMC_DATA_WRITE (1U << 1)
 
