@@ -59,8 +59,6 @@ enum {
 #define COMM_ERR -18     /* Communications Error */
 #define TIMEOUT -19
 
-#define MMC_CMD_CMDVAL_MASK 0x80000000
-
 #define MMC_CMD_GO_IDLE_STATE 0
 #define MMC_CMD_SEND_OP_COND 1
 #define MMC_CMD_ALL_SEND_CID 2
@@ -144,7 +142,6 @@ enum {
 /*
  * EXT_CSD fields
  */
-
 #define EXT_CSD_PART_CONF 179 /* R/W */
 #define EXT_CSD_BUS_WIDTH 183 /* R/W */
 #define EXT_CSD_HS_TIMING 185 /* R/W */
@@ -155,7 +152,6 @@ enum {
 /*
  * EXT_CSD field definitions
  */
-
 #define EXT_CSD_CMD_SET_NORMAL (1 << 0)
 #define EXT_CSD_CMD_SET_SECURE (1 << 1)
 #define EXT_CSD_CMD_SET_CPSECURE (1 << 2)
@@ -272,7 +268,7 @@ typedef struct mmc_data {
 typedef struct mmc {
     uint32_t voltages;
     uint32_t version;
-    uint32_t has_init;
+    uint32_t bus_width;
     uint32_t f_min;
     uint32_t f_max;
     uint32_t f_max_ddr;
@@ -299,6 +295,21 @@ typedef struct mmc {
     char revision[8 + 8]; /* CID:  PRV */
     uint32_t speed_mode;
 } mmc_t;
+
+
+/**
+ * @brief Initializes the SD/MMC host controller and attached card.
+ *
+ * This function initializes the specified SD/MMC host controller and the
+ * attached SD/MMC card. It initializes the host controller core, sets the
+ * bus width and clock speed, resets the card, and initializes the card
+ * based on its type (SD or eMMC). Finally, it probes the card to retrieve
+ * card-specific data.
+ *
+ * @param sdhci_hdl Pointer to the SD/MMC host controller structure.
+ * @return 0 on success, or an error code if an error occurred during initialization.
+ */
+int sunxi_mmc_init(void *sdhci_hdl);
 
 #ifdef __cplusplus
 }
