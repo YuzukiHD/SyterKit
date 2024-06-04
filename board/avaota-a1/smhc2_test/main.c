@@ -29,7 +29,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
-extern sdhci_t sdhci2;
+extern sunxi_sdhci_t sdhci2;
 
 msh_declare_command(speedtest);
 msh_define_help(speedtest, "Do speed test", "Usage: speedtest\n");

@@ -27,9 +27,9 @@ extern "C" {
 #define MMC_REG_FIFO_OS (0x200)
 
 #define SMHC_TIMEOUT 0xfffff
-#define SMHC_DMA_TIMEOUT 0xffffff
-#define SMHC_WAITBUSY_TIMEOUT 0x4ffffff
-#define SMHC_DATA_TIMEOUT 0xffffff
+#define SMHC_DMA_TIMEOUT 0xfffff
+#define SMHC_WAITBUSY_TIMEOUT 0xfffff
+#define SMHC_DATA_TIMEOUT 0xfffff
 #define SMHC_RESP_TIMEOUT 0xff
 
 enum {
@@ -64,13 +64,14 @@ typedef struct sunxi_sdhci_host {
     uint32_t hclkrst;
     uint32_t hclkbase;
     uint32_t mclkbase;
-    uint32_t database;
     uint32_t commreg;
-    uint32_t fatal_err;
-    sunxi_sdhci_desc_t sdhci_desc[32];
-    uint32_t timing_mode;
+    uint8_t fatal_err;
+    uint8_t timing_mode;
     uint32_t mod_clk;
     uint32_t clock;
+
+    /* DMA DESC */
+    sunxi_sdhci_desc_t sdhci_desc[32];
 } sunxi_sdhci_host_t;
 
 typedef struct sunxi_sdhci_pinctrl {
@@ -93,9 +94,10 @@ typedef struct sunxi_sdhci_timing {
     uint32_t sdly;
     uint32_t spd_md_id;
     uint32_t freq_id;
+    uint8_t auto_timing;
 } sunxi_sdhci_timing_t;
 
-typedef struct sdhci {
+typedef struct sunxi_sdhci {
     char *name;
     uint32_t reg_base;
     uint32_t id;
@@ -103,12 +105,16 @@ typedef struct sdhci {
     uint32_t clk_ctrl_base;
     uint32_t clk_base;
     uint32_t max_clk;
+    sunxi_sdhci_type_t sdhci_mmc_type;
+
+    /* Pinctrl info */
+    sunxi_sdhci_pinctrl_t pinctrl;
+
+    /* Private data */
     mmc_t *mmc;
-    sunxi_sdhci_type_t type;
     sunxi_sdhci_host_t *mmc_host;
-    sunxi_sdhci_pinctrl_t *pinctrl;
-    sunxi_sdhci_timing_t *timing_data;
-} sdhci_t;
+    sunxi_sdhci_timing_t timing_data;
+} sunxi_sdhci_t;
 
 /**
  * @brief Initialize the SDHC controller.
@@ -122,7 +128,7 @@ typedef struct sdhci {
  * @param sdhci Pointer to the SDHC structure.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_init(sdhci_t *sdhci);
+int sunxi_sdhci_init(sunxi_sdhci_t *sdhci);
 
 /**
  * @brief Initialize the core functionality of the SDHC controller.
@@ -134,7 +140,7 @@ int sunxi_sdhci_init(sdhci_t *sdhci);
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_core_init(sdhci_t *sdhci);
+int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci);
 
 /**
  * @brief Set the I/O settings for the SDHC controller.
@@ -145,7 +151,7 @@ int sunxi_sdhci_core_init(sdhci_t *sdhci);
  * @param sdhci Pointer to the SDHC controller structure.
  * @return void
  */
-void sunxi_sdhci_set_ios(sdhci_t *sdhci);
+void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci);
 
 /**
  * @brief Update phase for the SDHC controller.
@@ -155,7 +161,7 @@ void sunxi_sdhci_set_ios(sdhci_t *sdhci);
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Returns 0 on success.
  */
-int sunxi_sdhci_update_phase(sdhci_t *sdhci);
+int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci);
 
 /**
  * @brief Perform a data transfer operation on the SDHC controller.
@@ -169,7 +175,19 @@ int sunxi_sdhci_update_phase(sdhci_t *sdhci);
  * @param data Pointer to the MMC data structure.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_xfer(sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data);
+int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data);
+
+/**
+ * @brief Dump the contents of the SDHCI registers.
+ *
+ * This function dumps the contents of the SDHCI registers for a given SD card host controller.
+ *
+ * @param sdhci A pointer to the structure representing the SD card host controller.
+ * @return void
+ *
+ * @note This function is useful for debugging and analyzing the state of the SD card controller.
+ */
+void sunxi_sdhci_dump_reg(sunxi_sdhci_t *sdhci);
 
 #ifdef __cplusplus
 }

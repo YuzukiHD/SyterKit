@@ -55,7 +55,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci0;
 
 extern void enable_sram_a3();
 extern void rtc_set_vccio_det_spare();

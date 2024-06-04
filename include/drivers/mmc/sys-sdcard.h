@@ -19,7 +19,7 @@ extern "C" {
 
 typedef struct {
     mmc_t card;
-    sdhci_t *hci;
+    sunxi_sdhci_t *hci;
     uint8_t buf[512];
     bool online;
 } sdmmc_pdata_t;
