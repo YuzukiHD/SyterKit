@@ -193,3 +193,27 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
     printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
            pin_num, addr, read32(addr), v);
 }
+
+/**
+ * @brief Sets the drive strength of a Sunxi GPIO pin.
+ *
+ * This function sets the drive strength for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the drive strength for.
+ * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
+ */
+void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv) {
+    uint32_t port_addr = _port_base_get(pin);
+    uint32_t pin_num = _pin_num(pin);
+    uint32_t addr;
+    uint32_t val;
+
+    addr = port_addr + GPIO_PUL0 + ((pin_num >> 4) << 2);
+    val = read32(addr);
+    val &= ~(0x3 << ((pin_num & 0xf) << 1));
+    val |= (drv << ((pin_num & 0xf) << 1));
+    write32(addr, val);
+
+    printk_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n",
+           pin_num, addr, read32(addr), drv);
+}
