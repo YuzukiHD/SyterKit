@@ -628,7 +628,7 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
         return err;
     }
 
-    cardtype = ext_csd[196] & 0xff;///< Extract card type from the extended CSD data
+    cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0xff;///< Extract card type from the extended CSD data
 
     // Retry switching to high-speed mode for certain types of cards
     do {
@@ -652,7 +652,7 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
     }
 
     // Check if high-speed mode is supported
-    if (!ext_csd[185])
+    if (!ext_csd[EXT_CSD_HS_TIMING])
         return 0;
 
     // Determine the type of high-speed mode and update card capabilities
@@ -1297,13 +1297,6 @@ static int sunxi_mmc_send_if_cond(sunxi_sdhci_t *sdhci) {
  */
 static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci) {
     mmc_t *mmc = sdhci->mmc;
-
-    printk_debug("SD/MMC card at the '%s' host controller:\r\n", sdhci->name);
-    printk_debug("  Attached is a %s card\r\n", mmc->version & SD_VERSION_SD ? "SD" : "MMC");
-    if (mmc->capacity / (f64) 1000000000.0 < 4)
-        printk_info("  Capacity: %.1fMB\n", (f32) ((f64) mmc->capacity / (f64) 1000000.0));
-    else
-        printk_info("  Capacity: %.1fGB\n", (f32) ((f64) mmc->capacity / (f64) 1000000000.0));
     if (mmc->high_capacity)
         printk_debug("  High capacity card\r\n");
     printk_debug("  CID: %08X-%08X-%08X-%08X\r\n", mmc->cid[0], mmc->cid[1], mmc->cid[2], mmc->cid[3]);
@@ -1401,21 +1394,27 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
         switch (version) {
             case 0:
                 mmc->version = MMC_VERSION_1_2;
+                strver = "1.2";
                 break;
             case 1:
                 mmc->version = MMC_VERSION_1_4;
+                strver = "1.4";
                 break;
             case 2:
                 mmc->version = MMC_VERSION_2_2;
+                strver = "2.2";
                 break;
             case 3:
                 mmc->version = MMC_VERSION_3;
+                strver = "3.0";
                 break;
             case 4:
                 mmc->version = MMC_VERSION_4;
+                strver = "4.0";
                 break;
             default:
                 mmc->version = MMC_VERSION_1_2;
+                strver = "1.2";
                 break;
         }
     }
@@ -1471,7 +1470,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
         /* TODO MMC Timing update */
     }
 
-    sunxi_mmc_set_clock(sdhci, mmc->tran_speed);
+    sunxi_mmc_set_clock(sdhci, 25000000);
 
     /*
     * For SD, its erase group is always one sector
@@ -1484,7 +1483,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
         err = sunxi_mmc_send_ext_csd(sdhci, ext_csd);
         if (!err) {
             /* update mmc version */
-            switch (ext_csd[192]) {
+            switch (ext_csd[EXT_CSD_REV]) {
                 case 0:
                     mmc->version = MMC_VERSION_4;
                     strver = "4.0";
@@ -1520,17 +1519,12 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
             }
         }
 
-        if (!err & (ext_csd[192] >= 2)) {
-            /*
-            * According to the JEDEC Standard, the value of
-            * ext_csd's capacity is valid if the value is more
-            * than 2GB
-            */
-            capacity = ext_csd[212] << 0 | ext_csd[213] << 8 |
-                       ext_csd[214] << 16 | ext_csd[215] << 24;
-            capacity *= 512;
-            if ((capacity >> 20) > 2 * 1024)
-                mmc->capacity = capacity;
+        if (!err & (ext_csd[EXT_CSD_REV] >= 2)) {
+            mmc->capacity = ext_csd[EXT_CSD_SEC_CNT] << 0 |
+                            ext_csd[EXT_CSD_SEC_CNT + 1] << 8 |
+                            ext_csd[EXT_CSD_SEC_CNT + 2] << 16 |
+                            ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
+            mmc->capacity *= 1 << UNSTUFF_BITS(mmc->csd, 80, 4);
         }
 
         /*
@@ -1539,7 +1533,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
         * the group size from the csd value.
         */
         if (ext_csd[175])
-            mmc->erase_grp_size = ext_csd[224] * 512 * 1024;
+            mmc->erase_grp_size = ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] * 512 * 1024;
         else {
             int erase_gsz, erase_gmul;
             erase_gsz = (mmc->csd[2] & 0x00007c00) >> 10;
@@ -1548,8 +1542,8 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
         }
 
         /* store the partition info of emmc */
-        if (ext_csd[160] & PART_SUPPORT) {
-            mmc->part_config = ext_csd[179];
+        if (ext_csd[EXT_CSD_PARTITION_SUPPORT] & PART_SUPPORT) {
+            mmc->part_config = ext_csd[EXT_CSD_PART_CONFIG];
         }
     }
 
@@ -1696,6 +1690,14 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
     mmc->blksz = mmc->read_bl_len;
     mmc->lba = mmc->capacity >> 9;
 
+    printk_debug("SD/MMC card at the '%s' host controller:\r\n", sdhci->name);
+    printk_debug("  Attached is a %s%s card\r\n", mmc->version & SD_VERSION_SD ? "SD" : "MMC",
+                 mmc->version & SD_VERSION_SD ? "" : strver);
+    if (mmc->capacity / (f64) 1000000000.0 < 4)
+        printk_info("  Capacity: %.1fMB\n", (f32) ((f64) mmc->capacity / (f64) 1000000.0));
+    else
+        printk_info("  Capacity: %.1fGB\n", (f32) ((f64) mmc->capacity / (f64) 1000000000.0));
+
     sunxi_mmc_show_card_info(sdhci);
 
     return 0;
@@ -1764,6 +1766,20 @@ int sunxi_mmc_init(void *sdhci_hdl) {
     if (err) {
         printk_error("SMHC%d: SD/MMC Probe failed, err %d\n", sdhci->id, err);
     }
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 4096
+
+    memset((void *) 0x40000000, 0xff, 0x20000);
+
+    uint32_t start = time_ms();
+    sunxi_mmc_read_blocks(sdhci, (uint8_t *) (0x40000000), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    uint32_t test_time = time_ms() - start;
+
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+
+    dump_hex(0x40000000, 0x200);
 
     return err;
 }

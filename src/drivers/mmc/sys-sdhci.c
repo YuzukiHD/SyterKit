@@ -796,6 +796,8 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
         } else {
             pdes[des_idx].next_desc_addr = ((size_t) &pdes[des_idx + 1]) >> 2;
         }
+
+#ifdef SMHC_DMA_TRACE
         printk_trace("SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
                      "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
                      i, remain, des_idx, (uint32_t) (&pdes[des_idx]),
@@ -803,6 +805,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
                      (uint32_t) ((uint32_t *) &pdes[des_idx])[1],
                      (uint32_t) ((uint32_t *) &pdes[des_idx])[2],
                      (uint32_t) ((uint32_t *) &pdes[des_idx])[3]);
+#endif// SMHC_DMA_TRACE
     }
 
     dsb();
@@ -825,6 +828,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 
 
     /* Enable DMA */
+    mmc_host->reg->idst = 0x337;
     mmc_host->reg->gctrl |= (SMHC_GCTRL_DMA_ENABLE | SMHC_GCTRL_DMA_RESET);
 
     timeout = time_us() + SMHC_TIMEOUT;
@@ -859,7 +863,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
     mmc_host->reg->dlba = (uint32_t) pdes >> 2;
 
     /* burst-16, rx/tx trigger level=15/240 */
-    mmc_host->reg->ftrglevel = ((0x3 << 28) | (15 << 16) | 240);
+    mmc_host->reg->ftrglevel = ((3 << 28) | (15 << 16) | 240);
 
     return 0;
 }
@@ -1096,13 +1100,17 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
         uint32_t done = false;
         timeout = time_us() + (use_dma_status ? SMHC_DMA_TIMEOUT : SMHC_TIMEOUT);
         do {
+            sunxi_sdhci_dump_reg(sdhci);
             status = mmc_host->reg->rint;
             if ((time_us() > timeout) || (status & SMHC_RINT_INTERRUPT_ERROR_BIT)) {
                 error_code = status & SMHC_RINT_INTERRUPT_ERROR_BIT;
                 if (!error_code) {
                     error_code = 0xffffffff;
                 }
-                printk_error("SMHC: data timeout, error %08x\n", error_code);
+                if (time_us() > timeout)
+                    printk_error("SMHC: data timeout, error %08x\n", error_code);
+                else
+                    printk_error("SMHC: status get interrupt, error 0x%08x\n", error_code);
                 goto out;
             }
 
@@ -1178,6 +1186,7 @@ out:
     }
 
     if (error_code) {
+        dump_hex(sdhci->reg_base, 0x200);
         mmc_host->reg->gctrl = SMHC_GCTRL_HARDWARE_RESET;
         timeout = time_us() + SMHC_TIMEOUT;
         while (mmc_host->reg->gctrl & SMHC_GCTRL_HARDWARE_RESET) {

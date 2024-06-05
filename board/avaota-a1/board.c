@@ -98,13 +98,6 @@ sunxi_sdhci_t sdhci2 = {
                 .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
                 .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
         },
-        .timing_data = {
-                .freq_id = MMC_CLK_25M,
-                .odly = 0,
-                .sdly = 0,
-                .spd_md_id = MMC_DS26_SDR12,
-                .auto_timing = TRUE,
-        },
 };
 
 
