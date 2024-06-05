@@ -127,7 +127,7 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
 
     addr = port_addr + GPIO_PUL0 + ((pin_num >> 4) << 2);
     val = read32(addr);
-    val &= ~(v << ((pin_num & 0xf) << 1));
+    val &= ~(0x3 << ((pin_num & 0xf) << 1));
     val |= (v << ((pin_num & 0xf) << 1));
     write32(addr, val);
 
