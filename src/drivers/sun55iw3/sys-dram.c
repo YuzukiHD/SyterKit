@@ -38,7 +38,7 @@ uint64_t sunxi_dram_init(void *para) {
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
 
     if (para == NULL) {
-        printk_error("DRAM: please provide DRAM para");
+        printk_error("DRAM: please provide DRAM para\n");
     }
 
     uint32_t *para_data = (uint32_t *) para;
