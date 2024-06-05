@@ -53,7 +53,9 @@ enum gpio_pull_t {
     GPIO_PULL_NONE = 2,
 };
 
+typedef uint32_t gpio_drv_t;
 typedef uint32_t gpio_t;
+
 #define PIO_NUM_IO_BITS 5
 
 #define GPIO_PIN(x, y) (((uint32_t) (x << PIO_NUM_IO_BITS)) | y)
@@ -95,8 +97,18 @@ int sunxi_gpio_read(gpio_t pin);
  */
 void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
 
+/**
+ * @brief Sets the drive strength of a Sunxi GPIO pin.
+ *
+ * This function sets the drive strength for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the drive strength for.
+ * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
+ */
+void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv);
+
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __SYS_GPIO_H__
