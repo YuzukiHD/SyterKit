@@ -111,7 +111,7 @@ enum dram_training_type {
 };
 
 const uint32_t dram_para[32] = {
-        1200,
+        1600,
         0x8,
         0x7070707,
         0xd0d0d0d,
