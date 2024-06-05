@@ -21,33 +21,31 @@
 #define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
 
 #define RTC_FEL_INDEX 2
-#define DRAM_PARA_CLK 3
-#define DRAM_PARA_TPR13 4
+#define DRAM_PARA_ADDR 3
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
-void rtc_set_dram_para(uint32_t dram_clk, uint32_t dram_training) {
+void rtc_set_dram_para(uint32_t dram_para_addr) {
     do {
-        rtc_write_data(DRAM_PARA_CLK, dram_clk);
+        rtc_write_data(DRAM_PARA_ADDR, dram_para_addr);
         data_sync_barrier();
-    } while (rtc_read_data(DRAM_PARA_CLK) != dram_clk);
-
-    do {
-        rtc_write_data(DRAM_PARA_TPR13, dram_training);
-        data_sync_barrier();
-    } while (rtc_read_data(DRAM_PARA_TPR13) != dram_training);
+    } while (rtc_read_data(DRAM_PARA_ADDR) != dram_para_addr);
 }
 
 uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
 
+    if (para == NULL) {
+        printk_error("DRAM: please provide DRAM para\n");
+    }
+
     uint32_t *para_data = (uint32_t *) para;
 
     /* Set DRAM driver clk and training data to */
     if (para_data[0] != 0x0) {
-        rtc_set_dram_para(para_data[0], para_data[30]);
+        rtc_set_dram_para((uint32_t) para);
     }
 
     printk_debug("DRAM: load dram init from 0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);

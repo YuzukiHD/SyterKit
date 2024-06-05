@@ -24,7 +24,7 @@ static dma_source_t dma_channel_source[SUNXI_DMA_MAX];
 static dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
 
 void dma_init(void) {
-    printk_info("DMA: init\n");
+    printk_debug("DMA: init\n");
     int i;
     uint32_t val;
     dma_reg_t *const dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
