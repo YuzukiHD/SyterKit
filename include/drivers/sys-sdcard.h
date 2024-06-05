@@ -3,6 +3,10 @@
 #ifndef __SDCARD_H__
 #define __SDCARD_H__
 
+#ifdef CONFIG_CHIP_MMC_V2
+#include <mmc/sys-sdcard.h>
+#else
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -226,5 +230,7 @@ uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno, uint6
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif /* CONFIG_CHIP_MMC_V2 */
 
 #endif /* __SDCARD_H__ */

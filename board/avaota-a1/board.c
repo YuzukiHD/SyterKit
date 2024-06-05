@@ -12,10 +12,11 @@
 
 #include <mmu.h>
 
+#include <mmc/sys-sdhci.h>
+
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sdcard.h>
 #include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
@@ -50,51 +51,55 @@ sunxi_spi_t sunxi_spi0 = {
         .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
 };
 
-sdhci_t sdhci0 = {
+sunxi_sdhci_t sdhci0 = {
         .name = "sdhci0",
-        .id = 0,
-        .reg = (sdhci_reg_t *) SUNXI_SMHC0_BASE,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_100M,
-        .sdio_type = SDHCI_TYPE_SD,
-        .removable = 0,
-        .isspi = FALSE,
-        .skew_auto_mode = TRUE,
-        .sdhci_pll = CCU_MMC_CTRL_PLL6X2,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+        .id = MMC_CONTROLLER_0,
+        .reg_base = SUNXI_SMHC0_BASE,
+        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
+        .clk_base = CCU_BASE + CCU_SMHC0_CLK_REG,
+        .sdhci_mmc_type = MMC_TYPE_SD,
+        .max_clk = 75 * 1000 * 1000,
+        .pinctrl = {
+                .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
+                .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
+                .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
+                .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
+                .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
+                .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+        },
+        .timing_data = {
+                .freq_id = MMC_CLK_25M,
+                .odly = 0,
+                .sdly = 0,
+                .spd_md_id = MMC_DS26_SDR12,
+                .auto_timing = TRUE,
+        },
 };
 
-sdhci_t sdhci2 = {
+sunxi_sdhci_t sdhci2 = {
         .name = "sdhci2",
-        .id = 2,
-        .reg = (sdhci_reg_t *) SUNXI_SMHC2_BASE,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_25M,
-        .sdio_type = SDHCI_TYPE_MMC,
-        .removable = 0,
-        .isspi = FALSE,
-        .skew_auto_mode = TRUE,
-        .sdhci_pll = CCU_MMC_CTRL_PLL6X2,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTC, 13), GPIO_PERIPH_MUX3},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTC, 15), GPIO_PERIPH_MUX3},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTC, 8), GPIO_PERIPH_MUX3},
-        .gpio_d4 = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
-        .gpio_d5 = {GPIO_PIN(GPIO_PORTC, 11), GPIO_PERIPH_MUX3},
-        .gpio_d6 = {GPIO_PIN(GPIO_PORTC, 14), GPIO_PERIPH_MUX3},
-        .gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
-        .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
-        .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
+        .id = MMC_CONTROLLER_2,
+        .reg_base = SUNXI_SMHC2_BASE,
+        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
+        .clk_base = CCU_BASE + CCU_SMHC2_CLK_REG,
+        .sdhci_mmc_type = MMC_TYPE_EMMC,
+        .max_clk = 200 * 1000 * 1000,
+        .pinctrl = {
+                .gpio_clk = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
+                .gpio_cmd = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
+                .gpio_d0 = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
+                .gpio_d1 = {GPIO_PIN(GPIO_PORTC, 13), GPIO_PERIPH_MUX3},
+                .gpio_d2 = {GPIO_PIN(GPIO_PORTC, 15), GPIO_PERIPH_MUX3},
+                .gpio_d3 = {GPIO_PIN(GPIO_PORTC, 8), GPIO_PERIPH_MUX3},
+                .gpio_d4 = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
+                .gpio_d5 = {GPIO_PIN(GPIO_PORTC, 11), GPIO_PERIPH_MUX3},
+                .gpio_d6 = {GPIO_PIN(GPIO_PORTC, 14), GPIO_PERIPH_MUX3},
+                .gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
+                .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
+                .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
+        },
 };
+
 
 sunxi_i2c_t i2c_pmu = {
         .base = SUNXI_R_TWI0_BASE,

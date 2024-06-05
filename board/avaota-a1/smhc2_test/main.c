@@ -29,7 +29,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
-extern sdhci_t sdhci2;
+extern sunxi_sdhci_t sdhci2;
 
 extern uint32_t dram_para[32];
 
