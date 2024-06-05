@@ -57,6 +57,8 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 
+extern uint32_t dram_para[32];
+
 extern void enable_sram_a3();
 extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
@@ -325,7 +327,7 @@ int main(void) {
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();
 

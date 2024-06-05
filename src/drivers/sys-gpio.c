@@ -46,10 +46,27 @@ enum {
 };
 #endif
 
+/**
+ * @brief Extracts the port number from a GPIO pin.
+ *
+ * This inline function extracts the port number from the given GPIO pin number.
+ *
+ * @param pin The GPIO pin number.
+ * @return The port number.
+ */
 static inline uint32_t _port_num(gpio_t pin) {
     return pin >> PIO_NUM_IO_BITS;
 }
 
+/**
+ * @brief Gets the base address of the port register for a GPIO pin.
+ *
+ * This function calculates and returns the base address of the port register
+ * for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin number.
+ * @return The base address of the port register.
+ */
 static uint32_t _port_base_get(gpio_t pin) {
     uint32_t port = pin >> PIO_NUM_IO_BITS;
 
@@ -61,10 +78,28 @@ static uint32_t _port_base_get(gpio_t pin) {
     return SUNXI_PIO_BASE + port * GPIO_OFFSET;
 }
 
+/**
+ * @brief Extracts the pin number within a port from a GPIO pin.
+ *
+ * This inline function extracts the pin number within a port from the given
+ * GPIO pin number.
+ *
+ * @param pin The GPIO pin number.
+ * @return The pin number within a port.
+ */
 static inline uint32_t _pin_num(gpio_t pin) {
     return (pin & ((1 << PIO_NUM_IO_BITS) - 1));
 }
 
+/**
+ * @brief Initializes a Sunxi GPIO pin with the specified configuration.
+ *
+ * This function initializes a Sunxi GPIO pin with the specified configuration. It sets
+ * the pin's configuration based on the provided parameters.
+ *
+ * @param pin The GPIO pin to initialize.
+ * @param cfg The configuration value for the GPIO pin.
+ */
 void sunxi_gpio_init(gpio_t pin, int cfg) {
     uint32_t port_addr = _port_base_get(pin);
     uint32_t pin_num = _pin_num(pin);
@@ -81,6 +116,14 @@ void sunxi_gpio_init(gpio_t pin, int cfg) {
            pin, pin_num, addr, read32(addr), cfg);
 }
 
+/**
+ * @brief Sets the value of a Sunxi GPIO pin.
+ *
+ * This function sets the value of a Sunxi GPIO pin to the specified value (0 or 1).
+ *
+ * @param pin The GPIO pin to set the value for.
+ * @param value The value to set (0 or 1).
+ */
 void sunxi_gpio_set_value(gpio_t pin, int value) {
     uint32_t port_addr = _port_base_get(pin);
     uint32_t pin_num = _pin_num(pin);
@@ -92,6 +135,14 @@ void sunxi_gpio_set_value(gpio_t pin, int value) {
     write32(port_addr + GPIO_DAT, val);
 }
 
+/**
+ * @brief Reads the value of a Sunxi GPIO pin.
+ *
+ * This function reads the current value of a Sunxi GPIO pin and returns it.
+ *
+ * @param pin The GPIO pin to read the value from.
+ * @return The value of the GPIO pin (0 or 1).
+ */
 int sunxi_gpio_read(gpio_t pin) {
     uint32_t port_addr = _port_base_get(pin);
     uint32_t pin_num = _pin_num(pin);
@@ -101,6 +152,14 @@ int sunxi_gpio_read(gpio_t pin) {
     return !!(val & (1 << pin_num));
 }
 
+/**
+ * @brief Sets the pull configuration of a Sunxi GPIO pin.
+ *
+ * This function sets the pull-up, pull-down, or no pull configuration for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the pull configuration for.
+ * @param pull The pull configuration to set (GPIO_PULL_UP, GPIO_PULL_DOWN, or GPIO_PULL_NONE).
+ */
 void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
     uint32_t port_addr = _port_base_get(pin);
     uint32_t pin_num = _pin_num(pin);
@@ -127,10 +186,34 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
 
     addr = port_addr + GPIO_PUL0 + ((pin_num >> 4) << 2);
     val = read32(addr);
-    val &= ~(v << ((pin_num & 0xf) << 1));
+    val &= ~(0x3 << ((pin_num & 0xf) << 1));
     val |= (v << ((pin_num & 0xf) << 1));
     write32(addr, val);
 
     printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
            pin_num, addr, read32(addr), v);
+}
+
+/**
+ * @brief Sets the drive strength of a Sunxi GPIO pin.
+ *
+ * This function sets the drive strength for the specified GPIO pin.
+ *
+ * @param pin The GPIO pin to set the drive strength for.
+ * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
+ */
+void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv) {
+    uint32_t port_addr = _port_base_get(pin);
+    uint32_t pin_num = _pin_num(pin);
+    uint32_t addr;
+    uint32_t val;
+
+    addr = port_addr + GPIO_PUL0 + ((pin_num >> 4) << 2);
+    val = read32(addr);
+    val &= ~(0x3 << ((pin_num & 0xf) << 1));
+    val |= (drv << ((pin_num & 0xf) << 1));
+    write32(addr, val);
+
+    printk_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n",
+           pin_num, addr, read32(addr), drv);
 }
