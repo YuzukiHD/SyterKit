@@ -16,11 +16,11 @@
 #include <sstdlib.h>
 #include <string.h>
 
+#include <mmc/sys-sdcard.h>
 #include <sys-clk.h>
 #include <sys-dram.h>
 #include <sys-i2c.h>
 #include <sys-rtc.h>
-#include <sys-sdcard.h>
 #include <sys-sid.h>
 #include <sys-spi.h>
 
@@ -62,8 +62,8 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
-extern sdhci_t sdhci0;
-extern sdhci_t sdhci2;
+extern sunxi_sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
 
 extern uint32_t dram_para[32];
 
@@ -767,6 +767,8 @@ int main(void) {
     } else {
         printk_info("SMHC: %s controller initialized\n", sdhci0.name);
     }
+
+    sunxi_mmc_init(&sdhci0);
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {

@@ -25,6 +25,9 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern sunxi_sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
+
 extern sunxi_i2c_t i2c_pmu;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
@@ -61,7 +64,7 @@ int cmd_write(int argc, const char **argv) {
     uint32_t test_time;
 
     start = time_ms();
-    sdmmc_blk_write(&card0, (uint8_t *) (0x07380000), 0, 1024);
+    //sdmmc_blk_write(&card0, (uint8_t *) (0x07380000), 0, 1024);
     test_time = time_ms() - start;
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
                  (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
