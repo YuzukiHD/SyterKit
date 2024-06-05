@@ -31,6 +31,8 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci2;
 
+extern uint32_t dram_para[32];
+
 msh_declare_command(speedtest);
 msh_define_help(speedtest, "Do speed test", "Usage: speedtest\n");
 int cmd_speedtest(int argc, const char **argv) {
@@ -82,7 +84,7 @@ int main(void) {
 
     enable_sram_a3();
 
-    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
 
     sunxi_clk_dump();
 
