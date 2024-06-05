@@ -27,7 +27,7 @@ extern "C" {
 #define MMC_REG_FIFO_OS (0x200)
 
 #define SMHC_TIMEOUT 0xfffff
-#define SMHC_DMA_TIMEOUT 0xfffff
+#define SMHC_DMA_TIMEOUT 0xffffff
 #define SMHC_WAITBUSY_TIMEOUT 0xfffff
 #define SMHC_DATA_TIMEOUT 0xfffff
 #define SMHC_RESP_TIMEOUT 0xff

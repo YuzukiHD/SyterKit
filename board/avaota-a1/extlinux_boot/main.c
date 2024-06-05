@@ -760,15 +760,15 @@ int main(void) {
     strcpy(image.splash_filename, CONFIG_SPLASH_FILENAME);
 
     /* Initialize the SD host controller. */
-    if (sunxi_sdhci_init(&sdhci2) != 0) {
-        printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
         goto _fail;
     } else {
-        printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
     }
 
-    sunxi_mmc_init(&sdhci2);
+    sunxi_mmc_init(&sdhci0);
 
     /* Initialize the SD card and check if initialization is successful. */
     if (sdmmc_init(&card0, &sdhci0) != 0) {
