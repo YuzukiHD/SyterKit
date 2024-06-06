@@ -18,20 +18,8 @@
 
 #define INIT_DRAM_BIN_BASE 0x07280000
 
-#define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
-
-#define RTC_FEL_INDEX 2
-#define DRAM_PARA_ADDR 3
-
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
-
-void rtc_set_dram_para(uint32_t dram_para_addr) {
-    do {
-        rtc_write_data(DRAM_PARA_ADDR, dram_para_addr);
-        data_sync_barrier();
-    } while (rtc_read_data(DRAM_PARA_ADDR) != dram_para_addr);
-}
 
 uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
