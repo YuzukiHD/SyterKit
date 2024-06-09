@@ -194,8 +194,15 @@
 #define GPIO_3_3V_MODE 0
 #define GPIO_1_8V_MODE 1
 
-#define GIC_REDISTRIBUTOR (SUNXI_CPU_GIC600_BASE + 0x60000)
-#define GICR_WAKER (GIC_REDISTRIBUTOR + 0x14)
+/* GIC600 */
+#define GIC_IROUTR(_n)       (SUNXI_CPU_GIC600_BASE + 0x6000 + 8 * (_n))
+#define GICR_LPI_BASE(n)     (SUNXI_CPU_GIC600_BASE + 0x60000 + n*0x20000)
+#define GICR_WAKER(m)        (GICR_LPI_BASE(m) + 0x0014)
+#define GICR_PWRR(m)         (GICR_LPI_BASE(m) + 0x0024)
+#define LEVEL_TRIGERRED      (0)
+#define EDGE_TRIGERRED       (1)
+#define GIC_IRQ_TYPE_CFG(_n) (SUNXI_CPU_GIC600_BASE + 0xc00 + 4 * (_n))
+#define GIC_IRQ_MOD_CFG(_n)	 (SUNXI_CPU_GIC600_BASE + 0xd00 + 4 * (_n))
 
 #define PIOC_REG_o_POW_MOD_SEL 0x380
 #define PIOC_REG_o_POW_MS_CTL 0x384
