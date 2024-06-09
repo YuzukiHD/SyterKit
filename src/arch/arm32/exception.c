@@ -10,8 +10,6 @@
 
 #include <log.h>
 
-#include <sys-gic.h>
-
 static void show_regs(struct arm_regs_t *regs) {
     int i = 0;
 
