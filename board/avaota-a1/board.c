@@ -164,6 +164,14 @@ void neon_enable(void) {
     asm volatile("MCR p10, 7, r3, c8, c0, 0");
 }
 
+void gicr_set_waker(void) {
+    uint32_t gicr_waker = read32(GICR_WAKER(0));
+    if ((gicr_waker & 2) == 0) {
+        gicr_waker |= 2;
+        write32(GICR_WAKER(0), gicr_waker);
+    }
+}
+
 void clean_syterkit_data(void) {
     /* Disable MMU, data cache, instruction cache, interrupts */
     arm32_mmu_disable();
