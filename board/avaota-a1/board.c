@@ -165,7 +165,7 @@ void neon_enable(void) {
 }
 
 void gicr_set_waker(void) {
-    uint32_t gicr_waker = read32(GICR_WAKER(0);
+    uint32_t gicr_waker = read32(GICR_WAKER(0));
     if ((gicr_waker & 2) == 0) {
         gicr_waker |= 2;
         write32(GICR_WAKER(0), gicr_waker);
