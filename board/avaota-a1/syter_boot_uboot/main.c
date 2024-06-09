@@ -63,6 +63,7 @@ extern void enable_sram_a3();
 extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
 extern void sunxi_nsi_init();
+extern void gicr_set_waker(void);
 
 typedef struct atf_head {
     uint32_t jump_instruction; /* jumping to real code */
@@ -260,6 +261,8 @@ int cmd_boot(int argc, const char **argv) {
     printk_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
     clean_syterkit_data();
+
+    gicr_set_waker();
 
     jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
 
