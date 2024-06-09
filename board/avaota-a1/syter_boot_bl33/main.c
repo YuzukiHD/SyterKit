@@ -60,10 +60,13 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci0;
 
+extern uint32_t dram_para[32];
+
 extern void enable_sram_a3();
 extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
 extern void sunxi_nsi_init();
+extern void gicr_set_waker(void);
 
 typedef struct atf_head {
     uint32_t jump_instruction; /* jumping to real code */
@@ -270,6 +273,8 @@ int cmd_boot(int argc, const char **argv) {
 
     clean_syterkit_data();
 
+    gicr_set_waker();
+
     jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
 
     printk_info("Back to SyterKit\n");
@@ -336,7 +341,7 @@ int main(void) {
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();
 
