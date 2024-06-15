@@ -19,9 +19,17 @@
 sdmmc_pdata_t card0;
 
 int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci) {
-    return 0;
+    data->hci = hci;
+    data->online = false;
+
+    if (sunxi_mmc_init(data->hci) == 0) {
+        printk_info("SHMC: %s card detected\n", data->hci->sdhci_mmc_type & MMC_TYPE_SD ? "SD" : "MMC");
+        return 0;
+    }
+
+    return -1;
 }
 
-uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno, uint64_t blkcnt) {
-    return 0;
+uint32_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt) {
+    return sunxi_mmc_blk_read(data->hci, buf, blkno, blkcnt);
 }

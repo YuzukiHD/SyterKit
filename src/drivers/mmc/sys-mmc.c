@@ -242,15 +242,15 @@ static int sunxi_mmc_set_block_len(sunxi_sdhci_t *sdhci, uint32_t len) {
  * @param blkcnt Number of blocks to read.
  * @return Number of blocks read on success, 0 otherwise.
  */
-static uint64_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint64_t start, uint64_t blkcnt) {
+static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
     mmc_t *mmc = sdhci->mmc;
 
-    mmc_cmd_t cmd;
-    mmc_data_t data;
+    mmc_cmd_t cmd = {0};
+    mmc_data_t data = {0};
 
     int timeout = 1000;
 
-    if (blkcnt > 1)
+    if (blkcnt > 1UL)
         cmd.cmdidx = MMC_CMD_READ_MULTIPLE_BLOCK;
     else
         cmd.cmdidx = MMC_CMD_READ_SINGLE_BLOCK;
@@ -1667,21 +1667,22 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
             }
             sunxi_mmc_set_bus_width(sdhci, SMHC_WIDTH_8BIT);
         }
-    }
 
-    if (mmc->card_caps & MMC_MODE_HS400) {
-        mmc->tran_speed = sdhci->max_clk;
-    } else if (mmc->card_caps & MMC_MODE_DDR_52MHz) {
-        mmc->tran_speed = 52000000;
-    } else if (mmc->card_caps & MMC_MODE_HS) {
-        if (mmc->card_caps & MMC_MODE_HS_52MHz) {
+        if (mmc->card_caps & MMC_MODE_HS400) {
+            mmc->tran_speed = sdhci->max_clk;
+        } else if (mmc->card_caps & MMC_MODE_DDR_52MHz) {
             mmc->tran_speed = 52000000;
+        } else if (mmc->card_caps & MMC_MODE_HS) {
+            if (mmc->card_caps & MMC_MODE_HS_52MHz) {
+                mmc->tran_speed = 52000000;
+            } else {
+                mmc->tran_speed = 26000000;
+            }
         } else {
             mmc->tran_speed = 26000000;
         }
-    } else {
-        mmc->tran_speed = 26000000;
     }
+
 
     printk_trace("SMHC: set clock to %u\n", mmc->tran_speed);
     sunxi_mmc_set_clock(sdhci, mmc->tran_speed);
@@ -1767,19 +1768,9 @@ int sunxi_mmc_init(void *sdhci_hdl) {
         printk_error("SMHC%d: SD/MMC Probe failed, err %d\n", sdhci->id, err);
     }
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 4096
-
-    memset((void *) 0x40000000, 0xff, 0x20000);
-
-    uint32_t start = time_ms();
-    sunxi_mmc_read_blocks(sdhci, (uint8_t *) (0x40000000), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
-    uint32_t test_time = time_ms() - start;
-
-    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-
-    dump_hex(0x40000000, 0x200);
-
     return err;
+}
+
+uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+    return sunxi_mmc_read_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
 }

@@ -377,6 +377,21 @@ typedef struct mmc {
  */
 int sunxi_mmc_init(void *sdhci_hdl);
 
+/**
+ * @brief Reads blocks from the SD/MMC card.
+ *
+ * This function reads blocks from the SD/MMC card starting from the specified block address.
+ * It supports reading multiple blocks and handles high capacity cards appropriately.
+ *
+ * @param sdhci Pointer to the SDHCI controller structure.
+ * @param dst Pointer to the destination buffer where the data will be stored.
+ * @param start Start block address from where to read the data.
+ * @param blkcnt Number of blocks to read.
+ * @return Number of blocks read on success, 0 otherwise.
+ */
+uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt);
+
+
 #ifdef __cplusplus
 }
 #endif// __cplusplus

@@ -757,18 +757,22 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *data) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     sunxi_sdhci_desc_t *pdes = mmc_host->sdhci_desc;
+    uint32_t byte_cnt = data->blocksize * data->blocks;
     uint8_t *buff;
     uint32_t des_idx = 0, buff_frag_num = 0, remain = 0;
     uint32_t reg_val = 0;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
 
+    /* burst-16, rx/tx trigger level=15/240 */
+    mmc_host->reg->ftrglevel = ((3 << 28) | (15 << 16) | 240);
+
     buff = data->flags & MMC_DATA_READ ? (uint8_t *) data->b.dest : (uint8_t *) data->b.src;
-    buff_frag_num = (data->blocksize * data->blocks) >> SMHC_DES_NUM_SHIFT;
-    remain = (data->blocksize * data->blocks) & (SMHC_DES_BUFFER_MAX_LEN - 1);
+    buff_frag_num = byte_cnt >> SMHC_DES_NUM_SHIFT;
+    remain = byte_cnt & (SMHC_DES_BUFFER_MAX_LEN - 1);
     if (remain) {
         buff_frag_num++;
     } else {
-        remain = SMHC_DES_BUFFER_MAX_LEN;
+        remain = SMHC_DES_BUFFER_MAX_LEN - 1;
     }
 
     for (size_t i = 0; i < buff_frag_num; i++, des_idx++) {
@@ -778,7 +782,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
         pdes[des_idx].dic = 1;
 
         if (buff_frag_num > 1 && i != buff_frag_num - 1) {
-            pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN;
+            pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN - 1;
         } else {
             pdes[des_idx].data_buf_sz = remain;
         }
@@ -881,7 +885,8 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = sdhci->mmc;
 
-    printk_trace("SMHC: ios setting bus:%u, speed %u\n", mmc->bus_width, mmc->clock);
+    printk_trace("SMHC: ios setting bus:%u, speed %u\n",
+                 (0x1 << (mmc->bus_width + 1)), mmc->clock);
 
     // Configure clock and handle errors
     if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
@@ -1061,7 +1066,8 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 	 * STATREG[3] : FIFO full
 	 */
     if (data) {
-        printk_trace("SMHC: transfer data %lu bytes\n", data->blocksize * data->blocks);
+        printk_trace("SMHC: transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
+                     ((data->blocksize * data->blocks > 512) ? "DMA" : "CPU"));
         if (data->blocksize * data->blocks > 512) {
             use_dma_status = true;
             mmc_host->reg->gctrl &= ~SMHC_GCTRL_ACCESS_BY_AHB;
@@ -1091,7 +1097,10 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
             if (!error_code) {
                 error_code = 0xffffffff;
             }
-            printk_error("SMHC: cmd 0x%08x timeout, error %08x\n", cmd->cmdidx, error_code);
+            if (time_us() > timeout)
+                printk_error("SMHC: stage 1 data timeout, error %08x\n", error_code);
+            else
+                printk_error("SMHC: stage 1 status get interrupt, error 0x%08x\n", error_code);
             goto out;
         }
     } while (!(status & SMHC_RINT_COMMAND_DONE));
@@ -1100,7 +1109,6 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
         uint32_t done = false;
         timeout = time_us() + (use_dma_status ? SMHC_DMA_TIMEOUT : SMHC_TIMEOUT);
         do {
-            sunxi_sdhci_dump_reg(sdhci);
             status = mmc_host->reg->rint;
             if ((time_us() > timeout) || (status & SMHC_RINT_INTERRUPT_ERROR_BIT)) {
                 error_code = status & SMHC_RINT_INTERRUPT_ERROR_BIT;
@@ -1108,9 +1116,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
                     error_code = 0xffffffff;
                 }
                 if (time_us() > timeout)
-                    printk_error("SMHC: data timeout, error %08x\n", error_code);
+                    printk_error("SMHC: stage 2 data timeout, error %08x\n", error_code);
                 else
-                    printk_error("SMHC: status get interrupt, error 0x%08x\n", error_code);
+                    printk_error("SMHC: stage 2 status get interrupt, error 0x%08x\n", error_code);
                 goto out;
             }
 
@@ -1186,7 +1194,6 @@ out:
     }
 
     if (error_code) {
-        dump_hex(sdhci->reg_base, 0x200);
         mmc_host->reg->gctrl = SMHC_GCTRL_HARDWARE_RESET;
         timeout = time_us() + SMHC_TIMEOUT;
         while (mmc_host->reg->gctrl & SMHC_GCTRL_HARDWARE_RESET) {
@@ -1288,6 +1295,7 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
     mmc_host->hclkbase = sdhci->clk_ctrl_base;
     mmc_host->hclkrst = sdhci->clk_ctrl_base;
     mmc_host->mclkbase = sdhci->clk_base;
+    mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
 
     /* Configure pins and enable clocks */
     sunxi_sdhci_pin_config(sdhci);
