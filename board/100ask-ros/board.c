@@ -78,6 +78,41 @@ void clean_syterkit_data(void) {
     printk_info("free interrupt ok...\n");
 }
 
+const uint32_t dram_para[32] = {
+        0x318,
+        0x8,
+        0x7070707,
+        0xd0d0d0d,
+        0xe0e,
+        0xd0a050c,
+        0x30fa,
+        0x8001000,
+        0x0,
+        0x34,
+        0x1b,
+        0x33,
+        0x3,
+        0x0,
+        0x0,
+        0x4,
+        0x72,
+        0x0,
+        0x7,
+        0x0,
+        0x0,
+        0x26,
+        0x6060606,
+        0x4040404,
+        0x0,
+        0x74000000,
+        0x48000000,
+        0x273333,
+        0x201c181f,
+        0x13151513,
+        0x7521,
+        0x2023211f,
+};
+
 #define RTC_DATA_COLD_START (7)
 #define CPUS_CODE_LENGTH (0x1000)
 #define CPUS_VECTOR_LENGTH (0x4000)
@@ -89,7 +124,7 @@ int ar100s_gpu_fix(void) {
     uint32_t value;
     uint32_t id = (readl(SUNXI_SYSCRL_BASE + 0x24)) & 0x07;
     printk_debug("SUNXI_SYSCRL_BASE + 0x24 = 0x%08x, id = %d, RTC_DATA_COLD_START = %d\n",
-           readl(SUNXI_SYSCRL_BASE + 0x24), id, rtc_read_data(RTC_DATA_COLD_START));
+                 readl(SUNXI_SYSCRL_BASE + 0x24), id, rtc_read_data(RTC_DATA_COLD_START));
     if (((id == 0) || (id == 3) || (id == 4) || (id == 5))) {
         if (rtc_read_data(RTC_DATA_COLD_START) == 0) {
             rtc_write_data(RTC_DATA_COLD_START, 0x1);

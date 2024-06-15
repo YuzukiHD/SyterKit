@@ -20,7 +20,7 @@
 #include <sys-uart.h>
 
 extern sunxi_serial_t uart_dbg;
-
+extern uint32_t dram_para[32];
 extern sunxi_i2c_t i2c_pmu;
 
 static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
@@ -56,7 +56,7 @@ int main(void) {
 
     pmu_axp2202_dump(&i2c_pmu);
 
-    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(NULL));
+    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
 
     sunxi_clk_dump();
 
