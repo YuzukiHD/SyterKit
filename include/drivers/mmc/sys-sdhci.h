@@ -53,7 +53,7 @@ typedef struct sunxi_sdhci_desc {
             err_flag : 1,    /* transfer error flag */
             own : 1;         /* des owner:1-idma owns it, 0-host owns it */
 
-    uint32_t data_buf_sz : 16, data_buf_dummy : 16;
+    uint32_t data_buf_sz : SMHC_DES_NUM_SHIFT, data_buf_dummy : (32 - SMHC_DES_NUM_SHIFT);
     uint32_t buf_addr;
     uint32_t next_desc_addr;
 } sunxi_sdhci_desc_t __attribute__((aligned(8)));
@@ -71,7 +71,7 @@ typedef struct sunxi_sdhci_host {
     uint32_t clock;
 
     /* DMA DESC */
-    sunxi_sdhci_desc_t sdhci_desc[32];
+    sunxi_sdhci_desc_t *sdhci_desc;
 } sunxi_sdhci_host_t;
 
 typedef struct sunxi_sdhci_pinctrl {
@@ -105,6 +105,7 @@ typedef struct sunxi_sdhci {
     uint32_t clk_ctrl_base;
     uint32_t clk_base;
     uint32_t max_clk;
+    uint32_t dma_des_addr;
     sunxi_sdhci_type_t sdhci_mmc_type;
 
     /* Pinctrl info */
