@@ -94,8 +94,6 @@ typedef struct sunxi_sdhci_pinctrl {
 typedef struct sunxi_sdhci_timing {
     uint32_t odly;
     uint32_t sdly;
-    uint32_t spd_md_id;
-    uint32_t freq_id;
     uint8_t auto_timing;
 } sunxi_sdhci_timing_t;
 
@@ -116,7 +114,7 @@ typedef struct sunxi_sdhci {
     /* Private data */
     mmc_t *mmc;
     sunxi_sdhci_host_t *mmc_host;
-    sunxi_sdhci_timing_t timing_data;
+    sunxi_sdhci_timing_t *timing_data;
 } sunxi_sdhci_t;
 
 /**

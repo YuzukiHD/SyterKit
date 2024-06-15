@@ -1612,28 +1612,18 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
     } else {
         /* EMMC */
         if (mmc->card_caps & MMC_MODE_8BIT) {
-            mmc->card_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HS400;
-            mmc->speed_mode = MMC_HS400;
-            if ((mmc->card_caps & MMC_MODE_HS400)) {
-                /* firstly, switch to HS-DDR 8 bit */
-                err = sunxi_mmc_mmc_switch_bus_width(sdhci, MMC_HSDDR52_DDR50, SMHC_WIDTH_8BIT);
-                if (err) {
-                    printk_error("SMHC: HS400 switch to DDR mode fail\n");
-                    return err;
-                }
-
-                /* then, switch to HS400 */
-                err = sunxi_mmc_mmc_switch_bus_mode(sdhci, MMC_HS400, SMHC_WIDTH_8BIT);
-                if (err) {
-                    printk_error("SMHC: switch to HS400 mode fail\n");
-                    return err;
-                }
-                mmc->tran_speed = sdhci->max_clk;
-
-                /* Set the card to use 8 bit */
-            } else if ((mmc->card_caps & MMC_MODE_DDR_52MHz)) {
+            /* Set the card to use 8 bit */
+            if ((mmc->card_caps & MMC_MODE_DDR_52MHz)) {
                 /* Set the card to use 8 bit ddr */
                 err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_DDR_8);
+                if (err) {
+                    printk_error("SMHC: switch bus width failed\n");
+                    return err;
+                }
+                sunxi_mmc_set_bus_width(sdhci, SMHC_WIDTH_8BIT);
+            } else {
+                /* Set the card to use 8 bit */
+                err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_8);
                 if (err) {
                     printk_error("SMHC: switch bus width failed\n");
                     return err;
@@ -1752,7 +1742,7 @@ int sunxi_mmc_init(void *sdhci_hdl) {
                 return err;
             }
         }
-        
+
         printk_debug("SMHC: Try to init SD Card\n");
         err = sunxi_mmc_send_if_cond(sdhci);
         if (err) {
@@ -1777,23 +1767,6 @@ int sunxi_mmc_init(void *sdhci_hdl) {
     if (err) {
         printk_error("SMHC%d: SD/MMC Probe failed, err %d\n", sdhci->id, err);
     }
-
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 4096
-
-    memset((void *) 0x40000000, 0xff, 0x20000);
-
-    uint32_t start = time_ms();
-    sunxi_mmc_read_blocks(sdhci, (uint8_t *) (0x40000000), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
-    uint32_t test_time = time_ms() - start;
-
-    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-
-    while (1) {
-        /* code */
-    }
-
 
     return err;
 }

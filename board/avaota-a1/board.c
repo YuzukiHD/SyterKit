@@ -71,13 +71,6 @@ sunxi_sdhci_t sdhci0 = {
                 .gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
                 .cd_level = GPIO_LEVEL_LOW,
         },
-        .timing_data = {
-                .freq_id = MMC_CLK_25M,
-                .odly = 0,
-                .sdly = 0,
-                .spd_md_id = MMC_DS26_SDR12,
-                .auto_timing = TRUE,
-        },
 };
 
 sunxi_sdhci_t sdhci2 = {
@@ -87,7 +80,7 @@ sunxi_sdhci_t sdhci2 = {
         .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
         .clk_base = CCU_BASE + CCU_SMHC2_CLK_REG,
         .sdhci_mmc_type = MMC_TYPE_EMMC,
-        .max_clk = 50 * 1000 * 1000,
+        .max_clk = 25 * 1000 * 1000,
         .width = SMHC_WIDTH_8BIT,
         .dma_des_addr = SDRAM_BASE + 0x30080000,
         .pinctrl = {
