@@ -48,6 +48,19 @@ if (CONFIG_CHIP_WITHPMU)
     )
 endif()
 
+if (CONFIG_CHIP_MMC_V2)
+    set(DRIVER_MMC
+        mmc/sys-mmc.c
+        mmc/sys-sdhci.c
+        mmc/sys-sdcard.c
+    )
+else()
+    set(DRIVER_MMC
+        sys-sdcard.c
+        sys-sdhci.c
+    )
+endif()
+
 if (NOT CONFIG_CHIP_CLK_V1)
     set(COMMON_DRIVER
         ${COMMON_DRIVER}
@@ -56,13 +69,12 @@ if (NOT CONFIG_CHIP_CLK_V1)
         sys-rtc.c
         sys-spi-nand.c
         sys-spi.c
-        sys-sdcard.c
         sys-dma.c
         sys-i2c.c
-        sys-sdhci.c
 
         ${USB_DRIVER}
         ${GIC_DRIVER}
+        ${DRIVER_MMC}
     )
 endif()
 
