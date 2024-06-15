@@ -23,7 +23,7 @@ int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci) {
     data->online = false;
 
     if (sunxi_mmc_init(data->hci) == 0) {
-        printk_info("SHMC: %s card detected\n", data->hci->sdhci_mmc_type & MMC_TYPE_SD ? "SD" : "MMC");
+        printk_info("SHMC: %s card detected\n", data->hci->sdhci_mmc_type == MMC_TYPE_SD ? "SD" : "MMC");
         return 0;
     }
 

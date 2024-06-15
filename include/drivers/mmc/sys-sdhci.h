@@ -87,6 +87,8 @@ typedef struct sunxi_sdhci_pinctrl {
     gpio_mux_t gpio_clk;
     gpio_mux_t gpio_ds;
     gpio_mux_t gpio_rst;
+    gpio_mux_t gpio_cd;
+    uint8_t cd_level;
 } sunxi_sdhci_pinctrl_t;
 
 typedef struct sunxi_sdhci_timing {
