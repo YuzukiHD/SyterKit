@@ -706,6 +706,11 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci) {
         sunxi_gpio_init(sdhci_pins.gpio_rst.pin, sdhci_pins.gpio_rst.mux);
         sunxi_gpio_set_pull(sdhci_pins.gpio_rst.pin, GPIO_PULL_UP);
     }
+
+    if (sdhci->pinctrl.gpio_cd.pin != 0) {
+        sunxi_gpio_init(sdhci_pins.gpio_cd.pin, sdhci_pins.gpio_cd.mux);
+        sunxi_gpio_set_pull(sdhci_pins.gpio_cd.pin, GPIO_PULL_UP);
+    }
 }
 
 /**
@@ -885,8 +890,7 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = sdhci->mmc;
 
-    printk_trace("SMHC: ios setting bus:%u, speed %u\n",
-                 (0x1 << (mmc->bus_width + 1)), mmc->clock);
+    printk_trace("SMHC: ios setting bus:%u, speed %u\n", mmc->bus_width, mmc->clock);
 
     // Configure clock and handle errors
     if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
@@ -1091,6 +1095,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 
     timeout = time_us() + SMHC_TIMEOUT;
     do {
+        sunxi_sdhci_dump_reg(sdhci);
         status = mmc_host->reg->rint;
         if ((time_us() > timeout) || (status & SMHC_RINT_INTERRUPT_ERROR_BIT)) {
             error_code = status & SMHC_RINT_INTERRUPT_ERROR_BIT;

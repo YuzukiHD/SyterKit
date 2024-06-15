@@ -1090,13 +1090,13 @@ static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mo
             ret = sunxi_mmc_mmc_switch_ds(sdhci);
             break;
         case MMC_HSSDR52_SDR25:
-            ret = sunxi_mmc_mmc_switch_to_hs(sdhci);
+            ret = sunxi_mmc_mmc_switch_hs(sdhci);
             break;
         case MMC_HS200_SDR104:
-            ret = sunxi_mmc_mmc_switch_to_hs200(sdhci);
+            ret = sunxi_mmc_mmc_switch_hs200(sdhci);
             break;
         case MMC_HS400:
-            ret = sunxi_mmc_mmc_switch_to_hs400(sdhci);
+            ret = sunxi_mmc_mmc_switch_hs400(sdhci);
             break;
         default:
             ret = -1;
@@ -1121,12 +1121,13 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
     int ret = 0;
 
     if (bus_width == SMHC_WIDTH_1BIT) {
-        /* don't consider SD3.0. tSD/fSD is SD2.0, 1-bit can be support */ {
-            if ((emmc_hs_ddr && (!IS_SD(mmc)) && (mmc->speed_mode == MMC_HSSDR52_SDR25)) ||
-                ((!IS_SD(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50)) ||
-                ((!IS_SD(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104)) ||
-                ((!IS_SD(mmc)) && (mmc->speed_mode == MMC_HS400)))
-                ret = -1;
+        /* don't consider SD3.0. tSD/fSD is SD2.0, 1-bit can be support */
+
+        if ((emmc_hs_ddr && (!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSSDR52_SDR25)) ||
+            ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50)) ||
+            ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104)) ||
+            ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))) {
+            ret = -1;
         }
     } else if (bus_width == SMHC_WIDTH_1BIT) {
         if (!(mmc->card_caps & MMC_MODE_4BIT)) {
@@ -1135,7 +1136,7 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
     } else if (bus_width == SMHC_WIDTH_8BIT) {
         if (!(mmc->card_caps & MMC_MODE_8BIT))
             ret = -1;
-        if (IS_SD(mmc))
+        if (sunxi_mmc_device_is_sd(mmc))
             ret = -1;
     } else {
         printk_debug("SMHC: bus width error %d\n", bus_width);
@@ -1615,14 +1616,14 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
             mmc->speed_mode = MMC_HS400;
             if ((mmc->card_caps & MMC_MODE_HS400)) {
                 /* firstly, switch to HS-DDR 8 bit */
-                err = sunxi_mmc_mmc_switch_bus_width(sdhci, MMC_HSDDR52_DDR50, 8);
+                err = sunxi_mmc_mmc_switch_bus_width(sdhci, MMC_HSDDR52_DDR50, SMHC_WIDTH_8BIT);
                 if (err) {
                     printk_error("SMHC: HS400 switch to DDR mode fail\n");
                     return err;
                 }
 
                 /* then, switch to HS400 */
-                err = sunxi_mmc_mmc_switch_bus_mode(sdhci, MMC_HS400, 8);
+                err = sunxi_mmc_mmc_switch_bus_mode(sdhci, MMC_HS400, SMHC_WIDTH_8BIT);
                 if (err) {
                     printk_error("SMHC: switch to HS400 mode fail\n");
                     return err;
@@ -1743,6 +1744,15 @@ int sunxi_mmc_init(void *sdhci_hdl) {
     mmc->part_num = 0;
 
     if (sdhci->sdhci_mmc_type == MMC_TYPE_SD) {
+        /* if is SDHCI0 in PF port try SD Card CD pin */
+        if (sdhci->pinctrl.gpio_cd.pin != 0) {
+            if (sdhci->id == 0 && sunxi_gpio_read(sdhci->pinctrl.gpio_cd.pin) != GPIO_LEVEL_LOW) {
+                printk_error("SMHC: SD Card Get CD error %d\n", sunxi_gpio_read(sdhci->pinctrl.gpio_cd.pin));
+                err = -1;
+                return err;
+            }
+        }
+        
         printk_debug("SMHC: Try to init SD Card\n");
         err = sunxi_mmc_send_if_cond(sdhci);
         if (err) {
@@ -1767,6 +1777,23 @@ int sunxi_mmc_init(void *sdhci_hdl) {
     if (err) {
         printk_error("SMHC%d: SD/MMC Probe failed, err %d\n", sdhci->id, err);
     }
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 4096
+
+    memset((void *) 0x40000000, 0xff, 0x20000);
+
+    uint32_t start = time_ms();
+    sunxi_mmc_read_blocks(sdhci, (uint8_t *) (0x40000000), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    uint32_t test_time = time_ms() - start;
+
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+
+    while (1) {
+        /* code */
+    }
+
 
     return err;
 }

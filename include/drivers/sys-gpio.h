@@ -31,6 +31,11 @@ enum {
 };
 
 enum {
+    GPIO_LEVEL_LOW = 0,
+    GPIO_LEVEL_HIGH,
+};
+
+enum {
     GPIO_PORTA = 0,
     GPIO_PORTB,
     GPIO_PORTC,
