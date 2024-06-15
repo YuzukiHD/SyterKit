@@ -50,10 +50,9 @@
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 extern sunxi_serial_t uart_dbg;
-
 extern sunxi_i2c_t i2c_pmu;
-
 extern sdhci_t sdhci0;
+extern uint32_t dram_para[32];
 
 extern int ar100s_gpu_fix(void);
 
@@ -299,7 +298,7 @@ int main(void) {
     pmu_axp2202_dump(&i2c_pmu);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 

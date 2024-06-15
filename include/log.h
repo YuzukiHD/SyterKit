@@ -113,6 +113,18 @@ void uart_printf(const char *fmt, ...);
  */
 int printf(const char *fmt, ...);
 
+/**
+ * @brief Dumps memory content in hexadecimal format.
+ *
+ * This function dumps the content of memory starting from the specified
+ * address in hexadecimal format. It prints the hexadecimal values of memory
+ * contents and ASCII characters corresponding to printable characters.
+ *
+ * @param start_addr The starting address of the memory region to dump.
+ * @param count The number of bytes to dump.
+ */
+void dump_hex(uint32_t start_addr, uint32_t count);
+
 #ifdef __cplusplus
 }
 #endif// __cplusplus

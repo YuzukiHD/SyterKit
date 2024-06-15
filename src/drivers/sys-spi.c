@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>

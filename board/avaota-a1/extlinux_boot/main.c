@@ -16,11 +16,11 @@
 #include <sstdlib.h>
 #include <string.h>
 
+#include <mmc/sys-sdcard.h>
 #include <sys-clk.h>
 #include <sys-dram.h>
 #include <sys-i2c.h>
 #include <sys-rtc.h>
-#include <sys-sdcard.h>
 #include <sys-sid.h>
 #include <sys-spi.h>
 
@@ -62,8 +62,8 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
-extern sdhci_t sdhci0;
-extern sdhci_t sdhci2;
+extern sunxi_sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
 
 extern uint32_t dram_para[32];
 
@@ -197,17 +197,7 @@ static int load_sdcard(image_info_t *image) {
     FATFS fs;
     FRESULT fret;
     int ret;
-    uint32_t start;
-
-    uint32_t test_time;
-    start = time_ms();
-    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
-    test_time = time_ms() - start;
-    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-
-    start = time_ms();
+    uint32_t start = time_ms();
 
     fret = f_mount(&fs, "", 1);
     if (fret != FR_OK) {
@@ -832,6 +822,7 @@ int main(void) {
     jmp_to_fel();
 
 _fail:
+    printk_error("SyterKit Boot Failed\n");
     LCD_ShowString(0, 0, "SyterKit Boot Failed", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 12, "Please Connect UART for Debug info", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 24, "Error Info:", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
