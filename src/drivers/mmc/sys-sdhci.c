@@ -36,11 +36,11 @@ static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci) {
     uint32_t reg_val;
     /* Configure AHB clock */
     reg_val = readl(mmc_host->hclkbase);
-    reg_val |= (1 << (sdhci->id));
+    reg_val |= BIT(sdhci->id);
     writel(reg_val, mmc_host->hclkbase);
 
     reg_val = readl(mmc_host->hclkrst);
-    reg_val |= (1 << (16 + sdhci->id));
+    reg_val |= BIT(16 + sdhci->id);
     writel(reg_val, mmc_host->hclkrst);
 
     /* Configure module clock */
@@ -74,7 +74,7 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci) {
 
     /* Check status */
     if (mmc_host->reg->cmd & SMHC_CMD_START) {
-        printk_error("SMHC: mmc %d update clk failed\n", sdhci->id);
+        printk_debug("SMHC: mmc %d update clk failed\n", sdhci->id);
         return -1;
     }
 
@@ -84,14 +84,15 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci) {
 }
 
 /**
- * @brief Configure timing settings for timing mode 4 in the SDHC controller.
- * 
- * This function configures timing settings for timing mode 4 in the SDHC controller.
- * It calculates the delay based on the speed mode and frequency parameters and sets
- * the appropriate values in the timing data structure. Additionally, it sets the
- * output delay (`odly`) based on the speed mode and returns 0 on success or -1 on failure.
- * 
- * @param sdhci Pointer to the SDHC structure.
+ * @brief Calculate the timing configuration for Sunxi SD Host Controller using timing mode 4.
+ *
+ * This function calculates the timing configuration for the Sunxi SD Host Controller when operating
+ * in timing mode 4 based on the speed mode and frequency. It updates the timing data with the calculated delay.
+ *
+ * @param sdhci A pointer to the Sunxi SD Host Controller structure.
+ * @param spd_md_id The speed mode ID.
+ * @param freq_id The frequency ID.
+ *
  * @return 0 on success, -1 on failure.
  */
 static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const uint32_t spd_md_id, const uint32_t freq_id) {
@@ -103,7 +104,7 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 
     /* Check if the controller ID is MMC_CONTROLLER_2 and if timing mode and frequency ID are valid */
     if ((sdhci->id != MMC_CONTROLLER_2) || (spd_md_id > MMC_HS400) || (freq_id > MMC_MAX_SPD_MD_NUM)) {
-        printk_error("SMHC: timing 4 not supported for this configuration\n");
+        printk_debug("SMHC: timing 4 not supported for this configuration\n");
         return -1;
     }
 
@@ -116,7 +117,7 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
             if (freq_id <= MMC_CLK_25M) {
                 dly = 0;
             } else {
-                printk_error("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+                printk_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
                 ret = -1;
             }
         } else if (spd_md_id == MMC_HSSDR52_SDR25) {
@@ -125,18 +126,18 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
             } else if (freq_id == MMC_CLK_50M) {
                 dly = 15;
             } else {
-                printk_error("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+                printk_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
                 ret = -1;
             }
         } else if (spd_md_id == MMC_HSDDR52_DDR50) {
             if (freq_id <= MMC_CLK_25M) {
                 dly = 0;
             } else {
-                printk_error("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+                printk_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
                 ret = -1;
             }
         } else {
-            printk_error("SMHC: wrong speed mode %d\n", spd_md_id);
+            printk_debug("SMHC: wrong speed mode %d\n", spd_md_id);
             ret = -1;
         }
     }
@@ -157,14 +158,16 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
     return ret;
 }
 
-
 /**
- * @brief Get timing configuration for the SDHC controller.
- * 
- * This function retrieves the timing configuration for the specified SDHC controller.
- * 
- * @param sdhci Pointer to the SDHC controller structure.
- * @return Returns 0 on success, -1 on failure.
+ * @brief Get the timing configuration for the Sunxi SD Host Controller
+ *
+ * This function retrieves the timing configuration for the Sunxi SD Host Controller based on the provided parameters.
+ *
+ * @param sdhci     Pointer to the Sunxi SD Host Controller instance
+ * @param spd_md_id Speed mode ID
+ * @param freq_id   Frequency ID
+ *
+ * @return          Returns 0 on success, or an error code if the operation fails
  */
 static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, uint32_t freq_id) {
     int ret = 0;
@@ -174,29 +177,30 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
 
     // Check for specific conditions based on the controller ID and timing mode
     if ((sdhci->id == 2) && mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
-        /* When using eMMC and SMHC2, config it as timing 4 */
+        /* When using eMMC and SMHC2, configure it as timing 4 */
         ret = sunxi_sdhci_get_timing_config_timing_4(sdhci, spd_md_id, freq_id);
         if (ret) {
-            printk_error("SMHC: Config timing TM4 fail\n");
+            printk_debug("SMHC: Configuring timing TM4 failed\n");
         }
     } else if ((sdhci->id == 0) && (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1)) {
         // Check timing data and adjust configuration if necessary
         if ((spd_md_id <= MMC_HSSDR52_SDR25) && (freq_id <= MMC_CLK_50M)) {
-            /* if timing less than SDR25, use default odly */
+            /* If timing is less than SDR25, use default odly */
             timing_data->odly = 0;
             timing_data->sdly = 0;
             ret = 0;
         } else {
-            printk_warning("SMHC: SMHC0 does not support input spd mode %d\n", spd_md_id);
+            printk_warning("SMHC: SMHC0 does not support input speed mode %d\n", spd_md_id);
             ret = -1;
         }
     } else {
-        printk_error("SMHC: timing setting failed, parameter error\n");
+        printk_debug("SMHC: Timing setting failed due to parameter error\n");
         ret = -1;
     }
 
     return ret;
 }
+
 
 /**
  * @brief Set the SDHC controller's clock frequency.
@@ -244,7 +248,7 @@ static int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
         default:
             n = 0;
             m = 0;
-            printk_error("SMHC: requested frequency does not match: freq=%d\n", clk_hz);
+            printk_debug("SMHC: requested frequency does not match: freq=%d\n", clk_hz);
             break;
     }
 
@@ -290,7 +294,7 @@ static uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
             clk_hz = (sdhci->id == 2) ? 600000000 : 300000000;
             break;
         default:
-            printk_error("SMHC: wrong clock source %u\n", src);
+            printk_debug("SMHC: wrong clock source %u\n", src);
             break;
     }
 
@@ -299,12 +303,15 @@ static uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
 }
 
 /**
- * @brief Configure the delay for the SDHC controller based on timing mode.
- * 
- * This function configures the delay for the SDHC controller based on the timing mode.
- * 
- * @param sdhci Pointer to the SDHC controller structure.
- * @return 0 on success, -1 on failure.
+ * @brief Configure delay for the Sunxi SD Host Controller
+ *
+ * This function configures the delay settings for the Sunxi SD Host Controller based on the provided parameters.
+ *
+ * @param sdhci     Pointer to the Sunxi SD Host Controller instance
+ * @param spd_md_id Speed mode ID
+ * @param freq_id   Frequency ID
+ *
+ * @return          Returns 0 on success, or an error code if the operation fails
  */
 static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, uint32_t freq_id) {
     int ret = 0;
@@ -357,12 +364,12 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         timing_data->sdly = 0xff;
 
         if ((ret = sunxi_sdhci_get_timing_config(sdhci, spd_md_id, freq_id)) != 0) {
-            printk_error("SMHC: getting timing param error %d\n", ret);
+            printk_debug("SMHC: getting timing param error %d\n", ret);
             return -1;
         }
 
         if ((timing_data->odly == 0xff) || (timing_data->sdly == 0xff)) {
-            printk_error("SMHC: getting timing config error\n");
+            printk_debug("SMHC: getting timing config error\n");
             return -1;
         }
 
@@ -384,12 +391,12 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
             timing_data->odly = 0xff;
             timing_data->sdly = 0xff;
             if ((ret = sunxi_sdhci_get_timing_config(sdhci, spd_md_id, freq_id)) != 0) {
-                printk_error("SMHC: getting timing param error %d\n", ret);
+                printk_debug("SMHC: getting timing param error %d\n", ret);
                 return -1;
             }
 
             if ((timing_data->odly == 0xff) || (timing_data->sdly == 0xff)) {
-                printk_error("SMHC: getting timing config error\n");
+                printk_debug("SMHC: getting timing config error\n");
                 return -1;
             }
 
@@ -544,7 +551,7 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk) {
 
     // Update clock settings
     if (sunxi_sdhci_update_clk(sdhci)) {
-        printk_error("SMHC: Failed to update clock settings\n");
+        printk_debug("SMHC: Failed to update clock settings\n");
         return -1;
     }
 
@@ -552,11 +559,11 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk) {
     if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3 ||
         mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
         if (sunxi_sdhci_clock_mode(sdhci, clk)) {
-            printk_error("SMHC: Failed to configure clock mode\n");
+            printk_debug("SMHC: Failed to configure clock mode\n");
             return -1;
         }
     } else {
-        printk_error("SMHC: Timing mode not supported\n");
+        printk_debug("SMHC: Timing mode not supported\n");
         return -1;
     }
 
@@ -565,7 +572,7 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk) {
 
     // Check if clock update after configuration fails
     if (sunxi_sdhci_update_clk(sdhci)) {
-        printk_error("SMHC: Failed to update clock settings after configuration\n");
+        printk_debug("SMHC: Failed to update clock settings after configuration\n");
         return -1;
     }
 
@@ -733,7 +740,7 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
             }
             if (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) {
                 if (time_us() >= timeout) {
-                    printk_error("SMHC: read by CPU failed, timeout, index %u\n", i);
+                    printk_debug("SMHC: read by CPU failed, timeout, index %u\n", i);
                 }
                 return -1;
             }
@@ -835,13 +842,13 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 
 
     /* Enable DMA */
-    mmc_host->reg->idst = 0x337;
+    // mmc_host->reg->idst = 0x337;
     mmc_host->reg->gctrl |= (SMHC_GCTRL_DMA_ENABLE | SMHC_GCTRL_DMA_RESET);
 
     timeout = time_us() + SMHC_TIMEOUT;
     while (mmc_host->reg->gctrl & SMHC_GCTRL_DMA_RESET) {
         if (time_us() > timeout) {
-            printk_error("SMHC: wait for dma rst timeout\n");
+            printk_debug("SMHC: wait for dma rst timeout\n");
             return -1;
         }
     }
@@ -851,7 +858,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
     timeout = time_us() + SMHC_TIMEOUT;
     while (mmc_host->reg->dmac & SMHC_IDMAC_SOFT_RESET) {
         if (time_us() > timeout) {
-            printk_error("SMHC: wait for dma soft rst timeout\n");
+            printk_debug("SMHC: wait for dma soft rst timeout\n");
             return -1;
         }
     }
@@ -892,7 +899,7 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
 
     // Configure clock and handle errors
     if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
-        printk_error("SMHC: update clock failed\n");
+        printk_debug("SMHC: update clock failed\n");
         mmc_host->fatal_err = 1;
         return;
     }
@@ -933,7 +940,7 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci) {
     mmc_host->reg->gctrl = 0x7;
     while (mmc_host->reg->gctrl & 0x7) {
         if (time_us() > timeout) {
-            printk_error("SMHC: controller reset timeout\n");
+            printk_debug("SMHC: controller reset timeout\n");
             return -1;
         }
     }
@@ -989,7 +996,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 
     /* Check if have fatal error */
     if (mmc_host->fatal_err) {
-        printk_error("SMHC: SMHC into error, cmd send failed\n");
+        printk_debug("SMHC: SMHC into error, cmd send failed\n");
         return -1;
     }
 
@@ -1032,7 +1039,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
     if (data) {
         /* Check data desc align */
         if ((uint32_t) data->b.dest & 0x3) {
-            printk_error("SMHC: data dest is not 4 byte align\n");
+            printk_debug("SMHC: data dest is not 4 byte align\n");
             error_code = -1;
             goto out;
         }
@@ -1082,7 +1089,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 
         if (ret) {
             error_code = mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT;
-            printk_warning("SMHC: error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
+            printk_debug("SMHC: error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
             if (!error_code) {
                 error_code = 0xffffffff;
             }
@@ -1099,9 +1106,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
                 error_code = 0xffffffff;
             }
             if (time_us() > timeout)
-                printk_error("SMHC: stage 1 data timeout, error %08x\n", error_code);
+                printk_debug("SMHC: stage 1 data timeout, error %08x\n", error_code);
             else
-                printk_error("SMHC: stage 1 status get interrupt, error 0x%08x\n", error_code);
+                printk_debug("SMHC: stage 1 status get interrupt, error 0x%08x\n", error_code);
             goto out;
         }
     } while (!(status & SMHC_RINT_COMMAND_DONE));
@@ -1117,9 +1124,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
                     error_code = 0xffffffff;
                 }
                 if (time_us() > timeout)
-                    printk_error("SMHC: stage 2 data timeout, error %08x\n", error_code);
+                    printk_debug("SMHC: stage 2 data timeout, error %08x\n", error_code);
                 else
-                    printk_error("SMHC: stage 2 status get interrupt, error 0x%08x\n", error_code);
+                    printk_debug("SMHC: stage 2 status get interrupt, error 0x%08x\n", error_code);
                 goto out;
             }
 
@@ -1141,7 +1148,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
                     if (!error_code) {
                         error_code = 0xffffffff;
                     }
-                    printk_error("SMHC: wait dma timeout, error %08x\n", error_code);
+                    printk_debug("SMHC: wait dma timeout, error %08x\n", error_code);
                     goto out;
                 }
                 done = status & BIT(1);
@@ -1158,7 +1165,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
                 if (!error_code) {
                     error_code = 0xffffffff;
                 }
-                printk_error("SMHC: busy timeout, status %08x\n", status);
+                printk_debug("SMHC: busy timeout, status %08x\n", status);
                 goto out;
             }
         } while (status & SMHC_STATUS_CARD_DATA_BUSY);
@@ -1199,12 +1206,12 @@ out:
         timeout = time_us() + SMHC_TIMEOUT;
         while (mmc_host->reg->gctrl & SMHC_GCTRL_HARDWARE_RESET) {
             if (time_us() > timeout) {
-                printk_error("SMHC: controller error reset timeout\n");
+                printk_debug("SMHC: controller error reset timeout\n");
                 return -1;
             }
         }
         sunxi_sdhci_update_clk(sdhci);
-        printk_error("SMHC: CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
+        printk_debug("SMHC: CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
     }
 
     mmc_host->reg->rint = 0xffffffff;
@@ -1252,7 +1259,7 @@ int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci) {
 int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
     /* Check if controller ID is correct */
     if (sdhci->id > MMC_CONTROLLER_2) {
-        printk_error("SMHC: Unsupported MAX Controller reached\n");
+        printk_debug("SMHC: Unsupported MAX Controller reached\n");
         return -1;
     }
 
