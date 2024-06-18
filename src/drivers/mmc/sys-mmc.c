@@ -1515,7 +1515,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
                     break;
             }
         } else {
-            printk_debug("SMHC: Read ext csd fail");
+            printk_debug("SMHC: Read ext csd fail\n");
         }
 
         if (!err & (ext_csd[EXT_CSD_REV] >= 2)) {
