@@ -291,6 +291,69 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 }
 
 /**
+ * @brief Writes blocks of data to the MMC device.
+ *
+ * This function writes a specified number of blocks to the MMC (MultiMediaCard) device
+ * associated with the given SDHCI (SD Host Controller Interface) instance. It supports both
+ * single block and multiple block write operations, and handles sending the appropriate
+ * commands to the MMC device.
+ *
+ * @param[in] sdhci A pointer to the SDHCI instance.
+ * @param[in] dst A pointer to the destination buffer from which data will be written to the MMC.
+ * @param[in] start The starting block number where the data writing begins.
+ * @param[in] blkcnt The number of blocks to write.
+ *
+ * @return The number of blocks successfully written, or 0 if writing failed.
+ */
+static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+    mmc_t *mmc = sdhci->mmc;
+
+    mmc_cmd_t cmd = {0};
+    mmc_data_t data = {0};
+
+    int timeout = 1000;
+
+    if (blkcnt > 1UL)
+        cmd.cmdidx = MMC_CMD_WRITE_MULTIPLE_BLOCK;
+    else
+        cmd.cmdidx = MMC_CMD_WRITE_SINGLE_BLOCK;
+
+    if (mmc->high_capacity)
+        cmd.cmdarg = start;
+    else
+        cmd.cmdarg = start * mmc->write_bl_len;
+
+    cmd.resp_type = MMC_RSP_R1;
+    cmd.flags = 0;
+
+    data.b.dest = dst;
+    data.blocks = blkcnt;
+    data.blocksize = mmc->write_bl_len;
+    data.flags = MMC_DATA_WRITE;
+
+    if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
+        printk_warning("SMHC: read block failed\n");
+        return 0;
+    }
+
+    if (blkcnt > 1) {
+        cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
+        cmd.cmdarg = 0;
+        cmd.resp_type = MMC_RSP_R1b;
+        cmd.flags = 0;
+        if (sunxi_sdhci_xfer(sdhci, &cmd, NULL)) {
+            printk_warning("SMHC: failed to send stop command\n");
+            return 0;
+        }
+
+        /* Waiting for the ready status */
+        sunxi_mmc_send_status(sdhci, timeout);
+    }
+
+    return blkcnt;
+}
+
+/**
  * @brief Sends the SD/MMC card to idle state.
  *
  * This function sends the SD/MMC card to the idle state, preparing it for further commands.
@@ -1775,4 +1838,23 @@ int sunxi_mmc_init(void *sdhci_hdl) {
  */
 uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
     return sunxi_mmc_read_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
+}
+
+/**
+ * @brief Writes blocks of data to the MMC device using the specified SDHCI instance.
+ *
+ * This function writes a specified number of blocks to the MMC (MultiMediaCard) device
+ * associated with the given SDHCI (SD Host Controller Interface) instance. It serves as a
+ * wrapper around the sunxi_mmc_write_blocks function, providing a simplified interface for
+ * block data write operations.
+ *
+ * @param[in] sdhci A pointer to the SDHCI instance.
+ * @param[in] dst A pointer to the destination buffer from which data will be written to the MMC.
+ * @param[in] start The starting block number where the data writing begins.
+ * @param[in] blkcnt The number of blocks to write.
+ *
+ * @return The number of blocks successfully written, or 0 if writing failed.
+ */
+uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+    return sunxi_mmc_write_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
 }
