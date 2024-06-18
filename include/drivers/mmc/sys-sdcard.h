@@ -59,21 +59,20 @@ int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci);
 uint32_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt);
 
 /**
- * @brief Writes blocks of data to the MMC device using the specified SDHCI instance.
+ * @brief Writes blocks of data to the SD/MMC device using the specified SDHCI instance.
  *
- * This function writes a specified number of blocks to the MMC (MultiMediaCard) device
- * associated with the given SDHCI (SD Host Controller Interface) instance. It serves as a
- * wrapper around the sunxi_mmc_write_blocks function, providing a simplified interface for
- * block data write operations.
+ * This function writes a specified number of blocks to the SD/MMC (Secure Digital/MultiMediaCard) device
+ * associated with the given SDHCI (SD Host Controller Interface) instance. It serves as a wrapper around
+ * the sunxi_mmc_blk_write function, providing a simplified interface for block data write operations.
  *
- * @param[in] sdhci A pointer to the SDHCI instance.
- * @param[in] dst A pointer to the destination buffer from which data will be written to the MMC.
- * @param[in] start The starting block number where the data writing begins.
+ * @param[in] data A pointer to the SD/MMC platform data structure.
+ * @param[in] buf A pointer to the source buffer from which data will be written to the SD/MMC device.
+ * @param[in] blkno The starting block number where the data writing begins.
  * @param[in] blkcnt The number of blocks to write.
  *
  * @return The number of blocks successfully written, or 0 if writing failed.
  */
-uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt);
+uint32_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt);
 
 #ifdef __cplusplus
 }
