@@ -141,7 +141,7 @@ DRESULT disk_write(BYTE pdrv,        /* Physical drive nmuber to identify the dr
 
     printk_trace("FATFS: write %u sectors at %llu\r\n", count, sector);
 
-    return (sdmmc_blk_rwrite(&card0, buff, sector, count) == count ? RES_OK : RES_ERROR);
+    return (sdmmc_blk_write(&card0, buff, sector, count) == count ? RES_OK : RES_ERROR);
 }
 
 #endif
