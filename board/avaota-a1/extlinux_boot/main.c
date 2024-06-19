@@ -823,11 +823,12 @@ int main(void) {
     jmp_to_fel();
 
 _fail:
-    printk_error("SyterKit Boot Failed\n");
     LCD_ShowString(0, 0, "SyterKit Boot Failed", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 12, "Please Connect UART for Debug info", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_ShowString(0, 24, "Error Info:", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_Open_BLK();
+
+    printk_error("SyterKit Boot Failed, System halt. Please reset your board.\n");
 
     abort();
 
