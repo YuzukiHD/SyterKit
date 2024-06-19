@@ -26,6 +26,7 @@ static DSTATUS Stat = STA_NOINIT; /* Disk status */
 static uint8_t *const cache_data = (uint8_t *) CONFIG_FATFS_CACHE_ADDR; /* in CONFIG_FATFS_CACHE_ADDR */
 static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];                    /* in SRAM */
 static BYTE cache_pdrv = -1;
+static int current_cache_sdhci_id = -1;
 
 #define CACHE_SECTOR_TO_OFFSET(ss) (((ss) / FATFS_CACHE_SECTORS_PER_BIT) / 8)
 #define CACHE_SECTOR_TO_BIT(ss) (((ss) / FATFS_CACHE_SECTORS_PER_BIT) % 8)
@@ -82,12 +83,14 @@ DRESULT disk_read(BYTE pdrv,    /* Physical drive nmuber to identify the drive *
     printk_trace("FATFS: read %u sectors at %llu\r\n", count, sector);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
-    if (pdrv != cache_pdrv) {
+    if (pdrv != cache_pdrv || current_cache_sdhci_id != card0.hci->id) {
         printk_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
         if (cache_pdrv != -1)
             memset(cache_bitmap, 0, sizeof(cache_bitmap));
         cache_pdrv = pdrv;
     }
+
+    current_cache_sdhci_id = card0.hci->id;
 
     while (count) {
         if (sector >= FATFS_CACHE_SECTORS) {
