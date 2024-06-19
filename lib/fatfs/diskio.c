@@ -24,7 +24,7 @@ static DSTATUS Stat = STA_NOINIT; /* Disk status */
 #define FATFS_CACHE_CHUNKS (FATFS_CACHE_SECTORS / FATFS_CACHE_SECTORS_PER_BIT)
 
 static uint8_t *const cache_data = (uint8_t *) CONFIG_FATFS_CACHE_ADDR; /* in CONFIG_FATFS_CACHE_ADDR */
-static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];  /* in SRAM */
+static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];                    /* in SRAM */
 static BYTE cache_pdrv = -1;
 
 #define CACHE_SECTOR_TO_OFFSET(ss) (((ss) / FATFS_CACHE_SECTORS_PER_BIT) / 8)
@@ -43,10 +43,9 @@ static BYTE cache_pdrv = -1;
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
-)
-{
-	if (pdrv)
-		return STA_NOINIT;
+) {
+    if (pdrv)
+        return STA_NOINIT;
 
     return Stat;
 }
@@ -57,10 +56,9 @@ DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 
 DSTATUS
 disk_initialize(BYTE pdrv /* Physical drive nmuber to identify the drive */
-)
-{
-	if (pdrv)
-		return STA_NOINIT;
+) {
+    if (pdrv)
+        return STA_NOINIT;
 
     Stat &= ~STA_NOINIT;
 
@@ -136,7 +134,14 @@ DRESULT disk_write(BYTE pdrv,        /* Physical drive nmuber to identify the dr
                    LBA_t sector,     /* Start sector in LBA */
                    UINT count        /* Number of sectors to write */
 ) {
-    return RES_ERROR;
+    if (pdrv || !count)
+        return RES_PARERR;
+    if (Stat & STA_NOINIT)
+        return RES_NOTRDY;
+
+    printk_trace("FATFS: write %u sectors at %llu\r\n", count, sector);
+
+    return (sdmmc_blk_write(&card0, buff, sector, count) == count ? RES_OK : RES_ERROR);
 }
 
 #endif
