@@ -26,6 +26,7 @@ typedef struct {
  * External declaration of the 'card0' SDMMC platform data structure.
  */
 extern sdmmc_pdata_t card0;
+extern sdmmc_pdata_t card2;
 
 /**
  * @brief Initialize the SD/MMC interface
