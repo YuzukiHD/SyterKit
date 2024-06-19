@@ -13,7 +13,7 @@ set(CONIFG_SPECIAL_LD_PATH  "${CMAKE_SOURCE_DIR}/board/avaota-a1/")
 add_definitions(-DCONFIG_CHIP_SUN55IW3) 
 add_definitions(-DCONFIG_CHIP_DCACHE)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
-add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0x2000000)
+add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0xFFFFFFF)
 add_definitions(-DCONFIG_FATFS_CACHE_ADDR=0x60000000)
 
 set(CONFIG_USE_DRAM_PAYLOAD True)

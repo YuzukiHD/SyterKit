@@ -140,7 +140,7 @@ typedef struct image_header {
 
 image_info_t image;
 
-#define CHUNK_SIZE 0x20000
+#define CHUNK_SIZE 0x160000
 
 static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size) {
     FIL file;
