@@ -154,8 +154,6 @@ static int fatfs_loadimage_size(char *filename, BYTE *dest, uint32_t *file_size)
     fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
     if (fret != FR_OK) {
         printk_warning("FATFS: open, filename: [%s]: error %d\n", filename, fret);
-        LCD_ShowString(0, 104, "WARN: Open file fail, filename:", SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
-        LCD_ShowString(10, 116, filename, SPI_LCD_COLOR_YELLOW, SPI_LCD_COLOR_BLACK, 12);
         ret = -1;
         goto open_fail;
     }
@@ -780,9 +778,24 @@ int main(void) {
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
     if (load_sdcard(&image) != 0) {
-        printk_warning("SMHC: loading failed\n");
-        LCD_ShowString(0, 92, "SMHC: loading failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
-        goto _fail;
+        printk_warning("SMHC: loading failed, try to boot from SDC2\n");
+
+        if (sunxi_sdhci_init(&sdhci2) != 0) {
+            printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+            LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+            goto _fail;
+        } else {
+            if (sdmmc_init(&card0, &sdhci2) != 0) {
+                printk_warning("SMHC: SDC2 init failed.\n");
+                goto _fail;
+            } else {
+                printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+                if (load_sdcard(&image) != 0) {
+                    printk_error("SMHC: loading boot info failed, check your boot media.\n");
+                    goto _fail;
+                }
+            }
+        }
     }
 
     LCD_Open_BLK();
@@ -828,9 +841,9 @@ _fail:
     LCD_ShowString(0, 24, "Error Info:", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
     LCD_Open_BLK();
 
-    printk_error("SyterKit Boot Failed, System halt. Please reset your board.\n");
+    printk_error("SyterKit Boot Failed, System into software_interrupt panic. Please reset your board.\n");
 
-    abort();
+    panic();
 
     return 0;
 }
