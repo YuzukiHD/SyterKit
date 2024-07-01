@@ -27,7 +27,7 @@ function(add_syterkit_app target_name)
 
     add_custom_command(
         TARGET ${target_name}_fel
-        POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_fel ${target_name}_fel.elf 
+        POST_BUILD COMMAND ${CMAKE_OBJCOPY} -v -O binary ${target_name}_fel ${target_name}_fel.hex 
         COMMENT "Copy Binary ${target_name}_fel"
     )
 
