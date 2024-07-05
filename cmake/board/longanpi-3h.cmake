@@ -25,7 +25,7 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
-set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -mcpu=cortex-a53 -mno-unaligned-access")
+set(CMAKE_COMMON_FLAGS "-nostdinc -nostdlib -Os -mthumb-interwork -mthumb -march=armv8-a -Wno-builtin-declaration-mismatch -fno-short-enums -mfpu=neon -mfloat-abi=softfp -pipe")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-discarded-qualifiers -Wno-implicit-function-declaration")
