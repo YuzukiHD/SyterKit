@@ -22,6 +22,8 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern uint32_t dram_para[32];
+
 extern sunxi_i2c_t i2c_pmu;
 
 extern void set_cpu_poweroff(void);
@@ -299,7 +301,7 @@ int main(void) {
     pmu_axp1530_dump(&i2c_pmu);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 

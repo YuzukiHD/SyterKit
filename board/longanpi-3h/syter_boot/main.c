@@ -60,6 +60,8 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
+extern uint32_t dram_para[32];
+
 extern sdhci_t sdhci0;
 
 image_info_t image;
@@ -280,7 +282,7 @@ int main(void) {
     set_pmu_fin_voltage("dcdc3", 1100);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */
