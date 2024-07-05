@@ -28,6 +28,17 @@ uint64_t sunxi_dram_init(void *para) {
     uint8_t *src = __ddr_bin_start;
     uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
 
+    if (para == NULL) {
+        printk_error("DRAM: please provide DRAM para\n");
+    }
+
+    uint32_t *para_data = (uint32_t *) para;
+
+    /* Set DRAM driver clk and training data to */
+    if (para_data[0] != 0x0) {
+        rtc_set_dram_para((uint32_t) para);
+    }
+
     printk_debug("DRAM: load dram init from 0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);
     memcpy(dst, src, __ddr_bin_end - __ddr_bin_start);
 
