@@ -15,8 +15,8 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sid.h>
 #include <sys-sdcard.h>
+#include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
@@ -80,40 +80,75 @@ void neon_enable(void) {
     asm volatile("MCR p10, 7, r3, c8, c0, 0");
 }
 
-const uint32_t dram_para[32] = {
-        0x2d0,     // dram_para[0]
-        0x8,       // dram_para[1]
-        0xc0c0c0c, // dram_para[2]
-        0xe0e0e0e, // dram_para[3]
-        0xa0e,     // dram_para[4]
-        0x7887ffff,// dram_para[5]
-        0x30fa,    // dram_para[6]
-        0x4000000, // dram_para[7]
-        0x0,       // dram_para[8]
-        0x34,      // dram_para[9]
-        0x1b,      // dram_para[10]
-        0x33,      // dram_para[11]
-        0x3,       // dram_para[12]
-        0x0,       // dram_para[13]
-        0x0,       // dram_para[14]
-        0x4,       // dram_para[15]
-        0x72,      // dram_para[16]
-        0x0,       // dram_para[17]
-        0x9,       // dram_para[18]
-        0x0,       // dram_para[19]
-        0x0,       // dram_para[20]
-        0x24,      // dram_para[21]
-        0x0,       // dram_para[22]
-        0x0,       // dram_para[23]
-        0x0,       // dram_para[24]
-        0x0,       // dram_para[25]
-        0x39808080,// dram_para[26]
-        0x402f6603,// dram_para[27]
-        0x20262620,// dram_para[28]
-        0xe0e0f0f, // dram_para[29]
-        0x1024,    // dram_para[30]
-        0x0        // dram_para[31]
+const uint32_t dram_para_ddr3[32] = {
+        648,
+        3,
+        0x03030303,
+        0x0e0e0e0e,
+        0x1f12,
+        1,
+        0x30fb,
+        0x0000,
+        0x840,
+        0x4,
+        0x8,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0xC0001002,
+        0x0,
+        0x0,
+        0x0,
+        0x33808080,
+        0x002F1107,
+        0xddddcccc,
+        0xeddc7665,
+        0x40,
 };
+
+const uint32_t dram_para_lpddr4[32] = {
+        0x2d0,
+        0x8,
+        0xc0c0c0c,
+        0xe0e0e0e,
+        0xa0e,
+        0x7887ffff,
+        0x30fa,
+        0x4000000,
+        0x0,
+        0x34,
+        0x1b,
+        0x33,
+        0x3,
+        0x0,
+        0x0,
+        0x4,
+        0x72,
+        0x0,
+        0x9,
+        0x0,
+        0x0,
+        0x24,
+        0x0,
+        0x0,
+        0x0,
+        0x0,
+        0x39808080,
+        0x402f6603,
+        0x20262620,
+        0xe0e0f0f,
+        0x1024,
+        0x0,
+};
+
+uint32_t *dram_para = dram_para_lpddr4;
 
 void set_cpu_down(unsigned int cpu) {
     clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_DBG_REG1, 1 << cpu);
