@@ -280,6 +280,8 @@ const msh_command_entry commands[] = {
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
+    printk_info("Checking SoC Version...\n");
+
     ar100s_gpu_fix();
 
     show_banner();
