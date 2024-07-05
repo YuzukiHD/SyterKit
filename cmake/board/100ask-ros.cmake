@@ -12,7 +12,7 @@ set(CONFIG_BOARD_100ASK_ROS True)
 add_definitions(-DCONFIG_CHIP_SUN50IW10 -DCONFIG_CHIP_GPIO_V1)
 
 set(CONFIG_USE_DRAM_PAYLOAD True)
-set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD True)
+set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD False)
 set(CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH "${CMAKE_SOURCE_DIR}/payloads/sun50iw10_libdram")
 set(CONFIG_USE_DRAM_PAYLOAD_BIN_PATH "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}/output/ddr.bin")
 set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/100ask-ros/payloads/init_dram_bin.c")
@@ -26,7 +26,7 @@ set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
-set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -mthumb-interwork -mthumb -mcpu=cortex-a53 -mno-unaligned-access")
+set(CMAKE_COMMON_FLAGS "-nostdinc -nostdlib -Os -mthumb-interwork -mthumb -march=armv8-a -Wno-builtin-declaration-mismatch -fno-short-enums -mfpu=neon -mfloat-abi=softfp -pipe")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-discarded-qualifiers -Wno-implicit-function-declaration")
