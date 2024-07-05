@@ -10,6 +10,8 @@
 
 #include <log.h>
 
+extern void abort();
+
 static void show_regs(struct arm_regs_t *regs) {
     int i = 0;
 
