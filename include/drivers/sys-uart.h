@@ -49,23 +49,31 @@ typedef enum {
     UART_DLEN_8,
 } sunxi_serial_dlen_t;
 
-/* Define a structure sunxi_serial_reg_t for accessing serial registers */
+/*
+ * Define a structure sunxi_serial_reg_t for accessing serial registers.
+ * This structure provides a convenient way to access various registers
+ * associated with a serial interface.
+ */
 typedef struct {
-    volatile uint32_t rbr; /* Receiver Buffer Register (offset 0) */
-    volatile uint32_t ier; /* Interrupt Enable Register (offset 1) */
-    volatile uint32_t fcr; /* FIFO Control Register (offset 2) */
+    union {
+        volatile uint32_t rbr; /* Receiver Buffer Register (offset 0) */
+        volatile uint32_t thr; /* Transmitter Holding Register (offset 0) */
+        volatile uint32_t dll; /* Divisor Latch LSB (offset 0) */
+    };
+    union {
+        volatile uint32_t ier; /* Interrupt Enable Register (offset 1) */
+        volatile uint32_t dlh; /* Divisor Latch MSB (offset 1) */
+    };
+    union {
+        volatile uint32_t fcr; /* FIFO Control Register (offset 2) */
+        volatile uint32_t iir; /* Interrupt Identification Register (offset 2) */
+    };
     volatile uint32_t lcr; /* Line Control Register (offset 3) */
     volatile uint32_t mcr; /* Modem Control Register (offset 4) */
     volatile uint32_t lsr; /* Line Status Register (offset 5) */
     volatile uint32_t msr; /* Modem Status Register (offset 6) */
     volatile uint32_t sch; /* Scratch Register (offset 7) */
 } sunxi_serial_reg_t;
-
-/* Define macros for register aliasing */
-#define thr rbr
-#define dll rbr
-#define dlh ier
-#define iir fcr
 
 /* Define a structure sunxi_serial_t for serial configuration */
 typedef struct {
