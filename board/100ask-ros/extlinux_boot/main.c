@@ -39,9 +39,6 @@
 #define CONFIG_INITRD_LOAD_ADDR (0x43000000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
-#define CONFIG_SCP_FILENAME "scp.bin"
-#define CONFIG_SCP_LOAD_ADDR (0x48100000)
-
 #define CONFIG_EXTLINUX_FILENAME "extlinux/extlinux.conf"
 #define CONFIG_EXTLINUX_LOAD_ADDR (0x40020000)
 
@@ -58,15 +55,13 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sdhci_t sdhci0;
 
-extern void enable_sram_a3();
-extern void rtc_set_vccio_det_spare();
-extern void set_rpio_power_mode(void);
-extern void sunxi_nsi_init();
+extern uint32_t dram_para[32];
+
+extern int ar100s_gpu_fix(void);
 
 typedef struct atf_head {
     uint32_t jump_instruction; /* jumping to real code */
     uint8_t magic[8];          /* magic */
-    uint32_t scp_base;         /* scp openrisc core bin */
     uint32_t next_boot_base;   /* next boot base for uboot */
     uint32_t nos_base;         /* ARM SVC RUNOS base */
     uint32_t secureos_base;    /* optee base */
@@ -89,9 +84,6 @@ typedef struct ext_linux_data {
 typedef struct {
     uint8_t *bl31_dest;
     char bl31_filename[FILENAME_MAX_LEN];
-
-    uint8_t *scp_dest;
-    char scp_filename[FILENAME_MAX_LEN];
 
     uint8_t *kernel_dest;
     uint8_t *ramdisk_dest;
@@ -203,11 +195,6 @@ static int load_sdcard(image_info_t *image) {
     if (ret)
         return ret;
 
-    printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
-    ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
-    if (ret)
-        return ret;
-
     printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t) image->extlinux_dest);
     ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
     if (ret)
@@ -316,41 +303,6 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
     p += 4 * size_cells;
 
     return p - (char *) buf;
-}
-
-static int update_pmu_ext_info_dtb(image_info_t *image) {
-    int nodeoffset, pmu_ext_type, err, i;
-    uint32_t phandle = 0;
-
-    /* get used pmu_ext node */
-    nodeoffset = fdt_path_offset(image->of_dest, "reg-axp1530");
-    if (nodeoffset < 0) {
-        printk_error("FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
-        return -1;
-    }
-    /* get used pmu_ext phandle */
-    phandle = fdt_get_phandle(image->of_dest, nodeoffset);
-    if (!phandle) {
-        printk_error("FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
-        return -1;
-    }
-    printk_debug("get ext power phandle %d\n", phandle);
-
-    /* get cpu@4 node */
-    nodeoffset = fdt_path_offset(image->of_dest, "cpu-ext");
-    if (nodeoffset < 0) {
-        printk_error("FDT: cannot get cpu@4 node\n");
-        return -1;
-    }
-
-    /* Change cpu-supply to ext dcdc*/
-    err = fdt_setprop_u32(image->of_dest, nodeoffset, "cpu-supply", phandle);
-    if (err < 0) {
-        printk_warning("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
-        return -1;
-    }
-
-    return 0;
 }
 
 static char to_hex_char(uint8_t value) {
@@ -467,8 +419,6 @@ static int load_extlinux(image_info_t *image, uint64_t dram_size) {
         printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
         goto _error;
     }
-
-    update_pmu_ext_info_dtb(image);
 
     printk_debug("FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
 
@@ -646,14 +596,12 @@ static int abortboot_single_key(int bootdelay) {
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
+    
+    ar100s_gpu_fix();
 
     show_banner();
 
-    rtc_set_vccio_det_spare();
-
     sunxi_clk_init();
-
-    set_rpio_power_mode();
 
     sunxi_clk_dump();
 
@@ -661,47 +609,26 @@ int main(void) {
 
     pmu_axp2202_init(&i2c_pmu);
 
-    pmu_axp1530_init(&i2c_pmu);
-
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-
-    pmu_axp1530_set_dual_phase(&i2c_pmu);
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-    pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1100, 1);
-
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", 920, 1);
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1160, 1);
-    pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
-
     pmu_axp2202_dump(&i2c_pmu);
-    pmu_axp1530_dump(&i2c_pmu);
-
-    enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint64_t dram_size = sunxi_dram_init(NULL);
-
-    sunxi_clk_dump();
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-    sunxi_nsi_init();
-
     /* Clear the image_info_t struct. */
     memset(&image, 0, sizeof(image_info_t));
 
     image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
-    image.scp_dest = (uint8_t *) CONFIG_SCP_LOAD_ADDR;
     image.extlinux_dest = (uint8_t *) CONFIG_EXTLINUX_LOAD_ADDR;
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.ramdisk_dest = (uint8_t *) CONFIG_INITRD_LOAD_ADDR;
     image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
 
     strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
-    strcpy(image.scp_filename, CONFIG_SCP_FILENAME);
     strcpy(image.extlinux_filename, CONFIG_EXTLINUX_FILENAME);
 
     /* Initialize the SD host controller. */
