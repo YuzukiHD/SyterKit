@@ -289,6 +289,9 @@ void show_chip() {
         case 0x5500:
             printk_info("Chip type = MR527M02X0D00");
             break;
+        case 0xff10:
+            printk_info("Chip type = A527M000000H");
+            break;
         default:
             printk_info("Chip type = UNKNOW");
             break;
