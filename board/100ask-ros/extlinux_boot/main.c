@@ -61,7 +61,8 @@ extern int ar100s_gpu_fix(void);
 
 typedef struct atf_head {
     uint32_t jump_instruction; /* jumping to real code */
-    uint8_t magic[8];          /* magic */
+    uint8_t magic[8];          /* ="u-boot" */
+    uint32_t scp_base;         /* scp openrisc core bin */
     uint32_t next_boot_base;   /* next boot base for uboot */
     uint32_t nos_base;         /* ARM SVC RUNOS base */
     uint32_t secureos_base;    /* optee base */
@@ -156,7 +157,7 @@ read_fail:
     fret = f_close(&file);
 
     printk_info("FATFS: read in %ums at %.2fMB/S\n", time,
-           (f32) (total_read / time) / 1024.0f);
+                (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
@@ -177,8 +178,8 @@ static int load_sdcard(image_info_t *image) {
     sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
 
@@ -507,7 +508,7 @@ _set_bootargs:
     /* Append bootargs */
     strcat(bootargs, data.append);
 
-    printk_info("Kernel cmdline = [%s]\n", bootargs);
+    printk_debug("Kernel cmdline = [%s]\n", bootargs);
     
     /* Append bootargs mac address */
     uint32_t chip_sid[4];
@@ -520,10 +521,6 @@ _set_bootargs:
     char *mac0_address = get_mac_address_from_sid(chip_sid, mac_address_str);
     strcat(bootargs, " mac0_addr=");
     strcat(bootargs, mac0_address);
-    chip_sid[2]++;
-    char *mac1_address = get_mac_address_from_sid(chip_sid, mac_address_str);
-    strcat(bootargs, " mac1_addr=");
-    strcat(bootargs, mac1_address);
 
 _add_dts_size:
     /* Modify bootargs string */
@@ -596,7 +593,7 @@ static int abortboot_single_key(int bootdelay) {
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
-    
+
     ar100s_gpu_fix();
 
     show_banner();
@@ -609,10 +606,13 @@ int main(void) {
 
     pmu_axp2202_init(&i2c_pmu);
 
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
+    pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1100, 1);
+
     pmu_axp2202_dump(&i2c_pmu);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
@@ -666,9 +666,6 @@ int main(void) {
 
     atf_head->dtb_base = (uint32_t) image.of_dest;
     atf_head->nos_base = (uint32_t) image.kernel_dest;
-
-    /* Fill platform magic */
-    memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
     printk_info("ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
     printk_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
