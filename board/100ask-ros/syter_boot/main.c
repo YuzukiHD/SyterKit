@@ -36,7 +36,7 @@
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME "sun50i-r818-mg-core.dtb"
 #define CONFIG_DTB_LOAD_ADDR (0x41f00000)
 
 #define CONFIG_KERNEL_FILENAME "Image"
@@ -70,7 +70,7 @@ typedef struct atf_head {
     uint64_t dtb_base;         /* the address of dtb */
 } atf_head_t;
 
-#define FILENAME_MAX_LEN 16
+#define FILENAME_MAX_LEN 32
 typedef struct {
     uint8_t *bl31_dest;
     char bl31_filename[FILENAME_MAX_LEN];
