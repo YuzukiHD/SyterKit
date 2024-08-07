@@ -189,23 +189,7 @@ void clean_syterkit_data(void) {
 }
 
 void rtc_set_vccio_det_spare(void) {
-    uint32_t val = 0;
 
-    /* set detection threshold to 2.9V */
-    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-    val &= ~(VCCIO_THRESHOLD_MASK << 4);
-    val |= (VCCIO_THRESHOLD_VOLTAGE_2_9);
-    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-
-    /* enable vccio debonce */
-    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-    val |= DEBOUNCE_NO_BYPASS;
-    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-
-    /* enbale vccio detect */
-    val = readl(SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
-    val &= ~VCCIO_DET_BYPASS_EN;
-    writel(val, SUNXI_RTC_BASE + VDD_OFF_GATING_CTRL_REG);
 }
 
 void set_rpio_power_mode(void) {
