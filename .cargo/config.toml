@@ -1,0 +1,4 @@
+[alias]
+xtask = "run --package xtask --release --"
+make = "xtask make"
+flash = "xtask flash"
