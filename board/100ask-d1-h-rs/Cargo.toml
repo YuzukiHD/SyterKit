@@ -11,6 +11,10 @@ default-target = "riscv64imac-unknown-none-elf"
 [dependencies]
 naked-function = "0.1.5"
 panic-halt = "0.2.0"
+allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
+allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
+embedded-hal = "1.0.0"
+embedded-io = "0.6.1"
 
 [[bin]]
 name = "syterkit-100ask-d1-h"
