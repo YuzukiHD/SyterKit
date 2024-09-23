@@ -1,66 +1,28 @@
-#![feature(asm_const)]
 #![no_std]
 #![no_main]
-
+use allwinner_hal::uart::{Config, Serial};
+use allwinner_rt::{entry, Clocks, Peripherals};
+use embedded_hal::digital::{InputPin, OutputPin};
+use embedded_io::Write;
 use panic_halt as _;
 
-fn main() {}
+#[entry]
+fn main(p: Peripherals, c: Clocks) {
+    // light up led
+    let mut pb5 = p.gpio.pb5.into_output();
+    pb5.set_high().unwrap();
+    let mut pc1 = p.gpio.pc1.into_output();
+    pc1.set_high().unwrap();
 
-const STACK_SIZE: usize = 4 * 1024;
-static STACK: [u8; STACK_SIZE] = [0u8; STACK_SIZE];
+    let mut pb0 = p.gpio.pb7.into_input();
 
-#[naked_function::naked]
-#[export_name = "_start"]
-pub unsafe extern "C" fn start() -> ! {
-    asm!(
-        /* disable interrupt */
-        "csrw mie, zero",
+    pb0.with_output(|pad| pad.set_high()).unwrap();
 
-        /* enable theadisaee */
-        "li t1, (0x1 << 22) | (1 << 21) | (1 << 15)
-        csrs 0x7C0, t1", // mxstatus
+    let _input_high = pb0.is_high();
 
-        /* invaild ICACHE/DCACHE/BTB/BHT */
-        "li t2, 0x30013
-        csrs 0x7C2, t2", // mcor
+    let tx = p.gpio.pb8.into_function::<6>();
+    let rx = p.gpio.pb9.into_function::<6>();
+    let mut serial = Serial::new(p.uart0, (tx, rx), Config::default(), &c, &p.ccu);
 
-        /* Config pmp register */
-        "li t0, (0xfffffffc >> 2)
-        csrw pmpaddr0, t0
-        li t0, ((0x0 << 7) | (0x1 << 3) | (0x1 << 2) | (0x1 << 1) | (0x1 << 0))
-        csrw pmpcfg0, t0",
-
-        /* Mask all interrupts */
-        "csrw mideleg, zero
-        csrw medeleg, zero
-        csrw mie, zero
-        csrw mip, zero",
-
-        // /* Setup exception vectors */
-        // "la t1, _image_start
-        // LREG t1, (t1)
-        // la t2, _start
-        // sub t0, t1, t2
-        // la a0, vectors
-        // add a0, a0, t0
-        // csrw mtvec, a0",
-
-        /* Enable fpu and accelerator and vector if present */
-        "li t0, 0x00006000 | 0x00018000 | (3 << 23)", // MSTATUS_FS | MSTATUS_XS | (3 << 23)
-        "csrs mstatus, t0",
-
-        "la sp, {stack_end}",
-        "li t1, {stack_size}",
-        "add sp, sp, t1",
-
-        // TODO: clear_bss
-
-        // TODO: set_timer_count
-
-        "call {rust_main}",
-
-        stack_end = sym STACK,
-        stack_size = const STACK_SIZE,
-        rust_main = sym main,
-    )
+    writeln!(serial, "Hello World!").unwrap();
 }
