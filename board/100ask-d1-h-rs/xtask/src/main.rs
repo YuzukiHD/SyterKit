@@ -23,15 +23,23 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Make ELF and binary for this project
-    Make,
+    Make(Make),
     /// Build flash and burn into FEL mode board
     Flash(Flash),
+}
+
+#[derive(Args)]
+struct Make {
+    #[clap(help = "Specify the binary name")]
+    bin: String,
 }
 
 #[derive(Args)]
 struct Flash {
     #[clap(subcommand)]
     command: FlashCommands,
+    #[clap(help = "Specify the binary name")]
+    bin: String,
 }
 
 #[derive(Subcommand)]
@@ -59,29 +67,29 @@ fn main() {
         .filter_level(args.verbose.log_level_filter())
         .init();
     match &args.command {
-        Commands::Make => {
+        Commands::Make(make) => {
             info!("make D1 flash binary");
             let binutils_prefix = find_binutils_prefix_or_fail();
-            xtask_build_d1_flash_bt0(&args.env);
-            xtask_binary_d1_flash_bt0(binutils_prefix, &args.env);
-            xtask_finialize_d1_flash_bt0(&args.env);
+            xtask_build_d1_flash_bt0(&args.env, &make.bin);
+            xtask_binary_d1_flash_bt0(binutils_prefix, &args.env, &make.bin);
+            xtask_finialize_d1_flash_bt0(&args.env, &make.bin);
         }
         Commands::Flash(flash) => {
             info!("build D1 binary and burn");
             let xfel = find_xfel();
             xfel_find_connected_device(xfel);
             let binutils_prefix = find_binutils_prefix_or_fail();
-            xtask_build_d1_flash_bt0(&args.env);
-            xtask_binary_d1_flash_bt0(binutils_prefix, &args.env);
-            xtask_finialize_d1_flash_bt0(&args.env);
-            xtask_burn_d1_flash_bt0(xfel, &flash.command, &args.env);
+            xtask_build_d1_flash_bt0(&args.env, &flash.bin);
+            xtask_binary_d1_flash_bt0(binutils_prefix, &args.env, &flash.bin);
+            xtask_finialize_d1_flash_bt0(&args.env, &flash.bin);
+            xtask_burn_d1_flash_bt0(xfel, &flash.command, &args.env, &flash.bin);
         }
     }
 }
 
 const DEFAULT_TARGET: &'static str = "riscv64imac-unknown-none-elf";
 
-fn xtask_build_d1_flash_bt0(env: &Env) {
+fn xtask_build_d1_flash_bt0(env: &Env, bin: &str) {
     trace!("build D1 flash bt0");
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
     trace!("found cargo at {}", cargo);
@@ -93,6 +101,9 @@ fn xtask_build_d1_flash_bt0(env: &Env) {
     if env.release {
         command.arg("--release");
     }
+    command.arg("--bin");
+    command.arg(&bin);
+    trace!("cargo command: {:?}", command);
     let status = command.status().unwrap();
     trace!("cargo returned {}", status);
     if !status.success() {
@@ -101,18 +112,21 @@ fn xtask_build_d1_flash_bt0(env: &Env) {
     }
 }
 
-fn xtask_binary_d1_flash_bt0(prefix: &str, env: &Env) {
+fn xtask_binary_d1_flash_bt0(prefix: &str, env: &Env, bin: &str) {
     trace!("objcopy binary, prefix: '{}'", prefix);
-    let status = Command::new(format!("{}objcopy", prefix))
+    let mut command = Command::new(format!("{}objcopy", prefix));
+    trace!("objcopy dist dir: {:?}", dist_dir(env));
+    command
         .current_dir(dist_dir(env))
-        .arg("syterkit-100ask-d1-h")
+        .arg(&bin)
         .arg("--binary-architecture=riscv64")
         .arg("--strip-all")
-        .args(&["-O", "binary", "syterkit-100ask-d1-h.bin"])
-        .status()
-        .unwrap();
+        .args(&["-O", "binary", &format!("{}.bin", bin)]);
+    trace!("objcopy command: {:?}", command);
 
+    let status = command.status().unwrap();
     trace!("objcopy returned {}", status);
+
     if !status.success() {
         error!("objcopy failed with {}", status);
         process::exit(1);
@@ -124,12 +138,12 @@ const EGON_HEADER_LENGTH: u64 = 0x60;
 // This function does:
 // 1. fill in binary length
 // 2. calculate checksum of bt0 image; old checksum value must be filled as stamp value
-fn xtask_finialize_d1_flash_bt0(env: &Env) {
+fn xtask_finialize_d1_flash_bt0(env: &Env, bin: &str) {
     let path = dist_dir(env);
     let mut file = File::options()
         .read(true)
         .write(true)
-        .open(path.join("syterkit-100ask-d1-h.bin"))
+        .open(path.join(format!("{}.bin", bin)))
         .expect("open output binary file");
     let total_length = file.metadata().unwrap().len();
     if total_length < EGON_HEADER_LENGTH {
@@ -166,7 +180,7 @@ fn align_up_to(len: u64, target_align: u64) -> u64 {
     }
 }
 
-fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env) {
+fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env, bin: &str) {
     trace!("burn flash with xfel {}", xfel);
     let mut command = Command::new(xfel);
     command.current_dir(dist_dir(env));
@@ -175,7 +189,7 @@ fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env) {
         FlashCommands::Nor => command.arg("spinor"),
     };
     command.args(["write", "0"]);
-    command.arg("syterkit-100ask-d1-h.bin");
+    command.arg(format!("{}.bin", bin));
     let status = command.status().unwrap();
     trace!("xfel returned {}", status);
     if !status.success() {
