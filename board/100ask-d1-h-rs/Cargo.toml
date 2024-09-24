@@ -16,7 +16,12 @@ allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
 embedded-hal = "1.0.0"
 embedded-io = "0.6.1"
 
-[[bin]]
-name = "syterkit-100ask-d1-h"
+[lib]
+name = "syterkit_100ask_d1_h"
 test = false
 bench = false
+
+[features]
+default = ["nezha"]
+nezha = []
+lichee = []
