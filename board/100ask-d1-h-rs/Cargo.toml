@@ -15,9 +15,26 @@ allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
 allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
 embedded-hal = "1.0.0"
 embedded-io = "0.6.1"
+spin = "0.9"
+syterkit-macros = { path = "macros" }
 
 [lib]
 name = "syterkit_100ask_d1_h"
+test = false
+bench = false
+
+[[bin]]
+name = "hello-world"
+test = false
+bench = false
+
+[[bin]]
+name = "init-dram"
+test = false
+bench = false
+
+[[bin]]
+name = "led-lightup"
 test = false
 bench = false
 
