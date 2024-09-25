@@ -77,8 +77,8 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     quote!(
         #[export_name = "main"]
         pub fn main() {
-            let (p, c) = ::allwinner_rt::__rom_init_params();
-            let (__p, __uart0, __tx, __rx) = ::syterkit_100ask_d1_h::Peripherals::configure_uart0(p);
+            let (p, c) = ::syterkit::allwinner_rt::__rom_init_params();
+            let (__p, __uart0, __tx, __rx) = ::syterkit::Peripherals::configure_uart0(p);
             unsafe { __syterkit_macros__main(__p, c, __uart0, __tx, __rx) }
         }
         #[allow(non_snake_case)]
@@ -86,13 +86,13 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         #(#attrs)*
         #unsafety fn __syterkit_macros__main(
             #args,
-            __uart0: ::allwinner_rt::soc::d1::UART0,
-            __tx: ::allwinner_hal::gpio::Function<'static, 'B', 8, 6>,
-            __rx: ::allwinner_hal::gpio::Function<'static, 'B', 9, 6>
+            __uart0: ::syterkit::allwinner_rt::soc::d1::UART0,
+            __tx: ::syterkit::allwinner_hal::gpio::Function<'static, 'B', 8, 6>,
+            __rx: ::syterkit::allwinner_hal::gpio::Function<'static, 'B', 9, 6>
         ) #ret {
-            let mut __serial = ::allwinner_hal::uart::Serial::new(__uart0, (__tx, __rx), ::allwinner_hal::uart::Config::default(), &c, &p.ccu);
+            let mut __serial = ::syterkit::allwinner_hal::uart::Serial::new(__uart0, (__tx, __rx), ::syterkit::allwinner_hal::uart::Config::default(), &c, &p.ccu);
             unsafe {
-                *::syterkit_100ask_d1_h::CONSOLE.lock() = Some(::syterkit_100ask_d1_h::SyterKitConsole { inner: __serial })
+                *::syterkit::CONSOLE.lock() = Some(::syterkit::SyterKitConsole { inner: __serial })
             };
             #(#stmts)*
         }

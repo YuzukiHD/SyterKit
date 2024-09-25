@@ -1,8 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
+    "rust",
+    "rust/macros",
+    "rust/xtask",
     "board/100ask-d1-h-rs",
-    "board/100ask-d1-h-rs/macros",
-    "board/100ask-d1-h-rs/xtask",
 ]
-default-members = ["board/100ask-d1-h-rs/xtask"]
+default-members = ["rust/xtask"]

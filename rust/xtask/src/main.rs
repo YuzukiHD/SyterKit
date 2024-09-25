@@ -95,6 +95,7 @@ fn xtask_build_d1_flash_bt0(env: &Env, bin: &str) {
     trace!("found cargo at {}", cargo);
     let mut command = Command::new(cargo);
     command.current_dir(project_root());
+    trace!("cargo current dir: {:?}", project_root());
     command.arg("build");
     command.arg("-p");
     command.arg("syterkit-100ask-d1-h");
@@ -265,7 +266,7 @@ fn find_binutils_prefix_or_fail() -> &'static str {
 fn project_root() -> PathBuf {
     Path::new(&env!("CARGO_MANIFEST_DIR"))
         .ancestors()
-        .nth(3)
+        .nth(2)
         .unwrap()
         .to_path_buf()
 }
