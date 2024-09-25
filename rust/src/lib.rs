@@ -13,6 +13,9 @@ pub mod soc;
 pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
 
+#[cfg(feature = "sun20iw1")]
+pub use soc::sun20iw1::clock_dump;
+
 /// ROM runtime peripheral ownership and configurations.
 pub struct Peripherals<'a> {
     /// General Purpose Input/Output peripheral.

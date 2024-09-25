@@ -2,7 +2,7 @@
 #![no_main]
 
 use panic_halt as _;
-use syterkit::{entry, println, show_banner, Clocks, Peripherals};
+use syterkit::{clock_dump, entry, println, show_banner, Clocks, Peripherals};
 
 #[entry]
 fn main(p: Peripherals, c: Clocks) {
@@ -14,5 +14,5 @@ fn main(p: Peripherals, c: Clocks) {
     println!("DRAM size: {}M 🐏", dram_size);
 
     // Dump information about the system clocks.
-    // clock_dump();
+    clock_dump(&p.ccu);
 }
