@@ -2,24 +2,17 @@ cargo-features = ["per-package-target"]
 
 [package]
 name = "syterkit-100ask-d1-h"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 default-target = "riscv64imac-unknown-none-elf"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-naked-function = "0.1.5"
 panic-halt = "0.2.0"
-allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
-allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
 embedded-hal = "1.0.0"
-embedded-io = "0.6.1"
-spin = "0.9"
-syterkit-macros = { path = "macros" }
+syterkit = { path = "../../rust" }
 
-[lib]
-name = "syterkit_100ask_d1_h"
+[[bin]]
+name = "syterkit-100ask-d1-h"
 test = false
 bench = false
 
@@ -37,8 +30,3 @@ bench = false
 name = "led-lightup"
 test = false
 bench = false
-
-[features]
-default = ["nezha"]
-nezha = []
-lichee = []

@@ -1,4 +1,4 @@
 [alias]
-xtask = "run --package xtask --release --"
+xtask = "run --package syterkit-xtask --release --"
 make = "xtask make"
 flash = "xtask flash"

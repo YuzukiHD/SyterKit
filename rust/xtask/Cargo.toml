@@ -1,5 +1,5 @@
 [package]
-name = "xtask"
+name = "syterkit-xtask"
 version = "0.1.0"
 edition = "2021"
 
