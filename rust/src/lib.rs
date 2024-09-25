@@ -16,7 +16,7 @@ pub use syterkit_macros::entry;
 /// ROM runtime peripheral ownership and configurations.
 pub struct Peripherals<'a> {
     /// General Purpose Input/Output peripheral.
-    pub gpio: soc::d1::Pads<'a>,
+    pub gpio: soc::sun20iw1::Pads<'a>,
     // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
     /// Serial Peripheral Interface peripheral 0.
     pub spi0: SPI0,
@@ -43,7 +43,7 @@ impl<'a> Peripherals<'a> {
         let pb9 = src.gpio.pb9.into_function::<6>();
         let uart0 = src.uart0;
         let p = Self {
-            gpio: soc::d1::Pads::__init(),
+            gpio: soc::sun20iw1::Pads::__init(),
             spi0: src.spi0,
             com: src.com,
             ccu: src.ccu,
@@ -51,6 +51,21 @@ impl<'a> Peripherals<'a> {
         };
         (p, uart0, pb8, pb9)
     }
+}
+
+/// Print SyterKit banner.
+pub fn show_banner() {
+    println!(" _____     _           _____ _ _   ");
+    println!("|   __|_ _| |_ ___ ___|  |  |_| |_ ");
+    println!("|__   | | |  _| -_|  _|    -| | _| ");
+    println!("|_____|_  |_| |___|_| |__|__|_|_|  ");
+    println!("      |___|                        ");
+    println!("***********************************");
+    println!(" syterkit v{}", env!("CARGO_PKG_VERSION")); // TODO: Git commit hash
+    println!(" github.com/YuzukiHD/SyterKit      ");
+    println!("***********************************");
+    println!(" Built by: rustc"); // TODO: Detect Rustc version
+    println!();
 }
 
 #[doc(hidden)]
