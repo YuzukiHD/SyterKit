@@ -1,6 +1,7 @@
 use allwinner_hal::{ccu::CpuClockSource, gpio::Disabled};
 use allwinner_rt::soc::d1::{CCU, GPIO};
 
+/// Dump information about the system clocks.
 pub fn clock_dump(ccu: &CCU) {
     let cpu_clock_source = ccu.cpu_axi_config.read().clock_source();
     let clock_name = match cpu_clock_source {
