@@ -283,3 +283,7 @@ impl_gpio_pins! {
     pg17: ('G', 17, Disabled);
     pg18: ('G', 18, Disabled);
 }
+
+// macro internal code.
+#[doc(hidden)]
+pub use {allwinner_hal, allwinner_rt};
