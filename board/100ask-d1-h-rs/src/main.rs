@@ -2,10 +2,17 @@
 #![no_main]
 
 use panic_halt as _;
-use syterkit::{entry, println, Clocks, Peripherals};
+use syterkit::{entry, println, show_banner, Clocks, Peripherals};
 
 #[entry]
 fn main(p: Peripherals, c: Clocks) {
-    println!("Welcome to SyterKit 100ask-d1-h package!");
-    println!("Please refer to each files in `bin` path for examples.");
+    // Display the bootloader banner.
+    show_banner();
+
+    // Initialize the DRAM.
+    let dram_size = syterkit::mctl::init();
+    println!("DRAM size: {}M 🐏", dram_size);
+
+    // Dump information about the system clocks.
+    // clock_dump();
 }
