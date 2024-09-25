@@ -64,10 +64,14 @@ pub fn show_banner() {
     println!("|_____|_  |_| |___|_| |__|__|_|_|  ");
     println!("      |___|                        ");
     println!("***********************************");
-    println!(" syterkit v{}", env!("CARGO_PKG_VERSION")); // TODO: Git commit hash
+    println!(
+        " syterkit v{} Commit: {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("SYTERKIT_GIT_HASH")
+    );
     println!(" github.com/YuzukiHD/SyterKit      ");
     println!("***********************************");
-    println!(" Built by: rustc"); // TODO: Detect Rustc version
+    println!(" Built by: rustc {}", env!("SYTERKIT_RUSTC_VERSION"));
     println!();
 }
 
