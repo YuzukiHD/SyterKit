@@ -31,7 +31,7 @@ enum Commands {
 #[derive(Args)]
 struct Make {
     #[clap(help = "Specify the binary name")]
-    bin: String,
+    bin: Option<String>,
 }
 
 #[derive(Args)]
@@ -39,7 +39,7 @@ struct Flash {
     #[clap(subcommand)]
     command: FlashCommands,
     #[clap(help = "Specify the binary name")]
-    bin: String,
+    bin: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -89,7 +89,7 @@ fn main() {
 
 const DEFAULT_TARGET: &'static str = "riscv64imac-unknown-none-elf";
 
-fn xtask_build_d1_flash_bt0(env: &Env, bin: &str) {
+fn xtask_build_d1_flash_bt0(env: &Env, bin: &Option<String>) {
     trace!("build D1 flash bt0");
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
     trace!("found cargo at {}", cargo);
@@ -102,8 +102,10 @@ fn xtask_build_d1_flash_bt0(env: &Env, bin: &str) {
     if env.release {
         command.arg("--release");
     }
-    command.arg("--bin");
-    command.arg(&bin);
+    if let Some(bin) = bin {
+        command.arg("--bin");
+        command.arg(&bin);
+    }
     trace!("cargo command: {:?}", command);
     let status = command.status().unwrap();
     trace!("cargo returned {}", status);
@@ -113,16 +115,20 @@ fn xtask_build_d1_flash_bt0(env: &Env, bin: &str) {
     }
 }
 
-fn xtask_binary_d1_flash_bt0(prefix: &str, env: &Env, bin: &str) {
+fn xtask_binary_d1_flash_bt0(prefix: &str, env: &Env, bin: &Option<String>) {
     trace!("objcopy binary, prefix: '{}'", prefix);
     let mut command = Command::new(format!("{}objcopy", prefix));
     trace!("objcopy dist dir: {:?}", dist_dir(env));
-    command
-        .current_dir(dist_dir(env))
-        .arg(&bin)
-        .arg("--binary-architecture=riscv64")
-        .arg("--strip-all")
-        .args(&["-O", "binary", &format!("{}.bin", bin)]);
+    command.current_dir(dist_dir(env));
+    command.arg("--binary-architecture=riscv64");
+    command.arg("--strip-all");
+    if let Some(bin) = bin {
+        command.arg(&bin);
+        command.args(&["-O", "binary", &format!("{}.bin", bin)]);
+    } else {
+        command.arg("syterkit-100ask-d1-h");
+        command.args(&["-O", "binary", "syterkit-100ask-d1-h.bin"]);
+    }
     trace!("objcopy command: {:?}", command);
 
     let status = command.status().unwrap();
@@ -139,13 +145,19 @@ const EGON_HEADER_LENGTH: u64 = 0x60;
 // This function does:
 // 1. fill in binary length
 // 2. calculate checksum of bt0 image; old checksum value must be filled as stamp value
-fn xtask_finialize_d1_flash_bt0(env: &Env, bin: &str) {
+fn xtask_finialize_d1_flash_bt0(env: &Env, bin: &Option<String>) {
     let path = dist_dir(env);
+    let bin = match bin {
+        Some(bin) => &format!("{}.bin", bin),
+        None => "syterkit-100ask-d1-h.bin",
+    };
+    trace!("finialize binary, bin: {}", bin);
     let mut file = File::options()
         .read(true)
         .write(true)
-        .open(path.join(format!("{}.bin", bin)))
+        .open(path.join(bin))
         .expect("open output binary file");
+    trace!("finialize binary, opened binary file {:?}", file);
     let total_length = file.metadata().unwrap().len();
     if total_length < EGON_HEADER_LENGTH {
         error!(
@@ -169,6 +181,7 @@ fn xtask_finialize_d1_flash_bt0(env: &Env, bin: &str) {
     }
     file.seek(SeekFrom::Start(0x0C)).unwrap();
     file.write_u32::<LittleEndian>(checksum).unwrap();
+    trace!("finialize binary finished, saving file");
     file.sync_all().unwrap(); // save file before automatic closing
 } // for C developers: files are automatically closed when they're out of scope
 
@@ -181,7 +194,7 @@ fn align_up_to(len: u64, target_align: u64) -> u64 {
     }
 }
 
-fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env, bin: &str) {
+fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env, bin: &Option<String>) {
     trace!("burn flash with xfel {}", xfel);
     let mut command = Command::new(xfel);
     command.current_dir(dist_dir(env));
@@ -190,7 +203,11 @@ fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env, bin: &s
         FlashCommands::Nor => command.arg("spinor"),
     };
     command.args(["write", "0"]);
-    command.arg(format!("{}.bin", bin));
+    if let Some(bin) = bin {
+        command.arg(format!("{}.bin", bin));
+    } else {
+        command.arg("syterkit-100ask-d1-h.bin");
+    }
     let status = command.status().unwrap();
     trace!("xfel returned {}", status);
     if !status.success() {

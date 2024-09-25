@@ -1,5 +1,19 @@
-use allwinner_hal::gpio::Disabled;
-use allwinner_rt::soc::d1::GPIO;
+use allwinner_hal::{ccu::CpuClockSource, gpio::Disabled};
+use allwinner_rt::soc::d1::{CCU, GPIO};
+
+pub fn clock_dump(ccu: &CCU) {
+    let cpu_clock_source = ccu.cpu_axi_config.read().clock_source();
+    let clock_name = match cpu_clock_source {
+        CpuClockSource::Osc24M => "OSC24M",
+        CpuClockSource::Clk32K => "CLK32",
+        CpuClockSource::Clk16MRC => "CLK16M_RC",
+        CpuClockSource::PllCpu => "PLL_CPU",
+        CpuClockSource::PllPeri1x => "PLL_PERI(1X)",
+        CpuClockSource::PllPeri2x => "PLL_PERI(2X)",
+        CpuClockSource::PllPeri800M => "PLL_PERI(800M)",
+    };
+    println!("CLK: CPU PLL={}", clock_name);
+}
 
 // pb8, pb9 is removed for they are configured as Function<6> for UART0.
 impl_gpio_pins! {
