@@ -1,4 +1,3 @@
-use rustc_version::Channel;
 use std::process::Command;
 
 fn main() {
@@ -6,6 +5,7 @@ fn main() {
     match output {
         Ok(output) => {
             let git_hash = String::from_utf8(output.stdout).unwrap();
+            let git_hash = &git_hash[..8];
             println!("cargo:rustc-env=SYTERKIT_GIT_HASH={}", git_hash);
         }
         Err(e) => {
@@ -18,12 +18,6 @@ during compilation, git must be found, as it is used to generate the git hash ve
     }
     let syterkit_rustc_version = {
         let version = rustc_version::version_meta().unwrap();
-        let rustc_channel_extra = match version.channel {
-            Channel::Dev => "-dev",
-            Channel::Nightly => "-nightly",
-            Channel::Beta => "-beta",
-            Channel::Stable => "",
-        };
         let hash_date_extra = match (version.commit_hash, version.commit_date) {
             (Some(commit_hash), Some(commit_date)) => {
                 format!(" ({} {})", &commit_hash[..8], commit_date)
@@ -32,10 +26,7 @@ during compilation, git must be found, as it is used to generate the git hash ve
             (None, Some(commit_date)) => format!(" ({})", commit_date),
             (None, None) => "".to_string(),
         };
-        format!(
-            "{}{}{}",
-            version.semver, rustc_channel_extra, hash_date_extra
-        )
+        format!("{}{}", version.semver, hash_date_extra)
     };
     println!(
         "cargo:rustc-env=SYTERKIT_RUSTC_VERSION={}",
