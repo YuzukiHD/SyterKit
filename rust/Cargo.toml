@@ -1,0 +1,28 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name = "syterkit"
+version = "0.0.0"
+edition = "2021"
+default-target = "riscv64imac-unknown-none-elf"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+naked-function = "0.1.5"
+allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
+allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
+embedded-hal = "1.0.0"
+embedded-io = "0.6.1"
+spin = "0.9"
+syterkit-macros = { path = "macros" }
+
+[lib]
+name = "syterkit"
+test = false
+bench = false
+
+[features]
+default = ["nezha"]
+nezha = []
+lichee = []

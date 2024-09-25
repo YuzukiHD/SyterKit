@@ -226,9 +226,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.158"
+version = "0.2.159"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8adc4bb1803a324070e64a98ae98f38934d91957a99cfb3a43dcbc01bc56439"
+checksum = "561d97a539a36e26a9a5fad1ea11a3039a67714694aaa379433e580854bc3dc5"
 
 [[package]]
 name = "lock_api"
@@ -492,17 +492,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "syterkit-100ask-d1-h"
-version = "0.1.0"
+name = "syterkit"
+version = "0.0.0"
 dependencies = [
  "allwinner-hal",
  "allwinner-rt",
  "embedded-hal",
  "embedded-io",
  "naked-function",
- "panic-halt",
  "spin",
  "syterkit-macros",
+]
+
+[[package]]
+name = "syterkit-100ask-d1-h"
+version = "0.0.0"
+dependencies = [
+ "embedded-hal",
+ "panic-halt",
+ "syterkit",
 ]
 
 [[package]]
@@ -512,6 +520,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "syterkit-xtask"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "clap",
+ "clap-verbosity-flag",
+ "ctrlc",
+ "env_logger",
+ "log",
 ]
 
 [[package]]
@@ -665,15 +685,3 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
-
-[[package]]
-name = "xtask"
-version = "0.1.0"
-dependencies = [
- "byteorder",
- "clap",
- "clap-verbosity-flag",
- "ctrlc",
- "env_logger",
- "log",
-]
