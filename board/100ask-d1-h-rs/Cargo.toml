@@ -9,7 +9,7 @@ default-target = "riscv64imac-unknown-none-elf"
 [dependencies]
 panic-halt = "0.2.0"
 embedded-hal = "1.0.0"
-syterkit = { path = "../../rust" }
+syterkit = { path = "../../rust", features = ["sun20iw1"]}
 
 [[bin]]
 name = "syterkit-100ask-d1-h"
