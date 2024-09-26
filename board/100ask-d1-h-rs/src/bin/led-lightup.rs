@@ -6,7 +6,7 @@ use panic_halt as _;
 use syterkit::{entry, Clocks, Peripherals};
 
 #[entry]
-fn main(p: Peripherals, c: Clocks) {
+fn main(p: Peripherals, _c: Clocks) {
     // light up led
     let mut pb5 = p.gpio.pb5.into_output();
     pb5.set_high().unwrap();

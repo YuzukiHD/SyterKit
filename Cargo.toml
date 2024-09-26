@@ -6,4 +6,3 @@ members = [
     "rust/xtask",
     "board/100ask-d1-h-rs",
 ]
-default-members = ["rust/xtask"]
