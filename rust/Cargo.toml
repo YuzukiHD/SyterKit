@@ -1,10 +1,7 @@
-cargo-features = ["per-package-target"]
-
 [package]
 name = "syterkit"
 version = "0.0.0"
 edition = "2021"
-default-target = "riscv64imac-unknown-none-elf"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,5 +1,49 @@
-use allwinner_hal::{ccu::CpuClockSource, gpio::Disabled};
-use allwinner_rt::soc::d1::{CCU, GPIO};
+//! D1-H, D1s, F133, F133-A, F133-B series.
+use allwinner_hal::{
+    ccu::CpuClockSource,
+    gpio::{Disabled, Function},
+};
+use allwinner_rt::soc::d1::{CCU, COM, GPIO, PLIC, SPI0, UART0};
+
+/// SyterKit runtime peripheral ownership and configurations.
+pub struct Peripherals<'a> {
+    /// General Purpose Input/Output peripheral.
+    pub gpio: Pads<'a>,
+    // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
+    /// Serial Peripheral Interface peripheral 0.
+    pub spi0: SPI0,
+    /// Common control peripheral of DDR SDRAM.
+    pub com: COM,
+    /// Clock control unit peripheral.
+    pub ccu: CCU,
+    /// Platform-local Interrupt Controller.
+    pub plic: PLIC,
+}
+
+impl<'a> Peripherals<'a> {
+    /// Split SyterKit peripherals from `allwinner-rt` peripherals.
+    #[inline]
+    pub fn configure_uart0(
+        src: allwinner_rt::soc::d1::Peripherals<'a>,
+    ) -> (
+        Self,
+        UART0,
+        Function<'a, 'B', 8, 6>,
+        Function<'a, 'B', 9, 6>,
+    ) {
+        let pb8 = src.gpio.pb8.into_function::<6>();
+        let pb9 = src.gpio.pb9.into_function::<6>();
+        let uart0 = src.uart0;
+        let p = Self {
+            gpio: Pads::__init(),
+            spi0: src.spi0,
+            com: src.com,
+            ccu: src.ccu,
+            plic: src.plic,
+        };
+        (p, uart0, pb8, pb9)
+    }
+}
 
 /// Dump information about the system clocks.
 pub fn clock_dump(ccu: &CCU) {
@@ -14,6 +58,7 @@ pub fn clock_dump(ccu: &CCU) {
         CpuClockSource::PllPeri800M => "PLL_PERI(800M)",
     };
     println!("CLK: CPU PLL={}", clock_name);
+    // TODO further clock dumps.
 }
 
 // pb8, pb9 is removed for they are configured as Function<6> for UART0.
