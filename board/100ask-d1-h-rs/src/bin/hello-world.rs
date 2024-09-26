@@ -5,6 +5,6 @@ use panic_halt as _;
 use syterkit::{entry, println, Clocks, Peripherals};
 
 #[entry]
-fn main(p: Peripherals, c: Clocks) {
+fn main(_p: Peripherals, _c: Clocks) {
     println!("Hello World!");
 }
