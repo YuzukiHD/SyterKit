@@ -5,7 +5,7 @@ use panic_halt as _;
 use syterkit::{clock_dump, entry, println, show_banner, Clocks, Peripherals};
 
 #[entry]
-fn main(p: Peripherals, c: Clocks) {
+fn main(p: Peripherals, _c: Clocks) {
     // Display the bootloader banner.
     show_banner();
 
