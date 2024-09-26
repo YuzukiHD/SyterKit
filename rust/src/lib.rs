@@ -1,11 +1,11 @@
 #![no_std]
 use allwinner_hal::{gpio::Function, uart::Serial};
-use allwinner_rt::soc::d1::{CCU, COM, PLIC, SPI0, UART0};
+use allwinner_rt::soc::d1::UART0;
 use embedded_io::Write;
 use spin::Mutex;
 
 #[macro_use]
-pub mod macros;
+mod macros;
 
 pub mod mctl;
 pub mod soc;
@@ -14,47 +14,7 @@ pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
 
 #[cfg(feature = "sun20iw1")]
-pub use soc::sun20iw1::clock_dump;
-
-/// ROM runtime peripheral ownership and configurations.
-pub struct Peripherals<'a> {
-    /// General Purpose Input/Output peripheral.
-    pub gpio: soc::sun20iw1::Pads<'a>,
-    // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
-    /// Serial Peripheral Interface peripheral 0.
-    pub spi0: SPI0,
-    /// Common control peripheral of DDR SDRAM.
-    pub com: COM,
-    /// Clock control unit peripheral.
-    pub ccu: CCU,
-    /// Platform-local Interrupt Controller.
-    pub plic: PLIC,
-}
-
-impl<'a> Peripherals<'a> {
-    /// Split SyterKit peripherals from `allwinner-rt` peripherals.
-    #[inline]
-    pub fn configure_uart0(
-        src: allwinner_rt::soc::d1::Peripherals<'a>,
-    ) -> (
-        Self,
-        UART0,
-        Function<'a, 'B', 8, 6>,
-        Function<'a, 'B', 9, 6>,
-    ) {
-        let pb8 = src.gpio.pb8.into_function::<6>();
-        let pb9 = src.gpio.pb9.into_function::<6>();
-        let uart0 = src.uart0;
-        let p = Self {
-            gpio: soc::sun20iw1::Pads::__init(),
-            spi0: src.spi0,
-            com: src.com,
-            ccu: src.ccu,
-            plic: src.plic,
-        };
-        (p, uart0, pb8, pb9)
-    }
-}
+pub use soc::sun20iw1::{clock_dump, Peripherals};
 
 /// Print SyterKit banner.
 pub fn show_banner() {
@@ -94,6 +54,6 @@ pub fn _print(args: core::fmt::Arguments) {
     }
 }
 
-// macro internal code.
+// macro internal code, used in `entry` proc macro.
 #[doc(hidden)]
 pub use {allwinner_hal, allwinner_rt};

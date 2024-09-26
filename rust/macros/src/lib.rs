@@ -6,7 +6,7 @@ use syn::{
 
 use proc_macro::TokenStream;
 
-/// ROM stage function entry.
+/// SyterKit ROM stage function entry.
 #[proc_macro_attribute]
 pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
