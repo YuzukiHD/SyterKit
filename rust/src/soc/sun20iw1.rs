@@ -57,8 +57,33 @@ pub fn clock_dump(ccu: &CCU) {
         CpuClockSource::PllPeri2x => "PLL_PERI(2X)",
         CpuClockSource::PllPeri800M => "PLL_PERI(800M)",
     };
-    println!("CLK: CPU PLL={}", clock_name);
-    // TODO further clock dumps.
+
+    let val = ccu.pll_cpu_control.read();
+    let cpu_freq = 24 * ((val.pll_n() + 1) as u32) / ((val.pll_m() + 1) as u32);
+    println!("CLK: CPU PLL={} FREQ={}MHz", clock_name, cpu_freq);
+
+    let val = ccu.pll_peri0_control.read();
+    if val.is_pll_enabled() {
+        let peri_freq = 24 * ((val.pll_n() + 1) as u32) / ((val.pll_m() + 1) as u32);
+        let peri2x_freq = peri_freq / ((val.pll_p0() + 1) as u32);
+        let peri1x_freq = peri2x_freq / 2;
+        let peri800m_freq = peri_freq / ((val.pll_p1() + 1) as u32);
+        println!(
+            "CLK: PLL_peri (2X)={}MHz, (1X)={}MHz, (800M)={}MHz",
+            peri2x_freq, peri1x_freq, peri800m_freq
+        );
+    } else {
+        println!("CLK: PLL_peri is disabled");
+    }
+
+    let val = ccu.pll_ddr_control.read();
+    if val.is_pll_enabled() {
+        let ddr_freq = 24 * ((val.pll_n() + 1) as u32)
+            / (((val.pll_m1() + 1) as u32) * ((val.pll_m0() + 1) as u32));
+        println!("CLK: PLL_ddr={}MHz", ddr_freq);
+    } else {
+        println!("CLK: PLL_ddr is disabled");
+    }
 }
 
 // pb8, pb9 is removed for they are configured as Function<6> for UART0.
