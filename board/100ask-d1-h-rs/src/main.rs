@@ -10,7 +10,7 @@ fn main(p: Peripherals, _c: Clocks) {
     show_banner();
 
     // Initialize the DRAM.
-    let dram_size = syterkit::mctl::init();
+    let dram_size = syterkit::mctl::init(&p.ccu);
     println!("DRAM size: {}M 🐏", dram_size);
 
     // Dump information about the system clocks.

@@ -1,3 +1,4 @@
+use allwinner_rt::soc::d1::CCU;
 use core::ptr::{read_volatile, write_volatile};
 
 // for verbose prints
@@ -7,8 +8,8 @@ pub const RAM_BASE: usize = 0x40000000;
 
 // p49 ff
 const CCU: usize = 0x0200_1000;
-const PLL_CPU_CTRL: usize = CCU + 0x0000;
-const PLL_DDR_CTRL: usize = CCU + 0x0010;
+// const PLL_CPU_CTRL: usize = CCU + 0x0000;
+// const PLL_DDR_CTRL: usize = CCU + 0x0010;
 const MBUS_CLK: usize = CCU + 0x0540;
 const DRAM_CLK: usize = CCU + 0x0800;
 const DRAM_BGR: usize = CCU + 0x080c;
@@ -185,10 +186,14 @@ pub struct dram_parameters {
     pub dram_tpr6: u32,
     pub dram_tpr7: u32,
     pub dram_tpr8: u32,
+    /// overrided_dram_clk = para.dram_tpr9
     pub dram_tpr9: u32,
     pub dram_tpr10: u32,
     pub dram_tpr11: u32,
     pub dram_tpr12: u32,
+    /// should_override = para.dram_tpr13 & (1 << 6) != 0;
+    /// dqs_gating_mode = (para.dram_tpr13 >> 2) & 0x3;
+    /// should_auto_scan_dram_config = (para.dram_tpr13 & 0x1) == 0;
     pub dram_tpr13: u32,
 }
 // FIXME: This could be a concise struct. Let Rust piece it together.
@@ -374,37 +379,64 @@ fn dram_disable_all_master() {
 
 // Purpose of this routine seems to be to initialize the PLL driving
 // the MBUS and sdram.
-fn ccm_set_pll_ddr_clk(para: &mut dram_parameters) -> u32 {
+// should_override: para.dram_tpr13 & (1 << 6) != 0
+// overrided_dram_clk: para.dram_tpr9
+// origin_dram_clk: para.dram_clk
+fn ccm_set_pll_ddr_clk(
+    should_override: bool,
+    overrided_dram_clk: u32,
+    origin_dram_clk: u32,
+    ccu: &CCU,
+) -> u32 {
+    println!(
+        "[ccm_set_pll_ddr_clk] should_override = {}, overrided_dram_clk = {}, origin_dram_clk = {}",
+        should_override, overrided_dram_clk, origin_dram_clk
+    );
     // FIXME: This is a bit weird, especially the scaling down and up etc
-    let clk = if para.dram_tpr13 & (1 << 6) != 0 {
-        para.dram_tpr9
+    let clk = if should_override {
+        overrided_dram_clk
     } else {
-        para.dram_clk
+        origin_dram_clk
     };
     let n = (clk * 2) / 24;
-    // // println!("clk {} / div {}", clk, n);
+    // println!("clk {} / div {}", clk, n);
 
     // set VCO clock divider
-    let mut val = readl(PLL_DDR_CTRL);
-    val &= 0xfff800fc; // clear dividers
-    val |= (n - 1) << 8; // set PLL division
-    val |= 0xc0000000; // enable PLL and LDO
-    writel(PLL_DDR_CTRL, val);
+    // let mut val = readl(PLL_DDR_CTRL);
+    // val &= 0xfff800fc; // clear dividers
+    // val |= (n - 1) << 8; // set PLL division
+    // val |= 0xc0000000; // enable PLL and LDO
+    // writel(PLL_DDR_CTRL, val);
+    let mut val = ccu
+        .pll_ddr_control
+        .read()
+        .enable_pll()
+        .enable_pll_ldo()
+        .set_pll_n((n - 1) as u8);
+    unsafe { ccu.pll_ddr_control.write(val) };
 
     // Restart PLL locking
-    val &= 0xdfffffff; // disbable lock
-    val |= 0xc0000000; // enable PLL and LDO
-    writel(PLL_DDR_CTRL, val);
-    val |= 0xe0000000; // re-enable lock
-    writel(PLL_DDR_CTRL, val);
+    // val &= 0xdfffffff; // disbable lock
+    // val |= 0xc0000000; // enable PLL and LDO
+    // writel(PLL_DDR_CTRL, val);
+    // val |= 0xe0000000; // re-enable lock
+    // writel(PLL_DDR_CTRL, val);
+    val = val.disable_lock();
+    unsafe { ccu.pll_ddr_control.write(val) };
+    val = val.enable_lock();
+    unsafe { ccu.pll_ddr_control.write(val) };
 
-    // wait for PLL to lock
-    while readl(PLL_DDR_CTRL) == 0 {}
-    sdelay(20);
+    // // wait for PLL to lock
+    // while readl(PLL_DDR_CTRL) == 0 {}
+    // sdelay(20);
+    while !ccu.pll_ddr_control.read().is_locked() {
+        core::hint::spin_loop();
+    }
 
     // enable PLL output
-    let val = readl(PLL_CPU_CTRL);
-    writel(PLL_CPU_CTRL, val | 0x08000000);
+    unsafe { ccu.pll_ddr_control.modify(|val| val.ungate_pll_output()) };
+    // let val = readl(PLL_CPU_CTRL);
+    // writel(PLL_CPU_CTRL, val | 0x08000000);
 
     // turn clock gate on
     let mut val = readl(DRAM_CLK);
@@ -418,7 +450,11 @@ fn ccm_set_pll_ddr_clk(para: &mut dram_parameters) -> u32 {
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 // TODO: verify this
-fn mctl_sys_init(para: &mut dram_parameters) {
+fn mctl_sys_init(should_override: bool, overrided_dram_clk: u32, dram_clk: &mut u32, ccu: &CCU) {
+    println!(
+        "[mctl_sys_init] should_override = {}, overrided_dram_clk = {}, dram_clk = {}",
+        should_override, overrided_dram_clk, dram_clk
+    );
     // assert MBUS reset
     let val = readl(MBUS_CLK);
     writel(MBUS_CLK, val & 0xbfffffff);
@@ -442,7 +478,7 @@ fn mctl_sys_init(para: &mut dram_parameters) {
 
     // set ddr pll clock
     // NOTE: This passes an additional `0` in the original, but it's unused
-    para.dram_clk = ccm_set_pll_ddr_clk(para) >> 1;
+    *dram_clk = ccm_set_pll_ddr_clk(should_override, overrided_dram_clk, *dram_clk, &ccu) >> 1;
     sdelay(100);
     dram_disable_all_master();
 
@@ -1316,8 +1352,15 @@ fn mctl_channel_init(para: &mut dram_parameters) -> Result<(), &'static str> {
 // time to establish the number of ranks and DQ width. The second time to
 // establish the actual ram size. The third time is final one, with the final
 // settings.
-fn mctl_core_init(para: &mut dram_parameters) -> Result<(), &'static str> {
-    mctl_sys_init(para);
+fn mctl_core_init(para: &mut dram_parameters, ccu: &CCU) -> Result<(), &'static str> {
+    let should_override = para.dram_tpr13 & (1 << 6) != 0;
+    let overrided_dram_clk = para.dram_tpr9;
+    mctl_sys_init(
+        should_override,
+        overrided_dram_clk,
+        &mut para.dram_clk,
+        &ccu,
+    );
     mctl_vrefzq_init(para);
     mctl_com_init(para);
     unsafe {
@@ -1445,8 +1488,8 @@ fn dramc_simple_wr_test(mem_mb: u32, len: u32) -> Result<(), &'static str> {
 // Next the BA2 line is checked. This seems to be placed above the column, BA0-1 and
 // row addresses. Finally, the column address is allocated 13 lines and these are
 // tested. The results are placed in dram_para1 and dram_para2.
-fn auto_scan_dram_size(para: &mut dram_parameters) -> Result<(), &'static str> {
-    mctl_core_init(para)?;
+fn auto_scan_dram_size(para: &mut dram_parameters, ccu: &CCU) -> Result<(), &'static str> {
+    mctl_core_init(para, &ccu)?;
 
     // write test pattern
     for i in 0..64 {
@@ -1640,7 +1683,7 @@ fn auto_scan_dram_size(para: &mut dram_parameters) -> Result<(), &'static str> {
 // ranks enabled. It then configures the core and tests for 1 or 2 ranks and
 // full or half DQ width. it then resets the parameters to the original values.
 // dram_para2 is updated with the rank & width findings.
-fn auto_scan_dram_rank_width(para: &mut dram_parameters) -> Result<(), &'static str> {
+fn auto_scan_dram_rank_width(para: &mut dram_parameters, ccu: &CCU) -> Result<(), &'static str> {
     let s1 = para.dram_tpr13;
     let s2 = para.dram_para1;
 
@@ -1648,7 +1691,7 @@ fn auto_scan_dram_rank_width(para: &mut dram_parameters) -> Result<(), &'static 
     para.dram_para2 = (para.dram_para2 & 0xfffffff0) | 0x1000;
     para.dram_tpr13 = (s1 & 0xfffffff7) | 0x5; // set DQS probe mode
 
-    mctl_core_init(para)?;
+    mctl_core_init(para, &ccu)?;
 
     if readl(PGSR0) & (1 << 20) != 0 {
         return Err("auto scan rank/width");
@@ -1668,12 +1711,12 @@ fn auto_scan_dram_rank_width(para: &mut dram_parameters) -> Result<(), &'static 
 /// SDRAM address lines to establish the size of each rank. It then updates
 /// `dram_tpr13` to reflect that the sizes are now known: a re-init will not
 /// repeat the autoscan.
-fn auto_scan_dram_config(para: &mut dram_parameters) -> Result<(), &'static str> {
+fn auto_scan_dram_config(para: &mut dram_parameters, ccu: &CCU) -> Result<(), &'static str> {
     if para.dram_tpr13 & (1 << 14) == 0 {
-        auto_scan_dram_rank_width(para)?
+        auto_scan_dram_rank_width(para, &ccu)?
     }
     if para.dram_tpr13 & (1 << 0) == 0 {
-        auto_scan_dram_size(para)?
+        auto_scan_dram_size(para, &ccu)?
     }
     if (para.dram_tpr13 & (1 << 15)) == 0 {
         para.dram_tpr13 |= 0x6003;
@@ -1684,7 +1727,7 @@ fn auto_scan_dram_config(para: &mut dram_parameters) -> Result<(), &'static str>
 /// # Safety
 ///
 /// No warranty. Use at own risk. Be lucky to get values from vendor.
-pub fn init_dram(para: &mut dram_parameters) -> usize {
+pub fn init_dram(para: &mut dram_parameters, ccu: &CCU) -> usize {
     // STEP 1: ZQ, gating, calibration and voltage
     // Test ZQ status
     if para.dram_tpr13 & (1 << 16) > 0 {
@@ -1727,7 +1770,7 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     // STEP 2: CONFIG
     // Set SDRAM controller auto config
     if (para.dram_tpr13 & 0x1) == 0 {
-        if let Err(msg) = auto_scan_dram_config(para) {
+        if let Err(msg) = auto_scan_dram_config(para, &ccu) {
             // println!("config fail {}", msg);
             return 0;
         }
@@ -1758,7 +1801,7 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     }
 
     // Init core, final run
-    if let Err(msg) = mctl_core_init(para) {
+    if let Err(msg) = mctl_core_init(para, &ccu) {
         // println!("init error {}", msg);
         return 0;
     };
@@ -1838,7 +1881,7 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     mem_size as usize
 }
 
-pub fn init() -> usize {
+pub fn init(ccu: &CCU) -> usize {
     // taken from SPL
     #[rustfmt::skip]
     let mut dram_para: dram_parameters = dram_parameters {
@@ -1884,5 +1927,5 @@ pub fn init() -> usize {
     };
 
     // // println!("DRAM INIT");
-    return init_dram(&mut dram_para);
+    return init_dram(&mut dram_para, &ccu);
 }
