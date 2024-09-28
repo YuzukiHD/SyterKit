@@ -398,7 +398,8 @@ fn ccm_set_pll_ddr_clk(
     } else {
         origin_dram_clk
     };
-    let n = (clk * 2) / 24;
+    let (m0, m1) = (2, 1);
+    let n = clk * m0 * m1 / 24;
     // println!("clk {} / div {}", clk, n);
 
     // set VCO clock divider
@@ -410,9 +411,12 @@ fn ccm_set_pll_ddr_clk(
     let mut val = ccu
         .pll_ddr_control
         .read()
+        .mask_pll_output()
+        .set_pll_n((n - 1) as u8)
+        .set_pll_m1((m1 - 1) as u8)
+        .set_pll_m0((m0 - 1) as u8)
         .enable_pll()
-        .enable_pll_ldo()
-        .set_pll_n((n - 1) as u8);
+        .enable_pll_ldo();
     unsafe { ccu.pll_ddr_control.write(val) };
 
     // Restart PLL locking
@@ -432,9 +436,10 @@ fn ccm_set_pll_ddr_clk(
     while !ccu.pll_ddr_control.read().is_locked() {
         core::hint::spin_loop();
     }
+    // fixme: should we delay 20 us?
 
     // enable PLL output
-    unsafe { ccu.pll_ddr_control.modify(|val| val.ungate_pll_output()) };
+    unsafe { ccu.pll_ddr_control.modify(|val| val.unmask_pll_output()) };
     // let val = readl(PLL_CPU_CTRL);
     // writel(PLL_CPU_CTRL, val | 0x08000000);
 
@@ -444,7 +449,7 @@ fn ccm_set_pll_ddr_clk(
     val |= 0x80000000; // turn clock on
     writel(DRAM_CLK, val);
 
-    n * 24
+    n * 24 / (m0 * m1)
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
@@ -478,7 +483,7 @@ fn mctl_sys_init(should_override: bool, overrided_dram_clk: u32, dram_clk: &mut 
 
     // set ddr pll clock
     // NOTE: This passes an additional `0` in the original, but it's unused
-    *dram_clk = ccm_set_pll_ddr_clk(should_override, overrided_dram_clk, *dram_clk, &ccu) >> 1;
+    *dram_clk = ccm_set_pll_ddr_clk(should_override, overrided_dram_clk, *dram_clk, &ccu);
     sdelay(100);
     dram_disable_all_master();
 
