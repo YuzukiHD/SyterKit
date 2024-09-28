@@ -45,6 +45,27 @@ impl<'a> Peripherals<'a> {
     }
 }
 
+/// Initialize clock configurations.
+pub fn clock_init(ccu: &CCU) {
+    // TODO rewrite accordding to function `set_pll_cpux_axi` in src/drivers/sun20iw1/sys-clk.c
+    unsafe {
+        ccu.cpu_axi_config
+            .modify(|val| val.set_clock_source(CpuClockSource::PllPeri1x))
+    };
+    unsafe {
+        ccu.pll_cpu_control.modify(|val| val.set_pll_n(42 - 1));
+        ccu.pll_cpu_control.modify(|val| val.disable_lock());
+        ccu.pll_cpu_control.modify(|val| val.enable_lock())
+    };
+    while !ccu.pll_cpu_control.read().is_locked() {
+        core::hint::spin_loop();
+    }
+    unsafe {
+        ccu.cpu_axi_config
+            .modify(|val| val.set_clock_source(CpuClockSource::PllCpu));
+    };
+}
+
 /// Dump information about the system clocks.
 pub fn clock_dump(ccu: &CCU) {
     let cpu_clock_source = ccu.cpu_axi_config.read().clock_source();
