@@ -379,6 +379,7 @@ fn dram_disable_all_master() {
 
 // Purpose of this routine seems to be to initialize the PLL driving
 // the MBUS and sdram.
+//
 // should_override: para.dram_tpr13 & (1 << 6) != 0
 // overrided_dram_clk: para.dram_tpr9
 // origin_dram_clk: para.dram_clk
@@ -388,10 +389,6 @@ fn ccm_set_pll_ddr_clk(
     origin_dram_clk: u32,
     ccu: &CCU,
 ) -> u32 {
-    println!(
-        "[ccm_set_pll_ddr_clk] should_override = {}, overrided_dram_clk = {}, origin_dram_clk = {}",
-        should_override, overrided_dram_clk, origin_dram_clk
-    );
     // FIXME: This is a bit weird, especially the scaling down and up etc
     let clk = if should_override {
         overrided_dram_clk
@@ -400,14 +397,7 @@ fn ccm_set_pll_ddr_clk(
     };
     let (m0, m1) = (2, 1);
     let n = clk * m0 * m1 / 24;
-    // println!("clk {} / div {}", clk, n);
 
-    // set VCO clock divider
-    // let mut val = readl(PLL_DDR_CTRL);
-    // val &= 0xfff800fc; // clear dividers
-    // val |= (n - 1) << 8; // set PLL division
-    // val |= 0xc0000000; // enable PLL and LDO
-    // writel(PLL_DDR_CTRL, val);
     let mut val = ccu
         .pll_ddr_control
         .read()
@@ -420,30 +410,21 @@ fn ccm_set_pll_ddr_clk(
     unsafe { ccu.pll_ddr_control.write(val) };
 
     // Restart PLL locking
-    // val &= 0xdfffffff; // disbable lock
-    // val |= 0xc0000000; // enable PLL and LDO
-    // writel(PLL_DDR_CTRL, val);
-    // val |= 0xe0000000; // re-enable lock
-    // writel(PLL_DDR_CTRL, val);
     val = val.disable_lock();
     unsafe { ccu.pll_ddr_control.write(val) };
     val = val.enable_lock();
     unsafe { ccu.pll_ddr_control.write(val) };
 
-    // // wait for PLL to lock
-    // while readl(PLL_DDR_CTRL) == 0 {}
-    // sdelay(20);
+    // Wait for PLL to lock
     while !ccu.pll_ddr_control.read().is_locked() {
         core::hint::spin_loop();
     }
     // fixme: should we delay 20 us?
 
-    // enable PLL output
+    // Enable PLL output
     unsafe { ccu.pll_ddr_control.modify(|val| val.unmask_pll_output()) };
-    // let val = readl(PLL_CPU_CTRL);
-    // writel(PLL_CPU_CTRL, val | 0x08000000);
 
-    // turn clock gate on
+    // Turn clock gate on. TODO: rearrange into structures
     let mut val = readl(DRAM_CLK);
     val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
     val |= 0x80000000; // turn clock on
@@ -456,10 +437,6 @@ fn ccm_set_pll_ddr_clk(
 // the sdram controller.
 // TODO: verify this
 fn mctl_sys_init(should_override: bool, overrided_dram_clk: u32, dram_clk: &mut u32, ccu: &CCU) {
-    println!(
-        "[mctl_sys_init] should_override = {}, overrided_dram_clk = {}, dram_clk = {}",
-        should_override, overrided_dram_clk, dram_clk
-    );
     // assert MBUS reset
     let val = readl(MBUS_CLK);
     writel(MBUS_CLK, val & 0xbfffffff);
