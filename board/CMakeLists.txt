@@ -49,3 +49,7 @@ endif()
 if(CONFIG_BOARD_AVAOTA-A1)
     add_subdirectory(avaota-a1)
 endif()
+
+if(CONFIG_BOARD_AVAOTA-CAM)
+    add_subdirectory(avaota-cam)
+endif()
