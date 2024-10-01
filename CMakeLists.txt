@@ -184,7 +184,7 @@ endif()
 
 # If the CONFIG_ARCH_RISCV64 variable is defined, execute the following content
 if (CONFIG_ARCH_RISCV64)
-set(ARCH_INCLUDE include/arch/riscv64)
+set(ARCH_INCLUDE include/arch/riscv)
 
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
 set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
@@ -205,7 +205,7 @@ endif()
 
 # If the CONFIG_ARCH_RISCV32 variable is defined, execute the following content
 if (CONFIG_ARCH_RISCV32)
-set(ARCH_INCLUDE include/arch/riscv32)
+set(ARCH_INCLUDE include/arch/riscv)
 
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
 set(ARCH_SRAM_LENGTH "${ARCH_BIN_SRAM_LENGTH}")
@@ -230,6 +230,7 @@ include_directories(
     include/cli
     include/image
     include/drivers
+    include/drivers/chips
     include/drivers/reg
     include/drivers/usb
     include/lib/fatfs
