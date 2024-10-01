@@ -10,19 +10,16 @@
 #include <stdint.h>
 #include <types.h>
 
+#include <reg/reg-dram.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif// __cplusplus
 
-#if defined(CONFIG_CHIP_SUN8IW21)
-    #include <sun8iw21/reg/reg-dram.h>
-#elif defined(CONFIG_CHIP_SUN8IW20)
-    #include <sun8iw20/reg/reg-dram.h>
-#elif defined(CONFIG_CHIP_SUN20IW1)
-    #include <sun20iw1/reg/reg-dram.h>
-#endif
-
+/* Common is 0x40000000 */
+#ifndef SDRAM_BASE
 #define SDRAM_BASE (0x40000000)
+#endif
 
 enum sunxi_dram_type {
     SUNXI_DRAM_TYPE_DDR2 = 2,
@@ -64,8 +61,30 @@ typedef struct {
     uint32_t dram_tpr13;
 } dram_para_t;
 
+/**
+ * @brief Get the size of the DRAM (Dynamic Random Access Memory).
+ * 
+ * This function retrieves the total size of the DRAM available in the 
+ * system. The size is returned in bytes.
+ * 
+ * @return The size of the DRAM in bytes.
+ */
 uint64_t sunxi_get_dram_size();
 
+/**
+ * @brief Initialize the DRAM.
+ * 
+ * This function initializes the DRAM with the specified parameters. The 
+ * initialization process may involve configuration of memory controllers 
+ * and other hardware settings. The user must provide a pointer to a 
+ * structure containing the necessary initialization parameters.
+ * 
+ * @param para A pointer to a structure containing the parameters needed for 
+ *              the initialization process.
+ * @return A status code indicating the result of the initialization. 
+ *         Typically returns zero on success and a non-zero value on 
+ *         failure.
+ */
 uint64_t sunxi_dram_init(void *para);
 
 #ifdef __cplusplus

@@ -1,17 +1,3 @@
-if (CONFIG_CHIP_SUN8IW21)
-    add_subdirectory(sun8iw21)
-elseif(CONFIG_CHIP_SUN8IW20)
-    add_subdirectory(sun8iw20)
-elseif(CONFIG_CHIP_SUN20IW1)
-    add_subdirectory(sun20iw1)
-elseif(CONFIG_CHIP_SUN50IW9)
-    add_subdirectory(sun50iw9)
-elseif(CONFIG_CHIP_SUN55IW3)
-    add_subdirectory(sun55iw3)
-elseif(CONFIG_CHIP_SUN50IW10)
-    add_subdirectory(sun50iw10)
-endif()
-
 set(DRIVER_PMU "")
 
 set(COMMON_DRIVER
@@ -56,8 +42,8 @@ if (CONFIG_CHIP_MMC_V2)
     )
 else()
     set(DRIVER_MMC
-        sys-sdcard.c
-        sys-sdhci.c
+        sdhci/sys-sdcard.c
+        sdhci/sys-sdhci.c
     )
 endif()
 
@@ -77,6 +63,9 @@ if (NOT CONFIG_CHIP_CLK_V1)
         ${DRIVER_MMC}
     )
 endif()
+
+# chip implement
+add_subdirectory(chips)
 
 add_library(drivers-obj OBJECT
     ${COMMON_DRIVER}
