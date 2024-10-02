@@ -22,6 +22,17 @@ extern "C" {
 void sunxi_clk_init(void);
 
 /**
+ * @brief Get the type of High-Speed Oscillator (HOSC).
+ *
+ * This function retrieves the type of the High-Speed Oscillator currently being used.
+ * The returned value can indicate different HOSC configurations or features supported 
+ * by the system.
+ *
+ * @return uint32_t Type of the HOSC.
+ */
+uint32_t sunxi_clk_get_hosc_type(void);
+
+/**
  * @brief Reset the global clocks.
  *
  * This function resets all global clocks to their default values.

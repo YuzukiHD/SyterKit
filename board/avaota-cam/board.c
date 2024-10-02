@@ -21,39 +21,8 @@
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 8), GPIO_PERIPH_MUX6},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX6},
-};
-
-sunxi_spi_t sunxi_spi0 = {
-        .base = SUNXI_SPI0_BASE,
-        .id = 0,
-        .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
-};
-
-sdhci_t sdhci0 = {
-        .name = "sdhci0",
-        .id = 0,
-        .reg = (sdhci_reg_t *) 0x04020000,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_50M,
-        .removable = 0,
-        .isspi = FALSE,
-        .skew_auto_mode = TRUE,
-        .sdhci_pll = CCU_MMC_CTRL_PLL_PERIPH1X,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTL, 4), GPIO_PERIPH_MUX4},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX4},
 };
 
 dram_para_t dram_para = {
@@ -82,7 +51,3 @@ dram_para_t dram_para = {
         .dram_tpr12 = 0x00000002,
         .dram_tpr13 = 0x34050100,
 };
-
-void clean_syterkit_data(void) {
-
-}
