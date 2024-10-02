@@ -15,6 +15,8 @@ extern "C" {
 #include <sun20iw1/reg-dram.h>
 #elif defined(CONFIG_CHIP_SUN20IW5)
 #include <sun20iw5/reg-dram.h>
+#elif defined(CONFIG_CHIP_SUN50IW10)
+#include <sun50iw10/reg-dram.h>
 #endif
 
 #ifdef __cplusplus

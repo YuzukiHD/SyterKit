@@ -2,7 +2,7 @@
 
 add_library(chip_drivers-obj OBJECT
     sys-clk.c
-    sys-dram.c
+    sys-dram_src.c
     sys-sid.c
     sys-wdt.c
 )
