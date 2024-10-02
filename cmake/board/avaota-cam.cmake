@@ -4,6 +4,8 @@ set(CONFIG_ARCH_RISCV32 True)
 set(CONFIG_CHIP_SUN20IW5 True)
 set(CONFIG_BOARD_AVAOTA-CAM True)
 
+set(CONFIG_CHIP_MINSYS True)
+
 add_definitions(-DCONFIG_CHIP_SUN20IW5)
 
 # Set the cross-compile toolchain
@@ -23,14 +25,14 @@ set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 # Configure compiler flags based on ENABLE_HARDFP option
-set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow -fno-stack-protector -mstrict-align")
+set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -march=rv32imacxtheade -mabi=ilp32 -mtune=e907 -mcmodel=medany -Wno-format-security")
 
 # Disable specific warning flags for C and C++ compilers
-set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
+set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-builtin-declaration-mismatch")
 
-set(ARCH_BIN_START_ADDRESS "0x00020000")
+set(ARCH_BIN_START_ADDRESS "0x2000000")
 set(ARCH_BIN_SRAM_LENGTH "128K")
 
-set(ARCH_FEL_START_ADDRESS "0x00028000")
+set(ARCH_FEL_START_ADDRESS "0x2008000")
 set(ARCH_FEL_SRAM_LENGTH "128K")

@@ -48,20 +48,22 @@ else()
 endif()
 
 if (NOT CONFIG_CHIP_CLK_V1)
-    set(COMMON_DRIVER
-        ${COMMON_DRIVER}
-        sys-clk.c
-        sys-dram.c
-        sys-rtc.c
-        sys-spi-nand.c
-        sys-spi.c
-        sys-dma.c
-        sys-i2c.c
+    if (NOT CONFIG_CHIP_MINSYS)
+        set(COMMON_DRIVER
+            ${COMMON_DRIVER}
+            sys-clk.c
+            sys-dram.c
+            sys-rtc.c
+            sys-spi-nand.c
+            sys-spi.c
+            sys-dma.c
+            sys-i2c.c
 
-        ${USB_DRIVER}
-        ${GIC_DRIVER}
-        ${DRIVER_MMC}
-    )
+            ${USB_DRIVER}
+            ${GIC_DRIVER}
+            ${DRIVER_MMC}
+        )
+    endif()
 endif()
 
 # chip implement

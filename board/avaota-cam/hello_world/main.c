@@ -14,11 +14,11 @@ int main(void) {
 
     printk_info("Hello World!\n");
 
-    sunxi_clk_dump();
-
     sunxi_clk_init();
 
-    sunxi_clk_dump();
+    while (1) {
+        printk_info("Hello World!\n");
+    }
 
     printk_info("Hello World!\n");
 

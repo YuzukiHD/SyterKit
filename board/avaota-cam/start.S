@@ -11,24 +11,11 @@ _start:
 	csrw mie, zero
 
 	/* enable theadisaee */
-	li t1, (0x1 << 22) | (1 << 21) | (1 << 15)
+	li t1, (0x1 << 22)
 	csrs mxstatus, t1
 
 	/* invaild ICACHE/DCACHE/BTB/BHT */
-	li t2, 0x30013
-	csrs mcor, t2
-
-	/* Config pmp register */
-	li t0, (0xfffffffc >> 2)
-	csrw pmpaddr0, t0
-	li t0, ((0x0 << 7) | (0x1 << 3) | (0x1 << 2) | (0x1 << 1) | (0x1 << 0))
-	csrw pmpcfg0, t0
-
-	/* Mask all interrupts */
-	csrw mideleg, zero
-	csrw medeleg, zero
-	csrw mie, zero
-	csrw mip, zero
+	fence.i
 
 	/* Setup exception vectors */
 	la t1, _image_start
@@ -38,10 +25,6 @@ _start:
 	la a0, vectors
 	add a0, a0, t0
 	csrw mtvec, a0
-
-	/* Enable fpu and accelerator and vector if present */
-	li t0, MSTATUS_FS | MSTATUS_XS | (3 << 23)
-	csrs mstatus, t0
 
 	la sp, _stack_start
 
