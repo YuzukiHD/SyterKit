@@ -77,7 +77,8 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     quote!(
         #[export_name = "main"]
         pub fn main() {
-            let (allwinner_rt_p, c) = ::syterkit::allwinner_rt::__rom_init_params();
+            let (allwinner_rt_p, _allwinner_rt_c) = ::syterkit::allwinner_rt::__rom_init_params();
+            let c = ::syterkit::__clock_init(&allwinner_rt_p.ccu);
             let (p, uart0, tx, rx) = ::syterkit::Peripherals::configure_uart0(allwinner_rt_p);
             let mut serial = ::syterkit::allwinner_hal::uart::Serial::new(uart0, (tx, rx), ::syterkit::allwinner_hal::uart::Config::default(), &c, &p.ccu);
             unsafe {

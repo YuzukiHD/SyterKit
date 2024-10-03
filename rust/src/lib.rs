@@ -14,7 +14,7 @@ pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
 
 #[cfg(feature = "sun20iw1")]
-pub use soc::sun20iw1::{clock_dump, clock_init, Peripherals};
+pub use soc::sun20iw1::{__clock_init, clock_dump, Peripherals};
 
 /// Print SyterKit banner.
 pub fn show_banner() {
