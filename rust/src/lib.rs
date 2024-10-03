@@ -1,20 +1,17 @@
 #![no_std]
-use allwinner_hal::{gpio::Function, uart::Serial};
-use allwinner_rt::soc::d1::UART0;
-use embedded_io::Write;
-use spin::Mutex;
 
 #[macro_use]
 mod macros;
 
 pub mod mctl;
 pub mod soc;
+mod stdio;
 
 pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
 
 #[cfg(feature = "sun20iw1")]
-pub use soc::sun20iw1::{clock_dump, Peripherals};
+pub use soc::sun20iw1::{__clock_init, clock_dump, Peripherals};
 
 /// Print SyterKit banner.
 pub fn show_banner() {
@@ -35,24 +32,11 @@ pub fn show_banner() {
     println!();
 }
 
-#[doc(hidden)]
-pub static CONSOLE: Mutex<Option<SyterKitConsole<'static>>> = Mutex::new(None);
+pub use stdio::{stdin, stdout, Stdin, Stdout};
 
+// macro internal code, used by `print` and `println`.
 #[doc(hidden)]
-pub struct SyterKitConsole<'a> {
-    pub inner: Serial<UART0, 0, (Function<'a, 'B', 8, 6>, Function<'a, 'B', 9, 6>)>,
-}
-
-unsafe impl<'a> Send for SyterKitConsole<'a> {}
-
-// macro internal, used in `print` and `println` macros in `macros.rs`.
-#[doc(hidden)]
-#[inline]
-pub fn _print(args: core::fmt::Arguments) {
-    if let Some(serial) = &mut *CONSOLE.lock() {
-        serial.inner.write_fmt(args).unwrap();
-    }
-}
+pub use stdio::_print;
 
 // macro internal code, used in `entry` proc macro.
 #[doc(hidden)]
