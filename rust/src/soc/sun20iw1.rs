@@ -1,9 +1,10 @@
 //! D1-H, D1s, F133, F133-A, F133-B series.
 use allwinner_hal::{
-    ccu::CpuClockSource,
+    ccu::{Clocks, CpuClockSource},
     gpio::{Disabled, Function},
 };
 use allwinner_rt::soc::d1::{CCU, COM, GPIO, PLIC, SPI0, UART0};
+use embedded_time::rate::Extensions;
 
 /// SyterKit runtime peripheral ownership and configurations.
 pub struct Peripherals<'a> {
@@ -46,8 +47,11 @@ impl<'a> Peripherals<'a> {
 }
 
 /// Initialize clock configurations.
-pub fn clock_init(ccu: &CCU) {
-    // TODO rewrite accordding to function `set_pll_cpux_axi` in src/drivers/sun20iw1/sys-clk.c
+///
+/// Macro Internal - DO NOT USE on ordinary code.
+#[doc(hidden)]
+pub fn __clock_init(ccu: &CCU) -> Clocks {
+    // TODO rewrite according to function `set_pll_cpux_axi` in src/drivers/sun20iw1/sys-clk.c
     unsafe {
         ccu.cpu_axi_config
             .modify(|val| val.set_clock_source(CpuClockSource::PllPeri1x))
@@ -64,6 +68,12 @@ pub fn clock_init(ccu: &CCU) {
         ccu.cpu_axi_config
             .modify(|val| val.set_clock_source(CpuClockSource::PllCpu));
     };
+    // TODO move default frequencies into allwinner_hal::soc::d1::Clocks, reuse default
+    // frequencies and follow SyterKit defined clock frequencies for non-rom-default ones.
+    Clocks {
+        psi: 600_000_000.Hz(),
+        apb1: 24_000_000.Hz(),
+    }
 }
 
 /// Dump information about the system clocks.
