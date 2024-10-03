@@ -77,12 +77,15 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     quote!(
         #[export_name = "main"]
         pub fn main() {
-            let (allwinner_rt_p, c) = ::syterkit::allwinner_rt::__rom_init_params();
+            let (allwinner_rt_p, _allwinner_rt_c) = ::syterkit::allwinner_rt::__rom_init_params();
+            let c = ::syterkit::__clock_init(&allwinner_rt_p.ccu);
             let (p, uart0, tx, rx) = ::syterkit::Peripherals::configure_uart0(allwinner_rt_p);
-            let mut serial = ::syterkit::allwinner_hal::uart::Serial::new(uart0, (tx, rx), ::syterkit::allwinner_hal::uart::Config::default(), &c, &p.ccu);
-            unsafe {
-                *::syterkit::CONSOLE.lock() = Some(::syterkit::SyterKitConsole { inner: serial })
-            };
+            let serial = ::syterkit::allwinner_hal::uart::Serial::new(uart0, (tx, rx), ::syterkit::allwinner_hal::uart::Config::default(), &c, &p.ccu);
+            let (serial_out, stdin) = serial.split();
+            {
+                *::syterkit::STDOUT.lock() = Some(::syterkit::SyterKitStdoutInner { inner: serial_out });
+                *::syterkit::STDIN.lock() = Some(::syterkit::SyterKitStdinInner { inner: stdin });
+            }
             unsafe { __syterkit_macros__main(p, c) }
         }
         #[allow(non_snake_case)]
