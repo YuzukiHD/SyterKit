@@ -7,6 +7,6 @@ use syterkit::{entry, mctl, println, Clocks, Peripherals};
 #[entry]
 fn main(p: Peripherals, _c: Clocks) {
     println!("DDR Init");
-    let ram_size = mctl::init(&p.ccu);
+    let ram_size = mctl::init(&p.ccu, &p.phy);
     println!("{}M 🐏", ram_size);
 }
