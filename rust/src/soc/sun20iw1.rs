@@ -3,7 +3,7 @@ use allwinner_hal::{
     ccu::{Clocks, CpuClockSource},
     gpio::{Disabled, Function},
 };
-use allwinner_rt::soc::d1::{CCU, COM, GPIO, PLIC, SPI0, UART0};
+use allwinner_rt::soc::d1::{CCU, COM, GPIO, PHY, PLIC, SPI0, UART0};
 use embedded_time::rate::Extensions;
 
 /// SyterKit runtime peripheral ownership and configurations.
@@ -13,6 +13,8 @@ pub struct Peripherals<'a> {
     // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
     /// Serial Peripheral Interface peripheral 0.
     pub spi0: SPI0,
+    /// Memory controller physical layer (PHY) of DDR SDRAM.
+    pub phy: PHY,
     /// Common control peripheral of DDR SDRAM.
     pub com: COM,
     /// Clock control unit peripheral.
@@ -38,6 +40,7 @@ impl<'a> Peripherals<'a> {
         let p = Self {
             gpio: Pads::__init(),
             spi0: src.spi0,
+            phy: src.phy,
             com: src.com,
             ccu: src.ccu,
             plic: src.plic,
