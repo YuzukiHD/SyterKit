@@ -256,34 +256,25 @@ fn get_pmu_exists() -> bool {
     return false;
 }
 
-fn memcpy_self(dst: &mut [u32; 22], src: &mut [u32; 22], len: usize) {
-    for i in 0..len {
-        dst[i] = src[i];
-    }
-}
-
-static mut PHY_CFG0: [u32; 22] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-];
-static mut PHY_CFG1: [u32; 22] = [
+const PHY_CFG1: [u32; 22] = [
     1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22,
 ];
-static mut PHY_CFG2: [u32; 22] = [
+const PHY_CFG2: [u32; 22] = [
     4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22,
 ];
-static mut PHY_CFG3: [u32; 22] = [
+const PHY_CFG3: [u32; 22] = [
     1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22,
 ];
-static mut PHY_CFG4: [u32; 22] = [
+const PHY_CFG4: [u32; 22] = [
     4, 12, 10, 7, 8, 18, 1, 13, 2, 6, 3, 5, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22,
 ];
-static mut PHY_CFG5: [u32; 22] = [
+const PHY_CFG5: [u32; 22] = [
     13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22, 18, 17, 11, 20,
 ];
-static mut PHY_CFG6: [u32; 22] = [
+const PHY_CFG6: [u32; 22] = [
     3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17,
 ];
-static mut PHY_CFG7: [u32; 22] = [
+const PHY_CFG7: [u32; 22] = [
     3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11,
 ];
 
@@ -295,17 +286,18 @@ unsafe fn mctl_phy_ac_remapping(para: &mut dram_parameters) {
     // read SID info @ 0x228
     let fuse = (readl(SID_INFO) >> 8) & 0x4;
     // // println!("ddr_efuse_type: 0x{:x}", fuse);
+    let mut phy_cfg0 = [0; 22];
     if (para.dram_tpr13 >> 18) & 0x3 > 0 {
         // // println!("phy cfg 7");
-        memcpy_self(&mut PHY_CFG0, &mut PHY_CFG7, 22);
+        phy_cfg0 = PHY_CFG7;
     } else {
         match fuse {
-            8 => memcpy_self(&mut PHY_CFG0, &mut PHY_CFG2, 22),
-            9 => memcpy_self(&mut PHY_CFG0, &mut PHY_CFG3, 22),
-            10 => memcpy_self(&mut PHY_CFG0, &mut PHY_CFG5, 22),
-            11 => memcpy_self(&mut PHY_CFG0, &mut PHY_CFG4, 22),
+            8 => phy_cfg0 = PHY_CFG2,
+            9 => phy_cfg0 = PHY_CFG3,
+            10 => phy_cfg0 = PHY_CFG5,
+            11 => phy_cfg0 = PHY_CFG4,
             13 | 14 => {}
-            12 | _ => memcpy_self(&mut PHY_CFG0, &mut PHY_CFG1, 22),
+            12 | _ => phy_cfg0 = PHY_CFG1,
         }
     }
 
@@ -313,45 +305,45 @@ unsafe fn mctl_phy_ac_remapping(para: &mut dram_parameters) {
         if fuse == 15 {
             return;
         }
-        memcpy_self(&mut PHY_CFG0, &mut PHY_CFG6, 22);
+        phy_cfg0 = PHY_CFG6;
     }
 
     if para.dram_type == DramType::Ddr2 || para.dram_type == DramType::Ddr3 {
-        let val = (PHY_CFG0[4] << 25)
-            | (PHY_CFG0[3] << 20)
-            | (PHY_CFG0[2] << 15)
-            | (PHY_CFG0[1] << 10)
-            | (PHY_CFG0[0] << 5);
+        let val = (phy_cfg0[4] << 25)
+            | (phy_cfg0[3] << 20)
+            | (phy_cfg0[2] << 15)
+            | (phy_cfg0[1] << 10)
+            | (phy_cfg0[0] << 5);
         writel(PHY_AC_MAP1, val as u32);
 
-        let val = (PHY_CFG0[10] << 25)
-            | (PHY_CFG0[9] << 20)
-            | (PHY_CFG0[8] << 15)
-            | (PHY_CFG0[7] << 10)
-            | (PHY_CFG0[6] << 5)
-            | PHY_CFG0[5];
+        let val = (phy_cfg0[10] << 25)
+            | (phy_cfg0[9] << 20)
+            | (phy_cfg0[8] << 15)
+            | (phy_cfg0[7] << 10)
+            | (phy_cfg0[6] << 5)
+            | phy_cfg0[5];
         writel(PHY_AC_MAP2, val as u32);
 
-        let val = (PHY_CFG0[15] << 20)
-            | (PHY_CFG0[14] << 15)
-            | (PHY_CFG0[13] << 10)
-            | (PHY_CFG0[12] << 5)
-            | PHY_CFG0[11];
+        let val = (phy_cfg0[15] << 20)
+            | (phy_cfg0[14] << 15)
+            | (phy_cfg0[13] << 10)
+            | (phy_cfg0[12] << 5)
+            | phy_cfg0[11];
         writel(PHY_AC_MAP3, val as u32);
 
-        let val = (PHY_CFG0[21] << 25)
-            | (PHY_CFG0[20] << 20)
-            | (PHY_CFG0[19] << 15)
-            | (PHY_CFG0[18] << 10)
-            | (PHY_CFG0[17] << 5)
-            | PHY_CFG0[16];
+        let val = (phy_cfg0[21] << 25)
+            | (phy_cfg0[20] << 20)
+            | (phy_cfg0[19] << 15)
+            | (phy_cfg0[18] << 10)
+            | (phy_cfg0[17] << 5)
+            | phy_cfg0[16];
         writel(PHY_AC_MAP4, val as u32);
 
-        let val = (PHY_CFG0[4] << 25)
-            | (PHY_CFG0[3] << 20)
-            | (PHY_CFG0[2] << 15)
-            | (PHY_CFG0[1] << 10)
-            | (PHY_CFG0[0] << 5)
+        let val = (phy_cfg0[4] << 25)
+            | (phy_cfg0[3] << 20)
+            | (phy_cfg0[2] << 15)
+            | (phy_cfg0[1] << 10)
+            | (phy_cfg0[0] << 5)
             | 1;
         writel(PHY_AC_MAP1, val as u32);
     }
@@ -1633,10 +1625,10 @@ fn auto_scan_dram_size(
                 break;
             }
         }
-        let banks = (j + 1) << 2; // 4 or 8
-        if VERBOSE {
-            // println!("rank {} bank = {}", rank, banks);
-        }
+        // let banks = (j + 1) << 2; // 4 or 8
+        // if VERBOSE {
+        //     // println!("rank {} bank = {}", rank, banks);
+        // }
 
         // Store banks in para 1
         let shft = 12 + offs;
@@ -1795,10 +1787,10 @@ pub fn init_dram(para: &mut dram_parameters, ccu: &CCU, phy: &PHY) -> usize {
         sdelay(10);
         writel(RES_CAL_CTRL_REG, readl(RES_CAL_CTRL_REG) | 0x001);
         sdelay(20);
-        if VERBOSE {
-            let zq_val = readl(ZQ_VALUE);
-            // println!("ZQ: {}", zq_val);
-        }
+        // if VERBOSE {
+        //     let zq_val = readl(ZQ_VALUE);
+        //     // println!("ZQ: {}", zq_val);
+        // }
     }
 
     // Set voltage
@@ -1820,17 +1812,17 @@ pub fn init_dram(para: &mut dram_parameters, ccu: &CCU, phy: &PHY) -> usize {
     // STEP 2: CONFIG
     // Set SDRAM controller auto config
     if (para.dram_tpr13 & 0x1) == 0 {
-        if let Err(msg) = auto_scan_dram_config(para, &ccu, &phy) {
+        if let Err(_msg) = auto_scan_dram_config(para, &ccu, &phy) {
             // println!("config fail {}", msg);
             return 0;
         }
     }
 
-    let dtype = match para.dram_type {
-        DramType::Ddr2 => "DDR2",
-        DramType::Ddr3 => "DDR3",
-        _ => "",
-    };
+    // let dtype = match para.dram_type {
+    //     DramType::Ddr2 => "DDR2",
+    //     DramType::Ddr3 => "DDR3",
+    //     _ => "",
+    // };
     // println!("{}@{}MHz", dtype, para.dram_clk);
 
     if VERBOSE {
