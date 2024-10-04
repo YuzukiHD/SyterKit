@@ -36,18 +36,8 @@ struct Make {
 
 #[derive(Args)]
 struct Flash {
-    #[clap(subcommand)]
-    command: FlashCommands,
     #[clap(help = "Specify the binary name")]
     bin: Option<String>,
-}
-
-#[derive(Subcommand)]
-enum FlashCommands {
-    /// Operate on NAND flash
-    Nand,
-    /// Operate on NOR flash
-    Nor,
 }
 
 #[derive(clap::Args)]
@@ -59,6 +49,12 @@ struct Env {
         long_help = None,
     )]
     release: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum FlashType {
+    Nand,
+    Nor,
 }
 
 fn main() {
@@ -82,7 +78,8 @@ fn main() {
             xtask_build_d1_flash_bt0(&args.env, &flash.bin);
             xtask_binary_d1_flash_bt0(binutils_prefix, &args.env, &flash.bin);
             xtask_finialize_d1_flash_bt0(&args.env, &flash.bin);
-            xtask_burn_d1_flash_bt0(xfel, &flash.command, &args.env, &flash.bin);
+            let flash_type = xtask_detect_flash_type(xfel);
+            xtask_burn_d1_flash_bt0(xfel, flash_type, &args.env, &flash.bin);
         }
     }
 }
@@ -194,13 +191,33 @@ fn align_up_to(len: u64, target_align: u64) -> u64 {
     }
 }
 
-fn xtask_burn_d1_flash_bt0(xfel: &str, flash: &FlashCommands, env: &Env, bin: &Option<String>) {
-    trace!("burn flash with xfel {}", xfel);
+fn xtask_detect_flash_type(xfel: &str) -> FlashType {
+    trace!("detect flash type with xfel '{}'", xfel);
+    let mut command = Command::new(xfel);
+    command.arg("spinor");
+    let status = command.status().unwrap();
+    trace!("xfel spinor returned {}", status);
+    if status.success() {
+        return FlashType::Nor;
+    }
+    let mut command = Command::new(xfel);
+    command.arg("spinand");
+    let status = command.status().unwrap();
+    trace!("xfel spinand returned {}", status);
+    if status.success() {
+        return FlashType::Nand;
+    }
+    error!("cannot detect any flash");
+    process::exit(1);
+}
+
+fn xtask_burn_d1_flash_bt0(xfel: &str, flash: FlashType, env: &Env, bin: &Option<String>) {
+    trace!("burn flash with xfel '{}'", xfel);
     let mut command = Command::new(xfel);
     command.current_dir(dist_dir(env));
     match flash {
-        FlashCommands::Nand => command.arg("spinand"),
-        FlashCommands::Nor => command.arg("spinor"),
+        FlashType::Nand => command.arg("spinand"),
+        FlashType::Nor => command.arg("spinor"),
     };
     command.args(["write", "0"]);
     if let Some(bin) = bin {
