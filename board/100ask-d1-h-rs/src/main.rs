@@ -36,7 +36,7 @@ fn main(p: Peripherals, _c: Clocks) {
     clock_dump(&p.ccu);
 
     // Start boot command line.
-    let (command_buffer, history_buffer) = ([0; 32], [0; 32]);
+    let (command_buffer, history_buffer) = ([0; 128], [0; 128]);
     let mut cli = CliBuilder::default()
         .writer(syterkit::stdout())
         .command_buffer(command_buffer)

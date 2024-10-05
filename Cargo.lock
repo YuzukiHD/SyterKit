@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "allwinner-hal"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#4a80e331dc1eeb3117a507c0d9869d8719b65cf2"
+source = "git+https://github.com/rustsbi/allwinner-hal#7c4fdb93132ed9d3e34de003bf8d6bf4991b7c63"
 dependencies = [
  "embedded-hal",
  "embedded-io",
@@ -27,7 +27,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#4a80e331dc1eeb3117a507c0d9869d8719b65cf2"
+source = "git+https://github.com/rustsbi/allwinner-hal#7c4fdb93132ed9d3e34de003bf8d6bf4991b7c63"
 dependencies = [
  "allwinner-hal",
  "allwinner-rt-macros",
@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt-macros"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#4a80e331dc1eeb3117a507c0d9869d8719b65cf2"
+source = "git+https://github.com/rustsbi/allwinner-hal#7c4fdb93132ed9d3e34de003bf8d6bf4991b7c63"
 dependencies = [
  "proc-macro2",
  "quote",
