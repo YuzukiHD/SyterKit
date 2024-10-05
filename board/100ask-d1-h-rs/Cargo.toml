@@ -8,7 +8,7 @@ default-target = "riscv64imac-unknown-none-elf"
 
 [dependencies]
 embedded-hal = "1.0.0"
-embedded-cli = { version = "0.2.1", default-features = false, features = ["macros", "help"] }
+embedded-cli = "0.2.1"
 embedded-io = "0.6.1"
 panic-halt = "0.2.0"
 syterkit = { path = "../../rust", features = ["sun20iw1"]}
