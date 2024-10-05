@@ -63,8 +63,8 @@ fn main(p: Peripherals, _c: Clocks) {
     }
 }
 
-fn command_bootargs<'a>(cli: &mut CliHandle<'a, Stdout, Infallible>) {
-    ufmt::uwrite!(cli.writer(), "TODO Bootargs").ok();
+fn command_bootargs<'a>(_cli: &mut CliHandle<'a, Stdout, Infallible>) {
+    println!("TODO Bootargs");
 }
 
 fn command_reload<'a>(cli: &mut CliHandle<'a, Stdout, Infallible>) {
