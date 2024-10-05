@@ -9,7 +9,7 @@ use embedded_cli::{
 };
 use embedded_io::Read;
 use panic_halt as _;
-use syterkit::{clock_dump, entry, println, show_banner, Clocks, Peripherals, Stdout};
+use syterkit::{clock_dump, entry, print, println, show_banner, Clocks, Peripherals, Stdout};
 
 #[derive(Command)]
 enum Base<'a> {
@@ -33,6 +33,13 @@ enum Base<'a> {
         address: &'a str,
         /// The 32-bit data this command would use.
         data: &'a str,
+    },
+    /// Dumps memory region in hex.
+    Hexdump {
+        /// The physical address this command would start to dump.
+        address: &'a str,
+        /// Number of dumped bytes.
+        length: &'a str,
     },
 }
 
@@ -71,6 +78,7 @@ fn main(p: Peripherals, _c: Clocks) {
                     Base::Print => command_print(cli),
                     Base::Read32 { address } => command_read32(cli, address),
                     Base::Write32 { address, data } => command_write32(cli, address, data),
+                    Base::Hexdump { address, length } => command_hexdump(cli, address, length),
                 }
                 Ok(())
             }),
@@ -127,6 +135,45 @@ fn command_write32<'a, 'b>(
     };
     unsafe { core::ptr::write_volatile(address as *mut u32, data) };
     println!("Wrote 0x{:08x} to address 0x{:x}.", data, address);
+}
+
+fn command_hexdump<'a, 'b>(
+    _cli: &mut CliHandle<'a, Stdout, Infallible>,
+    address: &'b str,
+    length: &'b str,
+) {
+    let address: usize = match parse_value(address.trim()) {
+        Some(address) => address,
+        None => {
+            println!("error: invalid address, shoule be hexadecimal like 0x40000000, or decimal like 1073741824");
+            return;
+        }
+    };
+    let length: usize = match parse_value(length.trim()) {
+        Some(address) => address,
+        None => {
+            println!("error: invalid data, shoule be hexadecimal like 0x40000000, or decimal like 1073741824");
+            return;
+        }
+    };
+    for i in (address..address + length).step_by(16) {
+        print!("0x{:x}:\t", i);
+        let mut data = [0u8; 16];
+        for j in (0..16).step_by(4) {
+            let address = i + j;
+            let word: u32 = unsafe { core::ptr::read_volatile(address as *const u32) };
+            data[j..j + 4].copy_from_slice(&word.to_le_bytes());
+            print!("{:08x} ", word);
+        }
+        for byte in data {
+            if byte.is_ascii_graphic() || byte == b' ' {
+                print!("{}", byte as char);
+            } else {
+                print!(".");
+            }
+        }
+        println!()
+    }
 }
 
 fn parse_value<T: core::str::FromStr + num_traits::Num>(value: &str) -> Option<T> {
