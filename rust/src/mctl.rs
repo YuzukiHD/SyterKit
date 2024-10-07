@@ -1,3 +1,4 @@
+use allwinner_hal::ccu::{DramClockSource, FactorN};
 use allwinner_rt::soc::d1::{CCU, PHY};
 use core::ptr::{read_volatile, write_volatile};
 
@@ -7,12 +8,12 @@ const VERBOSE: bool = false;
 pub const RAM_BASE: usize = 0x40000000;
 
 // p49 ff
-const CCU: usize = 0x0200_1000;
+// const CCU: usize = 0x0200_1000;
 // const PLL_CPU_CTRL: usize = CCU + 0x0000;
 // const PLL_DDR_CTRL: usize = CCU + 0x0010;
-const MBUS_CLK: usize = CCU + 0x0540;
-const DRAM_CLK: usize = CCU + 0x0800;
-const DRAM_BGR: usize = CCU + 0x080c;
+// const MBUS_CLK: usize = CCU + 0x0540;
+// const DRAM_CLK: usize = CCU + 0x0800;
+// const DRAM_BGR: usize = CCU + 0x080c;
 
 /**
  * D1 manual p152 3.4 System Configuration
@@ -429,11 +430,15 @@ fn ccm_set_pll_ddr_clk(
     // Enable PLL output
     unsafe { ccu.pll_ddr_control.modify(|val| val.unmask_pll_output()) };
 
-    // Turn clock gate on. TODO: rearrange into structures
-    let mut val = readl(DRAM_CLK);
-    val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
-    val |= 0x80000000; // turn clock on
-    writel(DRAM_CLK, val);
+    // Turn clock gate on.
+    unsafe {
+        ccu.dram_clock.modify(|val| {
+            val.set_clock_source(DramClockSource::PllDdr)
+                .set_factor_m(0)
+                .set_factor_n(FactorN::N1)
+                .unmask_clock()
+        });
+    }
 
     n * 24 / (m0 * m1)
 }
@@ -449,24 +454,14 @@ fn mctl_sys_init(
     phy: &PHY,
 ) {
     // assert MBUS reset
-    let val = readl(MBUS_CLK);
-    writel(MBUS_CLK, val & 0xbfffffff);
+    unsafe { ccu.mbus_clock.modify(|val| val.assert_reset()) };
 
     // turn off sdram clock gate, assert sdram reset
-    let mut val = readl(DRAM_BGR);
-    val &= 0xfffffffe;
-    writel(DRAM_BGR, val);
-    val &= 0xfffefffe;
-    writel(DRAM_BGR, val);
-
-    // turn off bit 30 [??]
-    let mut val = readl(DRAM_CLK);
-    writel(DRAM_CLK, val & 0xbfffffff);
-    // and toggle dram clock gating off + trigger update
-    val &= 0x7fffffff;
-    writel(DRAM_CLK, val);
-    val |= 0x08000000;
-    writel(DRAM_CLK, val);
+    unsafe {
+        ccu.dram_bgr.modify(|val| val.gate_mask().assert_reset());
+        ccu.dram_clock.modify(|val| val.mask_clock());
+        ccu.dram_clock.modify(|val| val.unmask_clock());
+    }
     sdelay(10);
 
     // set ddr pll clock
@@ -476,28 +471,25 @@ fn mctl_sys_init(
     dram_disable_all_master();
 
     // release sdram reset
-    let val = readl(DRAM_BGR);
-    writel(DRAM_BGR, val | 0x00010000);
+    unsafe { ccu.dram_bgr.modify(|val| val.gate_mask().deassert_reset()) };
 
     // release MBUS reset
-    let val = readl(MBUS_CLK);
-    writel(MBUS_CLK, val | 0x40000000);
+    unsafe { ccu.mbus_clock.modify(|val| val.deassert_reset()) };
 
-    // turn bit 30 back on [?]
-    let val = readl(DRAM_CLK);
-    writel(DRAM_CLK, val | 0x40000000);
+    // No need to turn back on bit 30
+
     sdelay(5);
 
     // turn on sdram clock gate
-    let val = readl(DRAM_BGR);
-    writel(DRAM_BGR, val | 0x0000001); // (1<<0);
+    unsafe { ccu.dram_bgr.modify(|val| val.gate_pass()) };
 
     // turn dram clock gate on, trigger sdr clock update
-    let mut val = readl(DRAM_CLK);
-    val |= 0x80000000;
-    writel(DRAM_CLK, val);
-    val |= 0x88000000;
-    writel(DRAM_CLK, val);
+    unsafe {
+        // TODO: trigger SDR clock update (bit 27)
+        ccu.dram_clock.modify(|val| {
+            core::mem::transmute(core::mem::transmute::<_, u32>(val.unmask_clock()) | (0x1 << 27))
+        });
+    }
     sdelay(5);
 
     // mCTL clock enable
