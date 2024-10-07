@@ -36,7 +36,7 @@ pub fn _print(args: core::fmt::Arguments) {
 
 /// A handle to the global standard output stream of the current runtime.
 pub struct Stdout {
-    inner: spin::MutexGuard<'static, Option<SyterKitStdoutInner>>,
+    inner: &'static spin::Mutex<Option<SyterKitStdoutInner>>,
 }
 
 impl embedded_io::ErrorType for Stdout {
@@ -46,14 +46,16 @@ impl embedded_io::ErrorType for Stdout {
 impl embedded_io::Write for Stdout {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
-        if let Some(stdout) = &mut *self.inner {
+        let mut lock = self.inner.lock();
+        if let Some(stdout) = &mut *lock {
             stdout.inner.write_all(buf).ok();
         }
         Ok(buf.len())
     }
     #[inline]
     fn flush(&mut self) -> Result<(), Self::Error> {
-        if let Some(stdout) = &mut *self.inner {
+        let mut lock = self.inner.lock();
+        if let Some(stdout) = &mut *lock {
             stdout.inner.flush().ok();
         }
         Ok(())
@@ -62,7 +64,7 @@ impl embedded_io::Write for Stdout {
 
 /// A handle to the standard input stream of a runtime.
 pub struct Stdin {
-    inner: spin::MutexGuard<'static, Option<SyterKitStdinInner>>,
+    inner: &'static spin::Mutex<Option<SyterKitStdinInner>>,
 }
 
 impl embedded_io::ErrorType for Stdin {
@@ -72,7 +74,8 @@ impl embedded_io::ErrorType for Stdin {
 impl embedded_io::Read for Stdin {
     #[inline]
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
-        if let Some(stdin) = &mut *self.inner {
+        let mut lock = self.inner.lock();
+        if let Some(stdin) = &mut *lock {
             stdin.inner.read(buf).ok();
         }
         Ok(buf.len())
@@ -82,15 +85,11 @@ impl embedded_io::Read for Stdin {
 /// Constructs a new handle to the standard output of the current environment.
 #[inline]
 pub fn stdout() -> Stdout {
-    Stdout {
-        inner: STDOUT.lock(),
-    }
+    Stdout { inner: &STDOUT }
 }
 
 /// Constructs a new handle to the standard input of the current environment.
 #[inline]
 pub fn stdin() -> Stdin {
-    Stdin {
-        inner: STDIN.lock(),
-    }
+    Stdin { inner: &STDIN }
 }
