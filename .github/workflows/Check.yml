@@ -8,6 +8,7 @@ on:
 
 jobs:
   check:
+    name: Determine Rust or C check
     runs-on: ubuntu-latest
 
     outputs:
@@ -30,8 +31,8 @@ jobs:
             echo "::set-output name=is_rust::false"
           fi
 
-  cargo_check:
-    name: Cargo
+  rust_check:
+    name: Rust
     needs: check
     if: ${{ needs.check.outputs.is_rust == 'true' }}
     uses: ./.github/workflows/Cargo.yml
