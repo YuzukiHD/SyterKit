@@ -35,5 +35,4 @@ jobs:
           cargo install cargo-binutils
       - name: Cargo Make
         run: |
-          rustc -vV
           cargo make --release

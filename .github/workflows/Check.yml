@@ -31,11 +31,13 @@ jobs:
           fi
 
   cargo_check:
+    name: Cargo
     needs: check
     if: ${{ needs.check.outputs.is_rust == 'true' }}
     uses: ./.github/workflows/Cargo.yml
-  
+
   cmake_check:
+    name: CMake
     needs: check
     if: ${{ needs.check.outputs.is_rust == 'false' }}
     uses: ./.github/workflows/CMake.yml
