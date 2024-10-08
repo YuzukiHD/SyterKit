@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "allwinner-hal"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#3af2d8628ae86ed459ed441fe3ee45ade09708f6"
+source = "git+https://github.com/rustsbi/allwinner-hal#5a4b5d3b22114e58ff2028fcae9f5d55a079893b"
 dependencies = [
  "embedded-hal",
  "embedded-io",
@@ -27,7 +27,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#3af2d8628ae86ed459ed441fe3ee45ade09708f6"
+source = "git+https://github.com/rustsbi/allwinner-hal#5a4b5d3b22114e58ff2028fcae9f5d55a079893b"
 dependencies = [
  "allwinner-hal",
  "allwinner-rt-macros",
@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt-macros"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#3af2d8628ae86ed459ed441fe3ee45ade09708f6"
+source = "git+https://github.com/rustsbi/allwinner-hal#5a4b5d3b22114e58ff2028fcae9f5d55a079893b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -484,9 +484,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
+checksum = "b3e4daa0dcf6feba26f985457cdf104d4b4256fc5a09547140f3631bb076b19a"
 dependencies = [
  "unicode-ident",
 ]
