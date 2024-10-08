@@ -275,9 +275,11 @@ fn find_binutils_prefix() -> Option<&'static str> {
         let mut command = Command::new(format!("{}objcopy", prefix));
         command.arg("--version");
         command.stdout(Stdio::null());
-        let status = command.status().unwrap();
-        if status.success() {
-            return Some(prefix);
+        let status = command.status();
+        if let Ok(status) = status {
+            if status.success() {
+                return Some(prefix);
+            }
         }
     }
     None
