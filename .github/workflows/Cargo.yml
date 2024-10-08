@@ -1,0 +1,39 @@
+name: Cargo Test
+
+on:
+  workflow_call:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS:
+
+jobs:
+  fmt:
+    name: Rustfmt all packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - name: Rustfmt Check
+        run: cargo fmt --all -- --check
+  
+  make:
+    name: Cargo Make
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly-2024-10-01
+      - name: Setup env
+        run: |
+          rustup component add llvm-tools-preview
+          rustup target add riscv64imac-unknown-none-elf
+          cargo install cargo-binutils
+      - name: Cargo Make
+        run: |
+          rustc -vV
+          cargo make --release
