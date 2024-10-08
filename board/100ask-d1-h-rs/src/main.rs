@@ -55,6 +55,35 @@ fn main(p: Peripherals, _c: Clocks) {
     // Dump information about the system clocks.
     clock_dump(&p.ccu);
 
+    // TODO: SD/MMC init.
+    let _sdmmc_pins = {
+        let d1 = p.gpio.pf0.into_function::<2>();
+        let d0 = p.gpio.pf1.into_function::<2>();
+        let clk = p.gpio.pf2.into_function::<2>();
+        let cmd = p.gpio.pf3.into_function::<2>();
+        let d3 = p.gpio.pf4.into_function::<2>();
+        let d2 = p.gpio.pf5.into_function::<2>();
+        (clk, cmd, d0, d1, d2, d3)
+    };
+    /*
+    p.ccu.smhc_bgr.modify(|val| val.gate_pass::<0>().deassert_reset::<0>()); // 0 == sdhci->id
+    p.ccu.smhc0_clk.modify(|val| val.unmask_clock());
+    // let sdhci = p.smhc0.smhc(sdmmc_pins)
+    // sdhci.detect_sdcard() // TODO or: detect_mmc()
+    p.smhc0.global_control.modify(|val| val.set_dma_reset().set_fifo_reset().set_software_reset());
+    // TODO sdhci_set_clock(hci, MMC_CLK_400K)
+    // TODO sdhci_set_width(hci, MMC_BUS_WIDTH_1)
+    // TODO go_idle_state(hci)
+    // delay_ms(2)
+    // let sdcard = sdhci.try_detect_sdcard()?;
+    // // TODO volumn, directory, file, etc
+    // let dtb = dir.open_file_in_dir()?;
+    // // file read loop
+    // ddr_mem[..size].copy_from_slice(&buf);
+    // let kernel = ...
+    // let config = ...
+     */
+
     // Start boot command line.
     let (command_buffer, history_buffer) = ([0; 128], [0; 128]);
     let mut cli = CliBuilder::default()
