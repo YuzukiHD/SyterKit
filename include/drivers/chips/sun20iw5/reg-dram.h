@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef __SUN20IW1_REG_DRAM_H__
-#define __SUN20IW1_REG_DRAM_H__
+#ifndef __SUN20IW5_REG_DRAM_H__
+#define __SUN20IW5_REG_DRAM_H__
 
 #define MCTL_COM_BASE (0x3102000)
 #define MCTL_COM_WORK_MODE0 (0x00)
@@ -114,4 +114,4 @@
 #define VDD_SYS_PWROFF_GATING_REG (0x250)
 #define ANALOG_PWROFF_GATING_REG (0x254)
 
-#endif /* __SUN20IW1_REG_DRAM_H__ */
+#endif /* __SUN20IW5_REG_DRAM_H__ */

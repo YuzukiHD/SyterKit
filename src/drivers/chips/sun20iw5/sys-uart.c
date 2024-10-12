@@ -12,33 +12,31 @@
 
 #include <sys-clk.h>
 
-#define CCU_UART_RST_OFFSET (16)
-#define SERIAL_PARENT_CLK (24000000)
+#define SERIAL_PARENT_CLK (192000000)
 
-void __attribute__((weak)) sunxi_serial_clock_init(sunxi_serial_t *uart) {
-    uint32_t addr;
+extern void set_apb_spec(void);
+extern void set_pll_peri(void);
+
+void sunxi_serial_clock_init(sunxi_serial_t *uart) {
     uint32_t val;
+	
+	set_apb_spec();
+	set_pll_peri();
 
-    /* Open the clock gate for uart */
-    addr = CCU_BASE + CCU_UART_BGR_REG;
-    val = read32(addr);
-    val &= ~(1 << uart->id);
-    write32(addr, val);
-    udelay(10);
-    val |= 1 << uart->id;
-    write32(addr, val);
+	val = readl(SUNXI_CCU_APP_BASE + BUS_Reset0_REG);
+	val |= (1 << (BUS_Reset0_REG_PRESETN_UART0_SW_OFFSET + uart->id));
+	writel(val, SUNXI_CCU_APP_BASE + BUS_Reset0_REG);
 
-    /* Deassert USART reset */
-    addr = CCU_BASE + CCU_UART_BGR_REG;
-    val = read32(addr);
-    val &= ~(1 << (CCU_UART_RST_OFFSET + uart->id));
-    write32(addr, val);
+	/* gate */
+	val = readl(SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG);
+	val &= ~(1<< (BUS_CLK_GATING0_REG_UART0_PCLK_EN_OFFSET + uart->id));
+	writel(val, SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG);
     udelay(10);
-    val |= 1 << (CCU_UART_RST_OFFSET + uart->id);
-    write32(addr, val);
+	val |= (1 << (BUS_CLK_GATING0_REG_UART0_PCLK_EN_OFFSET + uart->id));
+	writel(val, SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG);
 }
 
-void __attribute__((weak)) sunxi_serial_init(sunxi_serial_t *uart) {
+void sunxi_serial_init(sunxi_serial_t *uart) {
     uint32_t addr;
     uint32_t val;
 
@@ -95,29 +93,4 @@ void __attribute__((weak)) sunxi_serial_init(sunxi_serial_t *uart) {
     /* Config uart TXD and RXD pins */
     sunxi_gpio_init(uart->gpio_tx.pin, uart->gpio_tx.mux);
     sunxi_gpio_init(uart->gpio_rx.pin, uart->gpio_rx.mux);
-}
-
-void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
-    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-    sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
-
-    while ((serial_reg->lsr & (1 << 6)) == 0)
-        ;
-    serial_reg->thr = c;
-}
-
-char __attribute__((weak)) sunxi_serial_getc(void *arg) {
-    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-    sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
-
-    while ((serial_reg->lsr & 1) == 0)
-        ;
-    return serial_reg->rbr;
-}
-
-int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
-    sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-    sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
-
-    return serial_reg->lsr & 1;
 }

@@ -1,10 +1,13 @@
-# SPDX-License-Identifier: Apache-2.0 
+# RISC-V 64 ARCH
+if (CONFIG_ARCH_RISCV64)
+if (CONFIG_ARCH_RISCV64_CORE_C906)
+    add_subdirectory(riscv64)
+endif()
+endif()
 
-add_library(arch-obj OBJECT
-    timer.c
-    exception.c
-    memcpy.S
-    memset.S
-    fprw.S
-    memcmp.c
-)
+# RISC-V 32 ARCH
+if (CONFIG_ARCH_RISCV32)
+if (CONFIG_ARCH_RISCV32_CORE_E907)
+    add_subdirectory(riscv32_e907)
+endif()
+endif()
