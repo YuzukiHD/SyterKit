@@ -9,12 +9,14 @@
 
 #include <log.h>
 
+extern uint32_t current_hosc_freq;
+
 void __attribute__((weak)) sunxi_clk_init(void) {
     printk_warning("sunxi_clk_init: not impl\n");
 }
 
 void __attribute__((weak)) uint32_t sunxi_clk_get_hosc_type() {
-    return 0;
+    return 24;
 }
 
 void __attribute__((weak)) sunxi_clk_reset(void) {

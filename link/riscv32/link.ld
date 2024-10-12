@@ -7,7 +7,7 @@ SEARCH_DIR(.)
 /* Memory Spaces Definitions */
 MEMORY
 {
-  ram   (rwx) : ORIGIN = @ARCH_START_ADDRESS@, LENGTH = @ARCH_SRAM_LENGTH@ /* SRAMC. 132K on boot mode, 100K on FEL mode */
+    ram (rwx) : ORIGIN = @ARCH_START_ADDRESS@, LENGTH = @ARCH_SRAM_LENGTH@ /* SRAM */
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
@@ -29,14 +29,25 @@ SECTIONS
         KEEP(*(.note.gnu.build-id))
         . = ALIGN(4);
     } > ram
+	
+    .rodata : 
+    {
+		. = ALIGN(4) ;
+		*(.rdata)
+		*(.rdata*)
+		*(.rodata)
+		*(.rodata*)
+		. = ALIGN(4) ;
+    } > ram
 
-	. = ALIGN(16);
-  	.rodata : { *(.rodata) }
-
-	. = ALIGN(16);
-  	.data : { *(.data) }
-
-    . = ALIGN(4);
+    .data : 
+    {
+		. = ALIGN(4) ;
+		*(.data)
+		*(.data*)
+		*(.sdata*)
+		. = ALIGN(4) ; 
+	} > ram
 
     PROVIDE(__spl_end = .);
     PROVIDE(__spl_size = __spl_end - __spl_start);
@@ -51,11 +62,10 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         _ebss = . ;
-    } > ram
+	} > ram
 
     .stack (NOLOAD):
     {
-        . = ALIGN(8);
         /* SRV stack section */
         __stack_srv_start = .;
         . += STACK_SIZE;

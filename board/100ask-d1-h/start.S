@@ -43,7 +43,7 @@ _start:
 	li t0, MSTATUS_FS | MSTATUS_XS | (3 << 23)
 	csrs mstatus, t0
 
-	la sp, _stack_start
+	la sp, _stack_end
 
 	jal clear_bss
 
