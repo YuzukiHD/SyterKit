@@ -51,3 +51,15 @@ dram_para_t dram_para = {
         .dram_tpr12 = 0x00000002,
         .dram_tpr13 = 0x34050100,
 };
+
+void show_chip() {
+    uint32_t chip_sid[4];
+    chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+    chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+    chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+    chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+    printk_info("Model: AvaotaSBC Avaota CAM board.\n");
+    printk_info("Core: XuanTie E907 RISC-V Core.\n");
+    printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+}

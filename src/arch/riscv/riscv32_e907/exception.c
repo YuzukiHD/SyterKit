@@ -466,8 +466,7 @@ void riscv_handle_exception(struct pt_regs_t *regs) {
                 break;
         }
     }
-    while (1)
-        ;
+    abort();
 }
 
 static void dummy_interrupt_function(void *data) {
