@@ -266,6 +266,9 @@ void sunxi_clk_init(void) {
     set_pll_csi();
 }
 
+void sunxi_clk_dump() {
+}
+
 /* we got hosc freq in arch/timer.c */
 extern uint32_t current_hosc_freq;
 
