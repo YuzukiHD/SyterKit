@@ -3,5 +3,6 @@ add_library(chip_drivers-obj OBJECT
     sys-sid.c
     sys-wdt.c
     #sys-dram.c
+    sys-uart.c
     sys-rproc.c
 )

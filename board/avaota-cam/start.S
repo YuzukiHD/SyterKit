@@ -7,27 +7,67 @@
 	.align 4
 	.globl _start
 _start:
+	/* This chip enable mie in BROM, We needs to close it right now */
+	csrc mstatus, MSTATUS_MIE
 	/* disable interrupt */
 	csrw mie, zero
+	li 	x1, 0
+	li 	x2, 0
+	li 	x3, 0
+	li 	x4, 0
+	li 	x5, 0
+	li 	x6, 0
+	li 	x7, 0
+	li 	x8, 0
+	li 	x9, 0
+	li 	x10, 0
+	li 	x11, 0
+	li 	x12, 0
+	li 	x13, 0
+	li 	x14, 0
+	li 	x15, 0
+	li 	x16, 0
+	li 	x17, 0
+	li 	x18, 0
+	li 	x19, 0
+	li 	x20, 0
+	li 	x21, 0
+	li 	x22, 0
+	li 	x23, 0
+	li 	x24, 0
+	li 	x25, 0
+	li 	x26, 0
+	li 	x27, 0
+	li 	x28, 0
+	li 	x29, 0
+	li 	x30, 0
+	li 	x31, 0
 
-	/* enable theadisaee */
-	li t1, (0x1 << 22)
-	csrs mxstatus, t1
+	/* enable FPU and accelerator if present */
+	li 	t0, MSTATUS_FS | MSTATUS_XS
+	csrs mstatus, t0
+
+	/* enable MXSTATUS.THEADISAEE bit[22] */
+	li 	t0,  MSTATUS_TSR
+	csrs mxstatus, t0
 
 	/* invaild ICACHE/DCACHE/BTB/BHT */
 	fence.i
 
 	/* Setup exception vectors */
-	la t1, _image_start
-	LREG t1, (t1)
-	la t2, _start
-	sub t0, t1, t2
 	la a0, vectors
-	add a0, a0, t0
+	ori	a0, a0, 3
 	csrw mtvec, a0
+	
+	/* Setup int vectors */
+	la a0, vectors
+	csrw mtvt, a0
 
-	la sp, _stack_start
+	/* Setup stack */
+	la sp, __stack_srv_end
+	csrw mscratch, sp
 
+	/* clear bss */
 	jal clear_bss
 
 	jal set_timer_count
@@ -35,8 +75,8 @@ _start:
 	jal main
 
 clear_bss:
-	la	t0, _s_bss
-	la	t1, _e_bss
+	la	t0, _sbss
+	la	t1, _ebss
 
 clbss_1:
 	sw zero, 0(t0)
@@ -47,7 +87,7 @@ clbss_1:
 	/*
 	* Exception vectors.
 	*/
-	.align 4
+	.align 6
 	.globl vectors
 vectors:
 	csrw mscratch, sp
@@ -95,7 +135,7 @@ vectors:
 	li x5, -1
 	SREG x5, 36 * REGSZ(x2)
 	move a0, sp
-	jal riscv64_handle_exception
+	jal riscv_handle_exception
 	csrr a0, mscratch
 	LREG x1, 1 * REGSZ(a0)
 	LREG x2, 2 * REGSZ(a0)
@@ -129,18 +169,3 @@ vectors:
 	LREG x31, 31 * REGSZ(a0)
 	LREG x10, 10 * REGSZ(a0)
 	mret
-
-	/*
-	* The location of section
-	*/
-	.align 3
-_image_start:
-	RVPTR __image_start
-_s_bss:
-	RVPTR _sbss
-_e_bss:
-	RVPTR _ebss
-_stack_start:
-	RVPTR __stack_srv_start
-_stack_end:
-	RVPTR __stack_srv_end

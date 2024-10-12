@@ -13,8 +13,6 @@
 
 #include <sys-clk.h>
 
-static uint32_t current_hosc_freq = 0;
-
 typedef struct {
     uint32_t pll_en;
     uint32_t pll_ldo_en;
@@ -43,21 +41,6 @@ int wait_until_pll_timeout(uint32_t time_cnt) {
 
     } while (time_cnt--);
     return ret = 0;
-}
-
-static int sunxi_hosc_detect(void) {
-    uint32_t counter_val = 0;
-    writel(HOSC_FREQ_DET_HOSC_ENABLE_DETECT, CCU_HOSC_FREQ_DET_REG);
-    while (!(HOSC_FREQ_DET_HOSC_FREQ_READY_CLEAR_MASK & readl(CCU_HOSC_FREQ_DET_REG)))
-        ;
-    counter_val = (readl(CCU_HOSC_FREQ_DET_REG) & HOSC_FREQ_DET_HOSC_FREQ_DET_CLEAR_MASK) >> HOSC_FREQ_DET_HOSC_FREQ_DET_OFFSET;
-    if (counter_val < ((HOSC_24M_COUNTER + HOSC_40M_COUNTER) / 2)) {
-        current_hosc_freq = HOSC_FREQ_24M;
-        return HOSC_FREQ_24M;
-    } else {
-        current_hosc_freq = HOSC_FREQ_40M;
-        return HOSC_FREQ_40M;
-    }
 }
 
 static void set_pll_general(uint32_t pll_addr, uint32_t en, uint32_t output_gate_en, uint32_t pll_d, uint32_t pll_d_off, uint32_t pll_n) {
@@ -152,7 +135,7 @@ static void set_pll_peri_ctrl1(void) {
 }
 
 /* pll peri hosc*2N/M = 3072M  hardware *2 */
-static void set_pll_peri(void) {
+void set_pll_peri(void) {
     // When efuse is burned, brom will initialize the peri clock in advance.
     if (!(readl(CCU_PLL_PERI_CTRL0_REG) & PLL_PERI_CTRL0_REG_PLL_EN_CLEAR_MASK)) {
         if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
@@ -170,8 +153,7 @@ static void set_pll_csi(void) {
     uint32_t n, input_div, wave_bot;
 
     /* Set N、M */
-    if (sunxi_clk_get_hosc_type() ==
-        HOSC_FREQ_40M) {
+    if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
         n = CCU_AON_PLL_CPU_N_67;
         wave_bot = 0xc0010000;
         input_div = PLL_CSI_CTRL_REG_PLL_INPUT_DIV_4;
@@ -252,7 +234,7 @@ static void set_apb(void) {
 }
 
 // 192M
-static void set_apb_spec(void) {
+void set_apb_spec(void) {
     clrsetbits_le32(CCU_APB_SPEC_CLK_REG, APB_SPEC_CLK_REG_APB_SPEC_SEL_CLEAR_MASK | APB_SPEC_CLK_REG_APB_SPEC_CLK_DIV_CLEAR_MASK,
                     APB_SPEC_CLK_REG_APB_SPEC_SEL_PERI_192M << APB_SPEC_CLK_REG_APB_SPEC_SEL_OFFSET);
     return;
@@ -260,7 +242,7 @@ static void set_apb_spec(void) {
 
 void sunxi_clk_init(void) {
     /* detect hosc */
-    if (sunxi_hosc_detect() == HOSC_FREQ_24M) {
+    if (sunxi_clk_get_hosc_type() == HOSC_FREQ_24M) {
         writel(readl(CCU_FUNC_CFG_REG) | PLL_FUNC_CFG_REG_DCXO_ST_CLEAR_MASK, CCU_FUNC_CFG_REG);
         set_pll_general(CCU_PLL_CPUX_CTRL_REG, PLL_CPU_CTRL_REG_PLL_EN_ENABLE, PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_ENABLE, CCU_AON_PLL_CPU_D_1, 2, CCU_AON_PLL_CPU_N_27);
         if (!(readl(CCU_PLL_VIDEO_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_EN_CLEAR_MASK)) {
@@ -283,6 +265,9 @@ void sunxi_clk_init(void) {
     set_pll_video();
     set_pll_csi();
 }
+
+/* we got hosc freq in arch/timer.c */
+extern uint32_t current_hosc_freq;
 
 uint32_t sunxi_clk_get_hosc_type() {
     return current_hosc_freq;

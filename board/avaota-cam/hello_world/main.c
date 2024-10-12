@@ -12,6 +12,11 @@ extern sunxi_serial_t uart_dbg;
 int main(void) {
     sunxi_serial_init(&uart_dbg);
 
+	uart_putchar('A');
+	uart_putchar('A');
+	uart_putchar('A');
+	uart_putchar('\n');
+
     printk_info("Hello World!\n");
 
     sunxi_clk_init();
