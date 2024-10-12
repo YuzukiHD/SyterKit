@@ -15,7 +15,7 @@ void __attribute__((weak)) sunxi_clk_init(void) {
     printk_warning("sunxi_clk_init: not impl\n");
 }
 
-void __attribute__((weak)) uint32_t sunxi_clk_get_hosc_type() {
+uint32_t __attribute__((weak)) sunxi_clk_get_hosc_type() {
     return 24;
 }
 
