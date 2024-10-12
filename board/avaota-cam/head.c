@@ -36,7 +36,8 @@ typedef struct boot_file_head {
 * bitwise operations and utilizes it to construct a jump instruction. 
 */
 
-#define BROM_FILE_HEAD_SIZE (sizeof(boot_file_head_t) & 0x00FFFFF)
+#define BROM_FILE_HEAD_PADDING (0x10)
+#define BROM_FILE_HEAD_SIZE ((sizeof(boot_file_head_t) + BROM_FILE_HEAD_PADDING) & 0x00FFFFF)
 #define BROM_FILE_HEAD_BIT_10_1 ((BROM_FILE_HEAD_SIZE & 0x7FE) >> 1)
 #define BROM_FILE_HEAD_BIT_11 ((BROM_FILE_HEAD_SIZE & 0x800) >> 11)
 #define BROM_FILE_HEAD_BIT_19_12 ((BROM_FILE_HEAD_SIZE & 0xFF000) >> 12)

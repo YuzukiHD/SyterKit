@@ -21,39 +21,8 @@
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 8), GPIO_PERIPH_MUX6},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX6},
-};
-
-sunxi_spi_t sunxi_spi0 = {
-        .base = SUNXI_SPI0_BASE,
-        .id = 0,
-        .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
-};
-
-sdhci_t sdhci0 = {
-        .name = "sdhci0",
-        .id = 0,
-        .reg = (sdhci_reg_t *) 0x04020000,
-        .voltage = MMC_VDD_27_36,
-        .width = MMC_BUS_WIDTH_4,
-        .clock = MMC_CLK_50M,
-        .removable = 0,
-        .isspi = FALSE,
-        .skew_auto_mode = TRUE,
-        .sdhci_pll = CCU_MMC_CTRL_PLL_PERIPH1X,
-        .gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-        .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-        .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-        .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-        .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-        .gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+        .gpio_tx = {GPIO_PIN(GPIO_PORTL, 4), GPIO_PERIPH_MUX3},
+        .gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX3},
 };
 
 dram_para_t dram_para = {
@@ -83,6 +52,14 @@ dram_para_t dram_para = {
         .dram_tpr13 = 0x34050100,
 };
 
-void clean_syterkit_data(void) {
+void show_chip() {
+    uint32_t chip_sid[4];
+    chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+    chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+    chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+    chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
+    printk_info("Model: AvaotaSBC Avaota CAM board.\n");
+    printk_info("Core: XuanTie E907 RISC-V Core.\n");
+    printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __RISCV64_BARRIER_H__
-#define __RISCV64_BARRIER_H__
+#ifndef __RISCV_BARRIER_H__
+#define __RISCV_BARRIER_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,4 +43,4 @@ extern "C" {
 }
 #endif
 
-#endif /* __RISCV64_BARRIER_H__ */
+#endif /* __RISCV_BARRIER_H__ */

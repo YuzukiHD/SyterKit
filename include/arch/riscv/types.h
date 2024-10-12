@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef __RISCV64_TYPES_H__
-#define __RISCV64_TYPES_H__
+#ifndef __RISCV_TYPES_H__
+#define __RISCV_TYPES_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,4 +103,4 @@ typedef u32 dma_addr_t;
 }
 #endif
 
-#endif /* __RISCV64_TYPES_H__ */
+#endif /* __RISCV_TYPES_H__ */
