@@ -1,7 +1,7 @@
 # RISC-V 64 ARCH
 if (CONFIG_ARCH_RISCV64)
 if (CONFIG_ARCH_RISCV64_CORE_C906)
-    add_subdirectory(riscv64)
+    add_subdirectory(riscv64_c906)
 endif()
 endif()
 
