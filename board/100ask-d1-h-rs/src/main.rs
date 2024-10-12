@@ -65,9 +65,16 @@ fn main(p: Peripherals, _c: Clocks) {
         let d2 = p.gpio.pf5.into_function::<2>();
         (clk, cmd, d0, d1, d2, d3)
     };
+    unsafe {
+        p.ccu
+            .smhc_bgr
+            .modify(|val| val.gate_pass::<0>().deassert_reset::<0>());
+        // p.ccu.smhc_clk[0].modify(|val| val.unmask_clock());
+        p.smhc0
+            .global_control
+            .modify(|val| val.set_dma_reset().set_fifo_reset().set_software_reset());
+    };
     /*
-    p.ccu.smhc_bgr.modify(|val| val.gate_pass::<0>().deassert_reset::<0>()); // 0 == sdhci->id
-    p.ccu.smhc0_clk.modify(|val| val.unmask_clock());
     // let sdhci = p.smhc0.smhc(sdmmc_pins)
     // sdhci.detect_sdcard() // TODO or: detect_mmc()
     p.smhc0.global_control.modify(|val| val.set_dma_reset().set_fifo_reset().set_software_reset());
