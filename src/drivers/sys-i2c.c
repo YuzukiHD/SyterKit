@@ -456,7 +456,7 @@ static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
     i2c->eft = 0;
 }
 
-static void sunxi_i2c_bus_open(sunxi_i2c_t *i2c_dev) {
+void __attribute__((weak)) sunxi_i2c_bus_open(sunxi_i2c_t *i2c_dev) {
     int reg_value = 0;
 
     if (i2c_dev->id <= 5) {
