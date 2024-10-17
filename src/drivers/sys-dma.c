@@ -23,15 +23,8 @@ static dma_source_t dma_channel_source[SUNXI_DMA_MAX];
 
 static dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
 
-void dma_init(void) {
-    printk_debug("DMA: init\n");
-    int i;
+void __attribute__((weak)) sunxi_dma_clk_init() {
     uint32_t val;
-    dma_reg_t *const dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
-
-    if (dma_init_ok > 0)
-        return;
-
     /* dma : mbus clock gating */
     //	ccu->mbus_gate |= 1 << 0;
     val = read32(CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG);
@@ -49,6 +42,17 @@ void dma_init(void) {
     val = read32(CCU_BASE + CCU_DMA_BGR_REG);
     val |= 1 << DMA_GATING_OFS;
     write32(CCU_BASE + CCU_DMA_BGR_REG, val);
+}
+
+void dma_init(void) {
+    printk_debug("DMA: init\n");
+    int i;
+    dma_reg_t *const dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
+
+    if (dma_init_ok > 0)
+        return;
+
+    sunxi_dma_clk_init();
 
     dma_reg->irq_en0 = 0;
     dma_reg->irq_en1 = 0;
@@ -215,7 +219,7 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
 
     len = ALIGN(len, 4);
     printk_debug("DMA: test 0x%08x ====> 0x%08x, len %uKB \n",
-           (uint32_t) src_addr, (uint32_t) dst_addr, (len / 1024));
+                 (uint32_t) src_addr, (uint32_t) dst_addr, (len / 1024));
 
     /* dma */
     dma_set.loop_mode = 0;
@@ -278,7 +282,7 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
         }
         if (valid) {
             printk_info("DMA: test OK in %lums\n",
-                   (time_ms() - timeout));
+                        (time_ms() - timeout));
         } else
             printk_error("DMA: test check failed at %u bytes\n", i);
     }

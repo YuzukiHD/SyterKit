@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project Name="avaota_cam" Version="1" Language="C" Type="Solution Package">
+  <Description/>
+  <Dependencies Name="Debug"/>
+  <MergedToYaml>yes</MergedToYaml>
+  <Dependencies Name="BuildSet"/>
+  <VendorInfo>
+    <VendorName>new_soc_project_c_solution_e907f</VendorName>
+  </VendorInfo>
+  <ToolsConfig>
+    <Compiler>
+      <Name>XTGccElfNewlib</Name>
+      <Version>latest</Version>
+    </Compiler>
+  </ToolsConfig>
+  <MonitorProgress>
+    <DebugLaunch>40</DebugLaunch>
+  </MonitorProgress>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions>0x0;;;</memoryExpressions>
+    <statistics>;;32;;MHZ;;up</statistics>
+    <peripheralTabs/>
+    <WatchDisplayFormat>1</WatchDisplayFormat>
+    <LocalDisplayFormat>1</LocalDisplayFormat>
+    <debugLayout/>
+    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
+    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
+  </DebugSessions>
+  <VirtualDirectory Name="board">
+    <File Name="../board.c">
+      <FileOption/>
+    </File>
+    <File Name="../eabi_compat.c">
+      <FileOption/>
+    </File>
+    <File Name="../head.c">
+      <FileOption/>
+    </File>
+    <File Name="../start.S">
+      <FileOption/>
+    </File>
+    <File Name="config.h">
+      <FileOption/>
+    </File>
+    <File Name="link_elf.ld">
+      <FileOption/>
+    </File>
+  </VirtualDirectory>
+  <VirtualDirectory Name="include">
+    <File Name="../../../include/common.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/ctype.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/fdt_wrapper.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/log.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/os.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/smalloc.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/sstdlib.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/string.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/uart.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../include/xformat.h">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="riscv">
+        <File Name="../../../include/arch/riscv/barrier.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/csr.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/io.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/limits.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/linkage.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/mmu.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/stdarg.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/stdbool.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/stddef.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/stdint.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/stdlib.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/timer.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/arch/riscv/types.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="cli">
+      <File Name="../../../include/cli/cli.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/cli/cli_config.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/cli/cli_history.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/cli/cli_shell.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/cli/cli_termesc.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="drivers">
+      <File Name="../../../include/drivers/sys-clk.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-dma.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-dram.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-gic.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-gpio.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-i2c.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-rproc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-rtc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-sdcard.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-sdhci.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-sid.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-spi.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-spi-nand.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-spi-nor.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-uart.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../include/drivers/sys-wdt.h">
+        <FileOption/>
+      </File>
+      <VirtualDirectory Name="chips">
+        <VirtualDirectory Name="sun20iw5">
+          <File Name="../../../include/drivers/chips/sun20iw5/reg-ccu.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/chips/sun20iw5/reg-dram.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/chips/sun20iw5/reg-ncat.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/chips/sun20iw5/reg-rproc.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mmc">
+        <File Name="../../../include/drivers/mmc/sys-mmc.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/mmc/sys-sdcard.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/mmc/sys-sdhci.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pmu">
+        <File Name="../../../include/drivers/pmu/axp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/pmu/reg-axp.h">
+          <FileOption/>
+        </File>
+        <VirtualDirectory Name="reg">
+          <File Name="../../../include/drivers/pmu/reg/reg-axp1530.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/pmu/reg/reg-axp2101.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/pmu/reg/reg-axp2202.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="reg">
+        <File Name="../../../include/drivers/reg/reg-ccu.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-dma.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-dram.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-gic.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-ncat.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-rproc.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/reg/reg-smhc.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="usb">
+        <VirtualDirectory Name="reg">
+          <File Name="../../../include/drivers/usb/reg/reg-usb.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <File Name="../../../include/drivers/usb/usb.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/usb/usb_controller.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/usb/usb_defs.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/usb/usb_device.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/usb/usb_dma.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="image">
+      <File Name="../../../include/image/image_loader.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="lib">
+      <VirtualDirectory Name="elf">
+        <File Name="../../../include/lib/elf/elf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/elf/elf_helpers.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/elf/elf_loader.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/elf/elf-em.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fatfs">
+        <File Name="../../../include/lib/fatfs/diskio.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fatfs/ff.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fatfs/ffconf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fatfs/media.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fdt">
+        <File Name="../../../include/lib/fdt/fdt.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fdt/libfdt.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fdt/libfdt_env.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/lib/fdt/libfdt_internal.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="src">
+    <File Name="../../../src/common.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/ctype.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/fdt_wrapper.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/os.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/smalloc.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/sstdlib.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/string.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../src/uart.c">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="riscv32_e907">
+        <File Name="../../../src/arch/riscv/riscv32_e907/exception.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/fprw.S">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/memcmp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/memcpy.S">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/memset.S">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/timer.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="cli">
+      <File Name="../../../src/cli/commands.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/cli/history.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/cli/lineedit.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/cli/parse.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/cli/shell.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="drivers">
+      <File Name="../../../src/drivers/sys-clk.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-gpio.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-uart.c">
+        <FileOption/>
+      </File>
+      <VirtualDirectory Name="chips">
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-clk.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-dram.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-rproc.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-sid.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-uart.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-wdt.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <File Name="../../../src/drivers/sys-dma.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-dram.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-gic.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-i2c.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-rtc.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-spi-nand.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/drivers/sys-spi-nor.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
+      <VirtualDirectory Name="mmc">
+        <File Name="../../../src/drivers/mmc/sys-mmc.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/mmc/sys-sdcard.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/mmc/sys-sdhci.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pmu">
+        <File Name="../../../src/drivers/pmu/axp.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/pmu/axp1530.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/pmu/axp2101.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/pmu/axp2202.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="usb">
+        <File Name="../../../src/drivers/usb/usb.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/usb/usb_controller.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/usb/usb_device.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/usb/usb_dma.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <VirtualDirectory Name="module">
+          <File Name="../../../src/drivers/usb/module/usb_detect.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../src/drivers/usb/module/usb_mass.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="image">
+        <File Name="../../../src/image/bimage.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/image/uimage.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/image/zimage.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="log">
+        <File Name="../../../src/log/log.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/log/xformat.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="app">
+    <File Name="../hello_world/main.c">
+      <FileOption/>
+    </File>
+  </VirtualDirectory>
+  <BuildConfigs>
+    <BuildConfig Name="BuildSet">
+      <Target>
+        <ROMBank Selected="1">
+          <ROM1>
+            <InUse>no</InUse>
+            <Start>0x0</Start>
+            <Size>0x20000</Size>
+          </ROM1>
+          <ROM2>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM2>
+          <ROM3>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM3>
+          <ROM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM4>
+          <ROM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM5>
+        </ROMBank>
+        <RAMBank>
+          <RAM1>
+            <InUse>yes</InUse>
+            <Start>0x20000000</Start>
+            <Size>0x80000</Size>
+            <Init>yes</Init>
+          </RAM1>
+          <RAM2>
+            <InUse>no</InUse>
+            <Start>0x50000000</Start>
+            <Size>0x800000</Size>
+            <Init>yes</Init>
+          </RAM2>
+          <RAM3>
+            <InUse>no</InUse>
+            <Start>0x60000000</Start>
+            <Size>0x20000</Size>
+            <Init>yes</Init>
+          </RAM3>
+          <RAM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM4>
+          <RAM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM5>
+        </RAMBank>
+        <CPU>e907f</CPU>
+        <UseMiniLib>yes</UseMiniLib>
+        <Endian>little</Endian>
+        <UseHardFloat>no</UseHardFloat>
+        <UseEnhancedLRW>yes</UseEnhancedLRW>
+        <UseContinueBuild>no</UseContinueBuild>
+        <UseSemiHost>no</UseSemiHost>
+      </Target>
+      <Output>
+        <OutputName>$(ProjectName)</OutputName>
+        <Type>Executable</Type>
+        <CreateHexFile>yes</CreateHexFile>
+        <CreateBinFile>yes</CreateBinFile>
+        <Preprocessor>yes</Preprocessor>
+        <Disassmeble>yes</Disassmeble>
+        <CallGraph>no</CallGraph>
+        <Map>yes</Map>
+      </Output>
+      <User>
+        <BeforeCompile>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+          <IsBatchScript>no</IsBatchScript>
+        </BeforeCompile>
+        <BeforeMake>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+          <IsBatchScript>no</IsBatchScript>
+        </BeforeMake>
+        <AfterMake>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+          <IsBatchScript>no</IsBatchScript>
+        </AfterMake>
+        <Tools/>
+      </User>
+      <Compiler>
+        <Define>CONFIG_CHIP_SUN20IW5</Define>
+        <Undefine/>
+        <Optim>Optimize for debug (-Og)</Optim>
+        <DebugLevel>Default (-g)</DebugLevel>
+        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
+        <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable</OtherFlags>
+        <Verbose>no</Verbose>
+        <Ansi>no</Ansi>
+        <Syntax>no</Syntax>
+        <Pedantic>no</Pedantic>
+        <PedanticErr>no</PedanticErr>
+        <InhibitWarn>no</InhibitWarn>
+        <AllWarn>yes</AllWarn>
+        <WarnErr>no</WarnErr>
+        <OneElfS>yes</OneElfS>
+        <OneElfSPerData>yes</OneElfSPerData>
+        <Fstrict>no</Fstrict>
+      </Compiler>
+      <Asm>
+        <Define/>
+        <Undefine/>
+        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
+        <OtherFlags/>
+        <DebugLevel>gdwarf2</DebugLevel>
+      </Asm>
+      <Linker>
+        <Garbage>yes</Garbage>
+        <Garbage2>yes</Garbage2>
+        <LDFile>$(ProjectPath)/link_elf.ld</LDFile>
+        <LibName/>
+        <LibPath/>
+        <OtherFlags/>
+        <AutoLDFile>no</AutoLDFile>
+        <LinkType>start-group</LinkType>
+        <IncludeAllLibs>no</IncludeAllLibs>
+        <LinkSpecsType>none</LinkSpecsType>
+        <LinkUseNewlibNano>no</LinkUseNewlibNano>
+      </Linker>
+      <Debug>
+        <LoadApplicationAtStartup>yes</LoadApplicationAtStartup>
+        <Connector>ICE</Connector>
+        <StopAt>yes</StopAt>
+        <StopAtText>main</StopAtText>
+        <InitFile>$(ProjectPath)/script/gdb.init</InitFile>
+        <PreInit/>
+        <AfterLoadFile/>
+        <AutoRun>yes</AutoRun>
+        <ResetType>Hard Reset</ResetType>
+        <SoftResetVal>0</SoftResetVal>
+        <ResetAfterLoad>no</ResetAfterLoad>
+        <AfterResetFile/>
+        <Dumpcore>no</Dumpcore>
+        <DumpcoreText>$(ProjectPath)/$(ProjectName).cdkcore</DumpcoreText>
+        <SVCFile/>
+        <ConfigICE>
+          <IP>localhost</IP>
+          <PORT>1025</PORT>
+          <CPUNumber>0</CPUNumber>
+          <Clock>1000</Clock>
+          <Delay>10</Delay>
+          <NResetDelay>100</NResetDelay>
+          <WaitReset>50</WaitReset>
+          <DDC>yes</DDC>
+          <TRST>no</TRST>
+          <PreReset>no</PreReset>
+          <DebugPrint>no</DebugPrint>
+          <Connect>Normal</Connect>
+          <ResetType>Soft Reset</ResetType>
+          <SoftResetVal>0</SoftResetVal>
+          <RTOSType>Bare Metal</RTOSType>
+          <DownloadToFlash>no</DownloadToFlash>
+          <ResetAfterConnect>yes</ResetAfterConnect>
+          <GDBName/>
+          <GDBServerType>Local</GDBServerType>
+          <OtherFlags/>
+          <ICEEnablePCSampling>no</ICEEnablePCSampling>
+          <ICESamplingFreq>1000</ICESamplingFreq>
+          <RemoteICEEnablePCSampling>no</RemoteICEEnablePCSampling>
+          <RemoteICESamplingPort>1026</RemoteICESamplingPort>
+          <Version>latest</Version>
+          <SupportRemoteICEAsyncDebug>no</SupportRemoteICEAsyncDebug>
+        </ConfigICE>
+        <ConfigSIM>
+          <SIMTarget/>
+          <OtherFlags/>
+          <NoGraphic>yes</NoGraphic>
+          <Log>no</Log>
+          <SimTrace>no</SimTrace>
+          <Version>latest</Version>
+        </ConfigSIM>
+        <ConfigOpenOCD>
+          <OpenOCDExecutablePath/>
+          <OpenOCDLocally>yes</OpenOCDLocally>
+          <OpenOCDTelnetPortEnable>no</OpenOCDTelnetPortEnable>
+          <OpenOCDTelnetPort>4444</OpenOCDTelnetPort>
+          <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
+          <OpenOCDTclPort>6666</OpenOCDTclPort>
+          <OpenOCDConfigOptions/>
+          <OpenOCDTimeout>5000</OpenOCDTimeout>
+          <OpenOCDRemoteIP>localhost</OpenOCDRemoteIP>
+          <OpenOCDRemotePort>3333</OpenOCDRemotePort>
+          <PluginID>openocd-sifive</PluginID>
+          <Version>latest</Version>
+        </ConfigOpenOCD>
+      </Debug>
+      <Flash>
+        <InitFile>$(ProjectPath)/script/flash.init</InitFile>
+        <PreInit/>
+        <Erase>Erase Sectors</Erase>
+        <Algorithms Path=""/>
+        <Program>no</Program>
+        <Verify>no</Verify>
+        <ResetAndRun>no</ResetAndRun>
+        <ResetType>Soft Reset</ResetType>
+        <SoftResetVal/>
+        <FlashIndex>no</FlashIndex>
+        <FlashIndexVal>0</FlashIndexVal>
+        <External>no</External>
+        <Command/>
+        <Arguments/>
+      </Flash>
+    </BuildConfig>
+  </BuildConfigs>
+</Project>
