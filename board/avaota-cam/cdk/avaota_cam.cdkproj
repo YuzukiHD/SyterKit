@@ -407,7 +407,7 @@
         <File Name="../../../src/drivers/chips/sun20iw5/sys-clk.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-dram.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-dram.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
         <File Name="../../../src/drivers/chips/sun20iw5/sys-rproc.c">
@@ -624,7 +624,7 @@
         <Optim>Optimize for debug (-Og)</Optim>
         <DebugLevel>Default (-g)</DebugLevel>
         <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
-        <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable</OtherFlags>
+        <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
         <Syntax>no</Syntax>

@@ -469,77 +469,13 @@ static void mctl_set_timing_params(dram_para_t *para) {
 // the MBUS and sdram.
 //
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
-    unsigned int val, clk, n;
-
-    if (para->dram_tpr13 & (1 << 6))
-        clk = para->dram_tpr9;
-    else
-        clk = para->dram_clk;
-
-    // set VCO clock divider
-    n = (clk * 2) / 24;
-
-    val = readl((CCU_BASE + CCU_PLL_DDR_CTRL_REG));
-    val &= 0xfff800fc;  // clear dividers
-    val |= (n - 1) << 8;// set PLL division
-    val |= 0xc0000000;  // enable PLL and LDO
-    val &= 0xdfffffff;
-    writel(val | 0x20000000, (CCU_BASE + CCU_PLL_DDR_CTRL_REG));
-
-    // wait for PLL to lock
-    while ((readl((CCU_BASE + CCU_PLL_DDR_CTRL_REG)) & 0x10000000) == 0) {
-        ;
-    }
-
-    udelay(20);
-
-    // enable PLL output
-    val = readl(CCU_BASE);
-    val |= 0x08000000;
-    writel(val, CCU_BASE);
-
-    // turn clock gate on
-    val = readl((CCU_BASE + CCU_DRAM_CLK_REG));
-    val &= 0xfcfffcfc;// select DDR clk source, n=1, m=1
-    val |= 0x80000000;// turn clock on
-    writel(val, (CCU_BASE + CCU_DRAM_CLK_REG));
-
-    return n * 24;
+	return 0x0;
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 //
 static void mctl_sys_init(dram_para_t *para) {
-    // assert MBUS reset
-    clrbits_le32((CCU_BASE + CCU_MBUS_CLK_REG), (1 << 30));
-
-    // turn off sdram clock gate, assert sdram reset
-    clrbits_le32((CCU_BASE + CCU_DRAM_BGR_REG), 0x10001);
-    clrsetbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 30), (1 << 27));
-    udelay(10);
-
-    // set ddr pll clock
-    para->dram_clk = ccu_set_pll_ddr_clk(0, para) / 2;
-    udelay(100);
-    dram_disable_all_master();
-
-    // release sdram reset
-    setbits_le32((CCU_BASE + CCU_DRAM_BGR_REG), (1 << 16));
-
-    // release MBUS reset
-    setbits_le32((CCU_BASE + CCU_MBUS_CLK_REG), (1 << 30));
-    setbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 30));
-
-    udelay(5);
-
-    // turn on sdram clock gate
-    setbits_le32((CCU_BASE + CCU_DRAM_BGR_REG), (1 << 0));
-
-    // turn dram clock gate on, trigger sdr clock update
-    setbits_le32((CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 27));
-    udelay(5);
-
     // mCTL clock enable
     writel(0x8000, (MCTL_PHY_BASE + MCTL_PHY_CLKEN));
     udelay(10);
