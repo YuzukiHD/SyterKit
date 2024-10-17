@@ -25,10 +25,6 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk_info("test Store address misaligned exception\n");
-
-    asm volatile(".word 0x23232323");
-
     abort();
 
     return 0;
