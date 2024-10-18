@@ -11,8 +11,27 @@
 #include <sys-clk.h>
 #include <sys-dram.h>
 
+#include <common.h>
+
+#include <cli.h>
+#include <cli_shell.h>
+#include <cli_termesc.h>
+
 extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
+
+msh_declare_command(helloworld);
+
+msh_define_help(helloworld, "display helloworld", "Usage: helloworld\n");
+int cmd_helloworld(int argc, const char **argv) {
+    printk(LOG_LEVEL_MUTE, "Hello World!\n");
+    return 0;
+}
+
+const msh_command_entry commands[] = {
+        msh_define_command(helloworld),
+        msh_command_end,
+};
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
@@ -27,7 +46,9 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    printk_info("DRAM init done, type = DDR%d, Size = %lluMB\n", dram_para.dram_type, sunxi_dram_init(&dram_para));
+    uint64_t dram_size = sunxi_dram_init(&dram_para);
+
+    syterkit_shell_attach(commands);
 
     abort();
 
