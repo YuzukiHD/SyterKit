@@ -13,17 +13,6 @@
 
 #include <sys-clk.h>
 
-int wait_until_pll_timeout(uint32_t time_cnt) {
-    uint32_t ret = 1;
-    do {
-        if (time_cnt == 0) {
-            return ret;
-        }
-
-    } while (time_cnt--);
-    return ret = 0;
-}
-
 static void set_pll_general(uint32_t pll_addr, uint32_t en, uint32_t output_gate_en, uint32_t pll_d, uint32_t pll_d_off, uint32_t pll_n) {
     uint32_t pll_en;
     uint32_t pll_ldo_en;
@@ -37,7 +26,7 @@ static void set_pll_general(uint32_t pll_addr, uint32_t en, uint32_t output_gate
         pll_lock_en = PLL_LOCK_EN_Enable;
     } else {
         pll_en = PLL_Disable;
-		pll_ldo_en = PLL_LDO_Disable;
+        pll_ldo_en = PLL_LDO_Disable;
         pll_lock_en = PLL_LOCK_EN_Disable;
     }
 
@@ -47,7 +36,7 @@ static void set_pll_general(uint32_t pll_addr, uint32_t en, uint32_t output_gate
     clrsetbits_le32(pll_addr, PLL_LDO_MASK | PLL_OUTPUT_GATE_MASK | PLL_EN_MASK, pll_en | pll_ldo_en | pll_lock_en);
     clrsetbits_le32(pll_addr, PLL_LOCK_EN_MASK, PLL_LOCK_EN_Enable);
 
-    while ((!(readl(pll_addr) & PLL_LOCK_MASK)) & wait_until_pll_timeout(0xffff))
+    while (!(readl(pll_addr) & PLL_LOCK_MASK))
         ;
 
     clrsetbits_le32(pll_addr, PLL_OUTPUT_GATE_MASK, PLL_OUTPUT_GATE_Enable);
@@ -69,7 +58,7 @@ static void set_pll_a27l2(void) {
 }
 
 static void set_pll_peri_ctrl0(uint32_t en, uint32_t output_gate_en, uint32_t pll_n, uint32_t pll_m) {
-	uint32_t pll_en;
+    uint32_t pll_en;
     uint32_t pll_ldo_en;
     uint32_t pll_lock_en;
     uint32_t pll_output_gate;
@@ -96,7 +85,7 @@ static void set_pll_peri_ctrl0(uint32_t en, uint32_t output_gate_en, uint32_t pl
 
     clrsetbits_le32(CCU_PLL_PERI_CTRL0_REG, PLL_PERI_CTRL0_REG_LOCK_ENABLE_CLEAR_MASK, pll_lock_en);
 
-    while ((!(readl(CCU_PLL_PERI_CTRL0_REG) & PLL_PERI_CTRL0_REG_LOCK_CLEAR_MASK)) & wait_until_pll_timeout(0xffff))
+    while (!(readl(CCU_PLL_PERI_CTRL0_REG) & PLL_PERI_CTRL0_REG_LOCK_CLEAR_MASK))
         ;
 
     if (output_gate_en == 1) {
@@ -163,7 +152,7 @@ static void set_pll_csi(void) {
     clrsetbits_le32(CCU_PLL_CSI_CTRL_REG, PLL_CSI_CTRL_REG_LOCK_ENABLE_CLEAR_MASK, PLL_CSI_CTRL_REG_LOCK_ENABLE_ENABLE << PLL_CSI_CTRL_REG_LOCK_ENABLE_OFFSET);
 
     /* Wait Lock_status */
-    while ((!(readl(CCU_PLL_CSI_CTRL_REG) & PLL_CSI_CTRL_REG_LOCK_CLEAR_MASK)) & wait_until_pll_timeout(0xffff))
+    while (!(readl(CCU_PLL_CSI_CTRL_REG) & PLL_CSI_CTRL_REG_LOCK_CLEAR_MASK))
         ;
 
     /* Enable Output */
@@ -188,7 +177,7 @@ static void set_pll_video(void) {
     clrsetbits_le32(CCU_PLL_VIDEO_CTRL_REG, PLL_VIDEO_CTRL_REG_LOCK_ENABLE_CLEAR_MASK, PLL_VIDEO_CTRL_REG_LOCK_ENABLE_ENABLE << PLL_VIDEO_CTRL_REG_LOCK_ENABLE_OFFSET);
 
     /* Wait Lock_status */
-    while ((!(readl(CCU_PLL_VIDEO_CTRL_REG) & PLL_VIDEO_CTRL_REG_LOCK_CLEAR_MASK)) & wait_until_pll_timeout(0xffff))
+    while (!(readl(CCU_PLL_VIDEO_CTRL_REG) & PLL_VIDEO_CTRL_REG_LOCK_CLEAR_MASK))
         ;
 
     /* Enable Output */
@@ -222,15 +211,13 @@ void set_apb_spec(void) {
 
 void sunxi_clk_init(void) {
     /* detect hosc */
-    if (sunxi_clk_get_hosc_type() == HOSC_FREQ_24M) {
-        writel(readl(CCU_FUNC_CFG_REG) | PLL_FUNC_CFG_REG_DCXO_ST_CLEAR_MASK, CCU_FUNC_CFG_REG);
+    if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
         set_pll_general(CCU_PLL_CPUX_CTRL_REG, PLL_CPU_CTRL_REG_PLL_EN_ENABLE, PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_ENABLE, CCU_AON_PLL_CPU_D_1, 2, CCU_AON_PLL_CPU_N_27);
         if (!(readl(CCU_PLL_VIDEO_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_EN_CLEAR_MASK)) {
             set_pll_general(CCU_PLL_VIDEO_CTRL_REG, PLL_CPU_CTRL_REG_PLL_EN_ENABLE, PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_ENABLE,
                             CCU_AON_PLL_CPU_D_4, 1, CCU_AON_PLL_CPU_N_118);
         }
     } else {
-        writel(readl(CCU_FUNC_CFG_REG) & (~PLL_FUNC_CFG_REG_DCXO_ST_CLEAR_MASK), CCU_FUNC_CFG_REG);
         set_pll_general(CCU_PLL_CPUX_CTRL_REG, PLL_CPU_CTRL_REG_PLL_EN_ENABLE, PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_ENABLE, CCU_AON_PLL_CPU_D_1, 2, CCU_AON_PLL_CPU_N_45);
         if (!(readl(CCU_PLL_VIDEO_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_EN_CLEAR_MASK)) {
             set_pll_general(CCU_PLL_VIDEO_CTRL_REG, PLL_CPU_CTRL_REG_PLL_EN_ENABLE, PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_ENABLE, CCU_AON_PLL_CPU_D_2, 1, CCU_AON_PLL_CPU_N_99);
@@ -246,14 +233,52 @@ void sunxi_clk_init(void) {
 }
 
 void sunxi_clk_dump() {
-	uint32_t reg_val = 0;
-	uint32_t n, m;
-	
-	reg_val = read32(CCU_PLL_PERI_CTRL0_REG);
-	n = (reg_val & PLL_PERI_CTRL0_REG_PLL_N_CLEAR_MASK) >> PLL_PERI_CTRL0_REG_PLL_N_OFFSET;
-	m = reg_val & PLL_PERI_CTRL0_REG_PLL_INPUT_DIV_CLEAR_MASK;
-	
-	printk_debug("CLK: PERI FREQ=%luMHz\r\n", (sunxi_clk_get_hosc_type() * 2 * (n + 1)) / (m + 1));
+    uint32_t reg_val = 0;
+    uint32_t n, m, clock_src, clock, vd_reg, pll_cpu_reg;
+
+    printk_debug("SoC HOSC Type = %d MHz\n", sunxi_clk_get_hosc_type());
+
+    reg_val = readl(SUNXI_CCM_AON_BASE + E907_CLK_REG);
+    clock_src = ((reg_val & E907_CLK_REG_E907_CLK_SEL_CLEAR_MASK) >> E907_CLK_REG_E907_CLK_SEL_OFFSET);
+    switch (clock_src) {
+        case E907_CLK_REG_E907_CLK_SEL_HOSC:
+            clock = sunxi_clk_get_hosc_type();
+            break;
+        case E907_CLK_REG_E907_CLK_SEL_VIDEOPLL2X:
+            reg_val = readl(CCU_PLL_VIDEO_CTRL_REG);
+            n = (reg_val & PLL_VIDEO_CTRL_REG_PLL_N_CLEAR_MASK) >> PLL_VIDEO_CTRL_REG_PLL_N_OFFSET;
+            m = (reg_val & PLL_VIDEO_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK) >> PLL_VIDEO_CTRL_REG_PLL_INPUT_DIV_OFFSET;
+            clock = (sunxi_clk_get_hosc_type() * 2 * (n + 1)) / (m + 1);
+            break;
+        case E907_CLK_REG_E907_CLK_SEL_RC1M:
+        case E907_CLK_REG_E907_CLK_SEL_RC1M0:
+            clock = 1;
+            break;
+        case E907_CLK_REG_E907_CLK_SEL_CPU_PLL:
+            pll_cpu_reg = readl(CCU_PLL_CPUX_CTRL_REG);
+            n = (pll_cpu_reg & PLL_CPU_CTRL_REG_PLL_N_CLEAR_MASK) >> PLL_CPU_CTRL_REG_PLL_N_OFFSET;
+            clock = sunxi_clk_get_hosc_type() * (n + 1);
+            break;
+        case E907_CLK_REG_E907_CLK_SEL_PERI_PLL_1024M:
+            clock = 1024;
+            break;
+        case E907_CLK_REG_E907_CLK_SEL_PERI_PLL_614M:
+        case E907_CLK_REG_E907_CLK_SEL_PERI_PLL_614M0:
+            clock = 614;
+            break;
+        default:
+            clock = 1;
+    }
+
+    reg_val = readl(SUNXI_CCM_AON_BASE + E907_CLK_REG);
+    m = reg_val & E907_CLK_REG_E907_CLK_DIV_CLEAR_MASK;
+
+    printk_debug("CLK: CPU FREQ = %d MHz\n", clock / (m + 1));
+
+    reg_val = read32(CCU_PLL_PERI_CTRL0_REG);
+    n = (reg_val & PLL_PERI_CTRL0_REG_PLL_N_CLEAR_MASK) >> PLL_PERI_CTRL0_REG_PLL_N_OFFSET;
+    m = reg_val & PLL_PERI_CTRL0_REG_PLL_INPUT_DIV_CLEAR_MASK;
+    printk_debug("CLK: PERI FREQ = %lu MHz\r\n", (sunxi_clk_get_hosc_type() * 2 * (n + 1)) / (m + 1));
 }
 
 /* we got hosc freq in arch/timer.c */

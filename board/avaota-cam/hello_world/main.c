@@ -9,8 +9,10 @@
 #include <log.h>
 
 #include <sys-clk.h>
+#include <sys-dram.h>
 
 extern sunxi_serial_t uart_dbg;
+extern dram_para_t dram_para;
 
 int main(void) {
     sunxi_serial_init(&uart_dbg);
@@ -24,6 +26,8 @@ int main(void) {
     printk_info("clk init finish\n");
 
     sunxi_clk_dump();
+
+    sunxi_dram_init(&dram_para);
 
     abort();
 

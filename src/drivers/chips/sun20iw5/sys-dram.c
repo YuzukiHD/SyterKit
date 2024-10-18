@@ -18,59 +18,10 @@
 
 #define CONFIG_SYS_SDRAM_BASE SDRAM_BASE
 
-#ifndef SUNXI_SID_BASE
-#define SUNXI_SID_BASE 0x3006200
-#endif
-
 static int ns_to_t(dram_para_t *para, int nanoseconds) {
     const unsigned int ctrl_freq = para->dram_clk / 2;
 
     return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
-}
-
-static void sid_read_ldoB_cal(dram_para_t *para) {
-    uint32_t reg;
-
-    reg = (readl(SYS_SID_BASE + SYS_LDOB_SID) & 0xff00) >> 8;
-
-    if (reg == 0)
-        return;
-
-    switch (para->dram_type) {
-        case SUNXI_DRAM_TYPE_DDR2:
-            break;
-        case SUNXI_DRAM_TYPE_DDR3:
-            if (reg > 0x20)
-                reg -= 0x16;
-            break;
-        default:
-            reg = 0;
-            break;
-    }
-
-    clrsetbits_le32((SYS_CONTROL_REG_BASE + LDO_CTAL_REG), 0xff00, reg << 8);
-}
-
-static void dram_voltage_set(dram_para_t *para) {
-    int vol;
-
-    switch (para->dram_type) {
-        case SUNXI_DRAM_TYPE_DDR2:
-            vol = 47;
-            break;
-        case SUNXI_DRAM_TYPE_DDR3:
-            vol = 25;
-            break;
-        default:
-            vol = 0;
-            break;
-    }
-
-    clrsetbits_le32((SYS_CONTROL_REG_BASE + LDO_CTAL_REG), 0x20ff00, vol << 8);
-
-    udelay(1);
-
-    sid_read_ldoB_cal(para);
 }
 
 static void dram_enable_all_master(void) {
@@ -469,13 +420,140 @@ static void mctl_set_timing_params(dram_para_t *para) {
 // the MBUS and sdram.
 //
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
-	return 0x0;
+    uint32_t reg_val = 0, n = 12, m1 = 1, p0 = 1, m0 = 1, pll_clk, hosc_freq;
+
+    if (((para->dram_tpr13 >> 6) & 0x1) == index)
+        pll_clk = (para->dram_clk << 1);
+    else
+        pll_clk = (para->dram_tpr9 << 1);
+
+    hosc_freq = (para->dram_tpr10 >> 16) & 0xff;
+    printk_debug("DRAM set hosc_freq = 0x%x\n", hosc_freq);
+    n = pll_clk * m0 * m1 / hosc_freq;
+    if (n < 12) {
+        n = n * 4;
+        m1 = 2;
+        m0 = 2;
+    }
+
+    reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+    reg_val &= ~PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK |
+               PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK |
+               PLL_DDR_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK |
+               PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_CLEAR_MASK;
+    reg_val |= ((PLL_DDR_CTRL_REG_PLL_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_EN_OFFSET) |
+                (PLL_DDR_CTRL_REG_PLL_LDO_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_LDO_EN_OFFSET) |
+                ((n - 1) << PLL_DDR_CTRL_REG_PLL_N_OFFSET) |
+                ((m1 - 1) << PLL_DDR_CTRL_REG_PLL_INPUT_DIV_OFFSET) |
+                ((m0 - 1) << PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_OFFSET));
+    writel(reg_val, SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+
+    /* Clear PLL Lock */
+    reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+    reg_val &= ~PLL_DDR_CTRL_REG_LOCK_ENABLE_CLEAR_MASK;
+    writel(reg_val, SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+
+    /* Set PLL Lock */
+    reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+    writel(reg_val | (PLL_DDR_CTRL_REG_LOCK_ENABLE_ENABLE << PLL_DDR_CTRL_REG_LOCK_ENABLE_OFFSET), SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+
+    /* Wait PLL Lock */
+    while (!(readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG) & PLL_DDR_CTRL_REG_LOCK_LOCKED__IT_INDICATES_THAT_THE_PLL_HAS_BEEN_STABLE
+                                                                    << PLL_DDR_CTRL_REG_LOCK_OFFSET))
+        ;
+    udelay(20);
+
+    /* Set Gate Open */
+    reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+    reg_val |= (PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_ENABLE << PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_OFFSET);
+    writel(reg_val, SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+
+
+    reg_val = readl((CCU_BASE + DRAM_CLK_REG));
+    reg_val &= ~DRAM_CLK_REG_DRAM_CLK_SEL_CLEAR_MASK;
+    reg_val &= ~(DRAM_CLK_REG_DRAM_DIV1_CLEAR_MASK | DRAM_CLK_REG_DRAM_DIV2_CLEAR_MASK);
+    reg_val |= ((DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET) |
+                (DRAM_CLK_REG_DRAM_CLK_SEL_DDRPLL << DRAM_CLK_REG_DRAM_CLK_SEL_OFFSET));
+    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+
+    return ((hosc_freq * n) / p0 / m0 / m1);
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 //
 static void mctl_sys_init(dram_para_t *para) {
+    uint32_t reg_val = 0;
+
+    /* assert MBUS reset */
+    reg_val = readl(CCU_BASE + BUS_Reset1_REG);
+    reg_val &= ~BUS_Reset1_REG_MBUS_RSTN_SW_CLEAR_MASK;
+    writel(reg_val, (CCU_BASE + BUS_Reset1_REG));
+    /* close MBUS gate */
+    reg_val = readl((CCU_BASE + BUS_CLK_GATING1_REG));
+    reg_val &= ~BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLEAR_MASK;
+    writel(reg_val, (CCU_BASE + BUS_CLK_GATING1_REG));
+
+    /* assert DRAM reset */
+    reg_val = readl(CCU_BASE + BUS_Reset0_REG);
+    reg_val &= ~BUS_Reset0_REG_DRAM_CLEAR_MASK;
+    writel(reg_val, (CCU_BASE + BUS_Reset0_REG));
+    /* close DRAM gate */
+    reg_val = readl((CCU_BASE + BUS_CLK_GATING0_REG));
+    reg_val &= ~BUS_CLK_GATING0_REG_DRAM_GATING_CLEAR_MASK;
+    writel(reg_val, (CCU_BASE + BUS_CLK_GATING0_REG));
+
+    /* Close DRAM CLK */
+    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val &= ~DRAM_CLK_REG_DRAM_CLK_GATING_CLEAR_MASK;
+    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+
+    /* Update CLK */
+    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
+    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+    udelay(10);
+
+    if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
+        para->dram_tpr10 |= (0x28 << 16);
+    } else {
+        para->dram_tpr10 |= (0x18 << 16);
+    }
+
+    reg_val = ccu_set_pll_ddr_clk(0, para);
+    printk_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
+    para->dram_clk = reg_val / 2;
+
+    dram_disable_all_master();
+
+    /* deassert DRAM reset */
+    reg_val = readl((CCU_BASE + BUS_Reset0_REG));
+    reg_val |= (BUS_Reset0_REG_DRAM_DE_ASSERT << BUS_Reset0_REG_DRAM_OFFSET);
+    writel(reg_val, (CCU_BASE + BUS_Reset0_REG));
+    /* deassert MBUS reset */
+    reg_val = readl((CCU_BASE + BUS_Reset1_REG));
+    reg_val |= (BUS_Reset1_REG_MBUS_RSTN_SW_DE_ASSERT << BUS_Reset1_REG_MBUS_RSTN_SW_OFFSET);
+    writel(reg_val, (CCU_BASE + BUS_Reset1_REG));
+
+    /* open DRAM clock gate */
+    reg_val = readl((CCU_BASE + BUS_CLK_GATING0_REG));
+    reg_val |= (BUS_CLK_GATING0_REG_DRAM_GATING_CLOCK_IS_ON << BUS_CLK_GATING0_REG_DRAM_GATING_OFFSET);
+    writel(reg_val, (CCU_BASE + BUS_CLK_GATING0_REG));
+    /* open MBUS clock gate */
+    reg_val = readl((CCU_BASE + BUS_CLK_GATING1_REG));
+    reg_val |= (BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLOCK_IS_ON << BUS_CLK_GATING1_REG_MBUS_GATE_SW_OFFSET);
+    writel(reg_val, (CCU_BASE + BUS_CLK_GATING1_REG));
+
+    /* Open DRAM CTL */
+    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val |= (DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET);
+    writel(reg_val, CCU_BASE + DRAM_CLK_REG);
+    /*Update CLK*/
+    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
+    writel(reg_val, CCU_BASE + DRAM_CLK_REG);
+    udelay(5);
+
     // mCTL clock enable
     writel(0x8000, (MCTL_PHY_BASE + MCTL_PHY_CLKEN));
     udelay(10);
@@ -557,128 +635,6 @@ static void mctl_com_init(dram_para_t *para) {
     }
 }
 
-static const uint8_t ac_remapping_tables[][22] =
-        {
-                /* No Remap */
-                [0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                /* ASIC Chip */
-                [1] = {0x1, 0x9, 0x3, 0x7, 0x8, 0x12, 0x4, 0xD,
-                       0x5, 0x6, 0xA, 0x2, 0xE, 0xC, 0x0, 0x0,
-                       0x15, 0x11, 0x14, 0x13, 0xB, 0x16},// Generic DDR3 Type1
-                [2] = {0x4, 0x9, 0x3, 0x7, 0x8, 0x12, 0x1, 0xD,
-                       0x2, 0x6, 0xA, 0x5, 0xE, 0xC, 0x0, 0x0,
-                       0x15, 0x11, 0x14, 0x13, 0xB, 0x16},// Generic DDR3 Type C
-                [3] = {0x1, 0x7, 0x8, 0xC, 0xA, 0x12, 0x4, 0xD,
-                       0x5, 0x6, 0x3, 0x2, 0x9, 0x0, 0x0, 0x0,
-                       0x15, 0x11, 0x14, 0x13, 0xB, 0x16},// Generic DDR3 Type 8
-                [4] = {0x4, 0xC, 0xA, 0x7, 0x8, 0x12, 0x1, 0xD,
-                       0x2, 0x6, 0x3, 0x5, 0x9, 0x0, 0x0, 0x0,
-                       0x15, 0x11, 0x14, 0x13, 0xB, 0x16},// Generic DDR3 Type 9
-                [5] = {0xD, 0x2, 0x7, 0x9, 0xC, 0x13, 0x5, 0x1,
-                       0x6, 0x3, 0x4, 0x8, 0xA, 0x0, 0x0, 0x0,
-                       0x15, 0x16, 0x12, 0x11, 0xB, 0x14},// DDR3 Type bf (T113)
-                [6] = {0x3, 0xA, 0x7, 0xD, 0x9, 0xB, 0x1, 0x2,
-                       0x4, 0x6, 0x8, 0x5, 0xC, 0x0, 0x0, 0x0,
-                       0x14, 0x12, 0x0, 0x15, 0x16, 0x11},// DDR2
-                [7] = {0x3, 0x2, 0x4, 0x7, 0x9, 0x1, 0x11, 0xC,
-                       0x12, 0xE, 0xD, 0x8, 0xF, 0x6, 0xA, 0x5,
-                       0x13, 0x16, 0x10, 0x15, 0x14, 0xB},// DDR3 D1-H
-                [8] = {0x2, 0x13, 0x8, 0x6, 0xE, 0x5, 0x14, 0xA,
-                       0x3, 0x12, 0xD, 0xB, 0x7, 0xF, 0x9, 0x1,
-                       0x16, 0x15, 0x11, 0xC, 0x4, 0x10},// DDR3 H133
-                [9] = {0x1, 0x2, 0xD, 0x8, 0xF, 0xC, 0x13, 0xA,
-                       0x3, 0x15, 0x6, 0x11, 0x9, 0xE, 0x5, 0x10,
-                       0x14, 0x16, 0xB, 0x7, 0x4, 0x12},// DDR2 H133
-};
-
-/*
- * This routine chooses one of several remapping tables for 22 lines.
- * It is unclear which lines are being remapped. It seems to pick
- * table cfg7 for the Nezha board.
- */
-static void mctl_phy_ac_remapping(dram_para_t *para) {
-    const uint8_t *cfg;
-    uint32_t fuse, val;
-
-    /*
-   * Only DDR2 and DDR3 Support Remap
-   */
-    if (para->dram_type != SUNXI_DRAM_TYPE_DDR2 &&
-        para->dram_type != SUNXI_DRAM_TYPE_DDR3)
-        return;
-
-    fuse = (readl(SYS_SID_BASE + SYS_EFUSE_REG) & 0xf00) >> 8;
-    printk_debug("DDR efuse: 0x%x\n", fuse);
-
-    if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
-        /* if fuse is 0xa then D1s -> no remap*/
-        if (fuse == 0x0a) {
-            printk_debug("D1s no REMAP!!\n");
-            return;
-        }
-        if (fuse == 15)
-            return;
-        printk_debug("DDR Using MAP: 6 \n");
-        cfg = ac_remapping_tables[6];
-    } else {
-        if (para->dram_tpr13 & 0xc0000) {
-            printk_debug("DDR Using MAP: 7 \n");
-            cfg = ac_remapping_tables[7];
-        } else {
-            switch (fuse) {
-                case 8:
-                    printk_debug("DDR Using MAP: 2 \n");
-                    cfg = ac_remapping_tables[2];
-                    break;
-                case 9:
-                    printk_debug("DDR Using MAP: 3 \n");
-                    cfg = ac_remapping_tables[3];
-                    break;
-                case 10:
-                    printk_debug("DDR Using MAP: 5 \n");
-                    cfg = ac_remapping_tables[5];
-                    break;
-                case 11:
-                    printk_debug("DDR Using MAP: 4 \n");
-                    cfg = ac_remapping_tables[4];
-                    break;
-                default:
-                case 12:
-                    printk_debug("DDR Using MAP: 1 \n");
-                    cfg = ac_remapping_tables[1];
-                    break;
-                case 13:
-                case 14:
-                    printk_debug("DDR Using MAP: 0 \n");
-                    cfg = ac_remapping_tables[0];
-                    break;
-            }
-        }
-    }
-
-    val = (cfg[1] << 10) | (32 * cfg[0]) | 1 | (cfg[2] << 15) | (cfg[3] << 20) |
-          (cfg[4] << 25);
-    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
-    val = (cfg[7] << 10) | (32 * cfg[6]) | cfg[5] | (cfg[8] << 15) |
-          (cfg[9] << 20) | (cfg[10] << 25);
-    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP1));
-    val = (cfg[13] << 10) | (32 * cfg[12]) | cfg[11] | (cfg[14] << 15) |
-          (cfg[15] << 20);
-    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP2));
-    val = (cfg[18] << 10) | (32 * cfg[17]) | cfg[16] | (cfg[19] << 15) |
-          (cfg[20] << 20) | (cfg[21] << 25);
-    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
-
-    printk_trace("MCTL_COM_REMAP0 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
-    printk_trace("MCTL_COM_REMAP1 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
-    printk_trace("MCTL_COM_REMAP2 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
-    printk_trace("MCTL_COM_REMAP3 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
-}
 
 // Init the controller channel. The key part is placing commands in the main
 // command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
@@ -742,10 +698,10 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     }
 
     clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_DTCR), 0x0fffffff,
-                    (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007);
+                    (para->dram_para2 & (1 << 12)) ? 0x03000001 /* 2 rank */ : 0x01003087 /* 1 rank */);
 
-    if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
-        clrbits_le32((R_PRCM_BASE + VDD_SYS_PWROFF_GATING_REG), 0x2);
+    if (readl(SUNXI_R_CPUCFG_SUP_STAN_FLAG) & (1 << 16)) {
+        clrbits_le32(VDD_SYS_PWROFF_GATING_REG, 0x2);
         udelay(10);
     }
 
@@ -768,7 +724,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
         else
             writel(0x520, (MCTL_PHY_BASE + MCTL_PHY_PIR));
     } else {
-        if ((readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) == 0) {
+        if ((readl(SUNXI_R_CPUCFG_SUP_STAN_FLAG) & (1 << 16)) == 0) {
             // prep DRAM init + PHY reset + d-cal + PLL init + z-cal
             if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
                 writel(0x1f2, (MCTL_PHY_BASE + MCTL_PHY_PIR));// + DRAM reset
@@ -786,7 +742,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     while ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & 0x1) == 0) {
     }// wait for IDONE
 
-    if (readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
+    if (readl(SUNXI_R_CPUCFG_SUP_STAN_FLAG) & (1 << 16)) {
         clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR3), 0x06000000, 0x04000000);
         udelay(10);
 
@@ -795,7 +751,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
         while ((readl((MCTL_PHY_BASE + MCTL_PHY_STATR)) & 0x7) != 0x3) {
         }
 
-        clrbits_le32((R_PRCM_BASE + VDD_SYS_PWROFF_GATING_REG), 0x1);
+        clrbits_le32(VDD_SYS_PWROFF_GATING_REG, 0x1);
         udelay(10);
 
         clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
@@ -980,8 +936,6 @@ static int mctl_core_init(dram_para_t *para) {
     mctl_vrefzq_init(para);
 
     mctl_com_init(para);
-
-    mctl_phy_ac_remapping(para);
 
     mctl_set_timing_params(para);
 
@@ -1206,7 +1160,7 @@ static int auto_scan_dram_config(dram_para_t *para) {
 static int init_DRAM(int type, dram_para_t *para) {
     uint32_t rc, mem_size_mb;
 
-    printk_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
+    printk_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.1");
     printk_debug("DRAM CLK = %d MHz\n", para->dram_clk);
     printk_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
     if ((para->dram_odt_en & 0x1) == 0)
@@ -1217,21 +1171,19 @@ static int init_DRAM(int type, dram_para_t *para) {
     /* Test ZQ status */
     if (para->dram_tpr13 & (1 << 16)) {
         printk_debug("DRAM only have internal ZQ\n");
-        setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 8));
-        writel(0, (SYS_CONTROL_REG_BASE + ZQ_RES_CTRL_REG));
+        setbits_le32(ZQ_CAL_CTRL_REG, (1 << 8));
+        writel(0, ZQ_RES_CTRL_REG);
         udelay(10);
     } else {
-        clrbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x3);
-        writel(para->dram_tpr13 & (1 << 16), (R_PRCM_BASE + ANALOG_PWROFF_GATING_REG));
+        writel(0x0, ANALOG_PWROFF_GATING_REG);
+        clrbits_le32(ZQ_CAL_CTRL_REG, 0x3);
         udelay(10);
-        clrsetbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), 0x108, (1 << 1));
+        clrsetbits_le32(ZQ_CAL_CTRL_REG, (BIT(8) | BIT(2)), BIT(1));
         udelay(10);
-        setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 0));
+        setbits_le32(ZQ_CAL_CTRL_REG, BIT(0));
         udelay(20);
-        printk_debug("ZQ value = 0x%08x\n", readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+        printk_debug("ZQ value = 0x%08x\n", readl(ZQ_RES_STATUS_REG));
     }
-
-    dram_voltage_set(para);
 
     /* Set SDRAM controller auto config */
     if ((para->dram_tpr13 & (1 << 0)) == 0) {
@@ -1308,7 +1260,7 @@ static int init_DRAM(int type, dram_para_t *para) {
 
     dram_enable_all_master();
     if (para->dram_tpr13 & (1 << 28)) {
-        if ((readl((SUNXI_R_CPUCFG_BASE + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) ||
+        if ((readl(SUNXI_R_CPUCFG_SUP_STAN_FLAG) & (1 << 16)) ||
             dramc_simple_wr_test(mem_size_mb, 4096))
             return 0;
     }
