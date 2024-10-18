@@ -27,7 +27,7 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    sunxi_dram_init(&dram_para);
+    printk_info("DRAM init done, type = DDR%d, Size = %lluMB\n", dram_para.dram_type, sunxi_dram_init(&dram_para));
 
     abort();
 
