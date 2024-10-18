@@ -84,8 +84,9 @@ static void eye_delay_compensation(dram_para_t *para)// s1
     delay = (para->dram_tpr10 & 0xf0) << 4;
 
     // Set RAS CAS and CA delay
-    for (i = 6; i < 27; ++i)
+    for (i = 6; i < 27; ++i) {
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay);
+    }
 
     // Set CK CS delay
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(2)), (para->dram_tpr10 & 0x0f) << 8);
@@ -469,12 +470,12 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
     writel(reg_val, SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
 
 
-    reg_val = readl((CCU_BASE + DRAM_CLK_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
     reg_val &= ~DRAM_CLK_REG_DRAM_CLK_SEL_CLEAR_MASK;
     reg_val &= ~(DRAM_CLK_REG_DRAM_DIV1_CLEAR_MASK | DRAM_CLK_REG_DRAM_DIV2_CLEAR_MASK);
     reg_val |= ((DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET) |
                 (DRAM_CLK_REG_DRAM_CLK_SEL_DDRPLL << DRAM_CLK_REG_DRAM_CLK_SEL_OFFSET));
-    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
 
     return ((hosc_freq * n) / p0 / m0 / m1);
 }
@@ -486,32 +487,32 @@ static void mctl_sys_init(dram_para_t *para) {
     uint32_t reg_val = 0;
 
     /* assert MBUS reset */
-    reg_val = readl(CCU_BASE + BUS_Reset1_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + BUS_Reset1_REG);
     reg_val &= ~BUS_Reset1_REG_MBUS_RSTN_SW_CLEAR_MASK;
-    writel(reg_val, (CCU_BASE + BUS_Reset1_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
     /* close MBUS gate */
-    reg_val = readl((CCU_BASE + BUS_CLK_GATING1_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
     reg_val &= ~BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLEAR_MASK;
-    writel(reg_val, (CCU_BASE + BUS_CLK_GATING1_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
 
     /* assert DRAM reset */
-    reg_val = readl(CCU_BASE + BUS_Reset0_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + BUS_Reset0_REG);
     reg_val &= ~BUS_Reset0_REG_DRAM_CLEAR_MASK;
-    writel(reg_val, (CCU_BASE + BUS_Reset0_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
     /* close DRAM gate */
-    reg_val = readl((CCU_BASE + BUS_CLK_GATING0_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
     reg_val &= ~BUS_CLK_GATING0_REG_DRAM_GATING_CLEAR_MASK;
-    writel(reg_val, (CCU_BASE + BUS_CLK_GATING0_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
 
     /* Close DRAM CLK */
-    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val &= ~DRAM_CLK_REG_DRAM_CLK_GATING_CLEAR_MASK;
-    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
 
     /* Update CLK */
-    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
-    writel(reg_val, (CCU_BASE + DRAM_CLK_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
     udelay(10);
 
     if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
@@ -527,31 +528,31 @@ static void mctl_sys_init(dram_para_t *para) {
     dram_disable_all_master();
 
     /* deassert DRAM reset */
-    reg_val = readl((CCU_BASE + BUS_Reset0_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
     reg_val |= (BUS_Reset0_REG_DRAM_DE_ASSERT << BUS_Reset0_REG_DRAM_OFFSET);
-    writel(reg_val, (CCU_BASE + BUS_Reset0_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
     /* deassert MBUS reset */
-    reg_val = readl((CCU_BASE + BUS_Reset1_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
     reg_val |= (BUS_Reset1_REG_MBUS_RSTN_SW_DE_ASSERT << BUS_Reset1_REG_MBUS_RSTN_SW_OFFSET);
-    writel(reg_val, (CCU_BASE + BUS_Reset1_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
 
     /* open DRAM clock gate */
-    reg_val = readl((CCU_BASE + BUS_CLK_GATING0_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
     reg_val |= (BUS_CLK_GATING0_REG_DRAM_GATING_CLOCK_IS_ON << BUS_CLK_GATING0_REG_DRAM_GATING_OFFSET);
-    writel(reg_val, (CCU_BASE + BUS_CLK_GATING0_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
     /* open MBUS clock gate */
-    reg_val = readl((CCU_BASE + BUS_CLK_GATING1_REG));
+    reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
     reg_val |= (BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLOCK_IS_ON << BUS_CLK_GATING1_REG_MBUS_GATE_SW_OFFSET);
-    writel(reg_val, (CCU_BASE + BUS_CLK_GATING1_REG));
+    writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
 
     /* Open DRAM CTL */
-    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET);
-    writel(reg_val, CCU_BASE + DRAM_CLK_REG);
+    writel(reg_val, SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     /*Update CLK*/
-    reg_val = readl(CCU_BASE + DRAM_CLK_REG);
+    reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
-    writel(reg_val, CCU_BASE + DRAM_CLK_REG);
+    writel(reg_val, SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     udelay(5);
 
     // mCTL clock enable
@@ -869,11 +870,12 @@ static int dqs_gate_detect(dram_para_t *para) {
         return 1;
     }
 
-    if ((para->dram_tpr13 & BIT(29)) == 0)
-        return 0;
+    printk_debug("DQS GATE DX0 state: %lu\n", dx0);
+    printk_debug("DQS GATE DX1 state: %lu\n", dx1);
 
-    printk_debug("DX0 state: %lu\n", dx0);
-    printk_debug("DX1 state: %lu\n", dx1);
+    if ((para->dram_tpr13 & BIT(29)) == 0) {
+        return 0;
+    }
 
     return 0;
 }
