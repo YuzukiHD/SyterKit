@@ -437,17 +437,17 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
         m0 = 2;
     }
 
-    reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
-    reg_val &= ~PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK |
-               PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK |
-               PLL_DDR_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK |
-               PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_CLEAR_MASK;
-    reg_val |= ((PLL_DDR_CTRL_REG_PLL_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_EN_OFFSET) |
-                (PLL_DDR_CTRL_REG_PLL_LDO_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_LDO_EN_OFFSET) |
-                ((n - 1) << PLL_DDR_CTRL_REG_PLL_N_OFFSET) |
-                ((m1 - 1) << PLL_DDR_CTRL_REG_PLL_INPUT_DIV_OFFSET) |
-                ((m0 - 1) << PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_OFFSET));
-    writel(reg_val, SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
+
+    clrsetbits_le32(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG,
+                    PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK |
+                            PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK |
+                            PLL_DDR_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK |
+                            PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_CLEAR_MASK,
+                    (PLL_DDR_CTRL_REG_PLL_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_EN_OFFSET) |
+                            (PLL_DDR_CTRL_REG_PLL_LDO_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_LDO_EN_OFFSET) |
+                            ((n - 1) << PLL_DDR_CTRL_REG_PLL_N_OFFSET) |
+                            ((m1 - 1) << PLL_DDR_CTRL_REG_PLL_INPUT_DIV_OFFSET) |
+                            ((m0 - 1) << PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_OFFSET));
 
     /* Clear PLL Lock */
     reg_val = readl(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG);
