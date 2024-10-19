@@ -69,7 +69,7 @@ set(CMAKE_ASM_FLAGS_RELEASE " ")
 
 # Define the major and minor version numbers of the project
 set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 2)
+set(PROJECT_VERSION_MINOR 3)
 
 # Use Git commands to get the Git version and hash values of the project
 find_package(Git QUIET)
@@ -94,7 +94,7 @@ else ()
 endif ()
 
 # Define the project name and languages used
-project(SyterKit VERSION 0.2.9 LANGUAGES C CXX ASM)
+project(SyterKit VERSION 0.3.0 LANGUAGES C CXX ASM)
 
 # Include other CMake modules
 include(cmake/add_syterkit_app.cmake)
