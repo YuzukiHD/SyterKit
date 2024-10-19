@@ -182,8 +182,8 @@ else()
 endif()
 endif()
 
-# If the CONFIG_ARCH_RISCV64 variable is defined, execute the following content
-if (CONFIG_ARCH_RISCV64)
+# If the CONFIG_ARCH_RISCV variable is defined, execute the following content
+if (CONFIG_ARCH_RISCV)
 set(ARCH_INCLUDE include/arch/riscv)
 
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
@@ -203,8 +203,8 @@ configure_file(
 )
 endif()
 
-# If the CONFIG_ARCH_RISCV32 variable is defined, execute the following content
-if (CONFIG_ARCH_RISCV32)
+# If the CONFIG_ARCH_RISCV variable is defined, execute the following content
+if (CONFIG_ARCH_RISCV)
 set(ARCH_INCLUDE include/arch/riscv)
 
 set(ARCH_START_ADDRESS "${ARCH_BIN_START_ADDRESS}")
