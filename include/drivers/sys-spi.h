@@ -10,10 +10,13 @@
 #include <stdint.h>
 #include <types.h>
 
-#include "sys-clk.h"
-#include "sys-gpio.h"
+#include <sys-clk.h>
+#include <sys-dma.h>
+#include <sys-gpio.h>
 
-#include "log.h"
+#include <log.h>
+
+#include <reg-spi.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,23 +29,22 @@ typedef enum {
     SPI_IO_QUAD_IO,
 } spi_io_mode_t;
 
-typedef struct spi_clk_reg {
-    uint32_t ccu_base;
-    uint32_t spi_clk_reg_offest;
-    uint32_t spi_bgr_reg_offset;
-} spi_clk_reg_t;
-
 typedef struct {
-    uint32_t base;
-    uint8_t id;
-    spi_clk_reg_t clk_reg;
-    uint32_t clk_rate;
     gpio_mux_t gpio_cs;
     gpio_mux_t gpio_sck;
     gpio_mux_t gpio_miso;
     gpio_mux_t gpio_mosi;
     gpio_mux_t gpio_wp;
     gpio_mux_t gpio_hold;
+} sunxi_spi_gpio_t;
+
+typedef struct {
+    uint32_t base;
+    uint8_t id;
+    uint32_t clk_rate;
+    sunxi_clk_t clk_reg;
+    sunxi_spi_gpio_t gpio;
+    sunxi_dma_t *dma_handle;
 } sunxi_spi_t;
 
 /**
