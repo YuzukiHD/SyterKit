@@ -244,6 +244,9 @@
         <File Name="../../../include/drivers/reg/reg-smhc.h">
           <FileOption/>
         </File>
+        <File Name="../../../include/drivers/reg/reg-spi.h">
+          <FileOption/>
+        </File>
       </VirtualDirectory>
       <VirtualDirectory Name="usb">
         <VirtualDirectory Name="reg">
@@ -405,14 +408,14 @@
         <File Name="../../../src/drivers/chips/sun20iw5/sys-sid.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-uart.c">
-          <FileOption/>
-        </File>
         <File Name="../../../src/drivers/chips/sun20iw5/sys-wdt.c">
           <FileOption/>
         </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-spi.c">
+          <FileOption/>
+        </File>
       </VirtualDirectory>
-      <File Name="../../../src/drivers/sys-dma.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-dma.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-dram.c" ExcludeProjConfig="">
@@ -421,13 +424,13 @@
       <File Name="../../../src/drivers/sys-gic.c" ExcludeProjConfig="BuildSet">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-i2c.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-i2c.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-rtc.c" ExcludeProjConfig="BuildSet">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-spi-nand.c" ExcludeProjConfig="BuildSet">
@@ -437,13 +440,13 @@
         <FileOption/>
       </File>
       <VirtualDirectory Name="mmc">
-        <File Name="../../../src/drivers/mmc/sys-mmc.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/mmc/sys-mmc.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/mmc/sys-sdcard.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/mmc/sys-sdcard.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/mmc/sys-sdhci.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/mmc/sys-sdhci.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -483,25 +486,25 @@
           </File>
         </VirtualDirectory>
       </VirtualDirectory>
-      <VirtualDirectory Name="image">
-        <File Name="../../../src/image/bimage.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../src/image/uimage.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../src/image/zimage.c">
-          <FileOption/>
-        </File>
-      </VirtualDirectory>
-      <VirtualDirectory Name="log">
-        <File Name="../../../src/log/log.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../src/log/xformat.c">
-          <FileOption/>
-        </File>
-      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="log">
+      <File Name="../../../src/log/log.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/log/xformat.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="image">
+      <File Name="../../../src/image/bimage.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/image/uimage.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../src/image/zimage.c">
+        <FileOption/>
+      </File>
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="app">
@@ -610,8 +613,8 @@
       <Compiler>
         <Define>CONFIG_CHIP_SUN20IW5;TRACE_MODE</Define>
         <Undefine/>
-        <Optim>Default</Optim>
-        <DebugLevel>Default (-g)</DebugLevel>
+        <Optim>None (-O0)</Optim>
+        <DebugLevel>Maximum (-g3)</DebugLevel>
         <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
         <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
         <Verbose>no</Verbose>
@@ -631,7 +634,7 @@
         <Undefine/>
         <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
         <OtherFlags/>
-        <DebugLevel>gdwarf2</DebugLevel>
+        <DebugLevel>none</DebugLevel>
       </Asm>
       <Linker>
         <Garbage>yes</Garbage>
@@ -720,7 +723,7 @@
         <SoftResetVal/>
         <FlashIndex>no</FlashIndex>
         <FlashIndexVal>0</FlashIndexVal>
-        <External>no</External>
+        <External>yes</External>
         <Command/>
         <Arguments/>
       </Flash>
