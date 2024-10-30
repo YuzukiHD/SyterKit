@@ -245,8 +245,8 @@ int main(void) {
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 
     /* Initialize the DMA subsystem and test it */
-    dma_init();
-    dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
+    sunxi_dma_init();
+    sunxi_dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
              (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
 
     /* Initialize the SPI controller. */

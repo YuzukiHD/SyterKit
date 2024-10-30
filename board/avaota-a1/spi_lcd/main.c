@@ -277,7 +277,7 @@ int main(void) {
     sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
     sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
 
-    dma_init();
+    sunxi_dma_init();
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
         printk_error("SPI: init failed\n");

@@ -51,7 +51,8 @@ sunxi_dma_t sunxi_dma = {
                 .rst_reg_offset = BUS_Reset0_REG_HRESETN_SGDMA_SW_OFFSET,
                 .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
                 .gate_reg_offset = BUS_CLK_GATING0_REG_SGDMA_HCLK_EN_OFFSET,
-        }};
+        },
+};
 
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,

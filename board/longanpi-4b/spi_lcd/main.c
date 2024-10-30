@@ -279,7 +279,7 @@ int main(void) {
     sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
     sunxi_gpio_set_value(lcd_cs_pins.pin, 0);
 
-    dma_init();
+    sunxi_dma_init();
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
         printk_error("SPI: init failed\n");

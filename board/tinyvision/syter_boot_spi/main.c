@@ -251,8 +251,8 @@ int main(void) {
     }
 
 _spi:
-    dma_init();
-    dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
+    sunxi_dma_init();
+    sunxi_dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
              (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
     printk_debug("SPI: init\n");
     if (sunxi_spi_init(&sunxi_spi0) != 0) {
