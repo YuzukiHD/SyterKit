@@ -59,9 +59,9 @@ int main(void) {
     /* Dump information about the system clocks. */
     sunxi_clk_dump();
 
-    dma_init();
+    sunxi_dma_init();
 
-    dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000);
+    sunxi_dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000);
 
     if (sunxi_sdhci_init(&sdhci0) != 0) {
         printk_error("SMHC: %s controller init failed\n", sdhci0.name);
