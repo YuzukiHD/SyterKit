@@ -9,7 +9,9 @@
 #include <log.h>
 
 #include <sys-clk.h>
+#include <sys-dma.h>
 #include <sys-dram.h>
+#include <sys-i2c.h>
 
 #include <common.h>
 
@@ -19,6 +21,8 @@
 
 extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
+extern sunxi_dma_t sunxi_dma;
+extern sunxi_i2c_t sunxi_i2c0;
 
 msh_declare_command(helloworld);
 
@@ -34,19 +38,31 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+    sunxi_clk_pre_init();
+
     sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+    // show_banner();
 
     printk_info("Hello World!\n");
 
     sunxi_clk_init();
 
-    printk_info("clk init finish\n");
+    printk_info("CLK init finish\n");
 
     sunxi_clk_dump();
 
     uint64_t dram_size = sunxi_dram_init(&dram_para);
+
+    sunxi_dma_init(&sunxi_dma);
+
+    sunxi_dma_test((uint32_t *) 0x81008000, (uint32_t *) 0x80008000);
+
+    sunxi_i2c_init(&sunxi_i2c0);
+
+    uint8_t axp_val = 0;
+
+    sunxi_i2c_read(&sunxi_i2c0, 0x37, 0x00, &axp_val);
 
     syterkit_shell_attach(commands);
 
