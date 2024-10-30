@@ -60,7 +60,6 @@ typedef struct sunxi_sdhci_desc {
 
 typedef struct sunxi_sdhci_host {
     sdhci_reg_t *reg;
-    uint32_t mclk;
     uint32_t hclkrst;
     uint32_t hclkbase;
     uint32_t mclkbase;
