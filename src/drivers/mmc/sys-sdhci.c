@@ -408,6 +408,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         printk_trace("SMHC: config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n",
                      freq_id, timing_data->odly, timing_data->sdly, spd_md_id);
     }
+    return ret;
 }
 
 /**
