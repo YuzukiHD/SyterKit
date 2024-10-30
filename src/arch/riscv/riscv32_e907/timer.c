@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 #include <io.h>
+#include <log.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
-#include <log.h>
-#include <timer.h>
 #include <sys-clk.h>
+#include <timer.h>
+#include <types.h>
 
 static uint32_t init_timestamp = 0; /**< Timestamp for initialization. */
-uint32_t current_hosc_freq = 24; /**< Current frequency of the high-speed oscillator (HOSC) in MHz. */
+uint32_t current_hosc_freq = 24;    /**< Current frequency of the high-speed oscillator (HOSC) in MHz. */
 
 /**
  * @brief Detect the current high-speed oscillator (HOSC) frequency.
@@ -86,7 +86,7 @@ uint64_t get_arch_counter(void) {
  * @return Current time in milliseconds.
  */
 uint32_t time_ms(void) {
-    return get_arch_counter() / (current_hosc_freq * 1000);
+    return (uint32_t) (get_arch_counter() / (uint64_t) (current_hosc_freq * 1000));
 }
 
 /**
