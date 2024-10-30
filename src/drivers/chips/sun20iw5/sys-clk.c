@@ -105,7 +105,7 @@ static void set_pll_peri_ctrl1(void) {
 }
 
 /* pll peri hosc*2N/M = 3072M  hardware * 2 */
-void set_pll_peri(void) {
+static void set_pll_peri(void) {
     if (!(readl(CCU_PLL_PERI_CTRL0_REG) & PLL_PERI_CTRL0_REG_PLL_EN_CLEAR_MASK)) {
         if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
             set_pll_peri_ctrl0(PLL_PERI_CTRL0_REG_PLL_EN_ENABLE, PLL_PERI_CTRL0_REG_PLL_OUTPUT_GATE_ENABLE, CCU_AON_PLL_CPU_N_192, CCU_AON_PLL_CPU_M_5);
@@ -203,7 +203,7 @@ static void set_apb(void) {
 }
 
 // 192M
-void set_apb_spec(void) {
+static void set_apb_spec(void) {
     clrsetbits_le32(CCU_APB_SPEC_CLK_REG, APB_SPEC_CLK_REG_APB_SPEC_SEL_CLEAR_MASK | APB_SPEC_CLK_REG_APB_SPEC_CLK_DIV_CLEAR_MASK,
                     APB_SPEC_CLK_REG_APB_SPEC_SEL_PERI_192M << APB_SPEC_CLK_REG_APB_SPEC_SEL_OFFSET);
     return;
@@ -230,6 +230,11 @@ void sunxi_clk_init(void) {
     set_apb();
     set_pll_video();
     set_pll_csi();
+}
+
+void sunxi_clk_pre_init(void) {
+    set_apb_spec();
+    set_pll_peri();
 }
 
 void sunxi_clk_dump() {
