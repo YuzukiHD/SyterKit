@@ -14,12 +14,930 @@
 #include <sys-dram.h>
 #include <sys-rtc.h>
 
-uint32_t auto_cal_timing(uint32_t time_ns, uint32_t clk) {
-    uint32_t value;
+static uint32_t training_error_flag = 0;
 
-    return (uint32_t) ((time_ns * clk) % 1000 != 0) + (time_ns * clk) / 1000;
+/* defines */
+uint32_t mctl_phy_init(dram_para_t *para);
+uint32_t mctl_channel_init(dram_para_t *para);
+void mctl_phy_cold_reset(void);
+void mctl_com_set_controller_after_phy(dram_para_t *para);
+void mctl_com_init(dram_para_t *para);
+void mctl_com_set_bus_config(dram_para_t *para);
+uint32_t mctl_core_init(dram_para_t *para);
+void mctl_sys_init(dram_para_t *para);
+
+uint32_t phy_write_training(dram_para_t *para) {
+    uint32_t uVar1;
+    bool bVar2;
+    uint32_t reg_val3;
+    uint32_t reg_val2;
+    uint32_t reg_val1;
+    uint32_t reg_val;
+    uint32_t write_training_error;
+    uint32_t i;
+
+    REG32(0x04830134) = 0;
+    REG32(0x04830138) = 0;
+    REG32(0x0483019c) = 0;
+    REG32(0x048301a0) = 0;
+    REG32(0x04830198) = REG32(0x04830198) & 0xfffffff3 | 8;
+    REG32(0x04830190) = REG32(0x04830190) | 0x30;
+    do {
+    } while ((REG32(0x048308e0) & 3) != 3);
+    bVar2 = (REG32(0x048308e0) & 0xc) != 0;
+    if (bVar2) {
+        printf("dx_low 16bit write training error  \n");
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        do {
+        } while ((REG32(0x04830ae0) & 3) != 3);
+        if ((REG32(0x04830ae0) & 0xc) != 0) {
+            printf("dx_high 16bit write training error  \n");
+            bVar2 = true;
+        }
+    }
+    for (i = 0; i < 9; i = i + 1) {
+    }
+    for (i = 0; i < 9; i = i + 1) {
+        uVar1 = *(int *) ((i + 0x120c24e) * 4) - *(int *) ((i + 0x120c23c) * 4);
+        if ((uVar1 < 7) &&
+            (printf("write dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+             (para->dram_tpr10 & 0x10000000) == 0)) {
+            bVar2 = true;
+        }
+    }
+    for (i = 0; i < 9; i = i + 1) {
+    }
+    for (i = 0; i < 9; i = i + 1) {
+        uVar1 = *(int *) ((i + 0x120c257) * 4) - *(int *) ((i + 0x120c245) * 4);
+        if ((uVar1 < 7) &&
+            (printf("write dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+             (para->dram_tpr10 & 0x10000000) == 0)) {
+            bVar2 = true;
+        }
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        for (i = 0; i < 9; i = i + 1) {
+        }
+        for (i = 0; i < 9; i = i + 1) {
+            uVar1 = *(int *) ((i + 0x120c2ce) * 4) - *(int *) ((i + 0x120c2bc) * 4);
+            if ((uVar1 < 7) &&
+                (printf("write dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+                 (para->dram_tpr10 & 0x10000000) == 0)) {
+                bVar2 = true;
+            }
+        }
+        for (i = 0; i < 9; i = i + 1) {
+        }
+        for (i = 0; i < 9; i = i + 1) {
+            uVar1 = *(int *) ((i + 0x120c2d7) * 4) - *(int *) ((i + 0x120c2c5) * 4);
+            if ((uVar1 < 7) &&
+                (printf("write dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+                 (para->dram_tpr10 & 0x10000000) == 0)) {
+                bVar2 = true;
+            }
+        }
+    }
+    REG32(0x04830190) = REG32(0x04830190) & 0xffffff9f;
+    if ((para->dram_para2 & 0x1000) != 0) {
+        REG32(0x04830198) = REG32(0x04830198) & 0xfffffff3 | 4;
+        REG32(0x04830190) = REG32(0x04830190) | 0x30;
+        do {
+        } while ((REG32(0x048308e0) & 3) != 3);
+        if ((REG32(0x048308e0) & 0xc) != 0) {
+            printf("dx_low 16bit write training error  \n");
+            bVar2 = true;
+        }
+        if ((para->dram_para2 & 1) == 0) {
+            do {
+            } while ((REG32(0x04830ae0) & 3) != 3);
+            if ((REG32(0x04830ae0) & 0xc) != 0) {
+                printf("dx_high 16bit write training error  \n");
+                bVar2 = true;
+            }
+        }
+        REG32(0x04830190) = REG32(0x04830190) & 0xffffff9f;
+    }
+    REG32(0x04830198) = REG32(0x04830198) & 0xfffffff3;
+    return (uint32_t) !bVar2;
 }
 
+uint32_t phy_read_training(dram_para_t *para) {
+    uint32_t uVar1;
+    bool bVar2;
+    uint32_t reg_val3;
+    uint32_t reg_val2;
+    uint32_t reg_val1;
+    uint32_t reg_val;
+    uint32_t read_training_error;
+    uint32_t i;
+    uint32_t dqs_read_default_deskew;
+
+    if (para->dram_type == 8) {
+        REG32(0x04830800) = 0;
+        REG32(0x0483081c) = 0;
+    }
+    uVar1 = para->dram_para1 >> 0x10 & 0xf;
+    dqs_read_default_deskew = uVar1 << 1;
+    if (uVar1 == 0) {
+        dqs_read_default_deskew = 0xf;
+    }
+    REG32(0x04830198) = REG32(0x04830198) & 0xfffffffc | 2;
+    REG32(0x04830804) = dqs_read_default_deskew | REG32(0x04830804) & 0xffffffc0;
+    REG32(0x04830808) = dqs_read_default_deskew | REG32(0x04830808) & 0xffffffc0;
+    REG32(0x04830a04) = dqs_read_default_deskew | REG32(0x04830a04) & 0xffffffc0;
+    REG32(0x04830a08) = dqs_read_default_deskew | REG32(0x04830a08) & 0xffffffc0;
+    REG32(0x04830190) = REG32(0x04830190) | 7;
+    do {
+    } while ((REG32(0x04830840) & 0xc) != 0xc);
+    bVar2 = (REG32(0x04830840) & 3) != 0;
+    if (bVar2) {
+        printf("dx_low 16bit read training error  \n");
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        do {
+        } while ((REG32(0x04830a40) & 0xc) != 0xc);
+        if ((REG32(0x04830a40) & 3) != 0) {
+            printf("dx_high 16bit read training error  \n");
+            bVar2 = true;
+        }
+    }
+    for (i = 0; i < 9; i = i + 1) {
+    }
+    for (i = 0; i < 9; i = i + 1) {
+        uVar1 = *(int *) ((i + 0x120c226) * 4) - *(int *) ((i + 0x120c214) * 4);
+        if ((uVar1 < 7) &&
+            (printf("read dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+             (para->dram_tpr10 & 0x10000000) == 0)) {
+            bVar2 = true;
+        }
+    }
+    for (i = 0; i < 9; i = i + 1) {
+    }
+    for (i = 0; i < 9; i = i + 1) {
+        uVar1 = *(int *) ((i + 0x120c22f) * 4) - *(int *) ((i + 0x120c21d) * 4);
+        if ((uVar1 < 7) &&
+            (printf("read dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+             (para->dram_tpr10 & 0x10000000) == 0)) {
+            bVar2 = true;
+        }
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        for (i = 0; i < 9; i = i + 1) {
+        }
+        for (i = 0; i < 9; i = i + 1) {
+            uVar1 = *(int *) ((i + 0x120c2a6) * 4) - *(int *) ((i + 0x120c294) * 4);
+            if ((uVar1 < 7) &&
+                (printf("read dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+                 (para->dram_tpr10 & 0x10000000) == 0)) {
+                bVar2 = true;
+            }
+        }
+        for (i = 0; i < 9; i = i + 1) {
+        }
+        for (i = 0; i < 9; i = i + 1) {
+            uVar1 = *(int *) ((i + 0x120c2af) * 4) - *(int *) ((i + 0x120c29d) * 4);
+            if ((uVar1 < 7) &&
+                (printf("read dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
+                 (para->dram_tpr10 & 0x10000000) == 0)) {
+                bVar2 = true;
+            }
+        }
+    }
+    REG32(0x04830190) = REG32(0x04830190) & 0xfffffffc;
+    if ((para->dram_para2 & 0x1000) != 0) {
+        REG32(0x04830198) = REG32(0x04830198) & 0xfffffffc | 2;
+        REG32(0x04830190) = REG32(0x04830190) | 7;
+        do {
+        } while ((REG32(0x04830840) & 0xc) != 0xc);
+        if ((REG32(0x04830840) & 3) != 0) {
+            printf("dx_low 16bit read training error  \n");
+            bVar2 = true;
+        }
+        if ((para->dram_para2 & 1) == 0) {
+            do {
+            } while ((REG32(0x04830a40) & 0xc) != 0xc);
+            if ((REG32(0x04830a40) & 3) != 0) {
+                printf("dx_high 16bit read training error  \n");
+                bVar2 = true;
+            }
+        }
+        REG32(0x04830190) = REG32(0x04830190) & 0xfffffffc;
+    }
+    REG32(0x04830198) = REG32(0x04830198) & 0xfffffffc;
+    return (uint32_t) !bVar2;
+}
+
+uint32_t phy_read_calibration(dram_para_t *para) {
+    bool bVar1;
+    uint32_t reg_val;
+    uint32_t read_calibration_error;
+
+    bVar1 = false;
+    if (para->dram_type == 4) {
+        REG32(0x04830054) = REG32(0x04830054) | 2;
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        do {
+            if ((REG32(0x04830184) & 0xf) == 0xf) goto LAB_0001231a;
+        } while ((REG32(0x04830184) >> 5 & 1) == 0);
+        bVar1 = true;
+    } else {
+        do {
+            if ((REG32(0x04830184) & 3) == 3) goto LAB_0001231a;
+        } while ((REG32(0x04830184) >> 5 & 1) == 0);
+        bVar1 = true;
+    }
+LAB_0001231a:
+    if ((para->dram_para2 & 0x1000) != 0) {
+        if ((para->dram_para2 & 1) == 0) {
+            do {
+                if ((REG32(0x04830184) & 0xf) == 0xf) goto LAB_00012422;
+            } while ((REG32(0x04830184) >> 5 & 1) == 0);
+            bVar1 = true;
+        } else {
+            do {
+                if ((REG32(0x04830184) & 3) == 3) goto LAB_00012422;
+            } while ((REG32(0x04830184) >> 5 & 1) == 0);
+            bVar1 = true;
+        }
+    }
+LAB_00012422:
+    REG32(0x04830008) = REG32(0x04830008) & 0xffffffce;
+    return (uint32_t) !bVar1;
+}
+
+uint32_t phy_write_leveling(dram_para_t *para) {
+    bool bVar1;
+    uint32_t uVar2;
+    int iVar3;
+    uint32_t type;
+    uint32_t reg_val;
+    uint32_t write_leveling_error;
+    uint32_t j;
+    uint32_t i;
+
+    bVar1 = false;
+    uVar2 = para->dram_type;
+    if (uVar2 == 4) {
+        REG32(0x0483000c) = para->dram_mr1 & 0xff;
+        REG32(0x04830010) = para->dram_mr1 >> 8 & 0xff | 0x40;
+    } else if (((uVar2 == 6) || (uVar2 == 7)) || (uVar2 == 8)) {
+        REG32(0x0483000c) = para->dram_mr2 & 0xff;
+        REG32(0x04830010) = para->dram_mr2 >> 8 & 0xff;
+    } else {
+        REG32(0x0483000c) = 4;
+        REG32(0x04830010) = 0x40;
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        do {
+        } while ((REG32(0x04830188) & 0xf) != 0xf);
+    } else {
+        do {
+        } while ((REG32(0x04830188) & 3) != 3);
+    }
+    for (i = 0; i < 4; i = i + 1) {
+        if (i < 2) {
+            j = i;
+        } else {
+            j = i + 0x2e;
+        }
+        iVar3 = *(int *) ((j + 0x120c096) * 4);
+        if ((iVar3 == 0) || (iVar3 == 0x3f)) {
+            bVar1 = true;
+        }
+    }
+    if ((para->dram_para2 & 0x1000) != 0) {
+        if ((para->dram_para2 & 1) == 0) {
+            do {
+            } while ((REG32(0x04830188) & 0xf) != 0xf);
+        } else {
+            do {
+            } while ((REG32(0x04830188) & 3) != 3);
+        }
+    }
+    REG32(0x04830008) = REG32(0x04830008) & 0xffffff3b;
+    return (uint32_t) !bVar1;
+}
+
+void mctl_phy_set_address_remapping(dram_para_t *para) {
+    uint32_t remap_lpddr3_A100[27];
+    uint32_t remap_ddr4_A100[27];
+    uint32_t remap_ddr3_A100[27];
+    uint32_t chip_id;
+    uint32_t i;
+
+    // memcpy(remap_ddr3_A100, &.LC0, 0x6c);
+    // memcpy(remap_ddr4_A100, &.LC1, 0x6c);
+    // memcpy(remap_lpddr3_A100, &.LC2, 0x6c);
+    if ((REG32(0x03006200) & 0xffff) != 0x800) {
+        if ((REG32(0x03006200) & 0xffff) == 0x1400) {
+            printf("DRAM remap error\n");
+        } else {
+            switch (para->dram_type) {
+                case 3:
+                    for (i = 0; i < 0x1b; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c030) * 4) = remap_ddr3_A100[i];
+                    }
+                    break;
+                case 4:
+                    for (i = 0; i < 0x1b; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c030) * 4) = remap_ddr4_A100[i];
+                    }
+                    break;
+                case 7:
+                    for (i = 0; i < 0x1b; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c030) * 4) = remap_lpddr3_A100[i];
+                    }
+                    break;
+                case 8:
+                    for (i = 0; i < 0x1b; i = i + 1) {
+                    }
+            }
+        }
+    }
+    return;
+}
+
+void mctl_phy_ca_bit_delay_compensation(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t chip_id;
+    uint32_t type;
+    uint32_t reg_val;
+    uint32_t i;
+
+    if ((para->dram_tpr10 & 0x10000) != 0) {
+        if ((REG32(0x03006200) & 0xffff) == 0x800) {
+            switch (para->dram_type) {
+                case 3:
+                    uVar1 = para->dram_tpr10;
+                    for (i = 0; i < 0x20; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
+                    }
+                    REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
+                    REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
+                    REG32(0x048307e0) = REG32(0x048307dc);
+                    if ((para->dram_para2 & 0x1000) != 0) {
+                        REG32(0x04832388) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+                    }
+                    break;
+                case 4:
+                case 7:
+                    break;
+                case 8:
+                    uVar1 = para->dram_tpr10;
+                    for (i = 0; i < 0x20; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
+                    }
+                    REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
+                    REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
+                    REG32(0x048307e0) = REG32(0x048307dc);
+                    if ((para->dram_para2 & 0x1000) != 0) {
+                        REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+                    }
+            }
+        } else {
+            switch (para->dram_type) {
+                case 3:
+                    uVar1 = para->dram_tpr10;
+                    for (i = 0; i < 0x20; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
+                    }
+                    REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
+                    REG32(0x048307b8) = (para->dram_tpr10 >> 8 & 0xf) << 1;
+                    REG32(0x048307e0) = REG32(0x048307dc);
+                    if ((para->dram_para2 & 0x1000) != 0) {
+                        REG32(0x04830784) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+                    }
+                    break;
+                case 4:
+                    uVar1 = para->dram_tpr10;
+                    for (i = 0; i < 0x20; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
+                    }
+                    REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
+                    REG32(0x04830784) = (para->dram_tpr10 >> 8 & 0xf) << 1;
+                    REG32(0x048307e0) = REG32(0x048307dc);
+                    break;
+                case 7:
+                    uVar1 = para->dram_tpr10;
+                    for (i = 0; i < 0x20; i = i + 1) {
+                        *(uint32_t *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
+                    }
+                    REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
+                    REG32(0x04830788) = (para->dram_tpr10 >> 8 & 0xf) << 1;
+                    REG32(0x048307e0) = REG32(0x048307dc);
+                    if ((para->dram_para2 & 0x1000) != 0) {
+                        REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+                    }
+                    break;
+                case 8:
+                    break;
+            }
+        }
+    }
+    return;
+}
+
+void mctl_drive_odt_config(dram_para_t *para) {
+    uint32_t reg_val;
+
+    REG32(0x0483038c) = para->dram_dx_dri & 0x1f;
+    REG32(0x04830388) = REG32(0x0483038c);
+    if (para->dram_type == 8) {
+        REG32(0x0483038c) = 4;
+    }
+    REG32(0x048303cc) = para->dram_dx_dri >> 8 & 0x1f;
+    REG32(0x048303c8) = REG32(0x048303cc);
+    if (para->dram_type == 8) {
+        REG32(0x048303cc) = 4;
+    }
+    REG32(0x0483040c) = para->dram_dx_dri >> 0x10 & 0x1f;
+    REG32(0x04830408) = REG32(0x0483040c);
+    if (para->dram_type == 8) {
+        REG32(0x0483040c) = 4;
+    }
+    REG32(0x0483044c) = para->dram_dx_dri >> 0x18 & 0x1f;
+    REG32(0x04830448) = REG32(0x0483044c);
+    if (para->dram_type == 8) {
+        REG32(0x0483044c) = 4;
+    }
+    REG32(0x04830340) = para->dram_ca_dri & 0x1f;
+    REG32(0x04830344) = REG32(0x04830340);
+    REG32(0x04830348) = para->dram_ca_dri >> 8 & 0x1f;
+    REG32(0x0483034c) = REG32(0x04830348);
+    REG32(0x04830384) = para->dram_dx_odt & 0x1f;
+    if ((para->dram_type == 4) || (REG32(0x04830380) = REG32(0x04830384), para->dram_type == 7)) {
+        REG32(0x04830380) = 0;
+    }
+    if (para->dram_type == 8) {
+        REG32(0x04830384) = 0;
+    }
+    REG32(0x048303c4) = para->dram_dx_odt >> 8 & 0x1f;
+    if ((para->dram_type == 4) || (REG32(0x048303c0) = REG32(0x048303c4), para->dram_type == 7)) {
+        REG32(0x048303c0) = 0;
+    }
+    if (para->dram_type == 8) {
+        REG32(0x048303c4) = 0;
+    }
+    REG32(0x04830404) = para->dram_dx_odt >> 0x10 & 0x1f;
+    if ((para->dram_type == 4) || (REG32(0x04830400) = REG32(0x04830404), para->dram_type == 7)) {
+        REG32(0x04830400) = 0;
+    }
+    if (para->dram_type == 8) {
+        REG32(0x04830404) = 0;
+    }
+    REG32(0x04830444) = para->dram_dx_odt >> 0x18 & 0x1f;
+    if ((para->dram_type == 4) || (REG32(0x04830440) = REG32(0x04830444), para->dram_type == 7)) {
+        REG32(0x04830440) = 0;
+    }
+    if (para->dram_type == 8) {
+        REG32(0x04830444) = 0;
+    }
+    return;
+}
+
+void mctl_phy_vref_config(dram_para_t *para) {
+    uint32_t reg_val;
+
+    reg_val = 0;
+    switch (para->dram_type) {
+        case 3:
+            if ((para->dram_tpr6 & 0xff) == 0) {
+                reg_val = 0x80;
+            } else {
+                reg_val = para->dram_tpr6 & 0xff;
+            }
+            break;
+        case 4:
+            if ((para->dram_tpr6 >> 8 & 0xff) == 0) {
+                reg_val = 0x80;
+            } else {
+                reg_val = para->dram_tpr6 >> 8 & 0xff;
+            }
+            break;
+        case 7:
+            if ((para->dram_tpr6 >> 0x10 & 0xff) == 0) {
+                reg_val = 0x80;
+            } else {
+                reg_val = para->dram_tpr6 >> 0x10 & 0xff;
+            }
+            break;
+        case 8:
+            if (para->dram_tpr6 >> 0x18 == 0) {
+                reg_val = 0x33;
+            } else {
+                reg_val = para->dram_tpr6 >> 0x18;
+            }
+    }
+    REG32(0x048303dc) = reg_val;
+    REG32(0x0483045c) = reg_val;
+    return;
+}
+
+void phy_para_config(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t type;
+    uint32_t ctrl_freq;
+    uint32_t reg_val;
+    uint32_t TCWL;
+    uint32_t TCL;
+
+    uVar1 = para->dram_type;
+    if (uVar1 == 8) {
+        REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f;
+    }
+    if ((para->dram_para2 & 1) == 0) {
+        reg_val = REG32(0x0483003c) & 0xfffffff0 | 0xf;
+    } else {
+        reg_val = REG32(0x0483003c) & 0xfffffff0 | 3;
+    }
+    REG32(0x0483003c) = reg_val;
+    switch (uVar1) {
+        case 3:
+            TCL = 0xd;
+            TCWL = 9;
+            break;
+        case 4:
+            TCL = 0xd;
+            TCWL = 10;
+            break;
+        default:
+            TCL = 0xd;
+            TCWL = 9;
+            break;
+        case 7:
+            TCL = 0xe;
+            TCWL = 8;
+            break;
+        case 8:
+            TCL = 0x14;
+            TCWL = 10;
+    }
+    REG32(0x04830014) = TCL;
+    REG32(0x0483035c) = TCL;
+    REG32(0x04830368) = TCL;
+    REG32(0x04830374) = TCL;
+    REG32(0x04830018) = 0;
+    REG32(0x04830360) = 0;
+    REG32(0x0483036c) = 0;
+    REG32(0x04830378) = 0;
+    REG32(0x0483001c) = TCWL;
+    REG32(0x04830364) = TCWL;
+    REG32(0x04830370) = TCWL;
+    REG32(0x0483037c) = TCWL;
+    mctl_phy_set_address_remapping(para);
+    mctl_phy_ca_bit_delay_compensation(para);
+    mctl_phy_vref_config(para);
+    mctl_drive_odt_config(para);
+    REG32(0x04830004) = REG32(0x04830004) & 0xfffffff8;
+    switch (uVar1) {
+        case 3:
+            reg_val = REG32(0x04830004) | 2;
+            break;
+        case 4:
+            reg_val = REG32(0x04830004) | 4;
+            break;
+        default:
+            reg_val = REG32(0x04830004) | 2;
+            break;
+        case 7:
+            reg_val = REG32(0x04830004) | 3;
+            break;
+        case 8:
+            reg_val = REG32(0x04830004) | 5;
+    }
+    REG32(0x04830004) = reg_val | 8;
+    if (para->dram_clk < 0x2a1) {
+        REG32(0x04830020) = 0xf;
+    }
+    if (para->dram_clk < 0x1f5) {
+        REG32(0x04830144) = REG32(0x04830144) | 0x80;
+        REG32(0x0483014c) = REG32(0x0483014c) & 0xffffff1f | 0x20;
+    } else {
+        REG32(0x04830144) = REG32(0x04830144) & 0xffffff7f;
+        REG32(0x0483014c) = REG32(0x0483014c) & 0xffffff1f;
+    }
+    REG32(0x0483014c) = REG32(0x0483014c) & 0xfffffff7;
+    do {
+    } while ((REG32(0x04830180) >> 2 & 1) != 1);
+    udelay(1000);
+    REG32(0x04830058) = 0x37;
+    REG32(0x04810008) = REG32(0x04810008) & 0xfffffdff;
+    udelay(1);
+    return;
+}
+
+void mctl_phy_dx_bit_delay_compensation(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t reg_val;
+    uint32_t i;
+
+    if ((para->dram_tpr10 & 0x40000) != 0) {
+        REG32(0x04830060) = REG32(0x04830060) & 0xfffffffe;
+        REG32(0x04830008) = REG32(0x04830008) | 8;
+        REG32(0x04830190) = REG32(0x04830190) & 0xffffffef;
+        if (para->dram_type == 8) {
+            REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f;
+        }
+        uVar1 = para->dram_tpr11 & 0x3f;
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) (i * 8 + 0x4830484) = uVar1;
+            *(uint32_t *) (i * 8 + 0x4830544) = uVar1;
+        }
+        REG32(0x048304cc) = para->dram_para0 & 0x3f;
+        uVar1 = para->dram_tpr11 >> 8 & 0x3f;
+        REG32(0x048304d0) = REG32(0x048304cc);
+        REG32(0x0483058c) = REG32(0x048304cc);
+        REG32(0x04830590) = REG32(0x048304cc);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) ((i + 0x90609b) * 8) = uVar1;
+            *(uint32_t *) ((i + 0x9060b3) * 8) = uVar1;
+        }
+        REG32(0x04830520) = para->dram_para0 >> 8 & 0x3f;
+        uVar1 = para->dram_tpr11 >> 0x10 & 0x3f;
+        REG32(0x04830524) = REG32(0x04830520);
+        REG32(0x048305e0) = REG32(0x04830520);
+        REG32(0x048305e4) = REG32(0x04830520);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) (i * 8 + 0x4830604) = uVar1;
+            *(uint32_t *) (i * 8 + 0x48306c4) = uVar1;
+        }
+        REG32(0x0483064c) = para->dram_para0 >> 0x10 & 0x3f;
+        uVar1 = para->dram_tpr11 >> 0x18 & 0x3f;
+        REG32(0x04830650) = REG32(0x0483064c);
+        REG32(0x0483070c) = REG32(0x0483064c);
+        REG32(0x04830710) = REG32(0x0483064c);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) ((i + 0x9060cb) * 8) = uVar1;
+            *(uint32_t *) ((i + 0x9060e3) * 8) = uVar1;
+        }
+        REG32(0x048306a0) = para->dram_para0 >> 0x18 & 0x3f;
+        REG32(0x04830060) = REG32(0x04830060) | 1;
+        REG32(0x048306a4) = REG32(0x048306a0);
+        REG32(0x04830760) = REG32(0x048306a0);
+        REG32(0x04830764) = REG32(0x048306a0);
+    }
+    if ((para->dram_tpr10 & 0x20000) != 0) {
+        REG32(0x04830054) = REG32(0x04830054) & 0xffffff7f;
+        REG32(0x04830190) = REG32(0x04830190) & 0xfffffffb;
+        uVar1 = para->dram_tpr12 & 0x3f;
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) ((i + 0x906090) * 8) = uVar1;
+            *(uint32_t *) ((i + 0x9060a8) * 8) = uVar1;
+        }
+        REG32(0x048304c8) = para->dram_tpr14 & 0x3f;
+        uVar1 = para->dram_tpr12 >> 8 & 0x3f;
+        REG32(0x04830528) = REG32(0x048304c8);
+        REG32(0x04830588) = REG32(0x048304c8);
+        REG32(0x048305e8) = REG32(0x048304c8);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) (i * 8 + 0x48304d4) = uVar1;
+            *(uint32_t *) (i * 8 + 0x4830594) = uVar1;
+        }
+        REG32(0x0483051c) = para->dram_tpr14 >> 8 & 0x3f;
+        uVar1 = para->dram_tpr12 >> 0x10 & 0x3f;
+        REG32(0x0483052c) = REG32(0x0483051c);
+        REG32(0x048305dc) = REG32(0x0483051c);
+        REG32(0x048305ec) = REG32(0x0483051c);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) ((i + 0x9060c0) * 8) = uVar1;
+            *(uint32_t *) ((i + 0x9060d8) * 8) = uVar1;
+        }
+        REG32(0x04830648) = para->dram_tpr14 >> 0x10 & 0x3f;
+        uVar1 = para->dram_tpr12 >> 0x18 & 0x3f;
+        REG32(0x048306a8) = REG32(0x04830648);
+        REG32(0x04830708) = REG32(0x04830648);
+        REG32(0x04830768) = REG32(0x04830648);
+        for (i = 0; i < 9; i = i + 1) {
+            *(uint32_t *) (i * 8 + 0x4830654) = uVar1;
+            *(uint32_t *) (i * 8 + 0x4830714) = uVar1;
+        }
+        REG32(0x0483069c) = para->dram_tpr14 >> 0x18 & 0x3f;
+        REG32(0x04830054) = REG32(0x04830054) | 0x80;
+        REG32(0x048306ac) = REG32(0x0483069c);
+        REG32(0x0483075c) = REG32(0x0483069c);
+        REG32(0x0483076c) = REG32(0x0483069c);
+    }
+    return;
+}
+
+void mctl_dfi_init(dram_para_t *para) {
+    uint32_t reg_val;
+
+    do {
+    } while ((REG32(0x04820324) & 1) != 1);
+    do {
+    } while ((REG32(0x048201bc) & 1) != 1);
+    REG32(0x048201b0) = REG32(0x048201b0) & 0xffffffdf | 1;
+    REG32(0x04820030) = REG32(0x04820030) & 0xffffffdf;
+    REG32(0x04820320) = 1;
+    do {
+    } while ((REG32(0x04820324) & 1) != 1);
+    do {
+    } while ((REG32(0x04820004) & 3) != 1);
+    udelay(200);
+    REG32(0x048201b0) = REG32(0x048201b0) & 0xfffffffe;
+    REG32(0x04820320) = 1;
+    do {
+    } while ((REG32(0x04820324) & 1) != 1);
+    if (para->dram_type == 8) {
+        do {
+        } while (true);
+    }
+    if (para->dram_type == 7) {
+        do {
+        } while (true);
+    }
+    if (para->dram_type == 4) {
+        do {
+        } while (true);
+    }
+    if (para->dram_type != 3) {
+        REG32(0x04830054) = 0;
+        return;
+    }
+    do {
+    } while (true);
+}
+
+void mctl_com_set_controller_refresh(uint32_t onoff, dram_para_t *para) {
+    uint32_t reg_val;
+
+    REG32(0x04820060) = onoff | REG32(0x04820060) & 0xfffffffe;
+    return;
+}
+
+uint32_t mctl_core_init(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t ret_val;
+
+    mctl_sys_init(para);
+    uVar1 = mctl_channel_init(para);
+    return uVar1;
+}
+
+uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
+    bool bVar1;
+    bool bVar2;
+    bool bVar3;
+    bool bVar4;
+    uint32_t reg_val;
+    uint32_t read_calibration_error;
+    uint32_t write_training_error;
+    uint32_t read_training_error;
+    uint32_t write_leveling_error;
+    uint32_t i;
+    uint32_t ret_val;
+
+    ret_val = 1;
+    bVar2 = false;
+    bVar3 = false;
+    bVar4 = false;
+    bVar1 = false;
+    phy_para_config(para);
+    mctl_dfi_init(para);
+    REG32(0x04820320) = 0;
+    mctl_com_set_controller_refresh(0, para);
+    REG32(0x04820320) = 1;
+    if ((para->dram_tpr10 & 0x100000) != 0) {
+        if ((para->dram_tpr10 & 0x80000) == 0) {
+            ret_val = phy_write_leveling(para);
+        } else {
+            for (i = 0; i < 5; i = i + 1) {
+                ret_val = phy_write_leveling(para);
+                if (ret_val == 1) {
+                    i = 5;
+                }
+            }
+        }
+        if (ret_val == 0) {
+            printf("write_leveling error \n");
+            bVar2 = true;
+        }
+    }
+    if ((para->dram_tpr10 & 0x200000) != 0) {
+        if ((para->dram_tpr10 & 0x80000) == 0) {
+            ret_val = phy_read_calibration(para);
+        } else {
+            for (i = 0; i < 5; i = i + 1) {
+                ret_val = phy_read_calibration(para);
+                if (ret_val == 1) {
+                    i = 5;
+                }
+            }
+        }
+        if (ret_val == 0) {
+            bVar1 = true;
+        }
+    }
+    if (((para->dram_tpr10 & 0x400000) != 0) && (!bVar1)) {
+        if ((para->dram_tpr10 & 0x80000) == 0) {
+            ret_val = phy_read_training(para);
+        } else {
+            for (i = 0; i < 5; i = i + 1) {
+                ret_val = phy_read_training(para);
+                if (ret_val == 1) {
+                    i = 5;
+                }
+            }
+        }
+        if (ret_val == 0) {
+            printf("read_training error \n");
+            bVar3 = true;
+        }
+    }
+    if (((para->dram_tpr10 & 0x800000) != 0) && (!bVar1)) {
+        if ((para->dram_tpr10 & 0x80000) == 0) {
+            ret_val = phy_write_training(para);
+        } else {
+            for (i = 0; i < 5; i = i + 1) {
+                ret_val = phy_write_training(para);
+                if (ret_val == 1) {
+                    i = 5;
+                }
+            }
+        }
+        if (ret_val == 0) {
+            printf("write_training error \n");
+            bVar4 = true;
+        }
+    }
+    if ((para->dram_tpr10 & 0x80000) == 0) {
+        if ((((bVar2) || (bVar1)) || (bVar3)) || (bVar4)) {
+            bVar1 = true;
+        } else {
+            bVar1 = false;
+        }
+        if (bVar1) {
+            return 0;
+        }
+    } else {
+        if (((bVar2) || (bVar1)) || ((bVar3 || (bVar4)))) {
+            bVar1 = true;
+        } else {
+            bVar1 = false;
+        }
+        if (bVar1) {
+            training_error_flag = training_error_flag + 1;
+            if (training_error_flag == 10) {
+                printf("retraining ten \n");
+                return 0;
+            }
+            ret_val = mctl_core_init(para);
+            training_error_flag = 0;
+        }
+    }
+    mctl_phy_dx_bit_delay_compensation(para);
+    return ret_val;
+}
+
+uint32_t mctl_phy_init(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t ret_val;
+
+    mctl_phy_cold_reset();
+    uVar1 = ddrphy_phyinit_C_initPhyConfig(para);
+    return uVar1;
+}
+
+uint32_t mctl_channel_init(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t reg_val;
+    uint32_t ret_val;
+
+    REG32(0x04810008) = REG32(0x04810008) & 0xfeffffff | 0x2000200;
+    REG32(0x04810020) = REG32(0x04810020) | 0x8000;
+    mctl_com_set_bus_config(para);
+    REG32(0x04820038) = 0;
+    mctl_com_init(para);
+    uVar1 = mctl_phy_init(para);
+    mctl_com_set_controller_after_phy(para);
+    return uVar1;
+}
+
+void mctl_phy_cold_reset(void) {
+    uint32_t reg_val;
+
+    REG32(0x04810008) = REG32(0x04810008) & 0xfeffffff | 0x200;
+    udelay(1);
+    REG32(0x04810008) = REG32(0x04810008) | 0x1000000;
+    udelay(1);
+    return;
+}
+
+void phy_zq_calibration(dram_para_t *para) {
+    uint32_t reg_val;
+
+    do {
+    } while ((REG32(0x048301ac) & 1) != 1);
+    REG32(0x04830050) = REG32(0x04830050) & 0xffffffdf;
+    REG32(0x04830394) = 0xff;
+    REG32(0x048303d4) = 0xff;
+    REG32(0x04830414) = 0xff;
+    REG32(0x04830454) = 0xff;
+    return;
+}
 
 void ccm_set_pll_ddr0_sscg(dram_para_t *para) {
     uint32_t reg_val;
@@ -50,236 +968,362 @@ void ccm_set_pll_ddr0_sscg(dram_para_t *para) {
     return;
 }
 
-
-uint32_t _ccm_set_pll_ddr_clk(uint32_t pll_clk, uint32_t PLL_ADDR, dram_para_t *para) {
+uint32_t _ccm_set_pll_ddr_clk(uint32_t pll_clk, dram_para_t *para) {
     uint32_t uVar1;
     uint32_t rval;
     uint32_t div;
 
-    uVar1 = REG32(PLL_ADDR) & 0xffff00fc | (pll_clk / 0x18 - 1) * 0x100;
-    REG32(PLL_ADDR) = uVar1 | 0x80000000;
+    uVar1 = REG32(0x03001010) & 0xffff00fc | (pll_clk / 0x18 - 1) * 0x100;
+    REG32(0x03001010) = uVar1 | 0x80000000;
     ccm_set_pll_ddr0_sscg(para);
-    REG32(PLL_ADDR) = uVar1 | 0xe0000000;
-    REG32(PLL_ADDR) = uVar1 | 0xa0000000;
+    REG32(0x03001010) = uVar1 | 0xe0000000;
+    REG32(0x03001010) = uVar1 | 0xa0000000;
     do {
-    } while ((REG32(PLL_ADDR) & 0x10000000) == 0);
+    } while ((REG32(0x03001010) & 0x10000000) == 0);
     return (pll_clk / 0x18) * 0x18;
 }
 
+uint32_t DRAMC_get_dram_size(dram_para_t *para) {
+    int iVar1;
+    uint32_t uVar2;
+    uint32_t temp;
+    uint32_t dram_size;
 
-void mctl_sys_init(dram_para_t *para) {
-    uint32_t reg_val;
-    REG32(0x03001540) = REG32(0x03001540) & 0x3fffffff;
-    REG32(0x0300180c) = REG32(0x0300180c) & 0xfffefffe;
-    REG32(0x03001010) = REG32(0x03001010) & 0x7fffffff;
-    REG32(0x03001800) = REG32(0x03001800) & 0xbfffffff;
-    udelay(5);
-    _ccm_set_pll_ddr_clk(para->dram_clk << 1, 0x03001010, para);
-    REG32(0x0300180c) = REG32(0x0300180c) | 0x10001;
-    REG32(0x03001540) = REG32(0x03001540) | 0xc0000000;
-    REG32(0x04810008) = REG32(0x04810008) & 0xfdffffff;
-    REG32(0x03001800) = REG32(0x03001800) & 0xfcffffe0 | 0x48000003;
-    udelay(5);
-    REG32(0x07010250) = REG32(0x07010250) | 0x10;
-    return;
-}
-
-
-void mctl_com_set_bus_config(dram_para_t *para) {
-    uint32_t reg_val;
-
-    if (para->dram_type == 8) {
-        REG32(0x03102ea8) = REG32(0x03102ea8) | 1;
-    }
-    REG32(0x04820250) = REG32(0x04820250) & 0xffff00ff | 0x3000;
-    return;
-}
-
-
-void mctl_com_set_controller_config(dram_para_t *para) {
-    uint32_t reg_val;
-
-    switch (para->dram_type & 0xf) {
-        case 3:
-            reg_val = 0x40001;
-            break;
-        case 4:
-            reg_val = 0x40010;
-            break;
-        default:
-            reg_val = 0x40001;
-            break;
-        case 7:
-            reg_val = 0x40008;
-            break;
-        case 8:
-            reg_val = 0x80020;
-    }
-    REG32(0x04820000) = ((para->dram_para2 >> 0xc & 3) * 2 + 1) * 0x1000000 | (para->dram_para2 & 1) << 0xc | reg_val | 0xc0000000;
-    return;
-}
-
-
-void mctl_com_set_controller_geardown_mode(dram_para_t *para) {
-    uint32_t reg_val;
-
-    REG32(0x04820000) = para->dram_tpr13 >> 0x1e & 1 | REG32(0x04820000);
-    return;
-}
-
-
-void mctl_com_set_controller_2T_mode(dram_para_t *para) {
-    uint32_t reg_val;
-
-    if ((REG32(0x04820000) & 0x800) == 0) {
-        if ((para->dram_tpr13 & 0x20) == 0) {
-            reg_val = REG32(0x04820000) | 0x400;
-        } else {
-            reg_val = REG32(0x04820000) & 0xfffffbff;
-        }
+    iVar1 = (para->dram_para2 >> 0xc & 0xf) +
+            (para->dram_para1 >> 0xe & 3) +
+            (para->dram_para1 >> 0xc & 3) + (para->dram_para1 >> 4 & 0xff) + (para->dram_para1 & 0xf);
+    if ((para->dram_para2 & 0xf) == 0) {
+        uVar2 = iVar1 - 0x12;
     } else {
-        reg_val = REG32(0x04820000) & 0xfffffbff;
+        uVar2 = iVar1 - 0x13;
     }
-    REG32(0x04820000) = reg_val;
-    return;
+    dram_size = 1 << (uVar2 & 0xff);
+    return dram_size;
 }
 
-
-void mctl_com_set_controller_odt(dram_para_t *para) {
-    uint32_t uVar1;
-    uint32_t t_odt;
-    uint32_t wl;
+void Wait_time_config(uint32_t value) {
     uint32_t reg_val;
 
-    if ((para->dram_para2 & 0x1000) == 0) {
-        reg_val = 0x201;
-    } else {
-        reg_val = 0x303;
-    }
-    REG32(0x04820244) = reg_val;
-    reg_val = 0x4000400;
-    uVar1 = para->dram_type & 7;
-    if (uVar1 == 7) {
-        if (para->dram_clk < 400) {
-            wl = 3;
-        } else {
-            wl = 4;
-        }
-        reg_val = (wl - (int) (para->dram_clk * 7) / 2000) * 0x10000 |
-                  ((int) (para->dram_clk * 7) / 2000 + 7) * 0x1000000 | 0x400U;
-    } else if (uVar1 < 8) {
-        if (uVar1 == 3) {
-            reg_val = 0x6000400;
-        } else if (uVar1 == 4) {
-            reg_val = (para->dram_mr4 >> 6 & 7) << 0x10 |
-                      ((para->dram_mr4 >> 0xc & 1) + 6) * 0x1000000 | 0x400;
-        }
-    }
-    REG32(0x04820240) = reg_val;
-    REG32(0x04822240) = reg_val;
-    REG32(0x04823240) = reg_val;
-    REG32(0x04824240) = reg_val;
+    REG32(0x04810004) = value << 8 | REG32(0x04810004) & 0xffff00ff;
     return;
 }
 
-
-void mctl_com_set_controller_address_map(dram_para_t *para) {
+uint32_t auto_scan_dram_rank_width(dram_para_t *para) {
     uint32_t uVar1;
     uint32_t uVar2;
     uint32_t uVar3;
     uint32_t uVar4;
-    uint32_t bg_num;
-    uint32_t bank_num;
-    uint32_t row_num;
-    uint32_t col_num;
+    uint32_t uVar5;
+    uint32_t temp_trp10;
+    uint32_t temp_para2;
+    uint32_t temp_para1;
+    uint32_t temp_trp13;
+    uint32_t ret_val;
 
-    uVar1 = para->dram_para1 & 0xf;
-    uVar2 = para->dram_para1 >> 4 & 0xff;
-    uVar3 = para->dram_para1 >> 0xc & 3;
-    uVar4 = para->dram_para1 >> 0xe & 3;
-    if ((para->dram_para2 & 0xf) != 0) {
-        uVar1 = uVar1 - 1;
-    }
-    REG32(0x04820208) = uVar4 << 0x18 | uVar4 << 8 | uVar4 << 0x10;
-    switch (uVar1) {
-        case 8:
-            REG32(0x0482020c) = uVar4 | uVar4 << 8 | 0x1f1f0000;
-            REG32(0x04820210) = 0x1f1f;
-            break;
-        case 9:
-            REG32(0x0482020c) = uVar4 << 8 | uVar4 | uVar4 << 0x10 | 0x1f000000;
-            REG32(0x04820210) = 0x1f1f;
-            break;
-        case 10:
-            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
-            REG32(0x04820210) = 0x1f1f;
-            break;
-        case 0xb:
-            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
-            REG32(0x04820210) = uVar4 | 0x1f00;
-            break;
-        default:
-            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
-            REG32(0x04820210) = uVar4 | uVar4 << 8;
-    }
-    if (uVar4 == 2) {
-        REG32(0x04820220) = 0x101;
-    } else if (uVar4 == 1) {
-        REG32(0x04820220) = 0x3f01;
+    uVar2 = para->dram_tpr13;
+    uVar3 = para->dram_para1;
+    uVar4 = para->dram_para2;
+    uVar5 = para->dram_tpr10;
+    para->dram_tpr10 = para->dram_tpr10 | 0x10000000;
+    para->dram_tpr13 = para->dram_tpr13 | 1;
+    if (para->dram_type == 4) {
+        para->dram_para1 = 0x60b7;
     } else {
-        REG32(0x04820220) = 0x3f3f;
+        para->dram_para1 = 0x20b7;
     }
-    if (uVar3 == 3) {
-        REG32(0x04820204) =
-                (uVar1 + uVar4 + -2) * 0x10000 | (uVar1 + uVar4) - 2 | (uVar1 + uVar4 + -2) * 0x100;
+    para->dram_para2 = 0x1000;
+    uVar1 = mctl_core_init(para);
+    if (uVar1 == 0) {
+        para->dram_para2 = 0;
+        uVar1 = mctl_core_init(para);
+        if (uVar1 == 0) {
+            para->dram_para2 = 0x1001;
+            uVar1 = mctl_core_init(para);
+            if (uVar1 == 0) {
+                para->dram_para2 = 1;
+                uVar1 = mctl_core_init(para);
+                if (uVar1 == 0) {
+                    return 0;
+                }
+                printf("[AUTO DEBUG]16 bit,1 ranks training success!\n");
+            } else {
+                printf("[AUTO DEBUG]16 bit,2 ranks training success!\n");
+            }
+        } else {
+            printf("[AUTO DEBUG]32bit,1 ranks training success!\n");
+        }
     } else {
-        REG32(0x04820204) = (uVar1 + uVar4) - 2 | (uVar1 + uVar4 + -2) * 0x100 | 0x3f0000;
+        printf("[AUTO DEBUG]32bit,2 ranks training success!\n");
     }
-    REG32(0x04820214) =
-            (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
-            (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
-            (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
-    switch (uVar2) {
-        case 0xe:
-            REG32(0x04820218) = (uVar3 + uVar4 + uVar1 + -6) * 0x100 | (uVar3 + uVar4 + uVar1) - 6 | 0xf0f0000;
-            REG32(0x0482021c) = 0xf0f;
-            break;
-        case 0xf:
-            REG32(0x04820218) =
-                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000 | 0xf000000;
-            REG32(0x0482021c) = 0xf0f;
-            break;
-        case 0x10:
-            REG32(0x04820218) =
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
-                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
-            REG32(0x0482021c) = 0xf0f;
-            break;
-        case 0x11:
-            REG32(0x04820218) =
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
-                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
-            REG32(0x0482021c) = (uVar3 + uVar4 + uVar1) - 6 | 0xf00;
-            break;
-        default:
-            REG32(0x04820218) =
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
-                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
-                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
-            REG32(0x0482021c) = (uVar3 + uVar4 + uVar1 + -6) * 0x100 | (uVar3 + uVar4 + uVar1) - 6;
-    }
-    if ((para->dram_para2 & 0x1000) == 0) {
-        REG32(0x04820200) = 0x1f;
+    para->dram_tpr13 = uVar2;
+    para->dram_para1 = uVar3;
+    para->dram_para2 = para->dram_para2 | uVar4 & 0xffff0000;
+    para->dram_tpr10 = uVar5;
+    return 1;
+}
+
+uint32_t auto_scan_dram_size(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t uVar2;
+    int iVar3;
+    uint32_t uVar4;
+    uint32_t uVar5;
+    uint32_t uVar6;
+    uint32_t uVar7;
+    uint32_t uVar8;
+    uint32_t row_num;
+    uint32_t bank_num;
+    uint32_t col_num;
+    uint32_t row_shift;
+    uint32_t bank_shift;
+    uint32_t col_shift;
+    uint32_t temp_trp10;
+    uint32_t rank_base_addr;
+    uint32_t ret;
+    uint32_t reg_val;
+    uint32_t bg_num;
+    uint32_t cnt;
+    uint32_t j;
+    uint32_t i;
+
+    uVar4 = para->dram_tpr10;
+    para->dram_tpr10 = para->dram_tpr10 | 0x10000000;
+    if (para->dram_type == 4) {
+        para->dram_para1 = 0xb0eb;
     } else {
-        REG32(0x04820200) = uVar4 + uVar1 + uVar3 + uVar2 + -6;
+        para->dram_para1 = 0x30eb;
+    }
+    if ((para->dram_para2 & 0xf) == 0) {
+        iVar3 = 2;
+    } else {
+        iVar3 = 1;
+    }
+    iVar3 = (para->dram_para1 >> 0xe & 3) + iVar3;
+    uVar5 = para->dram_para1;
+    uVar1 = mctl_core_init(para);
+    if (uVar1 == 0) {
+        uVar4 = 0;
+    } else {
+        for (i = 0; i < 0x10; i = i + 1) {
+            if ((i & 1) == 0) {
+                uVar1 = ~(i * 4 + 0x40000000);
+            } else {
+                uVar1 = i * 4 + 0x40000000;
+            }
+            *(uint32_t *) (i * 4 + 0x40000000) = uVar1;
+            dsb();
+        }
+        for (i = 1; i < 3; i = i + 1) {
+            cnt = 0;
+            for (j = 0; j < 0x10; j = j + 1) {
+                if ((j & 1) == 0) {
+                    uVar1 = ~(j * 4 + 0x40000000);
+                } else {
+                    uVar1 = j * 4 + 0x40000000;
+                }
+                if (uVar1 != *(uint32_t *) ((1 << (i + 5 & 0xff)) + 0x40000000 + j * 4)) break;
+                cnt = cnt + 1;
+            }
+            if (cnt == 0x10) break;
+        }
+        if (i == 1) {
+            bg_num = 1;
+        } else if (para->dram_type == 4) {
+            bg_num = 2;
+        } else {
+            bg_num = 0;
+        }
+        for (i = 7; i < 0xb; i = i + 1) {
+            cnt = 0;
+            for (j = 0; j < 0x10; j = j + 1) {
+                if ((j & 1) == 0) {
+                    uVar1 = ~(j * 4 + 0x40000000);
+                } else {
+                    uVar1 = j * 4 + 0x40000000;
+                }
+                if (uVar1 != *(uint32_t *) ((1 << (iVar3 + i & 0xff)) + 0x40000000 + j * 4)) break;
+                cnt = cnt + 1;
+            }
+            if (cnt == 0x10) break;
+        }
+        if (10 < i) {
+            i = 0xb;
+        }
+        uVar1 = i;
+        for (i = 2; i < 3; i = i + 1) {
+            cnt = 0;
+            for (j = 0; j < 0x10; j = j + 1) {
+                if ((j & 1) == 0) {
+                    uVar6 = ~(j * 4 + 0x40000000);
+                } else {
+                    uVar6 = j * 4 + 0x40000000;
+                }
+                if (uVar6 != *(uint32_t *) ((1 << ((uVar5 & 0xf) + iVar3 + i & 0xff)) + 0x40000000 + j * 4))
+                    break;
+                cnt = cnt + 1;
+            }
+            if (cnt == 0x10) break;
+        }
+        if (2 < i) {
+            i = 3;
+        }
+        uVar5 = i;
+        if (para->dram_type == 4) {
+            para->dram_para1 = 0x6118;
+        } else {
+            para->dram_para1 = 0x2118;
+        }
+        uVar6 = para->dram_para1;
+        if ((para->dram_para2 & 0xf) == 0) {
+            iVar3 = 2;
+        } else {
+            iVar3 = 1;
+        }
+        uVar7 = para->dram_para1;
+        uVar8 = para->dram_para1;
+        uVar2 = mctl_core_init(para);
+        if (uVar2 == 0) {
+            uVar4 = 0;
+        } else {
+            for (i = 0; i < 0x10; i = i + 1) {
+                if ((i & 1) == 0) {
+                    uVar2 = ~(i * 4 + 0x40000000);
+                } else {
+                    uVar2 = i * 4 + 0x40000000;
+                }
+                *(uint32_t *) (i * 4 + 0x40000000) = uVar2;
+                dsb();
+            }
+            for (i = 0xc; i < 0x11; i = i + 1) {
+                cnt = 0;
+                for (j = 0; j < 0x10; j = j + 1) {
+                    if ((j & 1) == 0) {
+                        uVar2 = ~(j * 4 + 0x40000000);
+                    } else {
+                        uVar2 = j * 4 + 0x40000000;
+                    }
+                    if (uVar2 != *(uint32_t *) ((1 << ((uVar8 >> 0xc & 3) +
+                                                               (uVar7 & 0xf) + (uVar6 >> 0xe & 3) + iVar3 + i &
+                                                       0xff)) +
+                                                0x40000000 + j * 4)) break;
+                    cnt = cnt + 1;
+                }
+                if (cnt == 0x10) break;
+            }
+            if (0x10 < i) {
+                i = 0x11;
+            }
+            para->dram_para1 = i << 4 | uVar1 | uVar5 << 0xc | bg_num << 0xe;
+            para->dram_tpr10 = uVar4;
+            uVar4 = 1;
+        }
+    }
+    return uVar4;
+}
+
+uint32_t auto_scan_dram_config(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t ret_val;
+
+    if (((para->dram_tpr13 & 0x4000) == 0) && (uVar1 = auto_scan_dram_rank_width(para), uVar1 == 0)) {
+        return 0;
+    }
+    uVar1 = auto_scan_dram_size(para);
+    if (uVar1 == 0) {
+        uVar1 = 0;
+    } else {
+        if ((para->dram_tpr13 & 0x8000) == 0) {
+            para->dram_tpr13 = para->dram_tpr13 | 3;
+            para->dram_tpr13 = para->dram_tpr13 | 0x6000;
+        }
+        uVar1 = 1;
+    }
+    return uVar1;
+}
+
+uint32_t dramc_simple_wr_test(uint32_t dram_size, uint32_t test_length) {
+    int iVar1;
+    int iVar2;
+    uint32_t val;
+    uint32_t half_size;
+    uint32_t reg_val;
+    uint32_t i;
+
+    iVar1 = (dram_size >> 1) * 0x100000;
+    for (i = 0; i < test_length; i = i + 1) {
+        *(uint32_t *) ((i + 0x10000000) * 4) = i + 0x1234567;
+        *(uint32_t *) (iVar1 + i * 4 + 0x40000000) = i + 0xfedcba98;
+    }
+    i = 0;
+    while (true) {
+        if (test_length <= i) {
+            printf("DRAM simple test OK.\n");
+            return 0;
+        }
+        iVar2 = *(int *) (iVar1 + i * 4 + 0x40000000);
+        if (iVar2 != i + 0xfedcba98) break;
+        iVar2 = *(int *) ((i + 0x10000000) * 4);
+        if (iVar2 != i + 0x1234567) {
+            printf("DRAM simple test FAIL-----%x != %x at address %x\n", iVar2, i + 0x1234567,
+                   (i + 0x10000000) * 4);
+            return 1;
+        }
+        i = i + 1;
+    }
+    printf("DRAM simple test FAIL-----%x != %x at address %x\n", iVar2, i + 0xfedcba98,
+           iVar1 + i * 4 + 0x40000000);
+    return 1;
+}
+
+uint32_t auto_cal_timing(uint32_t time_ns, uint32_t clk) {
+    uint32_t value;
+
+    return (uint32_t) ((time_ns * clk) % 1000 != 0) + (time_ns * clk) / 1000;
+}
+
+void mctl_com_set_controller_after_phy(dram_para_t *para) {
+    uint32_t reg_val;
+
+    REG32(0x04820320) = 0;
+    mctl_com_set_controller_refresh(0, para);
+    REG32(0x04820320) = 1;
+    do {
+    } while ((REG32(0x04820324) & 1) != 1);
+    return;
+}
+
+void mctl_com_set_controller_before_phy(dram_para_t *para) {
+    uint32_t reg_val;
+
+    mctl_com_set_controller_refresh(1, para);
+    REG32(0x048201b0) = REG32(0x048201b0) & 0xfffffffe;
+    REG32(0x04820030) = 0x20;
+    REG32(0x04810020) = REG32(0x04810020) | 0x100;
+    return;
+}
+
+void mctl_com_set_controller_dbi(dram_para_t *para) {
+    uint32_t reg_val;
+
+    if ((para->dram_tpr13 & 0x20000000) != 0) {
+        REG32(0x048201c0) = REG32(0x048201c0) | 4;
     }
     return;
 }
 
+void mctl_com_set_controller_update(dram_para_t *para) {
+    uint32_t reg_val;
 
+    REG32(0x048201a0) = REG32(0x048201a0) | 0xc0000000;
+    REG32(0x04820180) = REG32(0x04820180) | 0xc0000000;
+    REG32(0x04822180) = REG32(0x04822180) | 0xc0000000;
+    REG32(0x04823180) = REG32(0x04823180) | 0xc0000000;
+    REG32(0x04824180) = REG32(0x04824180) | 0xc0000000;
+    return;
+}
+
+/* WARNING: Removing unreachable block (ram,0x00013e58) */
+/* WARNING: Could not reconcile some variable overlaps */
 void mctl_com_set_channel_timing(dram_para_t *para) {
     uint32_t uVar1;
     uint32_t uVar2;
@@ -751,47 +1795,185 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
     return;
 }
 
+void mctl_com_set_controller_address_map(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t uVar2;
+    uint32_t uVar3;
+    uint32_t uVar4;
+    uint32_t bg_num;
+    uint32_t bank_num;
+    uint32_t row_num;
+    uint32_t col_num;
 
-void mctl_com_set_controller_update(dram_para_t *para) {
-    uint32_t reg_val;
-
-    REG32(0x048201a0) = REG32(0x048201a0) | 0xc0000000;
-    REG32(0x04820180) = REG32(0x04820180) | 0xc0000000;
-    REG32(0x04822180) = REG32(0x04822180) | 0xc0000000;
-    REG32(0x04823180) = REG32(0x04823180) | 0xc0000000;
-    REG32(0x04824180) = REG32(0x04824180) | 0xc0000000;
-    return;
-}
-
-
-void mctl_com_set_controller_dbi(dram_para_t *para) {
-    uint32_t reg_val;
-
-    if ((para->dram_tpr13 & 0x20000000) != 0) {
-        REG32(0x048201c0) = REG32(0x048201c0) | 4;
+    uVar1 = para->dram_para1 & 0xf;
+    uVar2 = para->dram_para1 >> 4 & 0xff;
+    uVar3 = para->dram_para1 >> 0xc & 3;
+    uVar4 = para->dram_para1 >> 0xe & 3;
+    if ((para->dram_para2 & 0xf) != 0) {
+        uVar1 = uVar1 - 1;
+    }
+    REG32(0x04820208) = uVar4 << 0x18 | uVar4 << 8 | uVar4 << 0x10;
+    switch (uVar1) {
+        case 8:
+            REG32(0x0482020c) = uVar4 | uVar4 << 8 | 0x1f1f0000;
+            REG32(0x04820210) = 0x1f1f;
+            break;
+        case 9:
+            REG32(0x0482020c) = uVar4 << 8 | uVar4 | uVar4 << 0x10 | 0x1f000000;
+            REG32(0x04820210) = 0x1f1f;
+            break;
+        case 10:
+            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
+            REG32(0x04820210) = 0x1f1f;
+            break;
+        case 0xb:
+            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
+            REG32(0x04820210) = uVar4 | 0x1f00;
+            break;
+        default:
+            REG32(0x0482020c) = uVar4 << 0x18 | uVar4 << 8 | uVar4 | uVar4 << 0x10;
+            REG32(0x04820210) = uVar4 | uVar4 << 8;
+    }
+    if (uVar4 == 2) {
+        REG32(0x04820220) = 0x101;
+    } else if (uVar4 == 1) {
+        REG32(0x04820220) = 0x3f01;
+    } else {
+        REG32(0x04820220) = 0x3f3f;
+    }
+    if (uVar3 == 3) {
+        REG32(0x04820204) =
+                (uVar1 + uVar4 + -2) * 0x10000 | (uVar1 + uVar4) - 2 | (uVar1 + uVar4 + -2) * 0x100;
+    } else {
+        REG32(0x04820204) = (uVar1 + uVar4) - 2 | (uVar1 + uVar4 + -2) * 0x100 | 0x3f0000;
+    }
+    REG32(0x04820214) =
+            (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
+            (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
+            (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
+    switch (uVar2) {
+        case 0xe:
+            REG32(0x04820218) = (uVar3 + uVar4 + uVar1 + -6) * 0x100 | (uVar3 + uVar4 + uVar1) - 6 | 0xf0f0000;
+            REG32(0x0482021c) = 0xf0f;
+            break;
+        case 0xf:
+            REG32(0x04820218) =
+                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000 | 0xf000000;
+            REG32(0x0482021c) = 0xf0f;
+            break;
+        case 0x10:
+            REG32(0x04820218) =
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
+                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
+            REG32(0x0482021c) = 0xf0f;
+            break;
+        case 0x11:
+            REG32(0x04820218) =
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
+                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
+            REG32(0x0482021c) = (uVar3 + uVar4 + uVar1) - 6 | 0xf00;
+            break;
+        default:
+            REG32(0x04820218) =
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x1000000 |
+                    (uVar3 + uVar4 + uVar1) - 6 | (uVar3 + uVar4 + uVar1 + -6) * 0x100 |
+                    (uVar3 + uVar4 + uVar1 + -6) * 0x10000;
+            REG32(0x0482021c) = (uVar3 + uVar4 + uVar1 + -6) * 0x100 | (uVar3 + uVar4 + uVar1) - 6;
+    }
+    if ((para->dram_para2 & 0x1000) == 0) {
+        REG32(0x04820200) = 0x1f;
+    } else {
+        REG32(0x04820200) = uVar4 + uVar1 + uVar3 + uVar2 + -6;
     }
     return;
 }
 
-
-void mctl_com_set_controller_refresh(uint32_t onoff, dram_para_t *para) {
+void mctl_com_set_controller_odt(dram_para_t *para) {
+    uint32_t uVar1;
+    uint32_t t_odt;
+    uint32_t wl;
     uint32_t reg_val;
 
-    REG32(0x04820060) = onoff | REG32(0x04820060) & 0xfffffffe;
+    if ((para->dram_para2 & 0x1000) == 0) {
+        reg_val = 0x201;
+    } else {
+        reg_val = 0x303;
+    }
+    REG32(0x04820244) = reg_val;
+    reg_val = 0x4000400;
+    uVar1 = para->dram_type & 7;
+    if (uVar1 == 7) {
+        if (para->dram_clk < 400) {
+            wl = 3;
+        } else {
+            wl = 4;
+        }
+        reg_val = (wl - (int) (para->dram_clk * 7) / 2000) * 0x10000 |
+                  ((int) (para->dram_clk * 7) / 2000 + 7) * 0x1000000 | 0x400U;
+    } else if (uVar1 < 8) {
+        if (uVar1 == 3) {
+            reg_val = 0x6000400;
+        } else if (uVar1 == 4) {
+            reg_val = (para->dram_mr4 >> 6 & 7) << 0x10 |
+                      ((para->dram_mr4 >> 0xc & 1) + 6) * 0x1000000 | 0x400;
+        }
+    }
+    REG32(0x04820240) = reg_val;
+    REG32(0x04822240) = reg_val;
+    REG32(0x04823240) = reg_val;
+    REG32(0x04824240) = reg_val;
     return;
 }
 
-
-void mctl_com_set_controller_before_phy(dram_para_t *para) {
+void mctl_com_set_controller_2T_mode(dram_para_t *para) {
     uint32_t reg_val;
 
-    mctl_com_set_controller_refresh(1, para);
-    REG32(0x048201b0) = REG32(0x048201b0) & 0xfffffffe;
-    REG32(0x04820030) = 0x20;
-    REG32(0x04810020) = REG32(0x04810020) | 0x100;
+    if ((REG32(0x04820000) & 0x800) == 0) {
+        if ((para->dram_tpr13 & 0x20) == 0) {
+            reg_val = REG32(0x04820000) | 0x400;
+        } else {
+            reg_val = REG32(0x04820000) & 0xfffffbff;
+        }
+    } else {
+        reg_val = REG32(0x04820000) & 0xfffffbff;
+    }
+    REG32(0x04820000) = reg_val;
     return;
 }
 
+void mctl_com_set_controller_geardown_mode(dram_para_t *para) {
+    uint32_t reg_val;
+
+    REG32(0x04820000) = para->dram_tpr13 >> 0x1e & 1 | REG32(0x04820000);
+    return;
+}
+
+void mctl_com_set_controller_config(dram_para_t *para) {
+    uint32_t reg_val;
+
+    switch (para->dram_type & 0xf) {
+        case 3:
+            reg_val = 0x40001;
+            break;
+        case 4:
+            reg_val = 0x40010;
+            break;
+        default:
+            reg_val = 0x40001;
+            break;
+        case 7:
+            reg_val = 0x40008;
+            break;
+        case 8:
+            reg_val = 0x80020;
+    }
+    REG32(0x04820000) =
+            ((para->dram_para2 >> 0xc & 3) * 2 + 1) * 0x1000000 | (para->dram_para2 & 1) << 0xc | reg_val | 0xc0000000;
+    return;
+}
 
 void mctl_com_init(dram_para_t *para) {
     mctl_com_set_controller_config(para);
@@ -813,1263 +1995,33 @@ void mctl_com_init(dram_para_t *para) {
     return;
 }
 
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_phy_cold_reset(void) {
-    uint reg_val;
-    _DAT_04810008 = _DAT_04810008 & 0xfeffffff | 0x200;
-    udelay(1);
-    _DAT_04810008 = _DAT_04810008 | 0x1000000;
-    udelay(1);
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_phy_ca_bit_delay_compensation(dram_para_t *para)
-
-{
-    uint uVar1;
-    uint chip_id;
-    uint type;
-    uint reg_val;
-    uint i;
-
-    if ((para->dram_tpr10 & 0x10000) != 0) {
-        if ((_DAT_03006200 & 0xffff) == 0x800) {
-            switch (para->dram_type) {
-                case 3:
-                    uVar1 = para->dram_tpr10;
-                    for (i = 0; i < 0x20; i = i + 1) {
-                        *(uint *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
-                    }
-                    _DAT_048307dc = (para->dram_tpr10 & 0xf) << 1;
-                    _DAT_048307e4 = (para->dram_tpr10 >> 8 & 0xf) << 1;
-                    _DAT_048307e0 = _DAT_048307dc;
-                    if ((para->dram_para2 & 0x1000) != 0) {
-                        _DAT_04832388 = (para->dram_tpr10 >> 0xc & 0xf) << 1;
-                    }
-                    break;
-                case 4:
-                case 7:
-                    break;
-                case 8:
-                    uVar1 = para->dram_tpr10;
-                    for (i = 0; i < 0x20; i = i + 1) {
-                        *(uint *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
-                    }
-                    _DAT_048307dc = (para->dram_tpr10 & 0xf) << 1;
-                    _DAT_048307e4 = (para->dram_tpr10 >> 8 & 0xf) << 1;
-                    _DAT_048307e0 = _DAT_048307dc;
-                    if ((para->dram_para2 & 0x1000) != 0) {
-                        _DAT_04830790 = (para->dram_tpr10 >> 0xc & 0xf) << 1;
-                    }
-            }
-        } else {
-            switch (para->dram_type) {
-                case 3:
-                    uVar1 = para->dram_tpr10;
-                    for (i = 0; i < 0x20; i = i + 1) {
-                        *(uint *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
-                    }
-                    _DAT_048307dc = (para->dram_tpr10 & 0xf) << 1;
-                    _DAT_048307b8 = (para->dram_tpr10 >> 8 & 0xf) << 1;
-                    _DAT_048307e0 = _DAT_048307dc;
-                    if ((para->dram_para2 & 0x1000) != 0) {
-                        _DAT_04830784 = (para->dram_tpr10 >> 0xc & 0xf) << 1;
-                    }
-                    break;
-                case 4:
-                    uVar1 = para->dram_tpr10;
-                    for (i = 0; i < 0x20; i = i + 1) {
-                        *(uint *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
-                    }
-                    _DAT_048307dc = (para->dram_tpr10 & 0xf) << 1;
-                    _DAT_04830784 = (para->dram_tpr10 >> 8 & 0xf) << 1;
-                    _DAT_048307e0 = _DAT_048307dc;
-                    break;
-                case 7:
-                    uVar1 = para->dram_tpr10;
-                    for (i = 0; i < 0x20; i = i + 1) {
-                        *(uint *) ((i + 0x120c1e0) * 4) = (uVar1 >> 4 & 0xf) << 1;
-                    }
-                    _DAT_048307dc = (para->dram_tpr10 & 0xf) << 1;
-                    _DAT_04830788 = (para->dram_tpr10 >> 8 & 0xf) << 1;
-                    _DAT_048307e0 = _DAT_048307dc;
-                    if ((para->dram_para2 & 0x1000) != 0) {
-                        _DAT_04830790 = (para->dram_tpr10 >> 0xc & 0xf) << 1;
-                    }
-                    break;
-                case 8:
-            }
-        }
-    }
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_phy_vref_config(dram_para_t *para)
-
-{
-    uint reg_val;
-
-    reg_val = 0;
-    switch (para->dram_type) {
-        case 3:
-            if ((para->dram_tpr6 & 0xff) == 0) {
-                reg_val = 0x80;
-            } else {
-                reg_val = para->dram_tpr6 & 0xff;
-            }
-            break;
-        case 4:
-            if ((para->dram_tpr6 >> 8 & 0xff) == 0) {
-                reg_val = 0x80;
-            } else {
-                reg_val = para->dram_tpr6 >> 8 & 0xff;
-            }
-            break;
-        case 7:
-            if ((para->dram_tpr6 >> 0x10 & 0xff) == 0) {
-                reg_val = 0x80;
-            } else {
-                reg_val = para->dram_tpr6 >> 0x10 & 0xff;
-            }
-            break;
-        case 8:
-            if (para->dram_tpr6 >> 0x18 == 0) {
-                reg_val = 0x33;
-            } else {
-                reg_val = para->dram_tpr6 >> 0x18;
-            }
-    }
-    _DAT_048303dc = reg_val;
-    _DAT_0483045c = reg_val;
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_drive_odt_config(dram_para_t *para)
-
-{
-    uint reg_val;
-
-    _DAT_0483038c = para->dram_dx_dri & 0x1f;
-    _DAT_04830388 = _DAT_0483038c;
-    if (para->dram_type == 8) {
-        _DAT_0483038c = 4;
-    }
-    _DAT_048303cc = para->dram_dx_dri >> 8 & 0x1f;
-    _DAT_048303c8 = _DAT_048303cc;
-    if (para->dram_type == 8) {
-        _DAT_048303cc = 4;
-    }
-    _DAT_0483040c = para->dram_dx_dri >> 0x10 & 0x1f;
-    _DAT_04830408 = _DAT_0483040c;
-    if (para->dram_type == 8) {
-        _DAT_0483040c = 4;
-    }
-    _DAT_0483044c = para->dram_dx_dri >> 0x18 & 0x1f;
-    _DAT_04830448 = _DAT_0483044c;
-    if (para->dram_type == 8) {
-        _DAT_0483044c = 4;
-    }
-    _DAT_04830340 = para->dram_ca_dri & 0x1f;
-    _DAT_04830344 = _DAT_04830340;
-    _DAT_04830348 = para->dram_ca_dri >> 8 & 0x1f;
-    _DAT_0483034c = _DAT_04830348;
-    _DAT_04830384 = para->dram_dx_odt & 0x1f;
-    if ((para->dram_type == 4) || (_DAT_04830380 = _DAT_04830384, para->dram_type == 7)) {
-        _DAT_04830380 = 0;
-    }
-    if (para->dram_type == 8) {
-        _DAT_04830384 = 0;
-    }
-    _DAT_048303c4 = para->dram_dx_odt >> 8 & 0x1f;
-    if ((para->dram_type == 4) || (_DAT_048303c0 = _DAT_048303c4, para->dram_type == 7)) {
-        _DAT_048303c0 = 0;
-    }
-    if (para->dram_type == 8) {
-        _DAT_048303c4 = 0;
-    }
-    _DAT_04830404 = para->dram_dx_odt >> 0x10 & 0x1f;
-    if ((para->dram_type == 4) || (_DAT_04830400 = _DAT_04830404, para->dram_type == 7)) {
-        _DAT_04830400 = 0;
-    }
-    if (para->dram_type == 8) {
-        _DAT_04830404 = 0;
-    }
-    _DAT_04830444 = para->dram_dx_odt >> 0x18 & 0x1f;
-    if ((para->dram_type == 4) || (_DAT_04830440 = _DAT_04830444, para->dram_type == 7)) {
-        _DAT_04830440 = 0;
-    }
-    if (para->dram_type == 8) {
-        _DAT_04830444 = 0;
-    }
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_phy_set_address_remapping(dram_para_t *para)
-
-{
-    uint remap_lpddr3_A100[27];
-    uint remap_ddr4_A100[27];
-    uint remap_ddr3_A100[27];
-    uint chip_id;
-    uint i;
-
-    memcpy(remap_ddr3_A100, &.LC0, 0x6c);
-    memcpy(remap_ddr4_A100, &.LC1, 0x6c);
-    memcpy(remap_lpddr3_A100, &.LC2, 0x6c);
-    if ((_DAT_03006200 & 0xffff) != 0x800) {
-        if ((_DAT_03006200 & 0xffff) == 0x1400) {
-            printf("DRAM remap error\n");
-        } else {
-            switch (para->dram_type) {
-                case 3:
-                    for (i = 0; i < 0x1b; i = i + 1) {
-                        *(uint *) ((i + 0x120c030) * 4) = remap_ddr3_A100[i];
-                    }
-                    break;
-                case 4:
-                    for (i = 0; i < 0x1b; i = i + 1) {
-                        *(uint *) ((i + 0x120c030) * 4) = remap_ddr4_A100[i];
-                    }
-                    break;
-                case 7:
-                    for (i = 0; i < 0x1b; i = i + 1) {
-                        *(uint *) ((i + 0x120c030) * 4) = remap_lpddr3_A100[i];
-                    }
-                    break;
-                case 8:
-                    for (i = 0; i < 0x1b; i = i + 1) {
-                    }
-            }
-        }
-    }
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void phy_para_config(dram_para_t *para)
-
-{
-    uint uVar1;
-    uint type;
-    uint ctrl_freq;
-    uint reg_val;
-    uint TCWL;
-    uint TCL;
-
-    uVar1 = para->dram_type;
-    if (uVar1 == 8) {
-        _DAT_04830004 = _DAT_04830004 & 0xffffff7f;
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        reg_val = _DAT_0483003c & 0xfffffff0 | 0xf;
-    } else {
-        reg_val = _DAT_0483003c & 0xfffffff0 | 3;
-    }
-    _DAT_0483003c = reg_val;
-    switch (uVar1) {
-        case 3:
-            TCL = 0xd;
-            TCWL = 9;
-            break;
-        case 4:
-            TCL = 0xd;
-            TCWL = 10;
-            break;
-        default:
-            TCL = 0xd;
-            TCWL = 9;
-            break;
-        case 7:
-            TCL = 0xe;
-            TCWL = 8;
-            break;
-        case 8:
-            TCL = 0x14;
-            TCWL = 10;
-    }
-    _DAT_04830014 = TCL;
-    _DAT_0483035c = TCL;
-    _DAT_04830368 = TCL;
-    _DAT_04830374 = TCL;
-    _DAT_04830018 = 0;
-    _DAT_04830360 = 0;
-    _DAT_0483036c = 0;
-    _DAT_04830378 = 0;
-    _DAT_0483001c = TCWL;
-    _DAT_04830364 = TCWL;
-    _DAT_04830370 = TCWL;
-    _DAT_0483037c = TCWL;
-    mctl_phy_set_address_remapping(para);
-    mctl_phy_ca_bit_delay_compensation(para);
-    mctl_phy_vref_config(para);
-    mctl_drive_odt_config(para);
-    _DAT_04830004 = _DAT_04830004 & 0xfffffff8;
-    switch (uVar1) {
-        case 3:
-            reg_val = _DAT_04830004 | 2;
-            break;
-        case 4:
-            reg_val = _DAT_04830004 | 4;
-            break;
-        default:
-            reg_val = _DAT_04830004 | 2;
-            break;
-        case 7:
-            reg_val = _DAT_04830004 | 3;
-            break;
-        case 8:
-            reg_val = _DAT_04830004 | 5;
-    }
-    _DAT_04830004 = reg_val | 8;
-    if (para->dram_clk < 0x2a1) {
-        _DAT_04830020 = 0xf;
-    }
-    if (para->dram_clk < 0x1f5) {
-        _DAT_04830144 = _DAT_04830144 | 0x80;
-        _DAT_0483014c = _DAT_0483014c & 0xffffff1f | 0x20;
-    } else {
-        _DAT_04830144 = _DAT_04830144 & 0xffffff7f;
-        _DAT_0483014c = _DAT_0483014c & 0xffffff1f;
-    }
-    _DAT_0483014c = _DAT_0483014c & 0xfffffff7;
-    do {
-    } while ((_DAT_04830180 >> 2 & 1) != 1);
-    dram_udelay(1000);
-    _DAT_04830058 = 0x37;
-    _DAT_04810008 = _DAT_04810008 & 0xfffffdff;
-    dram_udelay(1);
-    return;
-}
-
-
-/* WARNING: Removing unreachable block (ram,0x00010d9a) */
-/* WARNING: Removing unreachable block (ram,0x00010dbc) */
-/* WARNING: Removing unreachable block (ram,0x00010dc8) */
-/* WARNING: Removing unreachable block (ram,0x00010dea) */
-/* WARNING: Removing unreachable block (ram,0x00010d6c) */
-/* WARNING: Removing unreachable block (ram,0x00010d8e) */
-/* WARNING: Removing unreachable block (ram,0x00010b84) */
-/* WARNING: Removing unreachable block (ram,0x00010ba8) */
-/* WARNING: Removing unreachable block (ram,0x00010b24) */
-/* WARNING: Removing unreachable block (ram,0x00010b48) */
-/* WARNING: Removing unreachable block (ram,0x00010ac4) */
-/* WARNING: Removing unreachable block (ram,0x00010ae8) */
-/* WARNING: Removing unreachable block (ram,0x00010af4) */
-/* WARNING: Removing unreachable block (ram,0x00010b18) */
-/* WARNING: Removing unreachable block (ram,0x00010b54) */
-/* WARNING: Removing unreachable block (ram,0x00010b78) */
-/* WARNING: Removing unreachable block (ram,0x00010bb4) */
-/* WARNING: Removing unreachable block (ram,0x00010bd8) */
-/* WARNING: Removing unreachable block (ram,0x00010be4) */
-/* WARNING: Removing unreachable block (ram,0x00010c08) */
-/* WARNING: Removing unreachable block (ram,0x00010d10) */
-/* WARNING: Removing unreachable block (ram,0x00010d32) */
-/* WARNING: Removing unreachable block (ram,0x00010ce2) */
-/* WARNING: Removing unreachable block (ram,0x00010d04) */
-/* WARNING: Removing unreachable block (ram,0x00010d3e) */
-/* WARNING: Removing unreachable block (ram,0x00010d60) */
-/* WARNING: Removing unreachable block (ram,0x00010c4c) */
-/* WARNING: Removing unreachable block (ram,0x00010c70) */
-/* WARNING: Removing unreachable block (ram,0x00010e86) */
-/* WARNING: Removing unreachable block (ram,0x00010ea8) */
-/* WARNING: Removing unreachable block (ram,0x00010e58) */
-/* WARNING: Removing unreachable block (ram,0x00010e7a) */
-/* WARNING: Removing unreachable block (ram,0x00010c7c) */
-/* WARNING: Removing unreachable block (ram,0x00010ca0) */
-/* WARNING: Removing unreachable block (ram,0x00010e2a) */
-/* WARNING: Removing unreachable block (ram,0x00010e4c) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_dfi_init(dram_para_t *para)
-
-{
-    uint reg_val;
-
-    do {
-    } while ((_DAT_04820324 & 1) != 1);
-    do {
-    } while ((_DAT_048201bc & 1) != 1);
-    _DAT_048201b0 = _DAT_048201b0 & 0xffffffdf | 1;
-    _DAT_04820030 = _DAT_04820030 & 0xffffffdf;
-    _DAT_04820320 = 1;
-    do {
-    } while ((_DAT_04820324 & 1) != 1);
-    do {
-    } while ((_DAT_04820004 & 3) != 1);
-    dram_udelay(200);
-    _DAT_048201b0 = _DAT_048201b0 & 0xfffffffe;
-    _DAT_04820320 = 1;
-    do {
-    } while ((_DAT_04820324 & 1) != 1);
-    if (para->dram_type == 8) {
-        do {
-        } while (true);
-    }
-    if (para->dram_type == 7) {
-        do {
-        } while (true);
-    }
-    if (para->dram_type == 4) {
-        do {
-        } while (true);
-    }
-    if (para->dram_type != 3) {
-        _DAT_04830054 = 0;
-        return;
-    }
-    do {
-    } while (true);
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint phy_write_leveling(dram_para_t *para)
-
-{
-    bool bVar1;
-    uint uVar2;
-    int iVar3;
-    uint type;
-    uint reg_val;
-    uint write_leveling_error;
-    uint j;
-    uint i;
-
-    bVar1 = false;
-    uVar2 = para->dram_type;
-    if (uVar2 == 4) {
-        _DAT_0483000c = para->dram_mr1 & 0xff;
-        _DAT_04830010 = para->dram_mr1 >> 8 & 0xff | 0x40;
-    } else if (((uVar2 == 6) || (uVar2 == 7)) || (uVar2 == 8)) {
-        _DAT_0483000c = para->dram_mr2 & 0xff;
-        _DAT_04830010 = para->dram_mr2 >> 8 & 0xff;
-    } else {
-        _DAT_0483000c = 4;
-        _DAT_04830010 = 0x40;
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        do {
-        } while ((_DAT_04830188 & 0xf) != 0xf);
-    } else {
-        do {
-        } while ((_DAT_04830188 & 3) != 3);
-    }
-    for (i = 0; i < 4; i = i + 1) {
-        if (i < 2) {
-            j = i;
-        } else {
-            j = i + 0x2e;
-        }
-        iVar3 = *(int *) ((j + 0x120c096) * 4);
-        if ((iVar3 == 0) || (iVar3 == 0x3f)) {
-            bVar1 = true;
-        }
-    }
-    if ((para->dram_para2 & 0x1000) != 0) {
-        if ((para->dram_para2 & 1) == 0) {
-            do {
-            } while ((_DAT_04830188 & 0xf) != 0xf);
-        } else {
-            do {
-            } while ((_DAT_04830188 & 3) != 3);
-        }
-    }
-    _DAT_04830008 = _DAT_04830008 & 0xffffff3b;
-    return (uint) !bVar1;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint phy_read_training(dram_para_t *para)
-
-{
-    uint uVar1;
-    bool bVar2;
-    uint reg_val3;
-    uint reg_val2;
-    uint reg_val1;
-    uint reg_val;
-    uint read_training_error;
-    uint i;
-    uint dqs_read_default_deskew;
-
-    if (para->dram_type == 8) {
-        _DAT_04830800 = 0;
-        _DAT_0483081c = 0;
-    }
-    uVar1 = para->dram_para1 >> 0x10 & 0xf;
-    dqs_read_default_deskew = uVar1 << 1;
-    if (uVar1 == 0) {
-        dqs_read_default_deskew = 0xf;
-    }
-    _DAT_04830198 = _DAT_04830198 & 0xfffffffc | 2;
-    _DAT_04830804 = dqs_read_default_deskew | _DAT_04830804 & 0xffffffc0;
-    _DAT_04830808 = dqs_read_default_deskew | _DAT_04830808 & 0xffffffc0;
-    _DAT_04830a04 = dqs_read_default_deskew | _DAT_04830a04 & 0xffffffc0;
-    _DAT_04830a08 = dqs_read_default_deskew | _DAT_04830a08 & 0xffffffc0;
-    _DAT_04830190 = _DAT_04830190 | 7;
-    do {
-    } while ((_DAT_04830840 & 0xc) != 0xc);
-    bVar2 = (_DAT_04830840 & 3) != 0;
-    if (bVar2) {
-        printf("dx_low 16bit read training error  \n");
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        do {
-        } while ((_DAT_04830a40 & 0xc) != 0xc);
-        if ((_DAT_04830a40 & 3) != 0) {
-            printf("dx_high 16bit read training error  \n");
-            bVar2 = true;
-        }
-    }
-    for (i = 0; i < 9; i = i + 1) {
-    }
-    for (i = 0; i < 9; i = i + 1) {
-        uVar1 = *(int *) ((i + 0x120c226) * 4) - *(int *) ((i + 0x120c214) * 4);
-        if ((uVar1 < 7) &&
-            (printf("read dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-             (para->dram_tpr10 & 0x10000000) == 0)) {
-            bVar2 = true;
-        }
-    }
-    for (i = 0; i < 9; i = i + 1) {
-    }
-    for (i = 0; i < 9; i = i + 1) {
-        uVar1 = *(int *) ((i + 0x120c22f) * 4) - *(int *) ((i + 0x120c21d) * 4);
-        if ((uVar1 < 7) &&
-            (printf("read dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-             (para->dram_tpr10 & 0x10000000) == 0)) {
-            bVar2 = true;
-        }
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        for (i = 0; i < 9; i = i + 1) {
-        }
-        for (i = 0; i < 9; i = i + 1) {
-            uVar1 = *(int *) ((i + 0x120c2a6) * 4) - *(int *) ((i + 0x120c294) * 4);
-            if ((uVar1 < 7) &&
-                (printf("read dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-                 (para->dram_tpr10 & 0x10000000) == 0)) {
-                bVar2 = true;
-            }
-        }
-        for (i = 0; i < 9; i = i + 1) {
-        }
-        for (i = 0; i < 9; i = i + 1) {
-            uVar1 = *(int *) ((i + 0x120c2af) * 4) - *(int *) ((i + 0x120c29d) * 4);
-            if ((uVar1 < 7) &&
-                (printf("read dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-                 (para->dram_tpr10 & 0x10000000) == 0)) {
-                bVar2 = true;
-            }
-        }
-    }
-    _DAT_04830190 = _DAT_04830190 & 0xfffffffc;
-    if ((para->dram_para2 & 0x1000) != 0) {
-        _DAT_04830198 = _DAT_04830198 & 0xfffffffc | 2;
-        _DAT_04830190 = _DAT_04830190 | 7;
-        do {
-        } while ((_DAT_04830840 & 0xc) != 0xc);
-        if ((_DAT_04830840 & 3) != 0) {
-            printf("dx_low 16bit read training error  \n");
-            bVar2 = true;
-        }
-        if ((para->dram_para2 & 1) == 0) {
-            do {
-            } while ((_DAT_04830a40 & 0xc) != 0xc);
-            if ((_DAT_04830a40 & 3) != 0) {
-                printf("dx_high 16bit read training error  \n");
-                bVar2 = true;
-            }
-        }
-        _DAT_04830190 = _DAT_04830190 & 0xfffffffc;
-    }
-    _DAT_04830198 = _DAT_04830198 & 0xfffffffc;
-    return (uint) !bVar2;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint phy_write_training(dram_para_t *para)
-
-{
-    uint uVar1;
-    bool bVar2;
-    uint reg_val3;
-    uint reg_val2;
-    uint reg_val1;
-    uint reg_val;
-    uint write_training_error;
-    uint i;
-
-    _DAT_04830134 = 0;
-    _DAT_04830138 = 0;
-    _DAT_0483019c = 0;
-    _DAT_048301a0 = 0;
-    _DAT_04830198 = _DAT_04830198 & 0xfffffff3 | 8;
-    _DAT_04830190 = _DAT_04830190 | 0x30;
-    do {
-    } while ((_DAT_048308e0 & 3) != 3);
-    bVar2 = (_DAT_048308e0 & 0xc) != 0;
-    if (bVar2) {
-        printf("dx_low 16bit write training error  \n");
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        do {
-        } while ((_DAT_04830ae0 & 3) != 3);
-        if ((_DAT_04830ae0 & 0xc) != 0) {
-            printf("dx_high 16bit write training error  \n");
-            bVar2 = true;
-        }
-    }
-    for (i = 0; i < 9; i = i + 1) {
-    }
-    for (i = 0; i < 9; i = i + 1) {
-        uVar1 = *(int *) ((i + 0x120c24e) * 4) - *(int *) ((i + 0x120c23c) * 4);
-        if ((uVar1 < 7) &&
-            (printf("write dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-             (para->dram_tpr10 & 0x10000000) == 0)) {
-            bVar2 = true;
-        }
-    }
-    for (i = 0; i < 9; i = i + 1) {
-    }
-    for (i = 0; i < 9; i = i + 1) {
-        uVar1 = *(int *) ((i + 0x120c257) * 4) - *(int *) ((i + 0x120c245) * 4);
-        if ((uVar1 < 7) &&
-            (printf("write dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-             (para->dram_tpr10 & 0x10000000) == 0)) {
-            bVar2 = true;
-        }
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        for (i = 0; i < 9; i = i + 1) {
-        }
-        for (i = 0; i < 9; i = i + 1) {
-            uVar1 = *(int *) ((i + 0x120c2ce) * 4) - *(int *) ((i + 0x120c2bc) * 4);
-            if ((uVar1 < 7) &&
-                (printf("write dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-                 (para->dram_tpr10 & 0x10000000) == 0)) {
-                bVar2 = true;
-            }
-        }
-        for (i = 0; i < 9; i = i + 1) {
-        }
-        for (i = 0; i < 9; i = i + 1) {
-            uVar1 = *(int *) ((i + 0x120c2d7) * 4) - *(int *) ((i + 0x120c2c5) * 4);
-            if ((uVar1 < 7) &&
-                (printf("write dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1),
-                 (para->dram_tpr10 & 0x10000000) == 0)) {
-                bVar2 = true;
-            }
-        }
-    }
-    _DAT_04830190 = _DAT_04830190 & 0xffffff9f;
-    if ((para->dram_para2 & 0x1000) != 0) {
-        _DAT_04830198 = _DAT_04830198 & 0xfffffff3 | 4;
-        _DAT_04830190 = _DAT_04830190 | 0x30;
-        do {
-        } while ((_DAT_048308e0 & 3) != 3);
-        if ((_DAT_048308e0 & 0xc) != 0) {
-            printf("dx_low 16bit write training error  \n");
-            bVar2 = true;
-        }
-        if ((para->dram_para2 & 1) == 0) {
-            do {
-            } while ((_DAT_04830ae0 & 3) != 3);
-            if ((_DAT_04830ae0 & 0xc) != 0) {
-                printf("dx_high 16bit write training error  \n");
-                bVar2 = true;
-            }
-        }
-        _DAT_04830190 = _DAT_04830190 & 0xffffff9f;
-    }
-    _DAT_04830198 = _DAT_04830198 & 0xfffffff3;
-    return (uint) !bVar2;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_phy_dx_bit_delay_compensation(dram_para_t *para)
-
-{
-    uint uVar1;
-    uint reg_val;
-    uint i;
-
-    if ((para->dram_tpr10 & 0x40000) != 0) {
-        _DAT_04830060 = _DAT_04830060 & 0xfffffffe;
-        _DAT_04830008 = _DAT_04830008 | 8;
-        _DAT_04830190 = _DAT_04830190 & 0xffffffef;
-        if (para->dram_type == 8) {
-            _DAT_04830004 = _DAT_04830004 & 0xffffff7f;
-        }
-        uVar1 = para->dram_tpr11 & 0x3f;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) (i * 8 + 0x4830484) = uVar1;
-            *(uint *) (i * 8 + 0x4830544) = uVar1;
-        }
-        _DAT_048304cc = para->dram_para0 & 0x3f;
-        uVar1 = para->dram_tpr11 >> 8 & 0x3f;
-        _DAT_048304d0 = _DAT_048304cc;
-        _DAT_0483058c = _DAT_048304cc;
-        _DAT_04830590 = _DAT_048304cc;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) ((i + 0x90609b) * 8) = uVar1;
-            *(uint *) ((i + 0x9060b3) * 8) = uVar1;
-        }
-        _DAT_04830520 = para->dram_para0 >> 8 & 0x3f;
-        uVar1 = para->dram_tpr11 >> 0x10 & 0x3f;
-        _DAT_04830524 = _DAT_04830520;
-        _DAT_048305e0 = _DAT_04830520;
-        _DAT_048305e4 = _DAT_04830520;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) (i * 8 + 0x4830604) = uVar1;
-            *(uint *) (i * 8 + 0x48306c4) = uVar1;
-        }
-        _DAT_0483064c = para->dram_para0 >> 0x10 & 0x3f;
-        uVar1 = para->dram_tpr11 >> 0x18 & 0x3f;
-        _DAT_04830650 = _DAT_0483064c;
-        _DAT_0483070c = _DAT_0483064c;
-        _DAT_04830710 = _DAT_0483064c;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) ((i + 0x9060cb) * 8) = uVar1;
-            *(uint *) ((i + 0x9060e3) * 8) = uVar1;
-        }
-        _DAT_048306a0 = para->dram_para0 >> 0x18 & 0x3f;
-        _DAT_04830060 = _DAT_04830060 | 1;
-        _DAT_048306a4 = _DAT_048306a0;
-        _DAT_04830760 = _DAT_048306a0;
-        _DAT_04830764 = _DAT_048306a0;
-    }
-    if ((para->dram_tpr10 & 0x20000) != 0) {
-        _DAT_04830054 = _DAT_04830054 & 0xffffff7f;
-        _DAT_04830190 = _DAT_04830190 & 0xfffffffb;
-        uVar1 = para->dram_tpr12 & 0x3f;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) ((i + 0x906090) * 8) = uVar1;
-            *(uint *) ((i + 0x9060a8) * 8) = uVar1;
-        }
-        _DAT_048304c8 = para->dram_tpr14 & 0x3f;
-        uVar1 = para->dram_tpr12 >> 8 & 0x3f;
-        _DAT_04830528 = _DAT_048304c8;
-        _DAT_04830588 = _DAT_048304c8;
-        _DAT_048305e8 = _DAT_048304c8;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) (i * 8 + 0x48304d4) = uVar1;
-            *(uint *) (i * 8 + 0x4830594) = uVar1;
-        }
-        _DAT_0483051c = para->dram_tpr14 >> 8 & 0x3f;
-        uVar1 = para->dram_tpr12 >> 0x10 & 0x3f;
-        _DAT_0483052c = _DAT_0483051c;
-        _DAT_048305dc = _DAT_0483051c;
-        _DAT_048305ec = _DAT_0483051c;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) ((i + 0x9060c0) * 8) = uVar1;
-            *(uint *) ((i + 0x9060d8) * 8) = uVar1;
-        }
-        _DAT_04830648 = para->dram_tpr14 >> 0x10 & 0x3f;
-        uVar1 = para->dram_tpr12 >> 0x18 & 0x3f;
-        _DAT_048306a8 = _DAT_04830648;
-        _DAT_04830708 = _DAT_04830648;
-        _DAT_04830768 = _DAT_04830648;
-        for (i = 0; i < 9; i = i + 1) {
-            *(uint *) (i * 8 + 0x4830654) = uVar1;
-            *(uint *) (i * 8 + 0x4830714) = uVar1;
-        }
-        _DAT_0483069c = para->dram_tpr14 >> 0x18 & 0x3f;
-        _DAT_04830054 = _DAT_04830054 | 0x80;
-        _DAT_048306ac = _DAT_0483069c;
-        _DAT_0483075c = _DAT_0483069c;
-        _DAT_0483076c = _DAT_0483069c;
-    }
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint phy_read_calibration(dram_para_t *para)
-
-{
-    bool bVar1;
-    uint reg_val;
-    uint read_calibration_error;
-
-    bVar1 = false;
-    if (para->dram_type == 4) {
-        _DAT_04830054 = _DAT_04830054 | 2;
-    }
-    if ((para->dram_para2 & 1) == 0) {
-        do {
-            if ((_DAT_04830184 & 0xf) == 0xf) goto LAB_0001231a;
-        } while ((_DAT_04830184 >> 5 & 1) == 0);
-        bVar1 = true;
-    } else {
-        do {
-            if ((_DAT_04830184 & 3) == 3) goto LAB_0001231a;
-        } while ((_DAT_04830184 >> 5 & 1) == 0);
-        bVar1 = true;
-    }
-LAB_0001231a:
-    if ((para->dram_para2 & 0x1000) != 0) {
-        if ((para->dram_para2 & 1) == 0) {
-            do {
-                if ((_DAT_04830184 & 0xf) == 0xf) goto LAB_00012422;
-            } while ((_DAT_04830184 >> 5 & 1) == 0);
-            bVar1 = true;
-        } else {
-            do {
-                if ((_DAT_04830184 & 3) == 3) goto LAB_00012422;
-            } while ((_DAT_04830184 >> 5 & 1) == 0);
-            bVar1 = true;
-        }
-    }
-LAB_00012422:
-    _DAT_04830008 = _DAT_04830008 & 0xffffffce;
-    return (uint) !bVar1;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void mctl_com_set_controller_after_phy(dram_para_t *para)
-
-{
-    uint reg_val;
-
-    _DAT_04820320 = 0;
-    mctl_com_set_controller_refresh(0, para);
-    _DAT_04820320 = 1;
-    do {
-    } while ((_DAT_04820324 & 1) != 1);
-    return;
-}
-
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint ddrphy_phyinit_C_initPhyConfig(dram_para_t *para)
-
-{
-    bool bVar1;
-    bool bVar2;
-    bool bVar3;
-    bool bVar4;
-    uint reg_val;
-    uint read_calibration_error;
-    uint write_training_error;
-    uint read_training_error;
-    uint write_leveling_error;
-    uint i;
-    uint ret_val;
-
-    ret_val = 1;
-    bVar2 = false;
-    bVar3 = false;
-    bVar4 = false;
-    bVar1 = false;
-    phy_para_config(para);
-    mctl_dfi_init(para);
-    _DAT_04820320 = 0;
-    mctl_com_set_controller_refresh(0, para);
-    _DAT_04820320 = 1;
-    if ((para->dram_tpr10 & 0x100000) != 0) {
-        if ((para->dram_tpr10 & 0x80000) == 0) {
-            ret_val = phy_write_leveling(para);
-        } else {
-            for (i = 0; i < 5; i = i + 1) {
-                ret_val = phy_write_leveling(para);
-                if (ret_val == 1) {
-                    i = 5;
-                }
-            }
-        }
-        if (ret_val == 0) {
-            printf("write_leveling error \n");
-            bVar2 = true;
-        }
-    }
-    if ((para->dram_tpr10 & 0x200000) != 0) {
-        if ((para->dram_tpr10 & 0x80000) == 0) {
-            ret_val = phy_read_calibration(para);
-        } else {
-            for (i = 0; i < 5; i = i + 1) {
-                ret_val = phy_read_calibration(para);
-                if (ret_val == 1) {
-                    i = 5;
-                }
-            }
-        }
-        if (ret_val == 0) {
-            bVar1 = true;
-        }
-    }
-    if (((para->dram_tpr10 & 0x400000) != 0) && (!bVar1)) {
-        if ((para->dram_tpr10 & 0x80000) == 0) {
-            ret_val = phy_read_training(para);
-        } else {
-            for (i = 0; i < 5; i = i + 1) {
-                ret_val = phy_read_training(para);
-                if (ret_val == 1) {
-                    i = 5;
-                }
-            }
-        }
-        if (ret_val == 0) {
-            printf("read_training error \n");
-            bVar3 = true;
-        }
-    }
-    if (((para->dram_tpr10 & 0x800000) != 0) && (!bVar1)) {
-        if ((para->dram_tpr10 & 0x80000) == 0) {
-            ret_val = phy_write_training(para);
-        } else {
-            for (i = 0; i < 5; i = i + 1) {
-                ret_val = phy_write_training(para);
-                if (ret_val == 1) {
-                    i = 5;
-                }
-            }
-        }
-        if (ret_val == 0) {
-            printf("write_training error \n");
-            bVar4 = true;
-        }
-    }
-    if ((para->dram_tpr10 & 0x80000) == 0) {
-        if ((((bVar2) || (bVar1)) || (bVar3)) || (bVar4)) {
-            bVar1 = true;
-        } else {
-            bVar1 = false;
-        }
-        if (bVar1) {
-            return 0;
-        }
-    } else {
-        if (((bVar2) || (bVar1)) || ((bVar3 || (bVar4)))) {
-            bVar1 = true;
-        } else {
-            bVar1 = false;
-        }
-        if (bVar1) {
-            training_error_flag = training_error_flag + 1;
-            if (training_error_flag == 10) {
-                printf("retraining ten \n");
-                return 0;
-            }
-            ret_val = mctl_core_init(para);
-            training_error_flag = 0;
-        }
-    }
-    mctl_phy_dx_bit_delay_compensation(para);
-    return ret_val;
-}
-
-
-uint mctl_phy_init(dram_para_t *para)
-
-{
-    uint uVar1;
-    uint ret_val;
-
-    mctl_phy_cold_reset();
-    uVar1 = ddrphy_phyinit_C_initPhyConfig(para);
-    return uVar1;
-}
-
-
-uint32_t mctl_channel_init(dram_para_t *para)
-
-{
-    uint32_t uVar1;
+void mctl_com_set_bus_config(dram_para_t *para) {
     uint32_t reg_val;
-    uint32_t ret_val;
 
-    REG32(0x04810008) = REG32(0x04810008) & 0xfeffffff | 0x2000200;
-    REG32(0x04810020) = REG32(0x04810020) | 0x8000;
-    mctl_com_set_bus_config(para);
-    REG32(0x04820038) = 0;
-    mctl_com_init(para);
-    uVar1 = mctl_phy_init(para);
-    mctl_com_set_controller_after_phy(para);
-    return uVar1;
+    if (para->dram_type == 8) {
+        REG32(0x03102ea8) = REG32(0x03102ea8) | 1;
+    }
+    REG32(0x04820250) = REG32(0x04820250) & 0xffff00ff | 0x3000;
+    return;
 }
 
+void mctl_sys_init(dram_para_t *para) {
+    uint32_t reg_val;
 
-uint32_t mctl_core_init(dram_para_t *para)
-
-{
-    uint32_t uVar1;
-    uint32_t ret_val;
-
-    mctl_sys_init(para);
-    uVar1 = mctl_channel_init(para);
-    return uVar1;
+    REG32(0x03001540) = REG32(0x03001540) & 0x3fffffff;
+    REG32(0x0300180c) = REG32(0x0300180c) & 0xfffefffe;
+    REG32(0x03001010) = REG32(0x03001010) & 0x7fffffff;
+    REG32(0x03001800) = REG32(0x03001800) & 0xbfffffff;
+    udelay(5);
+    _ccm_set_pll_ddr_clk(para->dram_clk << 1, para);
+    REG32(0x0300180c) = REG32(0x0300180c) | 0x10001;
+    REG32(0x03001540) = REG32(0x03001540) | 0xc0000000;
+    REG32(0x04810008) = REG32(0x04810008) & 0xfdffffff;
+    REG32(0x03001800) = REG32(0x03001800) & 0xfcffffe0 | 0x48000003;
+    udelay(5);
+    REG32(0x07010250) = REG32(0x07010250) | 0x10;
+    return;
 }
-
-
-uint32_t auto_scan_dram_rank_width(dram_para_t *para)
-
-{
-    uint32_t uVar1;
-    uint32_t uVar2;
-    uint32_t uVar3;
-    uint32_t uVar4;
-    uint32_t uVar5;
-    uint32_t temp_trp10;
-    uint32_t temp_para2;
-    uint32_t temp_para1;
-    uint32_t temp_trp13;
-    uint32_t ret_val;
-
-    uVar2 = para->dram_tpr13;
-    uVar3 = para->dram_para1;
-    uVar4 = para->dram_para2;
-    uVar5 = para->dram_tpr10;
-    para->dram_tpr10 = para->dram_tpr10 | 0x10000000;
-    para->dram_tpr13 = para->dram_tpr13 | 1;
-    if (para->dram_type == 4) {
-        para->dram_para1 = 0x60b7;
-    } else {
-        para->dram_para1 = 0x20b7;
-    }
-    para->dram_para2 = 0x1000;
-    uVar1 = mctl_core_init(para);
-    if (uVar1 == 0) {
-        para->dram_para2 = 0;
-        uVar1 = mctl_core_init(para);
-        if (uVar1 == 0) {
-            para->dram_para2 = 0x1001;
-            uVar1 = mctl_core_init(para);
-            if (uVar1 == 0) {
-                para->dram_para2 = 1;
-                uVar1 = mctl_core_init(para);
-                if (uVar1 == 0) {
-                    return 0;
-                }
-                printf("[AUTO DEBUG]16 bit,1 ranks training success!\n");
-            } else {
-                printf("[AUTO DEBUG]16 bit,2 ranks training success!\n");
-            }
-        } else {
-            printf("[AUTO DEBUG]32bit,1 ranks training success!\n");
-        }
-    } else {
-        printf("[AUTO DEBUG]32bit,2 ranks training success!\n");
-    }
-    para->dram_tpr13 = uVar2;
-    para->dram_para1 = uVar3;
-    para->dram_para2 = para->dram_para2 | uVar4 & 0xffff0000;
-    para->dram_tpr10 = uVar5;
-    return 1;
-}
-
-
-uint auto_scan_dram_size(dram_para_t *para)
-
-{
-    uint uVar1;
-    uint uVar2;
-    int iVar3;
-    uint uVar4;
-    uint uVar5;
-    uint uVar6;
-    uint uVar7;
-    uint uVar8;
-    uint row_num;
-    uint bank_num;
-    uint col_num;
-    uint row_shift;
-    uint bank_shift;
-    uint col_shift;
-    uint temp_trp10;
-    uint rank_base_addr;
-    uint ret;
-    uint reg_val;
-    uint bg_num;
-    uint cnt;
-    uint j;
-    uint i;
-
-    uVar4 = para->dram_tpr10;
-    para->dram_tpr10 = para->dram_tpr10 | 0x10000000;
-    if (para->dram_type == 4) {
-        para->dram_para1 = 0xb0eb;
-    } else {
-        para->dram_para1 = 0x30eb;
-    }
-    if ((para->dram_para2 & 0xf) == 0) {
-        iVar3 = 2;
-    } else {
-        iVar3 = 1;
-    }
-    iVar3 = (para->dram_para1 >> 0xe & 3) + iVar3;
-    uVar5 = para->dram_para1;
-    uVar1 = mctl_core_init(para);
-    if (uVar1 == 0) {
-        uVar4 = 0;
-    } else {
-        for (i = 0; i < 0x10; i = i + 1) {
-            if ((i & 1) == 0) {
-                uVar1 = ~(i * 4 + 0x40000000);
-            } else {
-                uVar1 = i * 4 + 0x40000000;
-            }
-            *(uint *) (i * 4 + 0x40000000) = uVar1;
-            DataSynchronizationBarrier(0xf);
-        }
-        for (i = 1; i < 3; i = i + 1) {
-            cnt = 0;
-            for (j = 0; j < 0x10; j = j + 1) {
-                if ((j & 1) == 0) {
-                    uVar1 = ~(j * 4 + 0x40000000);
-                } else {
-                    uVar1 = j * 4 + 0x40000000;
-                }
-                if (uVar1 != *(uint *) ((1 << (i + 5 & 0xff)) + 0x40000000 + j * 4)) break;
-                cnt = cnt + 1;
-            }
-            if (cnt == 0x10) break;
-        }
-        if (i == 1) {
-            bg_num = 1;
-        } else if (para->dram_type == 4) {
-            bg_num = 2;
-        } else {
-            bg_num = 0;
-        }
-        for (i = 7; i < 0xb; i = i + 1) {
-            cnt = 0;
-            for (j = 0; j < 0x10; j = j + 1) {
-                if ((j & 1) == 0) {
-                    uVar1 = ~(j * 4 + 0x40000000);
-                } else {
-                    uVar1 = j * 4 + 0x40000000;
-                }
-                if (uVar1 != *(uint *) ((1 << (iVar3 + i & 0xff)) + 0x40000000 + j * 4)) break;
-                cnt = cnt + 1;
-            }
-            if (cnt == 0x10) break;
-        }
-        if (10 < i) {
-            i = 0xb;
-        }
-        uVar1 = i;
-        for (i = 2; i < 3; i = i + 1) {
-            cnt = 0;
-            for (j = 0; j < 0x10; j = j + 1) {
-                if ((j & 1) == 0) {
-                    uVar6 = ~(j * 4 + 0x40000000);
-                } else {
-                    uVar6 = j * 4 + 0x40000000;
-                }
-                if (uVar6 != *(uint *) ((1 << ((uVar5 & 0xf) + iVar3 + i & 0xff)) + 0x40000000 + j * 4))
-                    break;
-                cnt = cnt + 1;
-            }
-            if (cnt == 0x10) break;
-        }
-        if (2 < i) {
-            i = 3;
-        }
-        uVar5 = i;
-        if (para->dram_type == 4) {
-            para->dram_para1 = 0x6118;
-        } else {
-            para->dram_para1 = 0x2118;
-        }
-        uVar6 = para->dram_para1;
-        if ((para->dram_para2 & 0xf) == 0) {
-            iVar3 = 2;
-        } else {
-            iVar3 = 1;
-        }
-        uVar7 = para->dram_para1;
-        uVar8 = para->dram_para1;
-        uVar2 = mctl_core_init(para);
-        if (uVar2 == 0) {
-            uVar4 = 0;
-        } else {
-            for (i = 0; i < 0x10; i = i + 1) {
-                if ((i & 1) == 0) {
-                    uVar2 = ~(i * 4 + 0x40000000);
-                } else {
-                    uVar2 = i * 4 + 0x40000000;
-                }
-                *(uint *) (i * 4 + 0x40000000) = uVar2;
-                DataSynchronizationBarrier(0xf);
-            }
-            for (i = 0xc; i < 0x11; i = i + 1) {
-                cnt = 0;
-                for (j = 0; j < 0x10; j = j + 1) {
-                    if ((j & 1) == 0) {
-                        uVar2 = ~(j * 4 + 0x40000000);
-                    } else {
-                        uVar2 = j * 4 + 0x40000000;
-                    }
-                    if (uVar2 != *(uint *) ((1 << ((uVar8 >> 0xc & 3) +
-                                                           (uVar7 & 0xf) + (uVar6 >> 0xe & 3) + iVar3 + i &
-                                                   0xff)) +
-                                            0x40000000 + j * 4)) break;
-                    cnt = cnt + 1;
-                }
-                if (cnt == 0x10) break;
-            }
-            if (0x10 < i) {
-                i = 0x11;
-            }
-            para->dram_para1 = i << 4 | uVar1 | uVar5 << 0xc | bg_num << 0xe;
-            para->dram_tpr10 = uVar4;
-            uVar4 = 1;
-        }
-    }
-    return uVar4;
-}
-
-
-uint32_t auto_scan_dram_config(dram_para_t *para)
-
-{
-    uint32_t uVar1;
-    uint32_t ret_val;
-
-    if (((para->dram_tpr13 & 0x4000) == 0) && (uVar1 = auto_scan_dram_rank_width(para), uVar1 == 0)) {
-        return 0;
-    }
-    uVar1 = auto_scan_dram_size(para);
-    if (uVar1 == 0) {
-        uVar1 = 0;
-    } else {
-        if ((para->dram_tpr13 & 0x8000) == 0) {
-            para->dram_tpr13 = para->dram_tpr13 | 3;
-            para->dram_tpr13 = para->dram_tpr13 | 0x6000;
-        }
-        uVar1 = 1;
-    }
-    return uVar1;
-}
-
 
 int init_DRAM(dram_para_t *para) {
     uint32_t uVar1;
@@ -2077,6 +2029,7 @@ int init_DRAM(dram_para_t *para) {
     uint32_t ret_val;
     uint32_t dram_size;
 
+    printf("DRAM BOOT DRIVE INFO: %s\n", "V0.15");
     REG32(0x03000160) = REG32(0x03000160) | 0x100;
     REG32(0x03000168) = REG32(0x03000168) & 0xffffffc0;
     if (((para->dram_tpr13 & 1) == 0) && (uVar1 = auto_scan_dram_config(para), uVar1 == 0)) {
@@ -2108,7 +2061,6 @@ int init_DRAM(dram_para_t *para) {
     }
     return dram_size;
 }
-
 
 uint64_t sunxi_dram_init(void *para) {
     return init_DRAM((dram_para_t *) para);
