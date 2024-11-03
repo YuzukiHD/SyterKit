@@ -23,20 +23,21 @@
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
-};
-
-sunxi_spi_t sunxi_spi0 = {
-        .base = SUNXI_SPI0_BASE,
-        .id = 0,
-        .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = 0,
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = 16,
+                .parent_clk = 24000000,
+        },
 };
 
 sdhci_t sdhci0 = {
@@ -62,8 +63,10 @@ sunxi_i2c_t i2c_pmu = {
         .base = SUNXI_RTWI_BASE,
         .id = SUNXI_R_I2C0,
         .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+        .gpio = {
+                .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
+                .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+        },
 };
 
 void clean_syterkit_data(void) {
