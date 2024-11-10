@@ -13,6 +13,7 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
+#include <sys-spi.h>
 #include <sys-spi-nor.h>
 
 #include <common.h>
@@ -56,6 +57,8 @@ int main(void) {
     sunxi_clk_dump();
 
     uint64_t dram_size = sunxi_dram_init(&dram_para);
+	
+	printk_info("DRAM Size = %llu\n", dram_size);
 
     sunxi_spi_init(&sunxi_spi0);
 

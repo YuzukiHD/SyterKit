@@ -270,6 +270,14 @@
           <FileOption/>
         </File>
       </VirtualDirectory>
+      <VirtualDirectory Name="mtd">
+        <File Name="../../../include/drivers/mtd/sys-spi-nand.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/mtd/sys-spi-nor.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="image">
       <File Name="../../../include/image/image_loader.h">
@@ -411,9 +419,6 @@
         <File Name="../../../src/drivers/chips/sun20iw5/sys-wdt.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-spi.c">
-          <FileOption/>
-        </File>
       </VirtualDirectory>
       <File Name="../../../src/drivers/sys-dma.c" ExcludeProjConfig="">
         <FileOption/>
@@ -431,12 +436,6 @@
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="">
-        <FileOption/>
-      </File>
-      <File Name="../../../src/drivers/sys-spi-nand.c" ExcludeProjConfig="">
-        <FileOption/>
-      </File>
-      <File Name="../../../src/drivers/sys-spi-nor.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <VirtualDirectory Name="mmc">
@@ -489,6 +488,14 @@
       <File Name="../../../src/drivers/sys-spis.c" ExcludeProjConfig="BuildSet">
         <FileOption/>
       </File>
+      <VirtualDirectory Name="mtd">
+        <File Name="../../../src/drivers/mtd/sys-spi-nand.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/mtd/sys-spi-nor.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="log">
       <File Name="../../../src/log/log.c">
@@ -515,6 +522,17 @@
       <FileOption/>
     </File>
   </VirtualDirectory>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions>;;;</memoryExpressions>
+    <statistics>;;32;;MHZ;;up</statistics>
+    <peripheralTabs/>
+    <WatchDisplayFormat>1</WatchDisplayFormat>
+    <LocalDisplayFormat>1</LocalDisplayFormat>
+    <debugLayout/>
+    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
+    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
+  </DebugSessions>
   <BuildConfigs>
     <BuildConfig Name="BuildSet">
       <Target>
@@ -618,7 +636,7 @@
         <Undefine/>
         <Optim>None (-O0)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
-        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
+        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd</IncludePath>
         <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
@@ -649,6 +667,8 @@
         <AutoLDFile>no</AutoLDFile>
         <LinkType>start-group</LinkType>
         <IncludeAllLibs>no</IncludeAllLibs>
+        <LinkSpecsType>none</LinkSpecsType>
+        <LinkUseNewlibNano>no</LinkUseNewlibNano>
       </Linker>
       <Debug>
         <LoadApplicationAtStartup>yes</LoadApplicationAtStartup>
@@ -704,12 +724,15 @@
         </ConfigSIM>
         <ConfigOpenOCD>
           <OpenOCDExecutablePath/>
+          <OpenOCDLocally>yes</OpenOCDLocally>
           <OpenOCDTelnetPortEnable>no</OpenOCDTelnetPortEnable>
           <OpenOCDTelnetPort>4444</OpenOCDTelnetPort>
           <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
           <OpenOCDTclPort>6666</OpenOCDTclPort>
           <OpenOCDConfigOptions/>
           <OpenOCDTimeout>5000</OpenOCDTimeout>
+          <OpenOCDRemoteIP>localhost</OpenOCDRemoteIP>
+          <OpenOCDRemotePort>3333</OpenOCDRemotePort>
           <PluginID>openocd-sifive</PluginID>
           <Version>latest</Version>
         </ConfigOpenOCD>
@@ -732,15 +755,4 @@
       </Flash>
     </BuildConfig>
   </BuildConfigs>
-  <DebugSessions>
-    <watchExpressions/>
-    <memoryExpressions>;;;</memoryExpressions>
-    <statistics>;;32;;MHZ;;up</statistics>
-    <peripheralTabs/>
-    <WatchDisplayFormat>1</WatchDisplayFormat>
-    <LocalDisplayFormat>1</LocalDisplayFormat>
-    <debugLayout/>
-    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
-    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
-  </DebugSessions>
 </Project>

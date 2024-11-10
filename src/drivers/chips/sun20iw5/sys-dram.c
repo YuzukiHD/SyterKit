@@ -18,86 +18,146 @@
 
 #define CONFIG_SYS_SDRAM_BASE SDRAM_BASE
 
+/**
+ * @brief Convert nanoseconds to clock cycles for DRAM timing.
+ *
+ * This function calculates the corresponding number of clock cycles for a given 
+ * duration in nanoseconds, based on the DRAM controller clock frequency.
+ *
+ * @param para Pointer to a struct containing DRAM parameters, including the clock frequency.
+ * @param nanoseconds The time duration in nanoseconds to be converted.
+ * 
+ * @return The equivalent time in clock cycles (rounded up) for the given duration.
+ */
 static int ns_to_t(dram_para_t *para, int nanoseconds) {
     const unsigned int ctrl_freq = para->dram_clk / 2;
 
+    // Return the time in clock cycles, rounded up
     return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
 }
 
+/**
+ * @brief Enable all DRAM masters.
+ *
+ * This function enables all masters in the DRAM controller by writing to the 
+ * appropriate registers. It also introduces a small delay to ensure the changes 
+ * are applied.
+ */
 static void dram_enable_all_master(void) {
-    writel(~0, (MCTL_COM_BASE + MCTL_COM_MAER0));
-    writel(0xff, (MCTL_COM_BASE + MCTL_COM_MAER1));
-    writel(0xffff, (MCTL_COM_BASE + MCTL_COM_MAER2));
-    udelay(10);
+    writel(~0, (MCTL_COM_BASE + MCTL_COM_MAER0)); // Enable all masters in MAER0
+    writel(0xff, (MCTL_COM_BASE + MCTL_COM_MAER1)); // Enable all masters in MAER1
+    writel(0xffff, (MCTL_COM_BASE + MCTL_COM_MAER2)); // Enable all masters in MAER2
+    udelay(10); // Delay for 10 microseconds to allow changes to take effect
 }
 
+/**
+ * @brief Disable all DRAM masters.
+ *
+ * This function disables all masters in the DRAM controller by writing to the 
+ * appropriate registers. It also introduces a small delay to ensure the changes 
+ * are applied.
+ */
 static void dram_disable_all_master(void) {
-    writel(1, (MCTL_COM_BASE + MCTL_COM_MAER0));
-    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER1));
-    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER2));
-    udelay(10);
+    writel(1, (MCTL_COM_BASE + MCTL_COM_MAER0)); // Disable all masters in MAER0
+    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER1)); // Disable all masters in MAER1
+    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER2)); // Disable all masters in MAER2
+    udelay(10); // Delay for 10 microseconds to allow changes to take effect
 }
 
-static void eye_delay_compensation(dram_para_t *para)// s1
+/**
+ * @brief Perform eye delay compensation for DRAM timings.
+ *
+ * This function configures various delay parameters for DRAM by manipulating 
+ * specific PHY (Physical Layer) control registers. The compensation ensures 
+ * that the timing of various signal transitions (e.g., DQS, RAS, CAS) is optimized 
+ * for the DRAM device, based on the provided timing parameters.
+ * The adjustments are based on values extracted from the `dram_para_t` structure.
+ * The function configures the appropriate delay settings for data signals, command 
+ * signals, and other necessary PHY control registers.
+ *
+ * @param para Pointer to a structure containing the DRAM timing parameters. These 
+ *             parameters are used to configure delays for various signal lines 
+ *             in the DRAM controller.
+ */
+static void eye_delay_compensation(dram_para_t *para) // s1
 {
     uint32_t delay, i = 0;
 
-    // DATn0IOCR, n =  0...7
-    delay = (para->dram_tpr11 & 0xf) << 9;
-    delay |= (para->dram_tpr12 & 0xf) << 1;
-
+    // DATn0IOCR, n =  0...7 - Configure delay for DATn0 I/O control registers
+    delay = (para->dram_tpr11 & 0xf) << 9;  // Extract and adjust delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf) << 1; // Extract and adjust delay from dram_tpr12
     for (i = 0; i < 9; i++)
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(i)), delay);
 
-    // DATn1IOCR, n =  0...7
-    delay = (para->dram_tpr11 & 0xf0) << 5;
-    delay |= (para->dram_tpr12 & 0xf0) >> 3;
+    // DATn1IOCR, n =  0...7 - Configure delay for DATn1 I/O control registers
+    delay = (para->dram_tpr11 & 0xf0) << 5; // Extract and adjust delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf0) >> 3; // Extract and adjust delay from dram_tpr12
     for (i = 0; i < 9; i++)
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(i)), delay);
 
-    // PGCR0: assert AC loopback FIFO reset
+    // PGCR0: Assert AC loopback FIFO reset
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0x04000000);
 
-    // DQS0 read and write delay
-    delay = (para->dram_tpr11 & 0xf0000) >> 7;
-    delay |= (para->dram_tpr12 & 0xf0000) >> 15;
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(9)), delay); // DQS0 P
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(10)), delay);// DQS0 N
+    // DQS0 read and write delay configuration
+    delay = (para->dram_tpr11 & 0xf0000) >> 7;  // Extract delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf0000) >> 15; // Extract delay from dram_tpr12
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(9)), delay); // Configure DQS0 positive delay
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(10)), delay); // Configure DQS0 negative delay
 
-    // DQS1 read and write delay
-    delay = (para->dram_tpr11 & 0xf00000) >> 11;
-    delay |= (para->dram_tpr12 & 0xf00000) >> 19;
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(9)), delay); // DQS1 P
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(10)), delay);// DQS1 N
+    // DQS1 read and write delay configuration
+    delay = (para->dram_tpr11 & 0xf00000) >> 11;  // Extract delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf00000) >> 19; // Extract delay from dram_tpr12
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(9)), delay); // Configure DQS1 positive delay
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(10)), delay); // Configure DQS1 negative delay
 
-    // DQS0 enable bit delay
+    // DQS0 enable bit delay configuration
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(0)), (para->dram_tpr11 & 0xf0000) << 9);
 
-    // DQS1 enable bit delay
+    // DQS1 enable bit delay configuration
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(1)), (para->dram_tpr11 & 0xf00000) << 5);
 
-    // PGCR0: release AC loopback FIFO reset
+    // PGCR0: Release AC loopback FIFO reset
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), (1 << 26));
 
+    // Wait for 1 microsecond to ensure changes take effect
     udelay(1);
 
-    delay = (para->dram_tpr10 & 0xf0) << 4;
-
-    // Set RAS CAS and CA delay
+    // Set RAS, CAS, and CA delay for DRAM timing
+    delay = (para->dram_tpr10 & 0xf0) << 4; // Extract delay from dram_tpr10
     for (i = 6; i < 27; ++i) {
-        setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay);
+        setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay); // Apply delay to AC IO control registers
     }
 
-    // Set CK CS delay
+    // Set CK CS delay based on dram_tpr10
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(2)), (para->dram_tpr10 & 0x0f) << 8);
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(3)), (para->dram_tpr10 & 0x0f) << 8);
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(28)), (para->dram_tpr10 & 0xf00) >> 4);
 }
 
-/*
- * Main purpose of the auto_set_timing routine seems to be to calculate all
- * timing settings for the specific type of sdram used. Read together with
- * an sdram datasheet for context on the various variables.
+/**
+ * @brief Set the DRAM timing parameters for the specified DRAM type.
+ * 
+ * This function configures various timing parameters for the DRAM controller
+ * based on the DRAM type and clock speed specified in the `dram_para_t` structure.
+ * It sets the timing values for the DRAM and writes them to the appropriate registers.
+ * The function supports multiple DRAM types, including DDR2, DDR3, LPDDR2, and LPDDR3.
+ * 
+ * The following parameters are configured:
+ * - DRAM timing values (e.g., tCCD, tFAW, tRCD, tRP, tCAS latency, etc.)
+ * - Mode register values (mr0, mr1, mr2, mr3)
+ * - Initialization timing (e.g., tdinit0, tdinit1, tdinit2, tdinit3)
+ * 
+ * @param para Pointer to a structure that contains the DRAM parameters, including:
+ *             - dram_type: The type of DRAM (e.g., DDR2, DDR3, LPDDR2, LPDDR3).
+ *             - dram_clk: The DRAM clock frequency in MHz.
+ *             - dram_mr1: Value to be written to the MR1 register.
+ *             - Other parameters related to the DRAM configuration.
+ * 
+ * @note The function uses the `ns_to_t` helper function to convert nanosecond values
+ *       to clock cycles based on the DRAM clock frequency.
+ *       The DRAM type and clock speed influence the specific values of the timing parameters.
+ * 
+ * @return None
  */
 static void mctl_set_timing_params(dram_para_t *para) {
     /* DRAM_TPR0 */
@@ -393,7 +453,6 @@ static void mctl_set_timing_params(dram_para_t *para) {
     writel(mr1, (MCTL_PHY_BASE + MCTL_PHY_DRAM_MR1));
     writel(mr2, (MCTL_PHY_BASE + MCTL_PHY_DRAM_MR2));
     writel(mr3, (MCTL_PHY_BASE + MCTL_PHY_DRAM_MR3));
-    /* TODO: dram_odt_en is either 0x0 or 0x1, so right shift looks weird */
     writel((para->dram_odt_en >> 4) & 0x3, (MCTL_PHY_BASE + MCTL_PHY_LP3MR11));
 
     /* Set dram timing DRAMTMG0 - DRAMTMG5 */
@@ -417,9 +476,59 @@ static void mctl_set_timing_params(dram_para_t *para) {
     writel((trefi << 15) & 0x0fff0000, (MCTL_PHY_BASE + MCTL_PHY_RFSHCTL1));
 }
 
-// Purpose of this routine seems to be to initialize the PLL driving
-// the MBUS and sdram.
-//
+/**
+ * @brief Set the DDR PLL clock based on the given DRAM parameters.
+ * 
+ * This function configures the PLL clock for the DDR memory controller based on 
+ * the DRAM parameters passed in the `dram_para_t` structure. It calculates the
+ * PLL parameters (such as the PLL multiplier and divider) and writes them to the
+ * appropriate registers to enable the PLL and ensure it locks to the desired frequency.
+ * It also configures the DRAM clock source to use the PLL.
+ * 
+ * The PLL is configured using the following parameters:
+ * - PLL N (PLL multiplier) 
+ * - PLL M0, M1 (input/output dividers)
+ * - PLL enable and lock control
+ * - Gate control for the PLL output
+ * 
+ * The function uses hardware registers to configure the PLL and waits for the PLL
+ * to lock before enabling the output gate and selecting the PLL as the clock source
+ * for the DRAM controller.
+ * 
+ * @param index The index used to determine which PLL clock configuration to use.
+ *              This is typically used to select different PLL configurations 
+ *              based on the input parameters.
+ * @param para A pointer to a structure containing the DRAM parameters, including:
+ *             - dram_clk: The DRAM clock frequency in MHz.
+ *             - dram_tpr13: Contains information for selecting PLL configurations.
+ *             - dram_tpr9: Used for PLL clock calculation.
+ *             - dram_tpr10: Contains high-speed oscillator frequency for PLL calculation.
+ * 
+ * @return The resulting DDR PLL frequency in Hz, calculated as:
+ *         \[
+ *         \text{hosc\_freq} \times n / p0 / m0 / m1
+ *         \]
+ *         Where:
+ *         - \(\text{hosc\_freq}\) is the high-speed oscillator frequency.
+ *         - \(n\) is the PLL multiplier.
+ *         - \(p0, m0, m1\) are divider values for the PLL.
+ * 
+ * @note The PLL frequency calculation takes into account the DRAM clock, dividers,
+ *       and the high-speed oscillator frequency (`hosc_freq`). 
+ *       The function assumes that `dram_tpr13`, `dram_tpr9`, and `dram_tpr10`
+ *       contain the necessary information for PLL configuration.
+ * 
+ * @note This function performs low-level hardware register writes to configure the PLL
+ *       and DRAM clock. It directly interacts with the hardware, so it's intended for
+ *       use in a low-level driver or platform-specific initialization code.
+ * 
+ * @note The function waits for the PLL to lock, which involves polling a lock status
+ *       bit in the PLL control register. It then enables the output gate to allow the
+ *       PLL to drive the DRAM clock.
+ * 
+ * @note Ensure that the values in the `dram_para_t` structure are valid and appropriate
+ *       for your system configuration before calling this function.
+ */
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
     uint32_t reg_val = 0, n = 12, m1 = 1, p0 = 1, m0 = 1, pll_clk, hosc_freq;
 
@@ -480,90 +589,144 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
     return ((hosc_freq * n) / p0 / m0 / m1);
 }
 
-// Main purpose of sys_init seems to be to initalise the clocks for
-// the sdram controller.
-//
+/**
+ * @brief Initializes the MCTL (Memory Controller) system by configuring the DRAM and MBUS clocks and resets.
+ * 
+ * This function initializes the Memory Controller by performing a sequence of hardware register writes 
+ * to assert and deassert resets, configure clock gating, and enable the necessary clock sources for DRAM
+ * operation. It configures the DRAM clock PLL and updates the clock settings based on the system's 
+ * oscillator frequency (HOSC). Additionally, it enables the MCTL clock and prepares the system for 
+ * further memory operations.
+ * 
+ * The steps performed by this function include:
+ * 1. Asserting and deasserting the MBUS and DRAM resets.
+ * 2. Configuring the MBUS and DRAM clock gating.
+ * 3. Setting the DRAM clock PLL frequency and enabling the clock for DRAM operations.
+ * 4. Enabling the MCTL clock for PHY access.
+ * 
+ * This function directly manipulates hardware registers for clock configuration, reset control, and 
+ * memory initialization. It's intended for low-level hardware initialization and should be executed 
+ * early in the system's startup sequence.
+ * 
+ * @param para A pointer to a structure of type `dram_para_t` which contains the DRAM configuration 
+ *             parameters, including the DRAM clock frequency and PLL settings.
+ * 
+ * @note This function assumes that the hardware addresses for the clock and reset control registers 
+ *       are correct and the system is ready for memory controller configuration.
+ * 
+ * @note The function uses `udelay` to introduce delays, which might not be precise on all platforms. 
+ *       Ensure that the delays are sufficient for your platform's clock configuration to take effect.
+ * 
+ * @note The `dram_tpr10` register in `para` is modified to configure the HOSC frequency based on 
+ *       whether the system is using a 40 MHz or a different oscillator frequency.
+ * 
+ * @note The `ccu_set_pll_ddr_clk` function is called to configure the PLL for DRAM based on the 
+ *       passed parameters. It returns the actual DRAM frequency, which is stored in `para->dram_clk`.
+ * 
+ * @note This function performs critical operations on the system's memory and clocking hardware and 
+ *       should be executed with care, particularly when the system is in the early stages of booting.
+ */
 static void mctl_sys_init(dram_para_t *para) {
     uint32_t reg_val = 0;
 
-    /* assert MBUS reset */
+    /* Assert MBUS reset */
     reg_val = readl(SUNXI_CCU_APP_BASE + BUS_Reset1_REG);
     reg_val &= ~BUS_Reset1_REG_MBUS_RSTN_SW_CLEAR_MASK;
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
-    /* close MBUS gate */
+
+    /* Close MBUS gate */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
     reg_val &= ~BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLEAR_MASK;
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
 
-    /* assert DRAM reset */
+    /* Assert DRAM reset */
     reg_val = readl(SUNXI_CCU_APP_BASE + BUS_Reset0_REG);
     reg_val &= ~BUS_Reset0_REG_DRAM_CLEAR_MASK;
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
-    /* close DRAM gate */
+
+    /* Close DRAM gate */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
     reg_val &= ~BUS_CLK_GATING0_REG_DRAM_GATING_CLEAR_MASK;
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
 
-    /* Close DRAM CLK */
+    /* Close DRAM clock gating */
     reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val &= ~DRAM_CLK_REG_DRAM_CLK_GATING_CLEAR_MASK;
     writel(reg_val, (SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
 
-    /* Update CLK */
+    /* Update DRAM clock configuration */
     reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
     writel(reg_val, (SUNXI_CCU_APP_BASE + DRAM_CLK_REG));
     udelay(10);
 
+    /* Adjust HOSC frequency based on oscillator type */
     if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
-        para->dram_tpr10 |= (0x28 << 16);
+        para->dram_tpr10 |= (0x28 << 16);  // Set for 40MHz HOSC
     } else {
-        para->dram_tpr10 |= (0x18 << 16);
+        para->dram_tpr10 |= (0x18 << 16);  // Set for other frequencies
     }
 
+    /* Set PLL for DDR clock */
     reg_val = ccu_set_pll_ddr_clk(0, para);
     printk_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
-    para->dram_clk = reg_val / 2;
+    para->dram_clk = reg_val / 2;  // Store the actual DRAM clock frequency
 
+    /* Disable all DRAM masters (if any) */
     dram_disable_all_master();
 
-    /* deassert DRAM reset */
+    /* Deassert DRAM reset */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
     reg_val |= (BUS_Reset0_REG_DRAM_DE_ASSERT << BUS_Reset0_REG_DRAM_OFFSET);
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset0_REG));
-    /* deassert MBUS reset */
+
+    /* Deassert MBUS reset */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
     reg_val |= (BUS_Reset1_REG_MBUS_RSTN_SW_DE_ASSERT << BUS_Reset1_REG_MBUS_RSTN_SW_OFFSET);
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_Reset1_REG));
 
-    /* open DRAM clock gate */
+    /* Open DRAM clock gating */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
     reg_val |= (BUS_CLK_GATING0_REG_DRAM_GATING_CLOCK_IS_ON << BUS_CLK_GATING0_REG_DRAM_GATING_OFFSET);
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG));
-    /* open MBUS clock gate */
+
+    /* Open MBUS clock gate */
     reg_val = readl((SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
     reg_val |= (BUS_CLK_GATING1_REG_MBUS_GATE_SW_CLOCK_IS_ON << BUS_CLK_GATING1_REG_MBUS_GATE_SW_OFFSET);
     writel(reg_val, (SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG));
 
-    /* Open DRAM CTL */
+    /* Open DRAM controller clock gating */
     reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET);
     writel(reg_val, SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
-    /*Update CLK*/
+
+    /* Update DRAM clock again after enabling */
     reg_val = readl(SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     reg_val |= (DRAM_CLK_REG_DRAM_UPD_VALID << DRAM_CLK_REG_DRAM_UPD_OFFSET);
     writel(reg_val, SUNXI_CCU_APP_BASE + DRAM_CLK_REG);
     udelay(5);
 
-    // mCTL clock enable
+    /* Enable MCTL (Memory Controller) clock */
     writel(0x8000, (MCTL_PHY_BASE + MCTL_PHY_CLKEN));
     udelay(10);
 }
 
-// The main purpose of this routine seems to be to copy an address configuration
-// from the dram_para1 and dram_para2 fields to the PHY configuration registers
-// (MCTL_COM_WORK_MODE0, MCTL_COM_WORK_MODE1).
-//
+/**
+ * @brief Initializes the memory controller with the specified parameters.
+ * 
+ * This function configures the memory controller by setting various parameters such as SDRAM type, 
+ * word width, rank, bank, row, and address mapping. It also configures additional settings like the 
+ * controller wait time, ODTMAP, and specific register values for different DRAM configurations.
+ *
+ * @param para Pointer to a structure containing the DRAM parameters. The structure should contain
+ *             values such as DRAM type, size, ranks, timing parameters, and other relevant settings.
+ * 
+ * @note This function assumes that the base addresses for the memory controller (MCTL_COM_BASE, 
+ *       MCTL_PHY_BASE) and the relevant register offsets are correctly defined elsewhere in the code.
+ *       The specific register settings depend on the DRAM type and configuration (e.g., LPDDR2, LPDDR3).
+ *
+ * @return void
+ */
 static void mctl_com_init(dram_para_t *para) {
     uint32_t val, width;
     unsigned long ptr;
@@ -572,34 +735,34 @@ static void mctl_com_init(dram_para_t *para) {
     // Setting controller wait time
     clrsetbits_le32((MCTL_COM_BASE + MCTL_COM_DBGCR), 0x3f00, 0x2000);
 
-    // set SDRAM type and word width
+    // Set SDRAM type and word width
     val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)) & ~0x00fff000;
-    val |= (para->dram_type & 0x7) << 16;  // DRAM type
-    val |= (~para->dram_para2 & 0x1) << 12;// DQ width
-    val |= (1 << 22);                      // ??
+    val |= (para->dram_type & 0x7) << 16;  ///< DRAM type
+    val |= (~para->dram_para2 & 0x1) << 12;///< DQ width
+    val |= (1 << 22);                      ///< Additional configuration flag
     if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 || para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
-        val |= (1 << 19);// type 6 and 7 must use 1T
+        val |= (1 << 19); // Type 6 and 7 must use 1T
     } else {
         if (para->dram_tpr13 & (1 << 5))
             val |= (1 << 19);
     }
     writel(val, (MCTL_COM_BASE + MCTL_COM_WORK_MODE0));
 
-    // init rank / bank / row for single/dual or two different ranks
+    // Initialize rank, bank, row for single/dual or two different ranks
     if ((para->dram_para2 & (1 << 8)) && ((para->dram_para2 & 0xf000) != 0x1000))
-        width = 32;
+        width = 32; // 32-bit width if dual-rank is configured
     else
-        width = 16;
+        width = 16; // 16-bit width otherwise
 
     ptr = (MCTL_COM_BASE + MCTL_COM_WORK_MODE0);
     for (i = 0; i < width; i += 16) {
         val = readl(ptr) & 0xfffff000;
 
-        val |= (para->dram_para2 >> 12) & 0x3;                   // rank
-        val |= ((para->dram_para1 >> (i + 12)) << 2) & 0x4;      // bank - 2
-        val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) & 0xff;// row - 1
+        val |= (para->dram_para2 >> 12) & 0x3;                   ///< Rank
+        val |= ((para->dram_para1 >> (i + 12)) << 2) & 0x4;      ///< Bank - 2
+        val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) & 0xff;///< Row - 1
 
-        // convert from page size to column addr width - 3
+        // Convert from page size to column address width - 3
         switch ((para->dram_para1 >> i) & 0xf) {
             case 8:
                 val |= 0xa00;
@@ -621,25 +784,51 @@ static void mctl_com_init(dram_para_t *para) {
         ptr += 4;
     }
 
-    // set ODTMAP based on number of ranks in use
+    // Set ODTMAP based on the number of ranks in use
     val = (readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)) & 0x1) ? 0x303 : 0x201;
     writel(val, (MCTL_PHY_BASE + MCTL_PHY_ODTMAP));
 
-    // set mctl reg 3c4 to zero when using half DQ
+    // Set mctl reg 3c4 to zero when using half DQ
     if (para->dram_para2 & (1 << 0))
         writel(0, (MCTL_PHY_BASE + MCTL_PHY_DXnGCR0(1)));
 
-    // set dram address mapping from dram_tpr4 param
+    // Set DRAM address mapping from dram_tpr4 parameter
     if (para->dram_tpr4) {
         setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE0), (para->dram_tpr4 & 0x3) << 25);
         setbits_le32((MCTL_COM_BASE + MCTL_COM_WORK_MODE1), (para->dram_tpr4 & 0x7fc) << 10);
     }
 }
 
-
-// Init the controller channel. The key part is placing commands in the main
-// command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
-//
+/**
+ * @brief Initializes the memory controller channel with the provided DRAM parameters.
+ * 
+ * This function configures the memory controller channel based on the provided DRAM parameters. 
+ * It sets the DDR clock, adjusts PHY registers for DQS gating mode, enables/disable ODT (On-Die Termination),
+ * configures PLL and SSCG, applies timing and voltage parameters, and performs necessary DRAM controller 
+ * initialization and calibration steps. The function also handles power gating and waits for the status 
+ * signals to complete.
+ * 
+ * @param ch_index The index of the memory channel to initialize (not used in this implementation).
+ * @param para Pointer to a structure containing the DRAM configuration parameters. This structure includes:
+ *             - dram_clk: DRAM clock frequency
+ *             - dram_odt_en: ODT enable flag
+ *             - dram_type: DRAM type (e.g., DDR3, LPDDR2, LPDDR3)
+ *             - dram_tpr13: Timing parameter for DQS gating
+ *             - dram_zq: ZQ calibration parameter
+ *             - dram_para2: Additional parameters, including rank configuration
+ *             - dram_tpr4: Additional timing parameter
+ *             - dram_tpr13: Timing parameter for DQS gating mode
+ * 
+ * @return 1 if initialization was successful, 0 if there was a ZQ calibration error.
+ * 
+ * @note The function waits for several internal signals and completes multiple calibration steps. It assumes 
+ *       the DRAM controller's base address (MCTL_PHY_BASE, MCTL_COM_BASE) and the relevant register offsets 
+ *       are correctly defined elsewhere in the system.
+ * 
+ * @warning This function relies on hardware-specific timing parameters and assumes correct memory controller 
+ *          configuration for the target platform. Modifications to the registers or incorrect parameter values 
+ *          may result in improper initialization or system instability.
+ */
 static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) {
     unsigned int val, dqs_gating_mode;
 
@@ -675,7 +864,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
 
     eye_delay_compensation(para);
 
-    // set PLL SSCG ?
+    // set PLL SSCG
     val = readl((MCTL_PHY_BASE + MCTL_PHY_PGCR2));
     if (dqs_gating_mode == 1) {
         clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), 0xc0, 0);
@@ -798,46 +987,101 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para) 
     return 1;
 }
 
+/**
+ * @brief Calculates the size of a memory rank based on the provided register value.
+ * 
+ * This function computes the size of a memory rank using the information embedded in 
+ * the given register value. The register value is interpreted as follows:
+ * - Bits 8-11 (page size): Represents the page size offset.
+ * - Bits 4-7 (row width): Represents the row width offset.
+ * - Bits 2-3 (bank count): Represents the bank count offset.
+ * The function combines these values to calculate the rank size in terms of memory blocks.
+ * 
+ * The calculation subtracts 14 (representing 1MB = 20 bits, minus an additional 6 bits),
+ * and then returns the size of the memory rank as a power of 2.
+ * 
+ * @param regval The register value containing memory configuration information. The value is assumed to 
+ *               be formatted with page size, row width, and bank count information located in specific bit ranges:
+ *               - Bits 8-11 (page size)
+ *               - Bits 4-7 (row width)
+ *               - Bits 2-3 (bank count)
+ * 
+ * @return The calculated size of the memory rank in bytes as a power of 2 (i.e., 2^bits).
+ * 
+ * @note The function assumes that the provided register value corresponds to valid memory configuration data 
+ *       (i.e., it is already correctly formatted according to the memory controller specifications).
+ */
 static unsigned int calculate_rank_size(uint32_t regval) {
     unsigned int bits;
 
-    bits = (regval >> 8) & 0xf;  /* page size - 3 */
-    bits += (regval >> 4) & 0xf; /* row width - 1 */
-    bits += (regval >> 2) & 0x3; /* bank count - 2 */
+    bits = (regval >> 8) & 0xf;  /* Page size - 3 */
+    bits += (regval >> 4) & 0xf; /* Row width - 1 */
+    bits += (regval >> 2) & 0x3; /* Bank count - 2 */
     bits -= 14;                  /* 1MB = 20 bits, minus above 6 = 14 */
 
     return 1U << bits;
 }
 
-/*
- * The below routine reads the dram config registers and extracts
- * the number of address bits in each rank available. It then calculates
- * total memory size in MB.
+/**
+ * @brief Retrieves the total size of the DRAM.
+ * 
+ * This function calculates the total size of the DRAM by reading memory configuration 
+ * values from two registers (`MCTL_COM_WORK_MODE0` and `MCTL_COM_WORK_MODE1`) and interpreting 
+ * the memory rank configurations. It determines whether the system has a single rank, two identical ranks, 
+ * or two distinct ranks based on the values read from the registers.
+ * 
+ * - If the system has a single rank, the size of that rank is returned.
+ * - If the system has two identical ranks, the size of one rank is multiplied by two.
+ * - If the system has two distinct ranks, the sizes of both ranks are added together.
+ * 
+ * The function uses the `calculate_rank_size()` helper function to determine the size of individual ranks.
+ * 
+ * @return The total size of the DRAM in bytes.
+ * 
+ * @note The function assumes the DRAM configuration is valid and the base addresses 
+ *       (`MCTL_COM_BASE + MCTL_COM_WORK_MODE0`, `MCTL_COM_BASE + MCTL_COM_WORK_MODE1`) are correctly 
+ *       mapped and accessible in the memory space.
  */
-static unsigned int DRAMC_get_dram_size(void) {
+static unsigned int get_dram_size(void) {
     uint32_t val;
     unsigned int size;
 
     val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)); /* MCTL_COM_WORK_MODE0 */
     size = calculate_rank_size(val);
 
-    if ((val & 0x3) == 0) /* single rank? */
+    if ((val & 0x3) == 0) /* Single rank? */
         return size;
 
     val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE1)); /* MCTL_WORK_MODE1 */
-    if ((val & 0x3) == 0)                               /* two identical ranks? */
+    if ((val & 0x3) == 0)                               /* Two identical ranks? */
         return size * 2;
 
-    /* add sizes of both ranks */
+    /* Add sizes of both ranks */
     return size + calculate_rank_size(val);
 }
 
-/*
- * The below routine reads the command status register to extract
- * DQ width and rank count. This follows the DQS training command in
- * channel_init. If error bit 22 is reset, we have two ranks and full DQ.
- * If there was an error, figure out whether it was half DQ, single rank,
- * or both. Set bit 12 and 0 in dram_para2 with the results.
+/**
+ * @brief Detects the DQS gate state and updates DRAM parameters based on the detected configuration.
+ * 
+ * This function performs a series of hardware register reads to detect the state of the DQS (Data Strobe) gate 
+ * in a DRAM system. It checks the configuration of the DRAM system and modifies the `dram_para2` field of the 
+ * `dram_para_t` structure to reflect the detected DRAM parameters, such as rank and DQ (Data Queue) configuration. 
+ * Based on the detection, the function will set the appropriate flags for dual rank, single rank, full DQ, or 
+ * half DQ memory configurations.
+ * 
+ * The function reads values from specific registers:
+ * - `MCTL_PHY_PGSR0` to check if the DRAM is dual rank.
+ * - `MCTL_PHY_DXnGSR0(0)` and `MCTL_PHY_DXnGSR0(1)` to check the state of the DQS gate and determine the DQ configuration.
+ * 
+ * The detected configuration is then used to update `para->dram_para2`, and appropriate debug messages are logged.
+ * 
+ * @param para Pointer to the `dram_para_t` structure which holds DRAM configuration parameters.
+ * 
+ * @return 1 if the DRAM configuration was successfully detected and updated, 0 if no valid configuration was detected.
+ * 
+ * @note This function assumes that the register addresses (`MCTL_PHY_BASE`, `MCTL_PHY_PGSR0`, etc.) are correctly 
+ *       mapped and accessible in the memory space. It also relies on the presence of specific debug logging 
+ *       mechanisms (`printk_debug`).
  */
 static int dqs_gate_detect(dram_para_t *para) {
     uint32_t dx0 = 0, dx1 = 0;
@@ -880,18 +1124,45 @@ static int dqs_gate_detect(dram_para_t *para) {
     return 0;
 }
 
+/**
+ * @brief Performs a simple write-read test on the DRAM to verify its functionality.
+ * 
+ * This function writes two distinct patterns to different memory regions in the DRAM and then reads back the
+ * written values to check for consistency. The test is performed on half of the specified memory size, with
+ * pattern `patt1` written to the first half and pattern `patt2` written to the second half. The function verifies
+ * that the read values match the expected patterns at the corresponding addresses. If any mismatch is found, the
+ * function logs an error and returns a failure code.
+ * 
+ * The function works as follows:
+ * 1. It calculates the offset as half of the total memory size (`mem_mb`), and uses this offset to write to the
+ *    second half of the memory.
+ * 2. It writes `patt1` and `patt2` to the first and second halves of the memory, respectively.
+ * 3. It reads the values from both halves of the memory and compares them to the expected patterns (`patt1` and `patt2`).
+ * 4. If any read value does not match the expected value, an error is logged and the function returns `1` indicating failure.
+ * 5. If all values match, the function prints a success message and returns `0` indicating success.
+ * 
+ * @param mem_mb Total size of the DRAM in megabytes.
+ * @param len Number of memory locations (in words) to test.
+ * 
+ * @return 0 if the test passes (all values match the expected patterns), 1 if any mismatch is found.
+ * 
+ * @note The function assumes that the base address of the DRAM is specified by `CONFIG_SYS_SDRAM_BASE` and that the
+ *       system supports 32-bit word writes and reads. The function also assumes that the memory is properly initialized.
+ */
 static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
-    unsigned int offs = (mem_mb / 2) << 18;// half of memory size
+    unsigned int offs = (mem_mb / 2) << 18;  // Half of memory size
     unsigned int patt1 = 0x01234567;
     unsigned int patt2 = 0xfedcba98;
     unsigned int *addr, v1, v2, i;
 
+    // Write pattern1 to the first half of the memory
     addr = (unsigned int *) CONFIG_SYS_SDRAM_BASE;
     for (i = 0; i != len; i++, addr++) {
         writel(patt1 + i, (unsigned long) addr);
         writel(patt2 + i, (unsigned long) (addr + offs));
     }
 
+    // Read back and check pattern1 for the first half and pattern2 for the second half
     addr = (unsigned int *) CONFIG_SYS_SDRAM_BASE;
     for (i = 0; i != len; i++) {
         v1 = readl((unsigned long) (addr + i));
@@ -914,8 +1185,31 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
     return 0;
 }
 
-// Set the Vref mode for the controller
-//
+/**
+ * @brief Initializes the Vref mode for the memory controller.
+ * 
+ * This function configures the voltage reference (Vref) settings for the memory controller by modifying the
+ * appropriate registers. It uses the `dram_para_t` structure to determine the settings based on the provided
+ * configuration parameters.
+ * 
+ * The function performs the following steps:
+ * 1. Checks if a certain bit in `dram_tpr13` is set (bit 17). If it is, the function returns early and does
+ *    nothing.
+ * 2. Modifies the `MCTL_PHY_IOVCR0` register to set the appropriate I/O voltage reference values based on the
+ *    `dram_tpr5` configuration. Only the lower 32 bits of `dram_tpr5` are used for this purpose.
+ * 3. If bit 16 in `dram_tpr13` is not set, it modifies the `MCTL_PHY_IOVCR1` register to adjust another set of
+ *    voltage reference settings based on the lower 7 bits of `dram_tpr6`.
+ * 
+ * The function utilizes the `clrsetbits_le32` helper to modify specific bits of the I/O voltage reference control
+ * registers without affecting the other bits.
+ * 
+ * @param para Pointer to the `dram_para_t` structure containing the configuration parameters.
+ * 
+ * @note The function assumes that the memory controller base address (`MCTL_PHY_BASE`) and the corresponding
+ *       register offsets (`MCTL_PHY_IOVCR0` and `MCTL_PHY_IOVCR1`) are defined elsewhere in the code. 
+ *       Additionally, the function assumes that the `dram_para_t` structure contains valid values for the 
+ *       voltage reference configuration.
+ */
 static void mctl_vrefzq_init(dram_para_t *para) {
     if (para->dram_tpr13 & (1 << 17))
         return;
@@ -927,11 +1221,29 @@ static void mctl_vrefzq_init(dram_para_t *para) {
         clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_IOVCR1), 0x7f, para->dram_tpr6 & 0x7f);
 }
 
-// Perform an init of the controller. This is actually done 3 times. The first
-// time to establish the number of ranks and DQ width. The second time to
-// establish the actual ram size. The third time is final one, with the final
-// settings.
-//
+/**
+ * @brief Initializes the memory controller.
+ * 
+ * This function performs a three-stage initialization of the memory controller:
+ * 1. **First stage**: Initializes the controller to establish the number of ranks and DQ width.
+ * 2. **Second stage**: Initializes the controller to determine the actual RAM size.
+ * 3. **Third stage**: Finalizes the initialization with the final settings.
+ * 
+ * The function performs the following operations in sequence:
+ * 1. Calls `mctl_sys_init()` to initialize the system parameters.
+ * 2. Calls `mctl_vrefzq_init()` to configure the voltage reference settings.
+ * 3. Calls `mctl_com_init()` to initialize the memory controller communication settings.
+ * 4. Calls `mctl_set_timing_params()` to set the timing parameters for the memory controller.
+ * 5. Finally, calls `mctl_channel_init()` to initialize the memory channel with the given parameters.
+ * 
+ * @param para Pointer to the `dram_para_t` structure that holds the memory controller's configuration parameters.
+ * 
+ * @return int Returns the status of the memory channel initialization. A value of `0` typically indicates success.
+ * 
+ * @note The function assumes that the `mctl_sys_init()`, `mctl_vrefzq_init()`, `mctl_com_init()`, 
+ *       `mctl_set_timing_params()`, and `mctl_channel_init()` functions are correctly implemented and
+ *       that they are responsible for various aspects of memory controller configuration.
+ */
 static int mctl_core_init(dram_para_t *para) {
     mctl_sys_init(para);
 
@@ -944,16 +1256,33 @@ static int mctl_core_init(dram_para_t *para) {
     return mctl_channel_init(0, para);
 }
 
-/*
- * This routine sizes a DRAM device by cycling through address lines and
- * figuring out if they are connected to a real address line, or if the
- * address is a mirror.
- * First the column and bank bit allocations are set to low values (2 and 9
- * address lines). Then a maximum allocation (16 lines) is set for rows and
- * this is tested.
- * Next the BA2 line is checked. This seems to be placed above the column,
- * BA0-1 and row addresses. Finally, the column address is allocated 13 lines
- * and these are tested. The results are placed in dram_para1 and dram_para2.
+/**
+ * @brief Scans and sizes a DRAM device by cycling through address lines to determine the configuration.
+ * 
+ * This function performs an auto-scan of the DRAM to determine its size by cycling through various address lines
+ * and checking if they correspond to real memory addresses or mirrored addresses. The process involves adjusting
+ * and testing column, row, and bank bit allocations, and determining the number of address lines for each part.
+ * The results are then stored in the `dram_para1` and `dram_para2` parameters.
+ * 
+ * The procedure follows these steps:
+ * 1. Initializes the DRAM controller using `mctl_core_init()`.
+ * 2. Sets the rank count based on the DRAM configuration.
+ * 3. For each rank, it:
+ *    - Configures and tests the row address lines.
+ *    - Tests the bank address lines.
+ *    - Configures and tests the column address lines.
+ * 4. Finally, checks if the configuration for rank 1 differs from rank 0 for dual rank configurations.
+ * 
+ * The results for row size, bank size, and page size are stored in the `dram_para1` structure, while the 
+ * dual rank configuration is updated in `dram_para2`.
+ * 
+ * @param para Pointer to a `dram_para_t` structure that holds the configuration and result of the DRAM scan.
+ * 
+ * @return int Returns 1 on success, indicating the DRAM size scan was successful.
+ * @retval 0 If the DRAM initialization failed.
+ * 
+ * @note The function assumes that the DRAM is mapped starting at `CONFIG_SYS_SDRAM_BASE`. It uses hardware-specific
+ *       register operations to configure and test the DRAM controller.
  */
 static int auto_scan_dram_size(dram_para_t *para) {
     uint32_t i = 0, j = 0, current_rank = 0;
@@ -1106,11 +1435,32 @@ static int auto_scan_dram_size(dram_para_t *para) {
     return 1;
 }
 
-/*
- * This routine sets up parameters with dqs_gating_mode equal to 1 and two
- * ranks enabled. It then configures the core and tests for 1 or 2 ranks and
- * full or half DQ width. It then resets the parameters to the original values.
- * dram_para2 is updated with the rank and width findings.
+/**
+ * @brief Automatically scans and detects DRAM rank and DQ width.
+ * 
+ * This function configures the DRAM controller to test for the number of ranks (1 or 2)
+ * and the DQ width (full or half). It sets up the parameters with `dqs_gating_mode` 
+ * equal to 1 and enables two ranks. It then configures the controller and performs 
+ * tests to detect the rank and width. The function also resets the parameters to their 
+ * original values after the scan.
+ * 
+ * The steps performed by this function are as follows:
+ * 1. Save the original values of `dram_tpr13` and `dram_para1` in local variables.
+ * 2. Set up the DRAM parameters with a specific configuration (dqs_gating_mode = 1, two ranks).
+ * 3. Enable DQS probe mode by modifying the `dram_tpr13` register.
+ * 4. Call `mctl_core_init()` to initialize the memory controller with the new configuration.
+ * 5. Check if a specific bit in the PHY status register (`PGSR0`) is set, indicating an error.
+ * 6. Call `dqs_gate_detect()` to detect the DRAM DQS gating status.
+ * 7. If the detection fails, return `0` to indicate the scan was unsuccessful.
+ * 8. After the scan, restore the original values of `dram_tpr13` and `dram_para1`.
+ * 9. Return `1` to indicate the scan was successful.
+ * 
+ * @param para Pointer to the `dram_para_t` structure that holds the DRAM parameters to be tested.
+ * 
+ * @return int Returns `1` if the rank and width detection was successful, or `0` if it failed.
+ * 
+ * @note This function assumes that `mctl_core_init()` and `dqs_gate_detect()` are properly implemented.
+ *       It also assumes that the DRAM controller and PHY registers are accessible and can be modified as needed.
  */
 static int auto_scan_dram_rank_width(dram_para_t *para) {
     unsigned int s1 = para->dram_tpr13;
@@ -1136,11 +1486,37 @@ static int auto_scan_dram_rank_width(dram_para_t *para) {
     return 1;
 }
 
-/*
- * This routine determines the SDRAM topology. It first establishes the number
- * of ranks and the DQ width. Then it scans the SDRAM address lines to establish
- * the size of each rank. It then updates dram_tpr13 to reflect that the sizes
- * are now known: a re-init will not repeat the autoscan.
+/**
+ * @brief Automatically scans and configures the SDRAM topology.
+ * 
+ * This function determines the SDRAM topology by performing a series of scans. 
+ * First, it scans and establishes the number of ranks and the DQ width. Then, it 
+ * scans the SDRAM address lines to determine the size of each rank. After the scan, 
+ * it updates the `dram_tpr13` register to reflect that the SDRAM topology has been 
+ * successfully detected. The updated value of `dram_tpr13` ensures that the auto-scan 
+ * is not repeated upon a re-initialization.
+ * 
+ * The function follows these steps:
+ * 1. If the `dram_tpr13` register does not indicate that the number of ranks and DQ width
+ *    have been determined (bit 14 not set), it calls `auto_scan_dram_rank_width()` to perform 
+ *    the scan. If the scan fails, it logs an error message and returns `0`.
+ * 2. If the `dram_tpr13` register does not indicate that the size of each rank is known 
+ *    (bit 0 not set), it calls `auto_scan_dram_size()` to determine the size of each rank. 
+ *    If the scan fails, it logs an error message and returns `0`.
+ * 3. If bit 15 of `dram_tpr13` is not set, it sets the appropriate bits in `dram_tpr13` 
+ *    to indicate that the SDRAM topology is now known.
+ * 
+ * @param para Pointer to the `dram_para_t` structure that holds the SDRAM parameters.
+ * 
+ * @return int Returns `1` if the SDRAM configuration was successfully determined, 
+ *             or `0` if an error occurred during the scan.
+ * 
+ * @note The function assumes that `auto_scan_dram_rank_width()` and `auto_scan_dram_size()` 
+ *       are properly implemented and return `0` on failure and non-zero on success.
+ * 
+ * @warning The function logs errors if the rank, width, or size detection fails, and it 
+ *          ensures that re-initialization will not repeat the auto-scan if the SDRAM 
+ *          topology is already known.
  */
 static int auto_scan_dram_config(dram_para_t *para) {
     if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
@@ -1159,6 +1535,42 @@ static int auto_scan_dram_config(dram_para_t *para) {
     return 1;
 }
 
+/**
+ * @brief Initializes the DRAM controller and configures memory parameters.
+ * 
+ * This function initializes the DRAM controller and configures various settings 
+ * based on the provided `dram_para_t` structure. It configures the DRAM clock, 
+ * type, ZQ calibration, SDRAM size, hardware auto-refresh, ODT (On Die Termination) 
+ * settings, and more. The function also ensures that the DRAM controller is properly 
+ * initialized for the specified memory type (DDR2, DDR3, LPDDR2, LPDDR3, etc.).
+ * 
+ * The following steps are performed:
+ * 1. Prints out the DRAM boot info, clock speed, and type.
+ * 2. Checks and configures the ZQ calibration based on the DRAM parameters.
+ * 3. If the DRAM auto-scan is not already performed, it invokes `auto_scan_dram_config` 
+ *    to scan and configure the DRAM topology.
+ * 4. Initializes the core controller using `mctl_core_init`.
+ * 5. Retrieves and sets the DRAM size. The size can be forced by the `dram_para2` parameter.
+ * 6. Configures hardware auto-refresh settings if specified.
+ * 7. Adjusts settings based on the DRAM type (e.g., LPDDR3 ODT delay, HDR/DDR dynamic).
+ * 8. Disables ZQ calibration and sets the appropriate configurations for VTF and PAD hold.
+ * 9. Enables all DRAM masters and performs simple write tests if necessary.
+ * 
+ * @param type The type of DRAM to initialize (not used in the function body, but typically 
+ *             used to specify DDR2, DDR3, LPDDR2, etc.).
+ * @param para Pointer to a `dram_para_t` structure containing DRAM configuration parameters, 
+ *             such as clock, type, ODT settings, and other controller parameters.
+ * 
+ * @return int The size of the initialized DRAM in megabytes (MB) if successful, 
+ *             or 0 if initialization fails.
+ * 
+ * @note This function assumes that all registers are mapped to their correct memory locations.
+ *       The ZQ calibration and other settings might depend on the specific hardware 
+ *       configuration and DRAM type.
+ * 
+ * @warning The function assumes that the proper base addresses and control registers for 
+ *          the DRAM controller are defined and accessible in the system.
+ */
 static int init_DRAM(int type, dram_para_t *para) {
     uint32_t rc, mem_size_mb;
 
@@ -1209,13 +1621,13 @@ static int init_DRAM(int type, dram_para_t *para) {
     }
 
     /* Get SDRAM size
-	 * You can set dram_para2 to force set the dram size
-	 */
+     * You can set dram_para2 to force set the dram size
+     */
     rc = para->dram_para2;
     if (rc & (1 << 31)) {
         rc = (rc >> 16) & ~(1 << 15);
     } else {
-        rc = DRAMC_get_dram_size();
+        rc = get_dram_size();
         printk_info("DRAM: size = %uMB\n", rc);
         para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
     }
@@ -1270,7 +1682,22 @@ static int init_DRAM(int type, dram_para_t *para) {
     return mem_size_mb;
 }
 
+/**
+ * @brief Initializes the DRAM with the given parameters.
+ * 
+ * This function initializes the DRAM using the provided parameters encapsulated
+ * in the `dram_para_t` structure. It calls the `init_DRAM` function to perform 
+ * the actual initialization and returns the result.
+ * 
+ * @param para A pointer to the `dram_para_t` structure that contains DRAM 
+ *             initialization parameters. The function casts this void pointer 
+ *             to a `dram_para_t` pointer.
+ * 
+ * @return uint64_t Returns the result of the `init_DRAM` function call, which
+ *                  represents the size of the initialized DRAM in MB. A return 
+ *                  value of 0 indicates failure.
+ */
 uint64_t sunxi_dram_init(void *para) {
-    dram_para_t *dram_para = (dram_para_t *) para;
-    return init_DRAM(0, dram_para);
-};
+    dram_para_t *dram_para = (dram_para_t *) para;  /**< Cast the void pointer to dram_para_t pointer */
+    return init_DRAM(0, dram_para);  /**< Call init_DRAM and return its result (DRAM size in MB or 0 on failure) */
+}
