@@ -68,9 +68,9 @@ sunxi_i2c_t i2c_pmu = {
                 .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
         },
         .i2c_clk = {
-                .gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .gate_reg_base = SUNXI_RTWI_BRG_REG,
                 .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET + 0,
-                .rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .rst_reg_base = SUNXI_RTWI_BRG_REG,
                 .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET + 0,
                 .parent_clk = 24000000,
         },
