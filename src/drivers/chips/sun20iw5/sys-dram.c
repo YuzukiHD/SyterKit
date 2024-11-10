@@ -1693,11 +1693,11 @@ static int init_DRAM(int type, dram_para_t *para) {
  *             initialization parameters. The function casts this void pointer 
  *             to a `dram_para_t` pointer.
  * 
- * @return uint64_t Returns the result of the `init_DRAM` function call, which
+ * @return uint32_t Returns the result of the `init_DRAM` function call, which
  *                  represents the size of the initialized DRAM in MB. A return 
  *                  value of 0 indicates failure.
  */
-uint64_t sunxi_dram_init(void *para) {
-    dram_para_t *dram_para = (dram_para_t *) para;  /**< Cast the void pointer to dram_para_t pointer */
-    return init_DRAM(0, dram_para);  /**< Call init_DRAM and return its result (DRAM size in MB or 0 on failure) */
-}
+uint32_t sunxi_dram_init(void *para) {
+    dram_para_t *dram_para = (dram_para_t *) para;
+    return init_DRAM(0, dram_para);
+};
