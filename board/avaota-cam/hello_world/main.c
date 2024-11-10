@@ -56,13 +56,9 @@ int main(void) {
 
     sunxi_clk_dump();
 
-<<<<<<< HEAD
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
-	
-	printk_info("DRAM Size = %llu\n", dram_size);
-=======
     uint32_t dram_size = sunxi_dram_init(&dram_para);
->>>>>>> d9bc602569f01f8b1d55baecd0c107189cdb11be
+
+    printk_info("DRAM Size = %u\n", dram_size);
 
     sunxi_spi_init(&sunxi_spi0);
 
