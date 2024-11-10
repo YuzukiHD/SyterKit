@@ -21,10 +21,19 @@ uint8_t OLED_GRAM[144][8]; /* 显存 */
 
 sunxi_i2c_t i2c_0 = {
         .base = 0x02502000,
-        .id = 0,
-        .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTE, 4), GPIO_PERIPH_MUX8},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTE, 5), GPIO_PERIPH_MUX8},
+        .id = SUNXI_I2C0,
+        .speed = SUNXI_I2C_SPEED_400K,
+        .gpio = {
+                .gpio_scl = {GPIO_PIN(GPIO_PORTE, 4), GPIO_PERIPH_MUX8},
+                .gpio_sda = {GPIO_PIN(GPIO_PORTE, 5), GPIO_PERIPH_MUX8},
+        },
+        .i2c_clk = {
+                .gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET + 0,
+                .parent_clk = 24000000,
+        },
 };
 
 void OLED_WR_Byte(uint8_t dat, uint8_t mode) {

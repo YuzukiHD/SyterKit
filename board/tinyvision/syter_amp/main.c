@@ -59,8 +59,21 @@ extern dram_para_t dram_para;
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET + 3,
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET + 3,
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+        },
 };
 
 extern sunxi_spi_t sunxi_spi0;

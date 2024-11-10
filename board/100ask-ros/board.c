@@ -33,10 +33,10 @@ sunxi_serial_t uart_dbg = {
         },
         .uart_clk = {
                 .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .gate_reg_offset = 0,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET,
                 .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .rst_reg_offset = 16,
-                .parent_clk = 24000000,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET,
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
         },
 };
 
@@ -62,10 +62,17 @@ sdhci_t sdhci0 = {
 sunxi_i2c_t i2c_pmu = {
         .base = SUNXI_RTWI_BASE,
         .id = SUNXI_R_I2C0,
-        .speed = 4000000,
+        .speed = SUNXI_I2C_SPEED_400K,
         .gpio = {
                 .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
                 .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+        },
+        .i2c_clk = {
+                .gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
+                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET + 0,
+                .parent_clk = 24000000,
         },
 };
 

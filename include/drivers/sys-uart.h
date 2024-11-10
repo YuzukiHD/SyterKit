@@ -93,8 +93,9 @@ typedef struct {
     sunxi_serial_dlen_t dlen;          /* Data length configuration */
 } sunxi_serial_t;
 
-#define DEFAULT_SERIAL_CCU_UART_RST_OFFSET (16)
-#define DEFAULT_SERIAL_PARENT_CLK (24000000)
+#define SERIAL_DEFAULT_CLK_RST_OFFSET (16)
+#define SERIAL_DEFAULT_CLK_GATE_OFFSET (0)
+#define SERIAL_DEFAULT_PARENT_CLK (24000000)
 
 /**
  * Initialize the Sunxi serial interface with the specified configuration.

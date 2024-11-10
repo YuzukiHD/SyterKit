@@ -40,8 +40,22 @@ sunxi_serial_t uart_dbg = {
         },
 };
 
+sunxi_dma_t sunxi_dma = {
+        .dma_reg_base = SUNXI_DMA_BASE,
+        .bus_clk = {
+                .gate_reg_base = CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+        .dma_clk = {
+                .rst_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .rst_reg_offset = DMA_DEFAULT_CLK_RST_OFFSET,
+                .gate_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+};
+
 sunxi_spi_t sunxi_spi0 = {
-        .base = SUNXI_SPI0_BASE,
+        .base = 0x04025000,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
         .gpio = {
@@ -52,6 +66,19 @@ sunxi_spi_t sunxi_spi0 = {
                 .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
                 .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
         },
+        .spi_clk = {
+                .spi_clock_cfg_base = CCU_BASE + CCU_SPI0_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET + 0,
+                .gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
 };
 
 sdhci_t sdhci0 = {

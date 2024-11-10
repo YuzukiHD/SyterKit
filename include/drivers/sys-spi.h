@@ -57,6 +57,12 @@ typedef struct {
 
 #define MAX_FIFU (64)
 
+#define SPI_CLK_SEL_PERIPH_300M (0x1)
+#define SPI_CLK_SEL_PERIPH_200M (0x2)
+#define SPI_CLK_SEL_FACTOR_N_OFF (8)
+#define SPI_DEFAULT_CLK_RST_OFFSET (16)
+#define SPI_DEFAULT_CLK_GATE_OFFSET (0)
+
 /**
  * Initialize the Sunxi SPI controller with the specified configuration.
  *

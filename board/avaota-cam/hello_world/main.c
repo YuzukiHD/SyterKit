@@ -45,7 +45,7 @@ int main(void) {
 
     sunxi_serial_init(&uart_dbg);
 
-    // show_banner();
+    show_banner();
 
     printk_info("Hello World!\n");
 
@@ -58,8 +58,6 @@ int main(void) {
     uint64_t dram_size = sunxi_dram_init(&dram_para);
 
     sunxi_spi_init(&sunxi_spi0);
-
-    spi_nor_detect(&sunxi_spi0);
 
     syterkit_shell_attach(commands);
 

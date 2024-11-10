@@ -31,10 +31,10 @@ sunxi_serial_t uart_dbg = {
         },
         .uart_clk = {
                 .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .gate_reg_offset = 0,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET,
                 .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .rst_reg_offset = 16,
-                .parent_clk = 24000000,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET,
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
         },
 };
 

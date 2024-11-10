@@ -12,29 +12,71 @@
 
 #include <mmu.h>
 
+#include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-sdcard.h>
-#include <sys-dram.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 8), GPIO_PERIPH_MUX6},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX6},
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 8), GPIO_PERIPH_MUX6},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX6},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET,
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET,
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+        },
+};
+
+sunxi_dma_t sunxi_dma = {
+        .dma_reg_base = SUNXI_DMA_BASE,
+        .bus_clk = {
+                .gate_reg_base = CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+        .dma_clk = {
+                .rst_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .rst_reg_offset = DMA_DEFAULT_CLK_RST_OFFSET,
+                .gate_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
 };
 
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
+        .gpio = {
+                .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
+                .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
+                .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
+                .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
+                .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
+                .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
+        },
+        .spi_clk = {
+                .spi_clock_cfg_base = CCU_BASE + CCU_SPI0_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET + 0,
+                .gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
 };
 
 sdhci_t sdhci0 = {

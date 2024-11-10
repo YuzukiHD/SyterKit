@@ -103,6 +103,9 @@ typedef struct {
     sunxi_clk_t bus_clk;
 } sunxi_dma_t;
 
+#define DMA_DEFAULT_CLK_RST_OFFSET (16)
+#define DMA_DEFAULT_CLK_GATE_OFFSET (0)
+
 /**
  * Initialize the DMA subsystem.
  */
