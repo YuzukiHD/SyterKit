@@ -497,11 +497,7 @@ static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
     uint32_t clk_m = 0, clk_n = 0, _2_pow_clk_n = 1, duty = 0, src_clk = 0;
     uint32_t divider, sclk_real; /* the real clock frequency */
 
-    if (i2c_dev->i2c_clk.parent_clk > 40000000) {
-        src_clk = i2c_dev->i2c_clk.parent_clk;
-    } else {
-        src_clk = i2c_dev->i2c_clk.parent_clk / 10;
-    }
+    src_clk = i2c_dev->i2c_clk.parent_clk / 10;
 
     divider = src_clk / i2c_dev->speed; /* 400kHz or 100kHz */
     sclk_real = 0;                      /* the real clock frequency */
@@ -541,6 +537,8 @@ set_clk:
         duty = TWI_CLK_DUTY;
         i2c->clk &= ~(duty);
     }
+
+    printk_info("twi->clk %x\r\n", i2c->clk);
 }
 
 /**

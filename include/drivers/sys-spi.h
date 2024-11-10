@@ -39,13 +39,23 @@ typedef struct {
 } sunxi_spi_gpio_t;
 
 typedef struct {
+    uint32_t spi_clock_cfg_base;
+    uint32_t spi_clock_source;
+    uint32_t spi_clock_factor_n_offset;
+    uint32_t spi_clock_freq;
+} sunxi_spi_clk_t;
+
+typedef struct {
     uint32_t base;
     uint8_t id;
     uint32_t clk_rate;
-    sunxi_clk_t clk_reg;
     sunxi_spi_gpio_t gpio;
     sunxi_dma_t *dma_handle;
+    sunxi_clk_t parent_clk_reg;
+    sunxi_spi_clk_t spi_clk;
 } sunxi_spi_t;
+
+#define MAX_FIFU (64)
 
 /**
  * Initialize the Sunxi SPI controller with the specified configuration.

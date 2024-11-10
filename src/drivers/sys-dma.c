@@ -313,8 +313,7 @@ int sunxi_dma_free_int(uint32_t dma_fd) {
 }
 
 
-int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
-    uint32_t len = 1024 * 1024 * 8;
+int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len) {
     sunxi_dma_set_t dma_set;
     uint32_t st = 0;
     uint32_t timeout;
