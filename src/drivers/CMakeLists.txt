@@ -35,36 +35,40 @@ if (CONFIG_CHIP_WITHPMU)
 endif()
 
 if (CONFIG_CHIP_MMC_V2)
-    set(DRIVER_MMC
+    set(MMC_DRIVER
         mmc/sys-mmc.c
         mmc/sys-sdhci.c
         mmc/sys-sdcard.c
     )
 else()
-    set(DRIVER_MMC
+    set(MMC_DRIVER
         sdhci/sys-sdcard.c
         sdhci/sys-sdhci.c
     )
 endif()
 
-if (NOT CONFIG_CHIP_CLK_V1)
-    if (NOT CONFIG_CHIP_MINSYS)
-        set(COMMON_DRIVER
-            ${COMMON_DRIVER}
-            sys-clk.c
-            sys-dram.c
-            sys-rtc.c
-            sys-spi-nand.c
-            sys-spi.c
-            sys-dma.c
-            sys-i2c.c
+set(MTD_DRIVER
+    mtd/sys-spi-nand.c
+    mtd/sys-spi-nor.c
+)
 
-            ${USB_DRIVER}
-            ${GIC_DRIVER}
-            ${DRIVER_MMC}
-        )
-    endif()
+if (NOT CONFIG_CHIP_MINSYS)
+    set(COMMON_DRIVER
+        ${COMMON_DRIVER}
+        sys-clk.c
+        sys-dram.c
+        sys-rtc.c
+        sys-spi.c
+        sys-dma.c
+        sys-i2c.c
+
+        ${USB_DRIVER}
+        ${GIC_DRIVER}
+        ${MMC_DRIVER}
+        ${MTD_DRIVER}
+    )
 endif()
+
 
 # chip implement
 add_subdirectory(chips)

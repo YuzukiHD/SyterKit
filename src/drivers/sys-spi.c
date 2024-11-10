@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
+
+#define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -10,97 +13,165 @@
 
 #include <log.h>
 
-#include <sys-clk.h>
-#include <sys-dma.h>
-#include <sys-gpio.h>
+#include <sys-spi.h>
 
-#include "sys-spi.h"
+/* DMA Handler */
+static __attribute__((section(".data"))) sunxi_dma_set_t spi_rx_dma;
+static uint32_t spi_dma_handler = 0;
 
-enum {
-    SPI_GCR = 0x04,
-    SPI_TCR = 0x08,
-    SPI_IER = 0x10,
-    SPI_ISR = 0x14,
-    SPI_FCR = 0x18,
-    SPI_FSR = 0x1c,
-    SPI_WCR = 0x20,
-    SPI_CCR = 0x24,
-    SPI_DLY = 0x28,
-    SPI_MBC = 0x30,
-    SPI_MTC = 0x34,
-    SPI_BCC = 0x38,
-    SPI_TXD = 0x200,
-    SPI_RXD = 0x300,
-};
+static inline void sunxi_spi_soft_reset(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->gc |= SPI_GC_SRST;
+}
 
-enum {
-    SPI_GCR_SRST_POS = 31,
-    SPI_GCR_SRST_MSK = (1 << SPI_GCR_SRST_POS),
-    SPI_GCR_TPEN_POS = 7,
-    SPI_GCR_TPEN_MSK = (1 << SPI_GCR_TPEN_POS),
-    SPI_GCR_MODE_POS = 1,// Master mode
-    SPI_GCR_MODE_MSK = (1 << SPI_GCR_MODE_POS),
-    SPI_GCR_EN_POS = 0,
-    SPI_GCR_EN_MSK = (1 << SPI_GCR_EN_POS),
-};
+static inline void sunxi_spi_enable_bus(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->gc |= SPI_GC_EN;
+}
 
-enum {
-    SPI_BCC_DUAL_RX = (1 << 28),
-    SPI_BCC_QUAD_IO = (1 << 29),
-    SPI_BCC_STC_MSK = (0x00ffffff),
-    SPI_BCC_DUM_POS = 24,
-    SPI_BCC_DUM_MSK = (0xf << SPI_BCC_DUM_POS),
-};
+static inline void sunxi_spi_disable_bus(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->gc &= ~SPI_GC_EN;
+}
 
-enum {
-    SPI_MBC_CNT_MSK = (0x00ffffff),
-};
+static inline void sunxi_spi_set_cs(sunxi_spi_t *spi, uint8_t cs) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->tc &= ~SPI_TC_SS_MASK;         /* SS-chip select, clear two bits */
+    spi_reg->tc |= cs << SPI_TC_SS_BIT_POS; /* set chip select */
+}
 
-enum {
-    SPI_MTC_CNT_MSK = (0x00ffffff),
-};
+static inline void sunxi_spi_set_master(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->gc |= SPI_GC_MODE;
+}
 
-enum {
-    SPI_TCR_SPOL_POS = 2,
-    SPI_TCR_SPOL_MSK = (1 << SPI_TCR_SPOL_POS),
-    SPI_TCR_SS_OWNER_POS = 6,
-    SPI_TCR_SS_OWNER_MSK = (1 << SPI_TCR_SS_OWNER_POS),
-    SPI_TCR_DHB_POS = 8,
-    SPI_TCR_DHB_MSK = (1 << SPI_TCR_DHB_POS),
-    SPI_TCR_SDC_POS = 11,
-    SPI_TCR_SDC_MSK = (1 << SPI_TCR_SDC_POS),
-    SPI_TCR_SDM_POS = 13,
-    SPI_TCR_SDM_MSK = (1 << SPI_TCR_SDM_POS),
-};
+static inline void sunxi_spi_start_xfer(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->tc |= SPI_TC_XCH;
+}
 
-enum {
-    SPI_FCR_RX_LEVEL_POS = 0,
-    SPI_FCR_RX_LEVEL_MSK = (0xff < SPI_FCR_RX_LEVEL_POS),
-    SPI_FCR_RX_DRQEN_POS = 8,
-    SPI_FCR_RX_DRQEN_MSK = (0x1 << SPI_FCR_RX_DRQEN_POS),
-    SPI_FCR_RX_TESTEN_POS = 14,
-    SPI_FCR_RX_TESTEN_MSK = (0x1 << SPI_FCR_RX_TESTEN_POS),
-    SPI_FCR_RX_RST_POS = 15,
-    SPI_FCR_RX_RST_MSK = (0x1 << SPI_FCR_RX_RST_POS),
-    SPI_FCR_TX_LEVEL_POS = 16,
-    SPI_FCR_TX_LEVEL_MSK = (0xff << SPI_FCR_TX_LEVEL_POS),
-    SPI_FCR_TX_DRQEN_POS = 24,
-    SPI_FCR_TX_DRQEN_MSK = (0x1 << SPI_FCR_TX_DRQEN_POS),
-    SPI_FCR_TX_TESTEN_POS = 30,
-    SPI_FCR_TX_TESTEN_MSK = (0x1 << SPI_FCR_TX_TESTEN_POS),
-    SPI_FCR_TX_RST_POS = 31,
-    SPI_FCR_TX_RST_MSK = (0x1 << SPI_FCR_TX_RST_POS),
-};
+static inline void sunxi_spi_enable_transmit_pause(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->gc |= SPI_GC_TP_EN;
+}
 
-enum {
-    SPI_FSR_RF_CNT_POS = 0,
-    SPI_FSR_RF_CNT_MSK = (0xff << SPI_FSR_RF_CNT_POS),
-    SPI_FSR_TF_CNT_POS = 16,
-    SPI_FSR_TF_CNT_MSK = (0xff << SPI_FSR_TF_CNT_POS),
-};
+static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, u32 on_off) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    on_off &= 0x1;
+    if (on_off)
+        spi_reg->tc |= SPI_TC_SS_OWNER;
+    else
+        spi_reg->tc &= ~SPI_TC_SS_OWNER;
+}
 
-static sunxi_dma_set_t spi_rx_dma;
-static u32 spi_rx_dma_hd;
+static inline uint32_t sunxi_spi_query_txfifo(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint32_t reg_val = (SPI_FIFO_STA_TX_CNT & spi_reg->fifo_sta);
+    reg_val >>= SPI_TXCNT_BIT_POS;
+    return reg_val;
+}
+
+static inline uint32_t sunxi_spi_query_rxfifo(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint32_t reg_val = (SPI_FIFO_STA_RX_CNT & spi_reg->fifo_sta);
+    reg_val >>= SPI_RXCNT_BIT_POS;
+    return reg_val;
+}
+
+static inline void sunxi_spi_disable_irq(sunxi_spi_t *spi, uint32_t bitmap) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    bitmap &= SPI_INTEN_MASK;
+    spi_reg->int_ctl &= ~bitmap;
+}
+
+static inline void sunxi_spi_clr_irq_pending(sunxi_spi_t *spi, uint32_t pending_bit) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    pending_bit &= SPI_INT_STA_MASK;
+    spi_reg->int_sta = pending_bit;
+}
+
+static inline uint32_t sunxi_spi_query_irq_pending(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    return (SPI_INT_STA_MASK & spi_reg->int_sta);
+}
+
+static inline void sunxi_spi_set_ss_level(sunxi_spi_t *spi, uint32_t high_low) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    high_low &= 0x1;
+    if (high_low)
+        spi_reg->tc |= SPI_TC_SS_LEVEL;
+    else
+        spi_reg->tc &= ~SPI_TC_SS_LEVEL;
+}
+
+static inline void sunxi_spi_dma_disable(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    spi_reg->fifo_ctl &= ~(SPI_FIFO_CTL_TX_DRQEN | SPI_FIFO_CTL_RX_DRQEN);
+}
+
+/* reset fifo */
+static void sunxi_spi_reset_fifo(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint32_t reg_val = spi_reg->fifo_ctl;
+
+    reg_val |= (SPI_FIFO_CTL_RX_RST | SPI_FIFO_CTL_TX_RST);
+    /* Set the trigger level of RxFIFO/TxFIFO. */
+    reg_val &= ~(SPI_FIFO_CTL_RX_LEVEL | SPI_FIFO_CTL_TX_LEVEL);
+    reg_val |= (0x20 << 16) | 0x20;
+    spi_reg->fifo_ctl = reg_val;
+}
+
+static uint32_t sunxi_spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
+        while (sunxi_spi_query_rxfifo(spi) < SPI_FIFO_CTL_SHIFT) {
+        };
+        *(buf += SPI_FIFO_CTL_SHIFT) = spi_reg->rxdata;
+    }
+
+    while (len-- > 0) {
+        while (sunxi_spi_query_rxfifo(spi) < 1)
+            ;
+        *buf++ = read8((virtual_addr_t) &spi_reg->rxdata);
+    }
+    return len;
+}
+
+static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint32_t tx_len = len;
+    uint8_t *tx_buf = buf;
+
+    while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
+        while (sunxi_spi_query_txfifo(spi) > MAX_FIFU - SPI_FIFO_CTL_SHIFT) {
+            udelay(10);
+        };
+        spi_reg->txdata = *(buf += SPI_FIFO_CTL_SHIFT);
+    }
+
+    while (len-- > 0) {
+        while (sunxi_spi_query_txfifo(spi) >= MAX_FIFU) {
+            udelay(10);
+        };
+        write8((virtual_addr_t) &spi_reg->txdata, *buf++);
+    }
+}
+
+static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint8_t ret = 0x0;
+
+    memset(buf, 0x0, len);
+
+    spi_reg->fifo_ctl |= SPI_FIFO_CTL_RX_DRQEN;
+    ret = sunxi_dma_start(spi_dma_handler, (uint32_t) &spi_reg->rxdata, (uint32_t) buf, len);
+    if (ret) {
+        printk_warning("SPI: DMA transfer failed\n");
+    }
+
+    while (sunxi_dma_querystatus(spi_dma_handler))
+        ;
+}
 
 static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
     sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
@@ -134,62 +205,21 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 c
 
     spi_reg->clk_ctl = reg;
 
+    spi->spi_clk.spi_clock_freq = freq;
+
     return freq;
 }
 
-static int spi_clk_init(sunxi_spi_t *spi, uint32_t mod_clk) {
-    uint32_t rval;
+static int sunxi_spi_dma_init(sunxi_spi_t *spi) {
+    sunxi_dma_init(spi->dma_handle);
 
-    /* we use PERIPH_200M clock source */
-    if (spi->parent_clk_reg.parent_clk == 20000000000) {
-        rval = (1U << 31) | (0x2 << 24) | (0 << spi->spi_clk.spi_clock_factor_n_offset) |
-               0; /* gate enable | use PERIPH_200M */
-    } else {
-        /* we use PERIPH_300M clock source */
-        rval = (1U << 31) | (0x1 << 24) | (0 << spi->spi_clk.spi_clock_factor_n_offset) |
-               0; /* gate enable | use PERIPH_300M */
-    }
-    printk_trace("SPI: parent_clk=%dMHz\n", spi->parent_clk_reg.parent_clk);
+    spi_dma_handler = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
 
-    write32(spi->spi_clk.spi_clock_cfg_base, rval);
-
-    return 0;
-}
-
-static void spi_reset_fifo(sunxi_spi_t *spi) {
-    uint32_t val = read32(spi->base + SPI_FCR);
-
-    val |= (SPI_FCR_RX_RST_MSK | SPI_FCR_TX_RST_MSK);
-    /* Set the trigger level of RxFIFO/TxFIFO. */
-    val &= ~(SPI_FCR_RX_LEVEL_MSK | SPI_FCR_TX_LEVEL_MSK |
-             SPI_FCR_RX_DRQEN_MSK);
-    val |= (0x20 << SPI_FCR_TX_LEVEL_POS) |
-           (0x20
-            << SPI_FCR_RX_LEVEL_POS);// IRQ trigger at 32 bytes (half fifo)
-    write32(spi->base + SPI_FCR, val);
-}
-
-inline static uint32_t spi_query_txfifo(sunxi_spi_t *spi) {
-    uint32_t val = read32(spi->base + SPI_FSR) & SPI_FSR_TF_CNT_MSK;
-
-    val >>= SPI_FSR_TF_CNT_POS;
-    return 0;
-}
-
-inline static uint32_t spi_query_rxfifo(sunxi_spi_t *spi) {
-    uint32_t val = read32(spi->base + SPI_FSR) & SPI_FSR_RF_CNT_MSK;
-
-    val >>= SPI_FSR_RF_CNT_POS;
-    return val;
-}
-
-static int spi_dma_cfg(void) {
-    spi_rx_dma_hd = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
-
-    if ((spi_rx_dma_hd == 0)) {
-        printk_error("SPI: DMA request failed\n");
+    if (spi_dma_handler == 0) {
+        printk_error("SPI: DMA channel request failed\n");
         return -1;
     }
+
     /* config spi rx dma */
     spi_rx_dma.loop_mode = 0;
     spi_rx_dma.wait_cyc = 0x8;
@@ -198,40 +228,24 @@ static int spi_dma_cfg(void) {
     spi_rx_dma.channel_cfg.src_drq_type = DMAC_CFG_TYPE_SPI0; /* SPI0 */
     spi_rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE;
     spi_rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST;
-    spi_rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_16BIT;
-    spi_rx_dma.channel_cfg.reserved0 = 0;
+    spi_rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT;
 
     spi_rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM; /* DRAM */
-    spi_rx_dma.channel_cfg.dst_addr_mode =
-            DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;
+    spi_rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;
     spi_rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST;
-    spi_rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_16BIT;
-    spi_rx_dma.channel_cfg.reserved1 = 0;
+    spi_rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT;
+
+    /* init DMA settings */
+    sunxi_dma_install_int(spi_dma_handler, NULL);
+    sunxi_dma_enable_int(spi_dma_handler);
+    sunxi_dma_setting(spi_dma_handler, &spi_rx_dma);
 
     return 0;
 }
 
-static int spi_dma_init(void) {
-    if (spi_dma_cfg()) {
-        return -1;
-    }
-    sunxi_dma_setting(spi_rx_dma_hd, &spi_rx_dma);
-
+static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
+    sunxi_dma_disable_int(spi_dma_handler);
     return 0;
-}
-
-static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
-    /* Config SPI pins */
-    sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
-    sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
-    sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
-    sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
-    sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
-    sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
-
-    /* Floating by default */
-    sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
-    sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
 }
 
 static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
@@ -261,12 +275,43 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
     return sclk_freq;
 }
 
-int sunxi_spi_init(sunxi_spi_t *spi) {
-    uint32_t val, freq;
+static void sunxi_spi_clk_init(sunxi_spi_t *spi) {
+    uint32_t div, source_clk, mod_clk, n, m;
+    uint32_t reg_val;
 
-    sunxi_spi_gpio_init(spi);
+    /* close gate */
+    clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-    spi_clk_init(spi, spi->parent_clk_reg.parent_clk);
+    source_clk = spi->parent_clk_reg.parent_clk;
+    mod_clk = spi->clk_rate;
+
+    div = (source_clk + mod_clk - 1) / mod_clk;
+    div = div == 0 ? 1 : div;
+    if (div > 128) {
+        m = 1;
+        n = 0;
+        return;
+    } else if (div > 64) {
+        n = 3;
+        m = div >> 3;
+    } else if (div > 32) {
+        n = 2;
+        m = div >> 2;
+    } else if (div > 16) {
+        n = 1;
+        m = div >> 1;
+    } else {
+        n = 0;
+        m = div;
+    }
+
+    /* set m factor, factor_m = m -1 */
+    m -= 1;
+
+    reg_val = BIT(31) | (spi->spi_clk.spi_clock_source << 24) | (n << spi->spi_clk.spi_clock_factor_n_offset) | m;
+
+    /* enable spi clock */
+    write32(spi->spi_clk.spi_clock_cfg_base, reg_val);
 
     /* SPI Reset */
     clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
@@ -276,122 +321,151 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
     /* SPI gating */
     setbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-    freq = sunxi_spi_set_clk(spi, spi->clk_rate, spi->parent_clk_reg.parent_clk, 1);
-
-    /* Enable spi0 and do a soft reset */
-    val = SPI_GCR_SRST_MSK | SPI_GCR_TPEN_MSK | SPI_GCR_MODE_MSK |
-          SPI_GCR_EN_MSK;
-    write32(spi->base + SPI_GCR, val);
-    while (read32(spi->base + SPI_GCR) & SPI_GCR_SRST_MSK)
-        ;// Wait for reset bit to clear
-
-    /* set mode 0, software slave select, discard hash burst, SDC */
-    val = read32(spi->base + SPI_TCR);
-    val &= ~(0x3 << 0);//  CPOL, CPHA = 0
-    val &= ~(SPI_TCR_SDM_MSK | SPI_TCR_SDC_MSK);
-    val |= SPI_TCR_SPOL_MSK | SPI_TCR_DHB_MSK;
-    if (freq >= 80000000)
-        val |= SPI_TCR_SDC_MSK;// Set SDC bit when above 60MHz
-    else if ((freq <= 24000000))
-        val |= SPI_TCR_SDM_MSK;// Set SDM bit when below 24MHz
-    write32(spi->base + SPI_TCR, val);
-
-    spi_reset_fifo(spi);
-    spi_dma_init();
-
     sunxi_spi_get_clk(spi);
-
-    return 0;
 }
 
-void sunxi_spi_disable(sunxi_spi_t *spi) {
+static void sunxi_spi_clk_deinit(sunxi_spi_t *spi) {
+    /* SPI Assert */
+    clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
+
+    /* SPI Close gating */
+    clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 }
 
-/*
- *	txlen: transmit length
- * rxlen: receive length
- * stxlen: single transmit length (for sending opcode + address/param as single tx when quad mode is on)
- * dummylen: dummy bytes length
- */
-static void spi_set_counters(sunxi_spi_t *spi, int txlen, int rxlen, int stxlen,
-                             int dummylen) {
-    uint32_t val;
+static void sunxi_spi_config_transer_control(sunxi_spi_t *spi) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-    val = read32(spi->base + SPI_MBC);
-    val &= ~SPI_MBC_CNT_MSK;
-    val |= (SPI_MBC_CNT_MSK & (txlen + rxlen + dummylen));
-    write32(spi->base + SPI_MBC, val);
+    uint32_t reg_val = spi_reg->tc;
 
-    val = read32(spi->base + SPI_MTC);
-    val &= ~SPI_MTC_CNT_MSK;
-    val |= (SPI_MTC_CNT_MSK & txlen);
-    write32(spi->base + SPI_MTC, val);
-
-    val = read32(spi->base + SPI_BCC);
-    val &= ~SPI_BCC_STC_MSK;
-    val |= (SPI_BCC_STC_MSK & stxlen);
-    val &= ~SPI_BCC_DUM_MSK;
-    val |= (dummylen << SPI_BCC_DUM_POS);
-    write32(spi->base + SPI_BCC, val);
-}
-
-static void spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
-    while ((len -= 4 % 4) == 0) {
-        while (spi_query_txfifo(spi) > 60) {
-            udelay(100);
-        };
-        write32(spi->base + SPI_TXD, *(buf += 4));
+    if (spi->spi_clk.spi_clock_freq > 100000000) {
+        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
+        reg_val |= SPI_TC_SDC;
+    } else if (spi->spi_clk.spi_clock_freq <= 24000000) {
+        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
+        reg_val |= SPI_TC_SDM;
+    } else {
+        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
     }
+    reg_val |= SPI_TC_DHB | SPI_TC_SS_LEVEL | SPI_TC_SPOL;
 
-    while (len-- > 0) {
-        while (spi_query_txfifo(spi) > 63) {
-            udelay(100);
-        };
-        write8(spi->base + SPI_TXD, *buf++);
-    }
+    spi_reg->tc = reg_val;
 }
 
-static uint32_t spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
-    // Wait for data
-    while ((len -= 4 % 4) == 0) {
-        while (spi_query_rxfifo(spi) < 4) {
-        };
-        *(buf += 4) = read32(spi->base + SPI_RXD);
-    }
+static void sunxi_spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-    while (len-- > 0) {
-        while (spi_query_rxfifo(spi) < 1) {
-        };
-        *buf++ = read8(spi->base + SPI_RXD);
-    }
-    return len;
-}
-
-static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
-    uint32_t bcc;
-    bcc = read32(spi->base + SPI_BCC);
-    bcc &= ~(SPI_BCC_QUAD_IO | SPI_BCC_DUAL_RX);
+    spi_reg->bcc &= ~(SPI_BCC_QUAD_MODE | SPI_BCC_DUAL_MODE);
     switch (mode) {
         case SPI_IO_DUAL_RX:
-            bcc |= SPI_BCC_DUAL_RX;
+            spi_reg->bcc |= SPI_BCC_DUAL_MODE;
             break;
         case SPI_IO_QUAD_RX:
         case SPI_IO_QUAD_IO:
-            bcc |= SPI_BCC_QUAD_IO;
+            spi_reg->bcc |= SPI_BCC_QUAD_MODE;
             break;
         case SPI_IO_SINGLE:
         default:
             break;
     }
-    write32(spi->base + SPI_BCC, bcc);
+}
+
+static void sunxi_spi_set_counters(sunxi_spi_t *spi, int txlen, int rxlen, int stxlen, int dummylen) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    uint32_t val;
+
+    val = spi_reg->burst_cnt;
+    val &= ~SPI_BC_CNT_MASK;
+    val |= (SPI_BC_CNT_MASK & (txlen + rxlen + dummylen));
+    spi_reg->burst_cnt = val;
+
+    val = spi_reg->transmit_cnt;
+    val &= ~SPI_TC_CNT_MASK;
+    val |= (SPI_TC_CNT_MASK & txlen);
+    spi_reg->transmit_cnt = val;
+
+    val = spi_reg->bcc;
+    val &= ~SPI_BCC_STC_MASK;
+    val |= (SPI_BCC_STC_MASK & stxlen);
+    val &= ~SPI_BCC_DBC_MASK;
+    val |= (dummylen << SPI_BCC_DBC_POS);
+    spi_reg->bcc = val;
+}
+
+static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
+    sunxi_spi_soft_reset(spi);
+
+    sunxi_spi_enable_bus(spi);
+
+    sunxi_spi_set_cs(spi, 0);
+
+    sunxi_spi_set_master(spi);
+
+    sunxi_spi_set_clk(spi, spi->clk_rate, spi->parent_clk_reg.parent_clk, 1);
+
+    sunxi_spi_config_transer_control(spi);
+
+    sunxi_spi_set_ss_level(spi, 1);
+
+    sunxi_spi_enable_transmit_pause(spi);
+
+    sunxi_spi_set_ss_owner(spi, 0);
+
+    sunxi_spi_reset_fifo(spi);
+}
+
+static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
+    /* Config SPI pins */
+    sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
+    sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
+    sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
+    sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
+    sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
+    sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
+
+    /* Floating by default */
+    sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
+    sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
+}
+
+int sunxi_spi_init(sunxi_spi_t *spi) {
+    /* if set dma handle, we using dma mode */
+    if (spi->dma_handle != NULL) {
+        sunxi_spi_dma_init(spi);
+    }
+
+    sunxi_spi_gpio_init(spi);
+
+    sunxi_spi_clk_init(spi);
+
+    sunxi_spi_bus_init(spi);
+
+    return 0;
+}
+
+void sunxi_spi_disable(sunxi_spi_t *spi) {
+    sunxi_spi_disable_bus(spi);
+    sunxi_spi_dma_deinit(spi);
+    sunxi_spi_clk_deinit(spi);
+}
+
+int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk) {
+    spi->clk_rate = clk;
+    sunxi_spi_clk_init(spi);
+    sunxi_spi_bus_init(spi);
+    sunxi_spi_config_transer_control(spi);
+    return 0;
 }
 
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
-    uint32_t stxlen, fcr;
     sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    //printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
+    uint32_t stxlen, fcr;
 
-    spi_set_io_mode(spi, mode);
+    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
+
+    sunxi_spi_disable_irq(spi, SPI_INT_STA_PENDING_BIT);
+    sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT);
+
+    sunxi_spi_set_io_mode(spi, mode);
 
     switch (mode) {
         case SPI_IO_QUAD_IO:
@@ -407,38 +481,42 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
             break;
     };
 
-    // Full size of transfer, controller will wait for TX FIFO to be filled if txlen > 0
-    spi_set_counters(spi, txlen, rxlen, stxlen, 0);
-    spi_reset_fifo(spi);
-    write32(spi->base + SPI_ISR, 0);// Clear ISR
-
-    write32(spi->base + SPI_TCR, read32(spi->base + SPI_TCR) | (1 << 31));// Start exchange when data in FIFO
+    sunxi_spi_set_counters(spi, txlen, rxlen, stxlen, 0);
+    sunxi_spi_reset_fifo(spi);
+    sunxi_spi_start_xfer(spi);
 
     if (txbuf && txlen) {
-        spi_write_tx_fifo(spi, txbuf, txlen);
+        sunxi_spi_write_tx_fifo(spi, txbuf, txlen);
     }
 
-    fcr = read32(spi->base + SPI_FCR);
-
-    // Disable DMA request by default
-    write32(spi->base + SPI_FCR, (fcr & ~SPI_FCR_RX_DRQEN_MSK));
-
-    // Setup DMA for RX
     if (rxbuf && rxlen) {
         if (rxlen > 64) {
-            write32(spi->base + SPI_FCR, (fcr | SPI_FCR_RX_DRQEN_MSK));// Enable RX FIFO DMA request
-            if (sunxi_dma_start(spi_rx_dma_hd, spi->base + SPI_RXD, (u32) rxbuf, rxlen) != 0) {
-                printk_error("SPI: DMA transfer failed\n");
-                return -1;
-            }
-            while (sunxi_dma_querystatus(spi_rx_dma_hd))
-                ;
+            sunxi_spi_read_by_dma(spi, rxbuf, rxlen);
         } else {
-            spi_read_rx_fifo(spi, rxbuf, rxlen);
+            sunxi_spi_read_rx_fifo(spi, rxbuf, rxlen);
         }
     }
 
-    //printk_trace("SPI: ISR=0x%x\n", read32(spi->base + SPI_ISR));
+    if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) {
+        printk_warning("SPI: int sta err\n");
+    }
 
-    return txlen + rxlen;
+    while (!(sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_TC))
+        ;
+
+    sunxi_spi_dma_disable(spi);
+
+    if (spi_reg->burst_cnt == 0) {
+        if (spi_reg->tc & SPI_TC_XCH) {
+            printk_warning("SPI: XCH Control failed\n");
+        }
+    } else {
+        printk_warning("SPI: MBC error\n");
+    }
+
+    sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT);
+
+    printk_trace("SPI: ISR=0x%x\n", spi_reg->int_sta);
+
+    return rxlen + txlen;
 }
