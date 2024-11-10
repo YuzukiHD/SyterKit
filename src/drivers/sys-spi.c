@@ -1,24 +1,4 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-
-#define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
-
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <types.h>
-
-#include <timer.h>
-
-#include <log.h>
-
-#include <sys-spi.h>
-
-/* SPDX-License-Identifier: Apache-2.0 */
-
-#define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
-
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -119,28 +99,18 @@ enum {
     SPI_FSR_TF_CNT_MSK = (0xff << SPI_FSR_TF_CNT_POS),
 };
 
-static dma_set_t spi_rx_dma;
+static sunxi_dma_set_t spi_rx_dma;
 static u32 spi_rx_dma_hd;
 
-/* SPI Clock Control Register Bit Fields & Masks,default:0x0000_0002 */
-#define SPI_CLK_CTL_CDR2_MASK \
-    0xff /* Clock Divide Rate 2,master mode only : SPI_CLK = AHB_CLK/(2*(n+1)) */
-#define SPI_CLK_CTL_CDR2(div) (((div) &SPI_CLK_CTL_CDR2_MASK) << 0)
-#define SPI_CLK_CTL_CDR1_MASK \
-    0xf /* Clock Divide Rate 1,master mode only : SPI_CLK = AHB_CLK/2^n */
-#define SPI_CLK_CTL_CDR1(div) (((div) &SPI_CLK_CTL_CDR1_MASK) << 8)
-#define SPI_CLK_CTL_DRS \
-    (0x1 << 12) /* Divide rate select,default,0:rate 1;1:rate 2 */
+static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-#define SPI_MOD_CLK 300000000
-
-static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
     uint32_t reg = 0;
     uint32_t div = 1;
     uint32_t src_clk = mclk;
-    uint32_t freq = SPI_MOD_CLK;
+    uint32_t freq = spi->parent_clk_reg.parent_clk;
 
-    if (spi_clk != SPI_MOD_CLK) {
+    if (spi_clk != spi->parent_clk_reg.parent_clk) {
         /* CDR2 */
         if (cdr2) {
             div = mclk / (spi_clk * 2) - 1;
@@ -162,7 +132,7 @@ static uint32_t spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
     printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
                  spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
-    write32(spi->base + SPI_CCR, reg);
+    spi_reg->clk_ctl = reg;
 
     return freq;
 }
@@ -171,21 +141,17 @@ static int spi_clk_init(sunxi_spi_t *spi, uint32_t mod_clk) {
     uint32_t rval;
 
     /* we use PERIPH_200M clock source */
-    if (SPI_MOD_CLK == 20000000000) {
-        rval = (1U << 31) | (0x2 << 24) | (0 << 8) |
+    if (spi->parent_clk_reg.parent_clk == 20000000000) {
+        rval = (1U << 31) | (0x2 << 24) | (0 << spi->spi_clk.spi_clock_factor_n_offset) |
                0; /* gate enable | use PERIPH_200M */
     } else {
         /* we use PERIPH_300M clock source */
-        rval = (1U << 31) | (0x1 << 24) | (0 << 8) |
+        rval = (1U << 31) | (0x1 << 24) | (0 << spi->spi_clk.spi_clock_factor_n_offset) |
                0; /* gate enable | use PERIPH_300M */
     }
-    printk_trace("SPI: parent_clk=%dMHz\n", SPI_MOD_CLK);
+    printk_trace("SPI: parent_clk=%dMHz\n", spi->parent_clk_reg.parent_clk);
 
-    if (spi->clk_reg.ccu_base != 0) {
-        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_clk_reg_offest, rval);
-    } else {
-        write32(CCU_BASE + CCU_SPI0_CLK_REG, rval);
-    }
+    write32(spi->spi_clk.spi_clock_cfg_base, rval);
 
     return 0;
 }
@@ -218,7 +184,7 @@ inline static uint32_t spi_query_rxfifo(sunxi_spi_t *spi) {
 }
 
 static int spi_dma_cfg(void) {
-    spi_rx_dma_hd = dma_request(DMAC_DMATYPE_NORMAL);
+    spi_rx_dma_hd = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
 
     if ((spi_rx_dma_hd == 0)) {
         printk_error("SPI: DMA request failed\n");
@@ -249,7 +215,7 @@ static int spi_dma_init(void) {
     if (spi_dma_cfg()) {
         return -1;
     }
-    dma_setting(spi_rx_dma_hd, &spi_rx_dma);
+    sunxi_dma_setting(spi_rx_dma_hd, &spi_rx_dma);
 
     return 0;
 }
@@ -268,48 +234,49 @@ static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
     sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
 }
 
+static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
+    u32 reg_val = 0;
+    u32 src = 0, clk = 0, sclk_freq = 0;
+    u32 n, m;
+
+    reg_val = read32(spi->spi_clk.spi_clock_cfg_base);
+    src = (reg_val >> 24) & 0x7;
+    n = (reg_val >> spi->spi_clk.spi_clock_factor_n_offset) & 0x3;
+    m = ((reg_val >> 0) & 0xf) + 1;
+
+    switch (src) {
+        case 0:
+            clk = 24000000;
+            break;
+        case 1:
+        case 2:
+            clk = spi->parent_clk_reg.parent_clk;
+            break;
+        default:
+            clk = 0;
+            break;
+    }
+    sclk_freq = clk / (1 << n) / m;
+    printk_trace("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
+    return sclk_freq;
+}
 
 int sunxi_spi_init(sunxi_spi_t *spi) {
     uint32_t val, freq;
 
     sunxi_spi_gpio_init(spi);
 
-    /* check if defined clk regs */
-    if (spi->clk_reg.ccu_base != 0) {
-        /* Deassert spi reset */
-        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
-        val |= (1 << (16 + spi->id));
-        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
+    spi_clk_init(spi, spi->parent_clk_reg.parent_clk);
 
-        /* Open the spi gate */
-        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
-        val |= (1 << 31);
-        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
+    /* SPI Reset */
+    clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
+    udelay(1);
+    setbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
 
-        /* Open the spi bus gate */
-        val = read32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset);
-        val |= (1 << spi->id);
-        write32(spi->clk_reg.ccu_base + spi->clk_reg.spi_bgr_reg_offset, val);
-    } else {
-        /* Deassert spi reset */
-        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-        val |= (1 << (16 + spi->id));
-        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
+    /* SPI gating */
+    setbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-        /* Open the spi gate */
-        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-        val |= (1 << 31);
-        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
-
-        /* Open the spi bus gate */
-        val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-        val |= (1 << spi->id);
-        write32(CCU_BASE + CCU_SPI_BGR_REG, val);
-    }
-
-    spi_clk_init(spi, SPI_MOD_CLK);
-
-    freq = spi_set_clk(spi, spi->clk_rate, SPI_MOD_CLK, 1);
+    freq = sunxi_spi_set_clk(spi, spi->clk_rate, spi->parent_clk_reg.parent_clk, 1);
 
     /* Enable spi0 and do a soft reset */
     val = SPI_GCR_SRST_MSK | SPI_GCR_TPEN_MSK | SPI_GCR_MODE_MSK |
@@ -332,26 +299,9 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
     spi_reset_fifo(spi);
     spi_dma_init();
 
+    sunxi_spi_get_clk(spi);
+
     return 0;
-}
-
-void sunxi_spi_disable(sunxi_spi_t *spi) {
-    uint32_t val;
-
-    /* soft-reset the spi0 controller */
-    val = read32(spi->base + SPI_GCR);
-    val |= SPI_GCR_SRST_MSK;
-    write32(spi->base + SPI_GCR, val);
-
-    /* close the spi0 bus gate */
-    val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val &= ~((1 << spi->id) | (1 << 31));
-    write32(CCU_BASE + CCU_SPI_BGR_REG, val);
-
-    /* Assert spi0 reset */
-    val = read32(CCU_BASE + CCU_SPI_BGR_REG);
-    val &= ~(1 << (16 + spi->id));
-    write32(CCU_BASE + CCU_SPI_BGR_REG, val);
 }
 
 /*
@@ -435,7 +385,8 @@ static void spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
 
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
     uint32_t stxlen, fcr;
-    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
+    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+    //printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
 
     spi_set_io_mode(spi, mode);
 
@@ -473,18 +424,18 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
     if (rxbuf && rxlen) {
         if (rxlen > 64) {
             write32(spi->base + SPI_FCR, (fcr | SPI_FCR_RX_DRQEN_MSK));// Enable RX FIFO DMA request
-            if (dma_start(spi_rx_dma_hd, spi->base + SPI_RXD, (u32) rxbuf, rxlen) != 0) {
+            if (sunxi_dma_start(spi_rx_dma_hd, spi->base + SPI_RXD, (u32) rxbuf, rxlen) != 0) {
                 printk_error("SPI: DMA transfer failed\n");
                 return -1;
             }
-            while (dma_querystatus(spi_rx_dma_hd))
+            while (sunxi_dma_querystatus(spi_rx_dma_hd))
                 ;
         } else {
             spi_read_rx_fifo(spi, rxbuf, rxlen);
         }
     }
 
-    printk_trace("SPI: ISR=0x%x\n", read32(spi->base + SPI_ISR));
+    //printk_trace("SPI: ISR=0x%x\n", read32(spi->base + SPI_ISR));
 
     return txlen + rxlen;
 }

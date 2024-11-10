@@ -191,7 +191,7 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
     write32(addr, val);
 
     printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n",
-                 pin_num, addr, read32(addr), v);
+                 pin, addr, read32(addr), v);
 }
 
 /**
@@ -215,5 +215,5 @@ void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv) {
     write32(addr, val);
 
     printk_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n",
-                 pin_num, addr, read32(addr), drv);
+                 pin, addr, read32(addr), drv);
 }

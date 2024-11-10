@@ -20,7 +20,7 @@
 extern "C" {
 #endif// __cplusplus
 
-const int SFDP_MAX_NPH(6);
+#define SFDP_MAX_NPH (6)
 
 typedef struct sfdp_header {
     uint8_t sign[4];
@@ -46,9 +46,9 @@ typedef struct sfdp_basic_table {
 } sfdp_basic_table_t;
 
 typedef struct sfdp {
-    sfdp_header_t header{};
-    sfdp_parameter_header_t parameter_header[SFDP_MAX_NPH]{};
-    sfdp_basic_table_t basic_table{};
+    sfdp_header_t header;
+    sfdp_parameter_header_t parameter_header[SFDP_MAX_NPH];
+    sfdp_basic_table_t basic_table;
 } sfdp_t;
 
 typedef struct spi_nor_info {
@@ -68,13 +68,6 @@ typedef struct spi_nor_info {
     uint8_t opcode_erase_256k;
 } spi_nor_info_t;
 
-typedef struct spi_nor_pdata {
-    spi_nor_info_t info;
-    uint32_t swap_buf{};
-    uint32_t swap_len{};
-    uint32_t cmd_len{};
-} spi_nor_pdata_t;
-
 enum SPI_NOR_OPS {
     NOR_OPCODE_SFDP = 0x5a,
     NOR_OPCODE_RDID = 0x9f,
@@ -89,6 +82,20 @@ enum SPI_NOR_OPS {
     NOR_OPCODE_ENTER_4B = 0xb7,
     NOR_OPCODE_EXIT_4B = 0xe9,
 };
+
+enum SPI_CMD_OPS {
+    SPI_CMD_END = 0x00,
+    SPI_CMD_INIT = 0x01,
+    SPI_CMD_SELECT = 0x02,
+    SPI_CMD_DESELECT = 0x03,
+    SPI_CMD_FAST = 0x04,
+    SPI_CMD_TXBUF = 0x05,
+    SPI_CMD_RXBUF = 0x06,
+    SPI_CMD_SPINOR_WAIT = 0x07,
+    SPI_CMD_SPINAND_WAIT = 0x08,
+};
+
+int spi_nor_detect(sunxi_spi_t *spi);
 
 #ifdef __cplusplus
 }

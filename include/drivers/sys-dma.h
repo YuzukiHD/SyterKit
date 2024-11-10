@@ -233,7 +233,7 @@ int sunxi_dma_free_int(uint32_t dma_fd);
  * @param dst_addr Pointer to the destination address.
  * @return 0 if successful, or an error code if failed.
  */
-int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr);
+int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len);
 
 #ifdef __cplusplus
 }

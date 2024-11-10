@@ -11,7 +11,9 @@
 #include <sys-clk.h>
 #include <sys-dma.h>
 #include <sys-dram.h>
+#include <sys-gpio.h>
 #include <sys-i2c.h>
+#include <sys-spi-nor.h>
 
 #include <common.h>
 
@@ -23,6 +25,7 @@ extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
 extern sunxi_dma_t sunxi_dma;
 extern sunxi_i2c_t sunxi_i2c0;
+extern sunxi_spi_t sunxi_spi0;
 
 msh_declare_command(helloworld);
 
@@ -54,15 +57,9 @@ int main(void) {
 
     uint64_t dram_size = sunxi_dram_init(&dram_para);
 
-    sunxi_dma_init(&sunxi_dma);
+    sunxi_spi_init(&sunxi_spi0);
 
-    sunxi_dma_test((uint32_t *) 0x81008000, (uint32_t *) 0x80008000);
-
-    sunxi_i2c_init(&sunxi_i2c0);
-
-    uint8_t axp_val = 0;
-
-    sunxi_i2c_read(&sunxi_i2c0, 0x37, 0x00, &axp_val);
+    spi_nor_detect(&sunxi_spi0);
 
     syterkit_shell_attach(commands);
 

@@ -28,8 +28,8 @@ sunxi_serial_t uart_dbg = {
         .stop = UART_STOP_BIT_0,
         .parity = UART_PARITY_NO,
         .gpio_pin = {
-                .gpio_tx = {GPIO_PIN(GPIO_PORTL, 4), GPIO_PERIPH_MUX3},
-                .gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX3},
+                .gpio_tx = {GPIO_PIN(GPIO_PORTD, 22), GPIO_PERIPH_MUX3},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTD, 23), GPIO_PERIPH_MUX3},
         },
         .uart_clk = {
                 .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
@@ -57,7 +57,7 @@ sunxi_dma_t sunxi_dma = {
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,
         .id = 0,
-        .clk_rate = 75 * 1000 * 1000,
+        .clk_rate = 25 * 1000 * 1000,
         .gpio = {
                 .gpio_cs = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
                 .gpio_sck = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
@@ -66,12 +66,17 @@ sunxi_spi_t sunxi_spi0 = {
                 .gpio_wp = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
                 .gpio_hold = {GPIO_PIN(GPIO_PORTC, 7), GPIO_PERIPH_MUX3},
         },
-        .clk_reg = {
-                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
-                .rst_reg_offset = BUS_Reset0_REG_HRESETN_SGDMA_SW_OFFSET,
-                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
-                .gate_reg_offset = BUS_CLK_GATING0_REG_SGDMA_HCLK_EN_OFFSET,
-                .parent_clk = 307000000,
+        .spi_clk = {
+                .spi_clock_cfg_base = SUNXI_CCU_APP_BASE + SPI_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_REG_SPI_SCLK_DIV2_OFFSET,
+                .spi_clock_source = SPI_CLK_REG_SPI_SCLK_SEL_PERI_307M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset1_REG,
+                .rst_reg_offset = BUS_Reset1_REG_HRESETN_SPI_SW_OFFSET,
+                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG,
+                .gate_reg_offset = BUS_CLK_GATING1_REG_SPI_HCLK_EN_OFFSET,
+                .parent_clk = 307200000,
         },
         .dma_handle = &sunxi_dma,
 };

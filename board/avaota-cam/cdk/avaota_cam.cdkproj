@@ -433,10 +433,10 @@
       <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-spi-nand.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-spi-nand.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-spi-nor.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-spi-nor.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <VirtualDirectory Name="mmc">
@@ -486,6 +486,9 @@
           </File>
         </VirtualDirectory>
       </VirtualDirectory>
+      <File Name="../../../src/drivers/sys-spis.c" ExcludeProjConfig="BuildSet">
+        <FileOption/>
+      </File>
     </VirtualDirectory>
     <VirtualDirectory Name="log">
       <File Name="../../../src/log/log.c">
@@ -731,7 +734,7 @@
   </BuildConfigs>
   <DebugSessions>
     <watchExpressions/>
-    <memoryExpressions>0x0;;;</memoryExpressions>
+    <memoryExpressions>;;;</memoryExpressions>
     <statistics>;;32;;MHZ;;up</statistics>
     <peripheralTabs/>
     <WatchDisplayFormat>1</WatchDisplayFormat>

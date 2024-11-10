@@ -53,6 +53,7 @@ typedef enum {
     SPI_NAND_MFR_MICRON = 0x2c,
     SPI_NAND_MFR_FORESEE = 0xcd,
     SPI_NAND_MFR_ETRON = 0xd5,
+    SPI_NAND_MFR_XTX = 0x0b,
 } spi_mfr_id;
 
 static const spi_nand_info_t spi_nand_infos[] = {
@@ -136,6 +137,10 @@ static const spi_nand_info_t spi_nand_infos[] = {
 
         /* FORESEE */
         {"FS35SQA001G", {.mfr = SPI_NAND_MFR_FORESEE, .dev = 0x7171, 2}, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+        {"FS35ND01G", {.mfr = SPI_NAND_MFR_FORESEE, .dev = 0xb1cd, 2}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
+
+        /* XTX */
+        {"XT26G01C", {.mfr = SPI_NAND_MFR_XTX, .dev = 0x11, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
 };
 
 static spi_nand_info_t info; /* Static variable to store SPI NAND information */
@@ -150,16 +155,16 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     spi_nand_info_t *info_table; /* Pointer to the SPI NAND information table */
     spi_nand_id_t id;            /* Structure to store the SPI NAND ID */
     uint8_t tx[2];               /* Transmit buffer */
-    uint8_t rx[4], *rxp;         /* Receive buffer and pointer */
+    uint8_t rx[5], *rxp;         /* Receive buffer and pointer */
     int i, r;                    /* Loop counter and return value */
 
     tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
     tx[1] = 0x0;
-    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 4); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 5); /* Perform SPI transfer */
     if (r < 0)
         return r;
 
-    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3]);
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
     /* Check if the first byte of the received data is 0xff */
     if (rx[0] == 0xff) {
@@ -193,11 +198,11 @@ static int spi_nand_info(sunxi_spi_t *spi) {
     }
 
     tx[0] = OPCODE_READ_ID;                                   /* Command to read SPI NAND ID */
-    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 4); /* Perform SPI transfer */
+    r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 5); /* Perform SPI transfer */
     if (r < 0)
         return r;
 
-    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3]);
+    printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
     /* Check if the first byte of the received data is 0xff */
     if (rx[0] == 0xff) {
@@ -328,22 +333,18 @@ static void spi_nand_wait_while_busy(sunxi_spi_t *spi) {
 int spi_nand_detect(sunxi_spi_t *spi) {
     uint8_t val; /* Configuration value */
 
-    // spi_nand_reset(spi);
+    spi_nand_reset(spi);
     spi_nand_wait_while_busy(spi);
 
     if (spi_nand_info(spi) == 0) {
-        if ((spi_nand_get_config(spi, CONFIG_ADDR_PROTECT, &val) ==
-             0) &&
-            (val != 0x0)) {
+        if ((spi_nand_get_config(spi, CONFIG_ADDR_PROTECT, &val) == 0) && (val != 0x0)) {
             spi_nand_set_config(spi, CONFIG_ADDR_PROTECT, 0x0);
             spi_nand_wait_while_busy(spi);
         }
 
         // Disable buffer mode on Winbond (enable continuous)
         if (info.id.mfr == (uint8_t) SPI_NAND_MFR_WINBOND) {
-            if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) ==
-                 0) &&
-                (val != 0x0)) {
+            if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && (val != 0x0)) {
                 val &= ~CONFIG_POS_BUF;
                 spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
                 spi_nand_wait_while_busy(spi);
@@ -352,9 +353,7 @@ int spi_nand_detect(sunxi_spi_t *spi) {
 
         if (info.id.mfr == (uint8_t) SPI_NAND_MFR_GIGADEVICE ||
             info.id.mfr == (uint8_t) SPI_NAND_MFR_FORESEE) {
-            if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) ==
-                 0) &&
-                !(val & 0x01)) {
+            if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
                 printk_debug("SPI-NAND: enable Quad mode\n");
                 val |= (1 << 0);
                 spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
