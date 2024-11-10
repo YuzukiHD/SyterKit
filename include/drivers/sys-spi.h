@@ -64,30 +64,57 @@ typedef struct {
 #define SPI_DEFAULT_CLK_GATE_OFFSET (0)
 
 /**
- * Initialize the Sunxi SPI controller with the specified configuration.
- *
- * @param spi Pointer to the Sunxi SPI controller structure.
- * @return 0 if successful, or an error code if failed.
+ * @brief Initializes the SPI interface.
+ * 
+ * This function initializes the SPI interface by configuring the GPIO pins, clock, bus, and counters.
+ * If a DMA handle is set, DMA mode is used for data transfers. The function calls several other SPI
+ * initialization functions to set up the SPI hardware.
+ * 
+ * @param spi Pointer to the SPI structure containing configuration and register information.
+ * 
+ * @return 0 on success.
  */
 int sunxi_spi_init(sunxi_spi_t *spi);
 
 /**
- * Disable the Sunxi SPI controller.
- *
- * @param spi Pointer to the Sunxi SPI controller structure.
+ * @brief Disables the SPI interface.
+ * 
+ * This function disables the SPI bus, deinitializes DMA (if used), and deinitializes the SPI clock. 
+ * It is called when the SPI interface is no longer needed or when performing cleanup operations.
+ * 
+ * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 void sunxi_spi_disable(sunxi_spi_t *spi);
 
 /**
- * Perform a SPI transfer using the Sunxi SPI controller.
- *
- * @param spi Pointer to the Sunxi SPI controller structure.
- * @param mode The SPI IO mode to use for the transfer (e.g., SPI_IO_MODE_SINGLE, SPI_IO_MODE_DUAL, SPI_IO_MODE_QUAD).
- * @param txbuf Pointer to the buffer containing the data to transmit.
- * @param txlen The length of the data to transmit in bytes.
- * @param rxbuf Pointer to the buffer to store the received data.
- * @param rxlen The length of the data to receive in bytes.
- * @return 0 if successful, or an error code if failed.
+ * @brief Updates the SPI clock rate.
+ * 
+ * This function updates the SPI clock rate and reinitializes the clock, bus, and transfer control settings 
+ * to apply the new clock rate.
+ * 
+ * @param spi Pointer to the SPI structure containing configuration and register information.
+ * @param clk The new clock rate to be set.
+ * 
+ * @return 0 on success.
+ */
+int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk);
+
+/**
+ * @brief Performs SPI data transfer.
+ * 
+ * This function initiates a data transfer on the SPI bus. The transfer can be either full-duplex (both 
+ * transmission and reception) or half-duplex (only transmission or reception). The transfer is done based 
+ * on the specified SPI I/O mode. The function handles both transmit and receive operations, including the 
+ * use of DMA if required for large transfers.
+ * 
+ * @param spi Pointer to the SPI structure containing configuration and register information.
+ * @param mode The I/O mode to use for the transfer (e.g., single, dual, quad).
+ * @param txbuf Pointer to the transmission buffer.
+ * @param txlen Length of the transmission data in bytes.
+ * @param rxbuf Pointer to the reception buffer.
+ * @param rxlen Length of the reception data in bytes.
+ * 
+ * @return The total number of bytes transferred (txlen + rxlen).
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
 

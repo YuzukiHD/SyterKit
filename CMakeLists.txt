@@ -233,6 +233,7 @@ include_directories(
     include/drivers/chips
     include/drivers/reg
     include/drivers/usb
+    include/drivers/mtd
     include/lib/fatfs
     include/lib/fdt
     include/lib/elf
