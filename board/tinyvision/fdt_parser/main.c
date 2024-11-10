@@ -9,18 +9,18 @@
 #include <config.h>
 #include <log.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 
 #include "sys-dram.h"
 #include "sys-sdcard.h"
 #include "sys-sid.h"
 #include "sys-spi.h"
 
+#include "fdt_wrapper.h"
 #include "ff.h"
 #include "libfdt.h"
-#include "fdt_wrapper.h"
 
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_DTB_LOADADDR (0x41008000)
@@ -34,8 +34,21 @@ extern dram_para_t dram_para;
 sunxi_serial_t uart_e907 = {
         .base = 0x02500C00,
         .id = 3,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET + 3,
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET + 3,
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+        },
 };
 
 extern sdhci_t sdhci0;
@@ -91,7 +104,7 @@ read_fail:
     fret = f_close(&file);
 
     printk_debug("FATFS: read in %ums at %.2fMB/S\n", time,
-           (f32) (total_read / time) / 1024.0f);
+                 (f32) (total_read / time) / 1024.0f);
 
 open_fail:
     return ret;
@@ -109,8 +122,8 @@ static int load_sdcard(image_info_t *image) {
                    CONFIG_SDMMC_SPEED_TEST_SIZE);
     test_time = time_ms() - start;
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-           (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
     start = time_ms();
 
@@ -123,7 +136,7 @@ static int load_sdcard(image_info_t *image) {
     }
 
     printk_info("FATFS: read %s addr=%x\n", image->filename,
-           (unsigned int) image->dest);
+                (unsigned int) image->dest);
     ret = fatfs_loadimage(image->filename, image->dest);
     if (ret)
         return ret;
@@ -140,7 +153,6 @@ static int load_sdcard(image_info_t *image) {
 
     return 0;
 }
-
 
 
 int main(void) {

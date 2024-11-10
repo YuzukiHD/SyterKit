@@ -304,6 +304,9 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
     return 0;
 }
 
+void sunxi_spi_disable(sunxi_spi_t *spi) {
+}
+
 /*
  *	txlen: transmit length
  * rxlen: receive length

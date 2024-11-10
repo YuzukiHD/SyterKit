@@ -59,7 +59,7 @@ int main(void) {
     /* Dump information about the system clocks. */
     sunxi_clk_dump();
 
-    sunxi_dma_init();
+    
 
     sunxi_dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000);
 
