@@ -193,7 +193,7 @@ static char *skip_spaces(char *str) {
     return str;
 }
 
-static int update_dtb_for_linux(uint64_t dram_size) {
+static int update_dtb_for_linux(uint32_t dram_size) {
     int ret = 0;
 
     /* Force image.of_dest to be a pointer to fdt_header structure */
@@ -362,7 +362,7 @@ int main(void) {
     sunxi_clk_init();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */

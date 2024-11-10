@@ -55,7 +55,7 @@ int main(void) {
 
     sunxi_clk_dump();
 
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
 
     sunxi_spi_init(&sunxi_spi0);
 
