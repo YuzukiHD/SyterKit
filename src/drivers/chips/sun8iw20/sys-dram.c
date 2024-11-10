@@ -1387,7 +1387,7 @@ static int init_DRAM(int type, dram_para_t *para) {
     return mem_size_mb;
 }
 
-uint64_t sunxi_dram_init(void *para) {
+uint32_t sunxi_dram_init(void *para) {
     dram_para_t *dram_para = (dram_para_t *) para;
     return init_DRAM(0, dram_para);
 };

@@ -210,7 +210,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     printk_debug("enable mmu ok\n");

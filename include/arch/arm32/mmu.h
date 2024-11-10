@@ -59,7 +59,7 @@ static inline void arm32_interrupt_disable(void) {
                          : "memory");
 }
 
-static inline void arm32_mmu_enable(const uint32_t dram_base, uint64_t dram_size) {
+static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size) {
     uint32_t mmu_base;
 
     /* use dram high 16M */

@@ -390,7 +390,7 @@ static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str
     return mac_address_str;
 }
 
-static int load_extlinux(image_info_t *image, uint64_t dram_size) {
+static int load_extlinux(image_info_t *image, uint32_t dram_size) {
     FATFS fs;
     FRESULT fret;
     ext_linux_data_t data = {0};
@@ -679,7 +679,7 @@ int main(void) {
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(NULL);
+    uint32_t dram_size = sunxi_dram_init(NULL);
 
     sunxi_clk_dump();
 

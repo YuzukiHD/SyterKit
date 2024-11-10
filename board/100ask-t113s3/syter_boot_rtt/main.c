@@ -219,7 +219,7 @@ int main(void) {
     sunxi_clk_init();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Initialize the small memory allocator. */
