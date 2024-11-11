@@ -44,7 +44,8 @@ typedef enum {
 } sunxi_sdhci_type_t;
 
 typedef struct sunxi_sdhci_desc {
-    uint32_t : 1, dic : 1,   /* disable interrupt on completion */
+    uint32_t : 1,
+            dic : 1,         /* disable interrupt on completion */
             last_desc : 1,   /* 1-this data buffer is the last buffer */
             first_desc : 1,  /* 1-data buffer is the first buffer, 0-data buffer contained in the next descriptor is 1st buffer */
             des_chain : 1,   /* 1-the 2nd address in the descriptor is the next descriptor address */
@@ -60,14 +61,10 @@ typedef struct sunxi_sdhci_desc {
 
 typedef struct sunxi_sdhci_host {
     sdhci_reg_t *reg;
-    uint32_t hclkrst;
-    uint32_t hclkbase;
-    uint32_t mclkbase;
     uint32_t commreg;
     uint8_t fatal_err;
     uint8_t timing_mode;
-    uint32_t mod_clk;
-    uint32_t clock;
+    //uint32_t clock;
 
     /* DMA DESC */
     sunxi_sdhci_desc_t *sdhci_desc;
@@ -96,13 +93,23 @@ typedef struct sunxi_sdhci_timing {
     uint8_t auto_timing;
 } sunxi_sdhci_timing_t;
 
+typedef struct sunxi_sdhci_clk {
+    uint32_t reg_base;
+    uint8_t factor_n;
+    uint8_t reg_factor_n_offset;
+    uint8_t factor_m;
+    uint8_t reg_factor_m_offset;
+    uint8_t clk_sel;
+    uint32_t parent_clk;
+} sunxi_sdhci_clk_t;
+
 typedef struct sunxi_sdhci {
     char *name;
     uint32_t reg_base;
     uint32_t id;
     uint32_t width;
-    uint32_t clk_ctrl_base;
-    uint32_t clk_base;
+    sunxi_clk_t clk_ctrl;
+    sunxi_sdhci_clk_t sdhci_clk;
     uint32_t max_clk;
     uint32_t dma_des_addr;
     sunxi_sdhci_type_t sdhci_mmc_type;
@@ -115,6 +122,9 @@ typedef struct sunxi_sdhci {
     sunxi_sdhci_host_t *mmc_host;
     sunxi_sdhci_timing_t *timing_data;
 } sunxi_sdhci_t;
+
+#define SDHCI_DEFAULT_CLK_RST_OFFSET(x) (16 + x)
+#define SDHCI_DEFAULT_CLK_GATE_OFFSET(x) (x)
 
 /**
  * @brief Initialize the SDHC controller.
