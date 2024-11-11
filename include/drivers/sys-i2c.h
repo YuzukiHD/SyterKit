@@ -131,8 +131,8 @@ struct sunxi_twi_reg {
 #define TWI_LCR_WMASK (TWI_CTL_STA | TWI_CTL_STP | TWI_CTL_INTFLG)
 
 /* CCU */
-#define TWI_DEFAULT_CLK_RST_OFFSET (16)
-#define TWI_DEFAULT_CLK_GATE_OFFSET (0)
+#define TWI_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
+#define TWI_DEFAULT_CLK_GATE_OFFSET(x) (x)
 
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev);
 
