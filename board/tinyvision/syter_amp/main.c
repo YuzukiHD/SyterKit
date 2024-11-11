@@ -69,9 +69,9 @@ sunxi_serial_t uart_e907 = {
         },
         .uart_clk = {
                 .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET + 3,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(3),
                 .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET + 3,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(3),
                 .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
         },
 };

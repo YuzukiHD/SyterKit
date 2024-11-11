@@ -67,9 +67,9 @@ sunxi_spi_t sunxi_spi0_lcd = {
         },
         .parent_clk_reg = {
                 .rst_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET + 0,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
                 .gate_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
                 .parent_clk = 300000000,
         },
         .dma_handle = &sunxi_dma,

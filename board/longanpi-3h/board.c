@@ -33,9 +33,9 @@ sunxi_serial_t uart_dbg = {
         },
         .uart_clk = {
                 .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
                 .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
                 .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
         },
 };
@@ -73,9 +73,9 @@ sunxi_spi_t sunxi_spi0 = {
         },
         .parent_clk_reg = {
                 .rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
-                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET + 0,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
                 .gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
-                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
                 .parent_clk = 300000000,
         },
         .dma_handle = &sunxi_dma,
@@ -110,9 +110,9 @@ sunxi_i2c_t i2c_pmu = {
         },
         .i2c_clk = {
                 .gate_reg_base = SUNXI_RTWI_BRG_REG,
-                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
                 .rst_reg_base = SUNXI_RTWI_BRG_REG,
-                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET + 0,
+                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
                 .parent_clk = 24000000,
         },
 };
