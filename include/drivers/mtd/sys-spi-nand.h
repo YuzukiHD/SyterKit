@@ -11,8 +11,8 @@
 #include <types.h>
 
 #include "sys-clk.h"
-#include "sys-spi.h"
 #include "sys-gpio.h"
+#include "sys-spi.h"
 
 #include "log.h"
 
@@ -20,22 +20,28 @@
 extern "C" {
 #endif// __cplusplus
 
+/**
+ * @brief Represents the NAND Device ID structure.
+ */
 typedef struct {
-    uint8_t mfr;
-    uint16_t dev;
-    uint8_t dlen;
+    uint8_t mfr;  /**< Manufacturer ID byte. */
+    uint16_t dev; /**< Device ID (16-bits) for identifying the specific NAND device. */
+    uint8_t dlen; /**< Length of the ID (in bytes). */
 } __attribute__((packed)) spi_nand_id_t;
 
+/**
+ * @brief Represents the specific information of a NAND Flash device.
+ */
 typedef struct {
-    char *name;
-    spi_nand_id_t id;
-    uint32_t page_size;
-    uint32_t spare_size;
-    uint32_t pages_per_block;
-    uint32_t blocks_per_die;
-    uint32_t planes_per_die;
-    uint32_t ndies;
-    spi_io_mode_t mode;
+    char *name;               /**< Name of the NAND Flash device. */
+    spi_nand_id_t id;         /**< Unique identifier for the NAND Flash device, containing manufacturer and device ID. */
+    uint32_t page_size;       /**< Size of the data page (in bytes). */
+    uint32_t spare_size;      /**< Size of the spare area for additional information (in bytes). */
+    uint32_t pages_per_block; /**< Number of pages contained in a single block. */
+    uint32_t blocks_per_die;  /**< Number of blocks present on a single die. */
+    uint32_t planes_per_die;  /**< Number of planes present on a single die. */
+    uint32_t ndies;           /**< Total number of dies in the NAND package. */
+    spi_io_mode_t mode;       /**< I/O mode used for communication (assumes the existence of a spi_io_mode_t type). */
 } spi_nand_info_t;
 
 /**
@@ -59,6 +65,6 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
-#endif // __SYS_SPI_NAND_H__
+#endif// __SYS_SPI_NAND_H__
