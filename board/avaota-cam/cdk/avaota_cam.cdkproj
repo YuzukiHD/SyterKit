@@ -432,7 +432,7 @@
       <File Name="../../../src/drivers/sys-i2c.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-rtc.c" ExcludeProjConfig="BuildSet">
+      <File Name="../../../src/drivers/sys-rtc.c" ExcludeProjConfig="">
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-spi.c" ExcludeProjConfig="">
@@ -522,17 +522,6 @@
       <FileOption/>
     </File>
   </VirtualDirectory>
-  <DebugSessions>
-    <watchExpressions/>
-    <memoryExpressions>;;;</memoryExpressions>
-    <statistics>;;32;;MHZ;;up</statistics>
-    <peripheralTabs/>
-    <WatchDisplayFormat>1</WatchDisplayFormat>
-    <LocalDisplayFormat>1</LocalDisplayFormat>
-    <debugLayout/>
-    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
-    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
-  </DebugSessions>
   <BuildConfigs>
     <BuildConfig Name="BuildSet">
       <Target>

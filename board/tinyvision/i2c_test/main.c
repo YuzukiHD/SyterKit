@@ -24,9 +24,9 @@ sunxi_i2c_t i2c_0 = {
         },
         .i2c_clk = {
                 .gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET + 0,
+                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
                 .rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET + 0,
+                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
                 .parent_clk = 24000000,
         },
 };

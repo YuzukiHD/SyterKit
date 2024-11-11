@@ -16,7 +16,7 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sdcard.h>
+#include <sys-sdhci.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
@@ -57,7 +57,7 @@ sunxi_dma_t sunxi_dma = {
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,
         .id = 0,
-        .clk_rate = 25 * 1000 * 1000,
+        .clk_rate = 75 * 1000 * 1000,
         .gpio = {
                 .gpio_cs = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
                 .gpio_sck = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
@@ -95,6 +95,65 @@ sunxi_i2c_t sunxi_i2c0 = {
                 .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
                 .rst_reg_offset = BUS_Reset0_REG_PRESETN_TWI0_SW_OFFSET,
                 .parent_clk = 192000000,
+        },
+};
+
+sunxi_sdhci_t sdhci0 = {
+        .name = "sdhci0",
+        .id = MMC_CONTROLLER_0,
+        .reg_base = SUNXI_SMHC0_BASE,
+        .sdhci_mmc_type = MMC_TYPE_SD,
+        .max_clk = 50000000,
+        .width = SMHC_WIDTH_4BIT,
+        .dma_des_addr = SDRAM_BASE + 0x10080000,
+        .pinctrl = {
+                .gpio_clk = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX2},
+                .gpio_cmd = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX2},
+                .gpio_d0 = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX2},
+                .gpio_d1 = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX2},
+                .gpio_d2 = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX2},
+                .gpio_d3 = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX2},
+        },
+        .clk_ctrl = {
+                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG,
+                .gate_reg_offset = BUS_CLK_GATING1_REG_SMHC0_HCLK_EN_OFFSET,
+                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset1_REG,
+                .rst_reg_offset = BUS_Reset1_REG_HRESETN_SMHC0_SW_OFFSET,
+        },
+        .sdhci_clk = {
+                .reg_base = SUNXI_CCU_APP_BASE + SMHC_CTRL0_CLK_REG,
+                .reg_factor_n_offset = SMHC_CTRL0_CLK_REG_SMHC_CTRL0_CLK_DIV2_OFFSET,
+                .reg_factor_m_offset = SMHC_CTRL0_CLK_REG_SMHC_CTRL0_CLK_DIV1_OFFSET,
+                .clk_sel = SMHC_CTRL0_CLK_REG_SMHC_CTRL0_CLK_SEL_PERI_192M,
+                .parent_clk = 192000000,
+        },
+};
+
+sunxi_sdhci_t sdhci1 = {
+        .name = "sdhci1",
+        .id = MMC_CONTROLLER_1,
+        .reg_base = SUNXI_SMHC1_BASE,
+        .sdhci_mmc_type = MMC_TYPE_SD,
+        .max_clk = 50000000,
+        .width = SMHC_WIDTH_4BIT,
+        .dma_des_addr = SDRAM_BASE + 0x20080000,
+        .pinctrl = {
+                .gpio_clk = {GPIO_PIN(GPIO_PORTD, 3), GPIO_PERIPH_MUX6},
+                .gpio_cmd = {GPIO_PIN(GPIO_PORTD, 4), GPIO_PERIPH_MUX6},
+                .gpio_d0 = {GPIO_PIN(GPIO_PORTD, 2), GPIO_PERIPH_MUX6},
+                .gpio_d1 = {GPIO_PIN(GPIO_PORTD, 1), GPIO_PERIPH_MUX6},
+                .gpio_d2 = {GPIO_PIN(GPIO_PORTD, 5), GPIO_PERIPH_MUX6},
+                .gpio_d3 = {GPIO_PIN(GPIO_PORTD, 6), GPIO_PERIPH_MUX6},
+        },
+        .clk_ctrl = {
+                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING1_REG,
+                .gate_reg_offset = BUS_CLK_GATING1_REG_SMHC1_HCLK_EN_OFFSET,
+                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset1_REG,
+                .rst_reg_offset = BUS_Reset1_REG_HRESETN_SMHC1_SW_OFFSET,
+        },
+        .sdhci_clk = {
+                .reg_base = SUNXI_CCU_APP_BASE + SMHC_CTRL1_CLK_REG,
+                .clk_sel = SMHC_CTRL1_CLK_REG_SMHC_CTRL1_CLK_SEL_PERI_219M,
         },
 };
 
