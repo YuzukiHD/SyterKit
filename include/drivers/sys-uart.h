@@ -93,8 +93,9 @@ typedef struct {
     sunxi_serial_dlen_t dlen;          /* Data length configuration */
 } sunxi_serial_t;
 
-#define SERIAL_DEFAULT_CLK_RST_OFFSET (16)
-#define SERIAL_DEFAULT_CLK_GATE_OFFSET (0)
+#define SERIAL_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
+#define SERIAL_DEFAULT_CLK_GATE_OFFSET(x) (x)
+
 #define SERIAL_DEFAULT_PARENT_CLK (24000000)
 
 /**

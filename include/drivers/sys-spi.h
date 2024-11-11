@@ -60,8 +60,9 @@ typedef struct {
 #define SPI_CLK_SEL_PERIPH_300M (0x1)
 #define SPI_CLK_SEL_PERIPH_200M (0x2)
 #define SPI_CLK_SEL_FACTOR_N_OFF (8)
-#define SPI_DEFAULT_CLK_RST_OFFSET (16)
-#define SPI_DEFAULT_CLK_GATE_OFFSET (0)
+
+#define SPI_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
+#define SPI_DEFAULT_CLK_GATE_OFFSET(x) (x)
 
 /**
  * @brief Initializes the SPI interface.
