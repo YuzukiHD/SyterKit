@@ -125,6 +125,8 @@ typedef struct sunxi_sdhci {
 
 #define SDHCI_DEFAULT_CLK_RST_OFFSET(x) (16 + x)
 #define SDHCI_DEFAULT_CLK_GATE_OFFSET(x) (x)
+#define SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET (0)
+#define SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET (8)
 
 /**
  * @brief Initialize the SDHC controller.
