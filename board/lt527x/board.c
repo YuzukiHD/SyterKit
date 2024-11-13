@@ -105,8 +105,6 @@ sunxi_sdhci_t sdhci0 = {
         .name = "sdhci0",
         .id = MMC_CONTROLLER_0,
         .reg_base = SUNXI_SMHC0_BASE,
-        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
-        .clk_base = CCU_BASE + CCU_SMHC0_CLK_REG,
         .sdhci_mmc_type = MMC_TYPE_SD,
         .max_clk = 50000000,
         .width = SMHC_WIDTH_4BIT,
@@ -121,14 +119,25 @@ sunxi_sdhci_t sdhci0 = {
                 .gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
                 .cd_level = GPIO_LEVEL_LOW,
         },
+        .clk_ctrl = {
+                .gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
+        },
+        .sdhci_clk = {
+                .reg_base = CCU_BASE + CCU_SMHC0_CLK_REG,
+                .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
+                .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
+                .clk_sel = 0x1,
+                .parent_clk = 300000000,
+        },
 };
 
 sunxi_sdhci_t sdhci2 = {
         .name = "sdhci2",
         .id = MMC_CONTROLLER_2,
         .reg_base = SUNXI_SMHC2_BASE,
-        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
-        .clk_base = CCU_BASE + CCU_SMHC2_CLK_REG,
         .sdhci_mmc_type = MMC_TYPE_EMMC,
         .max_clk = 25000000,
         .width = SMHC_WIDTH_8BIT,
@@ -146,6 +155,19 @@ sunxi_sdhci_t sdhci2 = {
                 .gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
                 .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
                 .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
+        },
+        .clk_ctrl = {
+                .gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(2),
+                .rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(2),
+        },
+        .sdhci_clk = {
+                .reg_base = CCU_BASE + CCU_SMHC2_CLK_REG,
+                .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
+                .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
+                .clk_sel = 0x1,
+                .parent_clk = 600000000,
         },
 };
 
