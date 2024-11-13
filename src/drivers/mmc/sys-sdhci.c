@@ -1085,8 +1085,8 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 	 */
     if (data) {
         printk_trace("SMHC: transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
-                     ((data->blocksize * data->blocks > 512) ? "DMA" : "CPU"));
-        if (data->blocksize * data->blocks > 512) {
+                     (((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) ? "DMA" : "CPU"));
+        if ((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) {
             use_dma_status = true;
             mmc_host->reg->gctrl &= ~SMHC_GCTRL_ACCESS_BY_AHB;
             ret = sunxi_sunxi_sdhci_trans_data_dma(sdhci, data);
@@ -1313,7 +1313,10 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
 
     /* Set register addresses */
     mmc_host->reg = (sdhci_reg_t *) sdhci->reg_base;
-    mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
+    if (sdhci->dma_des_addr == 0)
+        mmc_host->sdhci_desc = NULL;
+    else
+        mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
 
     /* Configure pins and enable clocks */
     sunxi_sdhci_pin_config(sdhci);
