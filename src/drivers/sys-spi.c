@@ -167,7 +167,7 @@ static inline void sunxi_spi_enable_transmit_pause(sunxi_spi_t *spi) {
  * @note The SS line is critical in determining which device on the SPI bus is selected 
  *       for communication.
  */
-static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, u32 on_off) {
+static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, uint32_t on_off) {
     sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
     on_off &= 0x1;// Ensure the on_off value is either 0 or 1
     if (on_off)
@@ -476,7 +476,7 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
  * @note The function prints debug messages regarding the clock divider settings 
  *       and the resulting actual SPI clock frequency using `printk_debug`.
  */
-static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 cdr2) {
+static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t mclk, uint32_t cdr_mode) {
     sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
     uint32_t reg = 0;
@@ -485,13 +485,13 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 c
     uint32_t freq = 0;
 
     /* CDR2 mode: use a clock divider that divides by 2 (if cdr2 is set) */
-    if (cdr2 == SPI_CDR2_MODE) {
+    if (cdr_mode == SPI_CDR2_MODE) {
         div = mclk / (spi_clk * 2) - 1;///< Calculate divider for CDR2 mode
         reg &= ~SPI_CLK_CTL_CDR2;
         reg |= (div | SPI_CLK_CTL_DRS);
         printk_debug("SPI: CDR2 - n = %lu\n", div);
         freq = mclk / (2 * (div + 1));  ///< Calculate actual SPI frequency
-    } else if (cdr2 == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
+    } else if (cdr_mode == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
         while (src_clk > spi_clk) {
             div++;
             src_clk >>= 1;
@@ -500,7 +500,7 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 c
         reg |= (div << 8);///< Set CDR1 mode with the calculated divider
         printk_debug("SPI: CDR1 - n = %lu\n", div);
         freq = src_clk;///< Calculate actual SPI frequency
-    } else {
+    } else { ///< cdr_mode none
         freq = src_clk;
         goto clk_out;
     }
@@ -611,9 +611,9 @@ static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
  *       the register value, and the clock divider values (n and m).
  */
 static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
-    u32 reg_val = 0;
-    u32 src = 0, clk = 0, sclk_freq = 0;
-    u32 n, m;
+    uint32_t reg_val = 0;
+    uint32_t src = 0, clk = 0, sclk_freq = 0;
+    uint32_t n, m;
 
     // Read the SPI clock configuration register.
     reg_val = read32(spi->spi_clk.spi_clock_cfg_base);
