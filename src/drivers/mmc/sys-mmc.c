@@ -1362,16 +1362,17 @@ static int sunxi_mmc_sd_send_if_cond(sunxi_sdhci_t *sdhci) {
 static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci) {
     mmc_t *mmc = sdhci->mmc;
     if (mmc->high_capacity)
-        printk_debug("  High capacity card\r\n");
-    printk_debug("  CID: %08X-%08X-%08X-%08X\r\n", mmc->cid[0], mmc->cid[1], mmc->cid[2], mmc->cid[3]);
-    printk_debug("  CSD: %08X-%08X-%08X-%08X\r\n", mmc->csd[0], mmc->csd[1], mmc->csd[2], mmc->csd[3]);
-    printk_debug("  Max transfer speed: %u HZ\r\n", mmc->tran_speed);
-    printk_debug("  Manufacturer ID: %02X\r\n", extract_mid(mmc));
-    printk_debug("  OEM/Application ID: %04X\r\n", extract_oid(mmc));
-    printk_debug("  Product name: '%c%c%c%c%c'\r\n", mmc->cid[0] & 0xff, (mmc->cid[1] >> 24), (mmc->cid[1] >> 16) & 0xff, (mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
-    printk_debug("  Product revision: %u.%u\r\n", extract_prv(mmc) >> 4, extract_prv(mmc) & 0xf);
-    printk_debug("  Serial no: %0u\r\n", extract_psn(mmc));
-    printk_debug("  Manufacturing date: %u.%u\r\n", extract_year(mmc), extract_month(mmc));
+        printk_debug("  High capacity card\n");
+    printk_debug("  CID: %08X-%08X-%08X-%08X\n", mmc->cid[0], mmc->cid[1], mmc->cid[2], mmc->cid[3]);
+    printk_debug("  CSD: %08X-%08X-%08X-%08X\n", mmc->csd[0], mmc->csd[1], mmc->csd[2], mmc->csd[3]);
+    printk_debug("  Max transfer speed: %u HZ\n", mmc->tran_speed);
+    printk_debug("  SMHC CLK: %uHz\n", mmc->clock);
+    printk_debug("  Manufacturer ID: %02X\n", extract_mid(mmc));
+    printk_debug("  OEM/Application ID: %04X\n", extract_oid(mmc));
+    printk_debug("  Product name: '%c%c%c%c%c'\n", mmc->cid[0] & 0xff, (mmc->cid[1] >> 24), (mmc->cid[1] >> 16) & 0xff, (mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
+    printk_debug("  Product revision: %u.%u\n", extract_prv(mmc) >> 4, extract_prv(mmc) & 0xf);
+    printk_debug("  Serial no: %0u\n", extract_psn(mmc));
+    printk_debug("  Manufacturing date: %u.%u\n", extract_year(mmc), extract_month(mmc));
 }
 
 /**

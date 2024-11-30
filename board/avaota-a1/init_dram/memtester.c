@@ -505,7 +505,7 @@ static struct test tests[] = {
         {NULL, NULL}};
 
 /* Function declarations */
-static int do_memtester(uint64_t start_addr, uint64_t dram_size, uint64_t test_size, uint32_t loops) {
+static int do_memtester(uint64_t start_addr, uint32_t dram_size, uint64_t test_size, uint32_t loops) {
     ul loop, i;
     uint64_t bufsize, wantbytes, wantmb, halflen, count;
     char *memsuffix;

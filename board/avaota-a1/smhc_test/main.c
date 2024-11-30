@@ -185,7 +185,7 @@ int main(void) {
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
 
     printk_debug("DRAM Size = %dM\n", dram_size);
 

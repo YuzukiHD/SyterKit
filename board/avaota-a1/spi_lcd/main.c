@@ -43,6 +43,8 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_i2c_t i2c_pmu;
 
+extern sunxi_dma_t sunxi_dma;
+
 extern uint32_t dram_para[32];
 
 extern void set_rpio_power_mode(void);
@@ -53,14 +55,25 @@ sunxi_spi_t sunxi_spi0_lcd = {
         .base = SUNXI_R_SPI_BASE,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
-        .clk_reg = {
-                .ccu_base = SUNXI_R_PRCM_BASE,
-                .spi_clk_reg_offest = SUNXI_S_SPI_CLK_REG,
-                .spi_bgr_reg_offset = SUNXI_S_SPI_BGR_REG,
-        }};
+        .gpio = {
+                .gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
+                .gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
+                .gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
+        },
+        .spi_clk = {
+                .spi_clock_cfg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
+                .gate_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
+};
 
 static gpio_mux_t lcd_dc_pins = {
         .pin = GPIO_PIN(GPIO_PORTL, 13),
@@ -87,7 +100,7 @@ static void LCD_Set_RES(uint8_t val) {
 
 static void LCD_Write_Bus(uint8_t dat) {
     uint8_t tx[1]; /* Transmit buffer */
-    
+
     tx[0] = dat;
     int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
     if (r < 0)
@@ -260,7 +273,7 @@ int main(void) {
     enable_sram_a3();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
 
     sunxi_clk_dump();
 
@@ -277,7 +290,7 @@ int main(void) {
     sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
     sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
 
-    dma_init();
+    
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
         printk_error("SPI: init failed\n");

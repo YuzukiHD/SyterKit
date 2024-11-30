@@ -272,7 +272,7 @@ static const char *find_entry_value(const IniEntry *entries, int entry_count, co
     return NULL;
 }
 
-static int update_bootargs_from_config(uint64_t dram_size) {
+static int update_bootargs_from_config(uint32_t dram_size) {
     int ret = 0;
     char *bootargs_str_config = NULL;
     char *mac_addr = NULL;
@@ -557,7 +557,7 @@ int main(void) {
     sunxi_clk_init();
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
 
     /* Debug message to indicate that MMU is enabled. */
     printk_debug("enable mmu ok\n");

@@ -7,13 +7,3 @@ set(APP_COMMON_SOURCE
 )
 
 add_subdirectory(hello_world)
-
-add_subdirectory(init_dram)
-
-add_subdirectory(syter_boot)
-
-add_subdirectory(syter_boot_bl33)
-
-add_subdirectory(smhc_test)
-
-add_subdirectory(extlinux_boot)

@@ -7,15 +7,15 @@
 
 #include <log.h>
 
-#include <mmu.h>
 #include <common.h>
 #include <jmp.h>
+#include <mmu.h>
 #include <smalloc.h>
 #include <sstdlib.h>
 #include <string.h>
 
-#include "sys-dram.h"
 #include "sys-dma.h"
+#include "sys-dram.h"
 #include "sys-spi.h"
 
 #include "lcd.h"
@@ -28,14 +28,31 @@ extern sunxi_serial_t uart_dbg;
 
 extern dram_para_t dram_para;
 
-sunxi_spi_t sunxi_spi0_lcd = {
+extern sunxi_dma_t sunxi_dma;
+
+static sunxi_spi_t sunxi_spi0_lcd = {
         .base = 0x04025000,
         .id = 0,
-        .clk_rate = 120 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
+        .clk_rate = 75 * 1000 * 1000,
+        .gpio = {
+                .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
+                .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
+                .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
+                .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
+        },
+        .spi_clk = {
+                .spi_clock_cfg_base = CCU_BASE + CCU_SPI0_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
+                .gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
 };
 
 static gpio_mux_t lcd_dc_pins = {
@@ -193,7 +210,7 @@ int main(void) {
 
     sunxi_clk_init();
 
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     printk_debug("enable mmu ok\n");
@@ -204,8 +221,6 @@ int main(void) {
 
     sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
     sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
-
-    dma_init();
 
     if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
         printk_error("SPI: init failed\n");

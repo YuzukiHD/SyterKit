@@ -14,12 +14,27 @@
 extern "C" {
 #endif// __cplusplus
 
+typedef struct {
+    uint32_t gate_reg_base;
+    uint32_t gate_reg_offset;
+    uint32_t rst_reg_base;
+    uint32_t rst_reg_offset;
+    uint32_t parent_clk;
+} sunxi_clk_t;
+
 /**
  * @brief Initialize the global clocks.
  *
  * This function initializes the global clocks, including PLLs and clock dividers.
  */
 void sunxi_clk_init(void);
+
+/**
+ * @brief Initialize the necessary clocks for minsys boot up
+ *
+ * This function initializes the necessary clocks for minsys boot up clocks
+ */
+void sunxi_clk_pre_init(void);
 
 /**
  * @brief Get the type of High-Speed Oscillator (HOSC).
@@ -74,6 +89,6 @@ void sunxi_clk_set_cpu_pll(uint32_t freq);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
-#endif // __SYS_CLK_H__
+#endif// __SYS_CLK_H__

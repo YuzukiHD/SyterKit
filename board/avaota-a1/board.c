@@ -24,8 +24,21 @@
 sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+        },
 };
 
 sunxi_serial_t uart_dbg_1m5 = {
@@ -35,28 +48,64 @@ sunxi_serial_t uart_dbg_1m5 = {
         .dlen = UART_DLEN_8,
         .stop = UART_STOP_BIT_0,
         .parity = UART_PARITY_NO,
-        .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
-        .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
+        },
+        .uart_clk = {
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+        },
+};
+
+sunxi_dma_t sunxi_dma = {
+        .dma_reg_base = SUNXI_DMA_BASE,
+        .bus_clk = {
+                .gate_reg_base = CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+        .dma_clk = {
+                .rst_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .rst_reg_offset = DMA_DEFAULT_CLK_RST_OFFSET,
+                .gate_reg_base = CCU_BASE + CCU_DMA_BGR_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
 };
 
 sunxi_spi_t sunxi_spi0 = {
         .base = SUNXI_SPI0_BASE,
         .id = 0,
         .clk_rate = 75 * 1000 * 1000,
-        .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-        .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-        .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-        .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-        .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-        .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
+        .gpio = {
+                .gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
+                .gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
+                .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
+                .gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
+                .gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
+                .gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
+        },
+        .spi_clk = {
+                .spi_clock_cfg_base = CCU_BASE + CCU_SPI0_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
+                .gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
 };
 
 sunxi_sdhci_t sdhci0 = {
         .name = "sdhci0",
         .id = MMC_CONTROLLER_0,
         .reg_base = SUNXI_SMHC0_BASE,
-        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
-        .clk_base = CCU_BASE + CCU_SMHC0_CLK_REG,
         .sdhci_mmc_type = MMC_TYPE_SD,
         .max_clk = 50000000,
         .width = SMHC_WIDTH_4BIT,
@@ -71,14 +120,25 @@ sunxi_sdhci_t sdhci0 = {
                 .gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
                 .cd_level = GPIO_LEVEL_LOW,
         },
+        .clk_ctrl = {
+                .gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
+        },
+        .sdhci_clk = {
+                .reg_base = CCU_BASE + CCU_SMHC0_CLK_REG,
+                .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
+                .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
+                .clk_sel = 0x1,
+                .parent_clk = 300000000,
+        },
 };
 
 sunxi_sdhci_t sdhci2 = {
         .name = "sdhci2",
         .id = MMC_CONTROLLER_2,
         .reg_base = SUNXI_SMHC2_BASE,
-        .clk_ctrl_base = CCU_BASE + CCU_SMHC_BGR_REG,
-        .clk_base = CCU_BASE + CCU_SMHC2_CLK_REG,
         .sdhci_mmc_type = MMC_TYPE_EMMC,
         .max_clk = 25000000,
         .width = SMHC_WIDTH_8BIT,
@@ -97,15 +157,36 @@ sunxi_sdhci_t sdhci2 = {
                 .gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
                 .gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
         },
+        .clk_ctrl = {
+                .gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(2),
+                .rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
+                .rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(2),
+        },
+        .sdhci_clk = {
+                .reg_base = CCU_BASE + CCU_SMHC2_CLK_REG,
+                .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
+                .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
+                .clk_sel = 0x1,
+                .parent_clk = 600000000,
+        },
 };
 
-
 sunxi_i2c_t i2c_pmu = {
-        .base = SUNXI_R_TWI0_BASE,
+        .base = SUNXI_RTWI_BASE,
         .id = SUNXI_R_I2C0,
-        .speed = 4000000,
-        .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
-        .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+        .speed = SUNXI_I2C_SPEED_400K,
+        .gpio = {
+                .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
+                .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+        },
+        .i2c_clk = {
+                .gate_reg_base = SUNXI_RTWI_BRG_REG,
+                .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = SUNXI_RTWI_BRG_REG,
+                .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
+                .parent_clk = 24000000,
+        },
 };
 
 enum dram_training_type {
@@ -189,7 +270,6 @@ void clean_syterkit_data(void) {
 }
 
 void rtc_set_vccio_det_spare(void) {
-
 }
 
 void set_rpio_power_mode(void) {

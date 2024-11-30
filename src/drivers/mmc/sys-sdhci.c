@@ -11,6 +11,8 @@
 #include <log.h>
 #include <timer.h>
 
+#include <mmu.h>
+
 #include <sys-clk.h>
 #include <sys-gpio.h>
 
@@ -31,24 +33,22 @@ mmc_t g_mmc;
  * @return Returns 0 on success.
  */
 static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci) {
-    sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-
     uint32_t reg_val;
-    /* Configure AHB clock */
-    reg_val = readl(mmc_host->hclkbase);
-    reg_val |= BIT(sdhci->id);
-    writel(reg_val, mmc_host->hclkbase);
 
-    reg_val = readl(mmc_host->hclkrst);
-    reg_val |= BIT(16 + sdhci->id);
-    writel(reg_val, mmc_host->hclkrst);
+    /* Assert AHB Gate and RST clock */
+    clrbits_le32(sdhci->clk_ctrl.rst_reg_base, BIT(sdhci->clk_ctrl.rst_reg_offset));
+    clrbits_le32(sdhci->clk_ctrl.gate_reg_base, BIT(sdhci->clk_ctrl.gate_reg_offset));
 
-    /* Configure module clock */
-    writel(0x80000000, mmc_host->mclkbase);
-    mmc_host->mod_clk = 24000000;
+    udelay(10);
 
-    printk_trace("SMHC: sdhci%d clk enable clk reg = 0x%08x -> 0x%08x, mclk: 0x%08x\n", sdhci->id,
-                 mmc_host->hclkbase, readl(mmc_host->hclkbase), readl(mmc_host->mclkbase));
+    /* Configure AHB Gate and RST clock */
+    setbits_le32(sdhci->clk_ctrl.gate_reg_base, BIT(sdhci->clk_ctrl.gate_reg_offset));
+    setbits_le32(sdhci->clk_ctrl.rst_reg_base, BIT(sdhci->clk_ctrl.rst_reg_offset));
+
+    /* Enable module clock */
+    setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
+
+    printk_trace("SMHC: sdhci%d clk enable, mclk: 0x%08x\n", sdhci->id, readl(sdhci->sdhci_clk.reg_base));
 
     return 0;
 }
@@ -201,7 +201,6 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
     return ret;
 }
 
-
 /**
  * @brief Set the SDHC controller's clock frequency.
  * 
@@ -211,51 +210,52 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
  * @param clk_hz Desired clock frequency in Hertz.
  * @return Returns 0 on success, -1 on failure.
  */
-static int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
-    uint32_t n, m, src;
-    uint32_t reg_val = 0x0;
+int __attribute__((weak)) sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
+    uint32_t reg_val = 0x0, sclk_hz = 0x0, div = 0x0;
 
-    sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+    sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
 
-    // Determine the clock source based on the requested frequency
     if (clk_hz <= 4000000) {
-        src = 0;// SCLK = 24000000 OSC CLK
+        clk.clk_sel = 0;
+        sclk_hz = sunxi_clk_get_hosc_type() * 1000 * 1000; /* use hosc clk */
     } else {
-        src = 2;// SCLK = AHB PLL
+        if (clk.clk_sel && clk.parent_clk) {
+            sclk_hz = clk.parent_clk;
+        } else {
+            clk.clk_sel = 1;
+            sclk_hz = sunxi_clk_get_peri1x_rate() * 2 * 1000 * 1000; /* use 2x pll-per0 clock */
+        }
     }
 
-    // Set the clock divider values based on the requested frequency
-    switch (clk_hz) {
-        case 400000:
-            n = 1;
-            m = 0xe;
-            break;
-        case 25000000:
-        case 26000000:
-            n = (sdhci->id == 2) ? 2 : 1;
-            m = (sdhci->id == 2) ? 3 : 2;
-            break;
-        case 50000000:
-        case 52000000:
-            n = (sdhci->id == 2) ? 1 : 0;
-            m = 2;
-            break;
-        case 200000000:
-            src = 1;// PERI0_800M
-            n = 0;
-            m = 1;
-            break;
-        default:
-            n = 0;
-            m = 0;
-            printk_debug("SMHC: requested frequency does not match: freq=%d\n", clk_hz);
-            break;
+    div = (2 * sclk_hz + clk_hz) / (2 * clk_hz);
+    div = (div == 0) ? 1 : div;
+
+    if (div > 128) {
+        clk.factor_m = 1;
+        clk.factor_n = 0;
+        printk_warning("SMHC: Source clk is too high.\n");
+    } else if (div > 64) {
+        clk.factor_n = 3;
+        clk.factor_m = div >> 3;
+    } else if (div > 32) {
+        clk.factor_n = 2;
+        clk.factor_m = div >> 2;
+    } else if (div > 16) {
+        clk.factor_n = 1;
+        clk.factor_m = div >> 1;
+    } else {
+        clk.factor_n = 0;
+        clk.factor_m = div;
     }
 
-    // Configure the clock register value
-    reg_val = (src << 24) | (n << 8) | m;
-    writel(reg_val, mmc_host->mclkbase);
+    reg_val = BIT(31) | (clk.clk_sel << 24) | ((clk.factor_n) << clk.reg_factor_n_offset) |
+              ((clk.factor_m - 1) << clk.reg_factor_m_offset);
 
+    writel(reg_val, clk.reg_base);
+
+    printk_trace("SMHC: sdhci%d clk want %uHz parent %uHz, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n",
+                 sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base), clk.clk_sel, div,
+                 clk.factor_n, clk.factor_m);
     return 0;
 }
 
@@ -267,39 +267,45 @@ static int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Current clock frequency in Hertz.
  */
-static uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
-    uint32_t n, m, src, clk_hz;
+uint32_t __attribute__((weak)) sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
+    uint32_t clk_hz = 0x0;
     uint32_t reg_val = 0x0;
-    sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+    sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
 
     // Read the clock register value
-    reg_val = readl(mmc_host->mclkbase);
+    reg_val = readl(clk.reg_base);
 
     // Extract the divider values and clock source from the register value
-    m = reg_val & 0xf;
-    n = (reg_val >> 8) & 0x3;
-    src = (reg_val >> 24) & 0x3;
+    clk.factor_m = (reg_val >> clk.reg_factor_m_offset) & 0xf;
+    clk.factor_n = (reg_val >> clk.reg_factor_n_offset) & 0x3;
+
+    // check clk sel, check if correct
+    if (clk.clk_sel != ((reg_val >> 24) & 0x3)) {
+        clk.clk_sel = ((reg_val >> 24) & 0x3);
+    }
 
     // Calculate the current clock frequency based on the source and divider values
-    switch (src) {
+    switch (clk.clk_sel) {
         case 0:
-            clk_hz = 24000000;
+            clk_hz = sunxi_clk_get_hosc_type() * 1000 * 1000;
             break;
         case 1:
-        case 3:
-            clk_hz = (sdhci->id == 2) ? 800000000 : 400000000;
-            break;
-        case 2:
-        case 4:
-            clk_hz = (sdhci->id == 2) ? 600000000 : 300000000;
+            if (clk.parent_clk && clk.clk_sel) {
+                clk_hz = clk.parent_clk;
+            } else {
+                clk_hz = sunxi_clk_get_peri1x_rate() * 2 * 1000 * 1000;
+            }
             break;
         default:
-            printk_debug("SMHC: wrong clock source %u\n", src);
+            printk_debug("SMHC: wrong clock source %u\n", clk.clk_sel);
             break;
     }
 
+    printk_trace("SMHC: sdhci%d clk parent %uHz, mclk=0x%08x clk_sel=%u, n=%u, m=%u\n",
+                 sdhci->id, clk_hz, readl(sdhci->sdhci_clk.reg_base), clk.clk_sel, clk.factor_n + 1, clk.factor_m + 1);
+
     // Calculate the actual clock frequency based on the divider values
-    return clk_hz / (n + 1) / (m + 1);
+    return clk_hz / (clk.factor_n + 1) / (clk.factor_m + 1);
 }
 
 /**
@@ -318,6 +324,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
     uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     mmc_t *mmc = sdhci->mmc;
+    sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
     sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
 
     if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
@@ -328,9 +335,9 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         reg_val = mmc_host->reg->drv_dl;
         reg_val &= (~(0x3 << 16));
         reg_val |= (((timing_data->odly & 0x1) << 16) | ((timing_data->odly & 0x1) << 17));
-        writel(readl(mmc_host->mclkbase) & (~(1 << 31)), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) & (~(1 << 31)), clk.reg_base);
         mmc_host->reg->drv_dl = reg_val;
-        writel(readl(mmc_host->mclkbase) | (1 << 31), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) | (1 << 31), clk.reg_base);
 
         reg_val = mmc_host->reg->ntsr;
         reg_val &= (~(0x3 << 4));
@@ -344,9 +351,9 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         reg_val = mmc_host->reg->drv_dl;
         reg_val &= (~(0x3 << 16));
         reg_val |= (((timing_data->odly & 0x1) << 16) | ((timing_data->odly & 0x1) << 17));
-        writel(readl(mmc_host->mclkbase) & (~(1 << 31)), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) & (~(1 << 31)), clk.reg_base);
         mmc_host->reg->drv_dl = reg_val;
-        writel(readl(mmc_host->mclkbase) | (1 << 31), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) | (1 << 31), clk.reg_base);
 
         reg_val = mmc_host->reg->samp_dl;
         reg_val &= (~SDXC_NTDC_CFG_DLY);
@@ -376,9 +383,9 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         reg_val = mmc_host->reg->drv_dl;
         reg_val &= (~(0x3 << 16));
         reg_val |= (((timing_data->odly & 0x1) << 16) | ((timing_data->odly & 0x1) << 17));
-        writel(readl(mmc_host->mclkbase) & (~(1 << 31)), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) & (~(1 << 31)), clk.reg_base);
         mmc_host->reg->drv_dl = reg_val;
-        writel(readl(mmc_host->mclkbase) | (1 << 31), mmc_host->mclkbase);
+        writel(readl(clk.reg_base) | (1 << 31), clk.reg_base);
 
         reg_val = mmc_host->reg->samp_dl;
         reg_val &= (~SDXC_NTDC_CFG_DLY);
@@ -408,6 +415,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
         printk_trace("SMHC: config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n",
                      freq_id, timing_data->odly, timing_data->sdly, spd_md_id);
     }
+    return ret;
 }
 
 /**
@@ -419,17 +427,21 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
  * @param clk Clock frequency.
  * @return 0 on success, -1 on failure.
  */
-static int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
+int __attribute__((weak)) sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
     int ret = 0;
     uint32_t reg_val = 0x0;
     sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
     sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
     mmc_t *mmc = sdhci->mmc;
 
-    /* disable mclk */
-    writel(0x0, mmc_host->mclkbase);
+    uint32_t module_clk = 0x0;
+
+    /* Reset mclk reg to default */
+    writel(0x0, sdhci->sdhci_clk.reg_base);
+
+    /* Setting mclk timing */
     if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
-        mmc_host->reg->ntsr |= (1 << 31);
+        mmc_host->reg->ntsr |= BIT(31);
         printk_trace("SMHC: rntsr 0x%x\n", mmc_host->reg->ntsr);
     } else {
         mmc_host->reg->ntsr = 0x0;
@@ -438,21 +450,21 @@ static int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
     if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
         /* If using DDR mod to 4 */
         if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
-            mmc_host->mod_clk = clk * 4;
+            module_clk = clk * 4;
         } else {
-            mmc_host->mod_clk = clk * 2;
+            module_clk = clk * 2;
         }
     } else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
         /* If using DDR mod to 4 */
         if ((mmc->speed_mode == MMC_HSDDR52_DDR50) && (mmc->bus_width == SMHC_WIDTH_8BIT)) {
-            mmc_host->mod_clk = clk * 4;
+            module_clk = clk * 4;
         } else {
-            mmc_host->mod_clk = clk * 2;
+            module_clk = clk * 2;
         }
     }
 
     /* Now set mclk */
-    sunxi_sdhci_set_mclk(sdhci, clk);
+    sunxi_sdhci_set_mclk(sdhci, module_clk);
 
     /* Now set clock by mclk we get */
     if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
@@ -470,12 +482,11 @@ static int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
         }
     }
     /* Set host clock */
-    mmc_host->clock = mmc->clock;
-    printk_trace("SMHC: get round clk %luHz, mod_clk %luHz\n", mmc->clock, mmc_host->mod_clk);
+    printk_trace("SMHC: get round clk %luHz, mod_clk %luHz\n", mmc->clock, module_clk);
 
     /* enable mclk */
-    writel(readl(mmc_host->mclkbase) | (1U << 31), mmc_host->mclkbase);
-    printk_trace("SMHC: mclkbase 0x%x\n", readl(mmc_host->mclkbase));
+    setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
+    printk_trace("SMHC: mclkbase 0x%x\n", readl(sdhci->sdhci_clk.reg_base));
 
     /* Configure SMHC_CLKDIV to open clock for devices */
     reg_val = mmc_host->reg->clkcr;
@@ -594,8 +605,8 @@ static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status) {
     // Read current value of gctrl register
     reg_val = mmc_host->reg->gctrl;
 
-    // Disable CCU clock
-    writel(readl(mmc_host->mclkbase) & (~(1 << 31)), mmc_host->mclkbase);
+    // Disable mclk clock
+    clrbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
 
     // Set or clear DDR mode bit based on status
     if (status) {
@@ -607,8 +618,8 @@ static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status) {
     // Write updated value back to gctrl register
     mmc_host->reg->gctrl = reg_val;
 
-    // Enable CCU clock
-    writel(readl(mmc_host->mclkbase) | (1 << 31), mmc_host->mclkbase);
+    // Enable mclk clock
+    setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
 
     // Log DDR mode status
     printk_trace("SMHC: DDR mode %s\n", status ? "enabled" : "disabled");
@@ -822,8 +833,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 #endif// SMHC_DMA_TRACE
     }
 
-    dsb();
-    isb();
+    data_sync_barrier();
 
     /*
 	 * GCTRLREG
@@ -1075,8 +1085,8 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 	 */
     if (data) {
         printk_trace("SMHC: transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
-                     ((data->blocksize * data->blocks > 512) ? "DMA" : "CPU"));
-        if (data->blocksize * data->blocks > 512) {
+                     (((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) ? "DMA" : "CPU"));
+        if ((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) {
             use_dma_status = true;
             mmc_host->reg->gctrl &= ~SMHC_GCTRL_ACCESS_BY_AHB;
             ret = sunxi_sunxi_sdhci_trans_data_dma(sdhci, data);
@@ -1303,10 +1313,10 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
 
     /* Set register addresses */
     mmc_host->reg = (sdhci_reg_t *) sdhci->reg_base;
-    mmc_host->hclkbase = sdhci->clk_ctrl_base;
-    mmc_host->hclkrst = sdhci->clk_ctrl_base;
-    mmc_host->mclkbase = sdhci->clk_base;
-    mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
+    if (sdhci->dma_des_addr == 0)
+        mmc_host->sdhci_desc = NULL;
+    else
+        mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
 
     /* Configure pins and enable clocks */
     sunxi_sdhci_pin_config(sdhci);

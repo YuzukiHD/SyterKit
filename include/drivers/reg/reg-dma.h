@@ -27,7 +27,6 @@ extern "C" {
 #define DMAC_CFG_CONTINUOUS_ENABLE (0x01)
 #define DMAC_CFG_CONTINUOUS_DISABLE (0x00)
 
-/* ----------DMA dest config-------------------- */
 /* DMA dest width config */
 #define DMAC_CFG_DEST_DATA_WIDTH_8BIT (0x00)
 #define DMAC_CFG_DEST_DATA_WIDTH_16BIT (0x01)
@@ -43,7 +42,7 @@ extern "C" {
 #define DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE (0x00)
 #define DMAC_CFG_DEST_ADDR_TYPE_IO_MODE (0x01)
 
-/* ----------DMA src config -------------------*/
+/* DMA src config */
 #define DMAC_CFG_SRC_DATA_WIDTH_8BIT (0x00)
 #define DMAC_CFG_SRC_DATA_WIDTH_16BIT (0x01)
 #define DMAC_CFG_SRC_DATA_WIDTH_32BIT (0x02)
@@ -57,13 +56,13 @@ extern "C" {
 #define DMAC_CFG_SRC_ADDR_TYPE_LINEAR_MODE (0x00)
 #define DMAC_CFG_SRC_ADDR_TYPE_IO_MODE (0x01)
 
-/*dma int config*/
+/* DMA int config */
 #define DMA_PKG_HALF_INT (1 << 0)
 #define DMA_PKG_END_INT (1 << 1)
 #define DMA_QUEUE_END_INT (1 << 2)
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __REG_DMA_H__
