@@ -480,39 +480,39 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, u32 spi_clk, u32 mclk, u32 c
     sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
     uint32_t reg = 0;
-    uint32_t div = 1;
+    uint32_t div = 0;
     uint32_t src_clk = mclk;
-    uint32_t freq = spi->parent_clk_reg.parent_clk;
+    uint32_t freq = 0;
 
-    // If the requested SPI clock is different from the current parent clock
-    if (spi_clk != spi->parent_clk_reg.parent_clk) {
-        /* CDR2 mode: use a clock divider that divides by 2 (if cdr2 is set) */
-        if (cdr2) {
-            div = mclk / (spi_clk * 2) - 1;///< Calculate divider for CDR2 mode
-            reg |= SPI_CLK_CTL_CDR2(div) | SPI_CLK_CTL_DRS;
-            printk_debug("SPI: CDR2 - n = %lu\n", div);
-            freq = mclk / (2 * (div + 1));///< Calculate actual SPI frequency
-        } else {                          /* CDR1 mode: divide the source clock by powers of 2 */
-            while (src_clk > spi_clk) {
-                div++;
-                src_clk >>= 1;
-            }
-            reg |= SPI_CLK_CTL_CDR1(div);///< Set CDR1 mode with the calculated divider
-            printk_debug("SPI: CDR1 - n = %lu\n", div);
-            freq = src_clk;///< Calculate actual SPI frequency
+    /* CDR2 mode: use a clock divider that divides by 2 (if cdr2 is set) */
+    if (cdr2 == SPI_CDR2_MODE) {
+        div = mclk / (spi_clk * 2) - 1;///< Calculate divider for CDR2 mode
+        reg &= ~SPI_CLK_CTL_CDR2;
+        reg |= (div | SPI_CLK_CTL_DRS);
+        printk_debug("SPI: CDR2 - n = %lu\n", div);
+        freq = mclk / (2 * (div + 1));  ///< Calculate actual SPI frequency
+    } else if (cdr2 == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
+        while (src_clk > spi_clk) {
+            div++;
+            src_clk >>= 1;
         }
+        reg &= ~(SPI_CLK_CTL_CDR1 | SPI_CLK_CTL_DRS);
+        reg |= (div << 8);///< Set CDR1 mode with the calculated divider
+        printk_debug("SPI: CDR1 - n = %lu\n", div);
+        freq = src_clk;///< Calculate actual SPI frequency
+    } else {
+        freq = src_clk;
+        goto clk_out;
     }
-
-    // Print debug information about clock divider and actual SPI frequency
-    printk_debug("SPI: clock div=%u \n", div);
-    printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
-                 spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
     // Set the clock control register
     spi_reg->clk_ctl = reg;
 
-    // Update the SPI clock frequency in the SPI structure
-    spi->spi_clk.spi_clock_freq = freq;
+clk_out:
+    // Print debug information about clock divider and actual SPI frequency
+    printk_debug("SPI: clock div=%u \n", div);
+    printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
+                 spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
     return freq;
 }
@@ -641,7 +641,7 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
     sclk_freq = clk / (1 << n) / m;
 
     // Print trace message with SPI clock frequency and register values for debugging.
-    printk_trace("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
+    printk_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
 
     return sclk_freq;// Return the calculated SPI clock frequency in Hz.
 }
@@ -654,7 +654,7 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
-static void sunxi_spi_clk_init(sunxi_spi_t *spi) {
+void __attribute__((weak)) sunxi_spi_clk_init(sunxi_spi_t *spi) {
     uint32_t div, source_clk, mod_clk, n, m;
     uint32_t reg_val;
 
@@ -664,7 +664,7 @@ static void sunxi_spi_clk_init(sunxi_spi_t *spi) {
     source_clk = spi->parent_clk_reg.parent_clk;
     mod_clk = spi->clk_rate;
 
-    div = (source_clk + mod_clk - 1) / mod_clk;
+    div = ((source_clk + mod_clk) / mod_clk) - 1;
     div = div == 0 ? 1 : div;
     if (div > 128) {
         m = 1;
@@ -684,6 +684,9 @@ static void sunxi_spi_clk_init(sunxi_spi_t *spi) {
         m = div;
     }
 
+    printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n",
+                 spi->id, source_clk, readl(spi->spi_clk.spi_clock_cfg_base), n, m);
+
     /* set m factor, factor_m = m -1 */
     m -= 1;
 
@@ -700,7 +703,7 @@ static void sunxi_spi_clk_init(sunxi_spi_t *spi) {
     /* SPI gating */
     setbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-    sunxi_spi_get_clk(spi);
+    spi->spi_clk.spi_clock_freq = sunxi_spi_get_clk(spi);
 }
 
 /**
@@ -731,10 +734,10 @@ static void sunxi_spi_config_transer_control(sunxi_spi_t *spi) {
 
     uint32_t reg_val = spi_reg->tc;
 
-    if (spi->spi_clk.spi_clock_freq > 100000000) {
+    if (spi->spi_clk.spi_clock_freq > SPI_HIGH_FREQUENCY) {
         reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
         reg_val |= SPI_TC_SDC;
-    } else if (spi->spi_clk.spi_clock_freq <= 24000000) {
+    } else if (spi->spi_clk.spi_clock_freq <= SPI_LOW_FREQUENCY) {
         reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
         reg_val |= SPI_TC_SDM;
     } else {
@@ -824,7 +827,7 @@ static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
 
     sunxi_spi_set_master(spi);
 
-    sunxi_spi_set_clk(spi, spi->clk_rate, spi->parent_clk_reg.parent_clk, 1);
+    sunxi_spi_set_clk(spi, spi->clk_rate, spi->spi_clk.spi_clock_freq, spi->spi_clk.cdr_mode);
 
     sunxi_spi_config_transer_control(spi);
 

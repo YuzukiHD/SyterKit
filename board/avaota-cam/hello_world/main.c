@@ -15,6 +15,7 @@
 #include <sys-i2c.h>
 #include <sys-sdcard.h>
 #include <sys-sdhci.h>
+#include <sys-spi-nand.h>
 #include <sys-spi-nor.h>
 #include <sys-spi.h>
 
@@ -25,6 +26,7 @@
 #include <cli_termesc.h>
 
 extern sunxi_serial_t uart_dbg;
+extern sunxi_serial_t uart_card;
 extern dram_para_t dram_para;
 extern sunxi_dma_t sunxi_dma;
 extern sunxi_i2c_t sunxi_i2c0;
@@ -96,15 +98,7 @@ int cmd_load(int argc, const char **argv) {
 msh_declare_command(dump);
 msh_define_help(dump, "test", "Usage: dump\n");
 int cmd_dump(int argc, const char **argv) {
-    uint32_t start;
-    uint32_t test_time;
-
-    start = time_ms();
-    sdmmc_blk_write(&card0, (uint8_t *) (0x2020C00), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
-    test_time = time_ms() - start;
-    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
-                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+    uart_printf("%s\n", (void *) (0x2020C00));
     return 0;
 }
 
@@ -120,6 +114,8 @@ int main(void) {
     sunxi_clk_pre_init();
 
     sunxi_serial_init(&uart_dbg);
+
+    sunxi_serial_init(&uart_card);
 
     show_banner();
 
@@ -141,7 +137,15 @@ int main(void) {
 
     spi_nor_detect(&sunxi_spi0);
 
-    spi_nor_read(&sunxi_spi0, (void *) 0x81000000, 0x0, 0x100);
+    memset((void *) 0x81000000, 0x0, 0x1000);
+
+    uint32_t time = time_ms();
+    spi_nor_read(&sunxi_spi0, (void *) 0x81000000, 0x0, 1024 * 1024 * 4);
+    uint32_t time_end = time_ms();
+
+    printk_debug("SPI: speedtest %uKB in %ums at %uKB/S\n",
+                 1024 * 1024 * 4 / 1024, (time_end - time),
+                 1024 * 1024 * 4 / (time_end - time));
 
     syterkit_shell_attach(commands);
 

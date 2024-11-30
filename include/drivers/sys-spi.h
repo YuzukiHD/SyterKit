@@ -29,6 +29,19 @@ typedef enum {
     SPI_IO_QUAD_IO,
 } spi_io_mode_t;
 
+typedef enum {
+    SPI_LOW_FREQUENCY = 24000000,
+	SPI_MOD_FREQUENCY = 50000000,
+    SPI_HIGH_FREQUENCY = 60000000,
+    SPI_MAX_FREQUENCY = 100000000,
+} spi_speed_mode_t;
+
+typedef enum {
+	SPI_CDR_NONE = 0,
+    SPI_CDR1_MODE = 1,
+	SPI_CDR2_MODE = 2,
+} spi_clk_cdr_mode_t;
+
 typedef struct {
     gpio_mux_t gpio_cs;
     gpio_mux_t gpio_sck;
@@ -43,6 +56,7 @@ typedef struct {
     uint32_t spi_clock_source;
     uint32_t spi_clock_factor_n_offset;
     uint32_t spi_clock_freq;
+	spi_clk_cdr_mode_t cdr_mode;
 } sunxi_spi_clk_t;
 
 typedef struct {

@@ -419,6 +419,9 @@
         <File Name="../../../src/drivers/chips/sun20iw5/sys-wdt.c">
           <FileOption/>
         </File>
+        <File Name="../../../src/drivers/chips/sun20iw5/sys-sdhci.c">
+          <FileOption/>
+        </File>
       </VirtualDirectory>
       <File Name="../../../src/drivers/sys-dma.c" ExcludeProjConfig="">
         <FileOption/>
@@ -626,7 +629,7 @@
         <Optim>None (-O0)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
         <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd</IncludePath>
-        <OtherFlags>-nostdlib -g -ggdb -O0 -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
+        <OtherFlags>-nostdlib -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
         <Syntax>no</Syntax>
@@ -656,8 +659,6 @@
         <AutoLDFile>no</AutoLDFile>
         <LinkType>start-group</LinkType>
         <IncludeAllLibs>no</IncludeAllLibs>
-        <LinkSpecsType>none</LinkSpecsType>
-        <LinkUseNewlibNano>no</LinkUseNewlibNano>
       </Linker>
       <Debug>
         <LoadApplicationAtStartup>yes</LoadApplicationAtStartup>
@@ -713,15 +714,12 @@
         </ConfigSIM>
         <ConfigOpenOCD>
           <OpenOCDExecutablePath/>
-          <OpenOCDLocally>yes</OpenOCDLocally>
           <OpenOCDTelnetPortEnable>no</OpenOCDTelnetPortEnable>
           <OpenOCDTelnetPort>4444</OpenOCDTelnetPort>
           <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
           <OpenOCDTclPort>6666</OpenOCDTclPort>
           <OpenOCDConfigOptions/>
           <OpenOCDTimeout>5000</OpenOCDTimeout>
-          <OpenOCDRemoteIP>localhost</OpenOCDRemoteIP>
-          <OpenOCDRemotePort>3333</OpenOCDRemotePort>
           <PluginID>openocd-sifive</PluginID>
           <Version>latest</Version>
         </ConfigOpenOCD>
@@ -744,4 +742,15 @@
       </Flash>
     </BuildConfig>
   </BuildConfigs>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions>;;;</memoryExpressions>
+    <statistics>;;32;;MHZ;;up</statistics>
+    <peripheralTabs/>
+    <WatchDisplayFormat>1</WatchDisplayFormat>
+    <LocalDisplayFormat>1</LocalDisplayFormat>
+    <debugLayout/>
+    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
+    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
+  </DebugSessions>
 </Project>
