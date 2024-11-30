@@ -22,61 +22,89 @@
 extern "C" {
 #endif// __cplusplus
 
+/**
+ * @brief SPI Input/Output Mode Enumeration
+ * 
+ * This enum defines the different SPI I/O modes.
+ */
 typedef enum {
-    SPI_IO_SINGLE = 0x00,
-    SPI_IO_DUAL_RX,
-    SPI_IO_QUAD_RX,
-    SPI_IO_QUAD_IO,
+    SPI_IO_SINGLE = 0x00, /**< Single I/O mode, using one data line */
+    SPI_IO_DUAL_RX,       /**< Dual I/O mode, using two data lines for receiving */
+    SPI_IO_QUAD_RX,       /**< Quad I/O mode, using four data lines for receiving */
+    SPI_IO_QUAD_IO,       /**< Quad I/O mode, using four data lines for both transmitting and receiving */
 } spi_io_mode_t;
 
+/**
+ * @brief SPI Speed Mode Enumeration
+ * 
+ * This enum defines the different SPI clock frequencies.
+ */
 typedef enum {
-    SPI_LOW_FREQUENCY = 24000000,
-	SPI_MOD_FREQUENCY = 50000000,
-    SPI_HIGH_FREQUENCY = 60000000,
-    SPI_MAX_FREQUENCY = 100000000,
+    SPI_LOW_FREQUENCY = 24000000,  /**< Low frequency: 24 MHz */
+    SPI_MOD_FREQUENCY = 50000000,  /**< Medium frequency: 50 MHz */
+    SPI_HIGH_FREQUENCY = 60000000, /**< High frequency: 60 MHz */
+    SPI_MAX_FREQUENCY = 100000000, /**< Maximum frequency: 100 MHz */
 } spi_speed_mode_t;
 
+/**
+ * @brief SPI Clock CDR Mode Enumeration
+ * 
+ * This enum defines the clock CDR (Clock Data Recovery) modes.
+ */
 typedef enum {
-	SPI_CDR_NONE = 0,
-    SPI_CDR1_MODE = 1,
-	SPI_CDR2_MODE = 2,
+    SPI_CDR1_MODE = 0, /**< Clock Data Recovery mode 1 */
+    SPI_CDR2_MODE = 1, /**< Clock Data Recovery mode 2 */
+    SPI_CDR_NONE = 2,  /**< No Clock Data Recovery mode */
 } spi_clk_cdr_mode_t;
 
+/**
+ * @brief SPI GPIO Configuration Structure
+ * 
+ * This struct holds the GPIO configuration for the SPI interface.
+ */
 typedef struct {
-    gpio_mux_t gpio_cs;
-    gpio_mux_t gpio_sck;
-    gpio_mux_t gpio_miso;
-    gpio_mux_t gpio_mosi;
-    gpio_mux_t gpio_wp;
-    gpio_mux_t gpio_hold;
+    gpio_mux_t gpio_cs;   /**< Chip Select GPIO pin */
+    gpio_mux_t gpio_sck;  /**< SPI Clock (SCK) GPIO pin */
+    gpio_mux_t gpio_miso; /**< Master In Slave Out (MISO) GPIO pin */
+    gpio_mux_t gpio_mosi; /**< Master Out Slave In (MOSI) GPIO pin */
+    gpio_mux_t gpio_wp;   /**< Write Protect GPIO pin */
+    gpio_mux_t gpio_hold; /**< Hold GPIO pin */
 } sunxi_spi_gpio_t;
 
+/**
+ * @brief SPI Clock Configuration Structure
+ * 
+ * This struct holds the configuration for the SPI clock.
+ */
 typedef struct {
-    uint32_t spi_clock_cfg_base;
-    uint32_t spi_clock_source;
-    uint32_t spi_clock_factor_n_offset;
-    uint32_t spi_clock_freq;
-	spi_clk_cdr_mode_t cdr_mode;
+    uint32_t spi_clock_cfg_base;        /**< Base address of the SPI clock configuration */
+    uint32_t spi_clock_source;          /**< Source of the SPI clock */
+    uint32_t spi_clock_factor_n_offset; /**< Clock factor offset */
+    uint32_t spi_clock_freq;            /**< SPI clock frequency */
+    spi_clk_cdr_mode_t cdr_mode;        /**< Clock mode */
 } sunxi_spi_clk_t;
 
+/**
+ * @brief SPI Device Configuration Structure
+ * 
+ * This struct holds the configuration for an SPI device, including its clock and GPIO settings.
+ */
 typedef struct {
-    uint32_t base;
-    uint8_t id;
-    uint32_t clk_rate;
-    sunxi_spi_gpio_t gpio;
-    sunxi_dma_t *dma_handle;
-    sunxi_clk_t parent_clk_reg;
-    sunxi_spi_clk_t spi_clk;
+    uint32_t base;              /**< Base address of the SPI peripheral */
+    uint8_t id;                 /**< SPI device ID */
+    uint32_t clk_rate;          /**< Clock rate for the SPI device */
+    sunxi_spi_gpio_t gpio;      /**< GPIO configuration for the SPI device */
+    sunxi_dma_t *dma_handle;    /**< DMA handle for the SPI device */
+    sunxi_clk_t parent_clk_reg; /**< Parent clock register configuration */
+    sunxi_spi_clk_t spi_clk;    /**< SPI clock configuration */
 } sunxi_spi_t;
 
-#define MAX_FIFU (64)
-
-#define SPI_CLK_SEL_PERIPH_300M (0x1)
-#define SPI_CLK_SEL_PERIPH_200M (0x2)
-#define SPI_CLK_SEL_FACTOR_N_OFF (8)
-
-#define SPI_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
-#define SPI_DEFAULT_CLK_GATE_OFFSET(x) (x)
+#define MAX_FIFU (64)                          /**< Maximum FIFO size set to 64. */
+#define SPI_CLK_SEL_PERIPH_300M (0x1)          /**< Selects the SPI peripheral clock to 300 MHz. */
+#define SPI_CLK_SEL_PERIPH_200M (0x2)          /**< Selects the SPI peripheral clock to 200 MHz. */
+#define SPI_CLK_SEL_FACTOR_N_OFF (8)           /**< Offset for the SPI clock select factor is 8. */
+#define SPI_DEFAULT_CLK_RST_OFFSET(x) (x + 16) /**< Returns the default clock reset offset, based on the SPI module number (x). */
+#define SPI_DEFAULT_CLK_GATE_OFFSET(x) (x)     /**< Returns the default clock gate offset, based on the SPI module number (x). */
 
 /**
  * @brief Initializes the SPI interface.
