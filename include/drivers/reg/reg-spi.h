@@ -90,13 +90,10 @@
 #define SPI_WAIT_SWC_MASK (0xF << 16)   /* used only in master mode: Wait before start dual data transfer in dual SPI mode */
 
 /* SPI Clock Control Register Bit Fields & Masks,default:0x0000_0002 */
-/* SPI Clock Control Register Bit Fields & Masks,default:0x0000_0002 */
-#define SPI_CLK_CTL_CDR2_MASK \
-    0xff /* Clock Divide Rate 2,master mode only : SPI_CLK = AHB_CLK/(2*(n+1)) */
-#define SPI_CLK_CTL_CDR2(div) (((div) &SPI_CLK_CTL_CDR2_MASK) << 0)
-#define SPI_CLK_CTL_CDR1_MASK \
-    0xf /* Clock Divide Rate 1,master mode only : SPI_CLK = AHB_CLK/2^n */
-#define SPI_CLK_CTL_CDR1(div) (((div) &SPI_CLK_CTL_CDR1_MASK) << 8)
+#define SPI_CLK_CTL_CDR2 \
+    (0xFF << 0) /* Clock Divide Rate 2,master mode only : SPI_CLK = AHB_CLK/(2*(n+1)) */
+#define SPI_CLK_CTL_CDR1 \
+    (0xF << 8) /* Clock Divide Rate 1,master mode only : SPI_CLK = AHB_CLK/2^n */
 #define SPI_CLK_CTL_DRS \
     (0x1 << 12) /* Divide rate select,default,0:rate 1;1:rate 2 */
 #define SPI_CLK_SCOPE (SPI_CLK_CTL_CDR2 + 1)
@@ -111,7 +108,7 @@
 /* SPI Master Burst Control Counter reigster Bit Fields & Masks,default:0x0000_0000 */
 #define SPI_BCC_STC_MASK (0xFFFFFF << 0) /* master single mode transmit counter */
 #define SPI_BCC_DBC_MASK (0xF << 24)     /* master dummy burst counter */
-#define SPI_BCC_DBC_POS  (24)            /* master dummy burst pos */
+#define SPI_BCC_DBC_POS (24)             /* master dummy burst pos */
 #define SPI_BCC_DUAL_MODE (0x1 << 28)    /* master dual mode RX enable */
 #define SPI_BCC_QUAD_MODE (0x1 << 29)    /* master quad mode RX enable */
 
