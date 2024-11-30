@@ -343,7 +343,7 @@ static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str
     return mac_address_str;
 }
 
-static int load_extlinux(image_info_t *image, uint64_t dram_size) {
+static int load_extlinux(image_info_t *image, uint32_t dram_size) {
     FATFS fs;
     FRESULT fret;
     ext_linux_data_t data = {0};
@@ -612,7 +612,7 @@ int main(void) {
     pmu_axp2202_dump(&i2c_pmu);
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
 
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 

@@ -13,6 +13,18 @@
 #define BIT(x) (1 << x)
 
 /**
+ * @brief Read or write a 32-bit register at the specified address.
+ *
+ * This macro casts the given address `x` to a pointer to a volatile 
+ * 32-bit integer and returns the value at that address. This is useful 
+ * for directly accessing hardware registers.
+ *
+ * @param x The address of the target register.
+ * @return The value of the target register.
+ */
+#define REG32(x) (*((volatile uint32_t *) (x)))
+
+/**
  * Clear and set bits in a 32-bit address.
  *
  * @param addr The address to perform the operation on.

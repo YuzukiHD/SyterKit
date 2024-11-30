@@ -33,7 +33,7 @@
  * - Make sure the relevant hardware state is ready before invoking this function to avoid undefined behavior.
  */
 void sunxi_ansc_boot(uint32_t addr) {
-    uint32_t reg_val;
+    uint32_t reg_val = 0;
 
     /* Disable IRQ (Interrupt Request) */
     asm volatile("csrc mstatus, 0x8");
@@ -55,8 +55,8 @@ void sunxi_ansc_boot(uint32_t addr) {
                             CCU_APP_CLK_REG_A27L2_CFG_CLKEN_CLOCK_IS_ON << CCU_APP_CLK_REG_A27L2_CFG_CLKEN_OFFSET);
 
     /* Disable Instruction Cache */
-    asm volatile("li %0, 0x103f\n"  /* Load immediate value 0x103f into flags */
-                 "csrc mhcr, %0"  /* Clear the specified bits in mhcr register */
+    asm volatile("li %0, 0x103f\n" /* Load immediate value 0x103f into flags */
+                 "csrc mhcr, %0"   /* Clear the specified bits in mhcr register */
                  :
                  : "r"(reg_val));
 

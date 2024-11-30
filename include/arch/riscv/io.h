@@ -10,7 +10,7 @@
  *
  * @param x The bit position to generate the bit mask for.
  */
-#define BIT(x) (1 << x)
+#define BIT(x) (1 << (x))
 
 /**
  * Clear and set bits in a 32-bit address.

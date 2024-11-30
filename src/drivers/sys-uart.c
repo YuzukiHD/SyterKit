@@ -12,36 +12,17 @@
 
 #include <sys-clk.h>
 
-#define CCU_UART_RST_OFFSET (16)
-#define SERIAL_PARENT_CLK (24000000)
-
-void __attribute__((weak)) sunxi_serial_clock_init(sunxi_serial_t *uart) {
-    uint32_t addr;
-    uint32_t val;
-
-    /* Open the clock gate for uart */
-    addr = CCU_BASE + CCU_UART_BGR_REG;
-    val = read32(addr);
-    val &= ~(1 << uart->id);
-    write32(addr, val);
+void sunxi_serial_clock_init(sunxi_serial_t *uart) {
+    sunxi_clk_t uart_clk = uart->uart_clk;
+    /* Set CLK RST */
+    setbits_le32(uart_clk.rst_reg_base, BIT(uart_clk.rst_reg_offset));
+    /* Open Gate */
+    clrbits_le32(uart_clk.gate_reg_base, BIT(uart_clk.gate_reg_offset));
     udelay(10);
-    val |= 1 << uart->id;
-    write32(addr, val);
-
-    /* Deassert USART reset */
-    addr = CCU_BASE + CCU_UART_BGR_REG;
-    val = read32(addr);
-    val &= ~(1 << (CCU_UART_RST_OFFSET + uart->id));
-    write32(addr, val);
-    udelay(10);
-    val |= 1 << (CCU_UART_RST_OFFSET + uart->id);
-    write32(addr, val);
+    setbits_le32(uart_clk.gate_reg_base, BIT(uart_clk.gate_reg_offset));
 }
 
-void __attribute__((weak)) sunxi_serial_init(sunxi_serial_t *uart) {
-    uint32_t addr;
-    uint32_t val;
-
+void sunxi_serial_init(sunxi_serial_t *uart) {
     sunxi_serial_clock_init(uart);
 
     /* set default to 115200-8-1-0 for backwords compatibility */
@@ -59,7 +40,7 @@ void __attribute__((weak)) sunxi_serial_init(sunxi_serial_t *uart) {
     serial_reg->mcr = 0x3;
 
     /* Calculate UART clock frequency */
-    uint32_t uart_clk = (SERIAL_PARENT_CLK + 8 * uart->baud_rate) / (16 * uart->baud_rate);
+    uint32_t uart_clk = (uart->uart_clk.parent_clk + 8 * uart->baud_rate) / (16 * uart->baud_rate);
 
     /* Set bit 7 of line control register LCR */
     serial_reg->lcr |= 0x80;
@@ -93,8 +74,8 @@ void __attribute__((weak)) sunxi_serial_init(sunxi_serial_t *uart) {
     serial_reg->fcr = 0x7;
 
     /* Config uart TXD and RXD pins */
-    sunxi_gpio_init(uart->gpio_tx.pin, uart->gpio_tx.mux);
-    sunxi_gpio_init(uart->gpio_rx.pin, uart->gpio_rx.mux);
+    sunxi_gpio_init(uart->gpio_pin.gpio_tx.pin, uart->gpio_pin.gpio_tx.mux);
+    sunxi_gpio_init(uart->gpio_pin.gpio_rx.pin, uart->gpio_pin.gpio_rx.mux);
 }
 
 void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {

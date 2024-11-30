@@ -69,7 +69,7 @@ set(CMAKE_ASM_FLAGS_RELEASE " ")
 
 # Define the major and minor version numbers of the project
 set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 3)
+set(PROJECT_VERSION_MINOR 4)
 
 # Use Git commands to get the Git version and hash values of the project
 find_package(Git QUIET)
@@ -233,6 +233,7 @@ include_directories(
     include/drivers/chips
     include/drivers/reg
     include/drivers/usb
+    include/drivers/mtd
     include/lib/fatfs
     include/lib/fdt
     include/lib/elf

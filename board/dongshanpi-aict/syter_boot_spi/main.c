@@ -165,7 +165,6 @@ int cmd_boot(int argc, const char **argv) {
 
     /* Disable SPI controller, clean up and exit the DMA subsystem. */
     sunxi_spi_disable(&sunxi_spi0);
-    dma_exit();
 
     /* Set up boot parameters for the kernel. */
     if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
@@ -218,7 +217,7 @@ int main(void) {
     }
 
     /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint64_t dram_size = sunxi_dram_init(&dram_para);
+    uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
 
     /* Debug message to indicate that MMU is enabled. */
@@ -243,11 +242,6 @@ int main(void) {
     /* Copy the filenames for the DTB, kernel image. */
     strcpy(image.filename, CONFIG_KERNEL_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
-
-    /* Initialize the DMA subsystem and test it */
-    dma_init();
-    dma_test((uint32_t *) CONFIG_DTB_LOAD_ADDR,
-             (uint32_t *) CONFIG_KERNEL_LOAD_ADDR);
 
     /* Initialize the SPI controller. */
     if (sunxi_spi_init(&sunxi_spi0) != 0) {

@@ -9,50 +9,41 @@
 
 #include <log.h>
 
-#include <sys-clk.h>
+#include <sys-dma.h>
 
-#include "sys-dma.h"
-
-#define SUNXI_DMA_MAX 16
+#ifndef SUNXI_DMA_MAX
+#define SUNXI_DMA_MAX 4
+#endif
 
 static int dma_int_cnt = 0;
 
 static int dma_init_ok = -1;
 
-static dma_source_t dma_channel_source[SUNXI_DMA_MAX];
+static sunxi_dma_source_t dma_channel_source[SUNXI_DMA_MAX];
 
-static dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
+static sunxi_dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
 
-void __attribute__((weak)) sunxi_dma_clk_init() {
-    uint32_t val;
-    /* dma : mbus clock gating */
-    //	ccu->mbus_gate |= 1 << 0;
-    val = read32(CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG);
-    val |= 1 << 0;
-    write32(CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG, val);
+static uint32_t DMA_REG_BASE = 0x0;
 
-    /* dma reset */
-    //	ccu->dma_gate_reset |= 1 << DMA_RST_OFS;
-    val = read32(CCU_BASE + CCU_DMA_BGR_REG);
-    val |= 1 << DMA_RST_OFS;
-    write32(CCU_BASE + CCU_DMA_BGR_REG, val);
-
-    /* dma gating */
-    //	ccu->dma_gate_reset |= 1 << DMA_GATING_OFS;
-    val = read32(CCU_BASE + CCU_DMA_BGR_REG);
-    val |= 1 << DMA_GATING_OFS;
-    write32(CCU_BASE + CCU_DMA_BGR_REG, val);
+void sunxi_dma_clk_init(sunxi_dma_t *dma) {
+    /* DMA : mbus clock gating */
+    setbits_le32(dma->bus_clk.gate_reg_base, BIT(dma->bus_clk.gate_reg_offset));
+    /* DMA reset */
+    setbits_le32(dma->dma_clk.rst_reg_base, BIT(dma->dma_clk.rst_reg_offset));
+    /* DMA gating */
+    setbits_le32(dma->dma_clk.gate_reg_base, BIT(dma->dma_clk.gate_reg_offset));
 }
 
-void dma_init(void) {
-    printk_debug("DMA: init\n");
-    int i;
-    dma_reg_t *const dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
+void sunxi_dma_init(sunxi_dma_t *dma) {
+    int i = 0;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
+
+    DMA_REG_BASE = dma->dma_reg_base;
 
     if (dma_init_ok > 0)
         return;
 
-    sunxi_dma_clk_init();
+    sunxi_dma_clk_init(dma);
 
     dma_reg->irq_en0 = 0;
     dma_reg->irq_en1 = 0;
@@ -60,11 +51,11 @@ void dma_init(void) {
     dma_reg->irq_pending0 = 0xffffffff;
     dma_reg->irq_pending1 = 0xffffffff;
 
-    /* auto MCLK gating  disable */
+    /* auto MCLK gating disable */
     dma_reg->auto_gate &= ~(0x7 << 0);
     dma_reg->auto_gate |= 0x7 << 0;
 
-    memset((void *) dma_channel_source, 0, SUNXI_DMA_MAX * sizeof(dma_source_t));
+    memset((void *) dma_channel_source, 0, SUNXI_DMA_MAX * sizeof(sunxi_dma_source_t));
 
     for (i = 0; i < SUNXI_DMA_MAX; i++) {
         dma_channel_source[i].used = 0;
@@ -78,20 +69,23 @@ void dma_init(void) {
     return;
 }
 
-void dma_exit(void) {
-    int i;
-    dma_reg_t *dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
+void sunxi_dma_exit(sunxi_dma_t *dma) {
+    uint32_t dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
 
     /* free dma channel if other module not free it */
-    for (i = 0; i < SUNXI_DMA_MAX; i++) {
+    for (int i = 0; i < SUNXI_DMA_MAX; i++) {
         if (dma_channel_source[i].used == 1) {
             dma_channel_source[i].channel->enable = 0;
             dma_channel_source[i].used = 0;
+            dma_fd = (uint32_t) &dma_channel_source[i];
+            sunxi_dma_disable_int(dma_fd);
+            sunxi_dma_free_int(dma_fd);
         }
     }
 
     /* close dma clock when dma exit */
-    dma_reg->auto_gate &= ~(1 << DMA_GATING_OFS | 1 << DMA_RST_OFS);
+    dma_reg->auto_gate &= ~(1 << dma->dma_clk.gate_reg_offset | 1 << dma->dma_clk.rst_reg_offset);
 
     dma_reg->irq_en0 = 0;
     dma_reg->irq_en1 = 0;
@@ -102,10 +96,8 @@ void dma_exit(void) {
     dma_init_ok--;
 }
 
-uint32_t dma_request_from_last(uint32_t dmatype) {
-    int i;
-
-    for (i = SUNXI_DMA_MAX - 1; i >= 0; i--) {
+uint32_t sunxi_dma_request_from_last(uint32_t dmatype) {
+    for (int i = SUNXI_DMA_MAX - 1; i >= 0; i--) {
         if (dma_channel_source[i].used == 0) {
             dma_channel_source[i].used = 1;
             dma_channel_source[i].channel_count = i;
@@ -116,10 +108,8 @@ uint32_t dma_request_from_last(uint32_t dmatype) {
     return 0;
 }
 
-uint32_t dma_request(uint32_t dmatype) {
-    int i;
-
-    for (i = 0; i < SUNXI_DMA_MAX; i++) {
+uint32_t sunxi_dma_request(uint32_t dmatype) {
+    for (int i = 0; i < SUNXI_DMA_MAX; i++) {
         if (dma_channel_source[i].used == 0) {
             dma_channel_source[i].used = 1;
             dma_channel_source[i].channel_count = i;
@@ -131,22 +121,26 @@ uint32_t dma_request(uint32_t dmatype) {
     return 0;
 }
 
-int dma_release(uint32_t hdma) {
-    dma_source_t *dma_source = (dma_source_t *) hdma;
+int sunxi_dma_release(uint32_t dma_fd) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
 
-    if (!dma_source->used)
+    if (!dma_source->used) {
         return -1;
+    }
+
+    sunxi_dma_disable_int(dma_fd);
+    sunxi_dma_free_int(dma_fd);
 
     dma_source->used = 0;
 
     return 0;
 }
 
-int dma_setting(uint32_t hdma, dma_set_t *cfg) {
+int sunxi_dma_setting(uint32_t dma_fd, sunxi_dma_set_t *cfg) {
     uint32_t commit_para;
-    dma_set_t *dma_set = cfg;
-    dma_source_t *dma_source = (dma_source_t *) hdma;
-    dma_desc_t *desc = dma_source->desc;
+    sunxi_dma_set_t *dma_set = cfg;
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_desc_t *desc = dma_source->desc;
     uint32_t channel_addr = (uint32_t) (&(dma_set->channel_cfg));
 
     if (!dma_source->used)
@@ -166,10 +160,10 @@ int dma_setting(uint32_t hdma, dma_set_t *cfg) {
     return 0;
 }
 
-int dma_start(uint32_t hdma, uint32_t saddr, uint32_t daddr, uint32_t bytes) {
-    dma_source_t *dma_source = (dma_source_t *) hdma;
-    dma_channel_reg_t *channel = dma_source->channel;
-    dma_desc_t *desc = dma_source->desc;
+int sunxi_dma_start(uint32_t dma_fd, uint32_t saddr, uint32_t daddr, uint32_t bytes) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_channel_reg_t *channel = dma_source->channel;
+    sunxi_dma_desc_t *desc = dma_source->desc;
 
     if (!dma_source->used)
         return -1;
@@ -186,9 +180,9 @@ int dma_start(uint32_t hdma, uint32_t saddr, uint32_t daddr, uint32_t bytes) {
     return 0;
 }
 
-int dma_stop(uint32_t hdma) {
-    dma_source_t *dma_source = (dma_source_t *) hdma;
-    dma_channel_reg_t *channel = dma_source->channel;
+int sunxi_dma_stop(uint32_t dma_fd) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_channel_reg_t *channel = dma_source->channel;
 
     if (!dma_source->used)
         return -1;
@@ -197,10 +191,10 @@ int dma_stop(uint32_t hdma) {
     return 0;
 }
 
-int dma_querystatus(uint32_t hdma) {
+int sunxi_dma_querystatus(uint32_t dma_fd) {
     uint32_t channel_count;
-    dma_source_t *dma_source = (dma_source_t *) hdma;
-    dma_reg_t *dma_reg = (dma_reg_t *) SUNXI_DMA_BASE;
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 
     if (!dma_source->used)
         return -1;
@@ -210,11 +204,120 @@ int dma_querystatus(uint32_t hdma) {
     return (dma_reg->status >> channel_count) & 0x01;
 }
 
-int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
-    uint32_t len = 512 * 1024;
-    dma_set_t dma_set;
-    uint32_t hdma, st = 0;
+int sunxi_dma_install_int(uint32_t dma_fd, void *p) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+    uint8_t channel_count;
+
+    if (!dma_source->used)
+        return -1;
+
+    channel_count = dma_source->channel_count;
+
+    if (channel_count < 8)
+        dma_reg->irq_pending0 = (7 << channel_count * 4);
+    else
+        dma_reg->irq_pending1 = (7 << (channel_count - 8) * 4);
+
+    if (!dma_source->dma_func.m_func) {
+        dma_source->dma_func.m_func = 0;
+        dma_source->dma_func.m_data = p;
+    } else {
+        printk_error("DMA: 0x%08x int is used already, you have to free it first\n", dma_fd);
+    }
+
+    return 0;
+}
+
+int sunxi_dma_enable_int(uint32_t dma_fd) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+    uint8_t channel_count;
+
+    if (!dma_source->used)
+        return -1;
+
+    channel_count = dma_source->channel_count;
+    if (channel_count < 8) {
+        if ((dma_reg->irq_en0) & (DMA_PKG_END_INT << channel_count * 4)) {
+            printk_debug("DMA: 0x%08x int is avaible already\n", dma_fd);
+            return 0;
+        }
+        dma_reg->irq_en0 |= (DMA_PKG_END_INT << channel_count * 4);
+    } else {
+        if ((dma_reg->irq_en1) & (DMA_PKG_END_INT << (channel_count - 8) * 4)) {
+            printk_debug("DMA: 0x%08x int is avaible already\n", dma_fd);
+            return 0;
+        }
+        dma_reg->irq_en1 |= (DMA_PKG_END_INT << (channel_count - 8) * 4);
+    }
+
+    dma_int_cnt++;
+
+    return 0;
+}
+
+int sunxi_dma_disable_int(uint32_t dma_fd) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+    uint8_t channel_count;
+
+    if (!dma_source->used)
+        return -1;
+
+    channel_count = dma_source->channel_count;
+    if (channel_count < 8) {
+        if (!((dma_reg->irq_en0) & (DMA_PKG_END_INT << channel_count * 4))) {
+            printk_debug("DMA: 0x%08x int is not used yet\n", dma_fd);
+            return 0;
+        }
+        dma_reg->irq_en0 &= ~(DMA_PKG_END_INT << channel_count * 4);
+    } else {
+        if (!((dma_reg->irq_en1) & (DMA_PKG_END_INT << (channel_count - 8) * 4))) {
+            printk_debug("DMA: 0x%08x int is not used yet\n", dma_fd);
+            return 0;
+        }
+        dma_reg->irq_en1 &= ~(DMA_PKG_END_INT << (channel_count - 8) * 4);
+    }
+
+    /* disable golbal int */
+    if (dma_int_cnt > 0)
+        dma_int_cnt--;
+
+    return 0;
+}
+
+int sunxi_dma_free_int(uint32_t dma_fd) {
+    sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
+    sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+    uint8_t channel_count;
+
+    if (!dma_source->used)
+        return -1;
+
+    channel_count = dma_source->channel_count;
+    if (channel_count < 8)
+        dma_reg->irq_pending0 = (7 << channel_count);
+    else
+        dma_reg->irq_pending1 = (7 << (channel_count - 8));
+
+    if (dma_source->dma_func.m_func) {
+        dma_source->dma_func.m_func = NULL;
+        dma_source->dma_func.m_data = NULL;
+    } else {
+        printk_debug("DMA: 0x%08x int is free, you do not need to free it again\n", dma_fd);
+        return -1;
+    }
+
+    return 0;
+}
+
+
+int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len) {
+    sunxi_dma_set_t dma_set;
+    uint32_t st = 0;
     uint32_t timeout;
+    uint32_t dma_fd;
     uint32_t i, valid;
 
     len = ALIGN(len, 4);
@@ -238,13 +341,13 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
     dma_set.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_16BIT;
     dma_set.channel_cfg.reserved1 = 0;
 
-    hdma = dma_request(0);
-    if (!hdma) {
+    dma_fd = sunxi_dma_request(0);
+    if (!dma_fd) {
         printk_error("DMA: can't request dma\n");
         return -1;
     }
 
-    dma_setting(hdma, &dma_set);
+    sunxi_dma_setting(dma_fd, &dma_set);
 
     // prepare data
     for (i = 0; i < (len / 4); i += 4) {
@@ -257,21 +360,22 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
     /* timeout : 100 ms */
     timeout = time_ms();
 
-    dma_start(hdma, (uint32_t) src_addr, (uint32_t) dst_addr, len);
-    st = dma_querystatus(hdma);
+    sunxi_dma_start(dma_fd, (uint32_t) src_addr, (uint32_t) dst_addr, len);
+    st = sunxi_dma_querystatus(dma_fd);
 
     while ((time_ms() - timeout < 100) && st) {
-        st = dma_querystatus(hdma);
+        st = sunxi_dma_querystatus(dma_fd);
     }
 
     if (st) {
         printk_error("DMA: test timeout!\n");
-        dma_stop(hdma);
-        dma_release(hdma);
+        sunxi_dma_stop(dma_fd);
+        sunxi_dma_release(dma_fd);
 
         return -2;
     } else {
         valid = 1;
+        printk_debug("DMA: test done in %lums\n", (time_ms() - timeout));
         // Check data is valid
         for (i = 0; i < (len / 4); i += 4) {
             if (dst_addr[i] != i || dst_addr[i + 1] != i + 1 ||
@@ -280,15 +384,14 @@ int dma_test(uint32_t *src_addr, uint32_t *dst_addr) {
                 break;
             }
         }
-        if (valid) {
-            printk_info("DMA: test OK in %lums\n",
-                        (time_ms() - timeout));
-        } else
+        if (valid)
+            printk_debug("DMA: test check valid\n");
+        else
             printk_error("DMA: test check failed at %u bytes\n", i);
     }
 
-    dma_stop(hdma);
-    dma_release(hdma);
+    sunxi_dma_stop(dma_fd);
+    sunxi_dma_release(dma_fd);
 
     return 0;
 }
