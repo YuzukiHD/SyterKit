@@ -21,7 +21,7 @@ endif()
 set(GIC_DRIVER "")
 if (CONFIG_CHIP_GIC)
 set(GIC_DRIVER
-    sys-gic.c
+    intc/sys-gic.c
 )
 endif()
 
