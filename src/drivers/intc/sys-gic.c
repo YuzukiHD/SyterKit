@@ -12,7 +12,7 @@
 
 #include <reg-ncat.h>
 
-#include "sys-gic.h"
+#include <sys-gic.h>
 
 static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
 
