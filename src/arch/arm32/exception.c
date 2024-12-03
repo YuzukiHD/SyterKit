@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <types.h>
 
 #include <mmu.h>
@@ -20,6 +21,15 @@ static void show_regs(struct arm_regs_t *regs) {
     for (i = 12; i >= 0; i--)
         printk_error("r%-2d: 0x%08lx\n", i, regs->r[i]);
     printk_error("\n");
+    dump_stack();
+
+    char *PC = (char *) regs->pc;
+    long *SP = (long *) regs->sp;
+    char *LR = (char *) regs->lr;
+    if (regs->cpsr & 0x20) {
+        MAKE_THUMB_ADDR(PC);
+    }
+    backtrace(PC, SP, LR);
 }
 
 void __attribute__((weak)) arm32_do_undefined_instruction(struct arm_regs_t *regs) {

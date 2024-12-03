@@ -24,6 +24,7 @@ extern "C" {
 #define LOG_LEVEL_INFO 3
 #define LOG_LEVEL_DEBUG 4
 #define LOG_LEVEL_TRACE 5
+#define LOG_LEVEL_BACKTRACE 6
 
 #ifndef LOG_LEVEL_DEFAULT
 

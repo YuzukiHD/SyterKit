@@ -22,13 +22,18 @@ uint32_t current_hosc_freq = 24;    /**< Current frequency of the high-speed osc
  *
  * @return Current HOSC frequency in MHz (either 24 or 40).
  */
+
 static int sunxi_hosc_detect(void) {
-    uint32_t counter_val = 0;
-    writel(HOSC_FREQ_DET_HOSC_ENABLE_DETECT, CCU_HOSC_FREQ_DET_REG);
+	uint32_t val = readl(CCU_HOSC_FREQ_DET_REG);
+
+	writel(val & (~HOSC_FREQ_DET_HOSC_CLEAR_MASK), CCU_HOSC_FREQ_DET_REG);
+	writel(val | HOSC_FREQ_DET_HOSC_ENABLE_DETECT, CCU_HOSC_FREQ_DET_REG);
+
     while (!(HOSC_FREQ_DET_HOSC_FREQ_READY_CLEAR_MASK & readl(CCU_HOSC_FREQ_DET_REG)))
         ;
-    counter_val = (readl(CCU_HOSC_FREQ_DET_REG) & HOSC_FREQ_DET_HOSC_FREQ_DET_CLEAR_MASK) >> HOSC_FREQ_DET_HOSC_FREQ_DET_OFFSET;
-    if (counter_val < ((HOSC_24M_COUNTER + HOSC_40M_COUNTER) / 2)) {
+
+    val = (readl(CCU_HOSC_FREQ_DET_REG) & HOSC_FREQ_DET_HOSC_FREQ_DET_CLEAR_MASK) >> HOSC_FREQ_DET_HOSC_FREQ_DET_OFFSET;
+    if (val < ((HOSC_24M_COUNTER + HOSC_40M_COUNTER) / 2)) {
         current_hosc_freq = HOSC_FREQ_24M;
         return HOSC_FREQ_24M;
     } else {
