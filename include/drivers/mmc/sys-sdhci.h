@@ -201,6 +201,28 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data);
  */
 void sunxi_sdhci_dump_reg(sunxi_sdhci_t *sdhci);
 
+/* Internal Use */
+/**
+ * @brief Set the SDHC controller's clock frequency.
+ * 
+ * This function sets the clock frequency for the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param clk_hz Desired clock frequency in Hertz.
+ * @return Returns 0 on success, -1 on failure.
+ */
+extern int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz);
+
+/**
+ * @brief Get the current clock frequency of the SDHC controller.
+ * 
+ * This function retrieves the current clock frequency of the specified SDHC controller.
+ * 
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return Current clock frequency in Hertz.
+ */
+extern uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci);
+
 #ifdef __cplusplus
 }
 #endif// __cplusplus
