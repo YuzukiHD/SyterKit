@@ -140,7 +140,7 @@ sunxi_sdhci_t sdhci2 = {
         .id = MMC_CONTROLLER_2,
         .reg_base = SUNXI_SMHC2_BASE,
         .sdhci_mmc_type = MMC_TYPE_EMMC,
-        .max_clk = 25000000,
+        .max_clk = 5200000,
         .width = SMHC_WIDTH_8BIT,
         .dma_des_addr = SDRAM_BASE + 0x30080000,
         .pinctrl = {
@@ -168,7 +168,7 @@ sunxi_sdhci_t sdhci2 = {
                 .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
                 .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
                 .clk_sel = 0x1,
-                .parent_clk = 600000000,
+                .parent_clk = 800000000,
         },
 };
 
