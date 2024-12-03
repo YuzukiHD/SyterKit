@@ -161,6 +161,7 @@ int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk);
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
 
+
 #ifdef __cplusplus
 }
 #endif// __cplusplus
