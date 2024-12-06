@@ -25,6 +25,8 @@ int main(void) {
 
     sunxi_clk_init();
 
+    pmu_axp2202_init(&i2c_pmu);
+
     printk_info("Hello World!\n");
 
     abort();
