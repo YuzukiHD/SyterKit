@@ -98,6 +98,7 @@ project(SyterKit VERSION 0.4.0 LANGUAGES C CXX ASM)
 
 # Include other CMake modules
 include(cmake/add_syterkit_app.cmake)
+include(cmake/add_syterkit_driver.cmake)
 
 # Get the name of the compiler
 string(SUBSTRING ${CMAKE_C_COMPILER} 1 -1 COMPILER_NAME)
