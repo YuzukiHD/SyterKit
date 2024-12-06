@@ -53,3 +53,7 @@ endif()
 if(CONFIG_BOARD_AVAOTA-CAM)
     add_subdirectory(avaota-cam)
 endif()
+
+if(CONFIG_BOARD_AVAOTA-NAS)
+    add_subdirectory(avaota-nas)
+endif()

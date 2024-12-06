@@ -13,6 +13,20 @@
 
 extern void abort();
 
+// #define START_UP_DEBUG
+#ifdef START_UP_DEBUG
+void int_to_hex_string(int value, char* buffer) {
+    char hex_digits[] = "0123456789ABCDEF";
+    int i;
+    
+    for (i = 0; i < 8; i++) {
+        buffer[7 - i] = hex_digits[value & 0xF];
+        value >>= 4;
+    }
+    buffer[8] = '\0';
+}
+#endif
+
 static void show_regs(struct arm_regs_t *regs) {
     int i = 0;
 
@@ -21,7 +35,6 @@ static void show_regs(struct arm_regs_t *regs) {
     for (i = 12; i >= 0; i--)
         printk_error("r%-2d: 0x%08lx\n", i, regs->r[i]);
     printk_error("\n");
-    dump_stack();
 
     char *PC = (char *) regs->pc;
     long *SP = (long *) regs->sp;
