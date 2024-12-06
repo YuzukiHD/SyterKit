@@ -145,7 +145,9 @@ reset:
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_srv_end
 
-	bl  clear_bss
+	bl clear_bss
+
+	bl neon_enable
 
 	/*
 	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,

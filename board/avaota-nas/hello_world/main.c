@@ -20,8 +20,6 @@ int main(void) {
 
     printk_info("Hello World!\n");
 
-    
-
     abort();
 
     return 0;
