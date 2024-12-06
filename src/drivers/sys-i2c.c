@@ -537,8 +537,6 @@ set_clk:
         duty = TWI_CLK_DUTY;
         i2c->clk &= ~(duty);
     }
-
-    printk_info("twi->clk %x\r\n", i2c->clk);
 }
 
 /**
