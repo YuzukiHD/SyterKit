@@ -18,7 +18,7 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
-#include <sys-sdcard.h>
+#include <sys-sdhci.h>
 #include <sys-sid.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
