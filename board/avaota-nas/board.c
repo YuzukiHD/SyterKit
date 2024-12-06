@@ -41,10 +41,6 @@ sunxi_serial_t uart_dbg = {
 };
 
 void neon_enable(void) {
-    /* set NSACR, both Secure and Non-secure access are allowed to NEON */
-    asm volatile("MRC p15, 0, r0, c1, c1, 2");
-    asm volatile("ORR r0, r0, #(0x3<<10) @ enable fpu/neon");
-    asm volatile("MCR p15, 0, r0, c1, c1, 2");
     /* Set the CPACR for access to CP10 and CP11*/
     asm volatile("LDR r0, =0xF00000");
     asm volatile("MCR p15, 0, r0, c1, c0, 2");
@@ -74,4 +70,18 @@ void show_chip() {
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
     printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+
+    uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
+
+    switch (chip_markid_sid) {
+        case 0x5f00:
+            printk_info("Chip type = A733MX-N3X");
+            break;
+        default:
+            printk_info("Chip type = UNKNOW");
+            break;
+    }
+
+    uint32_t version = read32(SUNXI_SYSCTRL_BASE + 0x24) & 0x7;
+    printk(LOG_LEVEL_MUTE, " Chip Version = %04x \n", version);
 }
