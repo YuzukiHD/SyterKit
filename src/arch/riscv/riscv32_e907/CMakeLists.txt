@@ -1,6 +1,7 @@
-# SPDX-License-Identifier: Apache-2.0 
+# SPDX-License-Identifier: GPL-2.0+ 
 
 add_library(arch-obj OBJECT
+    backtrace.c
     timer.c
     exception.c
     memcpy.S

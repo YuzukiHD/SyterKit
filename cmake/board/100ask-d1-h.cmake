@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: GPL-2.0+
 
 set(CONFIG_ARCH_RISCV64 True)
 set(CONFIG_ARCH_RISCV64_CORE_C906 True)

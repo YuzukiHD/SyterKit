@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -95,10 +95,19 @@ int cmd_load(int argc, const char **argv) {
     return 0;
 }
 
-msh_declare_command(dump);
-msh_define_help(dump, "test", "Usage: dump\n");
-int cmd_dump(int argc, const char **argv) {
-    uart_printf("%s\n", (void *) (0x2020C00));
+msh_declare_command(reset);
+msh_define_help(reset, "reset test", "Usage: reset\n");
+int cmd_reset(int argc, const char **argv) {
+	setbits_le32(SUNXI_PRCM_BASE + 0x1c, BIT(3)); /* enable WDT clk */
+	writel(0x16aa0000, SUNXI_RTC_WDG_BASE + 0x18); /* disable WDT */
+	writel(0x16aa0000 | BIT(0), SUNXI_RTC_WDG_BASE + 0x08); /* trigger WDT */
+    return 0;
+}
+
+msh_declare_command(bt);
+msh_define_help(bt, "backtrace test", "Usage: bt\n");
+int cmd_bt(int argc, const char **argv) {
+	dump_stack();
     return 0;
 }
 
@@ -106,7 +115,8 @@ const msh_command_entry commands[] = {
         msh_define_command(load),
         msh_define_command(read),
         msh_define_command(write),
-        msh_define_command(dump),
+        msh_define_command(bt),
+		msh_define_command(reset),
         msh_command_end,
 };
 
@@ -117,7 +127,7 @@ int main(void) {
 
     sunxi_serial_init(&uart_card);
 
-    show_banner();
+    //show_banner();
 
     printk_info("Hello World!\n");
 
@@ -128,10 +138,6 @@ int main(void) {
     sunxi_clk_dump();
 
     uint32_t dram_size = sunxi_dram_init(&dram_para);
-
-    printk_info("DRAM Size = %u\n", dram_size);
-
-    printk_info("peri1x = %u\n", sunxi_clk_get_peri1x_rate());
 
     sunxi_spi_init(&sunxi_spi0);
 

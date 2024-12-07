@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __SYS_SPI_H__
 #define __SYS_SPI_H__
@@ -160,6 +160,7 @@ int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk);
  * @return The total number of bytes transferred (txlen + rxlen).
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
+
 
 #ifdef __cplusplus
 }

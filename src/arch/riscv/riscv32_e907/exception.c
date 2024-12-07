@@ -1,8 +1,9 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <types.h>
 
 #include <mmu.h>
@@ -273,6 +274,9 @@ static void show_regs(struct pt_regs_t *regs) {
     printk_error("Bad address:        0x%08x\r\n", regs->badvaddr);
     printk_error("Stored ra:          0x%08x\r\n", regs->x[1]);
     printk_error("Stored sp:          0x%08x\r\n", regs->x[2]);
+	printk_error("========== backtrace ==========\n");
+	dump_stack();
+	backtrace((char *)regs->epc, (long *)regs->x[2], (char *)regs->x[1]);
 }
 
 static struct instruction_info_t *match_instruction(unsigned long insn) {

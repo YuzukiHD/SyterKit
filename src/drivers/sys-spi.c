@@ -1,6 +1,8 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
+#if LOG_LEVEL_DEFAULT <= LOG_LEVEL_DEBUG
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
+#endif
 
 #include <io.h>
 #include <stdarg.h>

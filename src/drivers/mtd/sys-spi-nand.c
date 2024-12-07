@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <io.h>
 #include <stdarg.h>
@@ -35,7 +35,6 @@ enum {
     OPCODE_PROGRAM_EXEC = 0x10,
     OPCODE_RESET = 0xff,
 };
-
 
 /* Micron calls it "feature", Winbond "status".
    We'll call it config for simplicity. */
@@ -308,7 +307,8 @@ static int spi_nand_set_config(sunxi_spi_t *spi, uint8_t addr, uint8_t val) {
  *
  * @param spi Pointer to the sunxi_spi_t structure.
  */
-static void spi_nand_wait_while_busy(sunxi_spi_t *spi) {
+static bool spi_nand_wait_while_busy(sunxi_spi_t *spi) {
+	uint32_t timeout = 0xffff;
     uint8_t tx[2]; /* Transmit buffer */
     uint8_t rx[1]; /* Receive buffer */
     int r;         /* Return value */
@@ -321,7 +321,14 @@ static void spi_nand_wait_while_busy(sunxi_spi_t *spi) {
         r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 1); /* Perform SPI transfer */
         if (r < 0)
             break;
+		timeout--;
+		if (!timeout) {
+			printk_warning("SPI NAND: wait busy timeout\n");
+			return false;
+		}
     } while ((rx[0] & 0x1) == 0x1); /* Check SR3 Busy bit */
+	
+	return true;
 }
 
 /**
@@ -334,7 +341,8 @@ int spi_nand_detect(sunxi_spi_t *spi) {
     uint8_t val; /* Configuration value */
 
     spi_nand_reset(spi);
-    spi_nand_wait_while_busy(spi);
+    if(!spi_nand_wait_while_busy(spi))
+		return -1;
 
     if (spi_nand_info(spi) == 0) {
         if ((spi_nand_get_config(spi, CONFIG_ADDR_PROTECT, &val) == 0) && (val != 0x0)) {
@@ -352,7 +360,8 @@ int spi_nand_detect(sunxi_spi_t *spi) {
         }
 
         if (info.id.mfr == (uint8_t) SPI_NAND_MFR_GIGADEVICE ||
-            info.id.mfr == (uint8_t) SPI_NAND_MFR_FORESEE) {
+            info.id.mfr == (uint8_t) SPI_NAND_MFR_FORESEE ||
+			info.id.mfr == (uint8_t) SPI_NAND_MFR_XTX) {
             if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
                 printk_debug("SPI-NAND: enable Quad mode\n");
                 val |= (1 << 0);
@@ -437,7 +446,9 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
         return -1;
     }
 
-    if (info.id.mfr == SPI_NAND_MFR_GIGADEVICE || info.id.mfr == SPI_NAND_MFR_FORESEE) {
+    if (info.id.mfr == SPI_NAND_MFR_GIGADEVICE ||
+		info.id.mfr == SPI_NAND_MFR_FORESEE ||
+		info.id.mfr == SPI_NAND_MFR_XTX) {
         while (cnt > 0) {
             ca = address & (info.page_size - 1);
             n = cnt > (info.page_size - ca) ? (info.page_size - ca) : cnt;

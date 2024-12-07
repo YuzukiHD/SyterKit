@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

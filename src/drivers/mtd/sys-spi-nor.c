@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <io.h>
 #include <stdarg.h>
@@ -209,8 +209,14 @@ static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr) {
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
 static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi) {
-    while ((spi_nor_read_status_register(spi) & 0x1) == 0x1)
-        ;
+	uint32_t timeout = 0xffff;
+    while (((spi_nor_read_status_register(spi) & 0x1) == 0x1)) {
+		timeout--;
+		if (!timeout) {
+			printk_warning("SPI NAND: wait busy timeout\n");
+			return;
+		}
+	}
 }
 
 /**

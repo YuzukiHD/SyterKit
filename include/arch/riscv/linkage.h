@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __RISCV_LINKAGE_H__
 #define __RISCV_LINKAGE_H__
