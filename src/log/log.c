@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -31,6 +31,8 @@ void printk(int level, const char *fmt, ...) {
         case LOG_LEVEL_ERROR:
             uart_printf("[%5lu.%06lu][\033[31mE\033[37m] ", seconds, milliseconds);
             break;
+		case LOG_LEVEL_BACKTRACE:
+			uart_printf("[%5lu.%06lu][\033[38;5;214mB\033[37m] ", seconds, milliseconds);
         case LOG_LEVEL_MUTE:
         default:
             break;

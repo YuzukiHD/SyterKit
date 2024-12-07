@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: GPL-2.0+
 
 # List of common libraries used by the application
 set(APP_COMMON_LIBRARY 

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
@@ -24,6 +24,7 @@ extern "C" {
 #define LOG_LEVEL_INFO 3
 #define LOG_LEVEL_DEBUG 4
 #define LOG_LEVEL_TRACE 5
+#define LOG_LEVEL_BACKTRACE 6
 
 #ifndef LOG_LEVEL_DEFAULT
 

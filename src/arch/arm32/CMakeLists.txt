@@ -1,4 +1,5 @@
 add_library(arch-obj OBJECT
+    backtrace.c
     exception.c
     memcmp.S
     memcpy.S

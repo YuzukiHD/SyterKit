@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <io.h>
 #include <stdarg.h>
@@ -68,27 +68,6 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 	{ {500, 1400, 50}, } },
 };
 /* clang-format on */
-
-/**
- * Get control information from the table based on the given name.
- *
- * @param name The name of the control information to retrieve.
- * @return A pointer to the axp_contrl_info structure corresponding to the given name,
- *         or NULL if the name is not found in the table.
- */
-static axp_contrl_info *get_ctrl_info_from_tbl(char *name) {
-    int i = 0;
-    int size = ARRAY_SIZE(axp_ctrl_tbl);
-    for (i = 0; i < size; i++) {
-        if (!strncmp(name, axp_ctrl_tbl[i].name, strlen(axp_ctrl_tbl[i].name))) {
-            break;
-        }
-    }
-    if (i >= size) {
-        return NULL;
-    }
-    return (axp_ctrl_tbl + i);
-}
 
 int pmu_axp2202_init(sunxi_i2c_t *i2c_dev) {
     uint8_t axp_val;

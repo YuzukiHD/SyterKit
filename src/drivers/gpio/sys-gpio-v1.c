@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <io.h>
 #include <stdarg.h>
@@ -12,7 +12,6 @@
 #include <reg-ncat.h>
 #include <sys-gpio.h>
 
-#if defined(CONFIG_CHIP_GPIO_V1)
 enum {
     GPIO_CFG0 = 0x00,
     GPIO_CFG1 = 0x04,
@@ -27,24 +26,6 @@ enum {
     GPIO_CFG_MASK = 0x7,
     GPIO_DRV_MASK = 0x3,
 };
-#else
-enum {
-    GPIO_CFG0 = 0x00,
-    GPIO_CFG1 = 0x04,
-    GPIO_CFG2 = 0x08,
-    GPIO_CFG3 = 0x0c,
-    GPIO_DAT = 0x10,
-    GPIO_DRV0 = 0x14,
-    GPIO_DRV1 = 0x18,
-    GPIO_DRV2 = 0x1c,
-    GPIO_DRV3 = 0x20,
-    GPIO_PUL0 = 0x24,
-    GPIO_PUL1 = 0x28,
-    GPIO_OFFSET = 0x30,
-    GPIO_CFG_MASK = 0xf,
-    GPIO_DRV_MASK = 0x3,
-};
-#endif
 
 /**
  * @brief Extracts the port number from a GPIO pin.
@@ -71,7 +52,7 @@ static uint32_t _port_base_get(gpio_t pin) {
     uint32_t port = pin >> PIO_NUM_IO_BITS;
 
     /* PL PM PN in R_PIO */
-    if (port > 10) {
+    if (port >= GPIO_PORTL) {
         return SUNXI_RPIO_BASE + (port - GPIO_PORTL) * GPIO_OFFSET;
     }
     /* PA PB PC PD PE PF PG PH PI PJ PK in PIO */

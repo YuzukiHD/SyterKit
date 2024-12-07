@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <io.h>
 #include <stdarg.h>
@@ -12,7 +12,7 @@
 
 #include <reg-ncat.h>
 
-#include "sys-gic.h"
+#include <sys-gic.h>
 
 static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
 

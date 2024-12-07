@@ -374,6 +374,9 @@
         <File Name="../../../src/arch/riscv/riscv32_e907/timer.c">
           <FileOption/>
         </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/backtrace.c">
+          <FileOption/>
+        </File>
       </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="cli">
@@ -453,16 +456,16 @@
         </File>
       </VirtualDirectory>
       <VirtualDirectory Name="pmu">
-        <File Name="../../../src/drivers/pmu/axp.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/pmu/axp.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/pmu/axp1530.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/pmu/axp1530.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/pmu/axp2101.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/pmu/axp2101.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/pmu/axp2202.c" ExcludeProjConfig="BuildSet">
+        <File Name="../../../src/drivers/pmu/axp2202.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -624,12 +627,12 @@
         <Tools/>
       </User>
       <Compiler>
-        <Define>CONFIG_CHIP_SUN20IW5;TRACE_MODE</Define>
+        <Define>CONFIG_CHIP_SUN20IW5;DEBUG_MODE</Define>
         <Undefine/>
         <Optim>None (-O0)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
         <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd</IncludePath>
-        <OtherFlags>-nostdlib -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable</OtherFlags>
+        <OtherFlags>-nostdlib -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-parentheses</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
         <Syntax>no</Syntax>
@@ -744,13 +747,13 @@
   </BuildConfigs>
   <DebugSessions>
     <watchExpressions/>
-    <memoryExpressions>;;;</memoryExpressions>
+    <memoryExpressions>0x20181C8;;;</memoryExpressions>
     <statistics>;;32;;MHZ;;up</statistics>
     <peripheralTabs/>
     <WatchDisplayFormat>1</WatchDisplayFormat>
     <LocalDisplayFormat>1</LocalDisplayFormat>
     <debugLayout/>
-    <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
+    <memoryTabColSizeExpressions>100:4;100:8;100:8;100:8;</memoryTabColSizeExpressions>
     <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
   </DebugSessions>
 </Project>
