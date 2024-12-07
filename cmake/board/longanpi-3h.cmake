@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: GPL-2.0+
 
 set(CONFIG_ARCH_ARM32 True)
 set(CONFIG_ARCH_ARM32_ARM64 True)
