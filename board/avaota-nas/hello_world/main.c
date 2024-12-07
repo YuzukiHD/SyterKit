@@ -36,22 +36,7 @@ int main(void) {
 
     pmu_axp8191_dump(&i2c_pmu);
 
-    sunxi_dram_init(NULL);
-
     printk_info("Hello World!\n");
-
-    if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
-    } else {
-        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
-    }
-
-    /* Initialize the SD card and check if initialization is successful. */
-    if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk_warning("SMHC: init failed\n");
-    } else {
-        printk_debug("Card OK!\n");
-    }
 
     abort();
 
