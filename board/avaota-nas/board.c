@@ -12,6 +12,8 @@
 
 #include <mmu.h>
 
+#include <mmc/sys-sdhci.h>
+
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
@@ -57,6 +59,39 @@ sunxi_i2c_t i2c_pmu = {
         },
 };
 
+sunxi_sdhci_t sdhci0 = {
+        .name = "sdhci0",
+        .id = MMC_CONTROLLER_0,
+        .reg_base = SUNXI_SMHC0_BASE,
+        .sdhci_mmc_type = MMC_TYPE_SD,
+        .max_clk = 50000000,
+        .width = SMHC_WIDTH_4BIT,
+        .dma_des_addr = SDRAM_BASE + 0x30080000,
+        .pinctrl = {
+                //.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
+                .gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
+                .gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
+                .gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
+                .gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
+                //.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
+                .gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
+                .cd_level = GPIO_LEVEL_LOW,
+        },
+        .clk_ctrl = {
+                .gate_reg_base = SUNXI_CCU_BASE + SMHC0_BGR_REG,
+                .gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = SUNXI_CCU_BASE + SMHC0_BGR_REG,
+                .rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
+        },
+        .sdhci_clk = {
+                .reg_base = SUNXI_CCU_BASE + SMHC0_CLK_REG,
+                .reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
+                .reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
+                .clk_sel = 0x1,
+                .parent_clk = 300000000,
+        },
+};
+
 void neon_enable(void) {
     /* Set the CPACR for access to CP10 and CP11*/
     asm volatile("LDR r0, =0xF00000");
@@ -99,6 +134,7 @@ void show_chip() {
             break;
     }
 
-    uint32_t version = read32(SUNXI_SYSCTRL_BASE + 0x24) & 0x7;
-    printk(LOG_LEVEL_MUTE, " Chip Version = %04x \n", version);
+    setbits_le32(SUNXI_SYSCTRL_BASE + 0x24, BIT(15));
+    uint32_t version = (read32(SUNXI_SYSCTRL_BASE + 0x24) & 0xFFFF0007) >> 16;
+    printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
