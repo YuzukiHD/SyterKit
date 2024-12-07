@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __SYS_I2C_H__
 #define __SYS_I2C_H__

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __CTYPE_H__
 #define __CTYPE_H__

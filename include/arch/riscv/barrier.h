@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __RISCV_BARRIER_H__
 #define __RISCV_BARRIER_H__

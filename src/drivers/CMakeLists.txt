@@ -3,6 +3,7 @@ add_syterkit_driver(intc)
 add_syterkit_driver(pmu)
 add_syterkit_driver(mtd)
 add_syterkit_driver(usb)
+add_syterkit_driver(ufs)
 
 if (CONFIG_CHIP_MMC_V2)
     add_syterkit_driver(mmc)

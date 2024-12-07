@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __SUN50IW9_REG_CCU_H__
 #define __SUN50IW9_REG_CCU_H__
