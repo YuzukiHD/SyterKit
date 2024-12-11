@@ -546,7 +546,6 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para) {
         m0 = 2;
     }
 
-
     clrsetbits_le32(SUNXI_CCU_AON_BASE + PLL_DDR_CTRL_REG,
                     PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK |
                             PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK |

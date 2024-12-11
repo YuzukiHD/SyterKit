@@ -19,6 +19,7 @@
 #include <sys-dram.h>
 #include <sys-gpio.h>
 #include <sys-i2c.h>
+#include <sys-pwm.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
@@ -180,6 +181,46 @@ sunxi_sdhci_t sdhci1 = {
                 .reg_factor_m_offset = SMHC_CTRL1_CLK_REG_SMHC_CTRL1_CLK_DIV1_OFFSET,
                 .clk_sel = SMHC_CTRL1_CLK_REG_SMHC_CTRL1_CLK_SEL_PERI_192M,
                 .parent_clk = 192000000,
+        },
+};
+
+sunxi_pwm_channel_t pwm_channel[] = {
+        {
+                .pin = {GPIO_PIN(GPIO_PORTD, 1), GPIO_PERIPH_MUX5},
+                .channel_mode = PWM_CHANNEL_SINGLE,
+        },
+        {
+                .pin = {GPIO_PIN(GPIO_PORTD, 2), GPIO_PERIPH_MUX5},
+                .channel_mode = PWM_CHANNEL_SINGLE,
+        },
+        {
+                .pin = {GPIO_PIN(GPIO_PORTD, 3), GPIO_PERIPH_MUX5},
+                .bind_channel = 3,
+                .dead_time = 4000,
+                .channel_mode = PWM_CHANNEL_BIND,
+        },
+        {
+                .pin = {GPIO_PIN(GPIO_PORTD, 4), GPIO_PERIPH_MUX5},
+                .bind_channel = 2,
+                .dead_time = 4000,
+                .channel_mode = PWM_CHANNEL_BIND,
+        },
+};
+
+sunxi_pwm_t pwm_chip0 = {
+        .base = SUNXI_PWM_BASE,
+        .id = 0,
+        .channel = pwm_channel,
+        .channel_size = 4,
+        .pwm_clk = {
+                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
+                .gate_reg_offset = BUS_CLK_GATING0_REG_PWM_PCLK_EN_OFFSET,
+                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
+                .rst_reg_offset = BUS_Reset0_REG_PRESETN_PWM_SW_OFFSET,
+        },
+        .clk_src = {
+                .clk_src_hosc = 40000000,
+                .clk_src_apb = 384000000,
         },
 };
 
