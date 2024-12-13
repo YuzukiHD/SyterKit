@@ -60,7 +60,6 @@ static const uint32_t pre_scal[][2] =
         (n) = ((uint64_t) (n)) / __base;   \
         if (__rem > __base / 2)            \
             ++(n);                         \
-        __rem;                             \
     } while (0)
 
 /**

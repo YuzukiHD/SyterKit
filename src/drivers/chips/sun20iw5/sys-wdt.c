@@ -10,5 +10,7 @@
 #include <log.h>
 
 void sys_reset() {
-    write32(0x020500a0 + 0x08, (0x16aa << 16) | (0x1 << 0));
+    setbits_le32(SUNXI_PRCM_BASE + 0x1c, BIT(3));           /* enable WDT clk */
+    writel(0x16aa0000, SUNXI_RTC_WDG_BASE + 0x18);          /* disable WDT */
+    writel(0x16aa0000 | BIT(0), SUNXI_RTC_WDG_BASE + 0x08); /* trigger WDT */
 }

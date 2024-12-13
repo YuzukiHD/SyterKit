@@ -14,4 +14,3 @@
 
 #include <sys-clk.h>
 #include <sys-trng.h>
-
