@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef __SUN20IW5_REG_CCU_H__
-#define __SUN20IW5_REG_CCU_H__
+#ifndef __SUN300IW1_REG_CCU_H__
+#define __SUN300IW1_REG_CCU_H__
 
 #include <reg-ncat.h>
 
@@ -1885,4 +1885,4 @@
      << PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET)
 #define PLL_LOCK_MASK (PLL_CPU_CTRL_REG_LOCK_CLEAR_MASK)
 
-#endif// __SUN20IW5_REG_CCU_H__
+#endif// __SUN300IW1_REG_CCU_H__
