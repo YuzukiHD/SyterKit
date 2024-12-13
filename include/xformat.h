@@ -23,8 +23,8 @@
 #include <string.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 /**
  * Define internal parameters as volatile for 8 bit cpu define
@@ -68,6 +68,6 @@ unsigned xformat(void (*outchar)(void *arg, char), void *arg, const char *fmt, .
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif

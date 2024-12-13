@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     FILE *inputFile, *outputFile;
     char *inputFileName = argv[1]; // Name of the input binary file
     char *outputFileName = argv[2];// Name of the output C array file
-    char *funcName = argv[3];// Name of the output C array
+    char *funcName = argv[3];      // Name of the output C array
     int fileSize;
 
     // Open the input binary file
