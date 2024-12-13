@@ -27,14 +27,6 @@ void sunxi_serial_clock_init(sunxi_serial_t *uart) {
 void sunxi_serial_init(sunxi_serial_t *uart) {
     sunxi_serial_clock_init(uart);
 
-    /* set default to 115200-8-1-0 for backwords compatibility */
-    if (uart->baud_rate == 0) {
-        uart->baud_rate = UART_BAUDRATE_115200;
-        uart->dlen = UART_DLEN_8;
-        uart->stop = UART_STOP_BIT_0;
-        uart->parity = UART_PARITY_NO;
-    }
-
     /* Typecast to sunxi_serial_reg_t structure pointer */
     sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
 

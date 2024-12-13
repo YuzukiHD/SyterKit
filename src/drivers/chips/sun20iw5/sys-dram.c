@@ -44,10 +44,10 @@ static int ns_to_t(dram_para_t *para, int nanoseconds) {
  * are applied.
  */
 static void dram_enable_all_master(void) {
-    writel(~0, (MCTL_COM_BASE + MCTL_COM_MAER0)); // Enable all masters in MAER0
-    writel(0xff, (MCTL_COM_BASE + MCTL_COM_MAER1)); // Enable all masters in MAER1
-    writel(0xffff, (MCTL_COM_BASE + MCTL_COM_MAER2)); // Enable all masters in MAER2
-    udelay(10); // Delay for 10 microseconds to allow changes to take effect
+    writel(~0, (MCTL_COM_BASE + MCTL_COM_MAER0));    // Enable all masters in MAER0
+    writel(0xff, (MCTL_COM_BASE + MCTL_COM_MAER1));  // Enable all masters in MAER1
+    writel(0xffff, (MCTL_COM_BASE + MCTL_COM_MAER2));// Enable all masters in MAER2
+    udelay(10);                                      // Delay for 10 microseconds to allow changes to take effect
 }
 
 /**
@@ -58,10 +58,10 @@ static void dram_enable_all_master(void) {
  * are applied.
  */
 static void dram_disable_all_master(void) {
-    writel(1, (MCTL_COM_BASE + MCTL_COM_MAER0)); // Disable all masters in MAER0
-    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER1)); // Disable all masters in MAER1
-    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER2)); // Disable all masters in MAER2
-    udelay(10); // Delay for 10 microseconds to allow changes to take effect
+    writel(1, (MCTL_COM_BASE + MCTL_COM_MAER0));// Disable all masters in MAER0
+    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER1));// Disable all masters in MAER1
+    writel(0, (MCTL_COM_BASE + MCTL_COM_MAER2));// Disable all masters in MAER2
+    udelay(10);                                 // Delay for 10 microseconds to allow changes to take effect
 }
 
 /**
@@ -79,19 +79,19 @@ static void dram_disable_all_master(void) {
  *             parameters are used to configure delays for various signal lines 
  *             in the DRAM controller.
  */
-static void eye_delay_compensation(dram_para_t *para) // s1
+static void eye_delay_compensation(dram_para_t *para)// s1
 {
     uint32_t delay, i = 0;
 
     // DATn0IOCR, n =  0...7 - Configure delay for DATn0 I/O control registers
-    delay = (para->dram_tpr11 & 0xf) << 9;  // Extract and adjust delay from dram_tpr11
-    delay |= (para->dram_tpr12 & 0xf) << 1; // Extract and adjust delay from dram_tpr12
+    delay = (para->dram_tpr11 & 0xf) << 9; // Extract and adjust delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf) << 1;// Extract and adjust delay from dram_tpr12
     for (i = 0; i < 9; i++)
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(i)), delay);
 
     // DATn1IOCR, n =  0...7 - Configure delay for DATn1 I/O control registers
     delay = (para->dram_tpr11 & 0xf0) << 5; // Extract and adjust delay from dram_tpr11
-    delay |= (para->dram_tpr12 & 0xf0) >> 3; // Extract and adjust delay from dram_tpr12
+    delay |= (para->dram_tpr12 & 0xf0) >> 3;// Extract and adjust delay from dram_tpr12
     for (i = 0; i < 9; i++)
         setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(i)), delay);
 
@@ -99,16 +99,16 @@ static void eye_delay_compensation(dram_para_t *para) // s1
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0x04000000);
 
     // DQS0 read and write delay configuration
-    delay = (para->dram_tpr11 & 0xf0000) >> 7;  // Extract delay from dram_tpr11
-    delay |= (para->dram_tpr12 & 0xf0000) >> 15; // Extract delay from dram_tpr12
+    delay = (para->dram_tpr11 & 0xf0000) >> 7;                    // Extract delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf0000) >> 15;                  // Extract delay from dram_tpr12
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(9)), delay); // Configure DQS0 positive delay
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(10)), delay); // Configure DQS0 negative delay
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX0IOCR(10)), delay);// Configure DQS0 negative delay
 
     // DQS1 read and write delay configuration
-    delay = (para->dram_tpr11 & 0xf00000) >> 11;  // Extract delay from dram_tpr11
-    delay |= (para->dram_tpr12 & 0xf00000) >> 19; // Extract delay from dram_tpr12
+    delay = (para->dram_tpr11 & 0xf00000) >> 11;                  // Extract delay from dram_tpr11
+    delay |= (para->dram_tpr12 & 0xf00000) >> 19;                 // Extract delay from dram_tpr12
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(9)), delay); // Configure DQS1 positive delay
-    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(10)), delay); // Configure DQS1 negative delay
+    setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DATX1IOCR(10)), delay);// Configure DQS1 negative delay
 
     // DQS0 enable bit delay configuration
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_DXnSDLR6(0)), (para->dram_tpr11 & 0xf0000) << 9);
@@ -123,9 +123,9 @@ static void eye_delay_compensation(dram_para_t *para) // s1
     udelay(1);
 
     // Set RAS, CAS, and CA delay for DRAM timing
-    delay = (para->dram_tpr10 & 0xf0) << 4; // Extract delay from dram_tpr10
+    delay = (para->dram_tpr10 & 0xf0) << 4;// Extract delay from dram_tpr10
     for (i = 6; i < 27; ++i) {
-        setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay); // Apply delay to AC IO control registers
+        setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ACIOCR1(i)), delay);// Apply delay to AC IO control registers
     }
 
     // Set CK CS delay based on dram_tpr10
@@ -661,15 +661,15 @@ static void mctl_sys_init(dram_para_t *para) {
 
     /* Adjust HOSC frequency based on oscillator type */
     if (sunxi_clk_get_hosc_type() == HOSC_FREQ_40M) {
-        para->dram_tpr10 |= (0x28 << 16);  // Set for 40MHz HOSC
+        para->dram_tpr10 |= (0x28 << 16);// Set for 40MHz HOSC
     } else {
-        para->dram_tpr10 |= (0x18 << 16);  // Set for other frequencies
+        para->dram_tpr10 |= (0x18 << 16);// Set for other frequencies
     }
 
     /* Set PLL for DDR clock */
     reg_val = ccu_set_pll_ddr_clk(0, para);
     printk_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
-    para->dram_clk = reg_val / 2;  // Store the actual DRAM clock frequency
+    para->dram_clk = reg_val / 2;// Store the actual DRAM clock frequency
 
     /* Disable all DRAM masters (if any) */
     dram_disable_all_master();
@@ -740,7 +740,7 @@ static void mctl_com_init(dram_para_t *para) {
     val |= (~para->dram_para2 & 0x1) << 12;///< DQ width
     val |= (1 << 22);                      ///< Additional configuration flag
     if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 || para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
-        val |= (1 << 19); // Type 6 and 7 must use 1T
+        val |= (1 << 19);// Type 6 and 7 must use 1T
     } else {
         if (para->dram_tpr13 & (1 << 5))
             val |= (1 << 19);
@@ -749,9 +749,9 @@ static void mctl_com_init(dram_para_t *para) {
 
     // Initialize rank, bank, row for single/dual or two different ranks
     if ((para->dram_para2 & (1 << 8)) && ((para->dram_para2 & 0xf000) != 0x1000))
-        width = 32; // 32-bit width if dual-rank is configured
+        width = 32;// 32-bit width if dual-rank is configured
     else
-        width = 16; // 16-bit width otherwise
+        width = 16;// 16-bit width otherwise
 
     ptr = (MCTL_COM_BASE + MCTL_COM_WORK_MODE0);
     for (i = 0; i < width; i += 16) {
@@ -1149,7 +1149,7 @@ static int dqs_gate_detect(dram_para_t *para) {
  *       system supports 32-bit word writes and reads. The function also assumes that the memory is properly initialized.
  */
 static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
-    unsigned int offs = (mem_mb / 2) << 18;  // Half of memory size
+    unsigned int offs = (mem_mb / 2) << 18;// Half of memory size
     unsigned int patt1 = 0x01234567;
     unsigned int patt2 = 0xfedcba98;
     unsigned int *addr, v1, v2, i;
