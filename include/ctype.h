@@ -4,8 +4,8 @@
 #define __CTYPE_H__
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 /**
  * Check if the given character is alphanumeric.
@@ -137,6 +137,6 @@ int toupper(int c);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif /* __CTYPE_H__ */
