@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef __SUN20IW5_REG_DRAM_H__
-#define __SUN20IW5_REG_DRAM_H__
+#ifndef __SUN300IW1_REG_DRAM_H__
+#define __SUN300IW1_REG_DRAM_H__
 
 #define SDRAM_BASE (0x80000000)
 
@@ -106,4 +106,4 @@
 #define ZQ_RES_CTRL_REG (SUNXI_SYSCTRL_BASE + 0x168)
 #define ZQ_RES_STATUS_REG (SUNXI_SYSCTRL_BASE + 0x16C)
 
-#endif /* __SUN20IW5_REG_DRAM_H__ */
+#endif /* __SUN300IW1_REG_DRAM_H__ */

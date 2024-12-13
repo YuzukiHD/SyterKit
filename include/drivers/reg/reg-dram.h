@@ -13,8 +13,8 @@ extern "C" {
 #include <sun8iw20/reg-dram.h>
 #elif defined(CONFIG_CHIP_SUN20IW1)
 #include <sun20iw1/reg-dram.h>
-#elif defined(CONFIG_CHIP_SUN20IW5)
-#include <sun20iw5/reg-dram.h>
+#elif defined(CONFIG_CHIP_SUN300IW1)
+#include <sun300iw1/reg-dram.h>
 #endif
 
 #ifdef __cplusplus
