@@ -21,6 +21,7 @@
 
 extern sunxi_serial_t uart_dbg;
 extern uint32_t dram_para[32];
+extern sunxi_sdhci_t sdhci0;
 extern sunxi_i2c_t i2c_pmu;
 
 static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
