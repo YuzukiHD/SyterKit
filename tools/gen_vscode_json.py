@@ -38,10 +38,11 @@ def generate_c_cpp_properties(config):
 
 # Write the generated c_cpp_properties.json content to a file
 def write_c_cpp_properties_json(output_file_path, cpp_properties):
-    with open(output_file_path, "w") as json_file:
-        json.dump(
-            cpp_properties, json_file, indent=4
-        )  # Write formatted JSON to the file
+    try:
+        with open(output_file_path, "w") as json_file:
+            json.dump(cpp_properties, json_file, indent=4)
+    except FileNotFoundError:
+        pass
 
 
 # Main function to execute the process
