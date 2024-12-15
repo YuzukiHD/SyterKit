@@ -248,3 +248,5 @@ include_directories(
 add_subdirectory(src)
 add_subdirectory(lib)
 add_subdirectory(board)
+
+include(cmake/gen_syterkit_vscode.cmake)
