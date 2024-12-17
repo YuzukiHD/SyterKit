@@ -8,6 +8,7 @@ set(CONFIG_CHIP_DCACHE True)
 set(CONFIG_CHIP_MMC_V2 True)
 set(CONFIG_CHIP_GPIO_V3 True)
 set(CONFIG_BOARD_AVAOTA-NAS True)
+set(CONFIG_CHIP_UFS True)
 
 add_definitions(-DCONFIG_CHIP_SUN60IW2) 
 add_definitions(-DCONFIG_CHIP_DCACHE)
