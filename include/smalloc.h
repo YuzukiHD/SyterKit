@@ -7,8 +7,8 @@
 #include <types.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
 struct alloc_struct_t {
     phys_addr_t address;
@@ -54,6 +54,6 @@ void sfree(void *p);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __SMALLOC_H__

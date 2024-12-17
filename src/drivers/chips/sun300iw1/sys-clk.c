@@ -294,5 +294,5 @@ uint32_t sunxi_clk_get_hosc_type() {
 }
 
 uint32_t sunxi_clk_get_peri1x_rate() {
-	return 192; /* PERI_192M */
+    return 192; /* PERI_192M */
 }

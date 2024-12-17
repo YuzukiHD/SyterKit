@@ -98,16 +98,16 @@ int cmd_load(int argc, const char **argv) {
 msh_declare_command(reset);
 msh_define_help(reset, "reset test", "Usage: reset\n");
 int cmd_reset(int argc, const char **argv) {
-	setbits_le32(SUNXI_PRCM_BASE + 0x1c, BIT(3)); /* enable WDT clk */
-	writel(0x16aa0000, SUNXI_RTC_WDG_BASE + 0x18); /* disable WDT */
-	writel(0x16aa0000 | BIT(0), SUNXI_RTC_WDG_BASE + 0x08); /* trigger WDT */
+    setbits_le32(SUNXI_PRCM_BASE + 0x1c, BIT(3));           /* enable WDT clk */
+    writel(0x16aa0000, SUNXI_RTC_WDG_BASE + 0x18);          /* disable WDT */
+    writel(0x16aa0000 | BIT(0), SUNXI_RTC_WDG_BASE + 0x08); /* trigger WDT */
     return 0;
 }
 
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
 int cmd_bt(int argc, const char **argv) {
-	dump_stack();
+    dump_stack();
     return 0;
 }
 
@@ -116,7 +116,7 @@ const msh_command_entry commands[] = {
         msh_define_command(read),
         msh_define_command(write),
         msh_define_command(bt),
-		msh_define_command(reset),
+        msh_define_command(reset),
         msh_command_end,
 };
 
@@ -127,7 +127,7 @@ int main(void) {
 
     sunxi_serial_init(&uart_card);
 
-    //show_banner();
+    show_banner();
 
     printk_info("Hello World!\n");
 
