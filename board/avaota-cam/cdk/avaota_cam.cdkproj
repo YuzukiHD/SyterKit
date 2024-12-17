@@ -177,17 +177,17 @@
         <FileOption/>
       </File>
       <VirtualDirectory Name="chips">
-        <VirtualDirectory Name="sun20iw5">
-          <File Name="../../../include/drivers/chips/sun20iw5/reg-ccu.h">
+        <VirtualDirectory Name="sun300iw1">
+          <File Name="../../../include/drivers/chips/sun300iw1/reg-ccu.h">
             <FileOption/>
           </File>
-          <File Name="../../../include/drivers/chips/sun20iw5/reg-dram.h">
+          <File Name="../../../include/drivers/chips/sun300iw1/reg-dram.h">
             <FileOption/>
           </File>
-          <File Name="../../../include/drivers/chips/sun20iw5/reg-ncat.h">
+          <File Name="../../../include/drivers/chips/sun300iw1/reg-ncat.h">
             <FileOption/>
           </File>
-          <File Name="../../../include/drivers/chips/sun20iw5/reg-rproc.h">
+          <File Name="../../../include/drivers/chips/sun300iw1/reg-rproc.h">
             <FileOption/>
           </File>
         </VirtualDirectory>
@@ -407,22 +407,22 @@
         <FileOption/>
       </File>
       <VirtualDirectory Name="chips">
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-clk.c">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-clk.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-dram.c" ExcludeProjConfig="">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-dram.c" ExcludeProjConfig="">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-rproc.c">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-rproc.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-sid.c">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-sid.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-wdt.c">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-wdt.c">
           <FileOption/>
         </File>
-        <File Name="../../../src/drivers/chips/sun20iw5/sys-sdhci.c">
+        <File Name="../../../src/drivers/chips/sun300iw1/sys-sdhci.c">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -627,11 +627,11 @@
         <Tools/>
       </User>
       <Compiler>
-        <Define>CONFIG_CHIP_SUN20IW5;DEBUG_MODE</Define>
+        <Define>CONFIG_CHIP_SUN300IW1;DEBUG_MODE</Define>
         <Undefine/>
         <Optim>None (-O0)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
-        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd</IncludePath>
+        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun300iw1/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd</IncludePath>
         <OtherFlags>-nostdlib -nostdinc -march=rv32imafcxthead -mabi=ilp32f -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-parentheses</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
@@ -648,7 +648,7 @@
       <Asm>
         <Define/>
         <Undefine/>
-        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun20iw5/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
+        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun300iw1/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/</IncludePath>
         <OtherFlags/>
         <DebugLevel>none</DebugLevel>
       </Asm>

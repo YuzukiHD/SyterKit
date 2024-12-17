@@ -25,6 +25,8 @@ if (NOT CONFIG_CHIP_MINSYS)
         sys-spi.c
         sys-dma.c
         sys-i2c.c
+        sys-pwm.c
+        sys-trng.c
 
         ${USB_DRIVER}
         ${INTC_DRIVER}

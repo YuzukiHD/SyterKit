@@ -17,8 +17,8 @@ extern "C" {
     #include <sun55iw3/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN50IW10)
     #include <sun50iw10/reg-ccu.h>
-#elif defined(CONFIG_CHIP_SUN20IW5)
-    #include <sun20iw5/reg-ccu.h>
+#elif defined(CONFIG_CHIP_SUN300IW1)
+    #include <sun300iw1/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN60IW2)
     #include <sun60iw2/reg-ccu.h>
 #else

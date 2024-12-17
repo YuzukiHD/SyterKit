@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 #include <string.h>
+#include <types.h>
 
 #include "smalloc.h"
 
@@ -111,16 +111,16 @@ void sfree(void *p) {
     ptr = &boot_heap_head;
     while (ptr && ptr->next) {
         if (ptr->next->address == (phys_addr_t) p)
-            break; 
+            break;
         ptr = ptr->next;
     }
 
     prev = ptr;
     ptr = ptr->next;
 
-    if (!ptr) return; 
+    if (!ptr) return;
 
-    prev->next = ptr->next; 
+    prev->next = ptr->next;
 
     return;
 }

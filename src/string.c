@@ -981,4 +981,4 @@ int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap) {
     return o;
 }
 
-#endif // CONFIG_SPRINTF
+#endif// CONFIG_SPRINTF

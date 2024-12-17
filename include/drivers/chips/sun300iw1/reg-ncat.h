@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef __SUN20IW5_REG_NCAT_H__
-#define __SUN20IW5_REG_NCAT_H__
+#ifndef __SUN300IW1_REG_NCAT_H__
+#define __SUN300IW1_REG_NCAT_H__
 
 #define SUNXI_BROM_BASE 0x00000000
 #define SUNXI_SRAM_C_BASE 0x02000000
@@ -101,4 +101,4 @@
 #define POR_RESET_CTRL_REG (0X24)
 #define VCC33_DET_RSTN_ENABLE (1 << 4)
 
-#endif// __SUN20IW5_REG_NCAT_H__
+#endif// __SUN300IW1_REG_NCAT_H__

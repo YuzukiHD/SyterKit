@@ -45,12 +45,11 @@ long long simple_atoll(const char *nptr) {
     return (long long) simple_strtoll(nptr, NULL, 10);
 }
 
-long simple_strtol(const char *cp, char **endp, unsigned int base)
-{
-	if (*cp == '-')
-		return -simple_strtoul(cp + 1, endp, base);
+long simple_strtol(const char *cp, char **endp, unsigned int base) {
+    if (*cp == '-')
+        return -simple_strtoul(cp + 1, endp, base);
 
-	return simple_strtoul(cp, endp, base);
+    return simple_strtoul(cp, endp, base);
 }
 
 unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
