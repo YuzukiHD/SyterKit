@@ -42,7 +42,6 @@ enum {
     REG_UFS_PD_PSW_DLY = 0x314,
     REG_UFS_PD_CTRL = 0x320,
     REG_UFS_PD_STAT = 0x324,
-    UFSHCI_CRYPTO_REG_SPACE_SIZE = 0x400,
 };
 
 /* Controller capability masks */
