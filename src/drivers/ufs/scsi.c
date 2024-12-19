@@ -217,11 +217,14 @@ int scsi_scan_dev(ufs_device_t *dev) {
     blk_desc_t bd;
     blk_desc_t *bdesc;
 
+    uint32_t id = 0;
+    uint32_t lun = 0
+
     /* init dev desc */
     bd.target = 0xff;
     bd.lun = 0xff;
 
-    if (scsi_detect_dev(dev, 0, 0, &bd)) {
+    if (scsi_detect_dev(dev, id, lun, &bd)) {
         printk_warning("UFS: scsi scan device failed\n");
         return -1;
     }
