@@ -16,20 +16,20 @@ static uint8_t scsi_buffer[512];
 
 static void scsi_print_error(struct scsi_cmd *pccb) {
     int i = 0;
-    printk(LOG_LEVEL_MUTE, "scsi cmd");
+    printk(LOG_LEVEL_MUTE, "UFS: scsi cmd");
     for (i = 0; i < 8; i++) {
         printk(LOG_LEVEL_MUTE, "%02X ", pccb->cmd[i]);
     }
     printk(LOG_LEVEL_MUTE, "\n");
 
-    printk(LOG_LEVEL_MUTE, "scsi cmd len %d,data len %lu\n", pccb->cmdlen, pccb->datalen);
-    printk(LOG_LEVEL_MUTE, "scsi first 32 byte data");
+    printk(LOG_LEVEL_MUTE, "UFS: scsi cmd len %d,data len %lu\n", pccb->cmdlen, pccb->datalen);
+    printk(LOG_LEVEL_MUTE, "UFS: scsi first 32 byte data");
     for (i = 0; (i < (pccb->datalen)) && (i < 32); i++) {
         printk(LOG_LEVEL_MUTE, "%02X ", pccb->pdata[i]);
     }
     printk(LOG_LEVEL_MUTE, "\n");
 
-    printk(LOG_LEVEL_MUTE, "scsi last 32 byte data");
+    printk(LOG_LEVEL_MUTE, "UFS: scsi last 32 byte data");
     if (pccb->datalen > 32) {
         for (i = pccb->datalen - 32; i < pccb->datalen; i++) {
             printk(LOG_LEVEL_MUTE, "%02X ", pccb->pdata[i]);
@@ -218,7 +218,7 @@ int scsi_scan_dev(ufs_device_t *dev) {
     blk_desc_t *bdesc;
 
     uint32_t id = 0;
-    uint32_t lun = 0
+    uint32_t lun = 0;
 
     /* init dev desc */
     bd.target = 0xff;
