@@ -69,36 +69,45 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
  */
 int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr);
 
-/* AXP1530 */
+/* define AXP pmu */
 
 /**
- * Initialize the AXP1530 PMU.
+ * @brief Macro to define PMU functions for a specific AXP PMU chip.
  *
- * @param i2c_dev Pointer to the I2C device structure.
- * @return 0 if successful, -1 if an error occurred.
- */
-int pmu_axp1530_init(sunxi_i2c_t *i2c_dev);
-
-/**
- * Get the voltage value of a specific power domain from the AXP1530 PMU.
+ * This macro generates a set of function prototypes for controlling and
+ * interacting with a specified AXP Power Management Unit (PMU) chip.
+ * 
+ * The generated functions are:
+ * - `pmu_<name>_init`: Initializes the PMU for the specified device.
+ * - `pmu_<name>_get_vol`: Retrieves the voltage of a specified power rail.
+ * - `pmu_<name>_set_vol`: Sets the voltage of a specified power rail.
+ * - `pmu_<name>_dump`: Dumps the internal registers and status of the PMU.
  *
- * @param i2c_dev Pointer to the I2C device structure.
- * @param name Name of the power domain.
- * @return The voltage value of the power domain, or -1 if an error occurred.
+ * Example usage:
+ * ```c
+ * DEFINE_AXP_PMU(axp2202);
+ * ```
+ * This will generate the following function prototypes:
+ * - `int pmu_axp2202_init(sunxi_i2c_t *i2c_dev);`
+ * - `int pmu_axp2202_get_vol(sunxi_i2c_t *i2c_dev, char *name);`
+ * - `int pmu_axp2202_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);`
+ * - `void pmu_axp2202_dump(sunxi_i2c_t *i2c_dev);`
+ * 
+ * @param name The name of the PMU chip (e.g., axp2202, axp221, etc.).
  */
-int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name);
+#define DEFINE_AXP_PMU(name) \
+    int pmu_##name##_init(sunxi_i2c_t *i2c_dev); \
+    int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name); \
+    int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff); \
+    void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
 
-/**
- * Set the voltage value of a specific power domain on the AXP1530 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- * @param name Name of the power domain.
- * @param set_vol Voltage value to set.
- * @param onoff On/Off switch for the power domain (1 - On, 0 - Off).
- * @return 0 if successful, -1 if an error occurred.
- */
-int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);
+/* AXP PMU defines */
+DEFINE_AXP_PMU(axp1530)
+DEFINE_AXP_PMU(axp2202)
+DEFINE_AXP_PMU(axp2101)
+DEFINE_AXP_PMU(axp8191)
 
+/* Extra */
 /**
  * Set the dual phase function on the AXP1530 PMU.
  *
@@ -106,50 +115,6 @@ int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff
  * @return 0 if successful, -1 if an error occurred.
  */
 int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev);
-
-/**
- * Dump the register values of the AXP1530 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- */
-void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev);
-
-/* AXP2202 */
-
-/**
- * Initialize the AXP2202 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- * @return 0 if successful, -1 if an error occurred.
- */
-int pmu_axp2202_init(sunxi_i2c_t *i2c_dev);
-
-/**
- * Get the voltage value of a specific power domain from the AXP2202 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- * @param name Name of the power domain.
- * @return The voltage value of the power domain, or -1 if an error occurred.
- */
-int pmu_axp2202_get_vol(sunxi_i2c_t *i2c_dev, char *name);
-
-/**
- * Set the voltage value of a specific power domain on the AXP2202 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- * @param name Name of the power domain.
- * @param set_vol Voltage value to set.
- * @param onoff On/Off switch for the power domain (1 - On, 0 - Off).
- * @return 0 if successful, -1 if an error occurred.
- */
-int pmu_axp2202_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);
-
-/**
- * Dump the register values of the AXP2202 PMU.
- *
- * @param i2c_dev Pointer to the I2C device structure.
- */
-void pmu_axp2202_dump(sunxi_i2c_t *i2c_dev);
 
 #ifdef __cplusplus
 }
