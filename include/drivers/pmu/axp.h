@@ -102,10 +102,10 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
     void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
 
 /* AXP PMU defines */
-DEFINE_AXP_PMU(axp1530)
-DEFINE_AXP_PMU(axp2202)
-DEFINE_AXP_PMU(axp2101)
-DEFINE_AXP_PMU(axp8191)
+DEFINE_AXP_PMU(axp1530);
+DEFINE_AXP_PMU(axp2202);
+DEFINE_AXP_PMU(axp2101);
+DEFINE_AXP_PMU(axp8191);
 
 /* Extra */
 /**
