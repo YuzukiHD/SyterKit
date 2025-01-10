@@ -29,6 +29,7 @@ if (NOT CONFIG_CHIP_MINSYS)
         sys-trng.c
 
         ${USB_DRIVER}
+        ${UFS_DRIVER}
         ${INTC_DRIVER}
         ${MMC_DRIVER}
         ${MTD_DRIVER}
