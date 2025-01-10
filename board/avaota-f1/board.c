@@ -23,7 +23,27 @@
 #include <sys-spi.h>
 #include <sys-uart.h>
 
-sunxi_serial_t uart_dbg = {
+sunxi_serial_t uart_mcu_dbg = {
+        .base = SUNXI_UART0_BASE,
+        .id = 0,
+        .baud_rate = UART_BAUDRATE_115200,
+        .dlen = UART_DLEN_8,
+        .stop = UART_STOP_BIT_0,
+        .parity = UART_PARITY_NO,
+        .gpio_pin = {
+                .gpio_tx = {GPIO_PIN(GPIO_PORTD, 22), GPIO_PERIPH_MUX3},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTD, 23), GPIO_PERIPH_MUX3},
+        },
+        .uart_clk = {
+                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
+                .gate_reg_offset = BUS_CLK_GATING0_REG_UART0_PCLK_EN_OFFSET,
+                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
+                .rst_reg_offset = BUS_Reset0_REG_PRESETN_UART0_SW_OFFSET,
+                .parent_clk = 192000000,
+        },
+};
+
+sunxi_serial_t uart_cpu_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
         .baud_rate = UART_BAUDRATE_115200,

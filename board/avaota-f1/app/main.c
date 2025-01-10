@@ -25,7 +25,8 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
-extern sunxi_serial_t uart_dbg;
+extern sunxi_serial_t uart_mcu_dbg;
+extern sunxi_serial_t uart_cpu_dbg;
 extern sunxi_serial_t uart_card;
 extern dram_para_t dram_para;
 extern sunxi_dma_t sunxi_dma;
@@ -123,7 +124,9 @@ const msh_command_entry commands[] = {
 int main(void) {
     sunxi_clk_pre_init();
 
-    sunxi_serial_init(&uart_dbg);
+    sunxi_serial_init(&uart_cpu_dbg);
+
+    sunxi_serial_init(&uart_mcu_dbg);
 
     sunxi_serial_init(&uart_card);
 

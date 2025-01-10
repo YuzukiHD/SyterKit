@@ -5,4 +5,4 @@ set(APP_COMMON_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/head.c
 )
 
-add_subdirectory(hello_world)
+add_subdirectory(app)

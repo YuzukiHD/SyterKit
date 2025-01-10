@@ -19,7 +19,7 @@
 
 | Name        | Function                                                     | Path              |
 | ----------- | ------------------------------------------------------------ | ----------------- |
-| hello world | Minimal program example, prints Hello World                  | `app/hello_world` |
+| hello world | Minimal program example, prints Hello World                  | `app/app` |
 | init dram   | Initializes the serial port and DRAM                         | `app/init_dram`   |
 | load hifi4  | Start and initialize the tf card through the C906 CPU, read the hifi4 dsp firmware from it, and load it for execution | `app/load_hifi4`  |
 | syter boot  | Bootstrapping function that replaces U-Boot, enabling fast system startup for Linux | `app/syter_boot`  |
