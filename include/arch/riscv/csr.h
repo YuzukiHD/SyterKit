@@ -74,6 +74,12 @@ extern "C" {
 #define MIE_SEIE (1 << 9)  /**< Supervisor External Interrupt Enable */
 #define MIE_MEIE (1 << 11) /**< Machine External Interrupt Enable */
 
+/* RISC-V Privilege */
+#define PRV_U (0)
+#define PRV_S (1)
+#define PRV_H (2)
+#define PRV_M (3)
+
 /**
  * @brief Swap the value of a CSR with a new value.
  *

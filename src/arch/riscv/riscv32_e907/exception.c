@@ -14,6 +14,8 @@
 #include <common.h>
 #include <log.h>
 
+#include <sys-clic.h>
+
 #if defined(__riscv_flen)
 #if __riscv_flen >= 32
 extern void f32_read(int n, uint32_t *v);
@@ -114,19 +116,6 @@ struct instruction_info_t {
     unsigned int width : 8;
     unsigned int sign_extend : 1;
 };
-
-/**
- * @brief Structure for IRQ handler
- * 
- * @param data Pointer to data associated with the IRQ handler
- * @param func Function pointer to the IRQ handler function
- */
-typedef struct _irq_handler {
-    void *data;
-    void (*func)(void *data);
-} irq_handler_t;
-
-static irq_handler_t core_interrupt_handler[8] = {0};
 
 static struct instruction_info_t insn_info[] = {
 #if __riscv_xlen == 128
@@ -274,9 +263,9 @@ static void show_regs(struct pt_regs_t *regs) {
     printk_error("Bad address:        0x%08x\r\n", regs->badvaddr);
     printk_error("Stored ra:          0x%08x\r\n", regs->x[1]);
     printk_error("Stored sp:          0x%08x\r\n", regs->x[2]);
-	printk_error("========== backtrace ==========\n");
-	dump_stack();
-	backtrace((char *)regs->epc, (long *)regs->x[2], (char *)regs->x[1]);
+    printk_error("========== backtrace ==========\n");
+    dump_stack();
+    backtrace((char *) regs->epc, (long *) regs->x[2], (char *) regs->x[1]);
 }
 
 static struct instruction_info_t *match_instruction(unsigned long insn) {
@@ -429,7 +418,7 @@ void riscv_handle_exception(struct pt_regs_t *regs) {
             case 6: /* Hypervisor timer interrupt */
             case 7: /* Machine timer interrupt */
                 csr_clear(mip, pending);
-                (core_interrupt_handler[cause].func)(core_interrupt_handler[cause].data);
+                do_irq();
                 break;
             case 8:  /* User external interrupt */
             case 9:  /* Supervisor external interrupt */
@@ -471,7 +460,4 @@ void riscv_handle_exception(struct pt_regs_t *regs) {
         }
     }
     abort();
-}
-
-static void dummy_interrupt_function(void *data) {
 }

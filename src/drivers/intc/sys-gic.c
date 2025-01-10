@@ -133,6 +133,7 @@ static void default_isr(void *data) {
     while (1)
         ;
 }
+
 static void gic_sgi_handler(uint32_t irq_no) {
     printk_debug("GIC: SGI irq %d coming... \n", irq_no);
 }
@@ -185,7 +186,7 @@ int sunxi_gic_cpu_interface_exit(void) {
 
 void do_irq(struct arm_regs_t *regs) {
     uint32_t idnum = readl(GIC_INT_ACK_REG);
-    
+
     if ((idnum == 1022) || (idnum == 1023)) {
         printk_error("GIC: spurious irq !!\n");
         return;
