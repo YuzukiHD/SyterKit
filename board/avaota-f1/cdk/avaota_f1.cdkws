@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CDK_Workspace Name="Avaota CAM" Database="LanguageSever" DoubleClick="Yes">
+<CDK_Workspace Name="Avaota F1" Database="LanguageSever" DoubleClick="Yes">
   <DefaultPackPath>$(CDKWS)\__workspace_pack__</DefaultPackPath>
-  <Project Name="avaota_cam" Path="avaota_cam.cdkproj" RootPath="" Active="Yes"/>
+  <Project Name="avaota_f1" Path="avaota_f1.cdkproj" RootPath="" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
-      <Project Name="avaota_cam" ConfigName="BuildSet"/>
+      <Project Name="avaota_f1" ConfigName="BuildSet"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CDK_Workspace>
