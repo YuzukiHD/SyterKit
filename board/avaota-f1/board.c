@@ -278,7 +278,7 @@ void show_chip() {
     chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
-    printk_info("Model: AvaotaSBC Avaota CAM board.\n");
+    printk_info("Model: AvaotaSBC Avaota F1 board.\n");
     printk_info("Core: XuanTie E907 RISC-V Core.\n");
     printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
