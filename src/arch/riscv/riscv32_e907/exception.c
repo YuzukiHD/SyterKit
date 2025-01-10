@@ -418,7 +418,7 @@ void riscv_handle_exception(struct pt_regs_t *regs) {
             case 6: /* Hypervisor timer interrupt */
             case 7: /* Machine timer interrupt */
                 csr_clear(mip, pending);
-                do_irq();
+                do_irq(cause);
                 break;
             case 8:  /* User external interrupt */
             case 9:  /* Supervisor external interrupt */
