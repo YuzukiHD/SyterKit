@@ -194,17 +194,12 @@ void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
     sunxi_int_handlers[irq].func = handle_irq;
 }
 
-void do_irq() {
+void do_irq(uint64_t cause) {
     uint32_t idnum = 0;
-    uint32_t rv_mcause = 0;
-
-    asm volatile("csrr %0, mcause"
-                 : "=r"(rv_mcause));
-    printk_trace("CLIC: rv_mcause:0x%x riscv_mode:0x%lx\n", rv_mcause, riscv_mode);
     csr_clear(mie, MIE_MSIE);
 
     do {
-        idnum = (rv_mcause & 0xFFF);
+        idnum = (cause & 0xFFF);
         if (idnum != 0) {
             sunxi_clic_spi_handler(idnum);
             irq_enable(idnum);

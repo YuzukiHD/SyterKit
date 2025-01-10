@@ -41,7 +41,7 @@ typedef struct irq_controller {
  * @brief Handles the IRQ
  * 
  */
-void do_irq();
+void do_irq(uint64_t cause);
 
 /**
  * @brief Initializes the interrupt mechanism
