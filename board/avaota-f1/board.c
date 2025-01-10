@@ -23,7 +23,7 @@
 #include <sys-spi.h>
 #include <sys-uart.h>
 
-sunxi_serial_t uart_mcu_dbg = {
+sunxi_serial_t uart_dbg = {
         .base = SUNXI_UART0_BASE,
         .id = 0,
         .baud_rate = UART_BAUDRATE_115200,
