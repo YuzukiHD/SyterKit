@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project Name="avaota_cam" Version="1" Language="C" Type="Solution Package">
+<Project Name="avaota_f1" Version="1" Language="C" Type="Solution Package">
   <Description/>
   <Dependencies Name="Debug"/>
   <MergedToYaml>yes</MergedToYaml>
   <Dependencies Name="BuildSet"/>
   <VendorInfo>
-    <VendorName>new_soc_project_c_solution_e907f</VendorName>
+    <VendorName>Avaota SBC Avaota F1</VendorName>
   </VendorInfo>
   <ToolsConfig>
     <Compiler>
@@ -524,7 +524,7 @@
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="app">
-    <File Name="../hello_world/main.c">
+    <File Name="../app/main.c">
       <FileOption/>
     </File>
   </VirtualDirectory>
