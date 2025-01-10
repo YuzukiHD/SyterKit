@@ -137,9 +137,6 @@
       <File Name="../../../include/drivers/sys-dram.h">
         <FileOption/>
       </File>
-      <File Name="../../../include/drivers/sys-gic.h">
-        <FileOption/>
-      </File>
       <File Name="../../../include/drivers/sys-gpio.h">
         <FileOption/>
       </File>
@@ -162,12 +159,6 @@
         <FileOption/>
       </File>
       <File Name="../../../include/drivers/sys-spi.h">
-        <FileOption/>
-      </File>
-      <File Name="../../../include/drivers/sys-spi-nand.h">
-        <FileOption/>
-      </File>
-      <File Name="../../../include/drivers/sys-spi-nor.h">
         <FileOption/>
       </File>
       <File Name="../../../include/drivers/sys-uart.h">
@@ -275,6 +266,14 @@
           <FileOption/>
         </File>
         <File Name="../../../include/drivers/mtd/sys-spi-nor.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="intc">
+        <File Name="../../../include/drivers/intc/sys-gic.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../include/drivers/intc/sys-intc.h">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -400,9 +399,6 @@
       <File Name="../../../src/drivers/sys-clk.c">
         <FileOption/>
       </File>
-      <File Name="../../../src/drivers/sys-gpio.c">
-        <FileOption/>
-      </File>
       <File Name="../../../src/drivers/sys-uart.c">
         <FileOption/>
       </File>
@@ -430,9 +426,6 @@
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-dram.c" ExcludeProjConfig="">
-        <FileOption/>
-      </File>
-      <File Name="../../../src/drivers/sys-gic.c" ExcludeProjConfig="BuildSet">
         <FileOption/>
       </File>
       <File Name="../../../src/drivers/sys-i2c.c" ExcludeProjConfig="">
@@ -491,14 +484,27 @@
           </File>
         </VirtualDirectory>
       </VirtualDirectory>
-      <File Name="../../../src/drivers/sys-spis.c" ExcludeProjConfig="BuildSet">
-        <FileOption/>
-      </File>
       <VirtualDirectory Name="mtd">
         <File Name="../../../src/drivers/mtd/sys-spi-nand.c">
           <FileOption/>
         </File>
         <File Name="../../../src/drivers/mtd/sys-spi-nor.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="gpio">
+        <File Name="../../../src/drivers/gpio/sys-gpio-v1.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/gpio/sys-gpio-v2.c" ExcludeProjConfig="">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/gpio/sys-gpio-v3.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="intc">
+        <File Name="../../../src/drivers/intc/sys-gic.c" ExcludeProjConfig="BuildSet">
           <FileOption/>
         </File>
       </VirtualDirectory>
