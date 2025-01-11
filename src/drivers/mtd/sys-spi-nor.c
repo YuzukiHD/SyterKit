@@ -41,41 +41,41 @@ static const spi_nor_info_t spi_nor_info_table[] = {
  */
 __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp) {
     if (sfdp == NULL) {
-        printk(LOG_LEVEL_TRACE, "SFDP data is NULL.\n");
+        printk_trace("SFDP data is NULL.\n");
         return;
     }
 
-    printk(LOG_LEVEL_TRACE, "SFDP Header:\n");
-    printk(LOG_LEVEL_TRACE, "  Signature: %c%c%c%c\n",
+    printk_trace("SFDP Header:\n");
+    printk_trace("  Signature: %c%c%c%c\n",
            sfdp->header.sign[0],
            sfdp->header.sign[1],
            sfdp->header.sign[2],
            sfdp->header.sign[3]);
-    printk(LOG_LEVEL_TRACE, "  Minor version: %u\n", sfdp->header.minor);
-    printk(LOG_LEVEL_TRACE, "  Major version: %u\n", sfdp->header.major);
-    printk(LOG_LEVEL_TRACE, "  Number of Parameter Headers: %u\n", sfdp->header.nph);
-    printk(LOG_LEVEL_TRACE, "  Unused: 0x%02X\n", sfdp->header.unused);
+    printk_trace("  Minor version: %u\n", sfdp->header.minor);
+    printk_trace("  Major version: %u\n", sfdp->header.major);
+    printk_trace("  Number of Parameter Headers: %u\n", sfdp->header.nph);
+    printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
-    printk(LOG_LEVEL_TRACE, "SFDP Parameter Headers:\n");
+    printk_trace("SFDP Parameter Headers:\n");
     for (int i = 0; i < sfdp->header.nph; i++) {
-        printk(LOG_LEVEL_TRACE, "  Parameter Header #%d:\n", i + 1);
-        printk(LOG_LEVEL_TRACE, "    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
-        printk(LOG_LEVEL_TRACE, "    Minor version: %u\n", sfdp->parameter_header[i].minor);
-        printk(LOG_LEVEL_TRACE, "    Major version: %u\n", sfdp->parameter_header[i].major);
-        printk(LOG_LEVEL_TRACE, "    Length: %u\n", sfdp->parameter_header[i].length);
-        printk(LOG_LEVEL_TRACE, "    PTP: 0x%02X 0x%02X 0x%02X\n",
+        printk_trace("  Parameter Header #%d:\n", i + 1);
+        printk_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
+        printk_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
+        printk_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
+        printk_trace("    Length: %u\n", sfdp->parameter_header[i].length);
+        printk_trace("    PTP: 0x%02X 0x%02X 0x%02X\n",
                sfdp->parameter_header[i].ptp[0],
                sfdp->parameter_header[i].ptp[1],
                sfdp->parameter_header[i].ptp[2]);
-        printk(LOG_LEVEL_TRACE, "    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
+        printk_trace("    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
     }
 
-    printk(LOG_LEVEL_TRACE, "SFDP Basic Table:\n");
-    printk(LOG_LEVEL_TRACE, "  Minor version: %u\n", sfdp->basic_table.minor);
-    printk(LOG_LEVEL_TRACE, "  Major version: %u\n", sfdp->basic_table.major);
-    printk(LOG_LEVEL_TRACE, "  Table (16 x 4 bytes):\n");
+    printk_trace("SFDP Basic Table:\n");
+    printk_trace("  Minor version: %u\n", sfdp->basic_table.minor);
+    printk_trace("  Major version: %u\n", sfdp->basic_table.major);
+    printk_trace("  Table (16 x 4 bytes):\n");
     for (int i = 0; i < 16; i++) {
-        printk(LOG_LEVEL_TRACE, "    ");
+        printk_trace("    ");
         for (int j = 0; j < 4; j++) {
             printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]);
         }
@@ -285,7 +285,7 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 
     if (spi_nor_read_sfdp(spi, &sfdp)) {
         info.name = "SPDF";
-#if defined(LOG_LEVEL_TRACE)
+#if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
         spi_nor_dump_sfdp(&sfdp);
 #endif
 

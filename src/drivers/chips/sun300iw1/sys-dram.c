@@ -1048,11 +1048,11 @@ static unsigned int get_dram_size(void) {
     val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE0)); /* MCTL_COM_WORK_MODE0 */
     size = calculate_rank_size(val);
 
-    if ((val & 0x3) == 0) /* Single rank? */
+    if ((val & 0x3) == 0) /* Single rank */
         return size;
 
     val = readl((MCTL_COM_BASE + MCTL_COM_WORK_MODE1)); /* MCTL_WORK_MODE1 */
-    if ((val & 0x3) == 0)                               /* Two identical ranks? */
+    if ((val & 0x3) == 0)                               /* Two identical ranks */
         return size * 2;
 
     /* Add sizes of both ranks */
