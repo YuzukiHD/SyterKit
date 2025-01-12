@@ -22,11 +22,13 @@
 
 #include <image_loader.h>
 
-#include "sys-dram.h"
-#include "sys-rtc.h"
-#include "sys-sdcard.h"
-#include "sys-sid.h"
-#include "sys-spi.h"
+#include <sys-dram.h>
+#include <sys-gpio.h>
+#include <sys-i2c.h>
+#include <sys-sdcard.h>
+#include <sys-sid.h>
+#include <sys-spi.h>
+#include <sys-uart.h>
 
 #include "fdt_wrapper.h"
 #include "ff.h"
@@ -35,7 +37,10 @@
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_CONFIG_FILENAME "config.txt"
+#define CONFIG_CMDLINE "earlyprintk=uart8250,mmio32,0x02500000 " \
+                       "console=ttyS0,115200 loglevel=8 initcall_debug=0 "   \
+                       "root=/dev/mmcblk1p2 init=/init rdinit=/rdinit"        \
+                       "partitions=boot@mmcblk0p1:rootfs@mmcblk0p2:rootfs_data@mmcblk0p3:UDISK@mmcblk0p4"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
@@ -45,36 +50,15 @@
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
-#define CONFIG_DEFAULT_BOOTDELAY 5
+#define CONFIG_DEFAULT_BOOTDELAY 0
 
-#define FILENAME_MAX_LEN 64
+#define FILENAME_MAX_LEN 16
 typedef struct {
     uint8_t *dest;
-
     uint8_t *of_dest;
-
-    uint8_t *config_dest;
-    uint8_t is_config;
-
     char filename[FILENAME_MAX_LEN];
-
     char of_filename[FILENAME_MAX_LEN];
-
-    char config_filename[FILENAME_MAX_LEN];
 } image_info_t;
-
-#define MAX_SECTION_LEN 16
-#define MAX_KEY_LEN 16
-#define MAX_VALUE_LEN 512
-#define CONFIG_MAX_ENTRY 3
-
-typedef struct {
-    char section[MAX_SECTION_LEN];
-    char key[MAX_KEY_LEN];
-    char value[MAX_VALUE_LEN];
-} IniEntry;
-
-IniEntry entries[CONFIG_MAX_ENTRY];
 
 extern sunxi_serial_t uart_dbg;
 
@@ -174,16 +158,6 @@ static int load_sdcard(image_info_t *image) {
     if (ret)
         return ret;
 
-    /* load config */
-    printk_info("FATFS: read %s addr=%x\n", image->config_filename, (uint32_t) image->config_dest);
-    ret = fatfs_loadimage(image->config_filename, image->config_dest);
-    if (ret) {
-        printk_info("CONFIG: Cannot find config file, Using default config.\n");
-        image->is_config = 0;
-    } else {
-        image->is_config = 1;
-    }
-
     /* umount fs */
     fret = f_mount(0, "", 0);
     if (fret != FR_OK) {
@@ -197,159 +171,104 @@ static int load_sdcard(image_info_t *image) {
     return 0;
 }
 
-static void trim(char *str) {
-    int len = strlen(str);
-    while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\n' || str[len - 1] == '\r')) {
-        str[--len] = '\0';
-    }
-    while (*str && (*str == ' ' || *str == '\n' || *str == '\r')) {
-        ++str;
-        --len;
-    }
+static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size) {
+    int i;
+    int address_cells = fdt_address_cells(fdt, 0);
+    int size_cells = fdt_size_cells(fdt, 0);
+    char *p = buf;
+
+    if (address_cells == 2)
+        *(fdt64_t *) p = cpu_to_fdt64(address);
+    else
+        *(fdt32_t *) p = cpu_to_fdt32(address);
+    p += 4 * address_cells;
+
+    if (size_cells == 2)
+        *(fdt64_t *) p = cpu_to_fdt64(size);
+    else
+        *(fdt32_t *) p = cpu_to_fdt32(size);
+    p += 4 * size_cells;
+
+    return p - (char *) buf;
 }
 
-static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int max_entries) {
-    char line[MAX_VALUE_LEN];
-    char current_section[MAX_SECTION_LEN] = "";
-    int entry_count = 0;
-
-    const char *p = data;
-    const char *end = data + size;
-
-    while (p < end) {
-        /* Read a line of data */
-        size_t len = 0;
-        while (p + len < end && *(p + len) != '\n') {
-            ++len;
-        }
-        if (p + len < end && *(p + len) == '\n') {
-            ++len;
-        }
-        if (len > 0) {
-            strncpy(line, p, len);
-            line[len] = '\0';
-            p += len;
-
-            trim(line);
-
-            /* Ignore empty lines and comments */
-            if (line[0] == '\0' || line[0] == ';' || line[0] == '#') {
-                continue;
-            }
-
-            /* Parse the section name */
-            if (line[0] == '[' && line[strlen(line) - 1] == ']') {
-                strncpy(current_section, &line[1], strlen(line) - 2);
-                current_section[strlen(line) - 2] = '\0';
-                continue;
-            }
-
-            /* Parse key-value pairs */
-            char *pos = strchr(line, '=');
-            if (pos != NULL) {
-                char *key_start = line;
-                char *value_start = pos + 1;
-                *pos = '\0';
-                trim(key_start);
-                trim(value_start);
-
-                if (strlen(current_section) > 0 && strlen(key_start) > 0 && strlen(value_start) > 0) {
-                    if (entry_count >= max_entries) {
-                        printk_error("INI: Too many entries!\n");
-                        break;
-                    }
-                    strncpy(entries[entry_count].section, current_section, MAX_SECTION_LEN - 1);
-                    strncpy(entries[entry_count].key, key_start, MAX_KEY_LEN - 1);
-                    strncpy(entries[entry_count].value, value_start, MAX_VALUE_LEN - 1);
-                    ++entry_count;
-                }
-            }
-        }
-    }
-
-    return entry_count;
+static char *skip_spaces(char *str) {
+    while (*str == ' ') str++;
+    return str;
 }
 
-static const char *find_entry_value(const IniEntry *entries, int entry_count, const char *section, const char *key) {
-    for (int i = 0; i < entry_count; ++i) {
-        if (strcmp(entries[i].section, section) == 0 && strcmp(entries[i].key, key) == 0) {
-            return entries[i].value;
-        }
-    }
-    return NULL;
-}
-
-static int update_bootargs_from_config(uint32_t dram_size) {
+static int update_dtb_for_linux(uint32_t dram_size) {
     int ret = 0;
-    char *bootargs_str_config = NULL;
-    char *mac_addr = NULL;
 
-    /* Check if using config file, get bootargs in the config file */
-    if (image.is_config) {
-        size_t size_a = strlen(image.config_dest);
-        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
-        for (int i = 0; i < entry_count; ++i) {
-            /* Print parsed INI entries */
-            printk_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
-        }
-        bootargs_str_config = find_entry_value(entries, entry_count, "configs", "bootargs");
-        mac_addr = find_entry_value(entries, entry_count, "configs", "mac_addr");
-    }
-
-    /* Force image.dest to be a pointer to fdt_header structure */
+    /* Force image.of_dest to be a pointer to fdt_header structure */
     struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
 
     /* Check if DTB header is valid */
     if ((ret = fdt_check_header(dtb_header)) != 0) {
         printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     /* Get the total size of DTB */
     uint32_t size = fdt_totalsize(image.of_dest);
-    printk_debug("%s: FDT Size = %d\n", image.of_filename, size);
 
-    int len = 0;
+    printk_debug("FDT dtb size = %d\n", size);
+
+    if ((ret = fdt_increase_size(image.of_dest, 512)) != 0) {
+        printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
+        goto _error;
+    }
+
+    int memory_node = fdt_find_or_add_subnode(image.of_dest, 0, "memory");
+
+    if ((ret = fdt_setprop_string(image.of_dest, memory_node, "device_type", "memory")) != 0) {
+        printk_error("Can't change memory size node: %s\n", fdt_strerror(ret));
+        goto _error;
+    }
+
+    uint8_t *tmp_buf = (uint8_t *) smalloc(16 * sizeof(uint8_t));
+
+    /* fix up memory region */
+    int len = fdt_pack_reg(image.of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
+
+    if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
+        printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
+        sfree(tmp_buf);
+        goto _error;
+    }
+
     /* Get the offset of "/chosen" node */
-    uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
+    int chosen_node = fdt_find_or_add_subnode(image.of_dest, 0, "chosen");
 
+    len = 0;
     /* Get bootargs string */
-    char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
-
-    /* If config file read fail or not using */
-    if (bootargs_str_config == NULL) {
-        printk_warning("INI: Cannot parse bootargs, using default bootargs in DTB.\n");
-        bootargs_str_config = bootargs_str;
+    char *bootargs_str = (void *) fdt_getprop(image.of_dest, chosen_node, "bootargs", &len);
+    if (bootargs_str == NULL) {
+        bootargs_str = (char *) smalloc(strlen(CONFIG_CMDLINE) + 1);
+        bootargs_str[0] = '\0';
+    } else {
+        strcat(bootargs_str, " ");
     }
 
-    /* update mac address of board */
-    if (mac_addr != NULL) {
-        strcat(bootargs_str_config, " mac_addr=");
-        strcat(bootargs_str_config, mac_addr);
-    }
+    strcat(bootargs_str, CONFIG_CMDLINE);
 
-    /* Add dram size to dtb */
-    char dram_size_str[8];
-    strcat(bootargs_str_config, " mem=");
-    strcat(bootargs_str_config, ltoa(dram_size, dram_size_str, 10));
-    strcat(bootargs_str_config, "M");
-
-    /* Set bootargs based on the configuration file */
-    printk_debug("INI: Set bootargs to %s\n", bootargs_str_config);
+    printk_info("Kernel cmdline = [%s]\n", bootargs_str);
 
 _add_dts_size:
     /* Modify bootargs string */
-    ret = fdt_setprop(image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
+    ret = fdt_setprop_string(image.of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
     if (ret == -FDT_ERR_NOSPACE) {
         printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
         ret = fdt_increase_size(image.of_dest, 512);
-        if (!ret)
+        if (!ret) {
             goto _add_dts_size;
-        else
-            goto _err_size;
+        } else {
+            printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+            goto _error;
+        }
     } else if (ret < 0) {
         printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     /* Get the total size of DTB */
@@ -357,12 +276,12 @@ _add_dts_size:
 
     if (ret < 0) {
         printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
-        return -1;
+        goto _error;
     }
 
     return 0;
-_err_size:
-    printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+
+_error:
     return -1;
 }
 
@@ -376,7 +295,7 @@ static int abortboot_single_key(int bootdelay) {
     if (tstc()) {       /* we got a key press */
         uart_getchar(); /* consume input */
         printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
-        abort = 1; /* don't auto boot */
+        abort = 0; /* auto boot */
     }
 
     while ((bootdelay > 0) && (!abort)) {
@@ -394,122 +313,6 @@ static int abortboot_single_key(int bootdelay) {
     }
     uart_putchar('\n');
     return abort;
-}
-
-msh_declare_command(bootargs);
-msh_define_help(bootargs, "get/set bootargs for kernel",
-                "Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
-                "       bootargs get            - get current bootargs\n");
-int cmd_bootargs(int argc, const char **argv) {
-    int err = 0;
-
-    if (argc < 2) {
-        uart_puts(cmd_bootargs_usage);
-        return 0;
-    }
-
-    if (strncmp(argv[1], "set", 3) == 0) {
-        if (argc != 3) {
-            uart_puts(cmd_bootargs_usage);
-            return 0;
-        }
-        /* Force image.of_dest to be a pointer to fdt_header structure */
-        struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
-
-        /* Check if DTB header is valid */
-        if ((err = fdt_check_header(dtb_header)) != 0) {
-            printk_error("Invalid device tree blob: %s\n", fdt_strerror(err));
-            return 0;
-        }
-
-        int len = 0;
-        /* Get the offset of "/chosen" node */
-        uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
-
-        /* Get bootargs string */
-        char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
-        printk(LOG_LEVEL_MUTE, "DTB OLD bootargs = \"%s\"\n", bootargs_str);
-
-        /* New bootargs string */
-        char *new_bootargs_str = argv[2];
-        printk(LOG_LEVEL_MUTE, "Now set bootargs to \"%s\"\n", new_bootargs_str);
-
-    _add_dts_size:
-        /* Modify bootargs string */
-        err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
-        if (err == -FDT_ERR_NOSPACE) {
-            printk_debug("FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
-            err = fdt_increase_size(image.of_dest, 512);
-            if (!err)
-                goto _add_dts_size;
-            else
-                goto _err_size;
-        } else if (err < 0) {
-            printk_error("Can't change bootargs node: %s\n", fdt_strerror(err));
-            abort();
-        }
-
-        /* Get updated bootargs string */
-        char *updated_bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
-        printk(LOG_LEVEL_MUTE, "DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
-    } else if (strncmp(argv[1], "get", 3) == 0) {
-        /* Force image.of_dest to be a pointer to fdt_header structure */
-        struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
-
-        int err = 0;
-
-        /* Check if DTB header is valid */
-        if ((err = fdt_check_header(dtb_header)) != 0) {
-            printk_error("Invalid device tree blob: %s\n", fdt_strerror(err));
-            return 0;
-        }
-
-        int len = 0;
-        /* Get the offset of "/chosen" node */
-        uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
-
-        /* Get bootargs string */
-        char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
-        printk(LOG_LEVEL_MUTE, "DTB bootargs = \"%s\"\n", bootargs_str);
-    } else {
-        uart_puts(cmd_bootargs_usage);
-    }
-    return 0;
-
-_err_size:
-    printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(err));
-    abort();
-}
-
-msh_declare_command(reload);
-msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
-    if (sdmmc_init(&card0, &sdhci0) != 0) {
-        printk_error("SMHC: init failed\n");
-        return 0;
-    }
-
-    if (load_sdcard(&image) != 0) {
-        printk_error("SMHC: loading failed\n");
-        return 0;
-    }
-    return 0;
-}
-
-msh_declare_command(print);
-msh_define_help(print, "print out env config", "Usage: print\n");
-int cmd_print(int argc, const char **argv) {
-    if (image.is_config) {
-        size_t size_a = strlen(image.config_dest);
-        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
-        for (int i = 0; i < entry_count; ++i) {
-            /* Print parsed INI entries */
-            printk(LOG_LEVEL_MUTE, "ENV: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
-        }
-    } else {
-        printk_warning("ENV: Can not find env file\n");
-    }
-    return 0;
 }
 
 msh_declare_command(boot);
@@ -544,10 +347,7 @@ int cmd_boot(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-        msh_define_command(bootargs),
-        msh_define_command(reload),
         msh_define_command(boot),
-        msh_define_command(print),
         msh_command_end,
 };
 
@@ -565,22 +365,9 @@ int main(void) {
     /* Initialize the system clock. */
     sunxi_clk_init();
 
-    /* Check rtc fel flag. if set flag, goto fel */
-    if (rtc_probe_fel_flag()) {
-        printk_info("RTC: get fel flag, jump to fel mode.\n");
-        clean_syterkit_data();
-        rtc_clear_fel_flag();
-        sunxi_clk_reset();
-        mdelay(100);
-        goto _fel;
-    }
-
     /* Initialize the DRAM and enable memory management unit (MMU). */
     uint32_t dram_size = sunxi_dram_init(&dram_para);
     arm32_mmu_enable(SDRAM_BASE, dram_size);
-
-    /* Debug message to indicate that MMU is enabled. */
-    printk_debug("enable mmu ok\n");
 
     /* Initialize the small memory allocator. */
     smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
@@ -594,26 +381,25 @@ int main(void) {
     /* Set the destination address for the device tree binary (DTB), kernel image, and configuration data. */
     image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
     image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-    image.config_dest = (uint8_t *) CONFIG_CONFIG_LOAD_ADDR;
-    image.is_config = 0;
 
     /* Copy the filenames for the DTB, kernel image, and configuration data. */
     strcpy(image.filename, CONFIG_KERNEL_FILENAME);
     strcpy(image.of_filename, CONFIG_DTB_FILENAME);
-    strcpy(image.config_filename, CONFIG_CONFIG_FILENAME);
 
     /* Initialize the SD host controller. */
-    if (sunxi_sdhci_init(&sdhci2) != 0) {
-        printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
         goto _shell;
     } else {
-        printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
-    if (sdmmc_init(&card0, &sdhci2) != 0) {
-        printk_warning("SMHC: init failed\n");
-        goto _shell;
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk_warning("SMHC: init failed, retry...\n");
+        if (sdmmc_init(&card0, &sdhci0) != 0) {
+            goto _shell;
+        }
     }
 
     /* Load the DTB, kernel image, and configuration data from the SD card. */
@@ -623,24 +409,11 @@ int main(void) {
     }
 
     /* Update boot arguments based on configuration file. */
-    if (update_bootargs_from_config(dram_size)) {
+    if (update_dtb_for_linux(dram_size)) {
         goto _shell;
     }
 
     int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
-
-    if (image.is_config) {
-        size_t size_a = strlen(image.config_dest);
-        int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
-        for (int i = 0; i < entry_count; ++i) {
-            /* Print parsed INI entries */
-            printk_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
-        }
-        char *bootdelay_str = find_entry_value(entries, entry_count, "configs", "bootdelay");
-        if (bootdelay_str != NULL) {
-            bootdelay = simple_atoi(bootdelay_str);
-        }
-    }
 
     /* Showing boot delays */
     if (abortboot_single_key(bootdelay)) {

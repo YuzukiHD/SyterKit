@@ -9,8 +9,8 @@ set(CONFIG_CHIP_GIC True)
 
 add_definitions(-DCONFIG_CHIP_SUN8IW20)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
-add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0xFFFFFFF)
-add_definitions(-DCONFIG_FATFS_CACHE_ADDR=0x50000000)
+add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0x2000000)
+add_definitions(-DCONFIG_FATFS_CACHE_ADDR=0x48000000)
 
 # Options
 
