@@ -698,7 +698,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
             cfg = ac_remapping_tables[0];
         } else if (para->dram_tpr13 & 0xc0000) {
             printk_debug("DDR Using MAP: 7 \n");
-            cfg = ac_remapping_tables[10];
+            cfg = ac_remapping_tables[7];
         } else {
             switch (fuse) {
                 case 8:
@@ -731,18 +731,20 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
         }
     }
 
-    val = (cfg[1] << 10) | (32 * cfg[0]) | 1 | (cfg[2] << 15) | (cfg[3] << 20) |
-          (cfg[4] << 25);
+    /* set remapping */
+    val = (cfg[0] << 5) | (cfg[1] << 10) | (cfg[2] << 15) | (cfg[3] << 20) | (cfg[4] << 25);
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
-    val = (cfg[7] << 10) | (32 * cfg[6]) | cfg[5] | (cfg[8] << 15) |
-          (cfg[9] << 20) | (cfg[10] << 25);
+    val = (cfg[5] << 0) | (cfg[6] << 5) | (cfg[7] << 10) | (cfg[8] << 15) | (cfg[9] << 20) | (cfg[10] << 25);
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP1));
-    val = (cfg[13] << 10) | (32 * cfg[12]) | cfg[11] | (cfg[14] << 15) |
-          (cfg[15] << 20);
+    val = (cfg[11] << 0) | (cfg[12] << 5) | (cfg[13] << 10) | (cfg[14] << 15) | (cfg[15] << 20);
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP2));
-    val = (cfg[18] << 10) | (32 * cfg[17]) | cfg[16] | (cfg[19] << 15) |
-          (cfg[20] << 20) | (cfg[21] << 25);
+    val = (cfg[16] << 0) | (cfg[17] << 5) | (cfg[18] << 10) | (cfg[19] << 15) | (cfg[20] << 20) | (cfg[21] << 25);
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
+
+    /* enable ac remapping */
+    val = readl(MCTL_COM_BASE + MCTL_COM_REMAP0);
+    val |= BIT(0);
+    writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
 
     printk_trace("MCTL_COM_REMAP0 = 0x%x\n",
                  readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
