@@ -57,3 +57,7 @@ endif()
 if(CONFIG_BOARD_AVAOTA-NAS)
     add_subdirectory(avaota-nas)
 endif()
+
+if(CONFIG_BOARD_AVAOTA-86BOX)
+    add_subdirectory(avaota-86box)
+endif()

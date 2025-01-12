@@ -654,6 +654,9 @@ static const uint8_t ac_remapping_tables[][22] =
                 [9] = {0x1, 0x2, 0xD, 0x8, 0xF, 0xC, 0x13, 0xA,
                        0x3, 0x15, 0x6, 0x11, 0x9, 0xE, 0x5, 0x10,
                        0x14, 0x16, 0xB, 0x7, 0x4, 0x12},// DDR2 H133
+                [10] = {0x13, 0x01, 0x0c, 0x03, 0x0a, 0x06, 0x0e,
+                        0x11, 0x05, 0x12, 0x07, 0x00, 0x00, 0x0b,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 };
 
 /*
@@ -695,7 +698,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
             cfg = ac_remapping_tables[0];
         } else if (para->dram_tpr13 & 0xc0000) {
             printk_debug("DDR Using MAP: 7 \n");
-            cfg = ac_remapping_tables[7];
+            cfg = ac_remapping_tables[10];
         } else {
             switch (fuse) {
                 case 8:
@@ -742,13 +745,13 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
     writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
 
     printk_trace("MCTL_COM_REMAP0 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
+                 readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
     printk_trace("MCTL_COM_REMAP1 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
+                 readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
     printk_trace("MCTL_COM_REMAP2 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
+                 readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
     printk_trace("MCTL_COM_REMAP3 = 0x%x\n",
-           readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
+                 readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
 }
 
 // Init the controller channel. The key part is placing commands in the main
