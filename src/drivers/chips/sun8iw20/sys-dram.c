@@ -87,7 +87,7 @@ static void dram_disable_all_master(void) {
     udelay(10);
 }
 
-static void eye_delay_compensation(dram_para_t *para)// s1
+static void eye_delay_compensation(dram_para_t *para)
 {
     uint32_t delay, i = 0;
 
@@ -621,6 +621,20 @@ static void mctl_com_init(dram_para_t *para) {
     }
 }
 
+/* 
+ * DRAM Address IO remapping mux
+ * | A0      | A1      | A2      | A3      | A4      | A5      |
+ * | 1       | 2       | 3       | 4       | 5       | 6       |
+ * 
+ * | A6      | A7      | A8      | A9      | A10     | A11     |
+ * | 7       | 8       | 9       | 10      | 11      | 12      |
+ * 
+ * | A12     | A13     | A14     | A15     | BA0     | BA1     |
+ * | 13      | 14      | 15      | 16      | 17      | 18      |
+ * 
+ * | BA2     | CAS     | RAS     | WE
+ * | 19      | 21      | 20      | 22
+ */
 static const uint8_t ac_remapping_tables[][22] =
         {
                 /* No Remap */
@@ -654,9 +668,9 @@ static const uint8_t ac_remapping_tables[][22] =
                 [9] = {0x1, 0x2, 0xD, 0x8, 0xF, 0xC, 0x13, 0xA,
                        0x3, 0x15, 0x6, 0x11, 0x9, 0xE, 0x5, 0x10,
                        0x14, 0x16, 0xB, 0x7, 0x4, 0x12},// DDR2 H133
-                [10] = {0x13, 0x01, 0x0c, 0x03, 0x0a, 0x06, 0x0e,
-                        0x11, 0x05, 0x12, 0x07, 0x00, 0x00, 0x0b,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+                [10] = {0xF, 0x10, 0x16, 0x8, 0x4, 0x9, 0x2, 0xD,
+                        0x13, 0x1, 0xC, 0x3, 0xA, 0x6, 0xE, 0x11,
+                        0x5, 0x12, 0x7, 0x15, 0x14, 0xB}, // Avaota 86Box Modify
 };
 
 /*
@@ -698,7 +712,10 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
             cfg = ac_remapping_tables[0];
         } else if (para->dram_tpr13 & 0xc0000) {
             printk_debug("DDR Using MAP: 7 \n");
-            cfg = ac_remapping_tables[7];
+            cfg = ac_remapping_tables[10];
+        } else if (para->dram_tpr13 & 0x0c000) {
+            printk_debug("DDR Using MAP: 10 (86Box)\n");
+            cfg = ac_remapping_tables[10];
         } else {
             switch (fuse) {
                 case 8:

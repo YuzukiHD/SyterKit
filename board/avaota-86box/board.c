@@ -101,7 +101,7 @@ sdhci_t sdhci0 = {
 };
 
 dram_para_t dram_para = {
-        .dram_clk = 360,
+        .dram_clk = 1008,
         .dram_type = 3,
         .dram_zq = 0x07b7bfb,
         .dram_odt_en = 0x01,
@@ -124,7 +124,7 @@ dram_para_t dram_para = {
         .dram_tpr10 = 0,
         .dram_tpr11 = 0x00a70000,
         .dram_tpr12 = 0x00100003,
-        .dram_tpr13 = 0x34050100,
+        .dram_tpr13 = 0x3405C100,
 };
 
 void clean_syterkit_data(void) {
