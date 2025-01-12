@@ -80,7 +80,13 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_spi_t sunxi_spi0;
 
+#if defined(CONFIG_CHIP_MMC_V2)
+extern sunxi_sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
+#else
 extern sdhci_t sdhci0;
+extern sdhci_t sdhci2;
+#endif
 
 extern dram_para_t dram_para;
 
@@ -597,15 +603,15 @@ int main(void) {
     strcpy(image.config_filename, CONFIG_CONFIG_FILENAME);
 
     /* Initialize the SD host controller. */
-    if (sunxi_sdhci_init(&sdhci0) != 0) {
-        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+    if (sunxi_sdhci_init(&sdhci2) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci2.name);
         goto _shell;
     } else {
-        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+        printk_info("SMHC: %s controller initialized\n", sdhci2.name);
     }
 
     /* Initialize the SD card and check if initialization is successful. */
-    if (sdmmc_init(&card0, &sdhci0) != 0) {
+    if (sdmmc_init(&card0, &sdhci2) != 0) {
         printk_warning("SMHC: init failed\n");
         goto _shell;
     }

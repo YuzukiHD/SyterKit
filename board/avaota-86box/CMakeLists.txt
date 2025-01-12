@@ -8,3 +8,7 @@ set(APP_COMMON_SOURCE
 add_subdirectory(hello_world)
 
 add_subdirectory(boot)
+
+add_subdirectory(memtest)
+
+add_subdirectory(usb_test)

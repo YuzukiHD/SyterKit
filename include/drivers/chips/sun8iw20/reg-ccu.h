@@ -66,6 +66,8 @@
 #define CCU_MBUS_MAT_CLK_GATING_REG (0x804)
 #define CCU_DRAM_BGR_REG (0x80c)
 #define CCU_SMHC0_CLK_REG (0x830)
+#define CCU_SMHC1_CLK_REG (0x834)
+#define CCU_SMHC2_CLK_REG (0x838)
 #define CCU_SMHC_BGR_REG (0x84c)
 #define CCU_UART_BGR_REG (0x90c)
 #define CCU_TWI_BGR_REG (0x91c)
@@ -107,7 +109,7 @@
 #define CCU_DSP_CLK_SRC_PERI2X (0x3 << 24)
 #define CCU_DSP_CLK_SRC_AUDIO1_DIV2 (0x4 << 24)
 /* x must be 1 - 32 */
-#define CCU_DSP_CLK_FACTOR_M(x) (((x)-1) << 0)
+#define CCU_DSP_CLK_FACTOR_M(x) (((x) -1) << 0)
 
 #define CCU_DSP_BGR_REG (0xc7c)
 #define CCU_BIT_DSP0_CFG_GATING (1)
