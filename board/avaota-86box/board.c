@@ -186,7 +186,7 @@ sdhci_t sdhci2 = {
 #endif
 
 dram_para_t dram_para = {
-        .dram_clk = 1008,
+        .dram_clk = 720,
         .dram_type = 3,
         .dram_zq = 0x07b7bfb,
         .dram_odt_en = 0x01,
