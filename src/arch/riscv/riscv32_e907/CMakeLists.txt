@@ -7,5 +7,6 @@ add_library(arch-obj OBJECT
     memcpy.S
     memset.S
     fprw.S
+    cache.c
     memcmp.c
 )
