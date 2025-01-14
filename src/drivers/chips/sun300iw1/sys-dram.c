@@ -8,6 +8,7 @@
 #include <types.h>
 
 #include <log.h>
+#include <mmu.h>
 
 #include <sys-clk.h>
 #include <sys-dram.h>
@@ -1287,7 +1288,7 @@ static int auto_scan_dram_size(dram_para_t *para) {
     uint32_t i = 0, j = 0, current_rank = 0;
     uint32_t rank_count = 1, addr_line = 0;
     uint32_t reg_val = 0, ret = 0, cnt = 0;
-    unsigned long mc_work_mode;
+    volatile uint32_t mc_work_mode;
     uint32_t rank1_addr = CONFIG_SYS_SDRAM_BASE;
 
     // init core
@@ -1316,6 +1317,9 @@ static int auto_scan_dram_size(dram_para_t *para) {
             writel((i % 2) ? (CONFIG_SYS_SDRAM_BASE + 4 * i) : (~(CONFIG_SYS_SDRAM_BASE + 4 * i)),
                    CONFIG_SYS_SDRAM_BASE + 4 * i);
         }
+        /* flush cache */
+        data_sync_barrier();
+
         /* set row mode */
         clrsetbits_le32(mc_work_mode, 0xf0c, 0x6f0);
         udelay(2);
