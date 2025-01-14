@@ -31,28 +31,8 @@ sunxi_serial_t uart_dbg = {
         .stop = UART_STOP_BIT_0,
         .parity = UART_PARITY_NO,
         .gpio_pin = {
-                .gpio_tx = {GPIO_PIN(GPIO_PORTD, 22), GPIO_PERIPH_MUX3},
-                .gpio_rx = {GPIO_PIN(GPIO_PORTD, 23), GPIO_PERIPH_MUX3},
-        },
-        .uart_clk = {
-                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
-                .gate_reg_offset = BUS_CLK_GATING0_REG_UART0_PCLK_EN_OFFSET,
-                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
-                .rst_reg_offset = BUS_Reset0_REG_PRESETN_UART0_SW_OFFSET,
-                .parent_clk = 192000000,
-        },
-};
-
-sunxi_serial_t uart_cpu_dbg = {
-        .base = SUNXI_UART0_BASE,
-        .id = 0,
-        .baud_rate = UART_BAUDRATE_115200,
-        .dlen = UART_DLEN_8,
-        .stop = UART_STOP_BIT_0,
-        .parity = UART_PARITY_NO,
-        .gpio_pin = {
-                .gpio_tx = {GPIO_PIN(GPIO_PORTD, 22), GPIO_PERIPH_MUX3},
-                .gpio_rx = {GPIO_PIN(GPIO_PORTD, 23), GPIO_PERIPH_MUX3},
+                .gpio_tx = {GPIO_PIN(GPIO_PORTL, 4), GPIO_PERIPH_MUX3},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX3},
         },
         .uart_clk = {
                 .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
@@ -278,7 +258,7 @@ void show_chip() {
     chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
-    printk_info("Model: AvaotaSBC Avaota CAM board.\n");
+    printk_info("Model: AvaotaSBC Avaota F1 board.\n");
     printk_info("Core: XuanTie E907 RISC-V Core.\n");
     printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
