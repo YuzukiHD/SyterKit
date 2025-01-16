@@ -51,9 +51,10 @@ _start:
 	li 	t0,  MXSTATUS_THEADISAEE
 	csrs mxstatus, t0
 
-	/* enable MHCR IE, DE, WB, WA, RS, BPE, BTE */
+	/* enable MHCR IE, DE, WB, WA, RS, BPE, BTE 
 	li 	t0,  MHCR_IE | MHCR_DE | MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE
 	csrs mhcr, t0
+	*/
 	
 	/* enable MHINT D_PLD, IWPE, AMR_1, PREF_N_16 */
 	li 	t0,  MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16
