@@ -32,7 +32,7 @@ extern sunxi_i2c_t sunxi_i2c0;
 extern sunxi_spi_t sunxi_spi0;
 extern sunxi_sdhci_t sdhci0;
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 * 4// (unit: 512B sectors)
 #define CHUNK_SIZE 0x20000
 
 msh_declare_command(read);
@@ -53,7 +53,6 @@ int cmd_read(int argc, const char **argv) {
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
                  (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
                  (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-    data_sync_barrier();
     dump_hex(SDRAM_BASE, 0x100);
     return 0;
 }

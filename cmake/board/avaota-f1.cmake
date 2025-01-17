@@ -8,7 +8,7 @@ set(CONFIG_BOARD_AVAOTA-F1 True)
 
 add_definitions(-DCONFIG_CHIP_SUN300IW1)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
-add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0xFFFFFFF)
+add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0xFFFFFF)
 add_definitions(-DCONFIG_FATFS_CACHE_ADDR=0x82000000)
 
 # Set the cross-compile toolchain
