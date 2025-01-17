@@ -42,7 +42,7 @@ int cmd_read(int argc, const char **argv) {
     uint32_t test_time;
 
     printk_debug("Clear Buffer data\n");
-    memset((void *) SDRAM_BASE, 0x00, 0x2000);
+    memset((void *) SDRAM_BASE, 0xFF, 0x2000);
     dump_hex(SDRAM_BASE, 0x100);
 
     printk_debug("Read data to buffer data\n");
@@ -53,6 +53,7 @@ int cmd_read(int argc, const char **argv) {
     printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
                  (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
                  (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+    data_sync_barrier();
     dump_hex(SDRAM_BASE, 0x100);
     return 0;
 }

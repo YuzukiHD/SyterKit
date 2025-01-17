@@ -7,37 +7,23 @@
 extern "C" {
 #endif
 
-/* Read and write memory barrier */
-#define mb() __asm__ __volatile__("fence iorw, iorw" \
-                                  :                  \
-                                  :                  \
-                                  : "memory");
-/* Read memory barrier */
-#define rmb() __asm__ __volatile__("fence ir, ir" \
-                                   :              \
-                                   :              \
-                                   : "memory");
-/* Write memory barrier */
-#define wmb() __asm__ __volatile__("fence ow, ow" \
-                                   :              \
-                                   :              \
-                                   : "memory");
+#define RISCV_FENCE(p, s)           \
+    asm volatile("fence " #p "," #s \
+                 :                  \
+                 :                  \
+                 : "memory")
 
-/* SMP read and write memory barrier */
-#define smp_mb() __asm__ __volatile__("fence rw, rw" \
-                                      :              \
-                                      :              \
-                                      : "memory");
-/* SMP read memory barrier */
-#define smp_rmb() __asm__ __volatile__("fence r, r" \
-                                       :            \
-                                       :            \
-                                       : "memory");
-/* SMP write memory barrier */
-#define smp_wmb() __asm__ __volatile__("fence w, w" \
-                                       :            \
-                                       :            \
-                                       : "memory");
+#define mb() RISCV_FENCE(iorw, iorw)
+
+#define rmb() RISCV_FENCE(ir, ir)
+
+#define wmb() RISCV_FENCE(ow, ow)
+
+#define __smp_mb() RISCV_FENCE(rw, rw)
+
+#define __smp_rmb() RISCV_FENCE(r, r)
+
+#define __smp_wmb() RISCV_FENCE(w, w)
 
 #ifdef __cplusplus
 }
