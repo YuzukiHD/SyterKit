@@ -93,7 +93,7 @@ pub fn __clock_init(ccu: &CCU) -> Clocks {
 pub fn clock_dump(ccu: &CCU) {
     let cpu_clock_source = ccu.cpu_axi_config.read().clock_source();
     let clock_name = match cpu_clock_source {
-        CpuClockSource::Osc24M => "OSC24M",
+        CpuClockSource::Hosc => "OSC24M",
         CpuClockSource::Clk32K => "CLK32",
         CpuClockSource::Clk16MRC => "CLK16M_RC",
         CpuClockSource::PllCpu => "PLL_CPU",

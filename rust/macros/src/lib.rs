@@ -85,6 +85,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
             {
                 *::syterkit::STDOUT.lock() = Some(::syterkit::SyterKitStdoutInner { inner: serial_out });
                 *::syterkit::STDIN.lock() = Some(::syterkit::SyterKitStdinInner { inner: stdin });
+                ::syterkit::set_logger_stdout();
             }
             unsafe { __syterkit_macros__main(p, c) }
         }

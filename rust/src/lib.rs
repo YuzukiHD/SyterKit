@@ -36,7 +36,9 @@ pub use stdio::{stdin, stdout, Stdin, Stdout};
 
 // macro internal code, used by `print` and `println`.
 #[doc(hidden)]
-pub use stdio::{SyterKitStdinInner, SyterKitStdoutInner, _print, STDIN, STDOUT};
+pub use stdio::{
+    SyterKitStdinInner, SyterKitStdoutInner, _print, set_logger_stdout, STDIN, STDOUT,
+};
 
 // macro internal code, used in `entry` proc macro.
 #[doc(hidden)]
