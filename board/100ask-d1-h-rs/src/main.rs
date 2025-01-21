@@ -3,7 +3,7 @@
 
 use core::convert::Infallible;
 
-use allwinner_hal::smhc::{SdCard, Smhc};
+use allwinner_hal::smhc::{RegisterBlock, SdCard, SdCardError, Smhc};
 use embedded_cli::{
     cli::{CliBuilder, CliHandle},
     Command,
@@ -79,40 +79,138 @@ fn main(p: Peripherals, c: Clocks) {
     };
 
     println!("initialize smhc...");
-    let smhc = Smhc::new::<0>(&p.smhc0, pads, &c, &p.ccu);
+    let mut smhc = Smhc::new::<0>(&p.smhc0, pads, &c, &p.ccu);
 
     println!("initializing SD card...");
-    let sdcard = match SdCard::new(smhc) {
-        Ok(card) => card,
-        Err(e) => {
+    match load_from_sdcard(&mut smhc) {
+        Ok(_) => {}
+        Err(LoadError::SdCard(e)) => {
             println!("Failed to initialize SD card: {:?}", e);
-            loop {}
+            run_cli(&mut smhc);
         }
-    };
-    println!(
-        "SD card initialized, size: {:.2}GB",
-        sdcard.get_size_kb() / 1024.0 / 1024.0
-    );
+        Err(_) => {
+            println!("Failed to load from SD card");
+            run_cli(&mut smhc);
+        }
+    }
+
+    // Run payload.
+    run_payload();
+}
+
+/// Executes the loaded payload
+fn run_payload() -> ! {
+    const ZIMAGE_ADDRESS: usize = 0x4180_0000; // Load address of Linux zImage
+    const DTB_ADDRESS: usize = 0x4100_8000; // Address of the device tree blob
+    const HART_ID: usize = 0; // Hartid of the current core
+
+    type KernelEntry = unsafe extern "C" fn(hart_id: usize, dtb_addr: usize);
+
+    let kernel_entry: KernelEntry = unsafe { core::mem::transmute(ZIMAGE_ADDRESS) };
+    unsafe {
+        kernel_entry(HART_ID, DTB_ADDRESS);
+    }
+
+    loop {}
+}
+
+enum LoadError {
+    SdCard(SdCardError),
+    OpenVolume,
+    LoadToMemory,
+    FileSize,
+}
+
+impl From<SdCardError> for LoadError {
+    #[inline]
+    fn from(value: SdCardError) -> Self {
+        LoadError::SdCard(value)
+    }
+}
+
+fn load_from_sdcard<S: AsRef<RegisterBlock>, P>(smhc: &mut Smhc<S, P>) -> Result<(), LoadError> {
+    let sdcard = SdCard::new(smhc)?;
+    let size_gb = sdcard.get_size_kb() / 1024.0 / 1024.0;
+    println!("SD card initialized, size: {:.2}GB", size_gb);
 
     let time_source = MyTimeSource {};
     let mut volume_mgr = VolumeManager::new(sdcard, time_source);
     let volume_res = volume_mgr.open_raw_volume(embedded_sdmmc::VolumeIdx(0));
     if let Err(e) = volume_res {
         println!("Failed to open volume: {:?}", e);
-        loop {}
+        return Err(LoadError::OpenVolume);
     }
     let volume0 = volume_res.unwrap();
     let root_dir = volume_mgr.open_root_dir(volume0).unwrap();
 
-    volume_mgr
-        .iterate_dir(root_dir, |entry| {
-            println!("Entry: {:?}", entry);
-        })
-        .unwrap();
+    // Load `snuxi.dtb` and `zImage`
+    for (filename, addr, size) in [
+        ("SUNXI.DTB", 0x4100_8000, 64 * 1024),
+        ("ZIMAGE", 0x4180_0000, 512 * 1024 * 1024),
+    ] {
+        match unsafe { load_file_into_memory(&mut volume_mgr, root_dir, filename, addr, size) } {
+            Ok(bytes) => {
+                println!("load {} success, size = {} bytes", filename, bytes);
+            }
+            Err(LoadFileIntoMemoryError::Sdmmc(_e)) => {
+                println!("error: cannot load file `{}`.", filename);
+                return Err(LoadError::LoadToMemory);
+            }
+            Err(LoadFileIntoMemoryError::FileSize) => {
+                println!(
+                    "error: cannot load file `{}`, file size too large.",
+                    filename
+                );
+                return Err(LoadError::FileSize);
+            }
+        }
+    }
 
     volume_mgr.close_dir(root_dir).unwrap();
 
-    // Start boot command line.
+    Ok(())
+}
+
+enum LoadFileIntoMemoryError<T: core::fmt::Debug> {
+    Sdmmc(embedded_sdmmc::Error<T>),
+    FileSize,
+}
+
+impl<T: core::fmt::Debug> From<embedded_sdmmc::Error<T>> for LoadFileIntoMemoryError<T> {
+    #[inline]
+    fn from(value: embedded_sdmmc::Error<T>) -> Self {
+        LoadFileIntoMemoryError::Sdmmc(value)
+    }
+}
+
+/// Loads a file from SD card into specified memory address
+unsafe fn load_file_into_memory<T: embedded_sdmmc::BlockDevice>(
+    volume_mgr: &mut VolumeManager<T, MyTimeSource>,
+    dir: embedded_sdmmc::RawDirectory,
+    file_name: &str,
+    addr: usize,
+    max_size: u32,
+) -> Result<usize, LoadFileIntoMemoryError<T::Error>> {
+    // Find and open the file
+    volume_mgr.find_directory_entry(dir, file_name)?;
+
+    let file = volume_mgr.open_file_in_dir(dir, file_name, embedded_sdmmc::Mode::ReadOnly)?;
+
+    // Check file size
+    let file_size = volume_mgr.file_length(file)?;
+    if file_size > max_size {
+        return Err(LoadFileIntoMemoryError::FileSize);
+    }
+
+    // Read file content into memory
+    let target = unsafe { core::slice::from_raw_parts_mut(addr as *mut u8, file_size as usize) };
+    let size = volume_mgr.read(file, target)?;
+    volume_mgr.close_file(file).ok();
+
+    Ok(size)
+}
+
+fn run_cli<S: AsRef<RegisterBlock>, P>(smhc: &mut Smhc<S, P>) -> ! {
     let (command_buffer, history_buffer) = ([0; 128], [0; 128]);
     let mut cli = CliBuilder::default()
         .writer(syterkit::stdout())
@@ -130,7 +228,7 @@ fn main(p: Peripherals, c: Clocks) {
             &mut Base::processor(|cli, command| {
                 match command {
                     Base::Bootargs => command_bootargs(cli),
-                    Base::Reload => command_reload(cli),
+                    Base::Reload => command_reload(cli, smhc),
                     Base::Boot => command_boot(cli),
                     Base::Print => command_print(cli),
                     Base::Read32 { address } => command_read32(cli, address),
@@ -147,12 +245,15 @@ fn command_bootargs<'a>(_cli: &mut CliHandle<'a, Stdout, Infallible>) {
     println!("TODO Bootargs");
 }
 
-fn command_reload<'a>(cli: &mut CliHandle<'a, Stdout, Infallible>) {
-    ufmt::uwrite!(cli.writer(), "TODO Reload").ok();
+fn command_reload<'a, S: AsRef<RegisterBlock>, P>(
+    _cli: &mut CliHandle<'a, Stdout, Infallible>,
+    smhc: &mut Smhc<S, P>,
+) {
+    let _ = load_from_sdcard(smhc);
 }
 
-fn command_boot<'a>(cli: &mut CliHandle<'a, Stdout, Infallible>) {
-    ufmt::uwrite!(cli.writer(), "TODO Boot").ok();
+fn command_boot<'a>(_cli: &mut CliHandle<'a, Stdout, Infallible>) {
+    run_payload();
 }
 
 fn command_print<'a>(cli: &mut CliHandle<'a, Stdout, Infallible>) {
