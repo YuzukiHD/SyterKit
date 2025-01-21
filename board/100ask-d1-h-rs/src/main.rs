@@ -3,11 +3,13 @@
 
 use core::convert::Infallible;
 
+use allwinner_hal::smhc::{SdCard, Smhc};
 use embedded_cli::{
     cli::{CliBuilder, CliHandle},
     Command,
 };
 use embedded_io::Read;
+use embedded_sdmmc::VolumeManager;
 use panic_halt as _;
 use syterkit::{clock_dump, entry, print, println, show_banner, Clocks, Peripherals, Stdout};
 
@@ -43,8 +45,17 @@ enum Base<'a> {
     },
 }
 
+struct MyTimeSource {}
+
+impl embedded_sdmmc::TimeSource for MyTimeSource {
+    fn get_timestamp(&self) -> embedded_sdmmc::Timestamp {
+        // TODO
+        embedded_sdmmc::Timestamp::from_calendar(2023, 1, 1, 0, 0, 0).unwrap()
+    }
+}
+
 #[entry] // This macro would initialize system clocks.
-fn main(p: Peripherals, _c: Clocks) {
+fn main(p: Peripherals, c: Clocks) {
     // Display the bootloader banner.
     show_banner();
 
@@ -55,41 +66,51 @@ fn main(p: Peripherals, _c: Clocks) {
     // Dump information about the system clocks.
     clock_dump(&p.ccu);
 
-    // TODO: SD/MMC init.
-    let _sdmmc_pins = {
-        let d1 = p.gpio.pf0.into_function::<2>();
-        let d0 = p.gpio.pf1.into_function::<2>();
-        let clk = p.gpio.pf2.into_function::<2>();
-        let cmd = p.gpio.pf3.into_function::<2>();
-        let d3 = p.gpio.pf4.into_function::<2>();
-        let d2 = p.gpio.pf5.into_function::<2>();
-        (clk, cmd, d0, d1, d2, d3)
+    // SD/MMC init.
+    println!("initialize sdmmc pins...");
+    let pads = {
+        let sdc0_d1 = p.gpio.pf0.into_function::<2>();
+        let sdc0_d0 = p.gpio.pf1.into_function::<2>();
+        let sdc0_clk = p.gpio.pf2.into_function::<2>();
+        let sdc0_cmd = p.gpio.pf3.into_function::<2>();
+        let sdc0_d3 = p.gpio.pf4.into_function::<2>();
+        let sdc0_d2 = p.gpio.pf5.into_function::<2>();
+        (sdc0_d1, sdc0_d0, sdc0_clk, sdc0_cmd, sdc0_d3, sdc0_d2)
     };
-    unsafe {
-        p.ccu
-            .smhc_bgr
-            .modify(|val| val.gate_pass::<0>().deassert_reset::<0>());
-        // p.ccu.smhc_clk[0].modify(|val| val.unmask_clock());
-        p.smhc0
-            .global_control
-            .modify(|val| val.set_dma_reset().set_fifo_reset().set_software_reset());
+
+    println!("initialize smhc...");
+    let smhc = Smhc::new::<0>(&p.smhc0, pads, &c, &p.ccu);
+
+    println!("initializing SD card...");
+    let sdcard = match SdCard::new(smhc) {
+        Ok(card) => card,
+        Err(e) => {
+            println!("Failed to initialize SD card: {:?}", e);
+            loop {}
+        }
     };
-    /*
-    // let sdhci = p.smhc0.smhc(sdmmc_pins)
-    // sdhci.detect_sdcard() // TODO or: detect_mmc()
-    p.smhc0.global_control.modify(|val| val.set_dma_reset().set_fifo_reset().set_software_reset());
-    // TODO sdhci_set_clock(hci, MMC_CLK_400K)
-    // TODO sdhci_set_width(hci, MMC_BUS_WIDTH_1)
-    // TODO go_idle_state(hci)
-    // delay_ms(2)
-    // let sdcard = sdhci.try_detect_sdcard()?;
-    // // TODO volumn, directory, file, etc
-    // let dtb = dir.open_file_in_dir()?;
-    // // file read loop
-    // ddr_mem[..size].copy_from_slice(&buf);
-    // let kernel = ...
-    // let config = ...
-     */
+    println!(
+        "SD card initialized, size: {:.2}GB",
+        sdcard.get_size_kb() / 1024.0 / 1024.0
+    );
+
+    let time_source = MyTimeSource {};
+    let mut volume_mgr = VolumeManager::new(sdcard, time_source);
+    let volume_res = volume_mgr.open_raw_volume(embedded_sdmmc::VolumeIdx(0));
+    if let Err(e) = volume_res {
+        println!("Failed to open volume: {:?}", e);
+        loop {}
+    }
+    let volume0 = volume_res.unwrap();
+    let root_dir = volume_mgr.open_root_dir(volume0).unwrap();
+
+    volume_mgr
+        .iterate_dir(root_dir, |entry| {
+            println!("Entry: {:?}", entry);
+        })
+        .unwrap();
+
+    volume_mgr.close_dir(root_dir).unwrap();
 
     // Start boot command line.
     let (command_buffer, history_buffer) = ([0; 128], [0; 128]);
