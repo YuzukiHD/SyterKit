@@ -17,7 +17,7 @@ use syterkit::{clock_dump, entry, print, println, show_banner, Clocks, Periphera
 enum Base<'a> {
     /// Get/set bootargs for kernel.
     Bootargs,
-    /// Rescan TF Card and reload DTB, Kernel zImage.
+    /// Rescan TF Card and reload DTB, Kernel Image.
     Reload,
     /// Print out env config.
     Print,
@@ -100,13 +100,13 @@ fn main(p: Peripherals, c: Clocks) {
 
 /// Executes the loaded payload
 fn run_payload() -> ! {
-    const ZIMAGE_ADDRESS: usize = 0x4180_0000; // Load address of Linux zImage
+    const IMAGE_ADDRESS: usize = 0x4180_0000; // Load address of Linux Image
     const DTB_ADDRESS: usize = 0x4100_8000; // Address of the device tree blob
     const HART_ID: usize = 0; // Hartid of the current core
 
     type KernelEntry = unsafe extern "C" fn(hart_id: usize, dtb_addr: usize);
 
-    let kernel_entry: KernelEntry = unsafe { core::mem::transmute(ZIMAGE_ADDRESS) };
+    let kernel_entry: KernelEntry = unsafe { core::mem::transmute(IMAGE_ADDRESS) };
     unsafe {
         kernel_entry(HART_ID, DTB_ADDRESS);
     }
@@ -143,10 +143,10 @@ fn load_from_sdcard<S: AsRef<RegisterBlock>, P>(smhc: &mut Smhc<S, P>) -> Result
     let volume0 = volume_res.unwrap();
     let root_dir = volume_mgr.open_root_dir(volume0).unwrap();
 
-    // Load `snuxi.dtb` and `zImage`
+    // Load `sunxi.dtb` and `Image`
     for (filename, addr, size) in [
         ("SUNXI.DTB", 0x4100_8000, 64 * 1024),
-        ("ZIMAGE", 0x4180_0000, 512 * 1024 * 1024),
+        ("IMAGE", 0x4180_0000, 512 * 1024 * 1024),
     ] {
         match unsafe { load_file_into_memory(&mut volume_mgr, root_dir, filename, addr, size) } {
             Ok(bytes) => {
