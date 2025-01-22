@@ -76,7 +76,7 @@ pub fn set_logger_stdout() {
             if self.enabled(record.metadata()) {
                 let mut lock = STDOUT.lock();
                 if let Some(stdout) = &mut *lock {
-                    writeln!(stdout.inner, "{} - {}", record.level(), record.args()).ok();
+                    write!(stdout.inner, "{} - {}\r\n", record.level(), record.args()).ok();
                 }
                 drop(lock);
             }
