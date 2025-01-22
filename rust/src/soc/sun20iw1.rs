@@ -3,22 +3,29 @@ use allwinner_hal::{
     ccu::{Clocks, CpuClockSource},
     gpio::{Disabled, Function},
 };
-use allwinner_rt::soc::d1::{CCU, COM, GPIO, PHY, PLIC, SPI0, UART0};
+use allwinner_rt::soc::d1::{CCU, COM, GPIO, PHY, PLIC, SMHC0, SMHC1, SMHC2, SPI0, UART0};
 use embedded_time::rate::Extensions;
 
 /// SyterKit runtime peripheral ownership and configurations.
 pub struct Peripherals<'a> {
     /// General Purpose Input/Output peripheral.
     pub gpio: Pads<'a>,
-    // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
-    /// Serial Peripheral Interface peripheral 0.
-    pub spi0: SPI0,
-    /// Memory controller physical layer (PHY) of DDR SDRAM.
-    pub phy: PHY,
-    /// Common control peripheral of DDR SDRAM.
-    pub com: COM,
     /// Clock control unit peripheral.
     pub ccu: CCU,
+    // uart0 is removed; it is occupied by stdin/stdout `Serial` structure.
+    /// Serial Peripheral Interface peripheral 0.
+    /// Common control peripheral of DDR SDRAM.
+    pub com: COM,
+    /// Memory controller physical layer (PHY) of DDR SDRAM.
+    pub phy: PHY,
+    /// SD/MMC Host Controller peripheral 0.
+    pub smhc0: SMHC0,
+    /// SD/MMC Host Controller peripheral 1.
+    pub smhc1: SMHC1,
+    /// SD/MMC Host Controller peripheral 2.
+    pub smhc2: SMHC2,
+    /// Serial Peripheral Interface peripheral 0.
+    pub spi0: SPI0,
     /// Platform-local Interrupt Controller.
     pub plic: PLIC,
 }
@@ -39,10 +46,13 @@ impl<'a> Peripherals<'a> {
         let uart0 = src.uart0;
         let p = Self {
             gpio: Pads::__init(),
-            spi0: src.spi0,
-            phy: src.phy,
-            com: src.com,
             ccu: src.ccu,
+            com: src.com,
+            phy: src.phy,
+            smhc0: src.smhc0,
+            smhc1: src.smhc1,
+            smhc2: src.smhc2,
+            spi0: src.spi0,
             plic: src.plic,
         };
         (p, uart0, pb8, pb9)
@@ -83,7 +93,7 @@ pub fn __clock_init(ccu: &CCU) -> Clocks {
 pub fn clock_dump(ccu: &CCU) {
     let cpu_clock_source = ccu.cpu_axi_config.read().clock_source();
     let clock_name = match cpu_clock_source {
-        CpuClockSource::Osc24M => "OSC24M",
+        CpuClockSource::Hosc => "OSC24M",
         CpuClockSource::Clk32K => "CLK32",
         CpuClockSource::Clk16MRC => "CLK16M_RC",
         CpuClockSource::PllCpu => "PLL_CPU",

@@ -62,6 +62,40 @@ impl embedded_io::Write for Stdout {
     }
 }
 
+#[doc(hidden)]
+#[inline]
+pub fn set_logger_stdout() {
+    struct StdoutLogger;
+    impl log::Log for StdoutLogger {
+        #[inline]
+        fn enabled(&self, _metadata: &log::Metadata) -> bool {
+            STDOUT.lock().is_some()
+        }
+        #[inline]
+        fn log(&self, record: &log::Record) {
+            if self.enabled(record.metadata()) {
+                let mut lock = STDOUT.lock();
+                if let Some(stdout) = &mut *lock {
+                    write!(stdout.inner, "{} - {}\r\n", record.level(), record.args()).ok();
+                }
+                drop(lock);
+            }
+        }
+        #[inline]
+        fn flush(&self) {
+            let mut lock = STDOUT.lock();
+            if let Some(stdout) = &mut *lock {
+                stdout.inner.flush().ok();
+            }
+        }
+    }
+
+    static STDOUT_LOGGER: StdoutLogger = StdoutLogger;
+    log::set_logger(&STDOUT_LOGGER).ok();
+    // TODO: make it configurable in environment variable
+    log::set_max_level(log::LevelFilter::max());
+}
+
 /// A handle to the standard input stream of a runtime.
 pub struct Stdin {
     inner: &'static spin::Mutex<Option<SyterKitStdinInner>>,

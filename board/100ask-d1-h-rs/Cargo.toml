@@ -10,10 +10,15 @@ default-target = "riscv64imac-unknown-none-elf"
 embedded-hal = "1.0.0"
 embedded-cli = "0.2.1"
 embedded-io = "0.6.1"
+embedded-time = "0.12.1"
+riscv = "0.12.1"
 panic-halt = "0.2.0"
-syterkit = { path = "../../rust", features = ["sun20iw1"]}
+syterkit = { path = "../../rust", features = ["sun20iw1"] }
+allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
 ufmt = "0.2.0"
 num-traits = { version = "0.2.19", default-features = false }
+# log = "0.4.22"
+embedded-sdmmc = "0.8.1"
 
 [[bin]]
 name = "syterkit-100ask-d1-h"
