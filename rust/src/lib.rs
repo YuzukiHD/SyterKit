@@ -4,6 +4,7 @@
 mod macros;
 
 pub mod mctl;
+mod sdcard;
 pub mod soc;
 mod stdio;
 mod time_source;
