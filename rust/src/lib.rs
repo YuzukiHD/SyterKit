@@ -34,6 +34,7 @@ pub fn show_banner() {
     println!();
 }
 
+pub use sdcard::{load_from_sdcard, SdCardError};
 pub use stdio::{stdin, stdout, Stdin, Stdout};
 pub use time_source::{time_source, TimeSource};
 
