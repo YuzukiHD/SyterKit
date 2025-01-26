@@ -6,6 +6,7 @@ mod macros;
 pub mod mctl;
 pub mod soc;
 mod stdio;
+mod time_source;
 
 pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
@@ -33,6 +34,7 @@ pub fn show_banner() {
 }
 
 pub use stdio::{stdin, stdout, Stdin, Stdout};
+pub use time_source::{time_source, TimeSource};
 
 // macro internal code, used by `print` and `println`.
 #[doc(hidden)]

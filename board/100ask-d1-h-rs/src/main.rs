@@ -45,15 +45,6 @@ enum Base<'a> {
     },
 }
 
-struct MyTimeSource {}
-
-impl embedded_sdmmc::TimeSource for MyTimeSource {
-    fn get_timestamp(&self) -> embedded_sdmmc::Timestamp {
-        // TODO
-        embedded_sdmmc::Timestamp::from_calendar(2023, 1, 1, 0, 0, 0).unwrap()
-    }
-}
-
 #[entry] // This macro would initialize system clocks.
 fn main(p: Peripherals, c: Clocks) {
     // Display the bootloader banner.
@@ -133,8 +124,7 @@ fn load_from_sdcard<S: AsRef<RegisterBlock>, P>(smhc: &mut Smhc<S, P>) -> Result
     let size_gb = sdcard.get_size_kb() / 1024.0 / 1024.0;
     println!("SD card initialized, size: {:.2}GB", size_gb);
 
-    let time_source = MyTimeSource {};
-    let mut volume_mgr = VolumeManager::new(sdcard, time_source);
+    let mut volume_mgr = VolumeManager::new(sdcard, syterkit::time_source());
     let volume_res = volume_mgr.open_raw_volume(embedded_sdmmc::VolumeIdx(0));
     if let Err(e) = volume_res {
         println!("Failed to open volume: {:?}", e);
@@ -185,7 +175,7 @@ impl<T: core::fmt::Debug> From<embedded_sdmmc::Error<T>> for LoadFileIntoMemoryE
 
 /// Loads a file from SD card into specified memory address
 unsafe fn load_file_into_memory<T: embedded_sdmmc::BlockDevice>(
-    volume_mgr: &mut VolumeManager<T, MyTimeSource>,
+    volume_mgr: &mut VolumeManager<T, syterkit::TimeSource>,
     dir: embedded_sdmmc::RawDirectory,
     file_name: &str,
     addr: usize,
