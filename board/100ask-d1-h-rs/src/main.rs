@@ -80,7 +80,13 @@ fn main(p: Peripherals, c: Clocks) {
     let mut d = Device { smhc };
 
     println!("initializing SD card...");
-    let sdcard = SdCard::new(&mut d.smhc).unwrap();
+    let sdcard = match SdCard::new(&mut d.smhc) {
+        Ok(val) => val,
+        Err(e) => {
+            println!("SD card init failed with error {:?}", e);
+            run_cli(&mut d);
+        }
+    };
     let size_gb = sdcard.get_size_kb() / 1024.0 / 1024.0;
     println!("SD card initialized, size: {:.2}GB", size_gb);
 
@@ -133,13 +139,12 @@ const D1_H_FILES: [(&'static str, usize, u32); 2] = [
 
 fn run_cli<S: AsRef<RegisterBlock>, P>(d: &mut Device<S, P>) -> ! {
     let (command_buffer, history_buffer) = ([0; 128], [0; 128]);
-    let mut cli = CliBuilder::default()
+    let Ok(mut cli) = CliBuilder::default()
         .writer(syterkit::stdout())
         .command_buffer(command_buffer)
         .history_buffer(history_buffer)
         .prompt("SyterKit> ")
-        .build()
-        .unwrap();
+        .build();
     let mut stdin = syterkit::stdin();
     loop {
         let mut slice = [0];
@@ -170,7 +175,13 @@ fn command_reload<'a, S: AsRef<RegisterBlock>, P>(
     _cli: &mut CliHandle<'a, Stdout, Infallible>,
     d: &mut Device<S, P>,
 ) {
-    let sdcard = SdCard::new(&mut d.smhc).unwrap();
+    let sdcard = match SdCard::new(&mut d.smhc) {
+        Ok(val) => val,
+        Err(e) => {
+            println!("SD card init failed with error {:?}", e);
+            return;
+        }
+    };
     let _ = unsafe { load_from_sdcard(sdcard, syterkit::time_source(), D1_H_FILES) };
     println!("SD card reload succeeded");
 }
@@ -258,8 +269,8 @@ fn command_hexdump<'a, 'b>(
 }
 
 fn parse_value<T: core::str::FromStr + num_traits::Num>(value: &str) -> Option<T> {
-    if value.starts_with("0x") {
-        T::from_str_radix(value.strip_prefix("0x").unwrap(), 16).ok()
+    if let Some(zero_x_prefix_stripped) = value.strip_prefix("0x") {
+        T::from_str_radix(zero_x_prefix_stripped, 16).ok()
     } else {
         value.parse::<T>().ok()
     }
