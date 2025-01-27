@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
 
-use core::convert::Infallible;
-
 use allwinner_hal::smhc::{RegisterBlock, SdCard, Smhc};
+use core::convert::Infallible;
+use core::ptr::addr_of;
 use embedded_cli::{
     cli::{CliBuilder, CliHandle},
     Command,
@@ -11,8 +11,8 @@ use embedded_cli::{
 use embedded_io::Read;
 use panic_halt as _;
 use syterkit::{
-    clock_dump, entry, load_from_sdcard, print, println, show_banner, Clocks, Peripherals,
-    SdCardError, Stdout,
+    clock_dump, entry, load_from_sdcard, print, println, show_banner, Clocks, DynamicInfo,
+    Peripherals, SdCardError, Stdout,
 };
 
 #[derive(Command)]
@@ -116,17 +116,25 @@ fn main(p: Peripherals, c: Clocks) {
     run_payload();
 }
 
+static mut DYNAMIC_INFO: DynamicInfo = DynamicInfo::new();
+
 /// Executes the loaded payload
 fn run_payload() -> ! {
     const IMAGE_ADDRESS: usize = 0x4180_0000; // Load address of Linux Image
     const DTB_ADDRESS: usize = 0x4100_8000; // Address of the device tree blob
     const HART_ID: usize = 0; // Hartid of the current core
+    unsafe {
+        DYNAMIC_INFO = DYNAMIC_INFO
+            .with_supervisor(IMAGE_ADDRESS)
+            .with_boot_hart(HART_ID)
+    };
 
-    type KernelEntry = unsafe extern "C" fn(hart_id: usize, dtb_addr: usize);
+    type KernelEntry =
+        unsafe extern "C" fn(hart_id: usize, dtb_addr: usize, dynamic_info: *const DynamicInfo);
 
     let kernel_entry: KernelEntry = unsafe { core::mem::transmute(IMAGE_ADDRESS) };
     unsafe {
-        kernel_entry(HART_ID, DTB_ADDRESS);
+        kernel_entry(HART_ID, DTB_ADDRESS, addr_of!(DYNAMIC_INFO));
     }
 
     loop {}
