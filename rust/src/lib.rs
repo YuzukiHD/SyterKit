@@ -3,6 +3,7 @@
 #[macro_use]
 mod macros;
 
+pub mod config;
 mod dynamic_info;
 pub mod mctl;
 mod sdcard;
@@ -35,6 +36,7 @@ pub fn show_banner() {
     println!();
 }
 
+pub use config::{parse_config, Config};
 pub use dynamic_info::DynamicInfo;
 pub use sdcard::{load_from_sdcard, SdCardError};
 pub use stdio::{stdin, stdout, Stdin, Stdout};

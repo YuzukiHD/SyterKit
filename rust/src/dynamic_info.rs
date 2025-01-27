@@ -1,3 +1,5 @@
+use crate::config::Mode;
+
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct DynamicInfo {
@@ -31,6 +33,12 @@ impl DynamicInfo {
     #[inline]
     pub const fn with_boot_hart(mut self, boot_hart: usize) -> Self {
         self.boot_hart = boot_hart;
+        self
+    }
+    #[inline]
+    pub const fn with_next_stage(mut self, next_mode: Mode, next_addr: usize) -> Self {
+        self.next_mode = next_mode as usize;
+        self.next_addr = next_addr;
         self
     }
     #[inline]
