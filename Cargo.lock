@@ -538,9 +538,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 [[package]]
 name = "picotoml"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae8800e101595235eacdc125c2e374d5a64c82e26ebf6d51c1286a3005bd9a3d"
+source = "git+https://github.com/rustsbi/poplar/?rev=478750cc#478750cc21ad1031fe1878f40e08fb5afde7a3f1"
 dependencies = [
+ "heapless",
  "logos",
  "serde",
 ]

@@ -17,7 +17,7 @@ embedded-time = "0.12.1"
 log = "0.4.22"
 embedded-sdmmc = "0.8.1"
 heapless = { version = "0.8.0", features = ["serde"] }
-picotoml = "0.1"
+picotoml = { git = "https://github.com/rustsbi/poplar/", rev = "478750cc" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [build-dependencies]
