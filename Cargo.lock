@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "allwinner-hal"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#5549e07a63bace14ca90b2ad5d30605e463c9c0c"
+source = "git+https://github.com/rustsbi/allwinner-hal?branch=fix%2F160k-sram#db0f47f1ebdc56c20ed0f0ee6dbd26c6b8c7dce3"
 dependencies = [
  "embedded-hal",
  "embedded-io",
@@ -28,7 +28,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#5549e07a63bace14ca90b2ad5d30605e463c9c0c"
+source = "git+https://github.com/rustsbi/allwinner-hal?branch=fix%2F160k-sram#db0f47f1ebdc56c20ed0f0ee6dbd26c6b8c7dce3"
 dependencies = [
  "allwinner-hal",
  "allwinner-rt-macros",
@@ -41,7 +41,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt-macros"
 version = "0.0.0"
-source = "git+https://github.com/rustsbi/allwinner-hal#5549e07a63bace14ca90b2ad5d30605e463c9c0c"
+source = "git+https://github.com/rustsbi/allwinner-hal?branch=fix%2F160k-sram#db0f47f1ebdc56c20ed0f0ee6dbd26c6b8c7dce3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -538,9 +538,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 [[package]]
 name = "picotoml"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae8800e101595235eacdc125c2e374d5a64c82e26ebf6d51c1286a3005bd9a3d"
+source = "git+https://github.com/rustsbi/poplar?branch=refactor%2Friscv#478750cc21ad1031fe1878f40e08fb5afde7a3f1"
 dependencies = [
+ "heapless",
  "logos",
  "serde",
 ]

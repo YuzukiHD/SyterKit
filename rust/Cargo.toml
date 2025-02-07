@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 naked-function = "0.1.5"
-allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal" }
-allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal" }
+allwinner-hal = "0.0.0"
+allwinner-rt = "0.0.0"
 embedded-hal = "1.0.0"
 embedded-io = "0.6.1"
 spin = "0.9"
@@ -17,7 +17,7 @@ embedded-time = "0.12.1"
 log = "0.4.22"
 embedded-sdmmc = "0.8.1"
 heapless = { version = "0.8.0", features = ["serde"] }
-picotoml = "0.1"
+picotoml = { git = "https://github.com/rustsbi/poplar", branch = "refactor/riscv", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [build-dependencies]
