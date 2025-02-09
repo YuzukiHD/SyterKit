@@ -70,13 +70,13 @@ function(add_syterkit_app target_name)
     if(CMAKE_BUILD_TYPE STREQUAL Trace OR CMAKE_BUILD_TYPE STREQUAL Debug)
         add_custom_command(
             TARGET ${target_name}_bin
-            POST_BUILD COMMAND ${CROSS_COMPILE}objdump -S ${target_name}_bin > ${target_name}_bin.asm
+            POST_BUILD COMMAND ${CROSS_COMPILE}objdump -D ${target_name}_bin > ${target_name}_bin.asm
             COMMENT "Objdump ${target_name}_bin"
         )
 
         add_custom_command(
             TARGET ${target_name}_fel
-            POST_BUILD COMMAND ${CROSS_COMPILE}objdump -S ${target_name}_fel > ${target_name}_fel.asm
+            POST_BUILD COMMAND ${CROSS_COMPILE}objdump -D ${target_name}_fel > ${target_name}_fel.asm
             COMMENT "Objdump ${target_name}_fel"
         )
     endif()
