@@ -712,7 +712,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
             cfg = ac_remapping_tables[0];
         } else if (para->dram_tpr13 & 0xc0000) {
             printk_debug("DDR Using MAP: 7 \n");
-            cfg = ac_remapping_tables[10];
+            cfg = ac_remapping_tables[7];
         } else if (para->dram_tpr13 & 0x0c000) {
             printk_debug("DDR Using MAP: 10 (86Box)\n");
             cfg = ac_remapping_tables[10];
