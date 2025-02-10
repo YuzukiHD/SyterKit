@@ -47,18 +47,9 @@ _start:
 	li 	t0, MSTATUS_FS | MSTATUS_XS
 	csrs mstatus, t0
 
-	/* enable MXSTATUS.THEADISAEE bit[22] */
-	li 	t0,  MXSTATUS_THEADISAEE
+	/* enable MXSTATUS.MM MXSTATUS.THEADISAEE bit[22] */
+	li 	t0, MXSTATUS_MM | MXSTATUS_THEADISAEE
 	csrs mxstatus, t0
-
-	/* enable MHCR IE, DE, WB, WA, RS, BPE, BTE 
-	li 	t0,  MHCR_IE | MHCR_DE | MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE
-	csrs mhcr, t0
-	*/
-	
-	/* enable MHINT D_PLD, IWPE, AMR_1, PREF_N_16 */
-	li 	t0,  MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16
-	csrs mhint, t0
 
 	/* invaild ICACHE/DCACHE/BTB/BHT */
 	fence.i
@@ -80,6 +71,8 @@ _start:
 	jal clear_bss
 
 	jal set_timer_count
+
+	jal cache_init
 
 	jal main
 
