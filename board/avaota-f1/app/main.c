@@ -32,7 +32,7 @@ extern sunxi_i2c_t sunxi_i2c0;
 extern sunxi_spi_t sunxi_spi0;
 extern sunxi_sdhci_t sdhci0;
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 * 4// (unit: 512B sectors)
 #define CHUNK_SIZE 0x20000
 
 msh_declare_command(read);
@@ -42,7 +42,7 @@ int cmd_read(int argc, const char **argv) {
     uint32_t test_time;
 
     printk_debug("Clear Buffer data\n");
-    memset((void *) SDRAM_BASE, 0x00, 0x2000);
+    memset((void *) SDRAM_BASE, 0xFF, 0x2000);
     dump_hex(SDRAM_BASE, 0x100);
 
     printk_debug("Read data to buffer data\n");

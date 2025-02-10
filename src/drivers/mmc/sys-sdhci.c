@@ -677,18 +677,16 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
     uint32_t reg_val = 0;
     uint32_t timeout = time_us() + SMHC_TIMEOUT;
 
-    /* burst-16, rx/tx trigger level=15/240 */
-    mmc_host->reg->ftrglevel = ((3 << 28) | (15 << 16) | 240);
-
     buff = data->flags & MMC_DATA_READ ? (uint8_t *) data->b.dest : (uint8_t *) data->b.src;
     buff_frag_num = byte_cnt >> SMHC_DES_NUM_SHIFT;
     remain = byte_cnt & (SMHC_DES_BUFFER_MAX_LEN - 1);
     if (remain) {
         buff_frag_num++;
     } else {
-        remain = SMHC_DES_BUFFER_MAX_LEN - 1;
+        remain = SMHC_DES_BUFFER_MAX_LEN;
     }
 
+    data_sync_barrier();
     for (size_t i = 0; i < buff_frag_num; i++, des_idx++) {
         memset((void *) &pdes[des_idx], 0, sizeof(sunxi_sdhci_desc_t));
         pdes[des_idx].des_chain = 1;
@@ -696,7 +694,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
         pdes[des_idx].dic = 1;
 
         if (buff_frag_num > 1 && i != buff_frag_num - 1) {
-            pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN - 1;
+            pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN;
         } else {
             pdes[des_idx].data_buf_sz = remain;
         }
@@ -727,6 +725,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
     }
 
     data_sync_barrier();
+    wmb();
 
     /*
 	 * GCTRLREG
@@ -976,6 +975,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 	 * STATREG[2] : FIFO empty
 	 * STATREG[3] : FIFO full
 	 */
+
+    data_sync_barrier();
+
     if (data) {
         printk_trace("SMHC: transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
                      (((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) ? "DMA" : "CPU"));

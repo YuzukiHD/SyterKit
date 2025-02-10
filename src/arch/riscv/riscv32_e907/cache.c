@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <types.h>
 
+#include <barrier.h>
 #include <mmu.h>
 #include <timer.h>
 
@@ -15,15 +16,6 @@
 #include <log.h>
 
 #define L1_CACHE_BYTES (32) /**< Size of L1 cache line in bytes. */
-
-/**
- * @file mmu.h
- * @brief Memory Management Unit (MMU) interface for cache operations.
- *
- * This header file provides functions and definitions for initializing and 
- * managing the memory management unit (MMU), particularly concerning 
- * data and instruction caches.
- */
 
 /**
  * @brief Insert a data synchronization barrier.
@@ -42,11 +34,9 @@ void data_sync_barrier(void) {
  * This function configures the cache settings by writing specific 
  * values to the control and status registers.
  */
-void cache_init(void) {
-    csr_write(mcor, 0x70013);   // Configure cache options
-    csr_write(mhcr, 0x11ff);    // Set cache hit control register
-    csr_set(mxstatus, 0x638000);// Set machine status register
-    csr_write(mhint, 0x16e30c); // Set hint for cache operations
+void cache_init(void) {                                                        // Configure cache options
+    csr_write(mhcr, MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE);        // Set cache hit control register
+    csr_write(mhint, MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16);// Set hint for cache operations
 }
 
 /**
@@ -56,7 +46,7 @@ void cache_init(void) {
  * cache control register.
  */
 void dcache_enable(void) {
-    csr_write(mhcr, 0x2);// Set the data cache enable bit
+    csr_write(mhcr, MHCR_DE);// Set the data cache enable bit
 }
 
 /**
@@ -66,7 +56,7 @@ void dcache_enable(void) {
  * appropriate control bits in the machine cache control register.
  */
 void icache_enable(void) {
-    csr_set(mhcr, 0x1);// Set the instruction cache enable bit
+    csr_set(mhcr, MHCR_IE);// Set the instruction cache enable bit
 }
 
 /**
@@ -110,4 +100,26 @@ void invalidate_dcache_range(uint64_t start, uint64_t end) {
     for (; i < end; i += L1_CACHE_BYTES)
         asm volatile("dcache.ipa a0");
     asm volatile("sync.i");
+}
+
+/**
+ * @brief Flushes the entire data cache.
+ *
+ * This function flushes all data cache lines, ensuring that any modified or "dirty"
+ * cache lines are written back to the main memory. It ensures that the data in the cache
+ * is coherent with the memory.
+ */
+void flush_dcache_all() {
+    asm volatile("dcache.call");
+}
+
+/**
+ * @brief Invalidates the entire data cache.
+ *
+ * This function invalidates all data cache lines, ensuring that no stale or outdated
+ * data remains in the cache. This operation discards the cache contents and ensures that
+ * the next access will fetch fresh data from memory.
+ */
+void invalidate_dcache_all() {
+    asm volatile("dcache.ciall");
 }

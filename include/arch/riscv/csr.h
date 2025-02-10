@@ -27,6 +27,7 @@ extern "C" {
 #define MSTATUS64_SD (1ULL << 63)
 
 /** Machine Extra Status Bit Definitions */
+#define MXSTATUS_MM (1 << 15)
 #define MXSTATUS_THEADISAEE (1 << 22)
 
 /** Machine Hardware Config Bit Definitions */

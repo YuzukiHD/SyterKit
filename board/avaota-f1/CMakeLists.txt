@@ -6,3 +6,5 @@ set(APP_COMMON_SOURCE
 )
 
 add_subdirectory(app)
+
+add_subdirectory(boot)

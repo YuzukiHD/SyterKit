@@ -85,6 +85,24 @@ void flush_dcache_range(uint64_t start, uint64_t end);
  */
 void invalidate_dcache_range(uint64_t start, uint64_t end);
 
+/**
+ * @brief Flushes the entire data cache.
+ *
+ * This function flushes all data cache lines, ensuring that any modified or "dirty"
+ * cache lines are written back to the main memory. It ensures that the data in the cache
+ * is coherent with the memory.
+ */
+void flush_dcache_all();
+
+/**
+ * @brief Invalidates the entire data cache.
+ *
+ * This function invalidates all data cache lines, ensuring that no stale or outdated
+ * data remains in the cache. This operation discards the cache contents and ensures that
+ * the next access will fetch fresh data from memory.
+ */
+void invalidate_dcache_all();
+
 #ifdef __cplusplus
 }
 #endif
