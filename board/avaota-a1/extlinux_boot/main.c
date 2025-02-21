@@ -500,7 +500,7 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
     uint8_t *tmp_buf = (uint8_t *) smalloc(16 * sizeof(uint8_t));
 
     /* fix up memory region */
-    int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
+    int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE, ((uint64_t) dram_size * 1024 * 1024));
 
     if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
         printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
