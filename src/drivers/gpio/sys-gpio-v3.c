@@ -34,7 +34,7 @@ enum {
     R_GPIO_CFG1 = 0x04,
     R_GPIO_CFG2 = 0x08,
     R_GPIO_CFG3 = 0x0c,
-    R_GPIO_DAT = 0x10,
+    R_GPIO_DAT = 0x500,
     R_GPIO_DAT_SET = 0x504,
     R_GPIO_DAT_CLR = 0x508,
     R_GPIO_DRV0 = 0x14,
