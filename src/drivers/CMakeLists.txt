@@ -13,13 +13,13 @@ endif()
 
 set(COMMON_DRIVER
     sys-uart.c
+    sys-clk.c
     ${DRIVER_GPIO}
 )
 
 if (NOT CONFIG_CHIP_MINSYS)
     set(COMMON_DRIVER
         ${COMMON_DRIVER}
-        sys-clk.c
         sys-dram.c
         sys-rtc.c
         sys-spi.c

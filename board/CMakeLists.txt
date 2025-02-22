@@ -61,3 +61,7 @@ endif()
 if(CONFIG_BOARD_AVAOTA-86BOX)
     add_subdirectory(avaota-86box)
 endif()
+
+if(CONFIG_BOARD_TLT536-EVM)
+    add_subdirectory(tlt536-evm)
+endif()
