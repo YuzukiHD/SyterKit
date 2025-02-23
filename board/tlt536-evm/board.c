@@ -44,6 +44,23 @@ sunxi_serial_t uart_dbg = {
         },
 };
 
+sunxi_i2c_t i2c_pmu = {
+    .base = SUNXI_RTWI_BASE,
+    .id = SUNXI_R_I2C0,
+    .speed = SUNXI_I2C_SPEED_400K,
+    .gpio = {
+            .gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
+            .gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
+    },
+    .i2c_clk = {
+            .gate_reg_base = SUNXI_RTWI_BRG_REG,
+            .gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
+            .rst_reg_base = SUNXI_RTWI_BRG_REG,
+            .rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
+            .parent_clk = 24000000,
+    },
+};
+
 void neon_enable(void) {
     /* set NSACR, both Secure and Non-secure access are allowed to NEON */
     asm volatile("MRC p15, 0, r0, c1, c1, 2");
@@ -68,6 +85,24 @@ void clean_syterkit_data(void) {
     printk_info("disable icache ok...\n");
     arm32_interrupt_disable();
     printk_info("free interrupt ok...\n");
+}
+
+#define GPIO_POW_MOD_SEL (SUNXI_GPIO_BASE + 0x40)
+#define R_GPIO_POW_MOD_SEL (SUNXI_R_GPIO_BASE + 0x340)
+#define GPIO_POW_MOD_SEL_MASK (0x033ffff3)
+#define R_GPIO_POW_MOD_SEL_MASK (0xf)
+
+void sunxi_gpio_power_mode_init(void) {
+	uint32_t reg_val;
+	reg_val = readl(GPIO_POW_MOD_SEL);
+	reg_val &= ~GPIO_POW_MOD_SEL_MASK;
+	reg_val |= 0x022AAAA2;
+	writel(reg_val, GPIO_POW_MOD_SEL);
+
+	reg_val = readl(R_GPIO_POW_MOD_SEL);
+	reg_val &= ~R_GPIO_POW_MOD_SEL_MASK;
+	reg_val |= 0xA;
+	writel(reg_val, R_GPIO_POW_MOD_SEL);
 }
 
 void show_chip() {
