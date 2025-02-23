@@ -32,8 +32,8 @@ sunxi_serial_t uart_dbg = {
         .stop = UART_STOP_BIT_0,
         .parity = UART_PARITY_NO,
         .gpio_pin = {
-                .gpio_tx = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX3},
-                .gpio_rx = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX3},
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
         },
         .uart_clk = {
                 .gate_reg_base = SUNXI_CCU_BASE + UART0_BGR_REG,
@@ -83,7 +83,7 @@ void show_chip() {
 
     switch (chip_markid_sid) {
         case 0x5f00:
-            printk_info("Chip type = A733MX-N3X");
+            printk_info("Chip type = T536MX-CXX");
             break;
         default:
             printk_info("Chip type = UNKNOW");
