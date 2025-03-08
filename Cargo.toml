@@ -6,3 +6,7 @@ members = [
     "rust/xtask",
     "board/100ask-d1-h-rs",
 ]
+
+[patch.crates-io]
+allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal", branch = "fix/160k-sram" }
+allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal", branch = "fix/160k-sram" }
