@@ -31,10 +31,11 @@ jobs:
 
       - name: 📂 Sync Files
         uses: SamKirkland/web-deploy@v1
+        continue-on-error: true
         with:
           target-server: ${{ secrets.FTP_SERVER_IP }}
           remote-user: ${{ secrets.FTP_SERVER_USERNAME }}
           private-ssh-key: ${{ secrets.FTP_SERVER_PASSWD }}
           destination-path: /www/wwwroot/syterkit.yuzukihd.top/
           source-path: ${{ github.workspace }}/docs/
-          rsync-options: --archive -O --no-perms --compress --human-readable --progress --delete-after --exclude=.well-known --exclude=.git* --exclude=.git/ --exclude=.gitignore
+          rsync-options: --archive --compress --delete-after --exclude=.git* --exclude=.well-known/ --exclude=.user.ini --exclude=.htaccess --exclude=.git/ --exclude=.gitignore --no-times
