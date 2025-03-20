@@ -40,3 +40,4 @@ jobs:
           REMOTE_USER: ${{ secrets.FTP_SERVER_USERNAME }}
           TARGET: /www/wwwroot/syterkit.yuzukihd.top/
           EXCLUDE: ".git*, .well-known/, .user.ini, .htaccess, .git/, .gitignore"
+
