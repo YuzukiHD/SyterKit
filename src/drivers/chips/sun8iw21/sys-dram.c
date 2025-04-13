@@ -629,6 +629,8 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
 
     if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
         return;
+    } else if (fuse == 0x6) {
+        cfg = ac_remapping_tables[0];
     } else {
         cfg = ac_remapping_tables[1];
     }
