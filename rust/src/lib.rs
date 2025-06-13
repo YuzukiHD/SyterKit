@@ -42,6 +42,11 @@ pub use sdcard::{load_from_sdcard, SdCardError};
 pub use stdio::{stdin, stdout, Stdin, Stdout};
 pub use time_source::{time_source, TimeSource};
 
+/// SyterKit prelude.
+pub mod prelude {
+    pub use allwinner_hal::prelude::*;
+}
+
 // macro internal code, used by `print` and `println`.
 #[doc(hidden)]
 pub use stdio::{
