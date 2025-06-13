@@ -13,14 +13,14 @@ pub static STDIN: Mutex<Option<SyterKitStdinInner>> = Mutex::new(None);
 
 #[doc(hidden)]
 pub struct SyterKitStdoutInner {
-    pub inner: TransmitHalf<UART0, 0, Function<'static, 'B', 8, 6>>,
+    pub inner: TransmitHalf<'static, Function<'static, 'B', 8, 6>>,
 }
 
 unsafe impl Send for SyterKitStdoutInner {}
 
 #[doc(hidden)]
 pub struct SyterKitStdinInner {
-    pub inner: ReceiveHalf<UART0, 0, Function<'static, 'B', 9, 6>>,
+    pub inner: ReceiveHalf<'static, Function<'static, 'B', 9, 6>>,
 }
 
 unsafe impl Send for SyterKitStdinInner {}

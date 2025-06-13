@@ -1,15 +1,3 @@
-#[allow(unused)]
-macro_rules! impl_gpio_pins {
-    ($($px: ident:($P: expr, $N: expr, $M: ident);)+) => {
-/// GPIO pads available from SyterKit.
-pub struct Pads<'a> {
-    $(
-    pub $px: ::allwinner_hal::gpio::$M<'a, $P, $N>,
-    )+
-}
-    };
-}
-
 /// Prints to the standard output.
 #[macro_export]
 macro_rules! print {

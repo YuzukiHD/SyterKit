@@ -3,7 +3,7 @@
 
 use embedded_hal::digital::{InputPin, OutputPin};
 use panic_halt as _;
-use syterkit::{entry, Clocks, Peripherals};
+use syterkit::{entry, prelude::*, Clocks, Peripherals};
 
 #[entry]
 fn main(p: Peripherals, _c: Clocks) {
