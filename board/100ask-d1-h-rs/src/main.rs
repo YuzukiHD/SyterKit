@@ -10,8 +10,8 @@ use embedded_cli::{
 use embedded_io::Read;
 use panic_halt as _;
 use syterkit::{
-    clock_dump, entry, load_from_sdcard, print, println, show_banner, Clocks, Config, DynamicInfo,
-    Peripherals, SdCardError, Stdout,
+    clock_dump, entry, load_from_sdcard, prelude::*, print, println, show_banner, Clocks, Config,
+    DynamicInfo, Peripherals, SdCardError, Stdout,
 };
 
 #[derive(Command)]
@@ -205,7 +205,7 @@ fn command_reload<'a, S: AsRef<RegisterBlock>, P>(
     let opaque_dst = unsafe { from_raw_parts_mut(0x4100_8000 as *mut u8, 64 * 1024) };
     let firmware_dst = unsafe { from_raw_parts_mut(0x4100_0000 as *mut u8, 32 * 1024) };
     let next_stage_dst = unsafe { from_raw_parts_mut(0x4180_0000 as *mut u8, 512 * 1024 * 1024) };
-    load_from_sdcard(
+    let _ = load_from_sdcard(
         sdcard,
         syterkit::time_source(),
         config,
