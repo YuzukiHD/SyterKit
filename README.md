@@ -1,7 +1,6 @@
 # SyterKit
 
 ![SyterKit LOGO_Thin](https://github.com/YuzukiHD/SyterKit/assets/12003087/e6135860-1a6a-4cb4-b0f6-71af8eca1509)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FYuzukiHD%2FSyterKit.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FYuzukiHD%2FSyterKit?ref=badge_shield)
 
 SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality
 
