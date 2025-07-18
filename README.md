@@ -20,6 +20,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | longanpi-4b                                                  | sipeed       | T527     | Octa-Core Cortex A55              | [board/longanpi-4b](board/longanpi-4b)         | `longanpi-4b.cmake`     | 0.3.0 |
 | [LT527X](https://www.myir.cn/shows/134/70.html)              | myir-tech    | T527     | Octa-Core Cortex A55 | [board/lt527x](board/lt527x) | `lt527x.cmake` | 0.3.0 |
 |  Avaota A1                                                   | Avaota SBC | T527/A527     | Octa-Core Cortex A55 | [board/avaota-a1](board/avaota-a1) | `avaota-a1.cmake` |  |
+|  Avaota NAS (Canceled)                                                   | Avaota SBC | A733     | Dual-Core Cortex A76 + Hexa-Core Cortex A55 | [board/avaota-nas](board/avaota-nas) | `avaota-nas.cmake` |  |
 | Avaota F1 | Avaota SBC | V821 | RISC-V RV32 CPU + RISC-V RV32 MCU | [board/avaota-f1](board/avaota-f1) | `avaota-f1.cmake` | |
 | TLT536-EVM | Tronlong | T536 | Quad-Core Cortex A55 | [board/tlt536-evm](board/tlt536-evm) | `tlt536-evm.cmake` | |
 | Yuzukihomekit                                                | YuzukiHD     | T113-M4020DC0    | Dual-Core Cortex A7 + C906 RISC-V + HIFI4 DSP                        | [board/yuzukihomekit](board/yuzukihomekit)       | `yuzukihomekit.cmake`    | 0.3.0 |
