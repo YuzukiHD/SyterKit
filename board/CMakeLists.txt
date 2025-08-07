@@ -54,8 +54,8 @@ if(CONFIG_BOARD_AVAOTA-F1)
     add_subdirectory(avaota-f1)
 endif()
 
-if(CONFIG_BOARD_AVAOTA-NAS)
-    add_subdirectory(avaota-nas)
+if(CONFIG_BOARD_RADXA-CUBIE-A7A)
+    add_subdirectory(radxa-cubie-a7a)
 endif()
 
 if(CONFIG_BOARD_AVAOTA-86BOX)

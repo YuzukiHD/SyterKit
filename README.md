@@ -20,7 +20,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | longanpi-4b                                                  | T527          | Octa-Core Cortex A55                          | `longanpi-4b.cmake`      |
 | [LT527X](https://www.myir.cn/shows/134/70.html)              | T527          | Octa-Core Cortex A55                          | `lt527x.cmake`           |
 | Avaota A1                                                    | T527/A527     | Octa-Core Cortex A55                          | `avaota-a1.cmake`        |
-| Avaota NAS (Canceled)                                        | A733          | Dual-Core Cortex A76 + Hexa-Core Cortex A55   | `avaota-nas.cmake`       |
+| Radxa Cubie A7A                                              | A733          | Dual-Core Cortex A76 + Hexa-Core Cortex A55   | `radxa-cubie-a7a.cmake`  |
 | Avaota F1                                                    | V821          | RISC-V RV32 CPU + RISC-V RV32 MCU             | `avaota-f1.cmake`        |
 | TLT536-EVM                                                   | T536          | Quad-Core Cortex A55                          | `tlt536-evm.cmake`       |
 | Yuzukihomekit                                                | T113-M4020DC0 | Dual-Core Cortex A7 + C906 RISC-V + HIFI4 DSP | `yuzukihomekit.cmake`    |
