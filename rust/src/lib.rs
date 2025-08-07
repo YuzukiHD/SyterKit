@@ -3,9 +3,13 @@
 #[macro_use]
 mod macros;
 
+pub mod config;
+mod dynamic_info;
 pub mod mctl;
+mod sdcard;
 pub mod soc;
 mod stdio;
+mod time_source;
 
 pub use allwinner_hal::ccu::Clocks;
 pub use syterkit_macros::entry;
@@ -32,11 +36,22 @@ pub fn show_banner() {
     println!();
 }
 
+pub use config::{parse_config, Config};
+pub use dynamic_info::DynamicInfo;
+pub use sdcard::{load_from_sdcard, SdCardError};
 pub use stdio::{stdin, stdout, Stdin, Stdout};
+pub use time_source::{time_source, TimeSource};
+
+/// SyterKit prelude.
+pub mod prelude {
+    pub use allwinner_hal::prelude::*;
+}
 
 // macro internal code, used by `print` and `println`.
 #[doc(hidden)]
-pub use stdio::{SyterKitStdinInner, SyterKitStdoutInner, _print, STDIN, STDOUT};
+pub use stdio::{
+    SyterKitStdinInner, SyterKitStdoutInner, _print, set_logger_stdout, STDIN, STDOUT,
+};
 
 // macro internal code, used in `entry` proc macro.
 #[doc(hidden)]
