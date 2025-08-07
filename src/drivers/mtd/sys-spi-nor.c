@@ -503,6 +503,8 @@ int spi_nor_detect(sunxi_spi_t *spi) {
     spi_nor_chip_reset(spi);
     spi_nor_wait_for_busy(spi);
 
+    sunxi_spi_update_clk(spi, 25 * 1000 * 1000);
+
     if (!spi_nor_get_info(spi)) {
         printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
         return -1;

@@ -94,6 +94,45 @@ sunxi_sdhci_t sdhci0 = {
         },
 };
 
+sunxi_dma_t sunxi_dma = {
+        .dma_reg_base = SUNXI_DMA_BASE,
+        .bus_clk = {
+                .gate_reg_base = SUNXI_CCU_BASE + MBUS_MAT_CLK_GATING_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+        .dma_clk = {
+                .rst_reg_base = SUNXI_CCU_BASE + DMA0_BGR_REG,
+                .rst_reg_offset = DMA_DEFAULT_CLK_RST_OFFSET,
+                .gate_reg_base = SUNXI_CCU_BASE + DMA0_BGR_REG,
+                .gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
+        },
+};
+
+sunxi_spi_t sunxi_spi0 = {
+        .base = SUNXI_SPI0_BASE,
+        .id = 0,
+        .clk_rate = 25 * 1000 * 1000,
+        .gpio = {
+                .gpio_cs = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX5},
+                .gpio_sck = {GPIO_PIN(GPIO_PORTC, 12), GPIO_PERIPH_MUX5},
+                .gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX5},
+                .gpio_miso = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX5},
+        },
+        .spi_clk = {
+                .spi_clock_cfg_base = SUNXI_CCU_BASE + SPI0_CLK_REG,
+                .spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
+                .spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
+        },
+        .parent_clk_reg = {
+                .rst_reg_base = SUNXI_CCU_BASE + SPI0_BGR_REG,
+                .rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
+                .gate_reg_base = SUNXI_CCU_BASE + SPI0_BGR_REG,
+                .gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
+                .parent_clk = 300000000,
+        },
+        .dma_handle = &sunxi_dma,
+};
+
 void neon_enable(void) {
     /* Set the CPACR for access to CP10 and CP11*/
     asm volatile("LDR r0, =0xF00000");
