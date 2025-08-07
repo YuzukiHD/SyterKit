@@ -32,8 +32,8 @@ sunxi_serial_t uart_dbg = {
         .stop = UART_STOP_BIT_0,
         .parity = UART_PARITY_NO,
         .gpio_pin = {
-                .gpio_tx = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX3},
-                .gpio_rx = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX3},
+                .gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
+                .gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
         },
         .uart_clk = {
                 .gate_reg_base = SUNXI_CCU_BASE + UART0_BGR_REG,
@@ -123,11 +123,16 @@ void show_chip() {
     chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
     chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
 
+    printk_info("Model: Radxa Cubie A7A board.\n");
+    printk_info("Core: Arm Dual-Core Cortex-A76 + Arm Hexa-Core Cortex-A55\n");
     printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
     uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
     switch (chip_markid_sid) {
+        case 0x5100:
+            printk_info("Chip type = A733MX-HN3");
+            break;
         case 0x5f00:
             printk_info("Chip type = A733MX-N3X");
             break;
