@@ -29,12 +29,15 @@ jobs:
       - name: Build Docs
         run: doxygen
 
-      - name: 📂 Sync Files
-        uses: SamKirkland/web-deploy@v1
+      - name: Deploy to Staging server
+        uses: easingthemes/ssh-deploy@main
+        continue-on-error: true
         with:
-          target-server: ${{ secrets.FTP_SERVER_IP }}
-          remote-user: ${{ secrets.FTP_SERVER_USERNAME }}
-          private-ssh-key: ${{ secrets.FTP_SERVER_PASSWD }}
-          destination-path: /www/wwwroot/syterkit.yuzukihd.top/
-          source-path: ${{ github.workspace }}/docs/
-          rsync-options: --archive -O --no-perms --compress --human-readable --progress --delete-after --exclude=.well-known --exclude=.git* --exclude=.git/ --exclude=.gitignore
+          SSH_PRIVATE_KEY: ${{ secrets.FTP_SERVER_PASSWD }}
+          ARGS: "-rlgoDzvc -i"
+          SOURCE: /docs/
+          REMOTE_HOST: ${{ secrets.FTP_SERVER_IP }}
+          REMOTE_USER: ${{ secrets.FTP_SERVER_USERNAME }}
+          TARGET: /www/wwwroot/syterkit.yuzukihd.top/
+          EXCLUDE: ".git*, .well-known/, .user.ini, .htaccess, .git/, .gitignore"
+
