@@ -70,9 +70,9 @@ _start:
 	/* clear bss */
 	jal clear_bss
 
-	jal set_timer_count
+	/* jal set_timer_count */
 
-	jal cache_init
+	/* jal cache_init */
 
 	jal main
 

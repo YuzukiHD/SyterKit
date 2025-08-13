@@ -35,11 +35,11 @@ sunxi_serial_t uart_dbg = {
                 .gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX3},
         },
         .uart_clk = {
-                .gate_reg_base = SUNXI_CCU_APP_BASE + BUS_CLK_GATING0_REG,
-                .gate_reg_offset = BUS_CLK_GATING0_REG_UART0_PCLK_EN_OFFSET,
-                .rst_reg_base = SUNXI_CCU_APP_BASE + BUS_Reset0_REG,
-                .rst_reg_offset = BUS_Reset0_REG_PRESETN_UART0_SW_OFFSET,
-                .parent_clk = 192000000,
+                .gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
+                .rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
+                .rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
+                .parent_clk = SERIAL_DEFAULT_PARENT_CLK,
         },
 };
 

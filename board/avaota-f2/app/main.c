@@ -34,8 +34,6 @@ int main(void) {
 
     printk_info("Hello World!\n");
 
-    syterkit_shell_attach(NULL);
-
     abort();
 
     return 0;
