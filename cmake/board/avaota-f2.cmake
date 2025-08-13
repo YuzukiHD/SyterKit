@@ -4,7 +4,8 @@ set(CONFIG_ARCH_RISCV32 True)
 set(CONFIG_ARCH_RISCV32_CORE_E907 True)
 set(CONFIG_CHIP_SUN252IW1 True)
 set(CONFIG_CHIP_MMC_V2 True)
-set(CONFIG_BOARD_AVAOTA-F1 True)
+set(CONFIG_BOARD_AVAOTA-F2 True)
+set(CONFIG_CHIP_MINSYS True)
 
 add_definitions(-DCONFIG_CHIP_SUN252IW1)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
@@ -34,8 +35,8 @@ set(CMAKE_COMMON_FLAGS "-nostdlib -Os -nostdinc -fdata-sections -march=rv32imafc
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-builtin-declaration-mismatch")
 
-set(ARCH_BIN_START_ADDRESS "0x01000000")
+set(ARCH_BIN_START_ADDRESS "0x00100000")
 set(ARCH_BIN_SRAM_LENGTH "128K")
 
-set(ARCH_FEL_START_ADDRESS "0x01000000")
+set(ARCH_FEL_START_ADDRESS "0x00100000")
 set(ARCH_FEL_SRAM_LENGTH "128K")
