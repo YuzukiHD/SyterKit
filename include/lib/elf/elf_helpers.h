@@ -30,16 +30,18 @@ static inline void elf_hdr_init_ident(struct elf32_hdr *hdr, u8 class) {
 }
 
 /* Generate getter and setter for a specific elf struct/field */
-#define ELF_GEN_FIELD_GET_SET(__s, __field, __type)                                                                                                                                \
-	static inline __type elf_##__s##_get_##__field(u8 class, const void *arg) {                                                                                                    \
-		if (class == ELFCLASS32) return (__type) ((const struct elf32_##__s *) arg)->__field;                                                                                      \
-		else                                                                                                                                                                       \
-			return (__type) ((const struct elf64_##__s *) arg)->__field;                                                                                                           \
-	}                                                                                                                                                                              \
-	static inline void elf_##__s##_set_##__field(u8 class, void *arg, __type value) {                                                                                              \
-		if (class == ELFCLASS32) ((struct elf32_##__s *) arg)->__field = (__type) value;                                                                                           \
-		else                                                                                                                                                                       \
-			((struct elf64_##__s *) arg)->__field = (__type) value;                                                                                                                \
+#define ELF_GEN_FIELD_GET_SET(__s, __field, __type)                                   \
+	static inline __type elf_##__s##_get_##__field(u8 class, const void *arg) {       \
+		if (class == ELFCLASS32)                                                      \
+			return (__type) ((const struct elf32_##__s *) arg)->__field;              \
+		else                                                                          \
+			return (__type) ((const struct elf64_##__s *) arg)->__field;              \
+	}                                                                                 \
+	static inline void elf_##__s##_set_##__field(u8 class, void *arg, __type value) { \
+		if (class == ELFCLASS32)                                                      \
+			((struct elf32_##__s *) arg)->__field = (__type) value;                   \
+		else                                                                          \
+			((struct elf64_##__s *) arg)->__field = (__type) value;                   \
 	}
 
 ELF_GEN_FIELD_GET_SET(hdr, e_entry, u64)
@@ -72,11 +74,12 @@ ELF_GEN_FIELD_GET_SET(shdr, sh_offset, u64)
 ELF_GEN_FIELD_GET_SET(shdr, sh_name, u32)
 ELF_GEN_FIELD_GET_SET(shdr, sh_addr, u64)
 
-#define ELF_STRUCT_SIZE(__s)                                                                                                                                                       \
-	static inline unsigned long elf_size_of_##__s(u8 class) {                                                                                                                      \
-		if (class == ELFCLASS32) return sizeof(struct elf32_##__s);                                                                                                                \
-		else                                                                                                                                                                       \
-			return sizeof(struct elf64_##__s);                                                                                                                                     \
+#define ELF_STRUCT_SIZE(__s)                                  \
+	static inline unsigned long elf_size_of_##__s(u8 class) { \
+		if (class == ELFCLASS32)                              \
+			return sizeof(struct elf32_##__s);                \
+		else                                                  \
+			return sizeof(struct elf64_##__s);                \
 	}
 
 ELF_STRUCT_SIZE(shdr)

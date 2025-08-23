@@ -31,15 +31,15 @@ static int current_cache_sdhci_id = -1;
 #define CACHE_SECTOR_TO_OFFSET(ss) (((ss) / FATFS_CACHE_SECTORS_PER_BIT) / 8)
 #define CACHE_SECTOR_TO_BIT(ss) (((ss) / FATFS_CACHE_SECTORS_PER_BIT) % 8)
 
-#define CACHE_IS_VALID(ss)                                                                                                                                                         \
-	({                                                                                                                                                                             \
-		__typeof(ss) _ss = (ss);                                                                                                                                                   \
-		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] & (1 << CACHE_SECTOR_TO_BIT(_ss));                                                                                               \
+#define CACHE_IS_VALID(ss)                                                           \
+	({                                                                               \
+		__typeof(ss) _ss = (ss);                                                     \
+		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] & (1 << CACHE_SECTOR_TO_BIT(_ss)); \
 	})
-#define CACHE_SET_VALID(ss)                                                                                                                                                        \
-	do {                                                                                                                                                                           \
-		__typeof(ss) _ss = (ss);                                                                                                                                                   \
-		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] |= (1 << CACHE_SECTOR_TO_BIT(_ss));                                                                                              \
+#define CACHE_SET_VALID(ss)                                                           \
+	do {                                                                              \
+		__typeof(ss) _ss = (ss);                                                      \
+		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] |= (1 << CACHE_SECTOR_TO_BIT(_ss)); \
 	} while (0)
 #endif
 
@@ -49,7 +49,8 @@ static int current_cache_sdhci_id = -1;
 
 DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 ) {
-	if (pdrv) return STA_NOINIT;
+	if (pdrv)
+		return STA_NOINIT;
 
 	return Stat;
 }
@@ -61,7 +62,8 @@ DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 DSTATUS
 disk_initialize(BYTE pdrv /* Physical drive nmuber to identify the drive */
 ) {
-	if (pdrv) return STA_NOINIT;
+	if (pdrv)
+		return STA_NOINIT;
 
 	Stat &= ~STA_NOINIT;
 
@@ -77,15 +79,18 @@ DRESULT disk_read(BYTE pdrv,	/* Physical drive nmuber to identify the drive */
 				  LBA_t sector, /* Start sector in LBA */
 				  UINT count	/* Number of sectors to read */
 ) {
-	if (pdrv || !count) return RES_PARERR;
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
+	if (pdrv || !count)
+		return RES_PARERR;
+	if (Stat & STA_NOINIT)
+		return RES_NOTRDY;
 
 	printk_trace("FATFS: read %u sectors at %u\r\n", count, (uint32_t) sector);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
 	if (pdrv != cache_pdrv || current_cache_sdhci_id != card0.hci->id) {
 		printk_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
-		if (cache_pdrv != -1) memset(cache_bitmap, 0, sizeof(cache_bitmap));
+		if (cache_pdrv != -1)
+			memset(cache_bitmap, 0, sizeof(cache_bitmap));
 		cache_pdrv = pdrv;
 	}
 
@@ -136,8 +141,10 @@ DRESULT disk_write(BYTE pdrv,		 /* Physical drive nmuber to identify the drive *
 				   LBA_t sector,	 /* Start sector in LBA */
 				   UINT count		 /* Number of sectors to write */
 ) {
-	if (pdrv || !count) return RES_PARERR;
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
+	if (pdrv || !count)
+		return RES_PARERR;
+	if (Stat & STA_NOINIT)
+		return RES_NOTRDY;
 
 	printk_trace("FATFS: write %u sectors at %llu\r\n", count, sector);
 

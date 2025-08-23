@@ -12,18 +12,21 @@
 static const char *_parse_integer_fixup_radix(const char *s, unsigned int *base) {
 	if (*base == 0) {
 		if (s[0] == '0') {
-			if (tolower(s[1]) == 'x' && isxdigit(s[2])) *base = 16;
+			if (tolower(s[1]) == 'x' && isxdigit(s[2]))
+				*base = 16;
 			else
 				*base = 8;
 		} else
 			*base = 10;
 	}
-	if (*base == 16 && s[0] == '0' && tolower(s[1]) == 'x') s += 2;
+	if (*base == 16 && s[0] == '0' && tolower(s[1]) == 'x')
+		s += 2;
 	return s;
 }
 
 static unsigned int decode_digit(int ch) {
-	if (!isxdigit(ch)) return 256;
+	if (!isxdigit(ch))
+		return 256;
 
 	ch = tolower(ch);
 
@@ -37,7 +40,8 @@ int simple_atoi(const char *nptr) { return (int) simple_strtol(nptr, NULL, 10); 
 long long simple_atoll(const char *nptr) { return (long long) simple_strtoll(nptr, NULL, 10); }
 
 long simple_strtol(const char *cp, char **endp, unsigned int base) {
-	if (*cp == '-') return -simple_strtoul(cp + 1, endp, base);
+	if (*cp == '-')
+		return -simple_strtoul(cp + 1, endp, base);
 
 	return simple_strtoul(cp, endp, base);
 }
@@ -53,7 +57,8 @@ unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
 		cp++;
 	}
 
-	if (endp) *endp = (char *) cp;
+	if (endp)
+		*endp = (char *) cp;
 
 	return result;
 }
@@ -63,7 +68,8 @@ unsigned long simple_hextoul(const char *cp, char **endp) { return simple_strtou
 unsigned long simple_dectoul(const char *cp, char **endp) { return simple_strtoul(cp, endp, 10); }
 
 long strtol(const char *cp, char **endp, unsigned int base) {
-	if (*cp == '-') return -simple_strtoul(cp + 1, endp, base);
+	if (*cp == '-')
+		return -simple_strtoul(cp + 1, endp, base);
 
 	return simple_strtoul(cp, endp, base);
 }
@@ -80,8 +86,10 @@ unsigned long simple_ustrtoul(const char *cp, char **endp, unsigned int base) {
 		case 'k':
 			result *= 1024;
 			(*endp)++;
-			if (**endp == 'i') (*endp)++;
-			if (**endp == 'B') (*endp)++;
+			if (**endp == 'i')
+				(*endp)++;
+			if (**endp == 'B')
+				(*endp)++;
 	}
 	return result;
 }
@@ -98,8 +106,10 @@ unsigned long long simple_ustrtoull(const char *cp, char **endp, unsigned int ba
 		case 'k':
 			result *= 1024;
 			(*endp)++;
-			if (**endp == 'i') (*endp)++;
-			if (**endp == 'B') (*endp)++;
+			if (**endp == 'i')
+				(*endp)++;
+			if (**endp == 'B')
+				(*endp)++;
 	}
 	return result;
 }
@@ -115,13 +125,15 @@ unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int bas
 		cp++;
 	}
 
-	if (endp) *endp = (char *) cp;
+	if (endp)
+		*endp = (char *) cp;
 
 	return result;
 }
 
 long long simple_strtoll(const char *cp, char **endp, unsigned int base) {
-	if (*cp == '-') return -simple_strtoull(cp + 1, endp, base);
+	if (*cp == '-')
+		return -simple_strtoull(cp + 1, endp, base);
 
 	return simple_strtoull(cp, endp, base);
 }
@@ -129,17 +141,20 @@ long long simple_strtoll(const char *cp, char **endp, unsigned int base) {
 long trailing_strtoln_end(const char *str, const char *end, char const **endp) {
 	const char *p;
 
-	if (!end) end = str + strlen(str);
+	if (!end)
+		end = str + strlen(str);
 	p = end - 1;
 	if (p > str && isdigit(*p)) {
 		do {
 			if (!isdigit(p[-1])) {
-				if (endp) *endp = p;
+				if (endp)
+					*endp = p;
 				return simple_dectoul(p, NULL);
 			}
 		} while (--p > str);
 	}
-	if (endp) *endp = end;
+	if (endp)
+		*endp = end;
 
 	return -1;
 }
@@ -150,7 +165,8 @@ long trailing_strtol(const char *str) { return trailing_strtoln(str, NULL); }
 
 void str_to_upper(const char *in, char *out, size_t len) {
 	for (; len > 0 && *in; len--) *out++ = toupper(*in++);
-	if (len) *out = '\0';
+	if (len)
+		*out = '\0';
 }
 
 char *ltoa(long int num, char *str, int base) {
@@ -168,7 +184,9 @@ char *ltoa(long int num, char *str, int base) {
 		num /= base;
 	} while (num > 0);
 
-	if (is_negative) { str[i++] = '-'; }
+	if (is_negative) {
+		str[i++] = '-';
+	}
 
 	str[i] = '\0';
 

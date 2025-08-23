@@ -95,10 +95,10 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
  * 
  * @param name The name of the PMU chip (e.g., axp2202, axp221, etc.).
  */
-#define DEFINE_AXP_PMU(name)                                                                                                                                                       \
-	int pmu_##name##_init(sunxi_i2c_t *i2c_dev);                                                                                                                                   \
-	int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name);                                                                                                                    \
-	int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);                                                                                            \
+#define DEFINE_AXP_PMU(name)                                                            \
+	int pmu_##name##_init(sunxi_i2c_t *i2c_dev);                                        \
+	int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name);                         \
+	int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff); \
 	void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
 
 /* AXP PMU defines */

@@ -122,17 +122,18 @@
 
 sdmmc_pdata_t card0;
 
-#define UNSTUFF_BITS(resp, start, size)                                                                                                                                            \
-	({                                                                                                                                                                             \
-		const int __size = size;                                                                                                                                                   \
-		const uint32_t __mask = (__size < 32 ? 1 << __size : 0) - 1;                                                                                                               \
-		const int __off = 3 - ((start) / 32);                                                                                                                                      \
-		const int __shft = (start) &31;                                                                                                                                            \
-		uint32_t __res;                                                                                                                                                            \
-                                                                                                                                                                                   \
-		__res = resp[__off] >> __shft;                                                                                                                                             \
-		if (__size + __shft > 32) __res |= resp[__off - 1] << ((32 - __shft) % 32);                                                                                                \
-		__res &__mask;                                                                                                                                                             \
+#define UNSTUFF_BITS(resp, start, size)                              \
+	({                                                               \
+		const int __size = size;                                     \
+		const uint32_t __mask = (__size < 32 ? 1 << __size : 0) - 1; \
+		const int __off = 3 - ((start) / 32);                        \
+		const int __shft = (start) &31;                              \
+		uint32_t __res;                                              \
+                                                                     \
+		__res = resp[__off] >> __shft;                               \
+		if (__size + __shft > 32)                                    \
+			__res |= resp[__off - 1] << ((32 - __shft) % 32);        \
+		__res &__mask;                                               \
 	})
 
 static const unsigned tran_speed_unit[] = {
@@ -143,11 +144,27 @@ static const unsigned tran_speed_unit[] = {
 };
 
 static const unsigned char tran_speed_time[] = {
-		0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80,
+		0,
+		10,
+		12,
+		13,
+		15,
+		20,
+		25,
+		30,
+		35,
+		40,
+		45,
+		50,
+		55,
+		60,
+		70,
+		80,
 };
 
 static uint32_t extract_mid(sdmmc_t *card) {
-	if ((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4)) return UNSTUFF_BITS(card->cid, 104, 24);
+	if ((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4))
+		return UNSTUFF_BITS(card->cid, 104, 24);
 	else
 		return UNSTUFF_BITS(card->cid, 120, 8);
 }
@@ -160,14 +177,16 @@ static uint32_t extract_psn(sdmmc_t *card) {
 	if (card->version & SD_VERSION_SD) {
 		return UNSTUFF_BITS(card->csd, 24, 32);
 	} else {
-		if (card->version > MMC_VERSION_1_4) return UNSTUFF_BITS(card->cid, 16, 32);
+		if (card->version > MMC_VERSION_1_4)
+			return UNSTUFF_BITS(card->cid, 16, 32);
 		else
 			return UNSTUFF_BITS(card->cid, 16, 24);
 	}
 }
 
 static uint32_t extract_month(sdmmc_t *card) {
-	if (card->version & SD_VERSION_SD) return UNSTUFF_BITS(card->cid, 8, 4);
+	if (card->version & SD_VERSION_SD)
+		return UNSTUFF_BITS(card->cid, 8, 4);
 	else
 		return UNSTUFF_BITS(card->cid, 12, 4);
 }
@@ -175,12 +194,14 @@ static uint32_t extract_month(sdmmc_t *card) {
 static uint32_t extract_year(sdmmc_t *card) {
 	uint32_t year;
 
-	if (card->version & SD_VERSION_SD) year = UNSTUFF_BITS(card->cid, 12, 8) + 2000;
+	if (card->version & SD_VERSION_SD)
+		year = UNSTUFF_BITS(card->cid, 12, 8) + 2000;
 	else if (card->version < MMC_VERSION_4_41)
 		return UNSTUFF_BITS(card->cid, 8, 4) + 1997;
 	else {
 		year = UNSTUFF_BITS(card->cid, 8, 4) + 1997;
-		if (year < 2010) year += 16;
+		if (year < 2010)
+			year += 16;
 	}
 	return year;
 }
@@ -200,16 +221,19 @@ static bool sd_send_if_cond(sdhci_t *hci, sdmmc_t *card) {
 	sdhci_cmd_t cmd = {0};
 
 	cmd.idx = SD_CMD_SEND_IF_COND;
-	if (hci->voltage & MMC_VDD_27_36) cmd.arg = (0x1 << 8);
+	if (hci->voltage & MMC_VDD_27_36)
+		cmd.arg = (0x1 << 8);
 	else if (hci->voltage & MMC_VDD_165_195)
 		cmd.arg = (0x2 << 8);
 	else
 		cmd.arg = (0x0 << 8);
 	cmd.arg |= 0xaa;
 	cmd.resptype = MMC_RSP_R7;
-	if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+	if (!sdhci_transfer(hci, &cmd, NULL))
+		return FALSE;
 
-	if ((cmd.response[0] & 0xff) != 0xaa) return FALSE;
+	if ((cmd.response[0] & 0xff) != 0xaa)
+		return FALSE;
 	card->version = SD_VERSION_2;
 	return TRUE;
 }
@@ -218,42 +242,54 @@ static bool sd_send_op_cond(sdhci_t *hci, sdmmc_t *card) {
 	sdhci_cmd_t cmd = {0};
 	int retries = 50;
 
-	if (!go_idle_state(hci)) return FALSE;
+	if (!go_idle_state(hci))
+		return FALSE;
 
-	if (!sd_send_if_cond(hci, card)) { return FALSE; }
+	if (!sd_send_if_cond(hci, card)) {
+		return FALSE;
+	}
 
 	do {
 		cmd.idx = MMC_APP_CMD;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R1;
-		if (!sdhci_transfer(hci, &cmd, NULL)) continue;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			continue;
 
 		cmd.idx = SD_CMD_APP_SEND_OP_COND;
 		if (hci->isspi) {
 			cmd.arg = 0;
-			if (card->version == SD_VERSION_2) cmd.arg |= OCR_HCS;
+			if (card->version == SD_VERSION_2)
+				cmd.arg |= OCR_HCS;
 			cmd.resptype = MMC_RSP_R1;
-			if (sdhci_transfer(hci, &cmd, NULL)) break;
+			if (sdhci_transfer(hci, &cmd, NULL))
+				break;
 		} else {
-			if (hci->voltage & MMC_VDD_27_36) cmd.arg = 0x00ff8000;
+			if (hci->voltage & MMC_VDD_27_36)
+				cmd.arg = 0x00ff8000;
 			else if (hci->voltage & MMC_VDD_165_195)
 				cmd.arg = 0x00000080;
 			else
 				cmd.arg = 0;
-			if (card->version == SD_VERSION_2) cmd.arg |= OCR_HCS;
+			if (card->version == SD_VERSION_2)
+				cmd.arg |= OCR_HCS;
 			cmd.resptype = MMC_RSP_R3;
-			if (!sdhci_transfer(hci, &cmd, NULL) || (cmd.response[0] & OCR_BUSY)) break;
+			if (!sdhci_transfer(hci, &cmd, NULL) || (cmd.response[0] & OCR_BUSY))
+				break;
 		}
 	} while (retries--);
 
-	if (retries <= 0) return FALSE;
+	if (retries <= 0)
+		return FALSE;
 
-	if (card->version != SD_VERSION_2) card->version = SD_VERSION_1_0;
+	if (card->version != SD_VERSION_2)
+		card->version = SD_VERSION_1_0;
 	if (hci->isspi) {
 		cmd.idx = MMC_SPI_READ_OCR;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R3;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 	}
 	card->ocr = cmd.response[0];
 	card->high_capacity = ((card->ocr & OCR_HCS) == OCR_HCS);
@@ -276,18 +312,22 @@ static bool mmc_send_op_cond(sdhci_t *hci, sdmmc_t *card) {
 
 	do {
 		cmd.response[0] = 0;
-		if (!sdhci_transfer(hci, &cmd, NULL)) { return FALSE; }
+		if (!sdhci_transfer(hci, &cmd, NULL)) {
+			return FALSE;
+		}
 		udelay(5000);
 	} while (!(cmd.response[0] & OCR_BUSY) && retries--);
 	printk_trace("SHMC: op_cond 0x%x, retries = %d\n", cmd.response[0], retries);
 
-	if (retries <= 0) return FALSE;
+	if (retries <= 0)
+		return FALSE;
 
 	if (hci->isspi) {
 		cmd.idx = MMC_SPI_READ_OCR;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R3;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 	}
 	card->version = MMC_VERSION_UNKNOWN;
 	card->ocr = cmd.response[0];
@@ -304,11 +344,14 @@ static int sdmmc_status(sdhci_t *hci, sdmmc_t *card) {
 	cmd.resptype = MMC_RSP_R1;
 	cmd.arg = card->rca << 16;
 	do {
-		if (!sdhci_transfer(hci, &cmd, NULL)) continue;
-		if (cmd.response[0] & (1 << 8)) break;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			continue;
+		if (cmd.response[0] & (1 << 8))
+			break;
 		udelay(1);
 	} while (retries-- > 0);
-	if (retries > 0) return ((cmd.response[0] >> 9) & 0xf);
+	if (retries > 0)
+		return ((cmd.response[0] >> 9) & 0xf);
 	printk_warning("SMHC: status error\n");
 	return -1;
 }
@@ -318,10 +361,12 @@ static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uin
 	sdhci_data_t dat = {0};
 	int status;
 
-	if (blkcnt > 1) cmd.idx = MMC_READ_MULTIPLE_BLOCK;
+	if (blkcnt > 1)
+		cmd.idx = MMC_READ_MULTIPLE_BLOCK;
 	else
 		cmd.idx = MMC_READ_SINGLE_BLOCK;
-	if (card->high_capacity) cmd.arg = start;
+	if (card->high_capacity)
+		cmd.arg = start;
 	else
 		cmd.arg = start * card->read_bl_len;
 	cmd.resptype = MMC_RSP_R1;
@@ -338,7 +383,9 @@ static uint64_t sdmmc_read_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, uin
 	if (!hci->isspi) {
 		do {
 			status = sdmmc_status(hci, card);
-			if (status < 0) { return 0; }
+			if (status < 0) {
+				return 0;
+			}
 		} while ((status != MMC_STATUS_TRAN) && (status != MMC_STATUS_DATA));
 	}
 
@@ -359,10 +406,12 @@ static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, ui
 	sdhci_data_t dat = {0};
 	int status;
 
-	if (blkcnt > 1) cmd.idx = MMC_WRITE_MULTIPLE_BLOCK;
+	if (blkcnt > 1)
+		cmd.idx = MMC_WRITE_MULTIPLE_BLOCK;
 	else
 		cmd.idx = MMC_WRITE_SINGLE_BLOCK;
-	if (card->high_capacity) cmd.arg = start;
+	if (card->high_capacity)
+		cmd.arg = start;
 	else
 		cmd.arg = start * card->write_bl_len;
 	cmd.resptype = MMC_RSP_R1;
@@ -379,7 +428,8 @@ static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, ui
 	if (!hci->isspi) {
 		do {
 			status = sdmmc_status(hci, card);
-			if (status < 0) return 0;
+			if (status < 0)
+				return 0;
 		} while ((status != MMC_STATUS_TRAN) && (status != MMC_STATUS_RCV));
 	}
 
@@ -387,7 +437,8 @@ static uint64_t sdmmc_write_blocks(sdhci_t *hci, sdmmc_t *card, uint8_t *buf, ui
 		cmd.idx = MMC_STOP_TRANSMISSION;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R1B;
-		if (!sdhci_transfer(hci, &cmd, NULL)) printk_warning("SMHC: transfer stop failed\n");
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			printk_warning("SMHC: transfer stop failed\n");
 		return 0;
 	}
 	return blkcnt;
@@ -451,7 +502,8 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		cmd.idx = MMC_SEND_CID;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R1;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 		card->cid[0] = cmd.response[0];
 		card->cid[1] = cmd.response[1];
 		card->cid[2] = cmd.response[2];
@@ -460,7 +512,8 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		cmd.idx = MMC_SEND_CSD;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R1;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 		card->csd[0] = cmd.response[0];
 		card->csd[1] = cmd.response[1];
 		card->csd[2] = cmd.response[2];
@@ -469,7 +522,8 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		cmd.idx = MMC_ALL_SEND_CID;
 		cmd.arg = 0;
 		cmd.resptype = MMC_RSP_R2;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 		card->cid[0] = cmd.response[0];
 		card->cid[1] = cmd.response[1];
 		card->cid[2] = cmd.response[2];
@@ -478,13 +532,16 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		cmd.idx = SD_CMD_SEND_RELATIVE_ADDR;
 		cmd.arg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R6;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
-		if (card->version & SD_VERSION_SD) card->rca = (cmd.response[0] >> 16) & 0xffff;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
+		if (card->version & SD_VERSION_SD)
+			card->rca = (cmd.response[0] >> 16) & 0xffff;
 
 		cmd.idx = MMC_SEND_CSD;
 		cmd.arg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R2;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 		card->csd[0] = cmd.response[0];
 		card->csd[1] = cmd.response[1];
 		card->csd[2] = cmd.response[2];
@@ -493,10 +550,12 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		cmd.idx = MMC_SELECT_CARD;
 		cmd.arg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R1;
-		if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, NULL))
+			return FALSE;
 		do {
 			status = sdmmc_status(hci, card);
-			if (status < 0) return FALSE;
+			if (status < 0)
+				return FALSE;
 		} while (status != MMC_STATUS_TRAN);
 	}
 
@@ -529,11 +588,14 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 	card->dsr_imp = UNSTUFF_BITS(card->csd, 76, 1);
 
 	card->read_bl_len = 1 << UNSTUFF_BITS(card->csd, 80, 4);
-	if (card->version & SD_VERSION_SD) card->write_bl_len = card->read_bl_len;
+	if (card->version & SD_VERSION_SD)
+		card->write_bl_len = card->read_bl_len;
 	else
 		card->write_bl_len = 1 << ((card->csd[3] >> 22) & 0xf);
-	if (card->read_bl_len > 512) card->read_bl_len = 512;
-	if (card->write_bl_len > 512) card->write_bl_len = 512;
+	if (card->read_bl_len > 512)
+		card->read_bl_len = 512;
+	if (card->write_bl_len > 512)
+		card->write_bl_len = 512;
 
 	if ((card->version & MMC_VERSION_MMC) && (card->version >= MMC_VERSION_4)) {
 		card->tran_speed = 50000000;
@@ -544,11 +606,13 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		dat.flag = MMC_DATA_READ;
 		dat.blksz = 512;
 		dat.blkcnt = 1;
-		if (!sdhci_transfer(hci, &cmd, &dat)) return FALSE;
+		if (!sdhci_transfer(hci, &cmd, &dat))
+			return FALSE;
 		if (!hci->isspi) {
 			do {
 				status = sdmmc_status(hci, card);
-				if (status < 0) return FALSE;
+				if (status < 0)
+					return FALSE;
 			} while (status != MMC_STATUS_TRAN);
 		}
 		const char *strver = "unknown";
@@ -609,26 +673,30 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 		}
 	} else {
 		if (card->version & SD_VERSION_SD) {
-			if (hci->width == MMC_BUS_WIDTH_4) width = 2;
+			if (hci->width == MMC_BUS_WIDTH_4)
+				width = 2;
 			else
 				width = 0;
 
 			cmd.idx = MMC_APP_CMD;
 			cmd.arg = card->rca << 16;
 			cmd.resptype = MMC_RSP_R5;
-			if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+			if (!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
 
 			cmd.idx = SD_CMD_SWITCH_FUNC;
 			cmd.arg = width;
 			cmd.resptype = MMC_RSP_R1;
-			if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+			if (!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
 		} else if (card->version & MMC_VERSION_MMC) {
 			switch (hci->width) {
 				case MMC_BUS_WIDTH_8:
 					width = EXT_CSD_BUS_WIDTH_8;
 					break;
 				case MMC_BUS_WIDTH_4:
-					if (hci->clock == MMC_CLK_50M_DDR) width = EXT_CSD_DDR_BUS_WIDTH_4;
+					if (hci->clock == MMC_CLK_50M_DDR)
+						width = EXT_CSD_DDR_BUS_WIDTH_4;
 					else
 						width = EXT_CSD_BUS_WIDTH_4;
 					break;
@@ -647,12 +715,14 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 					cmd.arg |= ((card->extcsd[EXT_CSD_PWR_CL_52_360] & EXT_CSD_PWR_CL_4BIT_MASK >> EXT_CSD_PWR_CL_4BIT_SHIFT) << 8);
 				}
 
-				if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+				if (!sdhci_transfer(hci, &cmd, NULL))
+					return FALSE;
 			}
 
 			// Write EXT_CSD register 183 (width) with our value
 			cmd.arg = (3 << 24) | (EXT_CSD_BUS_WIDTH << 16) | (width << 8) | 1;
-			if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+			if (!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
 
 			udelay(1000);
 		}
@@ -665,14 +735,17 @@ static bool sdmmc_detect(sdhci_t *hci, sdmmc_t *card) {
 	cmd.idx = MMC_SET_BLOCKLEN;
 	cmd.arg = card->read_bl_len;
 	cmd.resptype = MMC_RSP_R1;
-	if (!sdhci_transfer(hci, &cmd, NULL)) return FALSE;
+	if (!sdhci_transfer(hci, &cmd, NULL))
+		return FALSE;
 
 	printk_debug("SD/MMC card at the '%s' host controller:\r\n", hci->name);
 	printk_debug("  Attached is a %s card\r\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
-	if (card->capacity / (f64) 1000000000.0 < 4) printk_info("  Capacity: %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
+	if (card->capacity / (f64) 1000000000.0 < 4)
+		printk_info("  Capacity: %.1fMB\n", (f32) ((f64) card->capacity / (f64) 1000000.0));
 	else
 		printk_info("  Capacity: %.1fGB\n", (f32) ((f64) card->capacity / (f64) 1000000000.0));
-	if (card->high_capacity) printk_debug("  High capacity card\r\n");
+	if (card->high_capacity)
+		printk_debug("  High capacity card\r\n");
 	printk_debug("  CID: %08X-%08X-%08X-%08X\r\n", card->cid[0], card->cid[1], card->cid[2], card->cid[3]);
 	printk_debug("  CSD: %08X-%08X-%08X-%08X\r\n", card->csd[0], card->csd[1], card->csd[2], card->csd[3]);
 	printk_debug("  Max transfer speed: %u HZ\r\n", card->tran_speed);
@@ -692,7 +765,8 @@ uint64_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno, uint6
 
 	while (blks > 0) {
 		cnt = (blks > 127) ? 127 : blks;
-		if (sdmmc_read_blocks(data->hci, sdcard, buf, blkno, cnt) != cnt) return 0;
+		if (sdmmc_read_blocks(data->hci, sdcard, buf, blkno, cnt) != cnt)
+			return 0;
 		blks -= cnt;
 		blkno += cnt;
 		buf += cnt * sdcard->read_bl_len;
@@ -707,7 +781,8 @@ uint64_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint64_t blkno, uint
 
 	while (blks > 0) {
 		cnt = (blks > 127) ? 127 : blks;
-		if (sdmmc_write_blocks(data->hci, sdcard, buf, blkno, cnt) != cnt) return 0;
+		if (sdmmc_write_blocks(data->hci, sdcard, buf, blkno, cnt) != cnt)
+			return 0;
 		blks -= cnt;
 		blkno += cnt;
 		buf += cnt * sdcard->write_bl_len;

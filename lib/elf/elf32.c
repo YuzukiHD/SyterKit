@@ -90,13 +90,17 @@ int load_elf32_image_remap(phys_addr_t img_addr, vaddr_map_t *map) {
 
 		printk_debug("ELF: Loading phdr %i from 0x%x to 0x%x (%i bytes)\n", i, phdr->p_paddr, dst, phdr->p_filesz);
 
-		if (phdr->p_type != PT_LOAD) continue;
+		if (phdr->p_type != PT_LOAD)
+			continue;
 
-		if ((phdr->p_memsz == 0) || (phdr->p_filesz == 0)) continue;
+		if ((phdr->p_memsz == 0) || (phdr->p_filesz == 0))
+			continue;
 
-		if (phdr->p_filesz) memcpy(dst, src, phdr->p_filesz);
+		if (phdr->p_filesz)
+			memcpy(dst, src, phdr->p_filesz);
 
-		if (phdr->p_filesz != phdr->p_memsz) memset((u8 *) dst + phdr->p_filesz, 0x00, phdr->p_memsz - phdr->p_filesz);
+		if (phdr->p_filesz != phdr->p_memsz)
+			memset((u8 *) dst + phdr->p_filesz, 0x00, phdr->p_memsz - phdr->p_filesz);
 	}
 
 	return 0;
@@ -114,7 +118,8 @@ static Elf32_Shdr *elf32_find_segment(phys_addr_t elf_addr, const char *seg_name
 	name_table = (const char *) (elf_data + shdr[ehdr->e_shstrndx].sh_offset);
 
 	for (i = 0; i < ehdr->e_shnum; i++, shdr++) {
-		if (strcmp(name_table + shdr->sh_name, seg_name)) continue;
+		if (strcmp(name_table + shdr->sh_name, seg_name))
+			continue;
 
 		return shdr;
 	}
@@ -126,7 +131,8 @@ void *elf32_find_segment_offset(phys_addr_t elf_addr, const char *seg_name) {
 	Elf32_Shdr *shdr;
 
 	shdr = elf32_find_segment(elf_addr, seg_name);
-	if (!shdr) return NULL;
+	if (!shdr)
+		return NULL;
 
 	return (void *) elf_addr + shdr->sh_offset;
 }
@@ -135,7 +141,8 @@ void *elf32_find_segment_addr(phys_addr_t elf_addr, const char *seg_name) {
 	Elf32_Shdr *shdr;
 
 	shdr = elf32_find_segment(elf_addr, seg_name);
-	if (!shdr) return NULL;
+	if (!shdr)
+		return NULL;
 
 	return (void *) shdr->sh_addr;
 }

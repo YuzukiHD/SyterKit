@@ -77,11 +77,15 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 	TM_PERF_INIT(t_pwconv);
 	TM_PERF_INIT(t_dwconv);
 	int pad_flag = (pad_top != 0 || pad_bottom != 0 || pad_left != 0 || pad_right != 0);
-	if (dx != 1 || dy != 1) return TM_ERR_TODO;
-	if (act >= TM_ACT_MAXCNT) return TM_ERR_UNSUPPORT;
+	if (dx != 1 || dy != 1)
+		return TM_ERR_TODO;
+	if (act >= TM_ACT_MAXCNT)
+		return TM_ERR_UNSUPPORT;
 	int maxk = kw * kh;
-	if (maxk > TM_MAX_KSIZE) return TM_ERR_KSIZE;
-	if (maxk == 1 && (pad_flag || dmul)) return TM_ERR_UNSUPPORT;//assume no pad or dwconv when pwconv
+	if (maxk > TM_MAX_KSIZE)
+		return TM_ERR_KSIZE;
+	if (maxk == 1 && (pad_flag || dmul))
+		return TM_ERR_UNSUPPORT;//assume no pad or dwconv when pwconv
 	int chi = in->c;
 	int cho = out->c;
 	sumtype_t sum = 0;
@@ -205,8 +209,9 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 					wtype_t *kptr = (wtype_t *) w + c * chi * maxk;//TM_PERF_START(t_dotp);
 					tm_dot_prod(sptr, kptr, maxk * chi, &sum);	   //TM_PERF_ADD(t_dotp);TM_PERF_START(t_post);
 					tm_postprocess_sum(1, &sum, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
-					outp++;				   //TM_PERF_ADD(t_post);
-					if (dmul) sptr += maxk;//dwconv need move step
+					outp++;//TM_PERF_ADD(t_post);
+					if (dmul)
+						sptr += maxk;//dwconv need move step
 				}
 			}
 			if (!slow_flag) {
@@ -276,7 +281,8 @@ tm_err_t TM_WEAK tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_
 #else
 		dout[c] = din[c];
 #endif
-		if (dout[c] > dmax) dmax = dout[c];
+		if (dout[c] > dmax)
+			dmax = dout[c];
 	}
 	float sum = 0;
 	for (int c = 0; c < in->c; c++) {

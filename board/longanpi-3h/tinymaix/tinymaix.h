@@ -197,7 +197,7 @@ typedef struct {		//48byte
 	zptype_t in_zp; //input zeropoint
 	sctype_t out_s; //output scale
 	zptype_t out_zp;//output zeropoint
-	//note: real = scale*(q-zeropoint)
+					//note: real = scale*(q-zeropoint)
 } tml_head_t;
 
 typedef struct {
@@ -221,9 +221,9 @@ typedef struct {
 					//skip bias scale: bias_scale = weight_scale*in_scale
 	uint32_t w_oft; //weight oft from this layer start
 	uint32_t b_oft; //bias oft from this layer start
-	//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-	//      fused in advance (when convert model)
-} tml_conv2d_dw_t;//compatible with conv2d and dwconv2d
+					//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+					//      fused in advance (when convert model)
+} tml_conv2d_dw_t;	//compatible with conv2d and dwconv2d
 
 typedef struct {
 	tml_head_t h;
@@ -265,8 +265,8 @@ typedef struct {
 					//skip bias scale: bias_scale = weight_scale*in_scale
 	uint32_t w_oft; //weight oft from this layer start
 	uint32_t b_oft; //bias oft from this layer start
-	//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-	//      fused in advance (when convert model)
+					//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+					//      fused in advance (when convert model)
 } tml_dwconv2d_t;
 
 typedef struct {

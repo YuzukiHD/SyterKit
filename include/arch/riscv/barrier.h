@@ -7,7 +7,10 @@
 extern "C" {
 #endif
 
-#define RISCV_FENCE(p, s) asm volatile("fence " #p "," #s : : : "memory")
+#define RISCV_FENCE(p, s) asm volatile("fence " #p "," #s \
+									   :                  \
+									   :                  \
+									   : "memory")
 
 #define mb() RISCV_FENCE(iorw, iorw)
 

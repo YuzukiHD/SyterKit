@@ -19,9 +19,17 @@ const struct sid_section_t {
 	uint32_t offset;
 	uint32_t size_bits;
 } sids[] = {
-		{"chipid", 0x0000, 128},	{"brom-conf-try", 0x0010, 32}, {"thermal-sensor", 0x0014, 64}, {"ft-zone", 0x001c, 128},
-		{"reserved1", 0x002c, 96},	{"write-protect", 0x0038, 32}, {"read-protect", 0x003c, 32},   {"lcjs", 0x0040, 32},
-		{"reserved2", 0x0044, 800}, {"rotpk", 0x00a8, 256},		   {"reserved3", 0x00c8, 448},
+		{"chipid", 0x0000, 128},
+		{"brom-conf-try", 0x0010, 32},
+		{"thermal-sensor", 0x0014, 64},
+		{"ft-zone", 0x001c, 128},
+		{"reserved1", 0x002c, 96},
+		{"write-protect", 0x0038, 32},
+		{"read-protect", 0x003c, 32},
+		{"lcjs", 0x0040, 32},
+		{"reserved2", 0x0044, 800},
+		{"rotpk", 0x00a8, 256},
+		{"reserved3", 0x00c8, 448},
 };
 
 enum {
@@ -78,7 +86,8 @@ void syter_efuse_dump(void) {
 
 		printk(LOG_LEVEL_MUTE, "%s:(0x%04x %d-bits)", sids[n].name, sids[n].offset, sids[n].size_bits);
 		for (int i = 0; i < count; i++) {
-			if (i >= 0 && ((i % 8) == 0)) printk(LOG_LEVEL_MUTE, "\n%-4s", "");
+			if (i >= 0 && ((i % 8) == 0))
+				printk(LOG_LEVEL_MUTE, "\n%-4s", "");
 			printk(LOG_LEVEL_MUTE, "%08x ", buffer[i]);
 		}
 		printk(LOG_LEVEL_MUTE, "\n");

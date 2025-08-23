@@ -32,29 +32,29 @@ extern void f64_write(int n, uint64_t *v);
 #define STRINGIFY(x) _STRINGIFY(x)
 #endif
 
-#define DEFINE_MPRV_READ_FLAGS(name, type, insn, flags)                                                                                                                            \
-	static inline type name(type *p) {                                                                                                                                             \
-		size_t mprv = flags;                                                                                                                                                       \
-		type value;                                                                                                                                                                \
-		__asm__ __volatile__("csrs mstatus, %1\n" STRINGIFY(insn) " %0, 0(%2)\n"                                                                                                   \
-																  "csrc mstatus, %1\n"                                                                                             \
-							 : "=&r"(value)                                                                                                                                        \
-							 : "r"(mprv), "r"(p)                                                                                                                                   \
-							 : "memory");                                                                                                                                          \
-		return value;                                                                                                                                                              \
+#define DEFINE_MPRV_READ_FLAGS(name, type, insn, flags)                                \
+	static inline type name(type *p) {                                                 \
+		size_t mprv = flags;                                                           \
+		type value;                                                                    \
+		__asm__ __volatile__("csrs mstatus, %1\n" STRINGIFY(insn) " %0, 0(%2)\n"       \
+																  "csrc mstatus, %1\n" \
+							 : "=&r"(value)                                            \
+							 : "r"(mprv), "r"(p)                                       \
+							 : "memory");                                              \
+		return value;                                                                  \
 	}
 
 #define DEFINE_MPRV_READ(name, type, insn) DEFINE_MPRV_READ_FLAGS(name, type, insn, 0x00020000)
 
 #define DEFINE_MPRV_READ_MXR(name, type, insn) DEFINE_MPRV_READ_FLAGS(name, type, insn, 0x00020000 | 0x00080000)
 
-#define DEFINE_MPRV_WRITE(name, type, insn)                                                                                                                                        \
-	static inline void name(type *p, type value) {                                                                                                                                 \
-		size_t mprv = 0x00020000;                                                                                                                                                  \
-		__asm__ __volatile__("csrs mstatus, %0\n" STRINGIFY(insn) " %1, 0(%2)\n"                                                                                                   \
-																  "csrc mstatus, %0\n" ::"r"(mprv),                                                                                \
-							 "r"(value), "r"(p)                                                                                                                                    \
-							 : "memory");                                                                                                                                          \
+#define DEFINE_MPRV_WRITE(name, type, insn)                                                         \
+	static inline void name(type *p, type value) {                                                  \
+		size_t mprv = 0x00020000;                                                                   \
+		__asm__ __volatile__("csrs mstatus, %0\n" STRINGIFY(insn) " %1, 0(%2)\n"                    \
+																  "csrc mstatus, %0\n" ::"r"(mprv), \
+							 "r"(value), "r"(p)                                                     \
+							 : "memory");                                                           \
 	}
 
 DEFINE_MPRV_READ(mprv_read_u8, uint8_t, lbu)
@@ -203,9 +203,18 @@ static struct instruction_info_t insn_info[] = {
 };
 
 static const char *interrupt_names[] = {
-		"User software interrupt", "Supervisor software interrupt", "Hypervisor software interrupt", "Machine software interrupt",
-		"User timer interrupt",	   "Supervisor timer interrupt",	"Hypervisor timer interrupt",	 "Machine timer interrupt",
-		"User external interrupt", "Supervisor external interrupt", "Hypervisor external interrupt", "Machine external interrupt",
+		"User software interrupt",
+		"Supervisor software interrupt",
+		"Hypervisor software interrupt",
+		"Machine software interrupt",
+		"User timer interrupt",
+		"Supervisor timer interrupt",
+		"Hypervisor timer interrupt",
+		"Machine timer interrupt",
+		"User external interrupt",
+		"Supervisor external interrupt",
+		"Hypervisor external interrupt",
+		"Machine external interrupt",
 };
 
 static const char *exception_names[] = {
@@ -245,11 +254,13 @@ static const char *mstatus_to_previous_mode(unsigned long ms) {
 
 static void show_regs(struct pt_regs_t *regs) {
 	if (regs->cause & (1UL << 63)) {
-		if ((regs->cause & ~(1UL << 63)) < ARRAY_SIZE(interrupt_names)) printk_error("Interrupt:          %s\r\n", interrupt_names[regs->cause & ~(1UL << 63)]);
+		if ((regs->cause & ~(1UL << 63)) < ARRAY_SIZE(interrupt_names))
+			printk_error("Interrupt:          %s\r\n", interrupt_names[regs->cause & ~(1UL << 63)]);
 		else
 			printk_error("Trap:               Unknown cause %p\r\n", (void *) regs->cause);
 	} else {
-		if (regs->cause < ARRAY_SIZE(exception_names)) printk_error("Exception:          %s\r\n", exception_names[regs->cause]);
+		if (regs->cause < ARRAY_SIZE(exception_names))
+			printk_error("Exception:          %s\r\n", exception_names[regs->cause]);
 		else
 			printk_error("Trap:               Unknown cause %p\r\n", (void *) regs->cause);
 	}
@@ -263,7 +274,8 @@ static void show_regs(struct pt_regs_t *regs) {
 static struct instruction_info_t *match_instruction(unsigned long insn) {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(insn_info); i++)
-		if ((insn_info[i].mask & insn) == insn_info[i].opcode) return &(insn_info[i]);
+		if ((insn_info[i].mask & insn) == insn_info[i].opcode)
+			return &(insn_info[i]);
 	return NULL;
 }
 
@@ -309,7 +321,8 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 
 	/* Try to fetch 16 / 32 bits instruction */
 	if (fetch_16bit_instruction(regs->epc, &insn)) {
-		if (fetch_32bit_instruction(regs->epc, &insn)) redirect_trap();
+		if (fetch_32bit_instruction(regs->epc, &insn))
+			redirect_trap();
 	}
 
 	/* Matching instruction */
@@ -332,7 +345,8 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 
 		/* Sign extend for signed integer loading */
 		if (match->sign_extend) {
-			if (buff.v >> (8 * match->width - 1)) buff.v |= -1 << (8 * match->width);
+			if (buff.v >> (8 * match->width - 1))
+				buff.v |= -1 << (8 * match->width);
 		}
 
 		/* Write to register */
@@ -354,7 +368,8 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 			}
 #endif
 #endif
-			if (!done) redirect_trap();
+			if (!done)
+				redirect_trap();
 		} else {
 			regs->x[n] = buff.v;
 		}
@@ -377,7 +392,8 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 			}
 #endif
 #endif
-			if (!done) redirect_trap();
+			if (!done)
+				redirect_trap();
 		} else {
 			buff.v = regs->x[n];
 		}
