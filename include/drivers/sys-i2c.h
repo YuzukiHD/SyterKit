@@ -25,8 +25,8 @@ extern "C" {
  * used in the I2C interface.
  */
 typedef struct {
-    gpio_mux_t gpio_scl; /**< GPIO configuration for the SCL line. */
-    gpio_mux_t gpio_sda; /**< GPIO configuration for the SDA line. */
+	gpio_mux_t gpio_scl; /**< GPIO configuration for the SCL line. */
+	gpio_mux_t gpio_sda; /**< GPIO configuration for the SDA line. */
 } sunxi_i2c_gpio_t;
 
 /**
@@ -37,12 +37,12 @@ typedef struct {
  * clock settings, and operational status.
  */
 typedef struct {
-    uint32_t base;         /**< Base address of the I2C hardware registers. */
-    uint8_t id;            /**< ID of the I2C device. */
-    uint32_t speed;        /**< Desired I2C speed (in Hz). */
-    sunxi_i2c_gpio_t gpio; /**< GPIO configuration for the I2C lines. */
-    sunxi_clk_t i2c_clk;   /**< Clock configuration for the I2C device. */
-    bool status;           /**< Operational status of the I2C device. */
+	uint32_t base;		   /**< Base address of the I2C hardware registers. */
+	uint8_t id;			   /**< ID of the I2C device. */
+	uint32_t speed;		   /**< Desired I2C speed (in Hz). */
+	sunxi_i2c_gpio_t gpio; /**< GPIO configuration for the I2C lines. */
+	sunxi_clk_t i2c_clk;   /**< Clock configuration for the I2C device. */
+	bool status;		   /**< Operational status of the I2C device. */
 } sunxi_i2c_t;
 
 /**
@@ -51,8 +51,8 @@ typedef struct {
  * This enumeration defines the supported I2C speeds for the device.
  */
 enum {
-    SUNXI_I2C_SPEED_100K = 100000, /**< 100 kHz I2C speed. */
-    SUNXI_I2C_SPEED_400K = 400000, /**< 400 kHz I2C speed. */
+	SUNXI_I2C_SPEED_100K = 100000, /**< 100 kHz I2C speed. */
+	SUNXI_I2C_SPEED_400K = 400000, /**< 400 kHz I2C speed. */
 };
 
 /**
@@ -62,15 +62,15 @@ enum {
  * Sunxi platform, including regular and reserved IDs.
  */
 enum {
-    SUNXI_I2C0 = 0,    /**< I2C device 0. */
-    SUNXI_I2C1,        /**< I2C device 1. */
-    SUNXI_I2C2,        /**< I2C device 2. */
-    SUNXI_I2C3,        /**< I2C device 3. */
-    SUNXI_I2C4,        /**< I2C device 4. */
-    SUNXI_I2C5,        /**< I2C device 5. */
-    SUNXI_R_I2C0,      /**< Reserved I2C device 0. */
-    SUNXI_R_I2C1,      /**< Reserved I2C device 1. */
-    SUNXI_I2C_BUS_MAX, /**< Maximum number of I2C buses. */
+	SUNXI_I2C0 = 0,	   /**< I2C device 0. */
+	SUNXI_I2C1,		   /**< I2C device 1. */
+	SUNXI_I2C2,		   /**< I2C device 2. */
+	SUNXI_I2C3,		   /**< I2C device 3. */
+	SUNXI_I2C4,		   /**< I2C device 4. */
+	SUNXI_I2C5,		   /**< I2C device 5. */
+	SUNXI_R_I2C0,	   /**< Reserved I2C device 0. */
+	SUNXI_R_I2C1,	   /**< Reserved I2C device 1. */
+	SUNXI_I2C_BUS_MAX, /**< Maximum number of I2C buses. */
 };
 
 /**
@@ -80,16 +80,16 @@ enum {
  * for the I2C (Inter-Integrated Circuit) interface on the Sunxi platform.
  */
 struct sunxi_twi_reg {
-    volatile uint32_t addr;   /**< Slave address register. */
-    volatile uint32_t xaddr;  /**< Extended address register. */
-    volatile uint32_t data;   /**< Data register for sending and receiving data. */
-    volatile uint32_t ctl;    /**< Control register for managing I2C operations. */
-    volatile uint32_t status; /**< Status register for monitoring the I2C state. */
-    volatile uint32_t clk;    /**< Clock configuration register. */
-    volatile uint32_t srst;   /**< Soft reset register for resetting the I2C controller. */
-    volatile uint32_t eft;    /**< Enhanced future technology control register. */
-    volatile uint32_t lcr;    /**< Line control register for managing line states. */
-    volatile uint32_t dvfs;   /**< Dynamic Voltage and Frequency Scaling control register. */
+	volatile uint32_t addr;	  /**< Slave address register. */
+	volatile uint32_t xaddr;  /**< Extended address register. */
+	volatile uint32_t data;	  /**< Data register for sending and receiving data. */
+	volatile uint32_t ctl;	  /**< Control register for managing I2C operations. */
+	volatile uint32_t status; /**< Status register for monitoring the I2C state. */
+	volatile uint32_t clk;	  /**< Clock configuration register. */
+	volatile uint32_t srst;	  /**< Soft reset register for resetting the I2C controller. */
+	volatile uint32_t eft;	  /**< Enhanced future technology control register. */
+	volatile uint32_t lcr;	  /**< Line control register for managing line states. */
+	volatile uint32_t dvfs;	  /**< Dynamic Voltage and Frequency Scaling control register. */
 };
 
 
@@ -125,9 +125,9 @@ struct sunxi_twi_reg {
  * Foscl is clock SCL;standard mode:100KHz or fast mode:400KHz
  */
 #define TWI_CLK_DUTY_30_EN (0x1 << 8) /* 8bit  */
-#define TWI_CLK_DUTY (0x1 << 7)       /* 7bit  */
-#define TWI_CLK_DIV_M (0xf << 3)      /* 6:3bit  */
-#define TWI_CLK_DIV_N (0x7 << 0)      /* 2:0bit */
+#define TWI_CLK_DUTY (0x1 << 7)		  /* 7bit  */
+#define TWI_CLK_DIV_M (0xf << 3)	  /* 6:3bit  */
+#define TWI_CLK_DIV_N (0x7 << 0)	  /* 2:0bit */
 #define TWI_LCR_WMASK (TWI_CTL_STA | TWI_CTL_STP | TWI_CTL_INTFLG)
 
 /* CCU */

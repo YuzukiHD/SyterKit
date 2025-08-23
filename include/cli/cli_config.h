@@ -61,11 +61,11 @@
 #define MSH_KEYBIND_HISTNEXT MSH_CTRL_KEY('n')
 
 /* parse.c */
-#define MSH_CMD_DQUOTE_CHAR '"'  /* double quote */
+#define MSH_CMD_DQUOTE_CHAR '"'	 /* double quote */
 #define MSH_CMD_SQUOTE_CHAR '\'' /* single quote */
 #define MSH_CMD_ESCAPE_CHAR '\\' /* backslash */
-#define MSH_CMD_SEP_CHAR ';'     /* command separator */
-#define MSH_CMD_FS_CHAR ' '      /* field separator */
+#define MSH_CMD_SEP_CHAR ';'	 /* command separator */
+#define MSH_CMD_FS_CHAR ' '		 /* field separator */
 
 
 #endif /*__CLI_CONFIG_H__*/

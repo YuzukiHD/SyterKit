@@ -18,8 +18,8 @@ extern "C" {
 #endif// __cplusplus
 
 typedef struct {
-    sunxi_sdhci_t *hci;
-    bool online;
+	sunxi_sdhci_t *hci;
+	bool online;
 } sdmmc_pdata_t;
 
 /**

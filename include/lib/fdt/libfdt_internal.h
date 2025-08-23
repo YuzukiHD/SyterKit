@@ -8,18 +8,17 @@
 #include <fdt.h>
 
 #ifdef __cplusplus
-extern "C" { 
-#endif // __cplusplus
+extern "C" {
+#endif// __cplusplus
 
-#define FDT_ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
-#define FDT_TAGALIGN(x)		(FDT_ALIGN((x), FDT_TAGSIZE))
+#define FDT_ALIGN(x, a) (((x) + (a) -1) & ~((a) -1))
+#define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
 int32_t fdt_ro_probe_(const void *fdt);
-#define FDT_RO_PROBE(fdt)					\
-	{							\
-		int32_t totalsize_;				\
-		if ((totalsize_ = fdt_ro_probe_(fdt)) < 0)	\
-			return totalsize_;			\
+#define FDT_RO_PROBE(fdt)                                                                                                                                                          \
+	{                                                                                                                                                                              \
+		int32_t totalsize_;                                                                                                                                                        \
+		if ((totalsize_ = fdt_ro_probe_(fdt)) < 0) return totalsize_;                                                                                                              \
 	}
 
 int fdt_check_node_offset_(const void *fdt, int offset);
@@ -27,28 +26,16 @@ int fdt_check_prop_offset_(const void *fdt, int offset);
 const char *fdt_find_string_(const char *strtab, int tabsize, const char *s);
 int fdt_node_end_offset_(void *fdt, int nodeoffset);
 
-static inline const void *fdt_offset_ptr_(const void *fdt, int offset)
-{
-	return (const char *)fdt + fdt_off_dt_struct(fdt) + offset;
-}
+static inline const void *fdt_offset_ptr_(const void *fdt, int offset) { return (const char *) fdt + fdt_off_dt_struct(fdt) + offset; }
 
-static inline void *fdt_offset_ptr_w_(void *fdt, int offset)
-{
-	return (void *)(uintptr_t)fdt_offset_ptr_(fdt, offset);
-}
+static inline void *fdt_offset_ptr_w_(void *fdt, int offset) { return (void *) (uintptr_t) fdt_offset_ptr_(fdt, offset); }
 
-static inline const struct fdt_reserve_entry *fdt_mem_rsv_(const void *fdt, int n)
-{
-	const struct fdt_reserve_entry *rsv_table =
-		(const struct fdt_reserve_entry *)
-		((const char *)fdt + fdt_off_mem_rsvmap(fdt));
+static inline const struct fdt_reserve_entry *fdt_mem_rsv_(const void *fdt, int n) {
+	const struct fdt_reserve_entry *rsv_table = (const struct fdt_reserve_entry *) ((const char *) fdt + fdt_off_mem_rsvmap(fdt));
 
 	return rsv_table + n;
 }
-static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n)
-{
-	return (void *)(uintptr_t)fdt_mem_rsv_(fdt, n);
-}
+static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n) { return (void *) (uintptr_t) fdt_mem_rsv_(fdt, n); }
 
 /*
  * Internal helpers to access tructural elements of the device tree
@@ -59,17 +46,11 @@ static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n)
  * If not the external helpers fdtXX_ld() from libfdt.h can be used
  * instead.
  */
-static inline uint32_t fdt32_ld_(const fdt32_t *p)
-{
-	return fdt32_to_cpu(*p);
-}
+static inline uint32_t fdt32_ld_(const fdt32_t *p) { return fdt32_to_cpu(*p); }
 
-static inline uint64_t fdt64_ld_(const fdt64_t *p)
-{
-	return fdt64_to_cpu(*p);
-}
+static inline uint64_t fdt64_ld_(const fdt64_t *p) { return fdt64_to_cpu(*p); }
 
-#define FDT_SW_MAGIC		(~FDT_MAGIC)
+#define FDT_SW_MAGIC (~FDT_MAGIC)
 
 /**********************************************************************/
 /* Checking controls                                                  */
@@ -106,7 +87,7 @@ enum {
 	 * Only use this if you have a fully validated device tree with
 	 * the latest supported version and wish to minimise code size.
 	 */
-	ASSUME_PERFECT		= 0xff,
+	ASSUME_PERFECT = 0xff,
 
 	/*
 	 * This assumes that the device tree is sane. i.e. header metadata
@@ -122,7 +103,7 @@ enum {
 	 * (not the parameters passed to libfdt) are disabled by this
 	 * assumption. This includes checking headers, tags and the like.
 	 */
-	ASSUME_VALID_DTB	= 1 << 0,
+	ASSUME_VALID_DTB = 1 << 0,
 
 	/*
 	 * This builds on ASSUME_VALID_DTB and further assumes that libfdt
@@ -134,7 +115,7 @@ enum {
 	 * It doesn't make sense to enable this assumption unless
 	 * ASSUME_VALID_DTB is also enabled.
 	 */
-	ASSUME_VALID_INPUT	= 1 << 1,
+	ASSUME_VALID_INPUT = 1 << 1,
 
 	/*
 	 * This disables checks for device-tree version and removes all code
@@ -143,7 +124,7 @@ enum {
 	 * Only enable this if you know you have a device tree with the latest
 	 * version.
 	 */
-	ASSUME_LATEST		= 1 << 2,
+	ASSUME_LATEST = 1 << 2,
 
 	/*
 	 * This assumes that it is OK for a failed addition to the device tree,
@@ -152,7 +133,7 @@ enum {
 	 * This is safe to enable in most circumstances, even though it may
 	 * leave the tree in a sub-optimal state.
 	 */
-	ASSUME_NO_ROLLBACK	= 1 << 3,
+	ASSUME_NO_ROLLBACK = 1 << 3,
 
 	/*
 	 * This assumes that the device tree components appear in a 'convenient'
@@ -167,7 +148,7 @@ enum {
 	 * ability to fix the problem there. This is safe if you know that the
 	 * device tree is correctly ordered. See fdt_blocks_misordered_().
 	 */
-	ASSUME_LIBFDT_ORDER	= 1 << 4,
+	ASSUME_LIBFDT_ORDER = 1 << 4,
 
 	/*
 	 * This assumes that libfdt itself does not have any internal bugs. It
@@ -176,7 +157,7 @@ enum {
 	 *
 	 * This can generally be considered safe to enable.
 	 */
-	ASSUME_LIBFDT_FLAWLESS	= 1 << 5,
+	ASSUME_LIBFDT_FLAWLESS = 1 << 5,
 };
 
 /**
@@ -185,16 +166,13 @@ enum {
  * @mask: Mask to check (ASSUME_...)
  * @return true if that assumption is enabled, else false
  */
-static inline bool can_assume_(int mask)
-{
-	return FDT_ASSUME_MASK & mask;
-}
+static inline bool can_assume_(int mask) { return FDT_ASSUME_MASK & mask; }
 
 /** helper macros for checking assumptions */
-#define can_assume(_assume)	can_assume_(ASSUME_ ## _assume)
+#define can_assume(_assume) can_assume_(ASSUME_##_assume)
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif /* LIBFDT_INTERNAL_H */

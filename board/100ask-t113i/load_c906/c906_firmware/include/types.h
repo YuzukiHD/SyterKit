@@ -35,11 +35,11 @@ typedef unsigned long long physical_addr_t;
 typedef unsigned long long physical_size_t;
 
 typedef struct {
-  volatile int counter;
+	volatile int counter;
 } atomic_t;
 
 typedef struct {
-  volatile int lock;
+	volatile int lock;
 } spinlock_t;
 
 #endif /* __RISCV64_TYPES_H__ */

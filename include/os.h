@@ -13,18 +13,18 @@
 #define TIMER_ALWAYS_RUN 0xFFFFFFFF
 
 typedef struct task_struct {
-    void (*callback)(void *arg, uint32_t event);
-    void *arg;
-    uint32_t run_count;
-    uint32_t max_run_count;
-    uint32_t interval;
-    uint32_t elapsed_time;
-    struct task_struct *next;
+	void (*callback)(void *arg, uint32_t event);
+	void *arg;
+	uint32_t run_count;
+	uint32_t max_run_count;
+	uint32_t interval;
+	uint32_t elapsed_time;
+	struct task_struct *next;
 } task_t;
 
 typedef struct timer_struct {
-    task_t task;
-    uint32_t interval;
+	task_t task;
+	uint32_t interval;
 } timer_t;
 
 /**

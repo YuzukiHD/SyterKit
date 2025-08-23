@@ -26,30 +26,30 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    printk_info("Hello World! Now Running RUAPU Test!\n");
+	printk_info("Hello World! Now Running RUAPU Test!\n");
 
-    ruapu_init();
+	ruapu_init();
 
-    PRINT_ISA_SUPPORT(edsp)
-    PRINT_ISA_SUPPORT(neon)
-    PRINT_ISA_SUPPORT(vfpv4)
-    PRINT_ISA_SUPPORT(idiv)
+	PRINT_ISA_SUPPORT(edsp)
+	PRINT_ISA_SUPPORT(neon)
+	PRINT_ISA_SUPPORT(vfpv4)
+	PRINT_ISA_SUPPORT(idiv)
 
 
-    printk_info("Ruapu Supported:\n");
-    const char *const *supported = ruapu_rua();
-    while (*supported) {
-        printk_info("%s\n", *supported);
-        supported++;
-    }
+	printk_info("Ruapu Supported:\n");
+	const char *const *supported = ruapu_rua();
+	while (*supported) {
+		printk_info("%s\n", *supported);
+		supported++;
+	}
 
-    printk_info("RUAPU Test done!\n");
+	printk_info("RUAPU Test done!\n");
 
-    return 0;
+	return 0;
 }

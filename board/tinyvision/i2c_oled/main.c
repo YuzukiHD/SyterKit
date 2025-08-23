@@ -16,20 +16,20 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    printk_info("Hello World\n");
+	printk_info("Hello World\n");
 
-    OLED_Init();
+	OLED_Init();
 
-    OLED_ShowString(12, 16, "SyterKit", 16, 1);
+	OLED_ShowString(12, 16, "SyterKit", 16, 1);
 	OLED_ShowString(20, 32, "I2C OLED", 16, 1);
 
-    OLED_Refresh();
+	OLED_Refresh();
 
-    abort();
+	abort();
 
-    return 0;
+	return 0;
 }

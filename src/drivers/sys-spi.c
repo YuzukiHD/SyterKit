@@ -49,8 +49,8 @@ static uint32_t spi_dma_handler = 0;
  * @note This function is typically used to reset the SPI controller to its initial state.
  */
 static inline void sunxi_spi_soft_reset(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->gc |= SPI_GC_SRST;///< Set the software reset bit
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->gc |= SPI_GC_SRST;///< Set the software reset bit
 }
 
 /**
@@ -64,8 +64,8 @@ static inline void sunxi_spi_soft_reset(sunxi_spi_t *spi) {
  * @note Enabling the bus allows SPI communication to begin.
  */
 static inline void sunxi_spi_enable_bus(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->gc |= SPI_GC_EN;///< Set the SPI enable bit
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->gc |= SPI_GC_EN;///< Set the SPI enable bit
 }
 
 /**
@@ -80,8 +80,8 @@ static inline void sunxi_spi_enable_bus(sunxi_spi_t *spi) {
  *       or for configuring the controller before restarting it.
  */
 static inline void sunxi_spi_disable_bus(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->gc &= ~SPI_GC_EN;///< Clear the SPI enable bit
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->gc &= ~SPI_GC_EN;///< Clear the SPI enable bit
 }
 
 /**
@@ -99,9 +99,9 @@ static inline void sunxi_spi_disable_bus(sunxi_spi_t *spi) {
  * @note The CS line is used to enable or disable communication with specific SPI peripherals.
  */
 static inline void sunxi_spi_set_cs(sunxi_spi_t *spi, uint8_t cs) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->tc &= ~SPI_TC_SS_MASK;         /* SS-chip select, clear two bits */
-    spi_reg->tc |= cs << SPI_TC_SS_BIT_POS; /* Set chip select */
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->tc &= ~SPI_TC_SS_MASK;			/* SS-chip select, clear two bits */
+	spi_reg->tc |= cs << SPI_TC_SS_BIT_POS; /* Set chip select */
 }
 
 /**
@@ -116,8 +116,8 @@ static inline void sunxi_spi_set_cs(sunxi_spi_t *spi, uint8_t cs) {
  * @note In master mode, the SPI controller will control the clock line and initiate data transfers.
  */
 static inline void sunxi_spi_set_master(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->gc |= SPI_GC_MODE;///< Set the master mode bit
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->gc |= SPI_GC_MODE;///< Set the master mode bit
 }
 
 /**
@@ -132,8 +132,8 @@ static inline void sunxi_spi_set_master(sunxi_spi_t *spi) {
  * @note This function should be called after configuring the SPI bus and chip select.
  */
 static inline void sunxi_spi_start_xfer(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->tc |= SPI_TC_XCH;///< Set the transfer start bit
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->tc |= SPI_TC_XCH;///< Set the transfer start bit
 }
 
 /**
@@ -149,8 +149,8 @@ static inline void sunxi_spi_start_xfer(sunxi_spi_t *spi) {
  * @note The transmit pause feature can be used to temporarily halt data transmission.
  */
 static inline void sunxi_spi_enable_transmit_pause(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->gc |= SPI_GC_TP_EN;///< Enable transmit pause
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->gc |= SPI_GC_TP_EN;///< Enable transmit pause
 }
 
 /**
@@ -170,12 +170,11 @@ static inline void sunxi_spi_enable_transmit_pause(sunxi_spi_t *spi) {
  *       for communication.
  */
 static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, uint32_t on_off) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    on_off &= 0x1;// Ensure the on_off value is either 0 or 1
-    if (on_off)
-        spi_reg->tc |= SPI_TC_SS_OWNER;///< Set SS ownership
-    else
-        spi_reg->tc &= ~SPI_TC_SS_OWNER;///< Clear SS ownership
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	on_off &= 0x1;							   // Ensure the on_off value is either 0 or 1
+	if (on_off) spi_reg->tc |= SPI_TC_SS_OWNER;///< Set SS ownership
+	else
+		spi_reg->tc &= ~SPI_TC_SS_OWNER;///< Clear SS ownership
 }
 
 /**
@@ -193,10 +192,10 @@ static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, uint32_t on_off) {
  *       and managing data flow.
  */
 static inline uint32_t sunxi_spi_query_txfifo(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t reg_val = (SPI_FIFO_STA_TX_CNT & spi_reg->fifo_sta);
-    reg_val >>= SPI_TXCNT_BIT_POS;///< Shift to get the TX FIFO count
-    return reg_val;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t reg_val = (SPI_FIFO_STA_TX_CNT & spi_reg->fifo_sta);
+	reg_val >>= SPI_TXCNT_BIT_POS;///< Shift to get the TX FIFO count
+	return reg_val;
 }
 
 /**
@@ -213,10 +212,10 @@ static inline uint32_t sunxi_spi_query_txfifo(sunxi_spi_t *spi) {
  * @note This function is useful for checking if data is available in the receive FIFO.
  */
 static inline uint32_t sunxi_spi_query_rxfifo(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t reg_val = (SPI_FIFO_STA_RX_CNT & spi_reg->fifo_sta);
-    reg_val >>= SPI_RXCNT_BIT_POS;///< Shift to get the RX FIFO count
-    return reg_val;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t reg_val = (SPI_FIFO_STA_RX_CNT & spi_reg->fifo_sta);
+	reg_val >>= SPI_RXCNT_BIT_POS;///< Shift to get the RX FIFO count
+	return reg_val;
 }
 
 /**
@@ -234,9 +233,9 @@ static inline uint32_t sunxi_spi_query_rxfifo(sunxi_spi_t *spi) {
  *       interrupt handling.
  */
 static inline void sunxi_spi_disable_irq(sunxi_spi_t *spi, uint32_t bitmap) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    bitmap &= SPI_INTEN_MASK;   ///< Mask with the interrupt enable mask
-    spi_reg->int_ctl &= ~bitmap;///< Disable the specified interrupts
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	bitmap &= SPI_INTEN_MASK;	///< Mask with the interrupt enable mask
+	spi_reg->int_ctl &= ~bitmap;///< Disable the specified interrupts
 }
 
 /**
@@ -253,9 +252,9 @@ static inline void sunxi_spi_disable_irq(sunxi_spi_t *spi, uint32_t bitmap) {
  *       repeated interrupts for the same event.
  */
 static inline void sunxi_spi_clr_irq_pending(sunxi_spi_t *spi, uint32_t pending_bit) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    pending_bit &= SPI_INT_STA_MASK;///< Mask with the interrupt status mask
-    spi_reg->int_sta = pending_bit; ///< Clear the pending interrupt flag
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	pending_bit &= SPI_INT_STA_MASK;///< Mask with the interrupt status mask
+	spi_reg->int_sta = pending_bit; ///< Clear the pending interrupt flag
 }
 
 /**
@@ -273,8 +272,8 @@ static inline void sunxi_spi_clr_irq_pending(sunxi_spi_t *spi, uint32_t pending_
  * @note This function is useful for checking which interrupts need to be handled.
  */
 static inline uint32_t sunxi_spi_query_irq_pending(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    return (SPI_INT_STA_MASK & spi_reg->int_sta);///< Return the pending interrupt status
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	return (SPI_INT_STA_MASK & spi_reg->int_sta);///< Return the pending interrupt status
 }
 
 /**
@@ -293,12 +292,11 @@ static inline uint32_t sunxi_spi_query_irq_pending(sunxi_spi_t *spi) {
  *       The level of the SS line controls when the SPI communication starts.
  */
 static inline void sunxi_spi_set_ss_level(sunxi_spi_t *spi, uint32_t high_low) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    high_low &= 0x1;///< Ensure high_low is either 0 or 1
-    if (high_low)
-        spi_reg->tc |= SPI_TC_SS_LEVEL;///< Set SS line to high
-    else
-        spi_reg->tc &= ~SPI_TC_SS_LEVEL;///< Set SS line to low
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	high_low &= 0x1;							 ///< Ensure high_low is either 0 or 1
+	if (high_low) spi_reg->tc |= SPI_TC_SS_LEVEL;///< Set SS line to high
+	else
+		spi_reg->tc &= ~SPI_TC_SS_LEVEL;///< Set SS line to low
 }
 
 /**
@@ -315,8 +313,8 @@ static inline void sunxi_spi_set_ss_level(sunxi_spi_t *spi, uint32_t high_low) {
  *       corresponding bits in the FIFO control register.
  */
 static inline void sunxi_spi_dma_disable(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    spi_reg->fifo_ctl &= ~(SPI_FIFO_CTL_TX_DRQEN | SPI_FIFO_CTL_RX_DRQEN);///< Disable TX and RX DMA
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	spi_reg->fifo_ctl &= ~(SPI_FIFO_CTL_TX_DRQEN | SPI_FIFO_CTL_RX_DRQEN);///< Disable TX and RX DMA
 }
 
 /**
@@ -333,14 +331,14 @@ static inline void sunxi_spi_dma_disable(sunxi_spi_t *spi) {
  *       to 0x20 for both TX and RX FIFO.
  */
 static void sunxi_spi_reset_fifo(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t reg_val = spi_reg->fifo_ctl;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t reg_val = spi_reg->fifo_ctl;
 
-    reg_val |= (SPI_FIFO_CTL_RX_RST | SPI_FIFO_CTL_TX_RST);///< Reset RX and TX FIFOs
-    // Set the trigger level for RX/TX FIFO
-    reg_val &= ~(SPI_FIFO_CTL_RX_LEVEL | SPI_FIFO_CTL_TX_LEVEL);///< Clear the level bits
-    reg_val |= (0x20 << 16) | 0x20;                             ///< Set trigger level to 0x20 for both RX and TX
-    spi_reg->fifo_ctl = reg_val;
+	reg_val |= (SPI_FIFO_CTL_RX_RST | SPI_FIFO_CTL_TX_RST);///< Reset RX and TX FIFOs
+	// Set the trigger level for RX/TX FIFO
+	reg_val &= ~(SPI_FIFO_CTL_RX_LEVEL | SPI_FIFO_CTL_TX_LEVEL);///< Clear the level bits
+	reg_val |= (0x20 << 16) | 0x20;								///< Set trigger level to 0x20 for both RX and TX
+	spi_reg->fifo_ctl = reg_val;
 }
 
 /**
@@ -362,21 +360,20 @@ static void sunxi_spi_reset_fifo(sunxi_spi_t *spi) {
  *       It ensures that enough data is available in the FIFO before proceeding with the read.
  */
 static uint32_t sunxi_spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
-        // Wait until the RX FIFO has enough data to transfer
-        while (sunxi_spi_query_rxfifo(spi) < SPI_FIFO_CTL_SHIFT) {
-        }
-        *(buf += SPI_FIFO_CTL_SHIFT) = spi_reg->rxdata;///< Read data from RX FIFO
-    }
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
+		// Wait until the RX FIFO has enough data to transfer
+		while (sunxi_spi_query_rxfifo(spi) < SPI_FIFO_CTL_SHIFT) {}
+		*(buf += SPI_FIFO_CTL_SHIFT) = spi_reg->rxdata;///< Read data from RX FIFO
+	}
 
-    while (len-- > 0) {
-        // Wait for at least 1 byte in the RX FIFO
-        while (sunxi_spi_query_rxfifo(spi) < 1)
-            ;
-        *buf++ = read8((virtual_addr_t) &spi_reg->rxdata);///< Read 1 byte from RX FIFO
-    }
-    return len;
+	while (len-- > 0) {
+		// Wait for at least 1 byte in the RX FIFO
+		while (sunxi_spi_query_rxfifo(spi) < 1)
+			;
+		*buf++ = read8((virtual_addr_t) &spi_reg->rxdata);///< Read 1 byte from RX FIFO
+	}
+	return len;
 }
 
 /**
@@ -394,25 +391,25 @@ static uint32_t sunxi_spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t 
  *       It ensures that there is space in the FIFO before writing more data.
  */
 static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t tx_len = len;
-    uint8_t *tx_buf = buf;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t tx_len = len;
+	uint8_t *tx_buf = buf;
 
-    while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
-        // Wait until there is space in the TX FIFO
-        while (sunxi_spi_query_txfifo(spi) > MAX_FIFU - SPI_FIFO_CTL_SHIFT) {
-            udelay(10);///< Small delay to allow TX FIFO to have space
-        }
-        spi_reg->txdata = *(buf += SPI_FIFO_CTL_SHIFT);///< Write data to TX FIFO
-    }
+	while ((len -= SPI_FIFO_CTL_SHIFT % SPI_FIFO_CTL_SHIFT) == 0) {
+		// Wait until there is space in the TX FIFO
+		while (sunxi_spi_query_txfifo(spi) > MAX_FIFU - SPI_FIFO_CTL_SHIFT) {
+			udelay(10);///< Small delay to allow TX FIFO to have space
+		}
+		spi_reg->txdata = *(buf += SPI_FIFO_CTL_SHIFT);///< Write data to TX FIFO
+	}
 
-    while (len-- > 0) {
-        // Wait for space in the TX FIFO before writing more data
-        while (sunxi_spi_query_txfifo(spi) >= MAX_FIFU) {
-            udelay(10);///< Small delay to allow TX FIFO to have space
-        }
-        write8((virtual_addr_t) &spi_reg->txdata, *buf++);///< Write 1 byte to TX FIFO
-    }
+	while (len-- > 0) {
+		// Wait for space in the TX FIFO before writing more data
+		while (sunxi_spi_query_txfifo(spi) >= MAX_FIFU) {
+			udelay(10);///< Small delay to allow TX FIFO to have space
+		}
+		write8((virtual_addr_t) &spi_reg->txdata, *buf++);///< Write 1 byte to TX FIFO
+	}
 }
 
 /**
@@ -435,24 +432,22 @@ static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len
  *          `printk_warning`.
  */
 static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint8_t ret = 0x0;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint8_t ret = 0x0;
 
-    // Initialize the buffer to zero
-    memset(buf, 0x0, len);
+	// Initialize the buffer to zero
+	memset(buf, 0x0, len);
 
-    // Enable the RX DMA request in the FIFO control register
-    spi_reg->fifo_ctl |= SPI_FIFO_CTL_RX_DRQEN;
+	// Enable the RX DMA request in the FIFO control register
+	spi_reg->fifo_ctl |= SPI_FIFO_CTL_RX_DRQEN;
 
-    // Start the DMA transfer
-    ret = sunxi_dma_start(spi_dma_handler, (uint32_t) &spi_reg->rxdata, (uint32_t) buf, len);
-    if (ret) {
-        printk_warning("SPI: DMA transfer failed\n");
-    }
+	// Start the DMA transfer
+	ret = sunxi_dma_start(spi_dma_handler, (uint32_t) &spi_reg->rxdata, (uint32_t) buf, len);
+	if (ret) { printk_warning("SPI: DMA transfer failed\n"); }
 
-    // Wait for the DMA transfer to complete
-    while (sunxi_dma_querystatus(spi_dma_handler))
-        ;
+	// Wait for the DMA transfer to complete
+	while (sunxi_dma_querystatus(spi_dma_handler))
+		;
 }
 
 /**
@@ -479,44 +474,43 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
  *       and the resulting actual SPI clock frequency using `printk_debug`.
  */
 static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t mclk, uint32_t cdr_mode) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-    uint32_t reg = 0;
-    uint32_t div = 0;
-    uint32_t src_clk = mclk;
-    uint32_t freq = 0;
+	uint32_t reg = 0;
+	uint32_t div = 0;
+	uint32_t src_clk = mclk;
+	uint32_t freq = 0;
 
-    /* CDR2 mode: use a clock divider that divides by 2 (if cdr2 is set) */
-    if (cdr_mode == SPI_CDR2_MODE) {
-        div = mclk / (spi_clk * 2) - 1;///< Calculate divider for CDR2 mode
-        reg &= ~SPI_CLK_CTL_CDR2;
-        reg |= (div | SPI_CLK_CTL_DRS);
-        printk_debug("SPI: CDR2 - n = %lu\n", div);
-        freq = mclk / (2 * (div + 1));  ///< Calculate actual SPI frequency
-    } else if (cdr_mode == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
-        while (src_clk > spi_clk) {
-            div++;
-            src_clk >>= 1;
-        }
-        reg &= ~(SPI_CLK_CTL_CDR1 | SPI_CLK_CTL_DRS);
-        reg |= (div << 8);///< Set CDR1 mode with the calculated divider
-        printk_debug("SPI: CDR1 - n = %lu\n", div);
-        freq = src_clk;///< Calculate actual SPI frequency
-    } else { ///< cdr_mode none
-        freq = src_clk;
-        goto clk_out;
-    }
+	/* CDR2 mode: use a clock divider that divides by 2 (if cdr2 is set) */
+	if (cdr_mode == SPI_CDR2_MODE) {
+		div = mclk / (spi_clk * 2) - 1;///< Calculate divider for CDR2 mode
+		reg &= ~SPI_CLK_CTL_CDR2;
+		reg |= (div | SPI_CLK_CTL_DRS);
+		printk_debug("SPI: CDR2 - n = %lu\n", div);
+		freq = mclk / (2 * (div + 1));		///< Calculate actual SPI frequency
+	} else if (cdr_mode == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
+		while (src_clk > spi_clk) {
+			div++;
+			src_clk >>= 1;
+		}
+		reg &= ~(SPI_CLK_CTL_CDR1 | SPI_CLK_CTL_DRS);
+		reg |= (div << 8);///< Set CDR1 mode with the calculated divider
+		printk_debug("SPI: CDR1 - n = %lu\n", div);
+		freq = src_clk;///< Calculate actual SPI frequency
+	} else {		   ///< cdr_mode none
+		freq = src_clk;
+		goto clk_out;
+	}
 
-    // Set the clock control register
-    spi_reg->clk_ctl = reg;
+	// Set the clock control register
+	spi_reg->clk_ctl = reg;
 
 clk_out:
-    // Print debug information about clock divider and actual SPI frequency
-    printk_debug("SPI: clock div=%u \n", div);
-    printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n",
-                 spi_clk / 1000000, freq / 1000000, mclk / 1000000);
+	// Print debug information about clock divider and actual SPI frequency
+	printk_debug("SPI: clock div=%u \n", div);
+	printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
-    return freq;
+	return freq;
 }
 
 /**
@@ -537,42 +531,42 @@ clk_out:
  * @warning If the DMA channel cannot be requested, an error message is printed using `printk_error`.
  */
 static int sunxi_spi_dma_init(sunxi_spi_t *spi) {
-    // Initialize the DMA controller using the SPI handle.
-    sunxi_dma_init(spi->dma_handle);
+	// Initialize the DMA controller using the SPI handle.
+	sunxi_dma_init(spi->dma_handle);
 
-    // Request a DMA channel for normal transfer.
-    spi_dma_handler = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
+	// Request a DMA channel for normal transfer.
+	spi_dma_handler = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
 
-    if (spi_dma_handler == 0) {
-        printk_error("SPI: DMA channel request failed\n");
-        return -1;
-    }
+	if (spi_dma_handler == 0) {
+		printk_error("SPI: DMA channel request failed\n");
+		return -1;
+	}
 
-    /* Configure SPI RX DMA transfer settings */
-    spi_rx_dma.loop_mode = 0;               // No loop mode for DMA transfer.
-    spi_rx_dma.wait_cyc = 0x8;              // Wait cycles set to 8.
-    spi_rx_dma.data_block_size = 1 * 32 / 8;// Data block size is 32 bits (4 bytes).
+	/* Configure SPI RX DMA transfer settings */
+	spi_rx_dma.loop_mode = 0;				// No loop mode for DMA transfer.
+	spi_rx_dma.wait_cyc = 0x8;				// Wait cycles set to 8.
+	spi_rx_dma.data_block_size = 1 * 32 / 8;// Data block size is 32 bits (4 bytes).
 
-    // Configure source (SPI0) settings for DMA.
-    spi_rx_dma.channel_cfg.src_drq_type = DMAC_CFG_TYPE_SPI0;             // Source is SPI0.
-    spi_rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE;// Source address is I/O mode.
-    spi_rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST;       // 8-byte burst length for source.
-    spi_rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT;// Source data width is 32 bits.
+	// Configure source (SPI0) settings for DMA.
+	spi_rx_dma.channel_cfg.src_drq_type = DMAC_CFG_TYPE_SPI0;			  // Source is SPI0.
+	spi_rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE;// Source address is I/O mode.
+	spi_rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST;		  // 8-byte burst length for source.
+	spi_rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT;// Source data width is 32 bits.
 
-    // Configure destination (DRAM) settings for DMA.
-    spi_rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM;                  // Destination is DRAM.
-    spi_rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;// Destination address is linear mode.
-    spi_rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST;           // 8-byte burst length for destination.
-    spi_rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT;    // Destination data width is 32 bits.
+	// Configure destination (DRAM) settings for DMA.
+	spi_rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM;				   // Destination is DRAM.
+	spi_rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;// Destination address is linear mode.
+	spi_rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST;		   // 8-byte burst length for destination.
+	spi_rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT;	   // Destination data width is 32 bits.
 
-    // Install DMA interrupt handler and enable interrupts.
-    sunxi_dma_install_int(spi_dma_handler, NULL);
-    sunxi_dma_enable_int(spi_dma_handler);
+	// Install DMA interrupt handler and enable interrupts.
+	sunxi_dma_install_int(spi_dma_handler, NULL);
+	sunxi_dma_enable_int(spi_dma_handler);
 
-    // Set DMA transfer settings.
-    sunxi_dma_setting(spi_dma_handler, &spi_rx_dma);
+	// Set DMA transfer settings.
+	sunxi_dma_setting(spi_dma_handler, &spi_rx_dma);
 
-    return 0;// Success
+	return 0;// Success
 }
 
 /**
@@ -588,10 +582,10 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi) {
  * @note This function is typically called when SPI DMA operations are no longer required.
  */
 static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
-    // Disable DMA interrupts for the current SPI DMA channel.
-    sunxi_dma_disable_int(spi_dma_handler);
+	// Disable DMA interrupts for the current SPI DMA channel.
+	sunxi_dma_disable_int(spi_dma_handler);
 
-    return 0;// Success
+	return 0;// Success
 }
 
 /**
@@ -613,39 +607,39 @@ static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
  *       the register value, and the clock divider values (n and m).
  */
 static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
-    uint32_t reg_val = 0;
-    uint32_t src = 0, clk = 0, sclk_freq = 0;
-    uint32_t n, m;
+	uint32_t reg_val = 0;
+	uint32_t src = 0, clk = 0, sclk_freq = 0;
+	uint32_t n, m;
 
-    // Read the SPI clock configuration register.
-    reg_val = read32(spi->spi_clk.spi_clock_cfg_base);
+	// Read the SPI clock configuration register.
+	reg_val = read32(spi->spi_clk.spi_clock_cfg_base);
 
-    // Extract the clock source (src), clock divider (n), and multiplier (m) from the register.
-    src = (reg_val >> 24) & 0x7;
-    n = (reg_val >> spi->spi_clk.spi_clock_factor_n_offset) & 0x3;
-    m = ((reg_val >> 0) & 0xf) + 1;
+	// Extract the clock source (src), clock divider (n), and multiplier (m) from the register.
+	src = (reg_val >> 24) & 0x7;
+	n = (reg_val >> spi->spi_clk.spi_clock_factor_n_offset) & 0x3;
+	m = ((reg_val >> 0) & 0xf) + 1;
 
-    // Determine the clock source based on the extracted value (src).
-    switch (src) {
-        case 0:
-            clk = 24000000;// Source clock is 24 MHz (likely an external reference clock).
-            break;
-        case 1:
-        case 2:
-            clk = spi->parent_clk_reg.parent_clk;// Use parent clock.
-            break;
-        default:
-            clk = 0;// Invalid clock source.
-            break;
-    }
+	// Determine the clock source based on the extracted value (src).
+	switch (src) {
+		case 0:
+			clk = 24000000;// Source clock is 24 MHz (likely an external reference clock).
+			break;
+		case 1:
+		case 2:
+			clk = spi->parent_clk_reg.parent_clk;// Use parent clock.
+			break;
+		default:
+			clk = 0;// Invalid clock source.
+			break;
+	}
 
-    // Calculate the actual SPI clock frequency using the clock source, divider (n), and multiplier (m).
-    sclk_freq = clk / (1 << n) / m;
+	// Calculate the actual SPI clock frequency using the clock source, divider (n), and multiplier (m).
+	sclk_freq = clk / (1 << n) / m;
 
-    // Print trace message with SPI clock frequency and register values for debugging.
-    printk_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
+	// Print trace message with SPI clock frequency and register values for debugging.
+	printk_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
 
-    return sclk_freq;// Return the calculated SPI clock frequency in Hz.
+	return sclk_freq;// Return the calculated SPI clock frequency in Hz.
 }
 
 /**
@@ -657,55 +651,54 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 void __attribute__((weak)) sunxi_spi_clk_init(sunxi_spi_t *spi) {
-    uint32_t div, source_clk, mod_clk, n, m;
-    uint32_t reg_val;
+	uint32_t div, source_clk, mod_clk, n, m;
+	uint32_t reg_val;
 
-    /* close gate */
-    clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
+	/* close gate */
+	clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-    source_clk = spi->parent_clk_reg.parent_clk;
-    mod_clk = spi->clk_rate;
+	source_clk = spi->parent_clk_reg.parent_clk;
+	mod_clk = spi->clk_rate;
 
-    div = ((source_clk + mod_clk) / mod_clk) - 1;
-    div = div == 0 ? 1 : div;
-    if (div > 128) {
-        m = 1;
-        n = 0;
-        return;
-    } else if (div > 64) {
-        n = 3;
-        m = div >> 3;
-    } else if (div > 32) {
-        n = 2;
-        m = div >> 2;
-    } else if (div > 16) {
-        n = 1;
-        m = div >> 1;
-    } else {
-        n = 0;
-        m = div;
-    }
+	div = ((source_clk + mod_clk) / mod_clk) - 1;
+	div = div == 0 ? 1 : div;
+	if (div > 128) {
+		m = 1;
+		n = 0;
+		return;
+	} else if (div > 64) {
+		n = 3;
+		m = div >> 3;
+	} else if (div > 32) {
+		n = 2;
+		m = div >> 2;
+	} else if (div > 16) {
+		n = 1;
+		m = div >> 1;
+	} else {
+		n = 0;
+		m = div;
+	}
 
-    printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n",
-                 spi->id, source_clk, readl(spi->spi_clk.spi_clock_cfg_base), n, m);
+	printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n", spi->id, source_clk, readl(spi->spi_clk.spi_clock_cfg_base), n, m);
 
-    /* set m factor, factor_m = m -1 */
-    m -= 1;
+	/* set m factor, factor_m = m -1 */
+	m -= 1;
 
-    reg_val = BIT(31) | (spi->spi_clk.spi_clock_source << 24) | (n << spi->spi_clk.spi_clock_factor_n_offset) | m;
+	reg_val = BIT(31) | (spi->spi_clk.spi_clock_source << 24) | (n << spi->spi_clk.spi_clock_factor_n_offset) | m;
 
-    /* enable spi clock */
-    write32(spi->spi_clk.spi_clock_cfg_base, reg_val);
+	/* enable spi clock */
+	write32(spi->spi_clk.spi_clock_cfg_base, reg_val);
 
-    /* SPI Reset */
-    clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
-    udelay(1);
-    setbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
+	/* SPI Reset */
+	clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
+	udelay(1);
+	setbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
 
-    /* SPI gating */
-    setbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
+	/* SPI gating */
+	setbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 
-    spi->spi_clk.spi_clock_freq = sunxi_spi_get_clk(spi);
+	spi->spi_clk.spi_clock_freq = sunxi_spi_get_clk(spi);
 }
 
 /**
@@ -716,11 +709,11 @@ void __attribute__((weak)) sunxi_spi_clk_init(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 static void sunxi_spi_clk_deinit(sunxi_spi_t *spi) {
-    /* SPI Assert */
-    clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
+	/* SPI Assert */
+	clrbits_le32(spi->parent_clk_reg.rst_reg_base, BIT(spi->parent_clk_reg.rst_reg_offset));
 
-    /* SPI Close gating */
-    clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
+	/* SPI Close gating */
+	clrbits_le32(spi->parent_clk_reg.gate_reg_base, BIT(spi->parent_clk_reg.gate_reg_offset));
 }
 
 /**
@@ -732,22 +725,22 @@ static void sunxi_spi_clk_deinit(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 static void sunxi_spi_config_transer_control(sunxi_spi_t *spi) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-    uint32_t reg_val = spi_reg->tc;
+	uint32_t reg_val = spi_reg->tc;
 
-    if (spi->spi_clk.spi_clock_freq > SPI_HIGH_FREQUENCY) {
-        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
-        reg_val |= SPI_TC_SDC;
-    } else if (spi->spi_clk.spi_clock_freq <= SPI_LOW_FREQUENCY) {
-        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
-        reg_val |= SPI_TC_SDM;
-    } else {
-        reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
-    }
-    reg_val |= SPI_TC_DHB | SPI_TC_SS_LEVEL | SPI_TC_SPOL;
+	if (spi->spi_clk.spi_clock_freq > SPI_HIGH_FREQUENCY) {
+		reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
+		reg_val |= SPI_TC_SDC;
+	} else if (spi->spi_clk.spi_clock_freq <= SPI_LOW_FREQUENCY) {
+		reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
+		reg_val |= SPI_TC_SDM;
+	} else {
+		reg_val &= ~(SPI_TC_SDC | SPI_TC_SDM);
+	}
+	reg_val |= SPI_TC_DHB | SPI_TC_SS_LEVEL | SPI_TC_SPOL;
 
-    spi_reg->tc = reg_val;
+	spi_reg->tc = reg_val;
 }
 
 /**
@@ -759,21 +752,21 @@ static void sunxi_spi_config_transer_control(sunxi_spi_t *spi) {
  * @param mode The desired SPI I/O mode (e.g., SPI_IO_SINGLE, SPI_IO_DUAL_RX, SPI_IO_QUAD_RX, etc.).
  */
 static void sunxi_spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-    spi_reg->bcc &= ~(SPI_BCC_QUAD_MODE | SPI_BCC_DUAL_MODE);
-    switch (mode) {
-        case SPI_IO_DUAL_RX:
-            spi_reg->bcc |= SPI_BCC_DUAL_MODE;
-            break;
-        case SPI_IO_QUAD_RX:
-        case SPI_IO_QUAD_IO:
-            spi_reg->bcc |= SPI_BCC_QUAD_MODE;
-            break;
-        case SPI_IO_SINGLE:
-        default:
-            break;
-    }
+	spi_reg->bcc &= ~(SPI_BCC_QUAD_MODE | SPI_BCC_DUAL_MODE);
+	switch (mode) {
+		case SPI_IO_DUAL_RX:
+			spi_reg->bcc |= SPI_BCC_DUAL_MODE;
+			break;
+		case SPI_IO_QUAD_RX:
+		case SPI_IO_QUAD_IO:
+			spi_reg->bcc |= SPI_BCC_QUAD_MODE;
+			break;
+		case SPI_IO_SINGLE:
+		default:
+			break;
+	}
 }
 
 /**
@@ -789,25 +782,25 @@ static void sunxi_spi_set_io_mode(sunxi_spi_t *spi, spi_io_mode_t mode) {
  * @param dummylen The length of the dummy data in bytes.
  */
 static void sunxi_spi_set_counters(sunxi_spi_t *spi, int txlen, int rxlen, int stxlen, int dummylen) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t val;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t val;
 
-    val = spi_reg->burst_cnt;
-    val &= ~SPI_BC_CNT_MASK;
-    val |= (SPI_BC_CNT_MASK & (txlen + rxlen + dummylen));
-    spi_reg->burst_cnt = val;
+	val = spi_reg->burst_cnt;
+	val &= ~SPI_BC_CNT_MASK;
+	val |= (SPI_BC_CNT_MASK & (txlen + rxlen + dummylen));
+	spi_reg->burst_cnt = val;
 
-    val = spi_reg->transmit_cnt;
-    val &= ~SPI_TC_CNT_MASK;
-    val |= (SPI_TC_CNT_MASK & txlen);
-    spi_reg->transmit_cnt = val;
+	val = spi_reg->transmit_cnt;
+	val &= ~SPI_TC_CNT_MASK;
+	val |= (SPI_TC_CNT_MASK & txlen);
+	spi_reg->transmit_cnt = val;
 
-    val = spi_reg->bcc;
-    val &= ~SPI_BCC_STC_MASK;
-    val |= (SPI_BCC_STC_MASK & stxlen);
-    val &= ~SPI_BCC_DBC_MASK;
-    val |= (dummylen << SPI_BCC_DBC_POS);
-    spi_reg->bcc = val;
+	val = spi_reg->bcc;
+	val &= ~SPI_BCC_STC_MASK;
+	val |= (SPI_BCC_STC_MASK & stxlen);
+	val &= ~SPI_BCC_DBC_MASK;
+	val |= (dummylen << SPI_BCC_DBC_POS);
+	spi_reg->bcc = val;
 }
 
 /**
@@ -821,25 +814,25 @@ static void sunxi_spi_set_counters(sunxi_spi_t *spi, int txlen, int rxlen, int s
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
-    sunxi_spi_soft_reset(spi);
+	sunxi_spi_soft_reset(spi);
 
-    sunxi_spi_enable_bus(spi);
+	sunxi_spi_enable_bus(spi);
 
-    sunxi_spi_set_cs(spi, 0);
+	sunxi_spi_set_cs(spi, 0);
 
-    sunxi_spi_set_master(spi);
+	sunxi_spi_set_master(spi);
 
-    sunxi_spi_set_clk(spi, spi->clk_rate, spi->spi_clk.spi_clock_freq, spi->spi_clk.cdr_mode);
+	sunxi_spi_set_clk(spi, spi->clk_rate, spi->spi_clk.spi_clock_freq, spi->spi_clk.cdr_mode);
 
-    sunxi_spi_config_transer_control(spi);
+	sunxi_spi_config_transer_control(spi);
 
-    sunxi_spi_set_ss_level(spi, 1);
+	sunxi_spi_set_ss_level(spi, 1);
 
-    sunxi_spi_enable_transmit_pause(spi);
+	sunxi_spi_enable_transmit_pause(spi);
 
-    sunxi_spi_set_ss_owner(spi, 0);
+	sunxi_spi_set_ss_owner(spi, 0);
 
-    sunxi_spi_reset_fifo(spi);
+	sunxi_spi_reset_fifo(spi);
 }
 
 /**
@@ -852,17 +845,17 @@ static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing the GPIO configuration.
  */
 static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
-    /* Config SPI pins */
-    sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
-    sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
-    sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
-    sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
-    sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
-    sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
+	/* Config SPI pins */
+	sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
+	sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
+	sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
+	sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
+	sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
+	sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
 
-    /* Floating by default */
-    sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
-    sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
+	/* Floating by default */
+	sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
+	sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
 }
 
 /**
@@ -877,18 +870,16 @@ static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
  * @return 0 on success.
  */
 int sunxi_spi_init(sunxi_spi_t *spi) {
-    /* if set dma handle, we using dma mode */
-    if (spi->dma_handle != NULL) {
-        sunxi_spi_dma_init(spi);
-    }
+	/* if set dma handle, we using dma mode */
+	if (spi->dma_handle != NULL) { sunxi_spi_dma_init(spi); }
 
-    sunxi_spi_gpio_init(spi);
+	sunxi_spi_gpio_init(spi);
 
-    sunxi_spi_clk_init(spi);
+	sunxi_spi_clk_init(spi);
 
-    sunxi_spi_bus_init(spi);
+	sunxi_spi_bus_init(spi);
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -900,9 +891,9 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 void sunxi_spi_disable(sunxi_spi_t *spi) {
-    sunxi_spi_disable_bus(spi); /**< Disable the SPI bus */
-    sunxi_spi_dma_deinit(spi);  /**< Deinitialize the DMA */
-    sunxi_spi_clk_deinit(spi);  /**< Deinitialize the SPI clock */
+	sunxi_spi_disable_bus(spi); /**< Disable the SPI bus */
+	sunxi_spi_dma_deinit(spi);	/**< Deinitialize the DMA */
+	sunxi_spi_clk_deinit(spi);	/**< Deinitialize the SPI clock */
 }
 
 /**
@@ -917,11 +908,11 @@ void sunxi_spi_disable(sunxi_spi_t *spi) {
  * @return 0 on success.
  */
 int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk) {
-    spi->clk_rate = clk;                   /**< Update the SPI clock rate */
-    sunxi_spi_clk_init(spi);               /**< Reinitialize the SPI clock with the new rate */
-    sunxi_spi_bus_init(spi);               /**< Reinitialize the SPI bus */
-    sunxi_spi_config_transer_control(spi); /**< Reconfigure the transfer control */
-    return 0;                              /**< Return success */
+	spi->clk_rate = clk;				   /**< Update the SPI clock rate */
+	sunxi_spi_clk_init(spi);			   /**< Reinitialize the SPI clock with the new rate */
+	sunxi_spi_bus_init(spi);			   /**< Reinitialize the SPI bus */
+	sunxi_spi_config_transer_control(spi); /**< Reconfigure the transfer control */
+	return 0;							   /**< Return success */
 }
 
 /**
@@ -942,66 +933,60 @@ int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk) {
  * @return The total number of bytes transferred (txlen + rxlen).
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen) {
-    sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-    uint32_t stxlen;
+	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
+	uint32_t stxlen;
 
-    printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
+	printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
 
-    sunxi_spi_disable_irq(spi, SPI_INT_STA_PENDING_BIT);     /**< Disable interrupt for pending status */
-    sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
+	sunxi_spi_disable_irq(spi, SPI_INT_STA_PENDING_BIT);	 /**< Disable interrupt for pending status */
+	sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
 
-    sunxi_spi_set_io_mode(spi, mode); /**< Set the I/O mode (single, dual, quad) */
+	sunxi_spi_set_io_mode(spi, mode); /**< Set the I/O mode (single, dual, quad) */
 
-    switch (mode) {
-        case SPI_IO_QUAD_IO:
-            stxlen = 1; /**< Only opcode in quad mode */
-            break;
-        case SPI_IO_DUAL_RX:
-        case SPI_IO_QUAD_RX:
-            stxlen = txlen; /**< Only transmit data in dual or quad RX mode */
-            break;
-        case SPI_IO_SINGLE:
-        default:
-            stxlen = txlen + rxlen; /**< Both transmit and receive data in single mode */
-            break;
-    }
+	switch (mode) {
+		case SPI_IO_QUAD_IO:
+			stxlen = 1; /**< Only opcode in quad mode */
+			break;
+		case SPI_IO_DUAL_RX:
+		case SPI_IO_QUAD_RX:
+			stxlen = txlen; /**< Only transmit data in dual or quad RX mode */
+			break;
+		case SPI_IO_SINGLE:
+		default:
+			stxlen = txlen + rxlen; /**< Both transmit and receive data in single mode */
+			break;
+	}
 
-    sunxi_spi_set_counters(spi, txlen, rxlen, stxlen, 0); /**< Set the SPI transfer counters */
-    sunxi_spi_reset_fifo(spi);                            /**< Reset the SPI FIFOs */
-    sunxi_spi_start_xfer(spi);                            /**< Start the SPI transfer */
+	sunxi_spi_set_counters(spi, txlen, rxlen, stxlen, 0); /**< Set the SPI transfer counters */
+	sunxi_spi_reset_fifo(spi);							  /**< Reset the SPI FIFOs */
+	sunxi_spi_start_xfer(spi);							  /**< Start the SPI transfer */
 
-    if (txbuf && txlen) {
-        sunxi_spi_write_tx_fifo(spi, txbuf, txlen); /**< Write data to TX FIFO if there's data to transmit */
-    }
+	if (txbuf && txlen) { sunxi_spi_write_tx_fifo(spi, txbuf, txlen); /**< Write data to TX FIFO if there's data to transmit */ }
 
-    if (rxbuf && rxlen) {
-        if (rxlen > 64) {
-            sunxi_spi_read_by_dma(spi, rxbuf, rxlen); /**< Use DMA for large receive buffers */
-        } else {
-            sunxi_spi_read_rx_fifo(spi, rxbuf, rxlen); /**< Use FIFO for smaller receive buffers */
-        }
-    }
+	if (rxbuf && rxlen) {
+		if (rxlen > 64) {
+			sunxi_spi_read_by_dma(spi, rxbuf, rxlen); /**< Use DMA for large receive buffers */
+		} else {
+			sunxi_spi_read_rx_fifo(spi, rxbuf, rxlen); /**< Use FIFO for smaller receive buffers */
+		}
+	}
 
-    if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) {
-        printk_warning("SPI: int sta err\n"); /**< Check for error interrupt */
-    }
+	if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) { printk_warning("SPI: int sta err\n"); /**< Check for error interrupt */ }
 
-    while (!(sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_TC))
-        ; /**< Wait for transfer completion interrupt (TC) */
+	while (!(sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_TC))
+		; /**< Wait for transfer completion interrupt (TC) */
 
-    sunxi_spi_dma_disable(spi); /**< Disable DMA if used */
+	sunxi_spi_dma_disable(spi); /**< Disable DMA if used */
 
-    if (spi_reg->burst_cnt == 0) {
-        if (spi_reg->tc & SPI_TC_XCH) {
-            printk_warning("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */
-        }
-    } else {
-        printk_warning("SPI: MBC error\n"); /**< Warn if there is an MBC error (memory-to-bus control) */
-    }
+	if (spi_reg->burst_cnt == 0) {
+		if (spi_reg->tc & SPI_TC_XCH) { printk_warning("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */ }
+	} else {
+		printk_warning("SPI: MBC error\n"); /**< Warn if there is an MBC error (memory-to-bus control) */
+	}
 
-    sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
+	sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
 
-    printk_trace("SPI: ISR=0x%x\n", spi_reg->int_sta); /**< Log the current interrupt status register */
+	printk_trace("SPI: ISR=0x%x\n", spi_reg->int_sta); /**< Log the current interrupt status register */
 
-    return rxlen + txlen; /**< Return the total number of transferred bytes (TX + RX) */
+	return rxlen + txlen; /**< Return the total number of transferred bytes (TX + RX) */
 }

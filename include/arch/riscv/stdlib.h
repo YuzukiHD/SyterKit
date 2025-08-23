@@ -39,4 +39,4 @@ int backtrace(char *PC, long *SP, char *LR);
  */
 int dump_stack(void);
 
-#endif // __STDLIB_H__
+#endif// __STDLIB_H__

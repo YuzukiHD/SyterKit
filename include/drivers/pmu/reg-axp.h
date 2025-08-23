@@ -19,7 +19,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 
 #endif// __G_REG_AXP_H__

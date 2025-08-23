@@ -15,12 +15,12 @@
  * DSP Register define
  */
 #define DSP_ALT_RESET_VEC_REG (0x0000) /* DSP Reset Control Register */
-#define DSP_CTRL_REG0 (0x0004)         /* DSP Control Register0 */
-#define DSP_PRID_REG (0x000c)          /* DSP PRID Register */
-#define DSP_STAT_REG (0x0010)          /* DSP STAT Register */
-#define DSP_BIST_CTRL_REG (0x0014)     /* DSP BIST CTRL Register */
-#define DSP_JTRST_REG (0x001c)         /* DSP JTAG CONFIG RESET Register */
-#define DSP_VER_REG (0x0020)           /* DSP Version Register */
+#define DSP_CTRL_REG0 (0x0004)		   /* DSP Control Register0 */
+#define DSP_PRID_REG (0x000c)		   /* DSP PRID Register */
+#define DSP_STAT_REG (0x0010)		   /* DSP STAT Register */
+#define DSP_BIST_CTRL_REG (0x0014)	   /* DSP BIST CTRL Register */
+#define DSP_JTRST_REG (0x001c)		   /* DSP JTAG CONFIG RESET Register */
+#define DSP_VER_REG (0x0020)		   /* DSP Version Register */
 
 /*
  * DSP Control Register0

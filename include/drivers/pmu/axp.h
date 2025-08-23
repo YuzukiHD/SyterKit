@@ -20,25 +20,25 @@ extern "C" {
  * Structure describing a voltage step of the power domain.
  */
 typedef struct _axp_step_info {
-    uint32_t step_min_vol;// Minimum voltage level for the step.
-    uint32_t step_max_vol;// Maximum voltage level for the step.
-    uint32_t step_val;    // Voltage increment value for the step.
-    uint32_t regation;    // Regulator register address.
+	uint32_t step_min_vol;// Minimum voltage level for the step.
+	uint32_t step_max_vol;// Maximum voltage level for the step.
+	uint32_t step_val;	  // Voltage increment value for the step.
+	uint32_t regation;	  // Regulator register address.
 } axp_step_info_t;
 
 /**
  * Structure describing the control information of a power domain.
  */
 typedef struct _axp_contrl_info {
-    char name[8];                   // Name of the power domain.
-    uint32_t min_vol;               // Minimum voltage level for the domain.
-    uint32_t max_vol;               // Maximum voltage level for the domain.
-    uint32_t cfg_reg_addr;          // Configuration register address.
-    uint32_t cfg_reg_mask;          // Configuration register mask.
-    uint32_t ctrl_reg_addr;         // Control register address.
-    uint32_t ctrl_bit_ofs;          // Bit offset in the control register.
-    uint32_t reg_addr_offset;       // Offset of the register address.
-    axp_step_info_t axp_step_tbl[4];// Voltage step table for the domain.
+	char name[8];					// Name of the power domain.
+	uint32_t min_vol;				// Minimum voltage level for the domain.
+	uint32_t max_vol;				// Maximum voltage level for the domain.
+	uint32_t cfg_reg_addr;			// Configuration register address.
+	uint32_t cfg_reg_mask;			// Configuration register mask.
+	uint32_t ctrl_reg_addr;			// Control register address.
+	uint32_t ctrl_bit_ofs;			// Bit offset in the control register.
+	uint32_t reg_addr_offset;		// Offset of the register address.
+	axp_step_info_t axp_step_tbl[4];// Voltage step table for the domain.
 } axp_contrl_info;
 
 /* Common function */
@@ -95,11 +95,11 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
  * 
  * @param name The name of the PMU chip (e.g., axp2202, axp221, etc.).
  */
-#define DEFINE_AXP_PMU(name) \
-    int pmu_##name##_init(sunxi_i2c_t *i2c_dev); \
-    int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name); \
-    int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff); \
-    void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
+#define DEFINE_AXP_PMU(name)                                                                                                                                                       \
+	int pmu_##name##_init(sunxi_i2c_t *i2c_dev);                                                                                                                                   \
+	int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name);                                                                                                                    \
+	int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);                                                                                            \
+	void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
 
 /* AXP PMU defines */
 DEFINE_AXP_PMU(axp1530);

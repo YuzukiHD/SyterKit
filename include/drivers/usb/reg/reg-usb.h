@@ -130,39 +130,29 @@
 #define USBC_REG_EP0TYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EP0TYPE)
 #define USBC_REG_TXTYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXTYPE)
 
-#define USBC_REG_NAKLIMIT0(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_NAKLIMIT0)
-#define USBC_REG_TXINTERVAL(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_TXINTERVAL)
+#define USBC_REG_NAKLIMIT0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_NAKLIMIT0)
+#define USBC_REG_TXINTERVAL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXINTERVAL)
 
 #define USBC_REG_RXTYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXTYPE)
-#define USBC_REG_RXINTERVAL(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_RXINTERVAL)
-#define USBC_REG_CONFIGDATA(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_CONFIGDATA)
+#define USBC_REG_RXINTERVAL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXINTERVAL)
+#define USBC_REG_CONFIGDATA(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_CONFIGDATA)
 #define USBC_REG_EPFIFO0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO0)
 #define USBC_REG_EPFIFO1(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO1)
 #define USBC_REG_EPFIFO2(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO2)
 #define USBC_REG_EPFIFO3(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO3)
 #define USBC_REG_EPFIFO4(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO4)
 #define USBC_REG_EPFIFO5(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO5)
-#define USBC_REG_EPFIFOx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_EPFIFOx(n))
+#define USBC_REG_EPFIFOx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_EPFIFOx(n))
 #define USBC_REG_DEVCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DEVCTL)
-#define USBC_REG_TXFIFOSZ(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_TXFIFOSZ)
-#define USBC_REG_RXFIFOSZ(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_RXFIFOSZ)
-#define USBC_REG_TXFIFOAD(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_TXFIFOAD)
-#define USBC_REG_RXFIFOAD(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_RXFIFOAD)
+#define USBC_REG_TXFIFOSZ(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXFIFOSZ)
+#define USBC_REG_RXFIFOSZ(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFIFOSZ)
+#define USBC_REG_TXFIFOAD(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXFIFOAD)
+#define USBC_REG_RXFIFOAD(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFIFOAD)
 #define USBC_REG_VEND0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VEND0)
 #define USBC_REG_VEND1(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VEND1)
 #define USBC_REG_EPINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPINFO)
 #define USBC_REG_RAMINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RAMINFO)
-#define USBC_REG_LINKINFO(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_LINKINFO)
+#define USBC_REG_LINKINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_LINKINFO)
 #define USBC_REG_VPLEN(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VPLEN)
 #define USBC_REG_HSEOF(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HSEOF)
 #define USBC_REG_FSEOF(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_FSEOF)
@@ -172,29 +162,21 @@
 #define USBC_REG_HADDR0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HADDR0)
 #define USBC_REG_HPORT0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HPORT0)
 
-#define USBC_REG_TXFADDRx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_TXFADDRx)
-#define USBC_REG_TXHADDRx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_TXHADDRx)
-#define USBC_REG_TXHPORTx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_TXHPORTx)
-#define USBC_REG_RXFADDRx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
-#define USBC_REG_RXHADDRx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_RXHADDRx)
-#define USBC_REG_RXHPORTx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_RXHPORTx)
+#define USBC_REG_TXFADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXFADDRx)
+#define USBC_REG_TXHADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXHADDRx)
+#define USBC_REG_TXHPORTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXHPORTx)
+#define USBC_REG_RXFADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
+#define USBC_REG_RXHADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXHADDRx)
+#define USBC_REG_RXHPORTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXHPORTx)
 
-#define USBC_REG_RPCOUNTx(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_RPCOUNT)
+#define USBC_REG_RPCOUNTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RPCOUNT)
 
 #define USBC_REG_ISCR(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_ISCR)
 #define USBC_REG_PHYCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYCTL)
 #define USBC_REG_PHYBIST(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYBIST)
 #define USBC_REG_PHYTUNE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYTUNE)
 
-#define USBC_REG_RXFADDRx_Ex(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
+#define USBC_REG_RXFADDRx_Ex(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
 
 /*DMA*/
 #define USBC_REG_o_DMA_INTE 0x0500
@@ -204,24 +186,17 @@
 #define USBC_REG_o_DMA_BC(n) (0x0548 + (0x10 * n))
 #define USBC_REG_o_DMA_RESIDUAL_BC(n) (0x0548 + (0x10 * n))
 
-#define USBC_REG_DMA_INTE(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_INTE)
-#define USBC_REG_DMA_INTS(usbc_base_addr) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_INTS)
-#define USBC_REG_DMA_CHAN_CFN(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_CHAN_CFN(n))
-#define USBC_REG_DMA_SDRAM_ADD(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_SDRAM_ADD(n))
-#define USBC_REG_DMA_BC(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_BC(n))
-#define USBC_REG_DMA_RESIDUAL_BC(usbc_base_addr, n) \
-    ((usbc_base_addr) + USBC_REG_o_DMA_RESIDUAL_BC(n))
+#define USBC_REG_DMA_INTE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DMA_INTE)
+#define USBC_REG_DMA_INTS(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DMA_INTS)
+#define USBC_REG_DMA_CHAN_CFN(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_CHAN_CFN(n))
+#define USBC_REG_DMA_SDRAM_ADD(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_SDRAM_ADD(n))
+#define USBC_REG_DMA_BC(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_BC(n))
+#define USBC_REG_DMA_RESIDUAL_BC(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_RESIDUAL_BC(n))
 
 /*-----------------------------------------------------------------------*/
 /*  registers extern*/
 /*-----------------------------------------------------------------------*/
-#define USBC_REG_EX_USB_EPFIFOn(usbc_base_addr) \
-    ((usbc_base_addr) + (0x00 + (n << 2)))
+#define USBC_REG_EX_USB_EPFIFOn(usbc_base_addr) ((usbc_base_addr) + (0x00 + (n << 2)))
 #define USBC_REG_EX_USB_GCS(usbc_base_addr) ((usbc_base_addr) + 0x0040)
 #define USBC_REG_EX_USB_EPINTF(usbc_base_addr) ((usbc_base_addr) + 0x0044)
 #define USBC_REG_EX_USB_EPINTE(usbc_base_addr) ((usbc_base_addr) + 0x0048)
@@ -377,10 +352,7 @@
 #define USBC_BP_TXCSR_H_FIFO_NOT_EMPTY 1
 #define USBC_BP_TXCSR_H_TX_READY 0
 
-#define USBC_TXCSR_H_WZC_BITS                                         \
-    ((1 << USBC_BP_TXCSR_H_NAK_TIMEOUT) |                             \
-     (1 << USBC_BP_TXCSR_H_TX_STALL) | (1 << USBC_BP_TXCSR_H_ERROR) | \
-     (1 << USBC_BP_TXCSR_H_FIFO_NOT_EMPTY))
+#define USBC_TXCSR_H_WZC_BITS ((1 << USBC_BP_TXCSR_H_NAK_TIMEOUT) | (1 << USBC_BP_TXCSR_H_TX_STALL) | (1 << USBC_BP_TXCSR_H_ERROR) | (1 << USBC_BP_TXCSR_H_FIFO_NOT_EMPTY))
 
 /* Tx ep Control and Status Register for Device only */
 #define USBC_BP_TXCSR_D_AUTOSET 15
@@ -406,7 +378,7 @@
 #define USBC_BP_RXCSR_H_AUTO_CLEAR 15
 #define USBC_BP_RXCSR_H_AUTO_REQ 14
 #define USBC_BP_RXCSR_H_DMA_REQ_EN 13
-#define USBC_BP_RXCSR_H_DISNYET 12   /* dis nyet */
+#define USBC_BP_RXCSR_H_DISNYET 12	 /* dis nyet */
 #define USBC_BP_RXCSR_H_PID_ERROR 12 /* pid error */
 #define USBC_BP_RXCSR_H_DMA_REQ_MODE 11
 #define USBC_BP_RXCSR_H_DATA_TOGGLE_WR_EN 10
@@ -416,16 +388,13 @@
 #define USBC_BP_RXCSR_H_RX_STALL 6
 #define USBC_BP_RXCSR_H_REQ_PACKET 5
 #define USBC_BP_RXCSR_H_FLUSH_FIFO 4
-#define USBC_BP_RXCSR_H_DATA_ERR 3    /* iso */
+#define USBC_BP_RXCSR_H_DATA_ERR 3	  /* iso */
 #define USBC_BP_RXCSR_H_NAK_TIMEOUT 3 /* bulk */
 #define USBC_BP_RXCSR_H_ERROR 2
 #define USBC_BP_RXCSR_H_FIFO_FULL 1
 #define USBC_BP_RXCSR_H_RX_PKT_READY 0
 
-#define USBC_RXCSR_H_WZC_BITS                                         \
-    ((1 << USBC_BP_RXCSR_H_RX_STALL) | (1 << USBC_BP_RXCSR_H_ERROR) | \
-     (1 << USBC_BP_RXCSR_H_DATA_ERR) |                                \
-     (1 << USBC_BP_RXCSR_H_RX_PKT_READY))
+#define USBC_RXCSR_H_WZC_BITS ((1 << USBC_BP_RXCSR_H_RX_STALL) | (1 << USBC_BP_RXCSR_H_ERROR) | (1 << USBC_BP_RXCSR_H_DATA_ERR) | (1 << USBC_BP_RXCSR_H_RX_PKT_READY))
 
 /* Rx ep Control and Status Register for Device only */
 #define USBC_BP_RXCSR_D_AUTO_CLEAR 15

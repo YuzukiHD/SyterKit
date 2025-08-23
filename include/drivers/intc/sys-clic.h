@@ -22,19 +22,14 @@ extern "C" {
 
 #define CLIC_IRQ_NUM (186)
 
-typedef enum irq_trigger_type {
-    IRQ_TRIGGER_TYPE_LEVEL,
-    IRQ_TRIGGER_TYPE_EDGE_RISING,
-    IRQ_TRIGGER_TYPE_EDGE_FALLING,
-    IRQ_TRIGGER_TYPE_EDGE_BOTH
-} irq_trigger_type_t;
+typedef enum irq_trigger_type { IRQ_TRIGGER_TYPE_LEVEL, IRQ_TRIGGER_TYPE_EDGE_RISING, IRQ_TRIGGER_TYPE_EDGE_FALLING, IRQ_TRIGGER_TYPE_EDGE_BOTH } irq_trigger_type_t;
 
 typedef struct irq_controller {
-    uint16_t id;
-    uint16_t irq_cnt;
-    uint16_t parent_id;
-    uint16_t irq_id;
-    uint64_t reg_base_addr;
+	uint16_t id;
+	uint16_t irq_cnt;
+	uint16_t parent_id;
+	uint16_t irq_id;
+	uint64_t reg_base_addr;
 } irq_controller_t;
 
 /**

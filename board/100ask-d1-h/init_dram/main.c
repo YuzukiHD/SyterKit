@@ -18,27 +18,27 @@ extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    sunxi_clk_dump();
+	sunxi_clk_dump();
 
-    printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
+	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram_para));
 
-    sunxi_clk_dump();
+	sunxi_clk_dump();
 
-    int i = 0;
+	int i = 0;
 
-    while (1) {
-        i++;
-        printk_info("Count: %d\n", i);
-        mdelay(1000);
-    }
+	while (1) {
+		i++;
+		printk_info("Count: %d\n", i);
+		mdelay(1000);
+	}
 
-    abort();
+	abort();
 
-    return 0;
+	return 0;
 }

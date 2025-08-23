@@ -15,11 +15,11 @@ extern "C" {
 #endif// __cplusplus
 
 typedef struct {
-    uint32_t gate_reg_base;
-    uint32_t gate_reg_offset;
-    uint32_t rst_reg_base;
-    uint32_t rst_reg_offset;
-    uint32_t parent_clk;
+	uint32_t gate_reg_base;
+	uint32_t gate_reg_offset;
+	uint32_t rst_reg_base;
+	uint32_t rst_reg_offset;
+	uint32_t parent_clk;
 } sunxi_clk_t;
 
 /**

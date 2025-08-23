@@ -28,13 +28,13 @@ limitations under the License.
 
 /******************************* MARCO ************************************/
 #define TM_MDL_MAGIC 0x5849414d//mdl magic sign
-#define TM_ALIGN_SIZE (8)  //8 byte align
+#define TM_ALIGN_SIZE (8)	   //8 byte align
 #define TM_ALIGN(addr) ((((size_t) (addr)) + (TM_ALIGN_SIZE - 1)) / TM_ALIGN_SIZE * TM_ALIGN_SIZE)
 #define TM_MATP(mat, y, x, ch) ((mat)->data + ((y) * (mat)->w + (x)) * (mat)->c + (ch))
 //HWC
 #if TM_MDL_TYPE == TM_MDL_INT8
-typedef int8_t mtype_t;   //mat data type
-typedef int8_t wtype_t;   //weight data type
+typedef int8_t mtype_t;	  //mat data type
+typedef int8_t wtype_t;	  //weight data type
 typedef int32_t btype_t;  //bias data type
 typedef int32_t sumtype_t;//sum data type
 typedef int32_t zptype_t; //zeropoint data type
@@ -47,9 +47,9 @@ typedef int32_t sumtype_t;//sum data type
 typedef int32_t zptype_t; //zeropoint data type
 #define UINT2INT_SHIFT (8)
 #elif TM_MDL_TYPE == TM_MDL_FP32
-typedef float mtype_t;  //mat data type
-typedef float wtype_t;  //weight data type
-typedef float btype_t;  //bias data type
+typedef float mtype_t;	//mat data type
+typedef float wtype_t;	//weight data type
+typedef float btype_t;	//bias data type
 typedef float sumtype_t;//sum data type
 typedef float zptype_t; //zeropoint data type
 #elif TM_MDL_TYPE == TM_MDL_FP16
@@ -57,9 +57,9 @@ typedef float zptype_t; //zeropoint data type
 #error "only support RV64V's float16!"
 #endif
 #include <riscv_vector.h>
-typedef float16_t mtype_t;  //mat data type
-typedef float16_t wtype_t;  //weight data type
-typedef float16_t btype_t;  //bias data type
+typedef float16_t mtype_t;	//mat data type
+typedef float16_t wtype_t;	//weight data type
+typedef float16_t btype_t;	//bias data type
 typedef float16_t sumtype_t;//sum data type
 typedef float16_t zptype_t; //zeropoint data type
 #elif (TM_MDL_TYPE == TM_MDL_FP8_143) || (TM_MDL_TYPE == TM_MDL_FP8_152)
@@ -92,189 +92,189 @@ typedef float sctype_t;
 
 /******************************* ENUM ************************************/
 typedef enum {
-    TM_OK = 0,
-    TM_ERR = 1,
-    TM_ERR_MAGIC = 2,
-    TM_ERR_UNSUPPORT = 3,
-    TM_ERR_OOM = 4,
-    TM_ERR_LAYERTYPE = 5,
-    TM_ERR_DIMS = 6,
-    TM_ERR_TODO = 7,
-    TM_ERR_MDLTYPE = 8,
-    TM_ERR_KSIZE = 9,
+	TM_OK = 0,
+	TM_ERR = 1,
+	TM_ERR_MAGIC = 2,
+	TM_ERR_UNSUPPORT = 3,
+	TM_ERR_OOM = 4,
+	TM_ERR_LAYERTYPE = 5,
+	TM_ERR_DIMS = 6,
+	TM_ERR_TODO = 7,
+	TM_ERR_MDLTYPE = 8,
+	TM_ERR_KSIZE = 9,
 } tm_err_t;
 
 typedef enum {
-    TML_CONV2D = 0,
-    TML_GAP = 1,
-    TML_FC = 2,
-    TML_SOFTMAX = 3,
-    TML_RESHAPE = 4,
-    TML_DWCONV2D = 5,
-    TML_ADD = 6,
-    TML_MAXCNT,
+	TML_CONV2D = 0,
+	TML_GAP = 1,
+	TML_FC = 2,
+	TML_SOFTMAX = 3,
+	TML_RESHAPE = 4,
+	TML_DWCONV2D = 5,
+	TML_ADD = 6,
+	TML_MAXCNT,
 } tm_layer_type_t;
 
 typedef enum {
-    TM_PAD_VALID = 0,
-    TM_PAD_SAME = 1,
+	TM_PAD_VALID = 0,
+	TM_PAD_SAME = 1,
 } tm_pad_type_t;
 
 typedef enum {
-    TM_ACT_NONE = 0,
-    TM_ACT_RELU = 1,
-    TM_ACT_RELU1 = 2,
-    TM_ACT_RELU6 = 3,
-    TM_ACT_TANH = 4,
-    TM_ACT_SIGNBIT = 5,
-    TM_ACT_MAXCNT,
+	TM_ACT_NONE = 0,
+	TM_ACT_RELU = 1,
+	TM_ACT_RELU1 = 2,
+	TM_ACT_RELU6 = 3,
+	TM_ACT_TANH = 4,
+	TM_ACT_SIGNBIT = 5,
+	TM_ACT_MAXCNT,
 } tm_act_type_t;
 
 
 typedef enum {
-    TMPP_NONE = 0,
-    TMPP_FP2INT = 1,    //user own fp buf -> int input buf
-    TMPP_UINT2INT = 2,  //int8: cvt in place; int16: can't cvt in place
-    TMPP_UINT2FP01 = 3, // u8/255.0
-    TMPP_UINT2FPN11 = 4,// (u8-128)/128
-    TMPP_UINT2DTYPE = 5,//uint8 to fp16,fp8
-    TMPP_MAXCNT,
+	TMPP_NONE = 0,
+	TMPP_FP2INT = 1,	//user own fp buf -> int input buf
+	TMPP_UINT2INT = 2,	//int8: cvt in place; int16: can't cvt in place
+	TMPP_UINT2FP01 = 3, // u8/255.0
+	TMPP_UINT2FPN11 = 4,// (u8-128)/128
+	TMPP_UINT2DTYPE = 5,//uint8 to fp16,fp8
+	TMPP_MAXCNT,
 } tm_pp_t;
 
 /******************************* STRUCT ************************************/
 //mdlbin in flash
 typedef struct {
-    uint32_t magic;     //"MAIX"
-    uint8_t mdl_type;   //0 int8, 1 int16, 2 fp32,
-    uint8_t out_deq;    //0 don't dequant out; 1 dequant out
-    uint16_t input_cnt; //only support 1 yet
-    uint16_t output_cnt;//only support 1 yet
-    uint16_t layer_cnt;
-    uint32_t buf_size;  //main buf size for middle result = pingpong+keep
-    uint32_t sub_size;  //pingpong buf size;
-    uint16_t in_dims[4];//0:dims; 1:dim0; 2:dim1; 3:dim2
-    uint16_t out_dims[4];
-    uint8_t reserve[28];   //reserve for future
-    uint8_t layers_body[0];//oft 64 here
+	uint32_t magic;		//"MAIX"
+	uint8_t mdl_type;	//0 int8, 1 int16, 2 fp32,
+	uint8_t out_deq;	//0 don't dequant out; 1 dequant out
+	uint16_t input_cnt; //only support 1 yet
+	uint16_t output_cnt;//only support 1 yet
+	uint16_t layer_cnt;
+	uint32_t buf_size;	//main buf size for middle result = pingpong+keep
+	uint32_t sub_size;	//pingpong buf size;
+	uint16_t in_dims[4];//0:dims; 1:dim0; 2:dim1; 3:dim2
+	uint16_t out_dims[4];
+	uint8_t reserve[28];   //reserve for future
+	uint8_t layers_body[0];//oft 64 here
 } tm_mdlbin_t;
 
 //mdl meta data in ram
 typedef struct {
-    tm_mdlbin_t *b;     //bin
-    void *cb;           //Layer callback
-    uint8_t *buf;       //main buf addr
-    uint8_t *subbuf;    //sub buf addr
-    uint16_t main_alloc;//is main buf alloc or static
-    uint16_t layer_i;   //current layer index
-    uint8_t *layer_body;//current layer body addr
+	tm_mdlbin_t *b;		//bin
+	void *cb;			//Layer callback
+	uint8_t *buf;		//main buf addr
+	uint8_t *subbuf;	//sub buf addr
+	uint16_t main_alloc;//is main buf alloc or static
+	uint16_t layer_i;	//current layer index
+	uint8_t *layer_body;//current layer body addr
 } tm_mdl_t;
 
 //dims==3, hwc
 //dims==2, 1wc
 //dims==1, 11c
 typedef struct {
-    uint16_t dims;
-    uint16_t h;
-    uint16_t w;
-    uint16_t c;
-    union {
-        mtype_t *data;
-        float *dataf;
-    };
+	uint16_t dims;
+	uint16_t h;
+	uint16_t w;
+	uint16_t c;
+	union {
+		mtype_t *data;
+		float *dataf;
+	};
 } tm_mat_t;
 
 /******************************* LAYER STRUCT ************************************/
-typedef struct {        //48byte
-    uint16_t type;      //layer type
-    uint16_t is_out;    //is output
-    uint32_t size;      //8 byte align size for this layer
-    uint32_t in_oft;    //input  oft in main buf
-    uint32_t out_oft;   //output oft in main buf
-    uint16_t in_dims[4];//0:dims; 1:dim0; 2:dim1; 3:dim2
-    uint16_t out_dims[4];
-    //following unit not used in fp32 mode
-    sctype_t in_s;  //input scale,
-    zptype_t in_zp; //input zeropoint
-    sctype_t out_s; //output scale
-    zptype_t out_zp;//output zeropoint
-    //note: real = scale*(q-zeropoint)
+typedef struct {		//48byte
+	uint16_t type;		//layer type
+	uint16_t is_out;	//is output
+	uint32_t size;		//8 byte align size for this layer
+	uint32_t in_oft;	//input  oft in main buf
+	uint32_t out_oft;	//output oft in main buf
+	uint16_t in_dims[4];//0:dims; 1:dim0; 2:dim1; 3:dim2
+	uint16_t out_dims[4];
+	//following unit not used in fp32 mode
+	sctype_t in_s;	//input scale,
+	zptype_t in_zp; //input zeropoint
+	sctype_t out_s; //output scale
+	zptype_t out_zp;//output zeropoint
+	//note: real = scale*(q-zeropoint)
 } tml_head_t;
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 
-    uint8_t kernel_w;
-    uint8_t kernel_h;
-    uint8_t stride_w;
-    uint8_t stride_h;
+	uint8_t kernel_w;
+	uint8_t kernel_h;
+	uint8_t stride_w;
+	uint8_t stride_h;
 
-    uint8_t dilation_w;
-    uint8_t dilation_h;
-    uint16_t act;//0 none, 1 relu, 2 relu1, 3 relu6, 4 tanh, 5 sign_bit
+	uint8_t dilation_w;
+	uint8_t dilation_h;
+	uint16_t act;//0 none, 1 relu, 2 relu1, 3 relu6, 4 tanh, 5 sign_bit
 
-    uint8_t pad[4];//top,bottom,left,right
+	uint8_t pad[4];//top,bottom,left,right
 
-    uint32_t depth_mul;//depth_multiplier: if conv2d,=0; else: >=1
-    uint32_t reserve;  //for 8byte align
+	uint32_t depth_mul;//depth_multiplier: if conv2d,=0; else: >=1
+	uint32_t reserve;  //for 8byte align
 
-    uint32_t ws_oft;//weight scale oft from this layer start
-                    //skip bias scale: bias_scale = weight_scale*in_scale
-    uint32_t w_oft; //weight oft from this layer start
-    uint32_t b_oft; //bias oft from this layer start
-    //note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-    //      fused in advance (when convert model)
+	uint32_t ws_oft;//weight scale oft from this layer start
+					//skip bias scale: bias_scale = weight_scale*in_scale
+	uint32_t w_oft; //weight oft from this layer start
+	uint32_t b_oft; //bias oft from this layer start
+	//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+	//      fused in advance (when convert model)
 } tml_conv2d_dw_t;//compatible with conv2d and dwconv2d
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 } tml_gap_t;
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 
-    uint32_t ws_oft; //weight scale oft from this layer start
-    uint32_t w_oft;  //weight oft from this layer start
-    uint32_t b_oft;  //bias oft from this layer start
-    uint32_t reserve;//for 8byte align
+	uint32_t ws_oft; //weight scale oft from this layer start
+	uint32_t w_oft;	 //weight oft from this layer start
+	uint32_t b_oft;	 //bias oft from this layer start
+	uint32_t reserve;//for 8byte align
 } tml_fc_t;
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 } tml_softmax_t;
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 } tml_reshape_t;
 
 typedef struct {
-    tml_head_t h;
+	tml_head_t h;
 
-    uint8_t kernel_w;
-    uint8_t kernel_h;
-    uint8_t stride_w;
-    uint8_t stride_h;
+	uint8_t kernel_w;
+	uint8_t kernel_h;
+	uint8_t stride_w;
+	uint8_t stride_h;
 
-    uint8_t dilation_w;
-    uint8_t dilation_h;
-    uint16_t act;//0 none, 1 relu, 2 relu1, 3 relu6, 4 tanh, 5 sign_bit
+	uint8_t dilation_w;
+	uint8_t dilation_h;
+	uint16_t act;//0 none, 1 relu, 2 relu1, 3 relu6, 4 tanh, 5 sign_bit
 
-    uint8_t pad[4];//top,bottom,left,right
+	uint8_t pad[4];//top,bottom,left,right
 
 
-    uint32_t ws_oft;//weight scale oft from this layer start
-                    //skip bias scale: bias_scale = weight_scale*in_scale
-    uint32_t w_oft; //weight oft from this layer start
-    uint32_t b_oft; //bias oft from this layer start
-    //note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-    //      fused in advance (when convert model)
+	uint32_t ws_oft;//weight scale oft from this layer start
+					//skip bias scale: bias_scale = weight_scale*in_scale
+	uint32_t w_oft; //weight oft from this layer start
+	uint32_t b_oft; //bias oft from this layer start
+	//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+	//      fused in advance (when convert model)
 } tml_dwconv2d_t;
 
 typedef struct {
-    tml_head_t h;
-    uint32_t in_oft1;
-    sctype_t in_s1;  //input scale,
-    zptype_t in_zp1; //input zeropoint
-    uint32_t reserve;//align8
+	tml_head_t h;
+	uint32_t in_oft1;
+	sctype_t in_s1;	 //input scale,
+	zptype_t in_zp1; //input zeropoint
+	uint32_t reserve;//align8
 } tml_add_t;
 
 
@@ -288,23 +288,19 @@ typedef tm_err_t (*tm_cb_t)(tm_mdl_t *mdl, tml_head_t *lh);
 
 /******************************* MODEL FUNCTION ************************************/
 tm_err_t tm_load(tm_mdl_t *mdl, const uint8_t *bin, uint8_t *buf, tm_cb_t cb, tm_mat_t *in);//load model
-void tm_unload(tm_mdl_t *mdl);                                                              //remove model
-tm_err_t tm_preprocess(tm_mdl_t *mdl, tm_pp_t pp_type, tm_mat_t *in, tm_mat_t *out);        //preprocess input data
-tm_err_t tm_run(tm_mdl_t *mdl, tm_mat_t *in, tm_mat_t *out);                                //run model
+void tm_unload(tm_mdl_t *mdl);																//remove model
+tm_err_t tm_preprocess(tm_mdl_t *mdl, tm_pp_t pp_type, tm_mat_t *in, tm_mat_t *out);		//preprocess input data
+tm_err_t tm_run(tm_mdl_t *mdl, tm_mat_t *in, tm_mat_t *out);								//run model
 
 
 /******************************* LAYER FUNCTION ************************************/
-tm_err_t tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b,
-                             int kw, int kh, int sx, int sy, int dx, int dy, int act,
-                             int pad_top, int pad_bottom, int pad_left, int pad_right, int dmul,
-                             sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
+tm_err_t tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, int kw, int kh, int sx, int sy, int dx, int dy, int act, int pad_top, int pad_bottom,
+							 int pad_left, int pad_right, int dmul, sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
 tm_err_t tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
-tm_err_t tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b,
-                sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
+tm_err_t tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
 tm_err_t tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
 tm_err_t tml_reshape(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp);
-tm_err_t tml_add(tm_mat_t *in0, tm_mat_t *in1, tm_mat_t *out,
-                 sctype_t in_s0, zptype_t in_zp0, sctype_t in_s1, zptype_t in_zp1, sctype_t out_s, zptype_t out_zp);
+tm_err_t tml_add(tm_mat_t *in0, tm_mat_t *in1, tm_mat_t *out, sctype_t in_s0, zptype_t in_zp0, sctype_t in_s1, zptype_t in_zp1, sctype_t out_s, zptype_t out_zp);
 
 /******************************* STAT FUNCTION ************************************/
 #if TM_ENABLE_STAT
@@ -336,16 +332,16 @@ float TM_WEAK tm_fp8to32(uint8_t fp8);
 #if TM_LOCAL_MATH
 //http://www.machinedlearnings.com/2011/06/fast-approximate-logarithm-exponential.html
 static inline float _exp(float x) {
-    float p = 1.442695040f * x;
-    uint32_t i = 0;
-    uint32_t sign = (i >> 31);
-    int w = (int) p;
-    float z = p - (float) w + (float) sign;
-    union {
-        uint32_t i;
-        float f;
-    } v = {.i = (uint32_t) ((1 << 23) * (p + 121.2740838f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))};
-    return v.f;
+	float p = 1.442695040f * x;
+	uint32_t i = 0;
+	uint32_t sign = (i >> 31);
+	int w = (int) p;
+	float z = p - (float) w + (float) sign;
+	union {
+		uint32_t i;
+		float f;
+	} v = {.i = (uint32_t) ((1 << 23) * (p + 121.2740838f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))};
+	return v.f;
 }
 #define tm_exp _exp//maybe some arch have exp acceleration, use macro in arch_xxx.h to reload it
 #else

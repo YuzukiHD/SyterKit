@@ -24,8 +24,8 @@ extern "C" {
  * @param func Function pointer to the IRQ handler function
  */
 typedef struct _irq_handler {
-    void *data;
-    void (*func)(void *data);
+	void *data;
+	void (*func)(void *data);
 } irq_handler_t;
 
 /**

@@ -28,13 +28,13 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    printk_info("Hello World!\n");
+	printk_info("Hello World!\n");
 
-    abort();
+	abort();
 
-    return 0;
+	return 0;
 }

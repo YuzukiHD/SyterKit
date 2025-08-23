@@ -32,9 +32,7 @@
  * before any subsequent instructions are executed, particularly useful 
  * for ensuring memory consistency.
  */
-void data_sync_barrier(void) {
-    asm volatile("fence.i");
-}
+void data_sync_barrier(void) { asm volatile("fence.i"); }
 
 /**
  * @brief Initialize the cache configuration.
@@ -43,10 +41,10 @@ void data_sync_barrier(void) {
  * values to the control and status registers.
  */
 void cache_init(void) {
-    csr_write(mcor, 0x70013);   // Configure cache options
-    csr_write(mhcr, 0x11ff);    // Set cache hit control register
-    csr_set(mxstatus, 0x638000);// Set machine status register
-    csr_write(mhint, 0x16e30c); // Set hint for cache operations
+	csr_write(mcor, 0x70013);	// Configure cache options
+	csr_write(mhcr, 0x11ff);	// Set cache hit control register
+	csr_set(mxstatus, 0x638000);// Set machine status register
+	csr_write(mhint, 0x16e30c); // Set hint for cache operations
 }
 
 /**
@@ -56,7 +54,7 @@ void cache_init(void) {
  * cache control register.
  */
 void dcache_enable(void) {
-    csr_write(mhcr, 0x2);// Set the data cache enable bit
+	csr_write(mhcr, 0x2);// Set the data cache enable bit
 }
 
 /**
@@ -66,7 +64,7 @@ void dcache_enable(void) {
  * appropriate control bits in the machine cache control register.
  */
 void icache_enable(void) {
-    csr_set(mhcr, 0x1);// Set the instruction cache enable bit
+	csr_set(mhcr, 0x1);// Set the instruction cache enable bit
 }
 
 /**
@@ -76,9 +74,9 @@ void icache_enable(void) {
  * instruction caches for the SV39 memory management unit.
  */
 void mmu_enable(void) {
-    cache_init();
-    dcache_enable();
-    icache_enable();
+	cache_init();
+	dcache_enable();
+	icache_enable();
 }
 
 /**
@@ -91,10 +89,9 @@ void mmu_enable(void) {
  * @param end The ending address of the range to flush.
  */
 void flush_dcache_range(uint64_t start, uint64_t end) {
-    register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-    for (; i < end; i += L1_CACHE_BYTES)
-        asm volatile("dcache.cpa a0");
-    asm volatile("sync.i");
+	register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+	for (; i < end; i += L1_CACHE_BYTES) asm volatile("dcache.cpa a0");
+	asm volatile("sync.i");
 }
 
 /**
@@ -108,8 +105,7 @@ void flush_dcache_range(uint64_t start, uint64_t end) {
  * @param end The ending address of the range to invalidate.
  */
 void invalidate_dcache_range(uint64_t start, uint64_t end) {
-    register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-    for (; i < end; i += L1_CACHE_BYTES)
-        asm volatile("dcache.ipa a0");
-    asm volatile("sync.i");
+	register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+	for (; i < end; i += L1_CACHE_BYTES) asm volatile("dcache.ipa a0");
+	asm volatile("sync.i");
 }

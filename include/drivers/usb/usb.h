@@ -32,144 +32,134 @@
 #define USB_DT_HID_SIZE 9
 
 enum usb_device_speed {
-    USB_SPEED_LOW,
-    USB_SPEED_FULL, /* usb 1.1 */
-    USB_SPEED_HIGH, /* usb 2.0 */
-    USB_SPEED_RESERVED
+	USB_SPEED_LOW,
+	USB_SPEED_FULL, /* usb 1.1 */
+	USB_SPEED_HIGH, /* usb 2.0 */
+	USB_SPEED_RESERVED
 };
 
 /*
  * standard usb descriptor structures
  */
 struct usb_endpoint_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType; /* 0x5 */
-    uint8_t bEndpointAddress;
-    uint8_t bmAttributes;
-    uint16_t wMaxPacketSize;
-    uint8_t bInterval;
+	uint8_t bLength;
+	uint8_t bDescriptorType; /* 0x5 */
+	uint8_t bEndpointAddress;
+	uint8_t bmAttributes;
+	uint16_t wMaxPacketSize;
+	uint8_t bInterval;
 } __attribute__((packed));
 
 struct usb_interface_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType; /* 0x04 */
-    uint8_t bInterfaceNumber;
-    uint8_t bAlternateSetting;
-    uint8_t bNumEndpoints;
-    uint8_t bInterfaceClass;
-    uint8_t bInterfaceSubClass;
-    uint8_t bInterfaceProtocol;
-    uint8_t iInterface;
+	uint8_t bLength;
+	uint8_t bDescriptorType; /* 0x04 */
+	uint8_t bInterfaceNumber;
+	uint8_t bAlternateSetting;
+	uint8_t bNumEndpoints;
+	uint8_t bInterfaceClass;
+	uint8_t bInterfaceSubClass;
+	uint8_t bInterfaceProtocol;
+	uint8_t iInterface;
 } __attribute__((packed));
 
 struct usb_configuration_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType; /* 0x2 */
-    uint16_t wTotalLength;
-    uint8_t bNumInterfaces;
-    uint8_t bConfigurationValue;
-    uint8_t iConfiguration;
-    uint8_t bmAttributes;
-    uint8_t bMaxPower;
+	uint8_t bLength;
+	uint8_t bDescriptorType; /* 0x2 */
+	uint16_t wTotalLength;
+	uint8_t bNumInterfaces;
+	uint8_t bConfigurationValue;
+	uint8_t iConfiguration;
+	uint8_t bmAttributes;
+	uint8_t bMaxPower;
 } __attribute__((packed));
 
 struct usb_device_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType; /* 0x01 */
-    uint16_t bcdUSB;
-    uint8_t bDeviceClass;
-    uint8_t bDeviceSubClass;
-    uint8_t bDeviceProtocol;
-    uint8_t bMaxPacketSize0;
-    uint16_t idVendor;
-    uint16_t idProduct;
-    uint16_t bcdDevice;
-    uint8_t iManufacturer;
-    uint8_t iProduct;
-    uint8_t iSerialNumber;
-    uint8_t bNumConfigurations;
+	uint8_t bLength;
+	uint8_t bDescriptorType; /* 0x01 */
+	uint16_t bcdUSB;
+	uint8_t bDeviceClass;
+	uint8_t bDeviceSubClass;
+	uint8_t bDeviceProtocol;
+	uint8_t bMaxPacketSize0;
+	uint16_t idVendor;
+	uint16_t idProduct;
+	uint16_t bcdDevice;
+	uint8_t iManufacturer;
+	uint8_t iProduct;
+	uint8_t iSerialNumber;
+	uint8_t bNumConfigurations;
 } __attribute__((packed));
 
 struct usb_qualifier_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
+	uint8_t bLength;
+	uint8_t bDescriptorType;
 
-    uint16_t bcdUSB;
-    uint8_t bDeviceClass;
-    uint8_t bDeviceSubClass;
-    uint8_t bDeviceProtocol;
-    uint8_t bMaxPacketSize0;
-    uint8_t bNumConfigurations;
-    uint8_t breserved;
+	uint16_t bcdUSB;
+	uint8_t bDeviceClass;
+	uint8_t bDeviceSubClass;
+	uint8_t bDeviceProtocol;
+	uint8_t bMaxPacketSize0;
+	uint8_t bNumConfigurations;
+	uint8_t breserved;
 } __attribute__((packed));
 
 struct usb_string_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType; /* 0x03 */
-    uint16_t wData[0];
+	uint8_t bLength;
+	uint8_t bDescriptorType; /* 0x03 */
+	uint16_t wData[0];
 } __attribute__((packed));
 
 struct usb_generic_descriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    uint8_t bDescriptorSubtype;
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
 } __attribute__((packed));
 
 struct usb_device_request {
-    uint8_t request_type;
-    uint8_t request;
-    uint16_t value;
-    uint16_t index;
-    uint16_t length;
+	uint8_t request_type;
+	uint8_t request;
+	uint16_t value;
+	uint16_t index;
+	uint16_t length;
 } __attribute__((packed));
 
 typedef struct sunxi_udc {
-    uint64_t usbc_hd;
-    uint32_t address;     /* device address, allocated by the host */
-    uint32_t speed;       /* flag: is it high speed? */
-    uint32_t bulk_ep_max; /* maximum packet size for bulk endpoints */
-    uint32_t fifo_size;   /* size of the FIFO */
-    uint32_t bulk_in_addr;
-    uint32_t bulk_out_addr;
-    uint32_t dma_send_channal;
-    uint32_t dma_recv_channal;
-    struct usb_device_request standard_reg;
+	uint64_t usbc_hd;
+	uint32_t address;	  /* device address, allocated by the host */
+	uint32_t speed;		  /* flag: is it high speed? */
+	uint32_t bulk_ep_max; /* maximum packet size for bulk endpoints */
+	uint32_t fifo_size;	  /* size of the FIFO */
+	uint32_t bulk_in_addr;
+	uint32_t bulk_out_addr;
+	uint32_t dma_send_channal;
+	uint32_t dma_recv_channal;
+	struct usb_device_request standard_reg;
 } sunxi_udc_t;
 
 typedef struct sunxi_ubuf {
-    uint8_t *rx_base_buffer;    /* base address for bulk transfer */
-    uint8_t *rx_req_buffer;     /* buffer for the request phase of bulk transfer */
-    uint32_t rx_req_length;     /* length of data in the request phase of bulk transfer */
-    uint32_t rx_ready_for_data; /* flag indicating completion of data reception */
-    uint32_t request_size;      /* size of the data to be sent */
+	uint8_t *rx_base_buffer;	/* base address for bulk transfer */
+	uint8_t *rx_req_buffer;		/* buffer for the request phase of bulk transfer */
+	uint32_t rx_req_length;		/* length of data in the request phase of bulk transfer */
+	uint32_t rx_ready_for_data; /* flag indicating completion of data reception */
+	uint32_t request_size;		/* size of the data to be sent */
 } sunxi_ubuf_t;
 
 typedef struct sunxi_usb_setup_req_s {
-    int (*state_init)(void);
-    int (*state_exit)(void);
-    void (*state_reset)(void);
-    int (*standard_req_op)(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer);
-    int (*nonstandard_req_op)(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status);
-    int (*state_loop)(void *sunxi_udc);
-    void (*dma_rx_isr)(void *p_arg);
-    void (*dma_tx_isr)(void *p_arg);
+	int (*state_init)(void);
+	int (*state_exit)(void);
+	void (*state_reset)(void);
+	int (*standard_req_op)(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer);
+	int (*nonstandard_req_op)(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status);
+	int (*state_loop)(void *sunxi_udc);
+	void (*dma_rx_isr)(void *p_arg);
+	void (*dma_tx_isr)(void *p_arg);
 } sunxi_usb_setup_req_t;
 
 #define SUNXI_USB_DEVICE_DETECT (1)
 #define SUNXI_USB_DEVICE_MASS (2)
 
-#define sunxi_usb_module_init(name, state_init, state_exit, state_reset, \
-                              standard_req_op, nonstandard_req_op,       \
-                              state_loop, dma_rx_isr, dma_tx_isr)        \
-    sunxi_usb_setup_req_t setup_req_##name = {                           \
-            state_init,                                                  \
-            state_exit,                                                  \
-            state_reset,                                                 \
-            standard_req_op,                                             \
-            nonstandard_req_op,                                          \
-            state_loop,                                                  \
-            dma_rx_isr,                                                  \
-            dma_tx_isr};
+#define sunxi_usb_module_init(name, state_init, state_exit, state_reset, standard_req_op, nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr)                                  \
+	sunxi_usb_setup_req_t setup_req_##name = {state_init, state_exit, state_reset, standard_req_op, nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr};
 
 #define sunxi_usb_module_reg(name) sunxi_udev_active = &setup_req_##name
 

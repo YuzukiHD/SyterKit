@@ -54,4 +54,4 @@ typedef s64_t int64_t;
  */
 typedef u64_t uint64_t;
 
-#endif // __RISCV_STDINT_H__
+#endif// __RISCV_STDINT_H__

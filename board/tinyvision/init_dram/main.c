@@ -14,15 +14,14 @@
 extern sunxi_serial_t uart_dbg;
 
 
-
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    sunxi_dram_init();
+	sunxi_dram_init();
 
-    return 0;
+	return 0;
 }

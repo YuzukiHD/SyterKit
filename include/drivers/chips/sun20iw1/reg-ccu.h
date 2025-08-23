@@ -106,7 +106,7 @@
 #define CCU_DSP_CLK_SRC_PERI2X (0x3 << 24)
 #define CCU_DSP_CLK_SRC_AUDIO1_DIV2 (0x4 << 24)
 /* x must be 1 - 32 */
-#define CCU_DSP_CLK_FACTOR_M(x) (((x)-1) << 0)
+#define CCU_DSP_CLK_FACTOR_M(x) (((x) -1) << 0)
 
 #define CCU_DSP_BGR_REG (0xc7c)
 #define CCU_BIT_DSP0_CFG_GATING (1)

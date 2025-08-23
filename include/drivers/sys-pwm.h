@@ -18,51 +18,51 @@ extern "C" {
 #endif// __cplusplus
 
 typedef enum {
-    PWM_PIER = 0x00, /* PWM IRQ enable register */
-    PWM_PISR = 0x04, /* PWM IRQ status register */
-    PWM_CIER = 0x10, /* PWM capture IRQ enable register */
-    PWM_CISR = 0x14, /* PWM capture IRQ status register */
+	PWM_PIER = 0x00, /* PWM IRQ enable register */
+	PWM_PISR = 0x04, /* PWM IRQ status register */
+	PWM_CIER = 0x10, /* PWM capture IRQ enable register */
+	PWM_CISR = 0x14, /* PWM capture IRQ status register */
 
-    PWM_PCCR_BASE = 0x20, /* Base address for PWM clock configuration registers */
-    PWM_PCCR01 = 0x20,    /* PWM01 clock configuration register */
-    PWM_PCCR23 = 0x24,    /* PWM23 clock configuration register */
-    PWM_PCCR45 = 0x28,    /* PWM45 clock configuration register */
-    PWM_PCCR67 = 0x2C,    /* PWM67 clock configuration register */
-    PWM_PCCR89 = 0x30,    /* PWM89 clock configuration register */
-    PWM_PCCRab = 0x34,    /* PWMab clock configuration register */
-    PWM_PCCRcd = 0x38,    /* PWMcd clock configuration register */
-    PWM_PCCRef = 0x3C,    /* PWMef clock configuration register */
+	PWM_PCCR_BASE = 0x20, /* Base address for PWM clock configuration registers */
+	PWM_PCCR01 = 0x20,	  /* PWM01 clock configuration register */
+	PWM_PCCR23 = 0x24,	  /* PWM23 clock configuration register */
+	PWM_PCCR45 = 0x28,	  /* PWM45 clock configuration register */
+	PWM_PCCR67 = 0x2C,	  /* PWM67 clock configuration register */
+	PWM_PCCR89 = 0x30,	  /* PWM89 clock configuration register */
+	PWM_PCCRab = 0x34,	  /* PWMab clock configuration register */
+	PWM_PCCRcd = 0x38,	  /* PWMcd clock configuration register */
+	PWM_PCCRef = 0x3C,	  /* PWMef clock configuration register */
 
-    PWM_PCGR = 0x40, /* PWM Clock Gating Register */
+	PWM_PCGR = 0x40, /* PWM Clock Gating Register */
 
-    PWM_PDZCR_BASE = 0x60, /* Base address for PWM Dead Zone Control registers */
-    PWM_PDZCR01 = 0x60,    /* PWM01 Dead Zone Control Register */
-    PWM_PDZCR23 = 0x64,    /* PWM23 Dead Zone Control Register */
-    PWM_PDZCR45 = 0x68,    /* PWM45 Dead Zone Control Register */
-    PWM_PDZCR67 = 0x6C,    /* PWM67 Dead Zone Control Register */
-    PWM_PDZCR89 = 0x70,    /* PWM89 Dead Zone Control Register */
-    PWM_PDZCRab = 0x74,    /* PWMad Dead Zone Control Register */
-    PWM_PDZCRcd = 0x78,    /* PWMcd Dead Zone Control Register */
-    PWM_PDZCRef = 0x7C,    /* PWMef Dead Zone Control Register */
+	PWM_PDZCR_BASE = 0x60, /* Base address for PWM Dead Zone Control registers */
+	PWM_PDZCR01 = 0x60,	   /* PWM01 Dead Zone Control Register */
+	PWM_PDZCR23 = 0x64,	   /* PWM23 Dead Zone Control Register */
+	PWM_PDZCR45 = 0x68,	   /* PWM45 Dead Zone Control Register */
+	PWM_PDZCR67 = 0x6C,	   /* PWM67 Dead Zone Control Register */
+	PWM_PDZCR89 = 0x70,	   /* PWM89 Dead Zone Control Register */
+	PWM_PDZCRab = 0x74,	   /* PWMad Dead Zone Control Register */
+	PWM_PDZCRcd = 0x78,	   /* PWMcd Dead Zone Control Register */
+	PWM_PDZCRef = 0x7C,	   /* PWMef Dead Zone Control Register */
 
-    PWM_PER = 0x80, /* PWM Enable Register */
+	PWM_PER = 0x80, /* PWM Enable Register */
 
-    PWM_PGR0 = 0x90, /* PWM Group0 Register */
-    PWM_PGR1 = 0x94, /* PWM Group1 Register */
-    PWM_PGR2 = 0x98, /* PWM Group2 Register */
-    PWM_PGR3 = 0x9C, /* PWM Group3 Register */
+	PWM_PGR0 = 0x90, /* PWM Group0 Register */
+	PWM_PGR1 = 0x94, /* PWM Group1 Register */
+	PWM_PGR2 = 0x98, /* PWM Group2 Register */
+	PWM_PGR3 = 0x9C, /* PWM Group3 Register */
 
-    PWM_CER = 0xC0, /* PWM Capture Enable Register */
+	PWM_CER = 0xC0, /* PWM Capture Enable Register */
 
-    PWM_PCR = 0x0100,    /* PWM Control Register */
-    PWM_PPR = 0x0104,    /* PWM Period Register */
-    PWM_PCNTR = 0x0108,  /* PWM Counter Register */
-    PWM_PPCNTR = 0x010C, /* PWM Pulse Counter Register */
-    PWM_CCR = 0x0110,    /* Capture Control Register */
-    PWM_CRLR = 0x0114,   /* Capture Rise Lock Register */
-    PWM_CFLR = 0x0118,   /* Capture Fall Lock Register */
+	PWM_PCR = 0x0100,	 /* PWM Control Register */
+	PWM_PPR = 0x0104,	 /* PWM Period Register */
+	PWM_PCNTR = 0x0108,	 /* PWM Counter Register */
+	PWM_PPCNTR = 0x010C, /* PWM Pulse Counter Register */
+	PWM_CCR = 0x0110,	 /* Capture Control Register */
+	PWM_CRLR = 0x0114,	 /* Capture Rise Lock Register */
+	PWM_CFLR = 0x0118,	 /* Capture Fall Lock Register */
 
-    PWM_VR = 0x03F0, /* PWM Version Register */
+	PWM_VR = 0x03F0, /* PWM Version Register */
 } sunxi_pwm_reg_offset_t;
 
 #define PWM_REG_CHN_OFFSET 0x20
@@ -119,8 +119,8 @@ typedef enum {
  * - PWM_MODE_PLUSE: PWM signal generates a pulse waveform.
  */
 typedef enum {
-    PWM_MODE_CYCLE = 0, /**< PWM operates in cycle mode. */
-    PWM_MODE_PLUSE = 1, /**< PWM operates in pulse mode. */
+	PWM_MODE_CYCLE = 0, /**< PWM operates in cycle mode. */
+	PWM_MODE_PLUSE = 1, /**< PWM operates in pulse mode. */
 } sunxi_pwm_mode_t;
 
 /**
@@ -131,8 +131,8 @@ typedef enum {
  * - PWM_POLARITY_NORMAL: Normal polarity for the PWM signal.
  */
 typedef enum {
-    PWM_POLARITY_INVERSED = 0, /**< Inverted PWM signal polarity. */
-    PWM_POLARITY_NORMAL = 1,   /**< Normal PWM signal polarity. */
+	PWM_POLARITY_INVERSED = 0, /**< Inverted PWM signal polarity. */
+	PWM_POLARITY_NORMAL = 1,   /**< Normal PWM signal polarity. */
 } sunxi_pwm_polarity_t;
 
 /**
@@ -143,8 +143,8 @@ typedef enum {
  * - PWM_CLK_SRC_APB: Clock sourced from the APB bus.
  */
 typedef enum {
-    PWM_CLK_SRC_OSC = 0, /**< Clock source is the oscillator. */
-    PWM_CLK_SRC_APB = 1, /**< Clock source is the APB bus. */
+	PWM_CLK_SRC_OSC = 0, /**< Clock source is the oscillator. */
+	PWM_CLK_SRC_APB = 1, /**< Clock source is the APB bus. */
 } sunxi_pwm_source_t;
 
 /**
@@ -155,8 +155,8 @@ typedef enum {
  * - PWM_CHANNEL_BIND: Multi-channel bind mode where multiple channels can be synchronized.
  */
 typedef enum {
-    PWM_CHANNEL_SINGLE = 0, /**< Single-channel PWM mode. */
-    PWM_CHANNEL_BIND = 1,   /**< Multi-channel bind mode. */
+	PWM_CHANNEL_SINGLE = 0, /**< Single-channel PWM mode. */
+	PWM_CHANNEL_BIND = 1,	/**< Multi-channel bind mode. */
 } sunxi_pwm_channel_mode_t;
 
 /**
@@ -167,10 +167,10 @@ typedef enum {
  * the dead time between signal transitions, and the channel mode.
  */
 typedef struct sunxi_pwm_channel {
-    gpio_mux_t pin;                        /**< GPIO pin used for the PWM signal. */
-    uint32_t bind_channel;                 /**< The bind channel ID for multi-channel synchronization. */
-    uint32_t dead_time;                    /**< Dead time (in nanoseconds) between signal transitions. */
-    sunxi_pwm_channel_mode_t channel_mode; /**< The mode of the PWM channel. */
+	gpio_mux_t pin;						   /**< GPIO pin used for the PWM signal. */
+	uint32_t bind_channel;				   /**< The bind channel ID for multi-channel synchronization. */
+	uint32_t dead_time;					   /**< Dead time (in nanoseconds) between signal transitions. */
+	sunxi_pwm_channel_mode_t channel_mode; /**< The mode of the PWM channel. */
 } sunxi_pwm_channel_t;
 
 /**
@@ -180,8 +180,8 @@ typedef struct sunxi_pwm_channel {
  * It contains fields for the oscillator and APB clock sources.
  */
 typedef struct sunxi_pwm_clk_src {
-    uint32_t clk_src_hosc; /**< The oscillator clock source. */
-    uint32_t clk_src_apb;  /**< The APB clock source. */
+	uint32_t clk_src_hosc; /**< The oscillator clock source. */
+	uint32_t clk_src_apb;  /**< The APB clock source. */
 } sunxi_pwm_clk_src_t;
 
 /**
@@ -191,14 +191,14 @@ typedef struct sunxi_pwm_clk_src {
  * the base address, channel settings, clock source settings, and the module's operational status.
  */
 typedef struct sunxi_pwm {
-    uint32_t base;                /**< The base address of the PWM hardware module. */
-    uint8_t id;                   /**< The PWM module ID. */
-    sunxi_pwm_channel_t *channel; /**< Pointer to the array of PWM channels. */
-    uint32_t channel_size;        /**< The number of PWM channels. */
-    sunxi_clk_t pwm_bus_clk;      /**< Clock for the PWM bus. */
-    sunxi_clk_t pwm_clk;          /**< The main clock for the PWM module. */
-    sunxi_pwm_clk_src_t clk_src;  /**< The clock sources for the PWM module. */
-    bool status;                  /**< The operational status of the PWM module (enabled/disabled). */
+	uint32_t base;				  /**< The base address of the PWM hardware module. */
+	uint8_t id;					  /**< The PWM module ID. */
+	sunxi_pwm_channel_t *channel; /**< Pointer to the array of PWM channels. */
+	uint32_t channel_size;		  /**< The number of PWM channels. */
+	sunxi_clk_t pwm_bus_clk;	  /**< Clock for the PWM bus. */
+	sunxi_clk_t pwm_clk;		  /**< The main clock for the PWM module. */
+	sunxi_pwm_clk_src_t clk_src;  /**< The clock sources for the PWM module. */
+	bool status;				  /**< The operational status of the PWM module (enabled/disabled). */
 } sunxi_pwm_t;
 
 /**
@@ -208,11 +208,11 @@ typedef struct sunxi_pwm {
  * including the duty cycle, period, polarity, operating mode, and pulse count.
  */
 typedef struct sunxi_pwm_config {
-    uint32_t duty_ns;              /**< The duty cycle duration in nanoseconds. */
-    uint32_t period_ns;            /**< The total period duration in nanoseconds. */
-    sunxi_pwm_polarity_t polarity; /**< The polarity of the PWM signal. */
-    sunxi_pwm_mode_t pwm_mode;     /**< The mode of operation for the PWM signal. */
-    uint32_t pluse_count;          /**< The number of pulses in pulse mode operation. */
+	uint32_t duty_ns;			   /**< The duty cycle duration in nanoseconds. */
+	uint32_t period_ns;			   /**< The total period duration in nanoseconds. */
+	sunxi_pwm_polarity_t polarity; /**< The polarity of the PWM signal. */
+	sunxi_pwm_mode_t pwm_mode;	   /**< The mode of operation for the PWM signal. */
+	uint32_t pluse_count;		   /**< The number of pulses in pulse mode operation. */
 } sunxi_pwm_config_t;
 
 /**

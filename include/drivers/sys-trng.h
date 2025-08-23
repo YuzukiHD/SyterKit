@@ -14,5 +14,4 @@
 #include <sys-gpio.h>
 
 
-
-#endif // __SYS_TRNG_H__
+#endif// __SYS_TRNG_H__

@@ -8,8 +8,8 @@ extern "C" {
 #include <stdint.h>
 
 enum {
-    false = 0,
-    true = 1,
+	false = 0,
+	true = 1,
 };
 
 typedef int8_t bool;
@@ -18,4 +18,4 @@ typedef int8_t bool;
 }
 #endif
 
-#endif // __STDBOOL_H__
+#endif// __STDBOOL_H__

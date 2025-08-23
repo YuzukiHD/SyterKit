@@ -30,11 +30,11 @@ extern "C" {
  * It contains the signature, version information, and the number of parameter headers.
  */
 typedef struct sfdp_header {
-    uint8_t sign[4]; /**< Signature for the SFDP header, typically "SFDP". */
-    uint8_t minor;   /**< Minor version number of the SFDP specification. */
-    uint8_t major;   /**< Major version number of the SFDP specification. */
-    uint8_t nph;     /**< Number of Parameter Headers present in the SFDP data. */
-    uint8_t unused;  /**< Reserved or unused byte(s) for future extensions or alignment. */
+	uint8_t sign[4]; /**< Signature for the SFDP header, typically "SFDP". */
+	uint8_t minor;	 /**< Minor version number of the SFDP specification. */
+	uint8_t major;	 /**< Major version number of the SFDP specification. */
+	uint8_t nph;	 /**< Number of Parameter Headers present in the SFDP data. */
+	uint8_t unused;	 /**< Reserved or unused byte(s) for future extensions or alignment. */
 } sfdp_header_t;
 
 /**
@@ -46,12 +46,12 @@ typedef struct sfdp_header {
  * and a pointer to the parameter table.
  */
 typedef struct sfdp_parameter_header {
-    uint8_t idlsb;  /**< Least significant byte of the parameter ID. */
-    uint8_t minor;  /**< Minor version number of the parameter. */
-    uint8_t major;  /**< Major version number of the parameter. */
-    uint8_t length; /**< Length of the parameter table in bytes. */
-    uint8_t ptp[3]; /**< 3-byte pointer to the parameter table. */
-    uint8_t idmsb;  /**< Most significant byte of the parameter ID. */
+	uint8_t idlsb;	/**< Least significant byte of the parameter ID. */
+	uint8_t minor;	/**< Minor version number of the parameter. */
+	uint8_t major;	/**< Major version number of the parameter. */
+	uint8_t length; /**< Length of the parameter table in bytes. */
+	uint8_t ptp[3]; /**< 3-byte pointer to the parameter table. */
+	uint8_t idmsb;	/**< Most significant byte of the parameter ID. */
 } sfdp_parameter_header_t;
 
 /**
@@ -62,9 +62,9 @@ typedef struct sfdp_parameter_header {
  * It contains the table version and a list of basic parameters.
  */
 typedef struct sfdp_basic_table {
-    uint8_t minor;         /**< Minor version of the basic parameter table. */
-    uint8_t major;         /**< Major version of the basic parameter table. */
-    uint8_t table[16 * 4]; /**< Basic parameter table (16 entries, each 4 bytes). */
+	uint8_t minor;		   /**< Minor version of the basic parameter table. */
+	uint8_t major;		   /**< Major version of the basic parameter table. */
+	uint8_t table[16 * 4]; /**< Basic parameter table (16 entries, each 4 bytes). */
 } sfdp_basic_table_t;
 
 /**
@@ -75,9 +75,9 @@ typedef struct sfdp_basic_table {
  * and the basic parameter table into a single structure for comprehensive SFDP data.
  */
 typedef struct sfdp {
-    sfdp_header_t header;                                   /**< SFDP header containing signature and version info. */
-    sfdp_parameter_header_t parameter_header[SFDP_MAX_NPH]; /**< Array of parameter headers. */
-    sfdp_basic_table_t basic_table;                         /**< Basic parameter table containing the flash parameters. */
+	sfdp_header_t header;									/**< SFDP header containing signature and version info. */
+	sfdp_parameter_header_t parameter_header[SFDP_MAX_NPH]; /**< Array of parameter headers. */
+	sfdp_basic_table_t basic_table;							/**< Basic parameter table containing the flash parameters. */
 } sfdp_t;
 
 /**
@@ -88,20 +88,20 @@ typedef struct sfdp {
  * operational capabilities, and specific commands for a SPI NOR Flash memory device.
  */
 typedef struct spi_nor_info {
-    char *name;                  /**< Name of the SPI NOR Flash device (e.g., "MX25L12835E"). */
-    uint32_t id;                 /**< Unique device ID for the SPI NOR Flash (manufacturer and model). */
-    uint32_t capacity;           /**< Total capacity of the SPI NOR Flash (in bytes). */
-    uint32_t blksz;              /**< Block size of the SPI NOR Flash (in bytes). */
-    uint32_t read_granularity;   /**< Read granularity, smallest read unit (in bytes). */
-    uint32_t write_granularity;  /**< Write granularity, smallest write unit (in bytes). */
-    uint8_t address_length;      /**< Length of the address field in the command (in bytes). */
-    uint8_t opcode_read;         /**< Opcode for the read operation. */
-    uint8_t opcode_write;        /**< Opcode for the write operation. */
-    uint8_t opcode_write_enable; /**< Opcode to enable write operations on the SPI NOR Flash. */
-    uint8_t opcode_erase_4k;     /**< Opcode to erase a 4K block of the SPI NOR Flash. */
-    uint8_t opcode_erase_32k;    /**< Opcode to erase a 32K block of the SPI NOR Flash. */
-    uint8_t opcode_erase_64k;    /**< Opcode to erase a 64K block of the SPI NOR Flash. */
-    uint8_t opcode_erase_256k;   /**< Opcode to erase a 256K block of the SPI NOR Flash. */
+	char *name;					 /**< Name of the SPI NOR Flash device (e.g., "MX25L12835E"). */
+	uint32_t id;				 /**< Unique device ID for the SPI NOR Flash (manufacturer and model). */
+	uint32_t capacity;			 /**< Total capacity of the SPI NOR Flash (in bytes). */
+	uint32_t blksz;				 /**< Block size of the SPI NOR Flash (in bytes). */
+	uint32_t read_granularity;	 /**< Read granularity, smallest read unit (in bytes). */
+	uint32_t write_granularity;	 /**< Write granularity, smallest write unit (in bytes). */
+	uint8_t address_length;		 /**< Length of the address field in the command (in bytes). */
+	uint8_t opcode_read;		 /**< Opcode for the read operation. */
+	uint8_t opcode_write;		 /**< Opcode for the write operation. */
+	uint8_t opcode_write_enable; /**< Opcode to enable write operations on the SPI NOR Flash. */
+	uint8_t opcode_erase_4k;	 /**< Opcode to erase a 4K block of the SPI NOR Flash. */
+	uint8_t opcode_erase_32k;	 /**< Opcode to erase a 32K block of the SPI NOR Flash. */
+	uint8_t opcode_erase_64k;	 /**< Opcode to erase a 64K block of the SPI NOR Flash. */
+	uint8_t opcode_erase_256k;	 /**< Opcode to erase a 256K block of the SPI NOR Flash. */
 } spi_nor_info_t;
 
 /**
@@ -114,18 +114,18 @@ typedef struct spi_nor_info {
  * erase, and other operational tasks.
  */
 enum SPI_NOR_OPS {
-    NOR_OPCODE_SFDP = 0x5a,     /**< SFDP Read Command: Read Serial Flash Discoverable Parameters */
-    NOR_OPCODE_RDID = 0x9f,     /**< Read ID Command: Retrieve the identity of the memory device */
-    NOR_OPCODE_WRSR = 0x01,     /**< Write Status Register Command: Write to the status register */
-    NOR_OPCODE_RDSR = 0x05,     /**< Read Status Register Command: Read the current status register */
-    NOR_OPCODE_WREN = 0x06,     /**< Write Enable Command: Enable write operations on the memory */
-    NOR_OPCODE_READ = 0x03,     /**< Read Data Command: Read data from the memory */
-    NOR_OPCODE_PROG = 0x02,     /**< Page Program Command: Program data into a memory page */
-    NOR_OPCODE_E4K = 0x20,      /**< 4K Block Erase Command: Erase a 4K block of memory */
-    NOR_OPCODE_E32K = 0x52,     /**< 32K Block Erase Command: Erase a 32K block of memory */
-    NOR_OPCODE_E64K = 0xd8,     /**< 64K Block Erase Command: Erase a 64K block of memory */
-    NOR_OPCODE_ENTER_4B = 0xb7, /**< Enter 4-Byte Address Mode Command: Switch to 4-byte addressing mode */
-    NOR_OPCODE_EXIT_4B = 0xe9,  /**< Exit 4-Byte Address Mode Command: Return to 3-byte addressing mode */
+	NOR_OPCODE_SFDP = 0x5a,		/**< SFDP Read Command: Read Serial Flash Discoverable Parameters */
+	NOR_OPCODE_RDID = 0x9f,		/**< Read ID Command: Retrieve the identity of the memory device */
+	NOR_OPCODE_WRSR = 0x01,		/**< Write Status Register Command: Write to the status register */
+	NOR_OPCODE_RDSR = 0x05,		/**< Read Status Register Command: Read the current status register */
+	NOR_OPCODE_WREN = 0x06,		/**< Write Enable Command: Enable write operations on the memory */
+	NOR_OPCODE_READ = 0x03,		/**< Read Data Command: Read data from the memory */
+	NOR_OPCODE_PROG = 0x02,		/**< Page Program Command: Program data into a memory page */
+	NOR_OPCODE_E4K = 0x20,		/**< 4K Block Erase Command: Erase a 4K block of memory */
+	NOR_OPCODE_E32K = 0x52,		/**< 32K Block Erase Command: Erase a 32K block of memory */
+	NOR_OPCODE_E64K = 0xd8,		/**< 64K Block Erase Command: Erase a 64K block of memory */
+	NOR_OPCODE_ENTER_4B = 0xb7, /**< Enter 4-Byte Address Mode Command: Switch to 4-byte addressing mode */
+	NOR_OPCODE_EXIT_4B = 0xe9,	/**< Exit 4-Byte Address Mode Command: Return to 3-byte addressing mode */
 };
 
 /**
@@ -138,15 +138,15 @@ enum SPI_NOR_OPS {
  * commands to facilitate communication with peripheral devices.
  */
 enum SPI_CMD_OPS {
-    SPI_CMD_END = 0x00,          /**< End Command: Mark the end of a command sequence */
-    SPI_CMD_INIT = 0x01,         /**< Initialization Command: Initialize the SPI device */
-    SPI_CMD_SELECT = 0x02,       /**< Select Command: Select the SPI device for communication */
-    SPI_CMD_DESELECT = 0x03,     /**< Deselect Command: Deselect the SPI device to end communication */
-    SPI_CMD_FAST = 0x04,         /**< Fast Command: Execute a fast operation or mode */
-    SPI_CMD_TXBUF = 0x05,        /**< Transmit Buffer Command: Transmit data from a buffer to the SPI device */
-    SPI_CMD_RXBUF = 0x06,        /**< Receive Buffer Command: Receive data from the SPI device to a buffer */
-    SPI_CMD_SPINOR_WAIT = 0x07,  /**< Wait Command for SPI NOR: Wait for the SPI NOR flash to complete its operation */
-    SPI_CMD_SPINAND_WAIT = 0x08, /**< Wait Command for SPI NAND: Wait for the SPI NAND flash to complete its operation */
+	SPI_CMD_END = 0x00,			 /**< End Command: Mark the end of a command sequence */
+	SPI_CMD_INIT = 0x01,		 /**< Initialization Command: Initialize the SPI device */
+	SPI_CMD_SELECT = 0x02,		 /**< Select Command: Select the SPI device for communication */
+	SPI_CMD_DESELECT = 0x03,	 /**< Deselect Command: Deselect the SPI device to end communication */
+	SPI_CMD_FAST = 0x04,		 /**< Fast Command: Execute a fast operation or mode */
+	SPI_CMD_TXBUF = 0x05,		 /**< Transmit Buffer Command: Transmit data from a buffer to the SPI device */
+	SPI_CMD_RXBUF = 0x06,		 /**< Receive Buffer Command: Receive data from the SPI device to a buffer */
+	SPI_CMD_SPINOR_WAIT = 0x07,	 /**< Wait Command for SPI NOR: Wait for the SPI NOR flash to complete its operation */
+	SPI_CMD_SPINAND_WAIT = 0x08, /**< Wait Command for SPI NAND: Wait for the SPI NAND flash to complete its operation */
 };
 
 /**
