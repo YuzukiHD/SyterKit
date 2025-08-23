@@ -135,7 +135,8 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);

@@ -150,7 +150,8 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->e906_filename, (uint32_t) image->e906_dest);
 	ret = fatfs_loadimage(image->e906_filename, image->e906_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -256,7 +257,9 @@ int main(void) {
 	uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.e906_dest);
 	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
-	if (load_elf32_image_remap((phys_addr_t) image.e906_dest, &e906_addr_mapping)) { printk_error("RISC-V ELF load FAIL\n"); }
+	if (load_elf32_image_remap((phys_addr_t) image.e906_dest, &e906_addr_mapping)) {
+		printk_error("RISC-V ELF load FAIL\n");
+	}
 
 	sunxi_e906_clock_init(elf_run_addr);
 

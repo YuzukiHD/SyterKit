@@ -32,7 +32,8 @@ uint8_t tm_fp32to8(float fp32) {
 		fp8_m = 0;
 		fp8_e += 1;
 	}
-	if (fp8_e > (1 << TM_FP8_ECNT) - 1) fp8_e = (1 << TM_FP8_ECNT) - 1;
+	if (fp8_e > (1 << TM_FP8_ECNT) - 1)
+		fp8_e = (1 << TM_FP8_ECNT) - 1;
 	else if (fp8_e < 0)
 		fp8_e = 0;
 	uint8_t fp8 = (fp8_s << 7) | (fp8_e << TM_FP8_MCNT) | fp8_m;
@@ -121,7 +122,8 @@ tm_err_t tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp,
 	float dmax = -FLT_MAX;
 	for (int c = 0; c < in->c; c++) {
 		dout[c] = tm_fp8to32(din[c]);
-		if (dout[c] > dmax) dmax = dout[c];
+		if (dout[c] > dmax)
+			dmax = dout[c];
 	}
 	float sum = 0;
 	for (int c = 0; c < in->c; c++) {

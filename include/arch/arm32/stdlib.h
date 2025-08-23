@@ -12,7 +12,7 @@
  *
  * @param pc The program counter to be converted to Thumb mode address.
  */
-#define MAKE_THUMB_ADDR(pc)                                                                                                                                                        \
+#define MAKE_THUMB_ADDR(pc) \
 	do { (pc) = (void *) ((uint32_t) (pc) | 0x1); /**< Set the least significant bit of PC to 1 */ } while (0)
 
 /**

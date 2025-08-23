@@ -48,8 +48,8 @@ limitations under the License.
 
 
 #define TM_PRINTF(...) printk(LOG_LEVEL_MUTE, __VA_ARGS__)
-#define TM_DBG(...)                                                                                                                                                                \
-	TM_PRINTF("###L%d: ", __LINE__);                                                                                                                                               \
+#define TM_DBG(...)                  \
+	TM_PRINTF("###L%d: ", __LINE__); \
 	TM_PRINTF(__VA_ARGS__);
 #define TM_DBGL() TM_PRINTF("###L%d\n", __LINE__);
 
@@ -57,17 +57,17 @@ limitations under the License.
 #include <timer.h>
 #define TM_GET_US() time_us();
 
-#define TM_DBGT_INIT()                                                                                                                                                             \
-	uint32_t _start, _finish;                                                                                                                                                      \
-	float _time;                                                                                                                                                                   \
+#define TM_DBGT_INIT()        \
+	uint32_t _start, _finish; \
+	float _time;              \
 	_start = TM_GET_US();
 #define TM_DBGT_START() _start = TM_GET_US();
-#define TM_DBGT(x)                                                                                                                                                                 \
-	{                                                                                                                                                                              \
-		_finish = TM_GET_US();                                                                                                                                                     \
-		_time = (float) (_finish - _start) / 1000.0;                                                                                                                               \
-		TM_PRINTF("===%s use %.3f ms\n", (x), _time);                                                                                                                              \
-		_start = TM_GET_US();                                                                                                                                                      \
+#define TM_DBGT(x)                                    \
+	{                                                 \
+		_finish = TM_GET_US();                        \
+		_time = (float) (_finish - _start) / 1000.0;  \
+		TM_PRINTF("===%s use %.3f ms\n", (x), _time); \
+		_start = TM_GET_US();                         \
 	}
 
 /******************************* DBG PERFORMANCE CONFIG  ************************************/
@@ -75,18 +75,19 @@ limitations under the License.
 #define TM_EN_PERF 0
 
 #if TM_EN_PERF
-#define TM_GET_TICK(x) __ASM volatile("csrr %0, mcycle" : "=r"(x));//edit your self
+#define TM_GET_TICK(x) __ASM volatile("csrr %0, mcycle" \
+									  : "=r"(x));//edit your self
 
 #define TM_TICK_PERUS (380)//sysconf(_SC_CLK_TCK)/1000000)
 #define TM_PERF_REG(x) uint64_t x = 0;
 #define TM_PERF_EXTREG(x) extern uint64_t x;
 #define TM_PERF_INIT(x) uint64_t _##x##_t0, _##x##_t1;
 #define TM_PERF_START(x) TM_GET_TICK(_##x##_t0);
-#define TM_PERF_ADD(x)                                                                                                                                                             \
-	{                                                                                                                                                                              \
-		TM_GET_TICK(_##x##_t1);                                                                                                                                                    \
-		(x) += (_##x##_t1 - _##x##_t0);                                                                                                                                            \
-		TM_GET_TICK(_##x##_t0);                                                                                                                                                    \
+#define TM_PERF_ADD(x)                  \
+	{                                   \
+		TM_GET_TICK(_##x##_t1);         \
+		(x) += (_##x##_t1 - _##x##_t0); \
+		TM_GET_TICK(_##x##_t0);         \
 	};
 #define TM_PERF_PRINT(x) TM_PRINTF("PERF " #x ": %ld us\r\n", (x) / TM_TICK_PERUS)
 #else

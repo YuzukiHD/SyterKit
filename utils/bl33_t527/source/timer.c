@@ -19,7 +19,10 @@ int raise(int signum) {
 static inline uint64_t get_arch_counter(void) {
 	uint32_t low = 0, high = 0;
 	// Use assembly language to read the architecture-specific counter
-	asm volatile("mrrc p15, 0, %0, %1, c14" : "=r"(low), "=r"(high) : : "memory");
+	asm volatile("mrrc p15, 0, %0, %1, c14"
+				 : "=r"(low), "=r"(high)
+				 :
+				 : "memory");
 	// Combine the low and high values to form a 64-bit counter value
 	return (((uint64_t) high) << 32 | low);
 }

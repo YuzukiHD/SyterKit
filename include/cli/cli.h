@@ -18,19 +18,19 @@ typedef struct msh_command_entry {
 	const char *usage;
 } msh_command_entry;
 
-#define msh_command_end                                                                                                                                                            \
+#define msh_command_end \
 	{ 0, 0, 0, 0 }
 
-#define msh_declare_command(name)                                                                                                                                                  \
-	int cmd_##name(int argc, const char **argv);                                                                                                                                   \
-	extern const char cmd_##name##_desc[];                                                                                                                                         \
+#define msh_declare_command(name)                \
+	int cmd_##name(int argc, const char **argv); \
+	extern const char cmd_##name##_desc[];       \
 	extern const char cmd_##name##_usage[];
 
-#define msh_define_help(name, desc, usage)                                                                                                                                         \
-	const char cmd_##name##_desc[] = desc;                                                                                                                                         \
+#define msh_define_help(name, desc, usage) \
+	const char cmd_##name##_desc[] = desc; \
 	const char cmd_##name##_usage[] = usage;
 
-#define msh_define_command(name)                                                                                                                                                   \
+#define msh_define_command(name) \
 	{ #name, cmd_##name, cmd_##name##_desc, cmd_##name##_usage }
 
 extern const msh_command_entry msh_builtin_commands[];

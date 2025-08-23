@@ -171,8 +171,9 @@ static inline void sunxi_spi_enable_transmit_pause(sunxi_spi_t *spi) {
  */
 static inline void sunxi_spi_set_ss_owner(sunxi_spi_t *spi, uint32_t on_off) {
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-	on_off &= 0x1;							   // Ensure the on_off value is either 0 or 1
-	if (on_off) spi_reg->tc |= SPI_TC_SS_OWNER;///< Set SS ownership
+	on_off &= 0x1;// Ensure the on_off value is either 0 or 1
+	if (on_off)
+		spi_reg->tc |= SPI_TC_SS_OWNER;///< Set SS ownership
 	else
 		spi_reg->tc &= ~SPI_TC_SS_OWNER;///< Clear SS ownership
 }
@@ -293,8 +294,9 @@ static inline uint32_t sunxi_spi_query_irq_pending(sunxi_spi_t *spi) {
  */
 static inline void sunxi_spi_set_ss_level(sunxi_spi_t *spi, uint32_t high_low) {
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-	high_low &= 0x1;							 ///< Ensure high_low is either 0 or 1
-	if (high_low) spi_reg->tc |= SPI_TC_SS_LEVEL;///< Set SS line to high
+	high_low &= 0x1;///< Ensure high_low is either 0 or 1
+	if (high_low)
+		spi_reg->tc |= SPI_TC_SS_LEVEL;///< Set SS line to high
 	else
 		spi_reg->tc &= ~SPI_TC_SS_LEVEL;///< Set SS line to low
 }
@@ -443,7 +445,9 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
 
 	// Start the DMA transfer
 	ret = sunxi_dma_start(spi_dma_handler, (uint32_t) &spi_reg->rxdata, (uint32_t) buf, len);
-	if (ret) { printk_warning("SPI: DMA transfer failed\n"); }
+	if (ret) {
+		printk_warning("SPI: DMA transfer failed\n");
+	}
 
 	// Wait for the DMA transfer to complete
 	while (sunxi_dma_querystatus(spi_dma_handler))
@@ -871,7 +875,9 @@ static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
  */
 int sunxi_spi_init(sunxi_spi_t *spi) {
 	/* if set dma handle, we using dma mode */
-	if (spi->dma_handle != NULL) { sunxi_spi_dma_init(spi); }
+	if (spi->dma_handle != NULL) {
+		sunxi_spi_dma_init(spi);
+	}
 
 	sunxi_spi_gpio_init(spi);
 
@@ -961,7 +967,9 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 	sunxi_spi_reset_fifo(spi);							  /**< Reset the SPI FIFOs */
 	sunxi_spi_start_xfer(spi);							  /**< Start the SPI transfer */
 
-	if (txbuf && txlen) { sunxi_spi_write_tx_fifo(spi, txbuf, txlen); /**< Write data to TX FIFO if there's data to transmit */ }
+	if (txbuf && txlen) {
+		sunxi_spi_write_tx_fifo(spi, txbuf, txlen); /**< Write data to TX FIFO if there's data to transmit */
+	}
 
 	if (rxbuf && rxlen) {
 		if (rxlen > 64) {
@@ -971,7 +979,9 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 		}
 	}
 
-	if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) { printk_warning("SPI: int sta err\n"); /**< Check for error interrupt */ }
+	if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) {
+		printk_warning("SPI: int sta err\n"); /**< Check for error interrupt */
+	}
 
 	while (!(sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_TC))
 		; /**< Wait for transfer completion interrupt (TC) */
@@ -979,7 +989,9 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 	sunxi_spi_dma_disable(spi); /**< Disable DMA if used */
 
 	if (spi_reg->burst_cnt == 0) {
-		if (spi_reg->tc & SPI_TC_XCH) { printk_warning("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */ }
+		if (spi_reg->tc & SPI_TC_XCH) {
+			printk_warning("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */
+		}
 	} else {
 		printk_warning("SPI: MBC error\n"); /**< Warn if there is an MBC error (memory-to-bus control) */
 	}

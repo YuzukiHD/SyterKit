@@ -47,11 +47,14 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 	}
 
 	div = sclk_hz / clk_hz;
-	if (sclk_hz % clk_hz) div += 1;
+	if (sclk_hz % clk_hz)
+		div += 1;
 
 	for (clk.factor_n = 1; clk.factor_n <= 32; clk.factor_n++) {
 		for (clk.factor_m = clk.factor_n; clk.factor_m <= 32; clk.factor_m++) {
-			if (clk.factor_n * clk.factor_m == div) { goto set_mclk; }
+			if (clk.factor_n * clk.factor_m == div) {
+				goto set_mclk;
+			}
 		}
 	}
 	printk_warning("SMHC: Illegal frequency division parameters %d\n", div);
@@ -87,7 +90,9 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
 	clk.factor_n = (reg_val >> clk.reg_factor_n_offset) & 0x3;
 
 	// check clk sel, check if correct
-	if (clk.clk_sel != ((reg_val >> 24) & 0x3)) { clk.clk_sel = ((reg_val >> 24) & 0x3); }
+	if (clk.clk_sel != ((reg_val >> 24) & 0x3)) {
+		clk.clk_sel = ((reg_val >> 24) & 0x3);
+	}
 
 	// Calculate the current clock frequency based on the source and divider values
 	switch (clk.clk_sel) {

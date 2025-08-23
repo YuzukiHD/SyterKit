@@ -39,7 +39,8 @@ sunxi_i2c_t i2c_0 = {
 };
 
 void OLED_WR_Byte(uint8_t dat, uint8_t mode) {
-	if (mode) sunxi_i2c_write(&i2c_0, OLED_IIC_ADDR, 0x40, dat);
+	if (mode)
+		sunxi_i2c_write(&i2c_0, OLED_IIC_ADDR, 0x40, dat);
 	else
 		sunxi_i2c_write(&i2c_0, OLED_IIC_ADDR, 0x00, dat);
 }
@@ -51,8 +52,12 @@ uint32_t OLED_Pow(uint8_t m, uint8_t n) {
 }
 
 void OLED_ColorTurn(uint8_t i) {
-	if (i == 0) { OLED_WR_Byte(0xA6, OLED_CMD); /* 正常显示 */ }
-	if (i == 1) { OLED_WR_Byte(0xA7, OLED_CMD); /* 反色显示 */ }
+	if (i == 0) {
+		OLED_WR_Byte(0xA6, OLED_CMD); /* 正常显示 */
+	}
+	if (i == 1) {
+		OLED_WR_Byte(0xA7, OLED_CMD); /* 反色显示 */
+	}
 }
 
 void OLED_DisplayTurn(uint8_t i) {
@@ -108,21 +113,24 @@ void OLED_DrawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t mode)
 	delta_y = y2 - y1;
 	uRow = x1;//画线起点坐标
 	uCol = y1;
-	if (delta_x > 0) incx = 1;//设置单步方向
+	if (delta_x > 0)
+		incx = 1;//设置单步方向
 	else if (delta_x == 0)
 		incx = 0;//垂直线
 	else {
 		incx = -1;
 		delta_x = -delta_x;
 	}
-	if (delta_y > 0) incy = 1;
+	if (delta_y > 0)
+		incy = 1;
 	else if (delta_y == 0)
 		incy = 0;//水平线
 	else {
 		incy = -1;
 		delta_y = -delta_x;
 	}
-	if (delta_x > delta_y) distance = delta_x;//选取基本增量坐标轴
+	if (delta_x > delta_y)
+		distance = delta_x;//选取基本增量坐标轴
 	else
 		distance = delta_y;
 	for (uint16_t t = 0; t < distance + 1; t++) {
@@ -167,7 +175,8 @@ void OLED_DrawCircle(uint8_t x, uint8_t y, uint8_t r) {
 void OLED_ShowChar(uint8_t x, uint8_t y, uint8_t chr, uint8_t size1, uint8_t mode) {
 	uint8_t temp, size2, chr1;
 	uint8_t x0 = x, y0 = y;
-	if (size1 == 8) size2 = 6;
+	if (size1 == 8)
+		size2 = 6;
 	else
 		size2 = (size1 / 8 + ((size1 % 8) ? 1 : 0)) * (size1 / 2);//得到字体一个字符对应点阵集所占的字节数
 	chr1 = chr - ' ';											  //计算偏移后的值
@@ -187,7 +196,8 @@ void OLED_ShowChar(uint8_t x, uint8_t y, uint8_t chr, uint8_t size1, uint8_t mod
 		else
 			return;
 		for (uint8_t m = 0; m < 8; m++) {
-			if (temp & 0x01) OLED_DrawPoint(x, y, mode);
+			if (temp & 0x01)
+				OLED_DrawPoint(x, y, mode);
 			else
 				OLED_DrawPoint(x, y, !mode);
 			temp >>= 1;
@@ -206,7 +216,8 @@ void OLED_ShowString(uint8_t x, uint8_t y, uint8_t *chr, uint8_t size1, uint8_t 
 	while ((*chr >= ' ') && (*chr <= '~'))//判断是不是非法字符!
 	{
 		OLED_ShowChar(x, y, *chr, size1, mode);
-		if (size1 == 8) x += 6;
+		if (size1 == 8)
+			x += 6;
 		else
 			x += size1 / 2;
 		chr++;
@@ -215,7 +226,8 @@ void OLED_ShowString(uint8_t x, uint8_t y, uint8_t *chr, uint8_t size1, uint8_t 
 
 void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size1, uint8_t mode) {
 	uint8_t temp, m = 0;
-	if (size1 == 8) m = 2;
+	if (size1 == 8)
+		m = 2;
 	for (uint8_t t = 0; t < len; t++) {
 		temp = (num / OLED_Pow(10, len - t - 1)) % 10;
 		if (temp == 0) {

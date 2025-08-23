@@ -442,7 +442,9 @@ static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint
 	reg_val |= (1 << USBC_BP_TXCSR_D_FLUSH_FIFO);
 	writew(reg_val, USBC_REG_TXCSR(addr));
 
-	if (is_double_fifo) { writew(reg_val, USBC_REG_TXCSR(addr)); }
+	if (is_double_fifo) {
+		writew(reg_val, USBC_REG_TXCSR(addr));
+	}
 
 	/* configure TX EP maximum packet size */
 	reg_val = readw(USBC_REG_TXMAXP(addr));
@@ -640,7 +642,9 @@ static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint
 	/* config tx csr */
 	writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr));
 
-	if (is_double_fifo) { writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr)); }
+	if (is_double_fifo) {
+		writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr));
+	}
 
 	/* config tx ep max packet */
 	reg_val = readw(USBC_REG_RXMAXP(addr));

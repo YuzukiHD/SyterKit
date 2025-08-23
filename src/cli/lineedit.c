@@ -357,7 +357,9 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c) {
 
 		default:
 			if (isprint(c)) {
-				if (pcmdline->pos < MSH_CMDLINE_CHAR_MAX - 1) { cmdline_insert_char(pcmdline, c); }
+				if (pcmdline->pos < MSH_CMDLINE_CHAR_MAX - 1) {
+					cmdline_insert_char(pcmdline, c);
+				}
 			}
 			break;
 	}

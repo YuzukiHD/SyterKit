@@ -153,15 +153,18 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int) image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->elf_filename, (unsigned int) image->elf_dest);
 	ret = fatfs_loadimage(image->elf_filename, image->elf_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -207,7 +210,9 @@ int main(void) {
 	} else {
 		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
 	}
-	if (sdmmc_init(&card0, &sdhci0) != 0) { printk_warning("SMHC: init failed, back to FEL\n"); }
+	if (sdmmc_init(&card0, &sdhci0) != 0) {
+		printk_warning("SMHC: init failed, back to FEL\n");
+	}
 
 	if (load_sdcard(&image) != 0) {
 		printk_warning("SMHC: loading failed, back to FEL\n");
@@ -219,7 +224,9 @@ int main(void) {
 	uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
 	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
-	if (load_elf32_image((phys_addr_t) image.dest)) { printk_error("RISC-V ELF load FAIL\n"); }
+	if (load_elf32_image((phys_addr_t) image.dest)) {
+		printk_error("RISC-V ELF load FAIL\n");
+	}
 
 	sunxi_e907_clock_init(elf_run_addr);
 

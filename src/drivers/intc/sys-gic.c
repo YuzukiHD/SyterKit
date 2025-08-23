@@ -26,7 +26,10 @@ static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
  */
 static inline int interrupts_is_open(void) {
 	uint64_t temp = 0;
-	__asm__ __volatile__("mrs %0, cpsr\n" : "=r"(temp) : : "memory");
+	__asm__ __volatile__("mrs %0, cpsr\n"
+						 : "=r"(temp)
+						 :
+						 : "memory");
 	return ((temp & 0x80) == 0) ? 1 : 0;
 }
 
@@ -70,7 +73,9 @@ static void gic_distributor_init(void) {
 
 	/* check GIC hardware configutation */
 	gic_irqs = ((readl(GIC_CON_TYPE) & 0x1f) + 1) * 32;
-	if (gic_irqs > 1020) { gic_irqs = 1020; }
+	if (gic_irqs > 1020) {
+		gic_irqs = 1020;
+	}
 
 	if (gic_irqs < GIC_IRQ_NUM) {
 		printk_error("GIC: parameter config error, only support %d irqs < %d(spec define)!!\n", gic_irqs, GIC_IRQ_NUM);
@@ -120,7 +125,9 @@ static void gic_sgi_handler(uint32_t irq_no) { printk_debug("GIC: SGI irq %d com
 static void gic_ppi_handler(uint32_t irq_no) { printk_debug("GIC: PPI irq %d coming... \n", irq_no); }
 
 static void gic_spi_handler(uint32_t irq_no) {
-	if (sunxi_int_handlers[irq_no].func != default_isr) { sunxi_int_handlers[irq_no].func(sunxi_int_handlers[irq_no].data); }
+	if (sunxi_int_handlers[irq_no].func != default_isr) {
+		sunxi_int_handlers[irq_no].func(sunxi_int_handlers[irq_no].data);
+	}
 }
 
 /**
@@ -169,7 +176,8 @@ void do_irq(struct arm_regs_t *regs) {
 		printk_debug("GIC: irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", idnum, GIC_IRQ_NUM - 32);
 		return;
 	}
-	if (idnum < 16) gic_sgi_handler(idnum);
+	if (idnum < 16)
+		gic_sgi_handler(idnum);
 	else if (idnum < 32)
 		gic_ppi_handler(idnum);
 	else
@@ -232,7 +240,9 @@ void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
 		printk_error("IRQ OPEN\n");
 	}
 
-	if (irq >= GIC_IRQ_NUM || !handle_irq) { goto fail; }
+	if (irq >= GIC_IRQ_NUM || !handle_irq) {
+		goto fail;
+	}
 
 	sunxi_int_handlers[irq].data = data;
 	sunxi_int_handlers[irq].func = handle_irq;

@@ -37,10 +37,10 @@
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_CMDLINE                                                                                                                                                             \
-	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 "                                                                                                                         \
-	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "                                                                                                                           \
-	"root=/dev/mmcblk0p2 init=/init rdinit=/rdinit"                                                                                                                                \
+#define CONFIG_CMDLINE                                     \
+	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
+	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
+	"root=/dev/mmcblk0p2 init=/init rdinit=/rdinit"        \
 	"partitions=boot@mmcblk0p1:rootfs@mmcblk0p2:rootfs_data@mmcblk0p3:UDISK@mmcblk0p4"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
@@ -144,12 +144,14 @@ static int load_sdcard(image_info_t *image) {
 	/* load DTB */
 	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* load Kernel */
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -246,7 +248,9 @@ int main(void) {
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed, retry...\n");
-		if (sdmmc_init(&card0, &sdhci0) != 0) { goto _shell; }
+		if (sdmmc_init(&card0, &sdhci0) != 0) {
+			goto _shell;
+		}
 	}
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */

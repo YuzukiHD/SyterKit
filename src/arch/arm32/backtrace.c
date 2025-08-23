@@ -51,7 +51,9 @@
  * @param x The instruction encoding (32-bit).
  * @return The length of the instruction in bytes (either 2, 4, 6, or 8).
  */
-#define insn_length(x) (((x) &0x03) < 0x03 ? 2 : ((x) &0x1f) < 0x1f ? 4 : ((x) &0x3f) < 0x3f ? 6 : 8)
+#define insn_length(x) (((x) &0x03) < 0x03 ? 2 : ((x) &0x1f) < 0x1f ? 4 \
+										 : ((x) &0x3f) < 0x3f		? 6 \
+																	: 8)
 
 /**
  * @brief Extracts a specific bit field from a value.
@@ -122,7 +124,9 @@ extern uint8_t __stack_srv_end[];
  * @return 1 if the PC is within the valid address range, 0 otherwise.
  */
 static int inline backtrace_check_address(void *pc) {
-	if (((uint32_t) pc > (uint32_t) __spl_start) && ((uint32_t) pc < (uint32_t) __stack_srv_end)) { return 1; /**< Valid address in the range. */ }
+	if (((uint32_t) pc > (uint32_t) __spl_start) && ((uint32_t) pc < (uint32_t) __stack_srv_end)) {
+		return 1; /**< Valid address in the range. */
+	}
 	return 0; /**< Invalid address outside the range. */
 }
 
@@ -140,7 +144,8 @@ static int inline backtrace_check_address(void *pc) {
  */
 static int thumb_thumb32bit_code(uint16_t ic) {
 	uint16_t op = (ic >> 11) & 0xFFFF;
-	if (op == 0x1D || op == 0x1E || op == 0x1F) return 1;
+	if (op == 0x1D || op == 0x1E || op == 0x1F)
+		return 1;
 	return 0;
 }
 
@@ -428,9 +433,13 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 		int error = 0;																		 /**< Error flag for instruction parsing. */
 		int thumb32bit = 0;																	 /**< Flag to indicate whether the instruction is a 32-bit Thumb instruction. */
 		ins32 = thumb_get_next_inst(&error, &i, parse_addr, parse_addr - 2, 0, &thumb32bit); /**< Fetch the next instruction. */
-		if (error) { return -1; /**< Return -1 if an error occurs during instruction fetching. */ }
+		if (error) {
+			return -1; /**< Return -1 if an error occurs during instruction fetching. */
+		}
 		framesize = thumb_get_push_lr_ins_framesize(ins32, &offset, thumb32bit); /**< Get the frame size based on the instruction. */
-		if (framesize >= 0) { break; /**< Exit loop if valid frame size is found. */ }
+		if (framesize >= 0) {
+			break; /**< Exit loop if valid frame size is found. */
+		}
 	}
 
 	printk_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d, framesize = %d\n", i, parse_addr, PC, offset, framesize);
@@ -446,15 +455,21 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 		int error = 0;																				 /**< Error flag for instruction parsing. */
 		int thumb32bit = 0;																			 /**< Flag for 32-bit Thumb instruction. */
 		ins32 = thumb_get_next_inst(&error, &i, parse_addr + i + 2, parse_addr + i, 1, &thumb32bit); /**< Fetch next instruction. */
-		if (error) { return -1; /**< Return -1 if an error occurs. */ }
+		if (error) {
+			return -1; /**< Return -1 if an error occurs. */
+		}
 		temp = thumb_backtrace_stack_push(ins32, thumb32bit); /**< Calculate the stack frame size for this instruction. */
-		if (temp >= 0) { framesize += temp; /**< Add the calculated frame size to the total. */ }
+		if (temp >= 0) {
+			framesize += temp; /**< Add the calculated frame size to the total. */
+		}
 	}
 
 	printk_trace("BT: i = %d, framesize = %d, SP = %p, offset = %d\n", i, framesize, SP, offset);
 
 	// If offset is zero, use the provided link register (LR).
-	if (offset == 0) { LR = *pLR; }
+	if (offset == 0) {
+		LR = *pLR;
+	}
 
 	// If no LR found, try to fetch it from the stack.
 	if (!LR) {
@@ -476,7 +491,9 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 	*pPC = LR - offset;					 /**< Calculate the program counter (PC) based on the LR and offset. */
 
 	// Adjust for THUMB state if needed.
-	if (state == THUMB_STATE) { MAKE_THUMB_ADDR(*pPC); /**< Make the program counter address compatible with THUMB state. */ }
+	if (state == THUMB_STATE) {
+		MAKE_THUMB_ADDR(*pPC); /**< Make the program counter address compatible with THUMB state. */
+	}
 
 	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p, state=%d\n", *pSP, offset, *pPC, state);
 
@@ -620,7 +637,9 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 		ins32 = *(long *) parse_addr;							   /**< Fetch the instruction at the parse address */
 		framesize = arm_get_push_lr_ins_framesize(ins32, &offset); /**< Determine the frame size and offset */
-		if (framesize >= 0) { break; /**< Found a valid instruction with frame size */ }
+		if (framesize >= 0) {
+			break; /**< Found a valid instruction with frame size */
+		}
 	}
 
 	// Trace information about the found instruction and frame size
@@ -640,7 +659,9 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 		ins32 = *(uint64_t *) (parse_addr + i); /**< Fetch the instruction at the next address */
 		temp = arm_backtrace_stack_push(ins32); /**< Calculate the additional frame size */
-		if (temp >= 0) { framesize += temp; /**< Add the frame size to the total */ }
+		if (temp >= 0) {
+			framesize += temp; /**< Add the frame size to the total */
+		}
 
 		if (ins32 == 0xef000000) { /**< SWI (Software Interrupt) detected */
 			swi_num++;			   /**< Count the number of software interrupts */
@@ -664,7 +685,9 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 	framesize -= swi_num; /**< Adjust the frame size by subtracting the SWI count */
 
 	// Determine the link register (LR) based on the offset
-	if (offset == 0) { LR = *pLR; /**< Use the provided LR if no offset was found */ }
+	if (offset == 0) {
+		LR = *pLR; /**< Use the provided LR if no offset was found */
+	}
 
 	if (LR == NULL) {
 		if (backtrace_check_address(SP + framesize - offset)) {
@@ -686,7 +709,9 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 	*pPC = LR - offset;					 /**< Calculate the program counter (PC) based on LR and offset */
 
 	// Adjust the program counter if in Thumb mode
-	if (state == THUMB_STATE) { MAKE_THUMB_ADDR(*pPC); /**< Adjust PC for Thumb instructions */ }
+	if (state == THUMB_STATE) {
+		MAKE_THUMB_ADDR(*pPC); /**< Adjust PC for Thumb instructions */
+	}
 
 	// Trace the final stack pointer, program counter, and frame size
 	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state = %d\n", *pSP, offset, *pPC, framesize, state);
@@ -778,7 +803,9 @@ static int thumb_backtrace_return_pop(uint32_t inst, int thumb32bit) {
 	if (!thumb32bit) {
 		/* Check for "bx lr" instruction (branch to link register) */
 		printk_trace("BT: \tbx lr\n"); /**< Trace log for bx lr instruction */
-		if ((inst & 0xFFFF) == 0x4770) { return 0; /**< Return 0 for a valid return instruction */ }
+		if ((inst & 0xFFFF) == 0x4770) {
+			return 0; /**< Return 0 for a valid return instruction */
+		}
 	}
 
 	printk_trace("BT: inst = 0x%x, framesize = %d\n", inst, framesize); /**< Log the instruction and frame size */
@@ -864,13 +891,17 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
 
 		// Get the next Thumb instruction
 		ins32 = thumb_get_next_inst(&error, &i, PC + i + 2, PC + i, 1, &thumb32bit);
-		if (error) { return -1; /**< Return error if instruction fetching fails */ }
+		if (error) {
+			return -1; /**< Return error if instruction fetching fails */
+		}
 
 		printk_trace("BT: parse_addr = 0x%x, i = %d\n", parse_addr, i); /**< Trace parsed address */
 
 		// Check if it's a stack pop operation
 		temp = thumb_backtrace_stack_pop(ins32, &sp_change, thumb32bit);
-		if (temp >= 0) { continue; /**< Continue scanning if it's a valid stack pop */ }
+		if (temp >= 0) {
+			continue; /**< Continue scanning if it's a valid stack pop */
+		}
 
 		// Check if it's a return pop operation
 		temp = thumb_backtrace_return_pop(ins32, thumb32bit);
@@ -897,12 +928,18 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
 
 			// Get the next Thumb instruction while scanning backwards
 			ins32 = thumb_get_next_inst(&error, &i, parse_addr, parse_addr - 2, 0, &thumb32bit);
-			if (error) { return -1; /**< Return error if instruction fetching fails */ }
+			if (error) {
+				return -1; /**< Return error if instruction fetching fails */
+			}
 
 			// Check if it's a push instruction and adjust framesize
 			temp = thumb_get_push_ins_framesize(ins32, &jump, thumb32bit);
-			if (temp >= 0) { framesize += temp; /**< Add to framesize for push instruction */ }
-			if (jump > 0) { break; /**< Break if a jump is encountered */ }
+			if (temp >= 0) {
+				framesize += temp; /**< Add to framesize for push instruction */
+			}
+			if (jump > 0) {
+				break; /**< Break if a jump is encountered */
+			}
 		}
 	}
 
@@ -918,7 +955,9 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
 	*pPC = LR - offset;					 /**< Update program counter */
 
 	// Adjust program counter if in Thumb state
-	if (state == THUMB_STATE) { MAKE_THUMB_ADDR(*pPC); /**< Adjust PC to Thumb address format */ }
+	if (state == THUMB_STATE) {
+		MAKE_THUMB_ADDR(*pPC); /**< Adjust PC to Thumb address format */
+	}
 
 	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state=%d\n", *pSP, offset, *pPC, framesize, state); /**< Trace final backtrace information */
 
@@ -1152,7 +1191,9 @@ int backtrace(char *PC, long *SP, char *LR) {
 		if (ret == 0) {
 			for (; level < BT_LEVEL_LIMIT; level++) {
 				ret = backtrace_from_stack((int **) &SP, &PC, &LR);
-				if (ret != 0) { break; }
+				if (ret != 0) {
+					break;
+				}
 			}
 		}
 	}
@@ -1183,10 +1224,14 @@ int dump_stack(void) {
 
 	// Inline assembly to get the current stack pointer (SP), program counter (PC), link register (LR),
 	// and current processor status register (CPSR).
-	asm volatile("mov %0, sp\r\n" : "=r"(SP));
-	asm volatile("mov %0, pc\r\n" : "=r"(PC));
-	asm volatile("mov %0, lr\r\n" : "=r"(LR));
-	asm volatile("mrs %0, CPSR\r\n" : "=r"(CPSR));
+	asm volatile("mov %0, sp\r\n"
+				 : "=r"(SP));
+	asm volatile("mov %0, pc\r\n"
+				 : "=r"(PC));
+	asm volatile("mov %0, lr\r\n"
+				 : "=r"(LR));
+	asm volatile("mrs %0, CPSR\r\n"
+				 : "=r"(CPSR));
 
 	/* CPSR Thumb state bit. bit[5] */
 	if (CPSR & 0x20) {

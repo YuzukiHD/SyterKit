@@ -21,7 +21,10 @@ void set_timer_count() { init_timestamp = (uint32_t) time_us(); }
  */
 uint64_t get_arch_counter(void) {
 	uint32_t low = 0, high = 0;
-	asm volatile("mrrc p15, 0, %0, %1, c14" : "=r"(low), "=r"(high) : : "memory");
+	asm volatile("mrrc p15, 0, %0, %1, c14"
+				 : "=r"(low), "=r"(high)
+				 :
+				 : "memory");
 	return ((uint64_t) high << 32) | (uint64_t) low;
 }
 
@@ -52,11 +55,11 @@ void mdelay(uint32_t ms) {
 void sdelay(uint32_t loops) {
 	__asm__ volatile("1:\n"				// Define label 1
 					 "subs %0, %1, #1\n"// Subtract 1 from the loop count and store the result in the first operand
-										// If the loop count has become 0, exit the loop
-					 "bne 1b"			// Jump to label 1, i.e., the beginning of the loop
-					 : "=r"(loops)		// Output operand: update the loop count in the variable 'loops'
-					 : "0"(loops)		// Input operand: initialize the second operand with the value of 'loops'
-					 :					// No other registers are used or modified
+					 // If the loop count has become 0, exit the loop
+					 "bne 1b"	  // Jump to label 1, i.e., the beginning of the loop
+					 : "=r"(loops)// Output operand: update the loop count in the variable 'loops'
+					 : "0"(loops) // Input operand: initialize the second operand with the value of 'loops'
+					 :			  // No other registers are used or modified
 	);
 }
 

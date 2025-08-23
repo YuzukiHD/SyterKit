@@ -59,11 +59,15 @@ int main(void) {
 	} else {
 		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
 	}
-	if (sdmmc_init(&card0, &sdhci0) != 0) { printk_warning("SMHC: init failed\n"); }
+	if (sdmmc_init(&card0, &sdhci0) != 0) {
+		printk_warning("SMHC: init failed\n");
+	}
 
 	sunxi_usb_attach_module(SUNXI_USB_DEVICE_MASS);
 
-	if (sunxi_usb_init()) { printk_info("USB init failed.\n"); }
+	if (sunxi_usb_init()) {
+		printk_info("USB init failed.\n");
+	}
 
 	printk_info("USB init OK.\n");
 

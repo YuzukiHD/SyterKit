@@ -204,19 +204,23 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
 	ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t) image->extlinux_dest);
 	ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
 	ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
-	if (ret) printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
+	if (ret)
+		printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
 	else
 		LCD_Show_Splash(image->splash_dest);
 
@@ -259,12 +263,15 @@ static char *skip_spaces(char *str) {
 
 static char *find_substring(char *source, const char *target) {
 	char *pos = strstr(source, target);
-	if (pos) { return pos + strlen(target); }
+	if (pos) {
+		return pos + strlen(target);
+	}
 	return NULL;
 }
 
 static char *copy_until_newline_or_end(char *source) {
-	if (!source) return NULL;
+	if (!source)
+		return NULL;
 
 	source = skip_spaces(source);
 
@@ -276,7 +283,8 @@ static char *copy_until_newline_or_end(char *source) {
 		len = strlen(source);
 	}
 	char *dest = smalloc(len + 1);
-	if (!dest) return NULL;
+	if (!dest)
+		return NULL;
 
 	strncpy(dest, source, len);
 	dest[len] = '\0';
@@ -311,12 +319,14 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
 	int size_cells = fdt_size_cells(fdt, 0);
 	char *p = buf;
 
-	if (address_cells == 2) *(fdt64_t *) p = cpu_to_fdt64(address);
+	if (address_cells == 2)
+		*(fdt64_t *) p = cpu_to_fdt64(address);
 	else
 		*(fdt32_t *) p = cpu_to_fdt32(address);
 	p += 4 * address_cells;
 
-	if (size_cells == 2) *(fdt64_t *) p = cpu_to_fdt64(size);
+	if (size_cells == 2)
+		*(fdt64_t *) p = cpu_to_fdt64(size);
 	else
 		*(fdt32_t *) p = cpu_to_fdt32(size);
 	p += 4 * size_cells;
@@ -423,11 +433,13 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
 
 	printk_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t) image->kernel_dest);
 	ret = fatfs_loadimage(data.kernel, image->kernel_dest);
-	if (ret) goto _error;
+	if (ret)
+		goto _error;
 
 	printk_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t) image->of_dest);
 	ret = fatfs_loadimage(data.fdt, image->of_dest);
-	if (ret) goto _error;
+	if (ret)
+		goto _error;
 
 	/* Check and load ramdisk */
 	uint32_t ramdisk_size = 0;
@@ -503,7 +515,9 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
 		/* Check if using uinitrd */
 		image_header_t *ramdisk_header = (image_header_t *) image->ramdisk_dest;
 
-		if (ramdisk_header->ih_magic == IH_MAGIC) { ramdisk_start += 0x40; }
+		if (ramdisk_header->ih_magic == IH_MAGIC) {
+			ramdisk_start += 0x40;
+		}
 
 		printk_debug("initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
 
@@ -615,7 +629,9 @@ _add_dts_size:
 			goto _error;
 		} else {
 			ret = fdt_overlay_apply_verbose(image->of_dest, image->of_overlay_dest);
-			if (ret) { printk_warning("dtb overlay not success applied, overlay not applied.\n"); }
+			if (ret) {
+				printk_warning("dtb overlay not success applied, overlay not applied.\n");
+			}
 		}
 	}
 

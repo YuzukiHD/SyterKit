@@ -62,7 +62,9 @@ static void task_loop() {
 			cur_task->run_count++;								   // Increment the run count of the current task
 
 			// If the current task has reached its maximum run count and it is not set to always run, remove it from the list
-			if (cur_task->run_count >= cur_task->max_run_count && cur_task->max_run_count != TIMER_ALWAYS_RUN) { remove_task(cur_task); }
+			if (cur_task->run_count >= cur_task->max_run_count && cur_task->max_run_count != TIMER_ALWAYS_RUN) {
+				remove_task(cur_task);
+			}
 		}
 
 		cur_task = cur_task->next;// Move to the next task in the list
