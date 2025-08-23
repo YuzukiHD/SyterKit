@@ -12,42 +12,42 @@ extern "C" {
 
 /* defines baud rate of the UART frame. */
 typedef enum {
-    UART_BAUDRATE_300 = 300,
-    UART_BAUDRATE_600 = 600,
-    UART_BAUDRATE_1200 = 1200,
-    UART_BAUDRATE_2400 = 2400,
-    UART_BAUDRATE_4800 = 4800,
-    UART_BAUDRATE_9600 = 9600,
-    UART_BAUDRATE_19200 = 19200,
-    UART_BAUDRATE_38400 = 38400,
-    UART_BAUDRATE_57600 = 57600,
-    UART_BAUDRATE_115200 = 115200,
-    UART_BAUDRATE_230400 = 230400,
-    UART_BAUDRATE_460800 = 460800,
-    UART_BAUDRATE_921600 = 921600,
-    UART_BAUDRATE_1500000 = 1500000,
-    UART_BAUDRATE_MAX,
+	UART_BAUDRATE_300 = 300,
+	UART_BAUDRATE_600 = 600,
+	UART_BAUDRATE_1200 = 1200,
+	UART_BAUDRATE_2400 = 2400,
+	UART_BAUDRATE_4800 = 4800,
+	UART_BAUDRATE_9600 = 9600,
+	UART_BAUDRATE_19200 = 19200,
+	UART_BAUDRATE_38400 = 38400,
+	UART_BAUDRATE_57600 = 57600,
+	UART_BAUDRATE_115200 = 115200,
+	UART_BAUDRATE_230400 = 230400,
+	UART_BAUDRATE_460800 = 460800,
+	UART_BAUDRATE_921600 = 921600,
+	UART_BAUDRATE_1500000 = 1500000,
+	UART_BAUDRATE_MAX,
 } sunxi_serial_baudrate_t;
 
 /* UART Line Control Parameter */
 typedef enum {
-    UART_PARITY_NO = 0,
-    UART_PARITY_ODD,
-    UART_PARITY_EVEN,
+	UART_PARITY_NO = 0,
+	UART_PARITY_ODD,
+	UART_PARITY_EVEN,
 } sunxi_serial_parity_t;
 
 /* UART Number of Stop Bit */
 typedef enum {
-    UART_STOP_BIT_0 = 0,
-    UART_STOP_BIT_1,
+	UART_STOP_BIT_0 = 0,
+	UART_STOP_BIT_1,
 } sunxi_serial_stop_bit_t;
 
 /* UART Data Length */
 typedef enum {
-    UART_DLEN_5 = 0,
-    UART_DLEN_6,
-    UART_DLEN_7,
-    UART_DLEN_8,
+	UART_DLEN_5 = 0,
+	UART_DLEN_6,
+	UART_DLEN_7,
+	UART_DLEN_8,
 } sunxi_serial_dlen_t;
 
 /*
@@ -56,41 +56,41 @@ typedef enum {
  * associated with a serial interface.
  */
 typedef struct {
-    union {
-        volatile uint32_t rbr; /* Receiver Buffer Register (offset 0) */
-        volatile uint32_t thr; /* Transmitter Holding Register (offset 0) */
-        volatile uint32_t dll; /* Divisor Latch LSB (offset 0) */
-    };
-    union {
-        volatile uint32_t ier; /* Interrupt Enable Register (offset 1) */
-        volatile uint32_t dlh; /* Divisor Latch MSB (offset 1) */
-    };
-    union {
-        volatile uint32_t fcr; /* FIFO Control Register (offset 2) */
-        volatile uint32_t iir; /* Interrupt Identification Register (offset 2) */
-    };
-    volatile uint32_t lcr; /* Line Control Register (offset 3) */
-    volatile uint32_t mcr; /* Modem Control Register (offset 4) */
-    volatile uint32_t lsr; /* Line Status Register (offset 5) */
-    volatile uint32_t msr; /* Modem Status Register (offset 6) */
-    volatile uint32_t sch; /* Scratch Register (offset 7) */
+	union {
+		volatile uint32_t rbr; /* Receiver Buffer Register (offset 0) */
+		volatile uint32_t thr; /* Transmitter Holding Register (offset 0) */
+		volatile uint32_t dll; /* Divisor Latch LSB (offset 0) */
+	};
+	union {
+		volatile uint32_t ier; /* Interrupt Enable Register (offset 1) */
+		volatile uint32_t dlh; /* Divisor Latch MSB (offset 1) */
+	};
+	union {
+		volatile uint32_t fcr; /* FIFO Control Register (offset 2) */
+		volatile uint32_t iir; /* Interrupt Identification Register (offset 2) */
+	};
+	volatile uint32_t lcr; /* Line Control Register (offset 3) */
+	volatile uint32_t mcr; /* Modem Control Register (offset 4) */
+	volatile uint32_t lsr; /* Line Status Register (offset 5) */
+	volatile uint32_t msr; /* Modem Status Register (offset 6) */
+	volatile uint32_t sch; /* Scratch Register (offset 7) */
 } sunxi_serial_reg_t;
 
 typedef struct {
-    gpio_mux_t gpio_tx; /* GPIO pin for data transmission */
-    gpio_mux_t gpio_rx; /* GPIO pin for data reception */
+	gpio_mux_t gpio_tx; /* GPIO pin for data transmission */
+	gpio_mux_t gpio_rx; /* GPIO pin for data reception */
 } sunxi_serial_pin_t;
 
 /* Define a structure sunxi_serial_t for serial configuration */
 typedef struct {
-    uint32_t base; /* Base address of the serial device */
-    uint8_t id;    /* ID of the serial device */
-    sunxi_clk_t uart_clk;
-    sunxi_serial_pin_t gpio_pin;
-    sunxi_serial_baudrate_t baud_rate; /* Baud rate configuration */
-    sunxi_serial_parity_t parity;      /* Parity configuration */
-    sunxi_serial_stop_bit_t stop;      /* Stop bit configuration */
-    sunxi_serial_dlen_t dlen;          /* Data length configuration */
+	uint32_t base; /* Base address of the serial device */
+	uint8_t id;	   /* ID of the serial device */
+	sunxi_clk_t uart_clk;
+	sunxi_serial_pin_t gpio_pin;
+	sunxi_serial_baudrate_t baud_rate; /* Baud rate configuration */
+	sunxi_serial_parity_t parity;	   /* Parity configuration */
+	sunxi_serial_stop_bit_t stop;	   /* Stop bit configuration */
+	sunxi_serial_dlen_t dlen;		   /* Data length configuration */
 } sunxi_serial_t;
 
 #define SERIAL_DEFAULT_CLK_RST_OFFSET(x) (x + 16)

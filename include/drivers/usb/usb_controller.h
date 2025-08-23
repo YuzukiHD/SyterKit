@@ -18,17 +18,17 @@
 #define USBC_EP0_FIFOSIZE 64
 
 typedef struct fifo_info {
-    uint32_t port0_fifo_addr;
-    uint32_t port0_fifo_size;
+	uint32_t port0_fifo_addr;
+	uint32_t port0_fifo_size;
 } fifo_info_t;
 
 /* Structure to store hardware information for the current USB port */
 typedef struct usb_controller_otg {
-    uint32_t port_num;  /* USB port number */
-    uint32_t base_addr; /* USB base address */
+	uint32_t port_num;	/* USB port number */
+	uint32_t base_addr; /* USB base address */
 
-    uint32_t used; /* Whether it is currently being used */
-    uint32_t no;   /* Position in the management array */
+	uint32_t used; /* Whether it is currently being used */
+	uint32_t no;   /* Position in the management array */
 } usb_controller_otg_t;
 
 /**
@@ -37,9 +37,7 @@ typedef struct usb_controller_otg {
  * @param addr The address of the USB controller.
  * @return Returns the interrupt pending flag of the TX endpoint.
  */
-static inline uint32_t usb_controller_int_tx_pending(uint32_t addr) {
-    return readw(USBC_REG_INTTx(addr));
-}
+static inline uint32_t usb_controller_int_tx_pending(uint32_t addr) { return readw(USBC_REG_INTTx(addr)); }
 
 /**
  * @brief Clear the interrupt pending flag of a TX endpoint.
@@ -47,18 +45,14 @@ static inline uint32_t usb_controller_int_tx_pending(uint32_t addr) {
  * @param addr The address of the USB controller.
  * @param ep_index The index of the TX endpoint.
  */
-static inline void usb_controller_int_clear_tx_pending(uint32_t addr, uint8_t ep_index) {
-    writew((1 << ep_index), USBC_REG_INTTx(addr));
-}
+static inline void usb_controller_int_clear_tx_pending(uint32_t addr, uint8_t ep_index) { writew((1 << ep_index), USBC_REG_INTTx(addr)); }
 
 /**
  * @brief Clear the interrupt pending flags of all TX endpoints.
  *
  * @param addr The address of the USB controller.
  */
-static inline void usb_controller_int_clear_tx_pending_all(uint32_t addr) {
-    writew(0xffff, USBC_REG_INTTx(addr));
-}
+static inline void usb_controller_int_clear_tx_pending_all(uint32_t addr) { writew(0xffff, USBC_REG_INTTx(addr)); }
 
 /**
  * @brief Get the interrupt pending flag of an RX endpoint.
@@ -66,9 +60,7 @@ static inline void usb_controller_int_clear_tx_pending_all(uint32_t addr) {
  * @param addr The address of the USB controller.
  * @return Returns the interrupt pending flag of the RX endpoint.
  */
-static inline uint32_t usb_controller_int_rx_pending(uint32_t addr) {
-    return readw(USBC_REG_INTRx(addr));
-}
+static inline uint32_t usb_controller_int_rx_pending(uint32_t addr) { return readw(USBC_REG_INTRx(addr)); }
 
 /**
  * @brief Clear the interrupt pending flag of an RX endpoint.
@@ -76,18 +68,14 @@ static inline uint32_t usb_controller_int_rx_pending(uint32_t addr) {
  * @param addr The address of the USB controller.
  * @param ep_index The index of the RX endpoint.
  */
-static inline void usb_controller_int_clear_rx_pending(uint32_t addr, uint8_t ep_index) {
-    writew((1 << ep_index), USBC_REG_INTRx(addr));
-}
+static inline void usb_controller_int_clear_rx_pending(uint32_t addr, uint8_t ep_index) { writew((1 << ep_index), USBC_REG_INTRx(addr)); }
 
 /**
  * @brief Clear the interrupt pending flags of all RX endpoints.
  *
  * @param addr The address of the USB controller.
  */
-static inline void usb_controller_int_clear_rx_pending_all(uint32_t addr) {
-    writew(0xffff, USBC_REG_INTRx(addr));
-}
+static inline void usb_controller_int_clear_rx_pending_all(uint32_t addr) { writew(0xffff, USBC_REG_INTRx(addr)); }
 
 /**
  * @brief Enable the interrupt of a TX endpoint.
@@ -95,9 +83,7 @@ static inline void usb_controller_int_clear_rx_pending_all(uint32_t addr) {
  * @param addr The address of the USB controller.
  * @param ep_index The index of the TX endpoint.
  */
-static inline void usb_controller_int_enable_tx_ep(uint32_t addr, uint8_t ep_index) {
-    usb_set_bit16(ep_index, USBC_REG_INTTxE(addr));
-}
+static inline void usb_controller_int_enable_tx_ep(uint32_t addr, uint8_t ep_index) { usb_set_bit16(ep_index, USBC_REG_INTTxE(addr)); }
 
 /**
  * @brief Enable the interrupt of an RX endpoint.
@@ -105,9 +91,7 @@ static inline void usb_controller_int_enable_tx_ep(uint32_t addr, uint8_t ep_ind
  * @param addr The address of the USB controller.
  * @param ep_index The index of the RX endpoint.
  */
-static inline void usb_controller_int_enable_rx_ep(uint32_t addr, uint8_t ep_index) {
-    usb_set_bit16(ep_index, USBC_REG_INTRxE(addr));
-}
+static inline void usb_controller_int_enable_rx_ep(uint32_t addr, uint8_t ep_index) { usb_set_bit16(ep_index, USBC_REG_INTRxE(addr)); }
 
 /**
  * @brief Disable the interrupt of a TX endpoint.
@@ -115,9 +99,7 @@ static inline void usb_controller_int_enable_rx_ep(uint32_t addr, uint8_t ep_ind
  * @param addr The address of the USB controller.
  * @param ep_index The index of the TX endpoint.
  */
-static inline void usb_controller_int_disable_tx_ep(uint32_t addr, uint8_t ep_index) {
-    usb_clear_bit16(ep_index, USBC_REG_INTTxE(addr));
-}
+static inline void usb_controller_int_disable_tx_ep(uint32_t addr, uint8_t ep_index) { usb_clear_bit16(ep_index, USBC_REG_INTTxE(addr)); }
 
 /**
  * @brief Disable the interrupt of an RX endpoint.
@@ -125,27 +107,21 @@ static inline void usb_controller_int_disable_tx_ep(uint32_t addr, uint8_t ep_in
  * @param addr The address of the USB controller.
  * @param ep_index The index of the RX endpoint.
  */
-static inline void usb_controller_int_disable_rx_ep(uint32_t addr, uint8_t ep_index) {
-    usb_clear_bit16(ep_index, USBC_REG_INTRxE(addr));
-}
+static inline void usb_controller_int_disable_rx_ep(uint32_t addr, uint8_t ep_index) { usb_clear_bit16(ep_index, USBC_REG_INTRxE(addr)); }
 
 /**
  * @brief Disable the interrupts of all TX endpoints.
  *
  * @param addr The address of the USB controller.
  */
-static inline void usb_controller_int_disable_tx_all(uint32_t addr) {
-    writew(0, USBC_REG_INTTxE(addr));
-}
+static inline void usb_controller_int_disable_tx_all(uint32_t addr) { writew(0, USBC_REG_INTTxE(addr)); }
 
 /**
  * @brief Disable the interrupts of all RX endpoints.
  *
  * @param addr The address of the USB controller.
  */
-static inline void usb_controller_int_disable_rx_all(uint32_t addr) {
-    writew(0, USBC_REG_INTRxE(addr));
-}
+static inline void usb_controller_int_disable_rx_all(uint32_t addr) { writew(0, USBC_REG_INTRxE(addr)); }
 
 /**
  * Open the USB OTG controller.

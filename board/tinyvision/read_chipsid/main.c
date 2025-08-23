@@ -14,11 +14,11 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    syter_efuse_dump();
+	syter_efuse_dump();
 
-    return 0;
+	return 0;
 }

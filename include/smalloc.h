@@ -11,10 +11,10 @@ extern "C" {
 #endif// __cplusplus
 
 struct alloc_struct_t {
-    phys_addr_t address;
-    uint32_t size;
-    uint32_t o_size;
-    struct alloc_struct_t *next;
+	phys_addr_t address;
+	uint32_t size;
+	uint32_t o_size;
+	struct alloc_struct_t *next;
 };
 
 #define BYTE_ALIGN(x) (((x + 15) / 16) * 16)

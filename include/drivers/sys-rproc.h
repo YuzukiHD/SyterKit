@@ -171,6 +171,6 @@ void sunxi_a53_clock_reset(void);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __SYS_RPROC_H__

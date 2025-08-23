@@ -11,17 +11,17 @@ extern "C" {
  * @brief The structure vaddr_range_t represents the mapping between a virtual address range and the starting physical address.
  */
 typedef struct vaddr_range {
-    uint64_t vstart; /**< The starting address of the virtual address range */
-    uint64_t vend;   /**< The ending address of the virtual address range */
-    uint64_t pstart; /**< The starting position of the corresponding physical address */
+	uint64_t vstart; /**< The starting address of the virtual address range */
+	uint64_t vend;	 /**< The ending address of the virtual address range */
+	uint64_t pstart; /**< The starting position of the corresponding physical address */
 } vaddr_range_t;
 
 /**
  * @brief The structure vaddr_map_t represents the mapping between a virtual address range and the starting physical address and size of this table.
  */
 typedef struct vaddr_map {
-    vaddr_range_t *range;
-    uint32_t range_size;
+	vaddr_range_t *range;
+	uint32_t range_size;
 } vaddr_map_t;
 
 /**

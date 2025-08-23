@@ -12,10 +12,8 @@
  *
  * @param pc The program counter to be converted to Thumb mode address.
  */
-#define MAKE_THUMB_ADDR(pc)                       \
-    do {                                          \
-        (pc) = (void *) ((uint32_t) (pc) | 0x1);  /**< Set the least significant bit of PC to 1 */ \
-    } while (0)
+#define MAKE_THUMB_ADDR(pc)                                                                                                                                                        \
+	do { (pc) = (void *) ((uint32_t) (pc) | 0x1); /**< Set the least significant bit of PC to 1 */ } while (0)
 
 /**
  * @brief Perform a backtrace to find the call stack.
@@ -53,4 +51,4 @@ int backtrace(char *PC, long *SP, char *LR);
  */
 int dump_stack(void);
 
-#endif // __STDLIB_H__
+#endif// __STDLIB_H__

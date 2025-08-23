@@ -16,4 +16,4 @@
  */
 void sys_uart_init();
 
-#endif // __SYS_UART_H__
+#endif// __SYS_UART_H__

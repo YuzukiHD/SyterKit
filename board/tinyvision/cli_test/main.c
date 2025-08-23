@@ -19,23 +19,23 @@ msh_declare_command(helloworld);
 
 msh_define_help(helloworld, "display helloworld", "Usage: helloworld\n");
 int cmd_helloworld(int argc, const char **argv) {
-    printk(LOG_LEVEL_MUTE, "Hello World!\n");
-    return 0;
+	printk(LOG_LEVEL_MUTE, "Hello World!\n");
+	return 0;
 }
 
 const msh_command_entry commands[] = {
-        msh_define_command(helloworld),
-        msh_command_end,
+		msh_define_command(helloworld),
+		msh_command_end,
 };
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    printk_info("Hello World!\n");
+	printk_info("Hello World!\n");
 
-    syterkit_shell_attach(commands);
+	syterkit_shell_attach(commands);
 
-    return 0;
+	return 0;
 }

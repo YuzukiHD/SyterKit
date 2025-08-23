@@ -27,8 +27,8 @@ extern "C" {
  * - `true` is defined as 1.
  */
 enum {
-    false = 0, /**< Boolean false value. */
-    true = 1   /**< Boolean true value. */
+	false = 0, /**< Boolean false value. */
+	true = 1   /**< Boolean true value. */
 };
 
 /**

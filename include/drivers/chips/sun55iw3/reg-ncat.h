@@ -195,14 +195,14 @@
 #define GPIO_1_8V_MODE 1
 
 /* GIC600 */
-#define GIC_IROUTR(_n)       (SUNXI_CPU_GIC600_BASE + 0x6000 + 8 * (_n))
-#define GICR_LPI_BASE(n)     (SUNXI_CPU_GIC600_BASE + 0x60000 + n*0x20000)
-#define GICR_WAKER(m)        (GICR_LPI_BASE(m) + 0x0014)
-#define GICR_PWRR(m)         (GICR_LPI_BASE(m) + 0x0024)
-#define LEVEL_TRIGERRED      (0)
-#define EDGE_TRIGERRED       (1)
+#define GIC_IROUTR(_n) (SUNXI_CPU_GIC600_BASE + 0x6000 + 8 * (_n))
+#define GICR_LPI_BASE(n) (SUNXI_CPU_GIC600_BASE + 0x60000 + n * 0x20000)
+#define GICR_WAKER(m) (GICR_LPI_BASE(m) + 0x0014)
+#define GICR_PWRR(m) (GICR_LPI_BASE(m) + 0x0024)
+#define LEVEL_TRIGERRED (0)
+#define EDGE_TRIGERRED (1)
 #define GIC_IRQ_TYPE_CFG(_n) (SUNXI_CPU_GIC600_BASE + 0xc00 + 4 * (_n))
-#define GIC_IRQ_MOD_CFG(_n)	 (SUNXI_CPU_GIC600_BASE + 0xd00 + 4 * (_n))
+#define GIC_IRQ_MOD_CFG(_n) (SUNXI_CPU_GIC600_BASE + 0xd00 + 4 * (_n))
 
 #define PIOC_REG_o_POW_MOD_SEL 0x380
 #define PIOC_REG_o_POW_MS_CTL 0x384
@@ -225,17 +225,17 @@
 #define PIOC_SEL_Px_DEFAULT PIOC_SEL_Px_1_8V_VOL
 
 /* rtc vccio detected */
-#define FORCE_DETECTER_OUTPUT		(1 << 7)
-#define DEBOUNCE_NO_BYPASS		(1 << 8)
-#define VCCIO_THRESHOLD_VOLTAGE_2_5	(0 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_6	(1 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_7	(2 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_8	(3 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_9	(4 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_3_0	(5 << 4)
-#define VCCIO_THRESHOLD_MASK		0x7
-#define VCCIO_DET_BYPASS_EN		(1 << 0)
-#define VDD_OFF_GATING_CTRL_REG		0x1f4
+#define FORCE_DETECTER_OUTPUT (1 << 7)
+#define DEBOUNCE_NO_BYPASS (1 << 8)
+#define VCCIO_THRESHOLD_VOLTAGE_2_5 (0 << 4)
+#define VCCIO_THRESHOLD_VOLTAGE_2_6 (1 << 4)
+#define VCCIO_THRESHOLD_VOLTAGE_2_7 (2 << 4)
+#define VCCIO_THRESHOLD_VOLTAGE_2_8 (3 << 4)
+#define VCCIO_THRESHOLD_VOLTAGE_2_9 (4 << 4)
+#define VCCIO_THRESHOLD_VOLTAGE_3_0 (5 << 4)
+#define VCCIO_THRESHOLD_MASK 0x7
+#define VCCIO_DET_BYPASS_EN (1 << 0)
+#define VDD_OFF_GATING_CTRL_REG 0x1f4
 
 /* R SPI */
 #define SUNXI_S_SPI_CLK_REG 0x0150

@@ -92,6 +92,6 @@ int rtc_get_bootmode_flag(void);
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif// __cplusplus
 
 #endif// __SYS_RTC_H__

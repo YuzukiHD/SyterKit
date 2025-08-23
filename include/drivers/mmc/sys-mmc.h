@@ -15,37 +15,37 @@ extern "C" {
 #endif// __cplusplus
 
 enum {
-    SD_VERSION_SD = 0x20000,
-    SD_VERSION_3 = (SD_VERSION_SD | 0x300),
-    SD_VERSION_2 = (SD_VERSION_SD | 0x200),
-    SD_VERSION_1_0 = (SD_VERSION_SD | 0x100),
-    SD_VERSION_1_10 = (SD_VERSION_SD | 0x10a),
+	SD_VERSION_SD = 0x20000,
+	SD_VERSION_3 = (SD_VERSION_SD | 0x300),
+	SD_VERSION_2 = (SD_VERSION_SD | 0x200),
+	SD_VERSION_1_0 = (SD_VERSION_SD | 0x100),
+	SD_VERSION_1_10 = (SD_VERSION_SD | 0x10a),
 
-    MMC_VERSION_MMC = 0x10000,
-    MMC_VERSION_UNKNOWN = (MMC_VERSION_MMC),
-    MMC_VERSION_1_2 = (MMC_VERSION_MMC | 0x102),
-    MMC_VERSION_1_4 = (MMC_VERSION_MMC | 0x104),
-    MMC_VERSION_2_2 = (MMC_VERSION_MMC | 0x202),
-    MMC_VERSION_3 = (MMC_VERSION_MMC | 0x300),
-    MMC_VERSION_4 = (MMC_VERSION_MMC | 0x400),
-    MMC_VERSION_4_1 = (MMC_VERSION_MMC | 0x401),
-    MMC_VERSION_4_2 = (MMC_VERSION_MMC | 0x402),
-    MMC_VERSION_4_3 = (MMC_VERSION_MMC | 0x403),
-    MMC_VERSION_4_41 = (MMC_VERSION_MMC | 0x429),
-    MMC_VERSION_4_5 = (MMC_VERSION_MMC | 0x405),
-    MMC_VERSION_5_0 = (MMC_VERSION_MMC | 0x500),
-    MMC_VERSION_5_1 = (MMC_VERSION_MMC | 0x501),
+	MMC_VERSION_MMC = 0x10000,
+	MMC_VERSION_UNKNOWN = (MMC_VERSION_MMC),
+	MMC_VERSION_1_2 = (MMC_VERSION_MMC | 0x102),
+	MMC_VERSION_1_4 = (MMC_VERSION_MMC | 0x104),
+	MMC_VERSION_2_2 = (MMC_VERSION_MMC | 0x202),
+	MMC_VERSION_3 = (MMC_VERSION_MMC | 0x300),
+	MMC_VERSION_4 = (MMC_VERSION_MMC | 0x400),
+	MMC_VERSION_4_1 = (MMC_VERSION_MMC | 0x401),
+	MMC_VERSION_4_2 = (MMC_VERSION_MMC | 0x402),
+	MMC_VERSION_4_3 = (MMC_VERSION_MMC | 0x403),
+	MMC_VERSION_4_41 = (MMC_VERSION_MMC | 0x429),
+	MMC_VERSION_4_5 = (MMC_VERSION_MMC | 0x405),
+	MMC_VERSION_5_0 = (MMC_VERSION_MMC | 0x500),
+	MMC_VERSION_5_1 = (MMC_VERSION_MMC | 0x501),
 };
 
-#define MMC_MODE_HS (1 << 0)       /* can run at 26MHz -- DS26_SDR12 */
+#define MMC_MODE_HS (1 << 0)	   /* can run at 26MHz -- DS26_SDR12 */
 #define MMC_MODE_HS_52MHz (1 << 1) /* can run at 52MHz with SDR mode -- HSSDR52_SDR25 */
 #define MMC_MODE_4BIT (1 << 2)
 #define MMC_MODE_8BIT (1 << 3)
 #define MMC_MODE_SPI (1 << 4)
 #define MMC_MODE_HC (1 << 5)
 #define MMC_MODE_DDR_52MHz (1 << 6) /* can run at 52Mhz with DDR mode -- HSDDR52_DDR50 */
-#define MMC_MODE_HS200 (1 << 7)     /* can run at 200/208MHz with SDR mode -- HS200_SDR104 */
-#define MMC_MODE_HS400 (1 << 8)     /* can run at 200MHz with DDR mode -- HS400 */
+#define MMC_MODE_HS200 (1 << 7)		/* can run at 200/208MHz with SDR mode -- HS200_SDR104 */
+#define MMC_MODE_HS400 (1 << 8)		/* can run at 200MHz with DDR mode -- HS400 */
 
 #define SD_DATA_4BIT 0x00040000
 
@@ -54,9 +54,9 @@ enum {
 
 #define MMC_CMD_MANUAL 1//add by sunxi.not sent stop when read/write multi block,and sent stop when sent cmd12
 
-#define NO_CARD_ERR -16  /* No SD/MMC card inserted */
+#define NO_CARD_ERR -16	 /* No SD/MMC card inserted */
 #define UNUSABLE_ERR -17 /* Unusable Card */
-#define COMM_ERR -18     /* Communications Error */
+#define COMM_ERR -18	 /* Communications Error */
 #define TIMEOUT -19
 
 #define MMC_CMD_GO_IDLE_STATE 0
@@ -131,8 +131,8 @@ enum {
 #define MMC_VDD_34_35 0x00400000   /* VDD voltage 3.4 ~ 3.5 */
 #define MMC_VDD_35_36 0x00800000   /* VDD voltage 3.5 ~ 3.6 */
 
-#define MMC_SWITCH_MODE_CMD_SET 0x00    /* Change the command set */
-#define MMC_SWITCH_MODE_SET_BITS 0x01   /* Set bits in EXT_CSD byte addressed by index which are 1 in value field */
+#define MMC_SWITCH_MODE_CMD_SET 0x00	/* Change the command set */
+#define MMC_SWITCH_MODE_SET_BITS 0x01	/* Set bits in EXT_CSD byte addressed by index which are 1 in value field */
 #define MMC_SWITCH_MODE_CLEAR_BITS 0x02 /* Clear bits in EXT_CSD byte addressed by index, which are 1 in value field */
 #define MMC_SWITCH_MODE_WRITE_BYTE 0x03 /* Set target byte to value */
 
@@ -142,77 +142,77 @@ enum {
 /*
  * EXT_CSD fields
  */
-#define EXT_CSD_CMDQ_MODE_EN 15                 /* R/W */
-#define EXT_CSD_FLUSH_CACHE 32                  /* W */
-#define EXT_CSD_CACHE_CTRL 33                   /* R/W */
-#define EXT_CSD_POWER_OFF_NOTIFICATION 34       /* R/W */
-#define EXT_CSD_PACKED_FAILURE_INDEX 35         /* RO */
-#define EXT_CSD_PACKED_CMD_STATUS 36            /* RO */
-#define EXT_CSD_EXP_EVENTS_STATUS 54            /* RO, 2 bytes */
-#define EXT_CSD_EXP_EVENTS_CTRL 56              /* R/W, 2 bytes */
-#define EXT_CSD_DATA_SECTOR_SIZE 61             /* R */
-#define EXT_CSD_GP_SIZE_MULT 143                /* R/W */
+#define EXT_CSD_CMDQ_MODE_EN 15					/* R/W */
+#define EXT_CSD_FLUSH_CACHE 32					/* W */
+#define EXT_CSD_CACHE_CTRL 33					/* R/W */
+#define EXT_CSD_POWER_OFF_NOTIFICATION 34		/* R/W */
+#define EXT_CSD_PACKED_FAILURE_INDEX 35			/* RO */
+#define EXT_CSD_PACKED_CMD_STATUS 36			/* RO */
+#define EXT_CSD_EXP_EVENTS_STATUS 54			/* RO, 2 bytes */
+#define EXT_CSD_EXP_EVENTS_CTRL 56				/* R/W, 2 bytes */
+#define EXT_CSD_DATA_SECTOR_SIZE 61				/* R */
+#define EXT_CSD_GP_SIZE_MULT 143				/* R/W */
 #define EXT_CSD_PARTITION_SETTING_COMPLETED 155 /* R/W */
-#define EXT_CSD_PARTITION_ATTRIBUTE 156         /* R/W */
-#define EXT_CSD_PARTITION_SUPPORT 160           /* RO */
-#define EXT_CSD_HPI_MGMT 161                    /* R/W */
-#define EXT_CSD_RST_N_FUNCTION 162              /* R/W */
-#define EXT_CSD_BKOPS_EN 163                    /* R/W */
-#define EXT_CSD_BKOPS_START 164                 /* W */
-#define EXT_CSD_SANITIZE_START 165              /* W */
-#define EXT_CSD_WR_REL_PARAM 166                /* RO */
-#define EXT_CSD_RPMB_MULT 168                   /* RO */
-#define EXT_CSD_FW_CONFIG 169                   /* R/W */
-#define EXT_CSD_BOOT_WP 173                     /* R/W */
-#define EXT_CSD_ERASE_GROUP_DEF 175             /* R/W */
-#define EXT_CSD_PART_CONFIG 179                 /* R/W */
-#define EXT_CSD_ERASED_MEM_CONT 181             /* RO */
-#define EXT_CSD_BUS_WIDTH 183                   /* R/W */
-#define EXT_CSD_STROBE_SUPPORT 184              /* RO */
-#define EXT_CSD_HS_TIMING 185                   /* R/W */
-#define EXT_CSD_POWER_CLASS 187                 /* R/W */
-#define EXT_CSD_REV 192                         /* RO */
-#define EXT_CSD_STRUCTURE 194                   /* RO */
-#define EXT_CSD_CARD_TYPE 196                   /* RO */
-#define EXT_CSD_DRIVER_STRENGTH 197             /* RO */
-#define EXT_CSD_OUT_OF_INTERRUPT_TIME 198       /* RO */
-#define EXT_CSD_PART_SWITCH_TIME 199            /* RO */
-#define EXT_CSD_PWR_CL_52_195 200               /* RO */
-#define EXT_CSD_PWR_CL_26_195 201               /* RO */
-#define EXT_CSD_PWR_CL_52_360 202               /* RO */
-#define EXT_CSD_PWR_CL_26_360 203               /* RO */
-#define EXT_CSD_SEC_CNT 212                     /* RO, 4 bytes */
-#define EXT_CSD_S_A_TIMEOUT 217                 /* RO */
-#define EXT_CSD_REL_WR_SEC_C 222                /* RO */
-#define EXT_CSD_HC_WP_GRP_SIZE 221              /* RO */
-#define EXT_CSD_ERASE_TIMEOUT_MULT 223          /* RO */
-#define EXT_CSD_HC_ERASE_GRP_SIZE 224           /* RO */
-#define EXT_CSD_BOOT_MULT 226                   /* RO */
-#define EXT_CSD_SEC_TRIM_MULT 229               /* RO */
-#define EXT_CSD_SEC_ERASE_MULT 230              /* RO */
-#define EXT_CSD_SEC_FEATURE_SUPPORT 231         /* RO */
-#define EXT_CSD_TRIM_MULT 232                   /* RO */
-#define EXT_CSD_PWR_CL_200_195 236              /* RO */
-#define EXT_CSD_PWR_CL_200_360 237              /* RO */
-#define EXT_CSD_PWR_CL_DDR_52_195 238           /* RO */
-#define EXT_CSD_PWR_CL_DDR_52_360 239           /* RO */
-#define EXT_CSD_BKOPS_STATUS 246                /* RO */
-#define EXT_CSD_POWER_OFF_LONG_TIME 247         /* RO */
-#define EXT_CSD_GENERIC_CMD6_TIME 248           /* RO */
-#define EXT_CSD_CACHE_SIZE 249                  /* RO, 4 bytes */
-#define EXT_CSD_PWR_CL_DDR_200_360 253          /* RO */
-#define EXT_CSD_FIRMWARE_VERSION 254            /* RO, 8 bytes */
-#define EXT_CSD_PRE_EOL_INFO 267                /* RO */
-#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A 268  /* RO */
-#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B 269  /* RO */
-#define EXT_CSD_CMDQ_DEPTH 307                  /* RO */
-#define EXT_CSD_CMDQ_SUPPORT 308                /* RO */
-#define EXT_CSD_SUPPORTED_MODE 493              /* RO */
-#define EXT_CSD_TAG_UNIT_SIZE 498               /* RO */
-#define EXT_CSD_DATA_TAG_SUPPORT 499            /* RO */
-#define EXT_CSD_MAX_PACKED_WRITES 500           /* RO */
-#define EXT_CSD_MAX_PACKED_READS 501            /* RO */
-#define EXT_CSD_BKOPS_SUPPORT 502               /* RO */
+#define EXT_CSD_PARTITION_ATTRIBUTE 156			/* R/W */
+#define EXT_CSD_PARTITION_SUPPORT 160			/* RO */
+#define EXT_CSD_HPI_MGMT 161					/* R/W */
+#define EXT_CSD_RST_N_FUNCTION 162				/* R/W */
+#define EXT_CSD_BKOPS_EN 163					/* R/W */
+#define EXT_CSD_BKOPS_START 164					/* W */
+#define EXT_CSD_SANITIZE_START 165				/* W */
+#define EXT_CSD_WR_REL_PARAM 166				/* RO */
+#define EXT_CSD_RPMB_MULT 168					/* RO */
+#define EXT_CSD_FW_CONFIG 169					/* R/W */
+#define EXT_CSD_BOOT_WP 173						/* R/W */
+#define EXT_CSD_ERASE_GROUP_DEF 175				/* R/W */
+#define EXT_CSD_PART_CONFIG 179					/* R/W */
+#define EXT_CSD_ERASED_MEM_CONT 181				/* RO */
+#define EXT_CSD_BUS_WIDTH 183					/* R/W */
+#define EXT_CSD_STROBE_SUPPORT 184				/* RO */
+#define EXT_CSD_HS_TIMING 185					/* R/W */
+#define EXT_CSD_POWER_CLASS 187					/* R/W */
+#define EXT_CSD_REV 192							/* RO */
+#define EXT_CSD_STRUCTURE 194					/* RO */
+#define EXT_CSD_CARD_TYPE 196					/* RO */
+#define EXT_CSD_DRIVER_STRENGTH 197				/* RO */
+#define EXT_CSD_OUT_OF_INTERRUPT_TIME 198		/* RO */
+#define EXT_CSD_PART_SWITCH_TIME 199			/* RO */
+#define EXT_CSD_PWR_CL_52_195 200				/* RO */
+#define EXT_CSD_PWR_CL_26_195 201				/* RO */
+#define EXT_CSD_PWR_CL_52_360 202				/* RO */
+#define EXT_CSD_PWR_CL_26_360 203				/* RO */
+#define EXT_CSD_SEC_CNT 212						/* RO, 4 bytes */
+#define EXT_CSD_S_A_TIMEOUT 217					/* RO */
+#define EXT_CSD_REL_WR_SEC_C 222				/* RO */
+#define EXT_CSD_HC_WP_GRP_SIZE 221				/* RO */
+#define EXT_CSD_ERASE_TIMEOUT_MULT 223			/* RO */
+#define EXT_CSD_HC_ERASE_GRP_SIZE 224			/* RO */
+#define EXT_CSD_BOOT_MULT 226					/* RO */
+#define EXT_CSD_SEC_TRIM_MULT 229				/* RO */
+#define EXT_CSD_SEC_ERASE_MULT 230				/* RO */
+#define EXT_CSD_SEC_FEATURE_SUPPORT 231			/* RO */
+#define EXT_CSD_TRIM_MULT 232					/* RO */
+#define EXT_CSD_PWR_CL_200_195 236				/* RO */
+#define EXT_CSD_PWR_CL_200_360 237				/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_195 238			/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_360 239			/* RO */
+#define EXT_CSD_BKOPS_STATUS 246				/* RO */
+#define EXT_CSD_POWER_OFF_LONG_TIME 247			/* RO */
+#define EXT_CSD_GENERIC_CMD6_TIME 248			/* RO */
+#define EXT_CSD_CACHE_SIZE 249					/* RO, 4 bytes */
+#define EXT_CSD_PWR_CL_DDR_200_360 253			/* RO */
+#define EXT_CSD_FIRMWARE_VERSION 254			/* RO, 8 bytes */
+#define EXT_CSD_PRE_EOL_INFO 267				/* RO */
+#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A 268	/* RO */
+#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B 269	/* RO */
+#define EXT_CSD_CMDQ_DEPTH 307					/* RO */
+#define EXT_CSD_CMDQ_SUPPORT 308				/* RO */
+#define EXT_CSD_SUPPORTED_MODE 493				/* RO */
+#define EXT_CSD_TAG_UNIT_SIZE 498				/* RO */
+#define EXT_CSD_DATA_TAG_SUPPORT 499			/* RO */
+#define EXT_CSD_MAX_PACKED_WRITES 500			/* RO */
+#define EXT_CSD_MAX_PACKED_READS 501			/* RO */
+#define EXT_CSD_BKOPS_SUPPORT 502				/* RO */
 #define EXT_CSD_HPI_FEATURES 503
 
 /*
@@ -229,7 +229,7 @@ enum {
 #define EXT_CSD_CARD_TYPE_DDR_1_8V (1 << 2) /* Card can run at 52MHz */ /* DDR mode @1.8V or 3V I/O */
 #define EXT_CSD_CARD_TYPE_DDR_1_2V (1 << 3) /* Card can run at 52MHz */ /* DDR mode @1.2V I/O */
 #define EXT_CSD_CARD_TYPE_DDR_52 (EXT_CSD_CARD_TYPE_DDR_1_8V | EXT_CSD_CARD_TYPE_DDR_1_2V)
-#define EXT_CSD_CARD_TYPE_HS200_1_8V (1 << 4)                              /* Card can run at 200MHz */
+#define EXT_CSD_CARD_TYPE_HS200_1_8V (1 << 4)							   /* Card can run at 200MHz */
 #define EXT_CSD_CARD_TYPE_HS200_1_2V (1 << 5) /* Card can run at 200MHz */ /* SDR mode @1.2V I/O */
 #define EXT_CSD_CARD_TYPE_HS200 (EXT_CSD_CARD_TYPE_HS200_1_8V | EXT_CSD_CARD_TYPE_HS200_1_2V)
 #define EXT_CSD_CARD_TYPE_HS400_1_8V (1 << 6) /* Card can run at 200MHz DDR, 1.8V */
@@ -240,12 +240,12 @@ enum {
 #define EXT_CSD_BUS_WIDTH_1 0 /* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4 1 /* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8 2 /* Card is in 8 bit mode */
-#define EXT_CSD_BUS_DDR_4 5   /* Card is in 4 bit ddr mode */
-#define EXT_CSD_BUS_DDR_8 6   /* Card is in 8 bit ddr mode */
+#define EXT_CSD_BUS_DDR_4 5	  /* Card is in 4 bit ddr mode */
+#define EXT_CSD_BUS_DDR_8 6	  /* Card is in 8 bit ddr mode */
 
 /* -- EXT_CSD[185] HS_TIMING */
-#define EXT_CSD_TIMING_BC 0    /* Backwards compatibility */
-#define EXT_CSD_TIMING_HS 1    /* High speed */
+#define EXT_CSD_TIMING_BC 0	   /* Backwards compatibility */
+#define EXT_CSD_TIMING_HS 1	   /* High speed */
 #define EXT_CSD_TIMING_HS200 2 /* HS200 */
 #define EXT_CSD_TIMING_HS400 3 /* HS400 */
 
@@ -253,15 +253,14 @@ enum {
 #define R1_APP_CMD (1 << 5)
 
 #define MMC_RSP_PRESENT (1 << 0)
-#define MMC_RSP_136 (1 << 1)    /* 136 bit response */
-#define MMC_RSP_CRC (1 << 2)    /* expect valid crc */
-#define MMC_RSP_BUSY (1 << 3)   /* card may send busy */
+#define MMC_RSP_136 (1 << 1)	/* 136 bit response */
+#define MMC_RSP_CRC (1 << 2)	/* expect valid crc */
+#define MMC_RSP_BUSY (1 << 3)	/* card may send busy */
 #define MMC_RSP_OPCODE (1 << 4) /* response contains opcode */
 
 #define MMC_RSP_NONE (0)
 #define MMC_RSP_R1 (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE)
-#define MMC_RSP_R1b (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE | \
-                     MMC_RSP_BUSY)
+#define MMC_RSP_R1b (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE | MMC_RSP_BUSY)
 #define MMC_RSP_R2 (MMC_RSP_PRESENT | MMC_RSP_136 | MMC_RSP_CRC)
 #define MMC_RSP_R3 (MMC_RSP_PRESENT)
 #define MMC_RSP_R4 (MMC_RSP_PRESENT)
@@ -276,22 +275,22 @@ enum {
 #define be32_to_cpu(x) ((0x000000ff & ((x) >> 24)) | (0x0000ff00 & ((x) >> 8)) | (0x00ff0000 & ((x) << 8)) | (0xff000000 & ((x) << 24)))
 
 typedef enum {
-    MMC_DS26_SDR12 = 0,
-    MMC_HSSDR52_SDR25 = 1,
-    MMC_HSDDR52_DDR50 = 2,
-    MMC_HS200_SDR104 = 3,
-    MMC_HS400 = 4,
-    MMC_MAX_SPD_MD_NUM = 5,
+	MMC_DS26_SDR12 = 0,
+	MMC_HSSDR52_SDR25 = 1,
+	MMC_HSDDR52_DDR50 = 2,
+	MMC_HS200_SDR104 = 3,
+	MMC_HS400 = 4,
+	MMC_MAX_SPD_MD_NUM = 5,
 } sdhci_speed_mode_t;
 
 typedef enum {
-    MMC_CLK_400K = 0,
-    MMC_CLK_25M = 1,
-    MMC_CLK_50M = 2,
-    MMC_CLK_100M = 3,
-    MMC_CLK_150M = 4,
-    MMC_CLK_200M = 5,
-    MMC_MAX_CLK_FREQ_NUM = 8,
+	MMC_CLK_400K = 0,
+	MMC_CLK_25M = 1,
+	MMC_CLK_50M = 2,
+	MMC_CLK_100M = 3,
+	MMC_CLK_150M = 4,
+	MMC_CLK_200M = 5,
+	MMC_MAX_CLK_FREQ_NUM = 8,
 } sdhci_freq_point_t;
 
 /*
@@ -302,64 +301,64 @@ typedef enum {
  *	    it also support to use delay chain on data strobe signal.
  */
 typedef enum {
-    MMC_TIMING_MODE_1 = 1,
-    MMC_TIMING_MODE_3 = 3,
-    MMC_TIMING_MODE_4 = 4,
+	MMC_TIMING_MODE_1 = 1,
+	MMC_TIMING_MODE_3 = 3,
+	MMC_TIMING_MODE_4 = 4,
 } sdhci_timing_mode;
 
 #define SUNXI_MMC_1X_2X_MODE_CONTROL_REG (0x03000024)
 
 typedef struct tune_sdly {
-    uint32_t tm4_smx_fx[12];
+	uint32_t tm4_smx_fx[12];
 } tune_sdly_t;
 
 typedef struct mmc_cmd {
-    uint32_t cmdidx;
-    uint32_t resp_type;
-    uint32_t cmdarg;
-    uint32_t response[4];
-    uint32_t flags;
+	uint32_t cmdidx;
+	uint32_t resp_type;
+	uint32_t cmdarg;
+	uint32_t response[4];
+	uint32_t flags;
 } mmc_cmd_t;
 
 typedef struct mmc_data {
-    union {
-        char *dest;
-        const char *src;
-    } b;
-    uint32_t flags;
-    uint32_t blocks;
-    uint32_t blocksize;
+	union {
+		char *dest;
+		const char *src;
+	} b;
+	uint32_t flags;
+	uint32_t blocks;
+	uint32_t blocksize;
 } mmc_data_t;
 
 typedef struct mmc {
-    uint32_t voltages;
-    uint32_t version;
-    uint32_t bus_width;
-    uint32_t f_min;
-    uint32_t f_max;
-    uint32_t f_max_ddr;
-    int high_capacity;
-    uint32_t clock;
-    uint32_t card_caps;
-    uint32_t host_caps;
-    uint32_t ocr;
-    uint32_t scr[2];
-    uint32_t csd[4];
-    uint32_t cid[4];
-    uint32_t rca;
-    uint32_t part_config;
-    uint32_t part_num;
-    uint32_t tran_speed;
-    uint32_t read_bl_len;
-    uint32_t write_bl_len;
-    uint32_t erase_grp_size;
-    uint64_t capacity;
-    tune_sdly_t tune_sdly;
-    uint32_t b_max;
-    uint32_t lba;         /* number of blocks */
-    uint32_t blksz;       /* block size */
-    char revision[8 + 8]; /* CID:  PRV */
-    uint32_t speed_mode;
+	uint32_t voltages;
+	uint32_t version;
+	uint32_t bus_width;
+	uint32_t f_min;
+	uint32_t f_max;
+	uint32_t f_max_ddr;
+	int high_capacity;
+	uint32_t clock;
+	uint32_t card_caps;
+	uint32_t host_caps;
+	uint32_t ocr;
+	uint32_t scr[2];
+	uint32_t csd[4];
+	uint32_t cid[4];
+	uint32_t rca;
+	uint32_t part_config;
+	uint32_t part_num;
+	uint32_t tran_speed;
+	uint32_t read_bl_len;
+	uint32_t write_bl_len;
+	uint32_t erase_grp_size;
+	uint64_t capacity;
+	tune_sdly_t tune_sdly;
+	uint32_t b_max;
+	uint32_t lba;		  /* number of blocks */
+	uint32_t blksz;		  /* block size */
+	char revision[8 + 8]; /* CID:  PRV */
+	uint32_t speed_mode;
 } mmc_t;
 
 
