@@ -86,10 +86,12 @@ int cmd_fdt(int argc, const char **argv) {
 				printk(LOG_LEVEL_MUTE, "prop (%d) doesn't fit in scratchpad!\n", len);
 				return 1;
 			}
-			if (ptmp != NULL) memcpy(data, ptmp, len);
+			if (ptmp != NULL)
+				memcpy(data, ptmp, len);
 
 			ret = fdt_parse_prop(&argv[4], argc - 4, data, &len);
-			if (ret != 0) return ret;
+			if (ret != 0)
+				return ret;
 		}
 
 		ret = fdt_setprop(image.of_dest, nodeoffset, prop, data, len);
@@ -107,16 +109,20 @@ int cmd_fdt(int argc, const char **argv) {
 		/*
 		 * list is an alias for print, but limited to 1 level
 		 */
-		if (argv[1][0] == 'l') { depth = 1; }
+		if (argv[1][0] == 'l') {
+			depth = 1;
+		}
 
 		/*
 		 * Get the starting path.  The root node is an oddball,
 		 * the offset is zero and has no name.
 		 */
-		if (argc == 2) pathp = root;
+		if (argc == 2)
+			pathp = root;
 		else
 			pathp = argv[2];
-		if (argc > 3) prop = argv[3];
+		if (argc > 3)
+			prop = argv[3];
 		else
 			prop = NULL;
 
@@ -163,9 +169,12 @@ int cmd_fdt(int argc, const char **argv) {
 		printk(LOG_LEVEL_MUTE, "off_mem_rsvmap:\t\t0x%x\n", fdt_off_mem_rsvmap(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "version:\t\t%d\n", version);
 		printk(LOG_LEVEL_MUTE, "last_comp_version:\t%d\n", fdt_last_comp_version(image.of_dest));
-		if (version >= 2) printk(LOG_LEVEL_MUTE, "boot_cpuid_phys:\t0x%x\n", fdt_boot_cpuid_phys(image.of_dest));
-		if (version >= 3) printk(LOG_LEVEL_MUTE, "size_dt_strings:\t0x%x\n", fdt_size_dt_strings(image.of_dest));
-		if (version >= 17) printk(LOG_LEVEL_MUTE, "size_dt_struct:\t\t0x%x\n", fdt_size_dt_struct(image.of_dest));
+		if (version >= 2)
+			printk(LOG_LEVEL_MUTE, "boot_cpuid_phys:\t0x%x\n", fdt_boot_cpuid_phys(image.of_dest));
+		if (version >= 3)
+			printk(LOG_LEVEL_MUTE, "size_dt_strings:\t0x%x\n", fdt_size_dt_strings(image.of_dest));
+		if (version >= 17)
+			printk(LOG_LEVEL_MUTE, "size_dt_struct:\t\t0x%x\n", fdt_size_dt_struct(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "number mem_rsv:\t\t0x%x\n", fdt_num_mem_rsv(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "\n");
 	} else if (strncmp(argv[1], "rs", 2) == 0) {

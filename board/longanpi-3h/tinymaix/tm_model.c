@@ -16,13 +16,16 @@ limitations under the License.
 //in: return input mat, include buf addr; //you can ignore it if use static buf
 tm_err_t TM_WEAK tm_load(tm_mdl_t *mdl, const uint8_t *bin, uint8_t *buf, tm_cb_t cb, tm_mat_t *in) {
 	tm_mdlbin_t *mdl_bin = (tm_mdlbin_t *) bin;
-	if (mdl_bin->magic != TM_MDL_MAGIC) return TM_ERR_MAGIC;//FIXME: big-endian not compatible
-	if (mdl_bin->mdl_type != TM_MDL_TYPE) return TM_ERR_MDLTYPE;
+	if (mdl_bin->magic != TM_MDL_MAGIC)
+		return TM_ERR_MAGIC;//FIXME: big-endian not compatible
+	if (mdl_bin->mdl_type != TM_MDL_TYPE)
+		return TM_ERR_MDLTYPE;
 	mdl->b = mdl_bin;
 	mdl->cb = (void *) cb;
 	if (buf == NULL) {
 		mdl->buf = (uint8_t *) tm_malloc(mdl->b->buf_size);
-		if (mdl->buf == NULL) return TM_ERR_OOM;
+		if (mdl->buf == NULL)
+			return TM_ERR_OOM;
 		mdl->main_alloc = 1;
 	} else {
 		mdl->buf = buf;
@@ -30,7 +33,8 @@ tm_err_t TM_WEAK tm_load(tm_mdl_t *mdl, const uint8_t *bin, uint8_t *buf, tm_cb_
 	}
 	if (mdl->b->sub_size > 0) {
 		mdl->subbuf = (uint8_t *) tm_malloc(mdl->b->sub_size);
-		if (mdl->subbuf == NULL) return TM_ERR_OOM;
+		if (mdl->subbuf == NULL)
+			return TM_ERR_OOM;
 	} else
 		mdl->subbuf = NULL;
 	mdl->layer_i = 0;
@@ -42,7 +46,8 @@ tm_err_t TM_WEAK tm_load(tm_mdl_t *mdl, const uint8_t *bin, uint8_t *buf, tm_cb_
 
 //remove model
 void TM_WEAK tm_unload(tm_mdl_t *mdl) {
-	if (mdl->main_alloc) tm_free(mdl->buf);
+	if (mdl->main_alloc)
+		tm_free(mdl->buf);
 	return;
 }
 
@@ -133,8 +138,10 @@ tm_err_t TM_WEAK tm_run(tm_mdl_t *mdl, tm_mat_t *in, tm_mat_t *out) {
 				res = TM_ERR_LAYERTYPE;
 				break;
 		}
-		if (res != TM_OK) return res;
-		if (mdl->cb) ((tm_cb_t) mdl->cb)(mdl, h);//layer callback
+		if (res != TM_OK)
+			return res;
+		if (mdl->cb)
+			((tm_cb_t) mdl->cb)(mdl, h);//layer callback
 		if (h->is_out) {
 			memcpy((void *) (&out[out_idx]), (void *) (&(h->out_dims)), sizeof(uint16_t) * 4);
 			if (mdl->b->out_deq == 0 || TM_MDL_TYPE == TM_MDL_FP32)//fp32 do not need deq

@@ -205,7 +205,9 @@ static int spi_dma_cfg(void) {
 }
 
 static int spi_dma_init(void) {
-	if (spi_dma_cfg()) { return -1; }
+	if (spi_dma_cfg()) {
+		return -1;
+	}
 	sunxi_dma_setting(spi_rx_dma_hd, &spi_rx_dma);
 
 	return 0;
@@ -280,7 +282,8 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
 	val &= ~(0x3 << 0);//  CPOL, CPHA = 0
 	val &= ~(SPI_TCR_SDM_MSK | SPI_TCR_SDC_MSK);
 	val |= SPI_TCR_SPOL_MSK | SPI_TCR_DHB_MSK;
-	if (freq >= 80000000) val |= SPI_TCR_SDC_MSK;// Set SDC bit when above 60MHz
+	if (freq >= 80000000)
+		val |= SPI_TCR_SDC_MSK;// Set SDC bit when above 60MHz
 	else if ((freq <= 24000000))
 		val |= SPI_TCR_SDM_MSK;// Set SDM bit when below 24MHz
 	write32(spi->base + SPI_TCR, val);
@@ -395,7 +398,9 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 
 	write32(spi->base + SPI_TCR, read32(spi->base + SPI_TCR) | (1 << 31));// Start exchange when data in FIFO
 
-	if (txbuf && txlen) { spi_write_tx_fifo(spi, txbuf, txlen); }
+	if (txbuf && txlen) {
+		spi_write_tx_fifo(spi, txbuf, txlen);
+	}
 
 	fcr = read32(spi->base + SPI_FCR);
 

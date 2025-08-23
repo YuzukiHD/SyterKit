@@ -236,10 +236,10 @@ int fdt_next_subnode(const void *fdt, int offset);
 #define fdt_size_dt_strings(fdt) (fdt_get_header(fdt, size_dt_strings))
 #define fdt_size_dt_struct(fdt) (fdt_get_header(fdt, size_dt_struct))
 
-#define fdt_set_hdr_(name)                                                                                                                                                         \
-	static inline void fdt_set_##name(void *fdt, uint32_t val) {                                                                                                                   \
-		struct fdt_header *fdth = (struct fdt_header *) fdt;                                                                                                                       \
-		fdth->name = cpu_to_fdt32(val);                                                                                                                                            \
+#define fdt_set_hdr_(name)                                       \
+	static inline void fdt_set_##name(void *fdt, uint32_t val) { \
+		struct fdt_header *fdth = (struct fdt_header *) fdt;     \
+		fdth->name = cpu_to_fdt32(val);                          \
 	}
 fdt_set_hdr_(magic);
 fdt_set_hdr_(totalsize);
@@ -378,7 +378,8 @@ static inline uint32_t fdt_get_max_phandle(const void *fdt) {
 	int err;
 
 	err = fdt_find_max_phandle(fdt, &phandle);
-	if (err < 0) return (uint32_t) -1;
+	if (err < 0)
+		return (uint32_t) -1;
 
 	return phandle;
 }

@@ -13,7 +13,9 @@
 extern void *memset0(void *s, int c, size_t count);
 
 void *memset(void *s, int c, size_t count) {
-	asm volatile("bx %0" : : "r"(memset0));
+	asm volatile("bx %0"
+				 :
+				 : "r"(memset0));
 
 	return s;
 }
@@ -21,7 +23,9 @@ void *memset(void *s, int c, size_t count) {
 extern void *memcpy0(void *dest, const void *src, size_t n);
 
 void *memcpy(void *dest, const void *src, size_t count) {
-	asm volatile("bx %0" : : "r"(memcpy0));
+	asm volatile("bx %0"
+				 :
+				 : "r"(memcpy0));
 
 	return dest;
 }

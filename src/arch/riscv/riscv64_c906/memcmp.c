@@ -12,6 +12,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 	int res = 0;
 
 	for (su1 = s1, su2 = s2; 0 < n; ++su1, ++su2, n--)
-		if ((res = *su1 - *su2) != 0) break;
+		if ((res = *su1 - *su2) != 0)
+			break;
 	return res;
 }

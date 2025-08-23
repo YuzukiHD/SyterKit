@@ -56,7 +56,9 @@
  * @param x The instruction encoding (32-bit).
  * @return The length of the instruction in bytes (either 2, 4, 6, or 8).
  */
-#define insn_length(x) (((x) &0x03) < 0x03 ? 2 : ((x) &0x1f) < 0x1f ? 4 : ((x) &0x3f) < 0x3f ? 6 : 8)
+#define insn_length(x) (((x) &0x03) < 0x03 ? 2 : ((x) &0x1f) < 0x1f ? 4 \
+										 : ((x) &0x3f) < 0x3f		? 6 \
+																	: 8)
 
 /**
  * @brief Extracts a specific bit field from a value.
@@ -101,7 +103,9 @@ extern uint8_t __stack_srv_end[];
  * @return 1 if the PC is within the valid address range, 0 otherwise.
  */
 static int inline backtrace_check_address(void *pc) {
-	if (((uint32_t) pc > (uint32_t) __spl_start) && ((uint32_t) pc < (uint32_t) __stack_srv_end)) { return 1; /**< Valid address in the range. */ }
+	if (((uint32_t) pc > (uint32_t) __spl_start) && ((uint32_t) pc < (uint32_t) __stack_srv_end)) {
+		return 1; /**< Valid address in the range. */
+	}
 	return 0; /**< Invalid address outside the range. */
 }
 
@@ -132,7 +136,9 @@ static int riscv_backtrace_find_lr_offset(char *LR) {
 	}
 
 	/* Validate that the address (LR - 4) points to executable code. */
-	if (backtrace_check_address(LR_fixed - 4) == 0) { return 0; /**< Return 0 if the address is invalid (not in valid text region). */ }
+	if (backtrace_check_address(LR_fixed - 4) == 0) {
+		return 0; /**< Return 0 if the address is invalid (not in valid text region). */
+	}
 
 	/* Retrieve the instruction at LR - 4 and compute the instruction length. */
 	ins16 = *(uint16_t *) (LR_fixed - 4); /**< Fetch the instruction at LR-4. */
@@ -166,7 +172,9 @@ int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset) {
 		int immed = (inst & 0xF80);
 		immed >>= 7;
 		immed |= ((inst & 0xFE000000) >> 25) << 5;
-		if (((immed >> 11) & 0x01) != 0) { immed = 0xFFF - immed + 1; }
+		if (((immed >> 11) & 0x01) != 0) {
+			immed = 0xFFF - immed + 1;
+		}
 		*offset = immed / sizeof(long);
 		ret = -1;
 	}
@@ -501,7 +509,9 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 			result = riscv_ins16_get_push_lr_framesize(ins16, &offset);
 		}
 
-		if (result >= 0) { break; }
+		if (result >= 0) {
+			break;
+		}
 	}
 
 	parse_addr = PC - i;
@@ -534,14 +544,19 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 			ins16 = ins16_l;
 			temp = riscv_ins16_backtrace_stask_push(ins16);
 		}
-		if (temp >= 0) { framesize += temp; }
+		if (temp >= 0) {
+			framesize += temp;
+		}
 	}
 
 	printk_trace("BT: i = %d, framesize = %d, SP = %p\n", i, framesize, SP);
 
-	if (!offset) { return -1; }
+	if (!offset) {
+		return -1;
+	}
 
-	if (backtrace_check_address(SP + offset) == 0) printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", SP + offset);
+	if (backtrace_check_address(SP + offset) == 0)
+		printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", SP + offset);
 
 	LR = (char *) *(SP + offset);
 	if (backtrace_check_address(LR) == 0) {
@@ -575,7 +590,9 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
  *         or -1 if an invalid program counter is provided or the backtrace fails.
  */
 static int backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
-	if (backtrace_check_address(*pPC) == 0) { return -1; }
+	if (backtrace_check_address(*pPC) == 0) {
+		return -1;
+	}
 
 	return riscv_backtrace_from_stack(pSP, pPC, pLR);
 }
@@ -800,7 +817,9 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 		}
 
 		/* If the result is valid, exit the loop. */
-		if (result >= 0) { break; }
+		if (result >= 0) {
+			break;
+		}
 	}
 
 	printk_trace("BT: i = %d, parse_addr = %p, PC = %p, framesize = %d\n", i, parse_addr, PC, framesize); /**< Log backtrace progress. */
@@ -900,7 +919,9 @@ int backtrace(char *PC, long *SP, char *LR) {
 		if (ret == 0) {
 			for (; level < BT_LEVEL_LIMIT; level++) {
 				ret = backtrace_from_stack(&SP, &PC, &LR);///< Continue stack backtrace if LR tracing succeeds
-				if (ret != 0) { break; }
+				if (ret != 0) {
+					break;
+				}
 			}
 		}
 	}
@@ -923,13 +944,16 @@ int dump_stack(void) {
 	char *LR = NULL;///< Link register (LR)
 
 	// Get the current stack pointer (SP)
-	asm volatile("mv %0, sp\n" : "=r"(SP));
+	asm volatile("mv %0, sp\n"
+				 : "=r"(SP));
 
 	// Get the current program counter (PC)
-	asm volatile("auipc %0, 0\n" : "=r"(PC));
+	asm volatile("auipc %0, 0\n"
+				 : "=r"(PC));
 
 	// Get the return address (LR)
-	asm volatile("mv %0, ra\n" : "=r"(LR));
+	asm volatile("mv %0, ra\n"
+				 : "=r"(LR));
 
 	// Check if stack pointer or program counter is invalid
 	if (SP == NULL || PC == NULL) {

@@ -23,21 +23,28 @@ void *smalloc(uint32_t num_bytes) {
 	struct alloc_struct_t *ptr, *newptr;
 	uint32_t actual_bytes;
 
-	if (!num_bytes) return 0;
+	if (!num_bytes)
+		return 0;
 
 	actual_bytes = BYTE_ALIGN(num_bytes);
 
 	ptr = &boot_heap_head;
 
 	while (ptr && ptr->next) {
-		if (ptr->next->address >= (ptr->address + ptr->size + 2 * sizeof(struct alloc_struct_t) + actual_bytes)) { break; }
+		if (ptr->next->address >= (ptr->address + ptr->size + 2 * sizeof(struct alloc_struct_t) + actual_bytes)) {
+			break;
+		}
 		ptr = ptr->next;
 	}
 
-	if (!ptr->next) { return 0; }
+	if (!ptr->next) {
+		return 0;
+	}
 
 	newptr = (struct alloc_struct_t *) (ptr->address + ptr->size);
-	if (!newptr) { return 0; }
+	if (!newptr) {
+		return 0;
+	}
 
 	newptr->address = ptr->address + ptr->size + sizeof(struct alloc_struct_t);
 	newptr->size = actual_bytes;
@@ -53,21 +60,30 @@ void *srealloc(void *p, uint32_t num_bytes) {
 	void *tmp;
 	uint32_t actual_bytes;
 
-	if (!p) { return smalloc(num_bytes); }
-	if (!num_bytes) { return p; }
+	if (!p) {
+		return smalloc(num_bytes);
+	}
+	if (!num_bytes) {
+		return p;
+	}
 
 	ptr = &boot_heap_head;
 	while (ptr && ptr->next) {
-		if (ptr->next->address == (phys_addr_t) p) break;
+		if (ptr->next->address == (phys_addr_t) p)
+			break;
 		ptr = ptr->next;
 	}
 	prev = ptr;
 	ptr = ptr->next;
 
-	if (!ptr) { return 0; }
+	if (!ptr) {
+		return 0;
+	}
 
 	actual_bytes = BYTE_ALIGN(ptr->o_size + num_bytes);
-	if (actual_bytes == ptr->size) { return p; }
+	if (actual_bytes == ptr->size) {
+		return p;
+	}
 
 	if (ptr->next->address >= (ptr->address + actual_bytes + 2 * sizeof(struct alloc_struct_t))) {
 		ptr->size = actual_bytes;
@@ -77,7 +93,9 @@ void *srealloc(void *p, uint32_t num_bytes) {
 	}
 
 	tmp = smalloc(actual_bytes);
-	if (!tmp) { return 0; }
+	if (!tmp) {
+		return 0;
+	}
 	memcpy(tmp, (void *) ptr->address, ptr->size);
 	prev->next = ptr->next; /* delete the node which need be released from the memory block chain  */
 
@@ -87,18 +105,21 @@ void *srealloc(void *p, uint32_t num_bytes) {
 void sfree(void *p) {
 	struct alloc_struct_t *ptr, *prev;
 
-	if (p == NULL) return;
+	if (p == NULL)
+		return;
 
 	ptr = &boot_heap_head;
 	while (ptr && ptr->next) {
-		if (ptr->next->address == (phys_addr_t) p) break;
+		if (ptr->next->address == (phys_addr_t) p)
+			break;
 		ptr = ptr->next;
 	}
 
 	prev = ptr;
 	ptr = ptr->next;
 
-	if (!ptr) return;
+	if (!ptr)
+		return;
 
 	prev->next = ptr->next;
 

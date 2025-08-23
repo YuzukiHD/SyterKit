@@ -64,7 +64,9 @@ static void sunxi_usb_read_complete(uint64_t husb, uint32_t ep_type, uint32_t co
 	usb_device_read_data_status(husb, ep_type, complete);
 	if (ep_type == USBC_EP_TYPE_EP0) {
 		/* clear data end */
-		if (complete) { usb_device_ep0_clear_setup_end(husb); }
+		if (complete) {
+			usb_device_ep0_clear_setup_end(husb);
+		}
 		/* clear irq */
 		usb_controller_int_clear_ep_pending(husb, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
 	}
@@ -93,7 +95,9 @@ static void sunxi_usb_write_complete(uint64_t husb, uint32_t ep_type, uint32_t c
 
 	if (ep_type == USBC_EP_TYPE_EP0) {
 		/* Clear data end */
-		if (complete) { usb_device_ctrl_clear_setup_end(husb); }
+		if (complete) {
+			usb_device_ctrl_clear_setup_end(husb);
+		}
 
 		/* Clear IRQ */
 		usb_controller_int_clear_ep_pending(husb, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
@@ -210,7 +214,9 @@ static int ep0_recv_op(void) {
 	int ret = 0;
 	static uint32_t ep0_stage;
 
-	if (!ep0_stage) { memset(&sunxi_udc_source.standard_reg, 0, sizeof(struct usb_device_request)); }
+	if (!ep0_stage) {
+		memset(&sunxi_udc_source.standard_reg, 0, sizeof(struct usb_device_request));
+	}
 
 	old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
@@ -224,7 +230,9 @@ static int ep0_recv_op(void) {
 	}
 
 	/* clear setup end */
-	if (usb_device_ctrl_get_setup_end(sunxi_udc_source.usbc_hd)) { usb_device_ctrl_clear_setup_end(sunxi_udc_source.usbc_hd); }
+	if (usb_device_ctrl_get_setup_end(sunxi_udc_source.usbc_hd)) {
+		usb_device_ctrl_clear_setup_end(sunxi_udc_source.usbc_hd);
+	}
 
 	/* Check if read data on EP0 is ready */
 	if (usb_device_get_read_data_ready(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0)) {
@@ -446,7 +454,9 @@ static void sunxi_usb_recv_by_dma_isr(void *p_arg) {
 	}
 
 	/* If the current DMA transfer is not a complete packet, manually clear the interrupt */
-	if (sunxi_ubuf.request_size % sunxi_udc_source.bulk_ep_max) { usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1); }
+	if (sunxi_ubuf.request_size % sunxi_udc_source.bulk_ep_max) {
+		usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1);
+	}
 
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
 	sunxi_udev_active->dma_rx_isr(p_arg);
@@ -497,7 +507,9 @@ static int eprx_recv_op(void) {
 				uint64_t len_left = this_len > dma_rec_size ? this_len - dma_rec_size : 0;
 				fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
 				usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, dma_rec_size, (void *) dma_rec_addr);
-				if (len_left) { sunxi_ubuf.rx_req_length = usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer); }
+				if (len_left) {
+					sunxi_ubuf.rx_req_length = usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer);
+				}
 				printk_trace("USB: fake rx dma\n");
 				sunxi_usb_recv_by_dma_isr(NULL);
 
@@ -666,9 +678,15 @@ int sunxi_usb_init() {
 	return 0;
 
 sunxi_usb_init_fail:
-	if (sunxi_udc_source.dma_send_channal) { usb_dma_release(sunxi_udc_source.dma_send_channal); }
-	if (sunxi_udc_source.dma_recv_channal) { usb_dma_release(sunxi_udc_source.dma_recv_channal); }
-	if (sunxi_udc_source.usbc_hd) { usb_controller_close_otg(sunxi_udc_source.usbc_hd); }
+	if (sunxi_udc_source.dma_send_channal) {
+		usb_dma_release(sunxi_udc_source.dma_send_channal);
+	}
+	if (sunxi_udc_source.dma_recv_channal) {
+		usb_dma_release(sunxi_udc_source.dma_recv_channal);
+	}
+	if (sunxi_udc_source.usbc_hd) {
+		usb_controller_close_otg(sunxi_udc_source.usbc_hd);
+	}
 	return -1;
 }
 
@@ -912,7 +930,9 @@ void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {
 	printk_trace("USBC_REG_o_PHYCTL        = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYCTL));
 	printk_trace("USBC_REG_o_PHYBIST       = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYBIST));
 
-	if (ep_index >= 0) { writew(old_ep_index, (usbc_base + USBC_REG_o_EPIND)); }
+	if (ep_index >= 0) {
+		writew(old_ep_index, (usbc_base + USBC_REG_o_EPIND));
+	}
 
 	return;
 }

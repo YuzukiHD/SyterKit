@@ -81,8 +81,8 @@
 #define SMHC_RINT_R1B_BUSY_CLEAR (0x1 << 17)
 #define SMHC_RINT_CARD_INSERT (0x1 << 30)
 #define SMHC_RINT_CARD_REMOVE (0x1 << 31)
-#define SMHC_RINT_INTERRUPT_ERROR_BIT                                                                                                                                              \
-	(SMHC_RINT_RESP_ERROR | SMHC_RINT_RESP_CRC_ERROR | SMHC_RINT_DATA_CRC_ERROR | SMHC_RINT_RESP_TIMEOUT | SMHC_RINT_DATA_TIMEOUT | SMHC_RINT_FIFO_RUN_ERROR |                     \
+#define SMHC_RINT_INTERRUPT_ERROR_BIT                                                                                                                          \
+	(SMHC_RINT_RESP_ERROR | SMHC_RINT_RESP_CRC_ERROR | SMHC_RINT_DATA_CRC_ERROR | SMHC_RINT_RESP_TIMEOUT | SMHC_RINT_DATA_TIMEOUT | SMHC_RINT_FIFO_RUN_ERROR | \
 	 SMHC_RINT_HARD_WARE_LOCKED | SMHC_RINT_START_BIT_ERROR | SMHC_RINT_END_BIT_ERROR) /* 0xbbc2 */
 #define SMHC_RINT_INTERRUPT_DONE_BIT (SMHC_RINT_AUTO_COMMAND_DONE | SMHC_RINT_DATA_OVER | SMHC_RINT_COMMAND_DONE | SMHC_RINT_VOLTAGE_CHANGE_DONE)
 

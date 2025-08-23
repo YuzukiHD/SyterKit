@@ -100,11 +100,13 @@ static void LCD_Write_Bus(uint8_t dat) {
 	uint8_t tx[1]; /* Transmit buffer */
 	tx[0] = dat;
 	/* Perform SPI transfer */
-	if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0) < 0) printk_error("SPI: SPI Xfer error!\n");
+	if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0) < 0)
+		printk_error("SPI: SPI Xfer error!\n");
 }
 
 static void LCD_Write_Data_Bus(void *dat, uint32_t len) {
-	if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0) < 0) printk_error("SPI: SPI Xfer error!\n");
+	if (sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0) < 0)
+		printk_error("SPI: SPI Xfer error!\n");
 }
 
 static void LCD_WR_DATA(uint16_t dat) {
@@ -152,7 +154,9 @@ static void LCD_Init(void) {
 	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
 	sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
 
-	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) { printk_error("SPI: init failed\n"); }
+	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
+		printk_error("SPI: init failed\n");
+	}
 
 	LCD_Set_RES(0);
 	mdelay(100);
@@ -370,7 +374,8 @@ static void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint1
 	for (i = 0; i < TypefaceNum; i++) {
 		temp = ascii_1206[num][i];// Call 6x12 font
 		for (t = 0; t < 8; t++) {
-			if (temp & (0x01 << t)) LCD_WR_DATA(fc);
+			if (temp & (0x01 << t))
+				LCD_WR_DATA(fc);
 			else
 				LCD_WR_DATA(bc);
 			m++;

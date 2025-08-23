@@ -53,7 +53,9 @@ int main(void) {
 
 	sunxi_usb_attach_module(SUNXI_USB_DEVICE_MASS);
 
-	if (sunxi_usb_init()) { printk_info("USB init failed.\n"); }
+	if (sunxi_usb_init()) {
+		printk_info("USB init failed.\n");
+	}
 
 	printk_info("USB init OK.\n");
 

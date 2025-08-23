@@ -37,7 +37,8 @@ static void scsi_setup_inquiry(scsi_cmd_t *pccb) {
 	pccb->cmd[1] = pccb->lun << 5;
 	pccb->cmd[2] = 0;
 	pccb->cmd[3] = 0;
-	if (pccb->datalen > 255) pccb->cmd[4] = 255;
+	if (pccb->datalen > 255)
+		pccb->cmd[4] = 255;
 	else
 		pccb->cmd[4] = (uint8_t) pccb->datalen;
 	pccb->cmd[5] = 0;
@@ -82,7 +83,8 @@ static int scsi_read_capacity(ufs_device_t *dev, scsi_cmd_t *pccb, uint64_t *cap
 
 	pccb->datalen = 8;
 	pccb->dma_dir = DMA_FROM_DEVICE;
-	if (scsi_exec(dev, pccb)) return 1;
+	if (scsi_exec(dev, pccb))
+		return 1;
 
 	*capacity = ((uint64_t) pccb->pdata[0] << 24) | ((uint64_t) pccb->pdata[1] << 16) | ((uint64_t) pccb->pdata[2] << 8) | ((uint64_t) pccb->pdata[3]);
 
@@ -101,7 +103,8 @@ static int scsi_read_capacity(ufs_device_t *dev, scsi_cmd_t *pccb, uint64_t *cap
 	/*ufs read capacity 16 parameter data is 32 byte*/
 	pccb->datalen = 32;
 	pccb->dma_dir = DMA_FROM_DEVICE;
-	if (scsi_exec(dev, pccb)) return 1;
+	if (scsi_exec(dev, pccb))
+		return 1;
 
 	*capacity = ((uint64_t) pccb->pdata[0] << 56) | ((uint64_t) pccb->pdata[1] << 48) | ((uint64_t) pccb->pdata[2] << 40) | ((uint64_t) pccb->pdata[3] << 32) |
 				((uint64_t) pccb->pdata[4] << 24) | ((uint64_t) pccb->pdata[5] << 16) | ((uint64_t) pccb->pdata[6] << 8) | ((uint64_t) pccb->pdata[7]);
@@ -154,7 +157,8 @@ static int scsi_detect_dev(ufs_device_t *dev, int target, int lun, blk_desc_t *d
 			pccb->dma_dir = DMA_NONE;
 			scsi_setup_test_unit_ready(pccb);
 			err = scsi_exec(dev, pccb);
-			if (!err) break;
+			if (!err)
+				break;
 		}
 		if (err) {
 			if (!spintime) {

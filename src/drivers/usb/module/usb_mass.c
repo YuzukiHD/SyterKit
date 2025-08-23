@@ -445,10 +445,14 @@ static int sunxi_mass_exit(void) {
 	printk_trace("USB MASS: sunxi_mass_exit\n");
 
 	// Free receive buffer memory
-	if (trans_data.base_recv_buffer) { sfree(trans_data.base_recv_buffer); }
+	if (trans_data.base_recv_buffer) {
+		sfree(trans_data.base_recv_buffer);
+	}
 
 	// Free send buffer memory
-	if (trans_data.base_send_buffer) { sfree(trans_data.base_send_buffer); }
+	if (trans_data.base_send_buffer) {
+		sfree(trans_data.base_send_buffer);
+	}
 
 	return 0;
 }
@@ -580,7 +584,9 @@ static int sunxi_mass_state_loop(void *buffer) {
 
 	switch (sunxi_usb_mass_status) {
 		case SUNXI_USB_MASS_IDLE:
-			if (sunxi_ubuf->rx_ready_for_data == 1) { sunxi_usb_mass_status = SUNXI_USB_MASS_SETUP; }
+			if (sunxi_ubuf->rx_ready_for_data == 1) {
+				sunxi_usb_mass_status = SUNXI_USB_MASS_SETUP;
+			}
 			break;
 		case SUNXI_USB_MASS_SETUP:
 			printk_trace("USB MASS: SUNXI_USB_MASS_SETUP\n");

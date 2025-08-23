@@ -22,7 +22,9 @@ static fifo_info_t usbc_info_g;
 uint32_t usb_controller_open_otg(uint32_t otg_no) {
 	usb_controller_otg_t *usbc_otg = usbc_otg_array;
 
-	if (otg_no >= USBC_MAX_CTL_NUM) { return 0; }
+	if (otg_no >= USBC_MAX_CTL_NUM) {
+		return 0;
+	}
 
 	usbc_otg[otg_no].used = 1;
 	usbc_otg[otg_no].no = otg_no;
@@ -34,7 +36,9 @@ uint32_t usb_controller_open_otg(uint32_t otg_no) {
 
 int usb_controller_close_otg(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 	memset(usbc_otg, 0, sizeof(usb_controller_otg_t));
 	return 0;
 }
@@ -188,7 +192,9 @@ void usb_controller_dpdm_pull_disable(uint64_t husb) {
 void usb_controller_select_bus(uint64_t husb, uint32_t io_type, uint32_t ep_type, uint32_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 	reg_val = read8(USBC_REG_VEND0(usbc_otg->base_addr));
 	if (io_type == USBC_IO_TYPE_DMA) {
 		if (ep_type == USBC_EP_TYPE_TX) {
@@ -207,7 +213,9 @@ void usb_controller_select_bus(uint64_t husb, uint32_t io_type, uint32_t ep_type
 void usb_controller_int_disable_usb_misc_all(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	writeb(0, USBC_REG_INTUSBE(usbc_otg->base_addr));
 }
@@ -215,7 +223,9 @@ void usb_controller_int_disable_usb_misc_all(uint64_t husb) {
 void usb_controller_int_disable_ep_all(uint64_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_TX:
@@ -237,7 +247,9 @@ void usb_controller_int_enable_usb_misc_uint(uint64_t husb, uint32_t mask) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	reg_val = readb(USBC_REG_INTUSBE(usbc_otg->base_addr));
 	reg_val |= mask;
@@ -248,7 +260,9 @@ void usb_controller_int_disable_usb_misc_uint(uint64_t husb, uint32_t mask) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	reg_val = readb(USBC_REG_INTUSBE(usbc_otg->base_addr));
 	reg_val &= ~mask;
@@ -258,7 +272,9 @@ void usb_controller_int_disable_usb_misc_uint(uint64_t husb, uint32_t mask) {
 void usb_controller_int_enable_ep(uint64_t husb, uint32_t ep_type, uint32_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_TX:
@@ -279,7 +295,9 @@ void usb_controller_int_enable_ep(uint64_t husb, uint32_t ep_type, uint32_t ep_i
 uint32_t usb_controller_get_active_ep(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	return readb(USBC_REG_EPIND(usbc_otg->base_addr));
 }
@@ -287,7 +305,9 @@ uint32_t usb_controller_get_active_ep(uint64_t husb) {
 void usb_controller_select_active_ep(uint64_t husb, uint8_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	writeb(ep_index, USBC_REG_EPIND(usbc_otg->base_addr));
 }
@@ -316,7 +336,9 @@ void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, ui
 
 	/* config fifo size */
 	writeb((size & 0x0f), USBC_REG_TXFIFOSZ(addr));
-	if (is_double_fifo) { usb_set_bit8(USBC_BP_TXFIFOSZ_DPB, USBC_REG_TXFIFOSZ(addr)); }
+	if (is_double_fifo) {
+		usb_set_bit8(USBC_BP_TXFIFOSZ_DPB, USBC_REG_TXFIFOSZ(addr));
+	}
 }
 
 void usb_controller_config_fifo_rx_ep_default(uint32_t addr) {
@@ -341,13 +363,17 @@ void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, ui
 	addr_base = fifo_addr >> 3;
 	writew(addr_base, USBC_REG_RXFIFOAD(addr));
 	writeb((size & 0x0f), USBC_REG_RXFIFOSZ(addr));
-	if (is_double_fifo) { usb_set_bit8(USBC_BP_RXFIFOSZ_DPB, USBC_REG_RXFIFOSZ(addr)); }
+	if (is_double_fifo) {
+		usb_set_bit8(USBC_BP_RXFIFOSZ_DPB, USBC_REG_RXFIFOSZ(addr));
+	}
 }
 
 void usb_controller_config_fifo(uint64_t husb, uint32_t ep_type, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
@@ -370,7 +396,9 @@ void usb_controller_config_fifo(uint64_t husb, uint32_t ep_type, uint32_t is_dou
 uint32_t usb_controller_int_ep_pending(uint64_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
@@ -389,7 +417,9 @@ uint32_t usb_controller_int_ep_pending(uint64_t husb, uint32_t ep_type) {
 void usb_controller_int_clear_ep_pending(uint64_t husb, uint32_t ep_type, uint8_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
@@ -412,7 +442,9 @@ void usb_controller_int_clear_ep_pending(uint64_t husb, uint32_t ep_type, uint8_
 void usb_controller_int_clear_ep_pending_all(uint64_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
@@ -435,7 +467,9 @@ void usb_controller_int_clear_ep_pending_all(uint64_t husb, uint32_t ep_type) {
 uint32_t usb_controller_int_misc_pending(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	return readb(USBC_REG_INTUSB(usbc_otg->base_addr));
 }
@@ -444,7 +478,9 @@ uint32_t usb_controller_int_misc_pending(uint64_t husb) {
 void usb_controller_int_clear_misc_pending(uint64_t husb, uint32_t mask) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	writeb(mask, USBC_REG_INTUSB(usbc_otg->base_addr));
 }
@@ -453,7 +489,9 @@ void usb_controller_int_clear_misc_pending(uint64_t husb, uint32_t mask) {
 void usb_controller_int_clear_misc_pending_all(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	writeb(0xff, USBC_REG_INTUSB(usbc_otg->base_addr));
 }
@@ -462,7 +500,9 @@ void usb_controller_int_clear_misc_pending_all(uint64_t husb) {
 void usb_controller_int_disable_ep(uint64_t husb, uint32_t ep_type, uint8_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_TX:
@@ -484,7 +524,9 @@ uint32_t usb_controller_get_vbus_status(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint8_t reg_val = 0;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	reg_val = readb(USBC_REG_DEVCTL(usbc_otg->base_addr));
 	reg_val = reg_val >> USBC_BP_DEVCTL_VBUS;
@@ -505,7 +547,9 @@ uint32_t usb_controller_get_vbus_status(uint64_t husb) {
 uint32_t usb_controller_read_len_from_fifo(uint64_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
@@ -529,7 +573,9 @@ uint32_t usb_controller_write_packet(uint64_t husb, uint32_t fifo, uint32_t cnt,
 	uint32_t *buf32 = NULL;
 	uint64_t a64_fifo = (uint64_t) fifo;
 
-	if (usbc_otg == NULL || buff == NULL) { return 0; }
+	if (usbc_otg == NULL || buff == NULL) {
+		return 0;
+	}
 
 	/* Adjust the data */
 	buf32 = buff;
@@ -557,7 +603,9 @@ uint32_t usb_controller_read_packet(uint64_t husb, uint32_t fifo, uint32_t cnt, 
 	uint32_t *buf32 = NULL;
 	uint64_t a64_fifo = (uint64_t) fifo;
 
-	if (usbc_otg == NULL || buff == NULL) { return 0; }
+	if (usbc_otg == NULL || buff == NULL) {
+		return 0;
+	}
 
 	/* Adjust the data */
 	buf32 = (uint32_t *) buff;
@@ -580,7 +628,9 @@ void usb_controller_config_fifo_base(uint64_t husb, uint32_t sram_base) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	fifo_info_t *usbc_info = &usbc_info_g;
 
-	if (usbc_otg == NULL) { return; }
+	if (usbc_otg == NULL) {
+		return;
+	}
 
 	if (usbc_otg->port_num == 0) {
 		usbc_info->port0_fifo_addr = 0x00;
@@ -592,7 +642,9 @@ void usb_controller_config_fifo_base(uint64_t husb, uint32_t sram_base) {
 uint32_t usb_controller_get_port_fifo_start_addr(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	if (usbc_otg->port_num == 0) {
 		return usbc_info_g.port0_fifo_addr;
@@ -608,7 +660,9 @@ uint32_t usb_controller_get_port_fifo_start_addr(uint64_t husb) {
 uint32_t usb_controller_get_port_fifo_size(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	if (usbc_otg->port_num == 0) {
 		return usbc_info_g.port0_fifo_size;
@@ -624,7 +678,9 @@ uint32_t usb_controller_get_port_fifo_size(uint64_t husb) {
 uint32_t usb_controller_select_fifo(uint64_t husb, uint32_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
-	if (usbc_otg == NULL) { return 0; }
+	if (usbc_otg == NULL) {
+		return 0;
+	}
 
 	return USBC_REG_EPFIFOx(usbc_otg->base_addr, ep_index);
 }

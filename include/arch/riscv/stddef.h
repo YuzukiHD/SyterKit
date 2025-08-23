@@ -60,10 +60,10 @@ extern "C" {
  * @param member Name of the member in the structure.
  * @return Pointer to the container structure.
  */
-#define container_of(ptr, type, member)                                                                                                                                            \
-	({                                                                                                                                                                             \
-		const typeof(((type *) 0)->member) *__mptr = (ptr);                                                                                                                        \
-		(type *) ((char *) __mptr - offsetof(type, member));                                                                                                                       \
+#define container_of(ptr, type, member)                      \
+	({                                                       \
+		const typeof(((type *) 0)->member) *__mptr = (ptr);  \
+		(type *) ((char *) __mptr - offsetof(type, member)); \
 	})
 
 /**

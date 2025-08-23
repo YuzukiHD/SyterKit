@@ -61,10 +61,14 @@ static int32_t sunxi_i2c_send_byteaddr(sunxi_i2c_t *i2c_dev, uint32_t byteaddr) 
 	while ((time--) && (!(i2c->ctl & 0x08)))
 		;
 
-	if (time <= 0) { return -I2C_NOK_TOUT; }
+	if (time <= 0) {
+		return -I2C_NOK_TOUT;
+	}
 
 	tmp_val = i2c->status;
-	if (tmp_val != I2C_DATAWRITE_ACK) { return -I2C_DATAWRITE_ACK; }
+	if (tmp_val != I2C_DATAWRITE_ACK) {
+		return -I2C_DATAWRITE_ACK;
+	}
 
 	return I2C_OK;
 }
@@ -81,10 +85,14 @@ static int32_t sunxi_i2c_send_start(sunxi_i2c_t *i2c_dev) {
 
 	while ((time--) && (!(i2c->ctl & TWI_CTL_INTFLG)))
 		;
-	if (time <= 0) { return -I2C_NOK_TOUT; }
+	if (time <= 0) {
+		return -I2C_NOK_TOUT;
+	}
 
 	tmp_val = i2c->status;
-	if (tmp_val != I2C_START_TRANSMIT) { return -I2C_START_TRANSMIT; }
+	if (tmp_val != I2C_START_TRANSMIT) {
+		return -I2C_START_TRANSMIT;
+	}
 
 	return I2C_OK;
 }
@@ -102,15 +110,21 @@ static int32_t sunxi_i2c_send_slave_addr(sunxi_i2c_t *i2c_dev, uint32_t saddr, u
 	while ((time--) && (!(i2c->ctl & TWI_CTL_INTFLG)))
 		;
 
-	if (time <= 0) { return -I2C_NOK_TOUT; }
+	if (time <= 0) {
+		return -I2C_NOK_TOUT;
+	}
 
 	tmp_val = i2c->status;
 	if (rw == I2C_WRITE) {
-		if (tmp_val != I2C_ADDRWRITE_ACK) { return -I2C_ADDRWRITE_ACK; }
+		if (tmp_val != I2C_ADDRWRITE_ACK) {
+			return -I2C_ADDRWRITE_ACK;
+		}
 	}
 
 	else {
-		if (tmp_val != I2C_ADDRREAD_ACK) { return -I2C_ADDRREAD_ACK; }
+		if (tmp_val != I2C_ADDRREAD_ACK) {
+			return -I2C_ADDRREAD_ACK;
+		}
 	}
 
 	return I2C_OK;
@@ -127,10 +141,14 @@ static int32_t sunxi_i2c_send_restart(sunxi_i2c_t *i2c_dev) {
 
 	while ((time--) && (!(i2c->ctl & 0x08)))
 		;
-	if (time <= 0) { return -I2C_NOK_TOUT; }
+	if (time <= 0) {
+		return -I2C_NOK_TOUT;
+	}
 
 	tmp_val = i2c->status;
-	if (tmp_val != I2C_RESTART_TRANSMIT) { return -I2C_RESTART_TRANSMIT; }
+	if (tmp_val != I2C_RESTART_TRANSMIT) {
+		return -I2C_RESTART_TRANSMIT;
+	}
 
 	return I2C_OK;
 }
@@ -143,12 +161,16 @@ static int32_t sunxi_i2c_stop(sunxi_i2c_t *i2c_dev) {
 	i2c->ctl |= (0x01 << 3);
 	while ((time--) && (i2c->ctl & 0x10))
 		;
-	if (time <= 0) { return -I2C_NOK_TOUT; }
+	if (time <= 0) {
+		return -I2C_NOK_TOUT;
+	}
 	time = 0xffff;
 	while ((time--) && (i2c->status != I2C_READY))
 		;
 	tmp_val = i2c->status;
-	if (tmp_val != I2C_READY) { return -I2C_NOK_TOUT; }
+	if (tmp_val != I2C_READY) {
+		return -I2C_NOK_TOUT;
+	}
 
 	return I2C_OK;
 }
@@ -162,13 +184,17 @@ static int32_t sunxi_i2c_get_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uint
 		i2c->ctl |= (0x01 << 3);
 		while ((time--) && (!(i2c->ctl & 0x08)))
 			;
-		if (time <= 0) { return -I2C_NOK_TOUT; }
+		if (time <= 0) {
+			return -I2C_NOK_TOUT;
+		}
 		for (time = 0; time < 100; time++)
 			;
 		*data_addr = i2c->data;
 
 		tmp_val = i2c->status;
-		if (tmp_val != I2C_DATAREAD_NACK) { return -I2C_DATAREAD_NACK; }
+		if (tmp_val != I2C_DATAREAD_NACK) {
+			return -I2C_DATAREAD_NACK;
+		}
 	} else {
 		for (i = 0; i < data_count - 1; i++) {
 			time = 0xffff;
@@ -181,14 +207,18 @@ static int32_t sunxi_i2c_get_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uint
 
 			while ((time--) && (!(i2c->ctl & 0x08)))
 				;
-			if (time <= 0) { return -I2C_NOK_TOUT; }
+			if (time <= 0) {
+				return -I2C_NOK_TOUT;
+			}
 			for (time = 0; time < 100; time++)
 				;
 			time = 0xffff;
 			data_addr[i] = i2c->data;
 			while ((time--) && (i2c->status != I2C_DATAREAD_ACK))
 				;
-			if (time <= 0) { return -I2C_NOK_TOUT; }
+			if (time <= 0) {
+				return -I2C_NOK_TOUT;
+			}
 		}
 
 		time = 0xffff;
@@ -196,13 +226,17 @@ static int32_t sunxi_i2c_get_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uint
 		i2c->ctl |= (0x01 << 3);
 		while ((time--) && (!(i2c->ctl & 0x08)))
 			;
-		if (time <= 0) { return -I2C_NOK_TOUT; }
+		if (time <= 0) {
+			return -I2C_NOK_TOUT;
+		}
 		for (time = 0; time < 100; time++)
 			;
 		data_addr[data_count - 1] = i2c->data;
 		while ((time--) && (i2c->status != I2C_DATAREAD_NACK))
 			;
-		if (time <= 0) { return -I2C_NOK_TOUT; }
+		if (time <= 0) {
+			return -I2C_NOK_TOUT;
+		}
 	}
 
 	return I2C_OK;
@@ -273,10 +307,14 @@ static int _sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, in
 	char *slave_reg;
 
 	ret = sunxi_i2c_send_start(i2c_dev);
-	if (ret) { goto i2c_read_err_occur; }
+	if (ret) {
+		goto i2c_read_err_occur;
+	}
 
 	ret = sunxi_i2c_send_slave_addr(i2c_dev, chip, I2C_WRITE);
-	if (ret) { goto i2c_read_err_occur; }
+	if (ret) {
+		goto i2c_read_err_occur;
+	}
 
 	/*send byte address*/
 	if (alen >= 3) {
@@ -290,18 +328,26 @@ static int _sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, in
 
 	for (i = addrlen; i >= 0; i--) {
 		ret = sunxi_i2c_send_byteaddr(i2c_dev, slave_reg[i] & 0xff);
-		if (ret) { goto i2c_read_err_occur; }
+		if (ret) {
+			goto i2c_read_err_occur;
+		}
 	}
 
 	ret = sunxi_i2c_send_restart(i2c_dev);
-	if (ret) { goto i2c_read_err_occur; }
+	if (ret) {
+		goto i2c_read_err_occur;
+	}
 
 	ret = sunxi_i2c_send_slave_addr(i2c_dev, chip, I2C_READ);
-	if (ret) { goto i2c_read_err_occur; }
+	if (ret) {
+		goto i2c_read_err_occur;
+	}
 
 	/*get data*/
 	ret = sunxi_i2c_get_data(i2c_dev, buffer, len);
-	if (ret) { goto i2c_read_err_occur; }
+	if (ret) {
+		goto i2c_read_err_occur;
+	}
 
 i2c_read_err_occur:
 	sunxi_i2c_stop(i2c_dev);
@@ -326,10 +372,14 @@ static int _sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, i
 
 	ret0 = -1;
 	ret = sunxi_i2c_send_start(i2c_dev);
-	if (ret) { goto i2c_write_err_occur; }
+	if (ret) {
+		goto i2c_write_err_occur;
+	}
 
 	ret = sunxi_i2c_send_slave_addr(i2c_dev, chip, I2C_WRITE);
-	if (ret) { goto i2c_write_err_occur; }
+	if (ret) {
+		goto i2c_write_err_occur;
+	}
 
 	/*send byte address*/
 	if (alen >= 3) {
@@ -343,11 +393,15 @@ static int _sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, i
 	slave_reg = (char *) &addr;
 	for (i = addrlen; i >= 0; i--) {
 		ret = sunxi_i2c_send_byteaddr(i2c_dev, slave_reg[i] & 0xff);
-		if (ret) { goto i2c_write_err_occur; }
+		if (ret) {
+			goto i2c_write_err_occur;
+		}
 	}
 
 	ret = sunxi_i2c_send_data(i2c_dev, buffer, len);
-	if (ret) { goto i2c_write_err_occur; }
+	if (ret) {
+		goto i2c_write_err_occur;
+	}
 	ret0 = 0;
 
 i2c_write_err_occur:
@@ -357,13 +411,15 @@ i2c_write_err_occur:
 }
 
 int sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t data) {
-	if (!i2c_dev->status) return I2C_NOK;
+	if (!i2c_dev->status)
+		return I2C_NOK;
 
 	return _sunxi_i2c_write(i2c_dev, addr, reg, 1, &data, 1);
 }
 
 int sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t *data) {
-	if (!i2c_dev->status) return I2C_NOK;
+	if (!i2c_dev->status)
+		return I2C_NOK;
 
 	return _sunxi_i2c_read(i2c_dev, addr, reg, 1, data, 1);
 }

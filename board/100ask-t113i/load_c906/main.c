@@ -120,15 +120,18 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->sbi_filename, (unsigned int) image->sbi_dest);
 	ret = fatfs_loadimage(image->sbi_filename, image->sbi_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->uboot_filename, (unsigned int) image->uboot_dest);
 	ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -193,7 +196,9 @@ int main(void) {
 	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
 
 	// Load RISC-V ELF image
-	if (load_elf64_image((phys_addr_t) image.dest)) { printk_error("RISC-V ELF load FAIL\n"); }
+	if (load_elf64_image((phys_addr_t) image.dest)) {
+		printk_error("RISC-V ELF load FAIL\n");
+	}
 
 	printk_info("RISC-V C906 Core now Running... \n");
 

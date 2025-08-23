@@ -115,7 +115,8 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -203,7 +204,9 @@ int main(void) {
 	sunxi_hifi4_clock_init(elf_run_addr);// Initialize clock with entry address
 
 	// Load HIFI4 ELF image
-	if (load_elf32_image_remap((phys_addr_t) image.dest, &hifi4_addr_mapping)) { printk_error("HIFI4 ELF load FAIL\n"); }
+	if (load_elf32_image_remap((phys_addr_t) image.dest, &hifi4_addr_mapping)) {
+		printk_error("HIFI4 ELF load FAIL\n");
+	}
 
 	dump_c906_clock();
 
