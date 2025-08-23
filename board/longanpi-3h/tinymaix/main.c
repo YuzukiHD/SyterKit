@@ -221,130 +221,126 @@ const static uint8_t mnist_pic[28*28]={
 /* clang-format on */
 
 static tm_err_t layer_cb(tm_mdl_t *mdl, tml_head_t *lh) {//dump middle result
-    int h = lh->out_dims[1];
-    int w = lh->out_dims[2];
-    int ch = lh->out_dims[3];
-    mtype_t *output = TML_GET_OUTPUT(mdl, lh);
-    return TM_OK;
-    TM_PRINTF("Layer %d callback ========\n", mdl->layer_i);
+	int h = lh->out_dims[1];
+	int w = lh->out_dims[2];
+	int ch = lh->out_dims[3];
+	mtype_t *output = TML_GET_OUTPUT(mdl, lh);
+	return TM_OK;
+	TM_PRINTF("Layer %d callback ========\n", mdl->layer_i);
 #if 1
-    for (int y = 0; y < h; y++) {
-        TM_PRINTF("[");
-        for (int x = 0; x < w; x++) {
-            TM_PRINTF("[");
-            for (int c = 0; c < ch; c++) {
+	for (int y = 0; y < h; y++) {
+		TM_PRINTF("[");
+		for (int x = 0; x < w; x++) {
+			TM_PRINTF("[");
+			for (int c = 0; c < ch; c++) {
 #if TM_MDL_TYPE == TM_MDL_FP32
-                TM_PRINTF("%.3f,", output[(y * w + x) * ch + c]);
+				TM_PRINTF("%.3f,", output[(y * w + x) * ch + c]);
 #else
-                TM_PRINTF("%.3f,", TML_DEQUANT(lh, output[(y * w + x) * ch + c]));
+				TM_PRINTF("%.3f,", TML_DEQUANT(lh, output[(y * w + x) * ch + c]));
 #endif
-            }
-            TM_PRINTF("],");
-        }
-        TM_PRINTF("],\n");
-    }
-    TM_PRINTF("\n");
+			}
+			TM_PRINTF("],");
+		}
+		TM_PRINTF("],\n");
+	}
+	TM_PRINTF("\n");
 #endif
-    return TM_OK;
+	return TM_OK;
 }
 
 static void parse_output(tm_mat_t *outs) {
-    tm_mat_t out = outs[0];
-    float *data = out.dataf;
-    float maxp = 0;
-    int maxi = -1;
-    for (int i = 0; i < 10; i++) {
-        TM_PRINTF("%d: %.3f\n", i, data[i]);
-        if (data[i] > maxp) {
-            maxi = i;
-            maxp = data[i];
-        }
-    }
-    TM_PRINTF("### Predict output is: Number %d, prob %.3f\n", maxi, maxp);
-    return;
+	tm_mat_t out = outs[0];
+	float *data = out.dataf;
+	float maxp = 0;
+	int maxi = -1;
+	for (int i = 0; i < 10; i++) {
+		TM_PRINTF("%d: %.3f\n", i, data[i]);
+		if (data[i] > maxp) {
+			maxi = i;
+			maxp = data[i];
+		}
+	}
+	TM_PRINTF("### Predict output is: Number %d, prob %.3f\n", maxi, maxp);
+	return;
 }
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    sunxi_clk_dump();
+	sunxi_clk_dump();
 
-    set_cpu_poweroff();
+	set_cpu_poweroff();
 
-    neon_enable();
+	neon_enable();
 
-    sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c_pmu);
 
-    pmu_axp1530_init(&i2c_pmu);
+	pmu_axp1530_init(&i2c_pmu);
 
-    pmu_axp1530_dump(&i2c_pmu);
+	pmu_axp1530_dump(&i2c_pmu);
 
-    int set_vol = 1100; /* LPDDR4 1100mv */
+	int set_vol = 1100; /* LPDDR4 1100mv */
 
-    int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, "dcdc3");
-    if (src_vol > set_vol) {
-        for (temp_vol = src_vol; temp_vol >= set_vol; temp_vol -= 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1);
-        }
-    } else if (src_vol < set_vol) {
-        for (temp_vol = src_vol; temp_vol <= set_vol; temp_vol += 50) {
-            pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1);
-        }
-    }
+	int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, "dcdc3");
+	if (src_vol > set_vol) {
+		for (temp_vol = src_vol; temp_vol >= set_vol; temp_vol -= 50) { pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1); }
+	} else if (src_vol < set_vol) {
+		for (temp_vol = src_vol; temp_vol <= set_vol; temp_vol += 50) { pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", temp_vol, 1); }
+	}
 
-    mdelay(30); /* Delay 300ms for pmu bootup */
+	mdelay(30); /* Delay 300ms for pmu bootup */
 
-    pmu_axp1530_dump(&i2c_pmu);
+	pmu_axp1530_dump(&i2c_pmu);
 
-    /* Initialize the DRAM and enable memory management unit (MMU). */
-    uint32_t dram_size = sunxi_dram_init(&dram_para);
+	/* Initialize the DRAM and enable memory management unit (MMU). */
+	uint32_t dram_size = sunxi_dram_init(&dram_para);
 
-    arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
-    /* Initialize the small memory allocator. */
-    smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
+	/* Initialize the small memory allocator. */
+	smalloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-    sunxi_clk_dump();
+	sunxi_clk_dump();
 
-    TM_DBGT_INIT();
-    TM_PRINTF("Running MNIST Test\n");
-    tm_mdl_t mdl;
+	TM_DBGT_INIT();
+	TM_PRINTF("Running MNIST Test\n");
+	tm_mdl_t mdl;
 
-    TM_PRINTF("Picture of Data: \n");
-    for (int i = 0; i < 28 * 28; i++) {
-        TM_PRINTF("%3d,", mnist_pic[i]);
-        if (i % 28 == 27) TM_PRINTF("\n");
-    }
+	TM_PRINTF("Picture of Data: \n");
+	for (int i = 0; i < 28 * 28; i++) {
+		TM_PRINTF("%3d,", mnist_pic[i]);
+		if (i % 28 == 27) TM_PRINTF("\n");
+	}
 
-    tm_mat_t in_uint8 = {3, 28, 28, 1, {(mtype_t *) mnist_pic}};
-    tm_mat_t in = {3, 28, 28, 1, {NULL}};
-    tm_mat_t outs[1];
-    tm_err_t res;
+	tm_mat_t in_uint8 = {3, 28, 28, 1, {(mtype_t *) mnist_pic}};
+	tm_mat_t in = {3, 28, 28, 1, {NULL}};
+	tm_mat_t outs[1];
+	tm_err_t res;
 
-    res = tm_load(&mdl, mdl_data, NULL, layer_cb, &in);
-    if (res != TM_OK) {
-        TM_PRINTF("tm model load err %d\n", res);
-        return -1;
-    }
+	res = tm_load(&mdl, mdl_data, NULL, layer_cb, &in);
+	if (res != TM_OK) {
+		TM_PRINTF("tm model load err %d\n", res);
+		return -1;
+	}
 
 #if (TM_MDL_TYPE == TM_MDL_INT8) || (TM_MDL_TYPE == TM_MDL_INT16)
-    res = tm_preprocess(&mdl, TMPP_UINT2INT, &in_uint8, &in);
+	res = tm_preprocess(&mdl, TMPP_UINT2INT, &in_uint8, &in);
 #else
-    res = tm_preprocess(&mdl, TMPP_UINT2FP01, &in_uint8, &in);
+	res = tm_preprocess(&mdl, TMPP_UINT2FP01, &in_uint8, &in);
 #endif
-    TM_DBGT_START();
-    res = tm_run(&mdl, &in, outs);
-    TM_DBGT(" MNIST Run");
-    if (res == TM_OK) parse_output(outs);
-    else
-        TM_PRINTF("tm run error: %d\n", res);
-    tm_unload(&mdl);
+	TM_DBGT_START();
+	res = tm_run(&mdl, &in, outs);
+	TM_DBGT(" MNIST Run");
+	if (res == TM_OK) parse_output(outs);
+	else
+		TM_PRINTF("tm run error: %d\n", res);
+	tm_unload(&mdl);
 
-    abort();
+	abort();
 
-    return 0;
+	return 0;
 }

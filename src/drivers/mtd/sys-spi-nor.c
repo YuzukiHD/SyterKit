@@ -21,9 +21,9 @@
 static spi_nor_info_t info;
 
 static const spi_nor_info_t spi_nor_info_table[] = {
-        {"W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0},
-        {"W25Q128JVEIQ", 0xefc018, 16 * 1024 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
-        {"GD25D10B", 0xc84011, 128 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
+		{"W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0},
+		{"W25Q128JVEIQ", 0xefc018, 16 * 1024 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
+		{"GD25D10B", 0xc84011, 128 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
 };
 
 /**
@@ -40,47 +40,38 @@ static const spi_nor_info_t spi_nor_info_table[] = {
  * @warning If the provided `sfdp` pointer is NULL, the function will print a trace log indicating the issue.
  */
 __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp) {
-    if (sfdp == NULL) {
-        printk_trace("SFDP data is NULL.\n");
-        return;
-    }
+	if (sfdp == NULL) {
+		printk_trace("SFDP data is NULL.\n");
+		return;
+	}
 
-    printk_trace("SFDP Header:\n");
-    printk_trace("  Signature: %c%c%c%c\n",
-           sfdp->header.sign[0],
-           sfdp->header.sign[1],
-           sfdp->header.sign[2],
-           sfdp->header.sign[3]);
-    printk_trace("  Minor version: %u\n", sfdp->header.minor);
-    printk_trace("  Major version: %u\n", sfdp->header.major);
-    printk_trace("  Number of Parameter Headers: %u\n", sfdp->header.nph);
-    printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
+	printk_trace("SFDP Header:\n");
+	printk_trace("  Signature: %c%c%c%c\n", sfdp->header.sign[0], sfdp->header.sign[1], sfdp->header.sign[2], sfdp->header.sign[3]);
+	printk_trace("  Minor version: %u\n", sfdp->header.minor);
+	printk_trace("  Major version: %u\n", sfdp->header.major);
+	printk_trace("  Number of Parameter Headers: %u\n", sfdp->header.nph);
+	printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
-    printk_trace("SFDP Parameter Headers:\n");
-    for (int i = 0; i < sfdp->header.nph; i++) {
-        printk_trace("  Parameter Header #%d:\n", i + 1);
-        printk_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
-        printk_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
-        printk_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
-        printk_trace("    Length: %u\n", sfdp->parameter_header[i].length);
-        printk_trace("    PTP: 0x%02X 0x%02X 0x%02X\n",
-               sfdp->parameter_header[i].ptp[0],
-               sfdp->parameter_header[i].ptp[1],
-               sfdp->parameter_header[i].ptp[2]);
-        printk_trace("    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
-    }
+	printk_trace("SFDP Parameter Headers:\n");
+	for (int i = 0; i < sfdp->header.nph; i++) {
+		printk_trace("  Parameter Header #%d:\n", i + 1);
+		printk_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
+		printk_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
+		printk_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
+		printk_trace("    Length: %u\n", sfdp->parameter_header[i].length);
+		printk_trace("    PTP: 0x%02X 0x%02X 0x%02X\n", sfdp->parameter_header[i].ptp[0], sfdp->parameter_header[i].ptp[1], sfdp->parameter_header[i].ptp[2]);
+		printk_trace("    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
+	}
 
-    printk_trace("SFDP Basic Table:\n");
-    printk_trace("  Minor version: %u\n", sfdp->basic_table.minor);
-    printk_trace("  Major version: %u\n", sfdp->basic_table.major);
-    printk_trace("  Table (16 x 4 bytes):\n");
-    for (int i = 0; i < 16; i++) {
-        printk_trace("    ");
-        for (int j = 0; j < 4; j++) {
-            printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]);
-        }
-        printk(LOG_LEVEL_MUTE, "\n");
-    }
+	printk_trace("SFDP Basic Table:\n");
+	printk_trace("  Minor version: %u\n", sfdp->basic_table.minor);
+	printk_trace("  Major version: %u\n", sfdp->basic_table.major);
+	printk_trace("  Table (16 x 4 bytes):\n");
+	for (int i = 0; i < 16; i++) {
+		printk_trace("    ");
+		for (int j = 0; j < 4; j++) { printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]); }
+		printk(LOG_LEVEL_MUTE, "\n");
+	}
 }
 
 /**
@@ -96,50 +87,46 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
  * @return 1 if the SFDP data was successfully read, 0 if there was an error or the data was invalid.
  */
 static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
-    uint32_t addr;
-    uint8_t tx[5];
-    int i;
+	uint32_t addr;
+	uint8_t tx[5];
+	int i;
 
-    memset(sfdp, 0, sizeof(sfdp_t));
-    tx[0] = NOR_OPCODE_SFDP;
-    tx[1] = 0x0;
-    tx[2] = 0x0;
-    tx[3] = 0x0;
-    tx[4] = 0x0;
-    if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->header, sizeof(sfdp_header_t)))
-        return 0;
+	memset(sfdp, 0, sizeof(sfdp_t));
+	tx[0] = NOR_OPCODE_SFDP;
+	tx[1] = 0x0;
+	tx[2] = 0x0;
+	tx[3] = 0x0;
+	tx[4] = 0x0;
+	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->header, sizeof(sfdp_header_t))) return 0;
 
-    if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') ||
-        (sfdp->header.sign[2] != 'D') || (sfdp->header.sign[3] != 'P'))
-        return 0;
+	if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') || (sfdp->header.sign[2] != 'D') || (sfdp->header.sign[3] != 'P')) return 0;
 
-    sfdp->header.nph = sfdp->header.nph > SFDP_MAX_NPH ? sfdp->header.nph + 1 : SFDP_MAX_NPH;
-    for (i = 0; i < sfdp->header.nph; i++) {
-        addr = i * sizeof(sfdp_parameter_header_t) + sizeof(sfdp_header_t);
-        tx[0] = NOR_OPCODE_SFDP;
-        tx[1] = (addr >> 16) & 0xff;
-        tx[2] = (addr >> 8) & 0xff;
-        tx[3] = (addr >> 0) & 0xff;
-        tx[4] = 0x0;
-        if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->parameter_header[i], sizeof(sfdp_parameter_header_t)))
-            return 0;
-    }
-    for (i = 0; i < sfdp->header.nph; i++) {
-        if ((sfdp->parameter_header[i].idlsb == 0x00) && (sfdp->parameter_header[i].idmsb == 0xff)) {
-            addr = (sfdp->parameter_header[i].ptp[0] << 0) | (sfdp->parameter_header[i].ptp[1] << 8) | (sfdp->parameter_header[i].ptp[2] << 16);
-            tx[0] = NOR_OPCODE_SFDP;
-            tx[1] = (addr >> 16) & 0xff;
-            tx[2] = (addr >> 8) & 0xff;
-            tx[3] = (addr >> 0) & 0xff;
-            tx[4] = 0x0;
-            if (sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->basic_table.table[0], sfdp->parameter_header[i].length * 4)) {
-                sfdp->basic_table.major = sfdp->parameter_header[i].major;
-                sfdp->basic_table.minor = sfdp->parameter_header[i].minor;
-                return 1;
-            }
-        }
-    }
-    return 0;
+	sfdp->header.nph = sfdp->header.nph > SFDP_MAX_NPH ? sfdp->header.nph + 1 : SFDP_MAX_NPH;
+	for (i = 0; i < sfdp->header.nph; i++) {
+		addr = i * sizeof(sfdp_parameter_header_t) + sizeof(sfdp_header_t);
+		tx[0] = NOR_OPCODE_SFDP;
+		tx[1] = (addr >> 16) & 0xff;
+		tx[2] = (addr >> 8) & 0xff;
+		tx[3] = (addr >> 0) & 0xff;
+		tx[4] = 0x0;
+		if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->parameter_header[i], sizeof(sfdp_parameter_header_t))) return 0;
+	}
+	for (i = 0; i < sfdp->header.nph; i++) {
+		if ((sfdp->parameter_header[i].idlsb == 0x00) && (sfdp->parameter_header[i].idmsb == 0xff)) {
+			addr = (sfdp->parameter_header[i].ptp[0] << 0) | (sfdp->parameter_header[i].ptp[1] << 8) | (sfdp->parameter_header[i].ptp[2] << 16);
+			tx[0] = NOR_OPCODE_SFDP;
+			tx[1] = (addr >> 16) & 0xff;
+			tx[2] = (addr >> 8) & 0xff;
+			tx[3] = (addr >> 0) & 0xff;
+			tx[4] = 0x0;
+			if (sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->basic_table.table[0], sfdp->parameter_header[i].length * 4)) {
+				sfdp->basic_table.major = sfdp->parameter_header[i].major;
+				sfdp->basic_table.minor = sfdp->parameter_header[i].minor;
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 /**
@@ -154,14 +141,13 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
  * @return 1 if the ID was successfully read, 0 if the transfer failed.
  */
 static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id) {
-    uint8_t tx[1];
-    uint8_t rx[3];
+	uint8_t tx[1];
+	uint8_t rx[3];
 
-    tx[0] = NOR_OPCODE_RDID;
-    if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 3))
-        return 0;
-    *id = (rx[0] << 16) | (rx[1] << 8) | (rx[2] << 0);
-    return 1;
+	tx[0] = NOR_OPCODE_RDID;
+	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 3)) return 0;
+	*id = (rx[0] << 16) | (rx[1] << 8) | (rx[2] << 0);
+	return 1;
 }
 
 /**
@@ -175,11 +161,11 @@ static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id) {
  * @return The 1-byte status register value returned by the NOR Flash chip.
  */
 static inline uint8_t spi_nor_read_status_register(sunxi_spi_t *spi) {
-    uint8_t tx = NOR_OPCODE_RDSR;
-    uint8_t rx = 0;
+	uint8_t tx = NOR_OPCODE_RDSR;
+	uint8_t rx = 0;
 
-    sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 1, &rx, 1);
-    return rx;
+	sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 1, &rx, 1);
+	return rx;
 }
 
 /**
@@ -192,12 +178,12 @@ static inline uint8_t spi_nor_read_status_register(sunxi_spi_t *spi) {
  * @param sr The new status register value to write to the NOR Flash chip.
  */
 static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr) {
-    uint8_t tx[2];
+	uint8_t tx[2];
 
-    tx[0] = NOR_OPCODE_WRSR;
-    tx[1] = sr;
+	tx[0] = NOR_OPCODE_WRSR;
+	tx[1] = sr;
 
-    sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 2, NULL, 0);
+	sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 2, NULL, 0);
 }
 
 /**
@@ -210,7 +196,7 @@ static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr) {
  */
 static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi) {
 	uint32_t timeout = 0xffff;
-    while (((spi_nor_read_status_register(spi) & 0x1) == 0x1)) {
+	while (((spi_nor_read_status_register(spi) & 0x1) == 0x1)) {
 		timeout--;
 		if (!timeout) {
 			printk_warning("SPI NAND: wait busy timeout\n");
@@ -229,12 +215,12 @@ static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi) {
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
 static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
-    uint8_t tx[2];
+	uint8_t tx[2];
 
-    tx[0] = 0x66;
-    tx[1] = 0x99;
+	tx[0] = 0x66;
+	tx[1] = 0x99;
 
-    sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 2, NULL, 0);
+	sunxi_spi_transfer(spi, SPI_IO_SINGLE, &tx, 2, NULL, 0);
 }
 
 /**
@@ -245,9 +231,7 @@ static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) {
-    sunxi_spi_transfer(spi, SPI_IO_SINGLE, (void *) info.opcode_write_enable, 1, NULL, 0);
-}
+static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) { sunxi_spi_transfer(spi, SPI_IO_SINGLE, (void *) info.opcode_write_enable, 1, NULL, 0); }
 
 
 /**
@@ -276,155 +260,145 @@ static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) {
  * @see spinor_read_id(), spi_nor_read_sfdp(), spi_nor_dump_sfdp(), NOR_OPCODE_WREN, NOR_OPCODE_READ, NOR_OPCODE_PROG
  */
 static inline int spi_nor_get_info(sunxi_spi_t *spi) {
-    sfdp_t sfdp;
-    spi_nor_info_t *tmp_info;
-    uint32_t v, i, id = 0x0;
+	sfdp_t sfdp;
+	spi_nor_info_t *tmp_info;
+	uint32_t v, i, id = 0x0;
 
-    spinor_read_id(spi, &id);
-    info.id = id;
+	spinor_read_id(spi, &id);
+	info.id = id;
 
-    if (spi_nor_read_sfdp(spi, &sfdp)) {
-        info.name = "SPDF";
+	if (spi_nor_read_sfdp(spi, &sfdp)) {
+		info.name = "SPDF";
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
-        spi_nor_dump_sfdp(&sfdp);
+		spi_nor_dump_sfdp(&sfdp);
 #endif
 
-        v = (sfdp.basic_table.table[7] << 24) | (sfdp.basic_table.table[6] << 16) |
-            (sfdp.basic_table.table[5] << 8) | (sfdp.basic_table.table[4] << 0);
-        if (v & (1 << 31)) {
-            v &= 0x7fffffff;
-            info.capacity = 1 << (v - 3);
-        } else {
-            info.capacity = (v + 1) >> 3;
-        }
-        /* Basic flash parameter table 1th dword */
-        v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) |
-            (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
+		v = (sfdp.basic_table.table[7] << 24) | (sfdp.basic_table.table[6] << 16) | (sfdp.basic_table.table[5] << 8) | (sfdp.basic_table.table[4] << 0);
+		if (v & (1 << 31)) {
+			v &= 0x7fffffff;
+			info.capacity = 1 << (v - 3);
+		} else {
+			info.capacity = (v + 1) >> 3;
+		}
+		/* Basic flash parameter table 1th dword */
+		v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
 
-        if ((info.capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2))
-            info.address_length = 3;
-        else
-            info.address_length = 4;
-        if (((v >> 0) & 0x3) == 0x1)
-            info.opcode_erase_4k = (v >> 8) & 0xff;
-        else
-            info.opcode_erase_4k = 0x00;
-        info.opcode_erase_32k = 0x00;
-        info.opcode_erase_64k = 0x00;
-        info.opcode_erase_256k = 0x00;
+		if ((info.capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2)) info.address_length = 3;
+		else
+			info.address_length = 4;
+		if (((v >> 0) & 0x3) == 0x1) info.opcode_erase_4k = (v >> 8) & 0xff;
+		else
+			info.opcode_erase_4k = 0x00;
+		info.opcode_erase_32k = 0x00;
+		info.opcode_erase_64k = 0x00;
+		info.opcode_erase_256k = 0x00;
 
-        /* Basic flash parameter table 8th dword */
-        v = (sfdp.basic_table.table[31] << 24) | (sfdp.basic_table.table[30] << 16) |
-            (sfdp.basic_table.table[29] << 8) | (sfdp.basic_table.table[28] << 0);
+		/* Basic flash parameter table 8th dword */
+		v = (sfdp.basic_table.table[31] << 24) | (sfdp.basic_table.table[30] << 16) | (sfdp.basic_table.table[29] << 8) | (sfdp.basic_table.table[28] << 0);
 
-        switch ((v >> 0) & 0xff) {
-            case 12:
-                info.opcode_erase_4k = (v >> 8) & 0xff;
-                break;
-            case 15:
-                info.opcode_erase_32k = (v >> 8) & 0xff;
-                break;
-            case 16:
-                info.opcode_erase_64k = (v >> 8) & 0xff;
-                break;
-            case 18:
-                info.opcode_erase_256k = (v >> 8) & 0xff;
-                break;
-            default:
-                break;
-        }
-        switch ((v >> 16) & 0xff) {
-            case 12:
-                info.opcode_erase_4k = (v >> 24) & 0xff;
-                break;
-            case 15:
-                info.opcode_erase_32k = (v >> 24) & 0xff;
-                break;
-            case 16:
-                info.opcode_erase_64k = (v >> 24) & 0xff;
-                break;
-            case 18:
-                info.opcode_erase_256k = (v >> 24) & 0xff;
-                break;
-            default:
-                break;
-        }
+		switch ((v >> 0) & 0xff) {
+			case 12:
+				info.opcode_erase_4k = (v >> 8) & 0xff;
+				break;
+			case 15:
+				info.opcode_erase_32k = (v >> 8) & 0xff;
+				break;
+			case 16:
+				info.opcode_erase_64k = (v >> 8) & 0xff;
+				break;
+			case 18:
+				info.opcode_erase_256k = (v >> 8) & 0xff;
+				break;
+			default:
+				break;
+		}
+		switch ((v >> 16) & 0xff) {
+			case 12:
+				info.opcode_erase_4k = (v >> 24) & 0xff;
+				break;
+			case 15:
+				info.opcode_erase_32k = (v >> 24) & 0xff;
+				break;
+			case 16:
+				info.opcode_erase_64k = (v >> 24) & 0xff;
+				break;
+			case 18:
+				info.opcode_erase_256k = (v >> 24) & 0xff;
+				break;
+			default:
+				break;
+		}
 
-        /* Basic flash parameter table 9th dword */
-        v = (sfdp.basic_table.table[35] << 24) | (sfdp.basic_table.table[34] << 16) |
-            (sfdp.basic_table.table[33] << 8) | (sfdp.basic_table.table[32] << 0);
-        switch ((v >> 0) & 0xff) {
-            case 12:
-                info.opcode_erase_4k = (v >> 8) & 0xff;
-                break;
-            case 15:
-                info.opcode_erase_32k = (v >> 8) & 0xff;
-                break;
-            case 16:
-                info.opcode_erase_64k = (v >> 8) & 0xff;
-                break;
-            case 18:
-                info.opcode_erase_256k = (v >> 8) & 0xff;
-                break;
-            default:
-                break;
-        }
-        switch ((v >> 16) & 0xff) {
-            case 12:
-                info.opcode_erase_4k = (v >> 24) & 0xff;
-                break;
-            case 15:
-                info.opcode_erase_32k = (v >> 24) & 0xff;
-                break;
-            case 16:
-                info.opcode_erase_64k = (v >> 24) & 0xff;
-                break;
-            case 18:
-                info.opcode_erase_256k = (v >> 24) & 0xff;
-                break;
-            default:
-                break;
-        }
-        if (info.opcode_erase_4k != 0x00)
-            info.blksz = 4096;
-        else if (info.opcode_erase_32k != 0x00)
-            info.blksz = 32768;
-        else if (info.opcode_erase_64k != 0x00)
-            info.blksz = 65536;
-        else if (info.opcode_erase_256k != 0x00)
-            info.blksz = 262144;
+		/* Basic flash parameter table 9th dword */
+		v = (sfdp.basic_table.table[35] << 24) | (sfdp.basic_table.table[34] << 16) | (sfdp.basic_table.table[33] << 8) | (sfdp.basic_table.table[32] << 0);
+		switch ((v >> 0) & 0xff) {
+			case 12:
+				info.opcode_erase_4k = (v >> 8) & 0xff;
+				break;
+			case 15:
+				info.opcode_erase_32k = (v >> 8) & 0xff;
+				break;
+			case 16:
+				info.opcode_erase_64k = (v >> 8) & 0xff;
+				break;
+			case 18:
+				info.opcode_erase_256k = (v >> 8) & 0xff;
+				break;
+			default:
+				break;
+		}
+		switch ((v >> 16) & 0xff) {
+			case 12:
+				info.opcode_erase_4k = (v >> 24) & 0xff;
+				break;
+			case 15:
+				info.opcode_erase_32k = (v >> 24) & 0xff;
+				break;
+			case 16:
+				info.opcode_erase_64k = (v >> 24) & 0xff;
+				break;
+			case 18:
+				info.opcode_erase_256k = (v >> 24) & 0xff;
+				break;
+			default:
+				break;
+		}
+		if (info.opcode_erase_4k != 0x00) info.blksz = 4096;
+		else if (info.opcode_erase_32k != 0x00)
+			info.blksz = 32768;
+		else if (info.opcode_erase_64k != 0x00)
+			info.blksz = 65536;
+		else if (info.opcode_erase_256k != 0x00)
+			info.blksz = 262144;
 
-        info.opcode_write_enable = NOR_OPCODE_WREN;
-        info.read_granularity = 1;
-        info.opcode_read = NOR_OPCODE_READ;
+		info.opcode_write_enable = NOR_OPCODE_WREN;
+		info.read_granularity = 1;
+		info.opcode_read = NOR_OPCODE_READ;
 
-        if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor < 5)) {
-            /* Basic flash parameter table 1th dword */
-            v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) |
-                (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
-            if ((v >> 2) & 0x1)
-                info.write_granularity = 64;
-            else
-                info.write_granularity = 1;
-        } else if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor >= 5)) {
-            /* Basic flash parameter table 11th dword */
-            v = (sfdp.basic_table.table[43] << 24) | (sfdp.basic_table.table[42] << 16) |
-                (sfdp.basic_table.table[41] << 8) | (sfdp.basic_table.table[40] << 0);
-            info.write_granularity = 1 << ((v >> 4) & 0xf);
-        }
-        info.opcode_write = NOR_OPCODE_PROG;
-        return 1;
-    } else if ((id != 0xffffff) && (id != 0)) {
-        for (i = 0; i < ARRAY_SIZE(spi_nor_info_table); i++) {
-            tmp_info = &spi_nor_info_table[i];
-            if (id == tmp_info->id) {
-                memcpy(&info, tmp_info, sizeof(spi_nor_info_t));
-                return 1;
-            }
-        }
-        printk_error("The spi nor flash '0x%x' is not yet supported\r\n", id);
-    }
-    return 0;
+		if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor < 5)) {
+			/* Basic flash parameter table 1th dword */
+			v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
+			if ((v >> 2) & 0x1) info.write_granularity = 64;
+			else
+				info.write_granularity = 1;
+		} else if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor >= 5)) {
+			/* Basic flash parameter table 11th dword */
+			v = (sfdp.basic_table.table[43] << 24) | (sfdp.basic_table.table[42] << 16) | (sfdp.basic_table.table[41] << 8) | (sfdp.basic_table.table[40] << 0);
+			info.write_granularity = 1 << ((v >> 4) & 0xf);
+		}
+		info.opcode_write = NOR_OPCODE_PROG;
+		return 1;
+	} else if ((id != 0xffffff) && (id != 0)) {
+		for (i = 0; i < ARRAY_SIZE(spi_nor_info_table); i++) {
+			tmp_info = &spi_nor_info_table[i];
+			if (id == tmp_info->id) {
+				memcpy(&info, tmp_info, sizeof(spi_nor_info_t));
+				return 1;
+			}
+		}
+		printk_error("The spi nor flash '0x%x' is not yet supported\r\n", id);
+	}
+	return 0;
 }
 
 /**
@@ -454,26 +428,26 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
  * modes, but any other address length is not supported.
  */
 static void spi_nor_read_bytes(sunxi_spi_t *spi, uint32_t addr, uint8_t *buf, uint32_t count) {
-    uint8_t tx[5];
-    switch (info.address_length) {
-        case 3:
-            tx[0] = info.opcode_read;
-            tx[1] = (uint8_t) (addr >> 16);
-            tx[2] = (uint8_t) (addr >> 8);
-            tx[3] = (uint8_t) (addr >> 0);
-            sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, buf, count);
-            break;
-        case 4:
-            tx[0] = info.opcode_read;
-            tx[1] = (uint8_t) (addr >> 24);
-            tx[2] = (uint8_t) (addr >> 16);
-            tx[3] = (uint8_t) (addr >> 8);
-            tx[4] = (uint8_t) (addr >> 0);
-            sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, buf, count);
-            break;
-        default:
-            break;
-    }
+	uint8_t tx[5];
+	switch (info.address_length) {
+		case 3:
+			tx[0] = info.opcode_read;
+			tx[1] = (uint8_t) (addr >> 16);
+			tx[2] = (uint8_t) (addr >> 8);
+			tx[3] = (uint8_t) (addr >> 0);
+			sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, buf, count);
+			break;
+		case 4:
+			tx[0] = info.opcode_read;
+			tx[1] = (uint8_t) (addr >> 24);
+			tx[2] = (uint8_t) (addr >> 16);
+			tx[3] = (uint8_t) (addr >> 8);
+			tx[4] = (uint8_t) (addr >> 0);
+			sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, buf, count);
+			break;
+		default:
+			break;
+	}
 }
 
 /**
@@ -500,17 +474,17 @@ static void spi_nor_read_bytes(sunxi_spi_t *spi, uint32_t addr, uint8_t *buf, ui
  *             inform the user.
  */
 int spi_nor_detect(sunxi_spi_t *spi) {
-    spi_nor_chip_reset(spi);
-    spi_nor_wait_for_busy(spi);
+	spi_nor_chip_reset(spi);
+	spi_nor_wait_for_busy(spi);
 
-    if (!spi_nor_get_info(spi)) {
-        printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
-        return -1;
-    }
+	if (!spi_nor_get_info(spi)) {
+		printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
+		return -1;
+	}
 
-    printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info.id, info.capacity / 1024 / 1024);
+	printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info.id, info.capacity / 1024 / 1024);
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -542,24 +516,23 @@ int spi_nor_detect(sunxi_spi_t *spi) {
  * each read operation accordingly.
  */
 uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uint32_t blk_cnt) {
-    uint32_t addr = blk_no * info.blksz;
-    uint32_t cnt = blk_cnt * info.blksz;
+	uint32_t addr = blk_no * info.blksz;
+	uint32_t cnt = blk_cnt * info.blksz;
 
-    uint8_t *pbuf = buf;
-    uint32_t len;
+	uint8_t *pbuf = buf;
+	uint32_t len;
 
-    if (info.read_granularity == 1)
-        len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
-    else
-        len = info.read_granularity;
-    while (cnt > 0) {
-        spi_nor_wait_for_busy(spi);
-        spi_nor_read_bytes(spi, addr, pbuf, len);
-        addr += len;
-        pbuf += len;
-        cnt -= len;
-    }
-    return blk_cnt;
+	if (info.read_granularity == 1) len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
+	else
+		len = info.read_granularity;
+	while (cnt > 0) {
+		spi_nor_wait_for_busy(spi);
+		spi_nor_read_bytes(spi, addr, pbuf, len);
+		addr += len;
+		pbuf += len;
+		cnt -= len;
+	}
+	return blk_cnt;
 }
 
 /**
@@ -588,44 +561,40 @@ uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uin
  *          another partial block at the end.
  */
 uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen) {
-    u64_t blksz = info.blksz;
-    u64_t blkno, len, tmp;
-    u64_t ret = 0;
+	u64_t blksz = info.blksz;
+	u64_t blkno, len, tmp;
+	u64_t ret = 0;
 
-    blkno = addr / blksz;
-    tmp = addr % blksz;
+	blkno = addr / blksz;
+	tmp = addr % blksz;
 
-    if (tmp > 0) {
-        len = blksz - tmp;
-        if (rxlen < len)
-            len = rxlen;
-        if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
-            return ret;
-        memcpy((void *) buf, (const void *) (&buf[tmp]), len);
-        buf += len;
-        rxlen -= len;
-        ret += len;
-        blkno += 1;
-    }
+	if (tmp > 0) {
+		len = blksz - tmp;
+		if (rxlen < len) len = rxlen;
+		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1) return ret;
+		memcpy((void *) buf, (const void *) (&buf[tmp]), len);
+		buf += len;
+		rxlen -= len;
+		ret += len;
+		blkno += 1;
+	}
 
-    tmp = rxlen / blksz;
+	tmp = rxlen / blksz;
 
-    if (tmp > 0) {
-        len = tmp * blksz;
-        if (spi_nor_read_block(spi, buf, blkno, tmp) != tmp)
-            return ret;
-        buf += len;
-        rxlen -= len;
-        ret += len;
-        blkno += tmp;
-    }
+	if (tmp > 0) {
+		len = tmp * blksz;
+		if (spi_nor_read_block(spi, buf, blkno, tmp) != tmp) return ret;
+		buf += len;
+		rxlen -= len;
+		ret += len;
+		blkno += tmp;
+	}
 
-    if (rxlen > 0) {
-        len = rxlen;
-        if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
-            return ret;
-        memcpy((void *) buf, (const void *) (&buf[0]), len);
-        ret += len;
-    }
-    return ret;
+	if (rxlen > 0) {
+		len = rxlen;
+		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1) return ret;
+		memcpy((void *) buf, (const void *) (&buf[0]), len);
+		ret += len;
+	}
+	return ret;
 }

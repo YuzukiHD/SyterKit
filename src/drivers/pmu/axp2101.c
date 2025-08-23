@@ -59,101 +59,97 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 /* clang-format on */
 
 int pmu_axp2101_init(sunxi_i2c_t *i2c_dev) {
-    uint8_t axp_val;
-    uint8_t reg_value;
-    int ret;
+	uint8_t axp_val;
+	uint8_t reg_value;
+	int ret;
 
-    if (!i2c_dev->status) {
-        printk_warning("PMU: I2C not init\n");
-        return -1;
-    }
+	if (!i2c_dev->status) {
+		printk_warning("PMU: I2C not init\n");
+		return -1;
+	}
 
-    if (ret = sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VERSION, &axp_val)) {
-        printk_warning("PMU: Probe target device AXP2101 failed. ret = %d\n", ret);
-        return -1;
-    }
+	if (ret = sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VERSION, &axp_val)) {
+		printk_warning("PMU: Probe target device AXP2101 failed. ret = %d\n", ret);
+		return -1;
+	}
 
-    axp_val &= 0xCF;
-    if (axp_val == AXP2101_CHIP_ID || axp_val == AXP2101_CHIP_ID_B) {
-        printk_info("PMU: Found AXP2101 PMU\n");
+	axp_val &= 0xCF;
+	if (axp_val == AXP2101_CHIP_ID || axp_val == AXP2101_CHIP_ID_B) {
+		printk_info("PMU: Found AXP2101 PMU\n");
 
-        /* limit charge current to 300mA */
-        reg_value = 0x9;
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_CHARGE1, reg_value);
+		/* limit charge current to 300mA */
+		reg_value = 0x9;
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_CHARGE1, reg_value);
 
-        /* limit run current to 2A */
-        reg_value = 0x5;
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_CUR_SET, reg_value);
+		/* limit run current to 2A */
+		reg_value = 0x5;
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_CUR_SET, reg_value);
 
-        /* enable vbus adc channel */
-        if (axp_val != AXP2101_CHIP_ID_B) {
-            reg_value = 0x40;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_BAT_AVERVOL_H6, reg_value);
-        }
+		/* enable vbus adc channel */
+		if (axp_val != AXP2101_CHIP_ID_B) {
+			reg_value = 0x40;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_BAT_AVERVOL_H6, reg_value);
+		}
 
-        /* set dcdc1 & dcdc3 & dcdc2  & dcdc4 pwm mode */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OUTPUT_CTL1, &reg_value);
-        reg_value |= ((1 << 2) | (1 << 4) | (1 << 3) | (1 << 5));
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OUTPUT_CTL1, reg_value);
+		/* set dcdc1 & dcdc3 & dcdc2  & dcdc4 pwm mode */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OUTPUT_CTL1, &reg_value);
+		reg_value |= ((1 << 2) | (1 << 4) | (1 << 3) | (1 << 5));
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OUTPUT_CTL1, reg_value);
 
-        /* pmu disable soften3 signal */
-        if (axp_val != AXP2101_CHIP_ID_B) {
-            reg_value = 0x00;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
-            reg_value = 0x06;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFUS_OP_CFG, reg_value);
-            reg_value = 0x04;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFREQ_CTRL, reg_value);
-            reg_value = 0x01;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
-            reg_value = 0x30;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_SELLP_CFG, reg_value);
-            reg_value = 0x00;
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFREQ_CTRL, reg_value);
-            sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFUS_OP_CFG, reg_value);
-        }
+		/* pmu disable soften3 signal */
+		if (axp_val != AXP2101_CHIP_ID_B) {
+			reg_value = 0x00;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
+			reg_value = 0x06;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFUS_OP_CFG, reg_value);
+			reg_value = 0x04;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFREQ_CTRL, reg_value);
+			reg_value = 0x01;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
+			reg_value = 0x30;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_SELLP_CFG, reg_value);
+			reg_value = 0x00;
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_TWI_ADDR_EXT, reg_value);
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFREQ_CTRL, reg_value);
+			sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_EFUS_OP_CFG, reg_value);
+		}
 
-        /* pmu set vsys min */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VSYS_MIN, &reg_value);
-        reg_value &= ~(0x7 << 4);
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VSYS_MIN, reg_value);
+		/* pmu set vsys min */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VSYS_MIN, &reg_value);
+		reg_value &= ~(0x7 << 4);
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VSYS_MIN, reg_value);
 
-        /* pmu set vimdpm cfg */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_VOL_SET, &reg_value);
-        reg_value &= ~(0xf << 0);
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_VOL_SET, reg_value);
+		/* pmu set vimdpm cfg */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_VOL_SET, &reg_value);
+		reg_value &= ~(0xf << 0);
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_VBUS_VOL_SET, reg_value);
 
-        /* pmu reset enable */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OFF_CTL, &reg_value);
-        reg_value |= (3 << 2);
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OFF_CTL, reg_value);
+		/* pmu reset enable */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OFF_CTL, &reg_value);
+		reg_value |= (3 << 2);
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_OFF_CTL, reg_value);
 
-        /* pmu pwroff enable */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_PWEON_PWEOFF_EN, &reg_value);
-        reg_value |= (1 << 1);
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_PWEON_PWEOFF_EN, reg_value);
+		/* pmu pwroff enable */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_PWEON_PWEOFF_EN, &reg_value);
+		reg_value |= (1 << 1);
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_PWEON_PWEOFF_EN, reg_value);
 
-        /* pmu dcdc1 pwroff enable */
-        sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_DCDC_PWEOFF_EN, &reg_value);
-        reg_value &= ~(1 << 0);
-        sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_DCDC_PWEOFF_EN, reg_value);
+		/* pmu dcdc1 pwroff enable */
+		sunxi_i2c_read(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_DCDC_PWEOFF_EN, &reg_value);
+		reg_value &= ~(1 << 0);
+		sunxi_i2c_write(i2c_dev, AXP2101_RUNTIME_ADDR, AXP2101_DCDC_PWEOFF_EN, reg_value);
 
-        return AXP2101_CHIP_ID;
-    }
-    return -1;
+		return AXP2101_CHIP_ID;
+	}
+	return -1;
 }
 
 int pmu_axp2101_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
-    return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2101_RUNTIME_ADDR);
+	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2101_RUNTIME_ADDR);
 }
 
-int pmu_axp2101_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
-    return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2101_RUNTIME_ADDR);
-}
+int pmu_axp2101_get_vol(sunxi_i2c_t *i2c_dev, char *name) { return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2101_RUNTIME_ADDR); }
 
 void pmu_axp2101_dump(sunxi_i2c_t *i2c_dev) {
-    for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-        printk_debug("PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
-    }
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); }
 }

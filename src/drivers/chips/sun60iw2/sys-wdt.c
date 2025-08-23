@@ -10,4 +10,3 @@
 #include <log.h>
 
 #include <reg-ncat.h>
-

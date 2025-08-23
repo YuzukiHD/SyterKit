@@ -33,93 +33,92 @@ extern "C" {
 #define SMHC_RESP_TIMEOUT 0xff
 
 enum {
-    MMC_CONTROLLER_0 = 0,
-    MMC_CONTROLLER_1 = 1,
-    MMC_CONTROLLER_2 = 2,
+	MMC_CONTROLLER_0 = 0,
+	MMC_CONTROLLER_1 = 1,
+	MMC_CONTROLLER_2 = 2,
 };
 
 typedef enum {
-    MMC_TYPE_SD,
-    MMC_TYPE_EMMC,
+	MMC_TYPE_SD,
+	MMC_TYPE_EMMC,
 } sunxi_sdhci_type_t;
 
 typedef struct sunxi_sdhci_desc {
-    uint32_t : 1,
-            dic : 1,         /* disable interrupt on completion */
-            last_desc : 1,   /* 1-this data buffer is the last buffer */
-            first_desc : 1,  /* 1-data buffer is the first buffer, 0-data buffer contained in the next descriptor is 1st buffer */
-            des_chain : 1,   /* 1-the 2nd address in the descriptor is the next descriptor address */
-            end_of_ring : 1, /* 1-last descriptor flag when using dual data buffer in descriptor */
-            : 24,            /* Reserved */
-            err_flag : 1,    /* transfer error flag */
-            own : 1;         /* des owner:1-idma owns it, 0-host owns it */
+	uint32_t : 1, dic : 1,	 /* disable interrupt on completion */
+			last_desc : 1,	 /* 1-this data buffer is the last buffer */
+			first_desc : 1,	 /* 1-data buffer is the first buffer, 0-data buffer contained in the next descriptor is 1st buffer */
+			des_chain : 1,	 /* 1-the 2nd address in the descriptor is the next descriptor address */
+			end_of_ring : 1, /* 1-last descriptor flag when using dual data buffer in descriptor */
+			: 24,			 /* Reserved */
+			err_flag : 1,	 /* transfer error flag */
+			own : 1;		 /* des owner:1-idma owns it, 0-host owns it */
 
-    uint32_t data_buf_sz : 16, data_buf_dummy : 16;
-    uint32_t buf_addr;
-    uint32_t next_desc_addr;
+	uint32_t data_buf_sz : 16, data_buf_dummy : 16;
+	uint32_t buf_addr;
+	uint32_t next_desc_addr;
 } sunxi_sdhci_desc_t __attribute__((aligned(8)));
 
 typedef struct sunxi_sdhci_host {
-    sdhci_reg_t *reg;
-    uint32_t commreg;
-    uint8_t fatal_err;
-    uint8_t timing_mode;
+	sdhci_reg_t *reg;
+	uint32_t commreg;
+	uint8_t fatal_err;
+	uint8_t timing_mode;
 
-    /* DMA DESC */
-    sunxi_sdhci_desc_t *sdhci_desc;
+	/* DMA DESC */
+	sunxi_sdhci_desc_t *sdhci_desc;
 } sunxi_sdhci_host_t;
 
 typedef struct sunxi_sdhci_pinctrl {
-    gpio_mux_t gpio_d0;
-    gpio_mux_t gpio_d1;
-    gpio_mux_t gpio_d2;
-    gpio_mux_t gpio_d3;
-    gpio_mux_t gpio_d4;
-    gpio_mux_t gpio_d5;
-    gpio_mux_t gpio_d6;
-    gpio_mux_t gpio_d7;
-    gpio_mux_t gpio_cmd;
-    gpio_mux_t gpio_clk;
-    gpio_mux_t gpio_ds;
-    gpio_mux_t gpio_rst;
-    gpio_mux_t gpio_cd;
-    uint8_t cd_level;
+	gpio_mux_t gpio_d0;
+	gpio_mux_t gpio_d1;
+	gpio_mux_t gpio_d2;
+	gpio_mux_t gpio_d3;
+	gpio_mux_t gpio_d4;
+	gpio_mux_t gpio_d5;
+	gpio_mux_t gpio_d6;
+	gpio_mux_t gpio_d7;
+	gpio_mux_t gpio_cmd;
+	gpio_mux_t gpio_clk;
+	gpio_mux_t gpio_ds;
+	gpio_mux_t gpio_rst;
+	gpio_mux_t gpio_cd;
+	uint8_t cd_level;
 } sunxi_sdhci_pinctrl_t;
 
 typedef struct sunxi_sdhci_timing {
-    uint32_t odly;
-    uint32_t sdly;
-    uint8_t auto_timing;
+	uint32_t odly;
+	uint32_t sdly;
+	uint8_t auto_timing;
 } sunxi_sdhci_timing_t;
 
 typedef struct sunxi_sdhci_clk {
-    uint32_t reg_base;
-    uint8_t factor_n;
-    uint8_t reg_factor_n_offset;
-    uint8_t factor_m;
-    uint8_t reg_factor_m_offset;
-    uint8_t clk_sel;
-    uint32_t parent_clk;
+	uint32_t reg_base;
+	uint8_t factor_n;
+	uint8_t reg_factor_n_offset;
+	uint8_t factor_m;
+	uint8_t reg_factor_m_offset;
+	uint8_t clk_sel;
+	uint32_t parent_clk;
 } sunxi_sdhci_clk_t;
 
 typedef struct sunxi_sdhci {
-    char *name;
-    uint32_t reg_base;
-    uint32_t id;
-    uint32_t width;
-    sunxi_clk_t clk_ctrl;
-    sunxi_sdhci_clk_t sdhci_clk;
-    uint32_t max_clk;
-    uint32_t dma_des_addr;
-    sunxi_sdhci_type_t sdhci_mmc_type;
+	char *name;
+	uint32_t reg_base;
+	uint32_t id;
+	uint32_t width;
+	sunxi_clk_t clk_ctrl;
+	sunxi_sdhci_clk_t sdhci_clk;
+	uint32_t max_clk;
+	uint32_t dma_des_addr;
+	sunxi_sdhci_type_t sdhci_mmc_type;
 
-    /* Pinctrl info */
-    sunxi_sdhci_pinctrl_t pinctrl;
+	/* Pinctrl info */
+	sunxi_sdhci_pinctrl_t pinctrl;
 
-    /* Private data */
-    mmc_t *mmc;
-    sunxi_sdhci_host_t *mmc_host;
-    sunxi_sdhci_timing_t *timing_data;
+	/* Private data */
+	mmc_t *mmc;
+	sunxi_sdhci_host_t *mmc_host;
+	sunxi_sdhci_timing_t *timing_data;
 } sunxi_sdhci_t;
 
 #define SDHCI_DEFAULT_CLK_RST_OFFSET(x) (16 + x)

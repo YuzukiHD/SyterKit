@@ -16,7 +16,11 @@ extern "C" {
 #else
 #define offsetof(type, field) ((size_t) (&((type *) 0)->field))
 #endif
-#define container_of(ptr, type, member) ({const typeof(((type *)0)->member) *__mptr = (ptr); (type *)((char *)__mptr - offsetof(type,member)); })
+#define container_of(ptr, type, member)                                                                                                                                            \
+	({                                                                                                                                                                             \
+		const typeof(((type *) 0)->member) *__mptr = (ptr);                                                                                                                        \
+		(type *) ((char *) __mptr - offsetof(type, member));                                                                                                                       \
+	})
 
 #if (defined(__GNUC__) && (__GNUC__ >= 3))
 #define likely(expr) (__builtin_expect(!!(expr), 1))

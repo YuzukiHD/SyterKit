@@ -43,15 +43,15 @@ void LCD_ShowPicture(uint16_t x, uint16_t y, uint16_t length, uint16_t width, co
 #define GREEN 0x07E0
 #define CYAN 0x7FFF
 #define YELLOW 0xFFE0
-#define BROWN 0XBC40     //棕色
-#define BRRED 0XFC07     //棕红色
-#define GRAY 0X8430      //灰色
-#define DARKBLUE 0X01CF  //深蓝色
+#define BROWN 0XBC40	 //棕色
+#define BRRED 0XFC07	 //棕红色
+#define GRAY 0X8430		 //灰色
+#define DARKBLUE 0X01CF	 //深蓝色
 #define LIGHTBLUE 0X7D7C //浅蓝色
-#define GRAYBLUE 0X5458  //灰蓝色
+#define GRAYBLUE 0X5458	 //灰蓝色
 #define LIGHTGREEN 0X841F//浅绿色
-#define LGRAY 0XC618     //浅灰色(PANNEL),窗体背景色
+#define LGRAY 0XC618	 //浅灰色(PANNEL),窗体背景色
 #define LGRAYBLUE 0XA651 //浅灰蓝色(中间层颜色)
-#define LBBLUE 0X2B12    //浅棕蓝色(选择条目的反色)
+#define LBBLUE 0X2B12	 //浅棕蓝色(选择条目的反色)
 
 #endif//__LCD_H__

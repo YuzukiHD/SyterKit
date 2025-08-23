@@ -25,14 +25,14 @@ extern "C" {
 #define TRUE 1
 
 static inline uint32_t swap_uint32(uint32_t data) {
-    volatile uint32_t a, b, c, d;
+	volatile uint32_t a, b, c, d;
 
-    a = ((data) &0xff000000) >> 24;
-    b = ((data) &0x00ff0000) >> 8;
-    c = ((data) &0x0000ff00) << 8;
-    d = ((data) &0x000000ff) << 24;
+	a = ((data) &0xff000000) >> 24;
+	b = ((data) &0x00ff0000) >> 8;
+	c = ((data) &0x0000ff00) << 8;
+	d = ((data) &0x000000ff) << 24;
 
-    return a | b | c | d;
+	return a | b | c | d;
 }
 
 void abort(void);

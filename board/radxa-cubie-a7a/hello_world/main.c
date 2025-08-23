@@ -22,23 +22,23 @@ extern sunxi_i2c_t i2c_pmu;
 extern sunxi_sdhci_t sdhci0;
 
 int main(void) {
-    sunxi_serial_init(&uart_dbg);
+	sunxi_serial_init(&uart_dbg);
 
-    show_banner();
+	show_banner();
 
-    sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c_pmu);
 
-    sunxi_clk_init();
+	sunxi_clk_init();
 
-    sunxi_clk_dump();
+	sunxi_clk_dump();
 
-    pmu_axp8191_init(&i2c_pmu);
+	pmu_axp8191_init(&i2c_pmu);
 
-    pmu_axp8191_dump(&i2c_pmu);
+	pmu_axp8191_dump(&i2c_pmu);
 
-    printk_info("Hello World!\n");
+	printk_info("Hello World!\n");
 
-    abort();
+	abort();
 
-    return 0;
+	return 0;
 }

@@ -12,10 +12,10 @@
 
 /* Linux zImage Header */
 typedef struct {
-    uint32_t code[9];
-    uint32_t magic;
-    uint32_t start;
-    uint32_t end;
+	uint32_t code[9];
+	uint32_t magic;
+	uint32_t start;
+	uint32_t end;
 } linux_zimage_header_t;
 
 int zImage_loader(uint8_t *addr, uint32_t *entry);
@@ -24,4 +24,4 @@ int bImage_loader(uint8_t *addr, uint32_t *entry);
 
 int uImage_loader(uint8_t *addr, uint32_t *entry);
 
-#endif // __IMAGE_LOADER_H__
+#endif// __IMAGE_LOADER_H__

@@ -38,30 +38,28 @@
 extern uint32_t __sunxi_smc_call(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3);
 
 uint32_t sunxi_smc_call_atf(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3, smc_call_arg_t pResult) {
-    return __sunxi_smc_call(arg0, arg1, arg2, arg3);
+	return __sunxi_smc_call(arg0, arg1, arg2, arg3);
 }
 
-uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2) {
-    return sunxi_smc_call_atf(ARM_SVC_RUNNSOS, kernel, fdt, arg2, 0);
-}
+uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2) { return sunxi_smc_call_atf(ARM_SVC_RUNNSOS, kernel, fdt, arg2, 0); }
 
 void print_banner(void) {
-    printf(" _____     _           _____ __    ___ ___ \n");
-    printf("|   __|_ _| |_ ___ ___| __  |  |  |_  |_  |\n");
-    printf("|__   | | |  _| -_|  _| __ -|  |__|_  |_  |\n");
-    printf("|_____|_  |_| |___|_| |_____|_____|___|___|\n");
-    printf("      |___|                                \n");
-    printf("\n");
-    printf("Hello Syter BL33!\n");
-    printf("load kernel 0x%08x to aarch64 mode...\n", CONFIG_KERNEL_LOAD_ADDR);
-    printf("load dtb 0x%08x...\n\n", CONFIG_DTB_LOAD_ADDR);
+	printf(" _____     _           _____ __    ___ ___ \n");
+	printf("|   __|_ _| |_ ___ ___| __  |  |  |_  |_  |\n");
+	printf("|__   | | |  _| -_|  _| __ -|  |__|_  |_  |\n");
+	printf("|_____|_  |_| |___|_| |_____|_____|___|___|\n");
+	printf("      |___|                                \n");
+	printf("\n");
+	printf("Hello Syter BL33!\n");
+	printf("load kernel 0x%08x to aarch64 mode...\n", CONFIG_KERNEL_LOAD_ADDR);
+	printf("load dtb 0x%08x...\n\n", CONFIG_DTB_LOAD_ADDR);
 
-    printf("Start Kernel...\n\n");
+	printf("Start Kernel...\n\n");
 
-    mdelay(10);
+	mdelay(10);
 }
 
 void sys_boot() {
-    sunxi_smc_call_atf(ARM_SVC_ARISC_STARTUP, (uint64_t) CONFIG_DTB_LOAD_ADDR, 0, 0, 0);
-    arm_svc_run_os(CONFIG_KERNEL_LOAD_ADDR, CONFIG_DTB_LOAD_ADDR, 1);
+	sunxi_smc_call_atf(ARM_SVC_ARISC_STARTUP, (uint64_t) CONFIG_DTB_LOAD_ADDR, 0, 0, 0);
+	arm_svc_run_os(CONFIG_KERNEL_LOAD_ADDR, CONFIG_DTB_LOAD_ADDR, 1);
 }
