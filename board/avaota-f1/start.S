@@ -9,8 +9,11 @@
 _start:
 	/* This chip enable mie in BROM, We needs to close it right now */
 	csrc mstatus, MSTATUS_MIE
+	
 	/* disable interrupt */
 	csrw mie, zero
+	
+	/* clean regs */
 	li 	x1, 0
 	li 	x2, 0
 	li 	x3, 0
@@ -71,6 +74,8 @@ _start:
 	jal clear_bss
 
 	jal set_timer_count
+
+	jal sysmap_init
 
 	jal cache_init
 

@@ -103,6 +103,35 @@ void flush_dcache_all();
  */
 void invalidate_dcache_all();
 
+/**
+ * @brief Adds a memory region to the system memory map.
+ *
+ * This function registers a new memory region with the given starting address,
+ * length, and memory attributes to the system's memory map. The region can be
+ * used for various purposes, such as memory allocation or defining regions for
+ * specific hardware access.
+ *
+ * @param start_addr Starting address of the memory region.
+ *                   This address should be aligned to the appropriate boundary
+ *                   for the memory type.
+ *
+ * @param len Length of the memory region in bytes.
+ *            The length should be a positive value and should not exceed the
+ *            system's available memory range.
+ *
+ * @param mem_attr Memory attributes for the region (e.g., read/write, cacheable,
+ *                 non-cacheable, etc.). The exact attributes depend on the
+ *                 platform and memory type.
+ *
+ * @return 0 if the memory region was successfully added.
+ *         A non-zero value if the addition failed (e.g., invalid address or
+ *         conflicting region).
+ *
+ * @note This function assumes that the provided address and length are valid.
+ *       Any conflicts with existing memory regions will result in failure.
+ */
+int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr);
+
 #ifdef __cplusplus
 }
 #endif
