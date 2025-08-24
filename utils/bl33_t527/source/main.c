@@ -41,7 +41,9 @@ uint32_t sunxi_smc_call_atf(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_a
 	return __sunxi_smc_call(arg0, arg1, arg2, arg3);
 }
 
-uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2) { return sunxi_smc_call_atf(ARM_SVC_RUNNSOS, kernel, fdt, arg2, 0); }
+uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2) {
+	return sunxi_smc_call_atf(ARM_SVC_RUNNSOS, kernel, fdt, arg2, 0);
+}
 
 void print_banner(void) {
 	printf(" _____     _           _____ __    ___ ___ \n");

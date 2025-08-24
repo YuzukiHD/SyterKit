@@ -9,6 +9,10 @@
 
 #include <log.h>
 
-uint64_t __attribute__((weak)) sunxi_get_dram_size() { return 0; }
+uint64_t __attribute__((weak)) sunxi_get_dram_size() {
+	return 0;
+}
 
-uint64_t __attribute__((weak)) sunxi_dram_init(void *para) { return 0; }
+uint64_t __attribute__((weak)) sunxi_dram_init(void *para) {
+	return 0;
+}

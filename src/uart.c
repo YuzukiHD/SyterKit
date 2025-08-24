@@ -86,7 +86,11 @@ char get_uart_input(void) {
 }
 
 /* Check if there are characters available in the input buffer */
-int tstc() { return sunxi_serial_tstc(&uart_dbg); }
+int tstc() {
+	return sunxi_serial_tstc(&uart_dbg);
+}
 
 /* Clib Porting */
-int puts(const char *s) { return uart_puts(s); }
+int puts(const char *s) {
+	return uart_puts(s);
+}

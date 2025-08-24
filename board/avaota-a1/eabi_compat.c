@@ -5,9 +5,14 @@ void abort(void) {
 		;
 }
 
-int raise(int signum) { return 0; }
+int raise(int signum) {
+	return 0;
+}
 
 /* Dummy function to avoid linker complaints */
-void __aeabi_unwind_cpp_pr0(void) {}
+void __aeabi_unwind_cpp_pr0(void) {
+}
 
-void panic() { asm volatile("svc #0"); }
+void panic() {
+	asm volatile("svc #0");
+}

@@ -37,7 +37,9 @@ enum {
  * @param pin The GPIO pin number.
  * @return The port number.
  */
-static inline uint32_t _port_num(gpio_t pin) { return pin >> PIO_NUM_IO_BITS; }
+static inline uint32_t _port_num(gpio_t pin) {
+	return pin >> PIO_NUM_IO_BITS;
+}
 
 /**
  * @brief Gets the base address of the port register for a GPIO pin.
@@ -68,7 +70,9 @@ static uint32_t _port_base_get(gpio_t pin) {
  * @param pin The GPIO pin number.
  * @return The pin number within a port.
  */
-static inline uint32_t _pin_num(gpio_t pin) { return (pin & ((1 << PIO_NUM_IO_BITS) - 1)); }
+static inline uint32_t _pin_num(gpio_t pin) {
+	return (pin & ((1 << PIO_NUM_IO_BITS) - 1));
+}
 
 /**
  * @brief Initializes a Sunxi GPIO pin with the specified configuration.

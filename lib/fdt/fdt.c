@@ -47,7 +47,9 @@ int32_t fdt_ro_probe_(const void *fdt) {
 		return -FDT_ERR_TRUNCATED;
 }
 
-static int check_off_(uint32_t hdrsize, uint32_t totalsize, uint32_t off) { return (off >= hdrsize) && (off <= totalsize); }
+static int check_off_(uint32_t hdrsize, uint32_t totalsize, uint32_t off) {
+	return (off >= hdrsize) && (off <= totalsize);
+}
 
 static int check_block_(uint32_t hdrsize, uint32_t totalsize, uint32_t base, uint32_t size) {
 	if (!check_off_(hdrsize, totalsize, base))
@@ -72,7 +74,9 @@ size_t fdt_header_size_(uint32_t version) {
 		return FDT_V17_SIZE;
 }
 
-size_t fdt_header_size(const void *fdt) { return can_assume(LATEST) ? FDT_V17_SIZE : fdt_header_size_(fdt_version(fdt)); }
+size_t fdt_header_size(const void *fdt) {
+	return can_assume(LATEST) ? FDT_V17_SIZE : fdt_header_size_(fdt_version(fdt));
+}
 
 int fdt_check_header(const void *fdt) {
 	size_t hdrsize;

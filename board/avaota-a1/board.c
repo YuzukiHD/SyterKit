@@ -288,7 +288,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void rtc_set_vccio_det_spare(void) {}
+void rtc_set_vccio_det_spare(void) {
+}
 
 void set_rpio_power_mode(void) {
 	uint32_t reg_val = read32(SUNXI_R_GPIO_BASE + 0x348);

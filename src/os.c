@@ -88,4 +88,6 @@ void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval) {
 	add_task(&(timer->task));				  // Add the timer's task to the task list
 }
 
-void timer_handle() { task_loop(); }
+void timer_handle() {
+	task_loop();
+}

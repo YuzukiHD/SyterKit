@@ -13,15 +13,20 @@
 
 #include <sys-rproc.h>
 
-static void sram_remap_set(int value) {}
+static void sram_remap_set(int value) {
+}
 
-static void sunxi_hifi4_set_run_stall(uint32_t value) {}
+static void sunxi_hifi4_set_run_stall(uint32_t value) {
+}
 
-void sunxi_hifi4_clock_init(uint32_t addr) {}
+void sunxi_hifi4_clock_init(uint32_t addr) {
+}
 
-void sunxi_hifi4_start(void) {}
+void sunxi_hifi4_start(void) {
+}
 
-void sunxi_hifi4_clock_reset(void) {}
+void sunxi_hifi4_clock_reset(void) {
+}
 
 void sunxi_e906_clock_init(uint32_t addr) {
 	uint32_t reg_val;

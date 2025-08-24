@@ -92,9 +92,13 @@ static gpio_mux_t lcd_blk_pins = {
 		.mux = GPIO_OUTPUT,
 };
 
-static void LCD_Set_DC(uint8_t val) { sunxi_gpio_set_value(lcd_dc_pins.pin, val); }
+static void LCD_Set_DC(uint8_t val) {
+	sunxi_gpio_set_value(lcd_dc_pins.pin, val);
+}
 
-static void LCD_Set_RES(uint8_t val) { sunxi_gpio_set_value(lcd_res_pins.pin, val); }
+static void LCD_Set_RES(uint8_t val) {
+	sunxi_gpio_set_value(lcd_res_pins.pin, val);
+}
 
 static void LCD_Write_Bus(uint8_t dat) {
 	uint8_t tx[1]; /* Transmit buffer */
@@ -114,7 +118,9 @@ static void LCD_WR_DATA(uint16_t dat) {
 	LCD_Write_Bus(dat);
 }
 
-static void LCD_WR_DATA8(uint8_t dat) { LCD_Write_Bus(dat); }
+static void LCD_WR_DATA8(uint8_t dat) {
+	LCD_Write_Bus(dat);
+}
 
 static void LCD_WR_REG(uint8_t dat) {
 	LCD_Set_DC(0);
@@ -132,7 +138,9 @@ static void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
 	LCD_WR_REG(0x2c);
 }
 
-static void LCD_Open_BLK() { sunxi_gpio_set_value(lcd_blk_pins.pin, 1); }
+static void LCD_Open_BLK() {
+	sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
+}
 
 #define LCD_W 240
 #define LCD_H 135

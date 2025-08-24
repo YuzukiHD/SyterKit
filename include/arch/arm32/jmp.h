@@ -35,7 +35,9 @@ static inline void syterkit_jmp(uint32_t addr) {
 	asm volatile("bx r0");
 }
 
-static inline void jmp_to_fel() { syterkit_jmp(0x20); }
+static inline void jmp_to_fel() {
+	syterkit_jmp(0x20);
+}
 
 static inline void syterkit_jmp_kernel(uint32_t addr, uint32_t fdt) {
 	void (*kernel_entry)(int zero, int arch, unsigned int params);

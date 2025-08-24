@@ -472,7 +472,9 @@ static void sunxi_usb_recv_by_dma_isr(void *p_arg) {
  * Parameters:
  * - p_arg: A void pointer that can be used to pass arguments to the DMA transmit interrupt service routine.
  */
-static void sunxi_usb_send_by_dma_isr(void *p_arg) { sunxi_udev_active->dma_tx_isr(p_arg); }
+static void sunxi_usb_send_by_dma_isr(void *p_arg) {
+	sunxi_udev_active->dma_tx_isr(p_arg);
+}
 
 /*
  * Function name: eprx_recv_op
@@ -690,7 +692,9 @@ sunxi_usb_init_fail:
 	return -1;
 }
 
-void sunxi_usb_ep_reset(void) { sunxi_usb_bulk_ep_reset(); }
+void sunxi_usb_ep_reset(void) {
+	sunxi_usb_bulk_ep_reset();
+}
 
 void sunxi_usb_irq() {
 	uint8_t misc_irq = 0;
@@ -806,7 +810,9 @@ void sunxi_usb_attach() {
 	while (1) { sunxi_udev_active->state_loop(&sunxi_ubuf); }
 }
 
-int sunxi_usb_extern_loop() { return sunxi_udev_active->state_loop(&sunxi_ubuf); }
+int sunxi_usb_extern_loop() {
+	return sunxi_udev_active->state_loop(&sunxi_ubuf);
+}
 
 void sunxi_usb_bulk_ep_reset() {
 	uint8_t old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
@@ -870,11 +876,17 @@ int sunxi_usb_send_data(void *buffer, uint32_t buffer_size) {
 	return sunxi_usb_write_fifo((uint8_t *) buffer, buffer_size);
 }
 
-int sunxi_usb_get_ep_max(void) { return sunxi_udc_source.bulk_ep_max; }
+int sunxi_usb_get_ep_max(void) {
+	return sunxi_udc_source.bulk_ep_max;
+}
 
-int sunxi_usb_get_ep_in_type(void) { return (0x80 | SUNXI_USB_BULK_IN_EP_INDEX); }
+int sunxi_usb_get_ep_in_type(void) {
+	return (0x80 | SUNXI_USB_BULK_IN_EP_INDEX);
+}
 
-int sunxi_usb_get_ep_out_type(void) { return SUNXI_USB_BULK_OUT_EP_INDEX; }
+int sunxi_usb_get_ep_out_type(void) {
+	return SUNXI_USB_BULK_OUT_EP_INDEX;
+}
 
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {
 	uint32_t old_ep_index = 0;

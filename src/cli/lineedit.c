@@ -35,7 +35,9 @@ static void cmdline_init(cmdline_t *pcmdline) {
 
 static char *prompt_string = MSH_CMD_PROMPT;
 
-void msh_set_prompt(char *str) { prompt_string = str; }
+void msh_set_prompt(char *str) {
+	prompt_string = str;
+}
 
 static void cmdline_kill(cmdline_t *pcmdline) {
 	int i;

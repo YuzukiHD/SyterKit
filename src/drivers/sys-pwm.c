@@ -173,7 +173,9 @@ static inline void sunxi_pwm_clk_deinit(sunxi_pwm_t *pwm) {
  * @param pwm Pointer to the PWM controller structure.
  * @param channel The PWM channel number (0-15) to enable.
  */
-static inline void sunxi_pwm_enable_controller(sunxi_pwm_t *pwm, int channel) { setbits_le32(pwm->base + PWM_PER, BIT(channel)); }
+static inline void sunxi_pwm_enable_controller(sunxi_pwm_t *pwm, int channel) {
+	setbits_le32(pwm->base + PWM_PER, BIT(channel));
+}
 
 /**
  * @brief Disable the PWM controller for a specific channel.
@@ -184,7 +186,9 @@ static inline void sunxi_pwm_enable_controller(sunxi_pwm_t *pwm, int channel) { 
  * @param pwm Pointer to the PWM controller structure.
  * @param channel The PWM channel number (0-15) to disable.
  */
-static inline void sunxi_pwm_disable_controller(sunxi_pwm_t *pwm, int channel) { clrbits_le32(pwm->base + PWM_PER, BIT(channel)); }
+static inline void sunxi_pwm_disable_controller(sunxi_pwm_t *pwm, int channel) {
+	clrbits_le32(pwm->base + PWM_PER, BIT(channel));
+}
 
 /**
  * @brief Set the polarity of a specific PWM channel.

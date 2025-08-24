@@ -52,7 +52,9 @@
  * @param mmc Pointer to the MMC structure.
  * @return 1 if the host operates in SPI mode, 0 otherwise.
  */
-static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) { return mmc->host_caps & MMC_MODE_SPI; }
+static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) {
+	return mmc->host_caps & MMC_MODE_SPI;
+}
 
 /**
  * @brief Checks if the MMC device is an SD card.
@@ -62,7 +64,9 @@ static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) { return mmc->host_caps & MM
  * @param mmc Pointer to the MMC structure.
  * @return 1 if the device is an SD card, 0 otherwise.
  */
-static inline int sunxi_mmc_device_is_sd(mmc_t *mmc) { return mmc->version & SD_VERSION_SD; }
+static inline int sunxi_mmc_device_is_sd(mmc_t *mmc) {
+	return mmc->version & SD_VERSION_SD;
+}
 
 /**
  * @brief Extracts the Manufacturer ID from the MMC card.
@@ -88,7 +92,9 @@ static inline uint32_t extract_mid(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The OEM/Application ID.
  */
-static inline uint32_t extract_oid(mmc_t *card) { return (card->cid[0] >> 8) & 0xffff; }
+static inline uint32_t extract_oid(mmc_t *card) {
+	return (card->cid[0] >> 8) & 0xffff;
+}
 
 /**
  * @brief Extracts the Product Revision from the MMC card.
@@ -98,7 +104,9 @@ static inline uint32_t extract_oid(mmc_t *card) { return (card->cid[0] >> 8) & 0
  * @param card Pointer to the MMC card structure.
  * @return The Product Revision.
  */
-static inline uint32_t extract_prv(mmc_t *card) { return (card->cid[2] >> 24); }
+static inline uint32_t extract_prv(mmc_t *card) {
+	return (card->cid[2] >> 24);
+}
 
 /**
  * @brief Extracts the Product Serial Number (PSN) from the MMC card.
@@ -1824,7 +1832,9 @@ int sunxi_mmc_init(void *sdhci_hdl) {
  *
  * @return          Returns 0 on success, or an error code if the operation fails
  */
-uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) { return sunxi_mmc_read_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt); }
+uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+	return sunxi_mmc_read_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
+}
 
 /**
  * @brief Writes blocks of data to the MMC device using the specified SDHCI instance.
@@ -1841,4 +1851,6 @@ uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blk
  *
  * @return The number of blocks successfully written, or 0 if writing failed.
  */
-uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) { return sunxi_mmc_write_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt); }
+uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+	return sunxi_mmc_write_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
+}

@@ -30,11 +30,16 @@ static int sunxi_usb_detect_exit(void) {
 	return 0;
 }
 
-static void sunxi_usb_detect_reset(void) {}
+static void sunxi_usb_detect_reset(void) {
+}
 
-static void sunxi_usb_detect_usb_rx_dma_isr(void *p_arg) { printk_debug("USB: dma int for usb rx occur\n"); }
+static void sunxi_usb_detect_usb_rx_dma_isr(void *p_arg) {
+	printk_debug("USB: dma int for usb rx occur\n");
+}
 
-static void sunxi_usb_detect_usb_tx_dma_isr(void *p_arg) { printk_debug("USB: dma int for usb tx occur\n"); }
+static void sunxi_usb_detect_usb_tx_dma_isr(void *p_arg) {
+	printk_debug("USB: dma int for usb tx occur\n");
+}
 
 static int sunxi_usb_detect_standard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer) {
 	int ret = SUNXI_USB_REQ_OP_ERR;
@@ -66,7 +71,9 @@ static int sunxi_usb_detect_standard_req_op(uint32_t cmd, struct usb_device_requ
 	return ret;
 }
 
-static int sunxi_usb_detect_nonstandard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status) { return 0; }
+static int sunxi_usb_detect_nonstandard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status) {
+	return 0;
+}
 
 static int sunxi_usb_detect_state_loop(void *buffer) {
 	printk_trace("USB: sunxi_usb_detect_state_loop get\n");
