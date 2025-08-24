@@ -1,4 +1,6 @@
 export RISCV_ROOT_PATH=/home/yuzuki/sdk/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/
+export RISCV_ROOT_PATH=/home/yuzuki/sdk/Xuantie-900-gcc-elf-newlib-x86_64-V3.2.0/bin/
+
 find ../cmake/board/ -name "*.cmake" -type f | while read file; do
     cmake -B ./build-$(basename "$file") -DCMAKE_BUILD_TYPE=Release -DCMAKE_BOARD_FILE=$(basename "$file") ..
     cmake --build ./build-$(basename "$file") --config Release -j

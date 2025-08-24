@@ -10,3 +10,7 @@ add_library(arch-obj OBJECT
     cache.c
     memcmp.c
 )
+
+if(CMAKE_C_COMPILER_VERSION VERSION_LESS "11.0.0")
+    add_definitions(-DCONFIG_RISCV_COMPILER_GCC_10)
+endif()
