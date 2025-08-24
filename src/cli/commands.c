@@ -11,7 +11,9 @@
 
 static int cmd_echo(int argc, const char **argv) {
 	int i;
-	if (argc < 1) { return 0; }
+	if (argc < 1) {
+		return 0;
+	}
 	for (i = 1; i < argc; i++) {
 		uart_puts(argv[i]);
 		uart_putchar(' ');
@@ -81,7 +83,9 @@ static int cmd_help(int argc, const char **argv) {
 		const char *usage;
 
 		usage = msh_get_command_usage(msh_user_commands, argv[1]);
-		if (usage == NULL) { usage = msh_get_command_usage(msh_builtin_commands, argv[1]); }
+		if (usage == NULL) {
+			usage = msh_get_command_usage(msh_builtin_commands, argv[1]);
+		}
 
 		if (usage == NULL) {
 			uart_puts("No such command: '");
@@ -142,7 +146,9 @@ static const msh_command_entry *find_command_entry(const msh_command_entry *cmdl
 int msh_do_command(const msh_command_entry *cmdlist, int argc, const char **argv) {
 	const msh_command_entry *cmd_entry;
 
-	if (argc < 1) { return -1; }
+	if (argc < 1) {
+		return -1;
+	}
 
 	cmd_entry = find_command_entry(cmdlist, argv[0]);
 

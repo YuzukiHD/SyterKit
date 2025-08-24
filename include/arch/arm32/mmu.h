@@ -21,13 +21,19 @@ struct arm_regs_t {
 static inline uint32_t arm32_read_p15_c1(void) {
 	uint32_t value;
 
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0" : "=r"(value) : : "memory");
+	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
+						 : "=r"(value)
+						 :
+						 : "memory");
 
 	return value;
 }
 
 static inline void arm32_write_p15_c1(uint32_t value) {
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0" : : "r"(value) : "memory");
+	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
+						 :
+						 : "r"(value)
+						 : "memory");
 	arm32_read_p15_c1();
 }
 
@@ -57,7 +63,8 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size
 	uint32_t mmu_base;
 
 	/* use dram high 16M */
-	if (dram_size > 2048) dram_size = 2048;
+	if (dram_size > 2048)
+		dram_size = 2048;
 
 	uint32_t *mmu_base_addr = (uint32_t *) (dram_base + ((dram_size - 1) << 20));
 	uint32_t *page_table = mmu_base_addr;
@@ -82,14 +89,24 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size
 #endif
 	}
 	/* flush tlb */
-	asm volatile("mcr p15, 0, %0, c8, c7, 0" : : "r"(0));
+	asm volatile("mcr p15, 0, %0, c8, c7, 0"
+				 :
+				 : "r"(0));
 	/* Copy the page table address to cp15 */
 	mmu_base = (uint32_t) mmu_base_addr;
 	mmu_base |= (1 << 0) | (1 << 1) | (2 << 3);
-	asm volatile("mcr p15, 0, %0, c2, c0, 0" : : "r"(mmu_base) : "memory");
-	asm volatile("mcr p15, 0, %0, c2, c0, 1" : : "r"(mmu_base) : "memory");
+	asm volatile("mcr p15, 0, %0, c2, c0, 0"
+				 :
+				 : "r"(mmu_base)
+				 : "memory");
+	asm volatile("mcr p15, 0, %0, c2, c0, 1"
+				 :
+				 : "r"(mmu_base)
+				 : "memory");
 	/* Set the access control to all-supervisor */
-	asm volatile("mcr p15, 0, %0, c3, c0, 0" : : "r"(0x55555555));//modified, origin value is (~0)
+	asm volatile("mcr p15, 0, %0, c3, c0, 0"
+				 :
+				 : "r"(0x55555555));//modified, origin value is (~0)
 	asm volatile("isb");
 
 #ifdef CONFIG_CHIP_DCACHE
@@ -100,14 +117,20 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size
 #endif
 
 	/* and enable the mmu */
-	asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR" : "=r"(reg) : : "cc");
+	asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR"
+				 : "=r"(reg)
+				 :
+				 : "cc");
 
 	sdelay(100);
 	reg |= ((1 << 0) | (1 << 12));// enable mmu, icache
 	reg &= ~(1 << 2);			  // disable dcache
 
 	printk_trace("MMU: CR = 0x%08x\n", reg);
-	asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR" : : "r"(reg) : "cc");
+	asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR"
+				 :
+				 : "r"(reg)
+				 : "cc");
 	asm volatile("isb");
 }
 
@@ -115,18 +138,28 @@ static inline void arm32_mmu_disable(void) {
 	uint32_t reg;
 
 	/* and disable the mmu */
-	asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR" : "=r"(reg) : : "cc");
+	asm volatile("mrc p15, 0, %0, c1, c0, 0	@ get CR"
+				 : "=r"(reg)
+				 :
+				 : "cc");
 	sdelay(100);
 	reg &= ~((7 << 0) | (1 << 12));//disable mmu, icache, dcache
-	asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR" : : "r"(reg) : "cc");
+	asm volatile("mcr p15, 0, %0, c1, c0, 0	@ set CR"
+				 :
+				 : "r"(reg)
+				 : "cc");
 	asm volatile("isb");
 	/*
 	 * Invalidate all instruction caches to PoU.
 	 * Also flushes branch target cache.
 	 */
-	asm volatile("mcr p15, 0, %0, c7, c5, 0" : : "r"(0));
+	asm volatile("mcr p15, 0, %0, c7, c5, 0"
+				 :
+				 : "r"(0));
 	/* Invalidate entire branch predictor array */
-	asm volatile("mcr p15, 0, %0, c7, c5, 6" : : "r"(0));
+	asm volatile("mcr p15, 0, %0, c7, c5, 6"
+				 :
+				 : "r"(0));
 	/* Full system DSB - make sure that the invalidation is complete */
 	asm volatile("dsb");
 	/* ISB - make sure the instruction stream sees it */

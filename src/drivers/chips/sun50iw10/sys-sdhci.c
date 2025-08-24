@@ -94,7 +94,9 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
 	clk.factor_n = (reg_val >> clk.reg_factor_n_offset) & 0x3;
 
 	// check clk sel, check if correct
-	if (clk.clk_sel != ((reg_val >> 24) & 0x3)) { clk.clk_sel = ((reg_val >> 24) & 0x3); }
+	if (clk.clk_sel != ((reg_val >> 24) & 0x3)) {
+		clk.clk_sel = ((reg_val >> 24) & 0x3);
+	}
 
 	// Calculate the current clock frequency based on the source and divider values
 	switch (clk.clk_sel) {

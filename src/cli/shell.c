@@ -20,7 +20,9 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 	char argbuf[MSH_CMDLINE_CHAR_MAX];
 
 	/* set msh_user_commands */
-	if (cmdlist != NULL) { msh_user_commands = cmdlist; }
+	if (cmdlist != NULL) {
+		msh_user_commands = cmdlist;
+	}
 
 	msh_set_prompt("SyterKit> ");
 
@@ -44,20 +46,26 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 				break; /* discard this line */
 			}
 
-			if (strlen(argv[0]) <= 0) { break; /* empty input line */ }
+			if (strlen(argv[0]) <= 0) {
+				break; /* empty input line */
+			}
 
 #if (MSH_ARGS_DEBUG == 1)
 			uart_puts(" args> ");
 			for (int i = argc - 1; i > 0; i--) {
 				uart_puts(argv[i]);
-				if (i > 1) { uart_puts(", "); }
+				if (i > 1) {
+					uart_puts(", ");
+				}
 			}
 			uart_puts("\n");
 #endif
 
 			ret_command = msh_do_command(msh_user_commands, argc, (const char **) argv);
 
-			if (ret_command < 0) { ret_command = msh_do_command(msh_builtin_commands, argc, (const char **) argv); }
+			if (ret_command < 0) {
+				ret_command = msh_do_command(msh_builtin_commands, argc, (const char **) argv);
+			}
 
 			if (ret_command < 0) {
 				uart_puts("command not found: \'");

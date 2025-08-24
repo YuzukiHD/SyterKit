@@ -38,7 +38,9 @@ static void show_regs(struct arm_regs_t *regs) {
 	char *PC = (char *) regs->pc;
 	long *SP = (long *) regs->sp;
 	char *LR = (char *) regs->lr;
-	if (regs->cpsr & 0x20) { MAKE_THUMB_ADDR(PC); }
+	if (regs->cpsr & 0x20) {
+		MAKE_THUMB_ADDR(PC);
+	}
 	backtrace(PC, SP, LR);
 }
 

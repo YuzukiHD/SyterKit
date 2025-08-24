@@ -49,8 +49,10 @@ int strcmp(const char *p1, const char *p2) {
 	while (1) {
 		c1 = *p1++;
 		c2 = *p2++;
-		if (c1 != c2) return c1 < c2 ? -1 : 1;
-		if (!c1) break;
+		if (c1 != c2)
+			return c1 < c2 ? -1 : 1;
+		if (!c1)
+			break;
 	}
 
 	return 0;
@@ -63,9 +65,11 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt) {
 		c1 = *p1++;
 		c2 = *p2++;
 
-		if (c1 != c2) return c1 < c2 ? -1 : 1;
+		if (c1 != c2)
+			return c1 < c2 ? -1 : 1;
 
-		if (!c1) break;
+		if (!c1)
+			break;
 	}
 
 	return 0;
@@ -73,7 +77,8 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt) {
 
 char *strchr(const char *s, int c) {
 	for (; *s != (char) c; ++s)
-		if (*s == '\0') return NULL;
+		if (*s == '\0')
+			return NULL;
 
 	return (char *) s;
 }
@@ -82,7 +87,8 @@ char *strrchr(const char *s, int c) {
 	const char *p = s + strlen(s);
 
 	do {
-		if (*p == (char) c) return (char *) p;
+		if (*p == (char) c)
+			return (char *) p;
 	} while (--p >= s);
 
 	return NULL;
@@ -102,7 +108,9 @@ char *strstr(const char *s1, const char *s2) {
 			++s;
 		} else {
 			p = s2;
-			if (!*s) { return NULL; }
+			if (!*s) {
+				return NULL;
+			}
 			s = ++s1;
 		}
 	} while (1);
@@ -128,7 +136,8 @@ char *strncpy(char *dest, const char *src, unsigned int n) {
 	char *tmp = dest;
 
 	while (n) {
-		if ((*tmp = *src) != 0) src++;
+		if ((*tmp = *src) != 0)
+			src++;
 		tmp++;
 		n--;
 	}
@@ -202,10 +211,12 @@ enum ranks {
 #define SIZE_T_RANK rank_long
 #define PTRDIFF_T_RANK rank_long
 
-#define EMIT(x)                                                                                                                                                                    \
-	({                                                                                                                                                                             \
-		if (o < n) { *q++ = (x); }                                                                                                                                                 \
-		o++;                                                                                                                                                                       \
+#define EMIT(x)         \
+	({                  \
+		if (o < n) {    \
+			*q++ = (x); \
+		}               \
+		o++;            \
 	})
 
 static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int base, int width, int prec) {
@@ -245,7 +256,8 @@ static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int
 	 * Adjust ndigits for size of output
 	 */
 	if ((flags & FL_HASH) && (base == 8)) {
-		if (prec < ndigits + 1) prec = ndigits + 1;
+		if (prec < ndigits + 1)
+			prec = ndigits + 1;
 	}
 
 	if (ndigits < prec) {
@@ -273,7 +285,8 @@ static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int
 	 */
 	nchars = ndigits;
 
-	if (minus || (flags & (FL_PLUS | FL_SPACE))) nchars++; /* Need space for sign */
+	if (minus || (flags & (FL_PLUS | FL_SPACE)))
+		nchars++; /* Need space for sign */
 	if ((flags & FL_HASH) && (base == 16)) {
 		nchars += 2; /* Add 0x for hex */
 		width += 2;
@@ -292,7 +305,8 @@ static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int
 	/*
 	 * Emit nondigits
 	 */
-	if (minus) EMIT('-');
+	if (minus)
+		EMIT('-');
 	else if (flags & FL_PLUS)
 		EMIT('+');
 	else if (flags & FL_SPACE)
@@ -327,13 +341,15 @@ static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int
 			qq--;
 			oo--;
 			ndigits--;
-			if (oo < n) *qq = '_';
+			if (oo < n)
+				*qq = '_';
 			b4tick = tickskip - 1;
 		}
 		qq--;
 		oo--;
 		ndigits--;
-		if (oo < n) *qq = digits[val % base];
+		if (oo < n)
+			*qq = digits[val % base];
 		val /= base;
 	}
 
@@ -390,8 +406,10 @@ static char *cvt(double arg, int ndigits, int *decpt, int *sign, char *buf, int 
 	double fi, fj;
 	char *p, *p1;
 
-	if (ndigits < 0) ndigits = 0;
-	if (ndigits >= CVT_BUFSZ - 1) ndigits = CVT_BUFSZ - 2;
+	if (ndigits < 0)
+		ndigits = 0;
+	if (ndigits >= CVT_BUFSZ - 1)
+		ndigits = CVT_BUFSZ - 2;
 
 	r2 = 0;
 	*sign = 0;
@@ -420,7 +438,8 @@ static char *cvt(double arg, int ndigits, int *decpt, int *sign, char *buf, int 
 	}
 
 	p1 = &buf[ndigits];
-	if (eflag == 0) p1 += r2;
+	if (eflag == 0)
+		p1 += r2;
 	*decpt = r2;
 	if (p1 < &buf[0]) {
 		buf[0] = '\0';
@@ -442,12 +461,14 @@ static char *cvt(double arg, int ndigits, int *decpt, int *sign, char *buf, int 
 
 	while (*p1 > '9') {
 		*p1 = '0';
-		if (p1 > buf) ++*--p1;
+		if (p1 > buf)
+			++*--p1;
 		else {
 			*p1 = '1';
 			(*decpt)++;
 			if (eflag == 0) {
-				if (p > buf) *p = '0';
+				if (p > buf)
+					*p = '0';
 				p++;
 			}
 		}
@@ -485,15 +506,18 @@ static void cfltcvt(double value, char *buffer, char fmt, int precision) {
 	if (fmt == 'e') {
 		digits = cvt(value, precision + 1, &decpt, &sign, cvtbuf, 1);
 
-		if (sign) *buffer++ = '-';
+		if (sign)
+			*buffer++ = '-';
 		*buffer++ = *digits;
-		if (precision > 0) *buffer++ = '.';
+		if (precision > 0)
+			*buffer++ = '.';
 		memcpy(buffer, digits + 1, precision);
 		buffer += precision;
 		*buffer++ = capexp ? 'E' : 'e';
 
 		if (decpt == 0) {
-			if (value == 0.0) exp = 0;
+			if (value == 0.0)
+				exp = 0;
 			else
 				exp = -1;
 		} else
@@ -514,7 +538,8 @@ static void cfltcvt(double value, char *buffer, char fmt, int precision) {
 	} else if (fmt == 'f') {
 		digits = cvt(value, precision, &decpt, &sign, cvtbuf, 0);
 
-		if (sign) *buffer++ = '-';
+		if (sign)
+			*buffer++ = '-';
 		if (*digits) {
 			if (decpt <= 0) {
 				*buffer++ = '0';
@@ -524,7 +549,8 @@ static void cfltcvt(double value, char *buffer, char fmt, int precision) {
 			} else {
 				pos = 0;
 				while (*digits) {
-					if (pos++ == decpt) *buffer++ = '.';
+					if (pos++ == decpt)
+						*buffer++ = '.';
 					*buffer++ = *digits++;
 				}
 			}
@@ -542,8 +568,10 @@ static void cfltcvt(double value, char *buffer, char fmt, int precision) {
 
 static void forcdecpt(char *buffer) {
 	while (*buffer) {
-		if (*buffer == '.') return;
-		if (*buffer == 'e' || *buffer == 'E') break;
+		if (*buffer == '.')
+			return;
+		if (*buffer == 'e' || *buffer == 'E')
+			break;
 		buffer++;
 	}
 
@@ -569,7 +597,8 @@ static void cropzeros(char *buffer) {
 		while (*buffer && *buffer != 'e' && *buffer != 'E') buffer++;
 		stop = buffer--;
 		while (*buffer == '0') buffer--;
-		if (*buffer == '.') buffer--;
+		if (*buffer == '.')
+			buffer--;
 		while ((*++buffer = *stop++))
 			;
 	}
@@ -581,7 +610,8 @@ static size_t format_float(char *q, size_t n, double val, enum flags flags, char
 	char c, sign;
 	int len, i;
 
-	if (flags & FL_MINUS) flags &= ~FL_ZERO;
+	if (flags & FL_MINUS)
+		flags &= ~FL_ZERO;
 
 	c = (flags & FL_ZERO) ? '0' : ' ';
 	sign = 0;
@@ -599,15 +629,18 @@ static size_t format_float(char *q, size_t n, double val, enum flags flags, char
 		}
 	}
 
-	if (prec < 0) prec = 6;
+	if (prec < 0)
+		prec = 6;
 	else if (prec == 0 && fmt == 'g')
 		prec = 1;
 
 	cfltcvt(val, tmp, fmt, prec);
 
-	if ((flags & FL_HASH) && prec == 0) forcdecpt(tmp);
+	if ((flags & FL_HASH) && prec == 0)
+		forcdecpt(tmp);
 
-	if (fmt == 'g' && !(flags & FL_HASH)) cropzeros(tmp);
+	if (fmt == 'g' && !(flags & FL_HASH))
+		cropzeros(tmp);
 
 	len = strlen(tmp);
 	width -= len;
@@ -615,7 +648,8 @@ static size_t format_float(char *q, size_t n, double val, enum flags flags, char
 	if (!(flags & (FL_ZERO | FL_MINUS)))
 		while (width-- > 0) EMIT(' ');
 
-	if (sign) EMIT(sign);
+	if (sign)
+		EMIT(sign);
 
 	if (!(flags & FL_MINUS)) {
 		while (width-- > 0) EMIT(c);
@@ -715,7 +749,8 @@ int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap) {
 					prec = prec * 10 + (ch - '0');
 				} else if (ch == '*') {
 					prec = va_arg(ap, int);
-					if (prec < 0) prec = -1;
+					if (prec < 0)
+						prec = -1;
 				} else {
 					state = st_modifiers;
 					p--; /* Process this character again */
@@ -755,7 +790,8 @@ int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap) {
 						/*
 				 * Canonicalize rank
 				 */
-						if (rank < MIN_RANK) rank = MIN_RANK;
+						if (rank < MIN_RANK)
+							rank = MIN_RANK;
 						else if (rank > MAX_RANK)
 							rank = MAX_RANK;
 
@@ -847,7 +883,8 @@ int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap) {
 								char sch;
 								int i;
 
-								if (prec != -1 && slen > prec) slen = prec;
+								if (prec != -1 && slen > prec)
+									slen = prec;
 
 								if (width > slen && !(flags & FL_MINUS)) {
 									char pad = (flags & FL_ZERO) ? '0' : ' ';
@@ -914,7 +951,8 @@ int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap) {
 	/*
 	 * Null-terminate the string
 	 */
-	if (o < n) *q = '\0'; /* No overflow */
+	if (o < n)
+		*q = '\0'; /* No overflow */
 	else if (n > 0)
 		buf[n - 1] = '\0'; /* Overflow - terminate at end of buffer */
 

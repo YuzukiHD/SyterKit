@@ -156,12 +156,14 @@ static int load_sdcard(image_info_t *image) {
 	/* load DTB */
 	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* load Kernel */
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* load config */
 	printk_info("FATFS: read %s addr=%x\n", image->config_filename, (uint32_t) image->config_dest);
@@ -207,7 +209,9 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 		/* Read a line of data */
 		size_t len = 0;
 		while (p + len < end && *(p + len) != '\n') { ++len; }
-		if (p + len < end && *(p + len) == '\n') { ++len; }
+		if (p + len < end && *(p + len) == '\n') {
+			++len;
+		}
 		if (len > 0) {
 			strncpy(line, p, len);
 			line[len] = '\0';
@@ -216,7 +220,9 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 			trim(line);
 
 			/* Ignore empty lines and comments */
-			if (line[0] == '\0' || line[0] == ';' || line[0] == '#') { continue; }
+			if (line[0] == '\0' || line[0] == ';' || line[0] == '#') {
+				continue;
+			}
 
 			/* Parse the section name */
 			if (line[0] == '[' && line[strlen(line) - 1] == ']') {
@@ -253,7 +259,9 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 
 static const char *find_entry_value(const IniEntry *entries, int entry_count, const char *section, const char *key) {
 	for (int i = 0; i < entry_count; ++i) {
-		if (strcmp(entries[i].section, section) == 0 && strcmp(entries[i].key, key) == 0) { return entries[i].value; }
+		if (strcmp(entries[i].section, section) == 0 && strcmp(entries[i].key, key) == 0) {
+			return entries[i].value;
+		}
 	}
 	return NULL;
 }
@@ -322,7 +330,8 @@ _add_dts_size:
 	if (ret == -FDT_ERR_NOSPACE) {
 		printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
 		ret = fdt_increase_size(image.of_dest, 512);
-		if (!ret) goto _add_dts_size;
+		if (!ret)
+			goto _add_dts_size;
 		else
 			goto _err_size;
 	} else if (ret < 0) {
@@ -418,7 +427,8 @@ int cmd_bootargs(int argc, const char **argv) {
 		if (err == -FDT_ERR_NOSPACE) {
 			printk_debug("FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
 			err = fdt_increase_size(image.of_dest, 512);
-			if (!err) goto _add_dts_size;
+			if (!err)
+				goto _add_dts_size;
 			else
 				goto _err_size;
 		} else if (err < 0) {
@@ -521,7 +531,11 @@ int cmd_boot(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(bootargs), msh_define_command(reload), msh_define_command(boot), msh_define_command(print), msh_command_end,
+		msh_define_command(bootargs),
+		msh_define_command(reload),
+		msh_define_command(boot),
+		msh_define_command(print),
+		msh_command_end,
 };
 
 /* 
@@ -596,7 +610,9 @@ int main(void) {
 	}
 
 	/* Update boot arguments based on configuration file. */
-	if (update_bootargs_from_config(dram_size)) { goto _shell; }
+	if (update_bootargs_from_config(dram_size)) {
+		goto _shell;
+	}
 
 	int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
 
@@ -608,11 +624,15 @@ int main(void) {
 			printk_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
 		}
 		char *bootdelay_str = find_entry_value(entries, entry_count, "configs", "bootdelay");
-		if (bootdelay_str != NULL) { bootdelay = simple_atoi(bootdelay_str); }
+		if (bootdelay_str != NULL) {
+			bootdelay = simple_atoi(bootdelay_str);
+		}
 	}
 
 	/* Showing boot delays */
-	if (abortboot_single_key(bootdelay)) { goto _shell; }
+	if (abortboot_single_key(bootdelay)) {
+		goto _shell;
+	}
 
 	cmd_boot(0, NULL);
 

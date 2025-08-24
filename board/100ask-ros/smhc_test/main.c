@@ -65,7 +65,9 @@ int main(void) {
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) { printk_warning("SMHC: init failed\n"); }
+	if (sdmmc_init(&card0, &sdhci0) != 0) {
+		printk_warning("SMHC: init failed\n");
+	}
 
 	printk_debug("Card OK!\n");
 

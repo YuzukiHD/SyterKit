@@ -28,7 +28,9 @@ static void set_read_timeout(sdhci_t *sdhci, uint32_t timeout) {
 	rval = sdhci->reg->ntsr;
 	mode_2x = rval & (0x1 << 31);
 
-	if ((sdhci->clock == MMC_CLK_50M_DDR && mode_2x)) { rdto_clk = rdto_clk << 1; }
+	if ((sdhci->clock == MMC_CLK_50M_DDR && mode_2x)) {
+		rdto_clk = rdto_clk << 1;
+	}
 
 	rval = sdhci->reg->gctrl;
 	/*ddr50 mode don't use 256x timeout unit*/
@@ -61,7 +63,8 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
 	buff = data->buf;
 	buff_frag_num = byte_cnt >> SMHC_DES_NUM_SHIFT;
 	remain = byte_cnt & (SMHC_DES_BUFFER_MAX_LEN - 1);
-	if (remain) buff_frag_num++;
+	if (remain)
+		buff_frag_num++;
 	else
 		remain = SMHC_DES_BUFFER_MAX_LEN - 1;
 
@@ -70,11 +73,13 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
 		pdes[des_idx].des_chain = 1;
 		pdes[des_idx].own = 1;
 		pdes[des_idx].dic = 1;
-		if (buff_frag_num > 1 && i != buff_frag_num - 1) pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN - 1;
+		if (buff_frag_num > 1 && i != buff_frag_num - 1)
+			pdes[des_idx].data_buf_sz = SMHC_DES_BUFFER_MAX_LEN - 1;
 		else
 			pdes[des_idx].data_buf_sz = remain;
 		pdes[des_idx].buf_addr = ((uint32_t) buff + i * SMHC_DES_BUFFER_MAX_LEN) >> 2;
-		if (i == 0) pdes[des_idx].first_desc = 1;
+		if (i == 0)
+			pdes[des_idx].first_desc = 1;
 
 		if (i == buff_frag_num - 1) {
 			pdes[des_idx].dic = 0;
@@ -113,7 +118,8 @@ static int prepare_dma(sdhci_t *sdhci, sdhci_data_t *data) {
 
 	sdhci->reg->dmac = SMHC_IDMAC_FIX_BURST | SMHC_IDMAC_IDMA_ON; /* idma on */
 	sdhci->reg->idie &= ~(SMHC_IDMAC_TRANSMIT_INTERRUPT | SMHC_IDMAC_RECEIVE_INTERRUPT);
-	if (data->flag & MMC_DATA_WRITE) sdhci->reg->idie |= SMHC_IDMAC_TRANSMIT_INTERRUPT;
+	if (data->flag & MMC_DATA_WRITE)
+		sdhci->reg->idie |= SMHC_IDMAC_TRANSMIT_INTERRUPT;
 	else
 		sdhci->reg->idie |= SMHC_IDMAC_RECEIVE_INTERRUPT;
 
@@ -137,7 +143,8 @@ static int wait_done(sdhci_t *sdhci, sdhci_data_t *dat, uint32_t timeout_msecs, 
 			printk_warning("SMHC: error 0x%x status 0x%x\n", status & SMHC_RINT_INTERRUPT_ERROR_BIT, status & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
 			return -1;
 		}
-		if (dat && dma && (dat->blkcnt * dat->blksz) > 0) done = ((status & flag) && (sdhci->reg->idst & SMHC_IDMAC_RECEIVE_INTERRUPT)) ? 1 : 0;
+		if (dat && dma && (dat->blkcnt * dat->blksz) > 0)
+			done = ((status & flag) && (sdhci->reg->idst & SMHC_IDMAC_RECEIVE_INTERRUPT)) ? 1 : 0;
 		else
 			done = (status & flag);
 	} while (!done);
@@ -152,13 +159,15 @@ static bool read_bytes(sdhci_t *sdhci, sdhci_data_t *dat) {
 	uint32_t timeout = time_ms() + count;
 	uint32_t in_fifo;
 
-	if (timeout < 250) timeout = 250;
+	if (timeout < 250)
+		timeout = 250;
 
 	printk_trace("SMHC: read %u\n", count);
 
 	status = sdhci->reg->status;
 	err = sdhci->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT;
-	if (err) printk_warning("SMHC: interrupt error 0x%x status 0x%x\n", err & SMHC_RINT_INTERRUPT_ERROR_BIT, status);
+	if (err)
+		printk_warning("SMHC: interrupt error 0x%x status 0x%x\n", err & SMHC_RINT_INTERRUPT_ERROR_BIT, status);
 
 	while ((!err) && (count >= sizeof(sdhci->reg->fifo))) {
 		while (sdhci->reg->status & SMHC_STATUS_FIFO_EMPTY) {
@@ -179,7 +188,8 @@ static bool read_bytes(sdhci_t *sdhci, sdhci_data_t *dat) {
 		status = sdhci->reg->rint;
 
 		err = status & SMHC_RINT_INTERRUPT_ERROR_BIT;
-		if (dat->blkcnt > 1) done = status & SMHC_RINT_AUTO_COMMAND_DONE;
+		if (dat->blkcnt > 1)
+			done = status & SMHC_RINT_AUTO_COMMAND_DONE;
 		else
 			done = status & SMHC_RINT_DATA_OVER;
 
@@ -203,7 +213,8 @@ static bool write_bytes(sdhci_t *sdhci, sdhci_data_t *dat) {
 	uint32_t status, err, done;
 	uint32_t timeout = time_ms() + count;
 
-	if (timeout < 250) timeout = 250;
+	if (timeout < 250)
+		timeout = 250;
 
 	printk_trace("SMHC: write %u\n", count);
 
@@ -226,14 +237,17 @@ static bool write_bytes(sdhci_t *sdhci, sdhci_data_t *dat) {
 	do {
 		status = sdhci->reg->rint;
 		err = status & SMHC_RINT_INTERRUPT_ERROR_BIT;
-		if (dat->blkcnt > 1) done = status & SMHC_RINT_AUTO_COMMAND_DONE;
+		if (dat->blkcnt > 1)
+			done = status & SMHC_RINT_AUTO_COMMAND_DONE;
 		else
 			done = status & SMHC_RINT_DATA_OVER;
 	} while (!done && !err);
 
-	if (err & SMHC_RINT_INTERRUPT_ERROR_BIT) return FALSE;
+	if (err & SMHC_RINT_INTERRUPT_ERROR_BIT)
+		return FALSE;
 
-	if (count) return FALSE;
+	if (count)
+		return FALSE;
 	return TRUE;
 }
 
@@ -259,12 +273,15 @@ bool sdhci_transfer(sdhci_t *sdhci, sdhci_cmd_t *cmd, sdhci_data_t *dat) {
 		return TRUE;
 	}
 
-	if (cmd->idx == MMC_GO_IDLE_STATE) cmdval |= SMHC_CMD_SEND_INIT_SEQUENCE;
+	if (cmd->idx == MMC_GO_IDLE_STATE)
+		cmdval |= SMHC_CMD_SEND_INIT_SEQUENCE;
 
 	if (cmd->resptype & MMC_RSP_PRESENT) {
 		cmdval |= SMHC_CMD_RESP_EXPIRE;
-		if (cmd->resptype & MMC_RSP_136) cmdval |= SMHC_CMD_LONG_RESPONSE;
-		if (cmd->resptype & MMC_RSP_CRC) cmdval |= SMHC_CMD_CHECK_RESPONSE_CRC;
+		if (cmd->resptype & MMC_RSP_136)
+			cmdval |= SMHC_CMD_LONG_RESPONSE;
+		if (cmd->resptype & MMC_RSP_CRC)
+			cmdval |= SMHC_CMD_CHECK_RESPONSE_CRC;
 	}
 
 	if (dat) {
@@ -278,10 +295,12 @@ bool sdhci_transfer(sdhci_t *sdhci, sdhci_cmd_t *cmd, sdhci_data_t *dat) {
 			cmdval |= SMHC_CMD_WRITE;
 			sdhci->reg->idst |= SMHC_IDMAC_TRANSMIT_INTERRUPT;// clear TX status
 		}
-		if (dat->flag & MMC_DATA_READ) sdhci->reg->idst |= SMHC_IDMAC_RECEIVE_INTERRUPT;// clear RX status
+		if (dat->flag & MMC_DATA_READ)
+			sdhci->reg->idst |= SMHC_IDMAC_RECEIVE_INTERRUPT;// clear RX status
 	}
 
-	if (cmd->idx == MMC_WRITE_MULTIPLE_BLOCK || cmd->idx == MMC_READ_MULTIPLE_BLOCK) cmdval |= SMHC_CMD_SEND_AUTO_STOP;
+	if (cmd->idx == MMC_WRITE_MULTIPLE_BLOCK || cmd->idx == MMC_READ_MULTIPLE_BLOCK)
+		cmdval |= SMHC_CMD_SEND_AUTO_STOP;
 
 	sdhci->reg->rint = 0xffffffff;// Clear status
 	sdhci->reg->arg = cmd->arg;
@@ -294,7 +313,8 @@ bool sdhci_transfer(sdhci_t *sdhci, sdhci_cmd_t *cmd, sdhci_data_t *dat) {
 	} else if (dat && (dat->blkcnt * dat->blksz) > 0) {
 		sdhci->reg->gctrl |= SMHC_GCTRL_ACCESS_BY_AHB;
 		sdhci->reg->cmd = cmdval | cmd->idx | SMHC_CMD_START;// Start
-		if (dat->flag & MMC_DATA_READ && !read_bytes(sdhci, dat)) return FALSE;
+		if (dat->flag & MMC_DATA_READ && !read_bytes(sdhci, dat))
+			return FALSE;
 		else if (dat->flag & MMC_DATA_WRITE && !write_bytes(sdhci, dat))
 			return FALSE;
 	} else {
@@ -434,7 +454,8 @@ static bool update_card_clock(sdhci_t *sdhci) {
 	uint32_t timeout = time_ms();
 
 	do {
-		if (time_ms() - timeout > 10) return FALSE;
+		if (time_ms() - timeout > 10)
+			return FALSE;
 	} while (sdhci->reg->cmd & SMHC_CMD_START);
 
 	sdhci->reg->rint = 0xffffffff;
@@ -475,7 +496,8 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 		printk_trace("SMHC: set clock to %.2fMHz\n", (f32) ((f32) hz / 1000000.0));
 	}
 
-	if (sdhci->clock == MMC_CLK_50M_DDR) mod_hz = hz * 4; /* 4xclk: DDR 4(HS); */
+	if (sdhci->clock == MMC_CLK_50M_DDR)
+		mod_hz = hz * 4; /* 4xclk: DDR 4(HS); */
 	else
 		mod_hz = hz * 2; /* 2xclk: SDR 1/4; */
 
@@ -488,7 +510,8 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 	}
 
 	div = pll_hz / mod_hz;
-	if (pll_hz % mod_hz) div++;
+	if (pll_hz % mod_hz)
+		div++;
 
 	n = 0;
 	while (div > 16) {
@@ -504,12 +527,14 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 	printk_trace("SMHC: clock ratio %u\n", div);
 
 	sdhci->reg->clkcr &= ~SMHC_CLKCR_CARD_CLOCK_ON;// Disable clock
-	if (!update_card_clock(sdhci)) return false;
+	if (!update_card_clock(sdhci))
+		return false;
 
 	sdhci->reg->ntsr |= SUNXI_MMC_NTSR_MODE_SEL_NEW;
 
 	val = read32(CCU_BASE + CCU_SMHC_BGR_REG);
-	if (sdhci->id == 2) val |= CCU_MMC_BGR_SMHC2_RST;
+	if (sdhci->id == 2)
+		val |= CCU_MMC_BGR_SMHC2_RST;
 	else
 		val |= CCU_MMC_BGR_SMHC0_RST;
 	write32(CCU_BASE + CCU_SMHC_BGR_REG, val);
@@ -527,7 +552,8 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 	write32(CCU_BASE + (CCU_SMHC0_CLK_REG + (0x4 * sdhci->id)), val);
 
 	val = read32(CCU_BASE + CCU_SMHC_BGR_REG);
-	if (sdhci->id == 2) val |= CCU_MMC_BGR_SMHC2_GATE;
+	if (sdhci->id == 2)
+		val |= CCU_MMC_BGR_SMHC2_GATE;
 	else
 		val |= CCU_MMC_BGR_SMHC0_GATE;
 	write32(CCU_BASE + CCU_SMHC_BGR_REG, val);
@@ -536,10 +562,13 @@ bool sdhci_set_clock(sdhci_t *sdhci, smhc_clk_t clock) {
 
 	sdhci->reg->clkcr |= SMHC_CLKCR_MASK_D0;// Mask D0 when updating
 	sdhci->reg->clkcr &= ~(0xff);			// Clear div (set to 1)
-	if (sdhci->clock == MMC_CLK_50M_DDR) { sdhci->reg->clkcr |= SMHC_CLKCR_CLOCK_DIV(2); }
+	if (sdhci->clock == MMC_CLK_50M_DDR) {
+		sdhci->reg->clkcr |= SMHC_CLKCR_CLOCK_DIV(2);
+	}
 	sdhci->reg->clkcr |= SMHC_CLKCR_CARD_CLOCK_ON;// Enable clock
 
-	if (!update_card_clock(sdhci)) return false;
+	if (!update_card_clock(sdhci))
+		return false;
 
 	config_delay(sdhci);
 

@@ -40,7 +40,8 @@ void sunxi_dma_init(sunxi_dma_t *dma) {
 
 	DMA_REG_BASE = dma->dma_reg_base;
 
-	if (dma_init_ok > 0) return;
+	if (dma_init_ok > 0)
+		return;
 
 	sunxi_dma_clk_init(dma);
 
@@ -123,7 +124,9 @@ uint32_t sunxi_dma_request(uint32_t dmatype) {
 int sunxi_dma_release(uint32_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
 
-	if (!dma_source->used) { return -1; }
+	if (!dma_source->used) {
+		return -1;
+	}
 
 	sunxi_dma_disable_int(dma_fd);
 	sunxi_dma_free_int(dma_fd);
@@ -140,9 +143,11 @@ int sunxi_dma_setting(uint32_t dma_fd, sunxi_dma_set_t *cfg) {
 	sunxi_dma_desc_t *desc = dma_source->desc;
 	uint32_t channel_addr = (uint32_t) (&(dma_set->channel_cfg));
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
-	if (dma_set->loop_mode) desc->link = (uint32_t) (&dma_source->desc);
+	if (dma_set->loop_mode)
+		desc->link = (uint32_t) (&dma_source->desc);
 	else
 		desc->link = SUNXI_DMA_LINK_NULL;
 
@@ -160,7 +165,8 @@ int sunxi_dma_start(uint32_t dma_fd, uint32_t saddr, uint32_t daddr, uint32_t by
 	sunxi_dma_channel_reg_t *channel = dma_source->channel;
 	sunxi_dma_desc_t *desc = dma_source->desc;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	/*config desc */
 	desc->source_addr = saddr;
@@ -178,7 +184,8 @@ int sunxi_dma_stop(uint32_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
 	sunxi_dma_channel_reg_t *channel = dma_source->channel;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 	channel->enable = 0;
 
 	return 0;
@@ -189,7 +196,8 @@ int sunxi_dma_querystatus(uint32_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
 	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	channel_count = dma_source->channel_count;
 
@@ -201,11 +209,13 @@ int sunxi_dma_install_int(uint32_t dma_fd, void *p) {
 	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 	uint8_t channel_count;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	channel_count = dma_source->channel_count;
 
-	if (channel_count < 8) dma_reg->irq_pending0 = (7 << channel_count * 4);
+	if (channel_count < 8)
+		dma_reg->irq_pending0 = (7 << channel_count * 4);
 	else
 		dma_reg->irq_pending1 = (7 << (channel_count - 8) * 4);
 
@@ -224,7 +234,8 @@ int sunxi_dma_enable_int(uint32_t dma_fd) {
 	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 	uint8_t channel_count;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	channel_count = dma_source->channel_count;
 	if (channel_count < 8) {
@@ -251,7 +262,8 @@ int sunxi_dma_disable_int(uint32_t dma_fd) {
 	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 	uint8_t channel_count;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	channel_count = dma_source->channel_count;
 	if (channel_count < 8) {
@@ -269,7 +281,8 @@ int sunxi_dma_disable_int(uint32_t dma_fd) {
 	}
 
 	/* disable golbal int */
-	if (dma_int_cnt > 0) dma_int_cnt--;
+	if (dma_int_cnt > 0)
+		dma_int_cnt--;
 
 	return 0;
 }
@@ -279,10 +292,12 @@ int sunxi_dma_free_int(uint32_t dma_fd) {
 	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
 	uint8_t channel_count;
 
-	if (!dma_source->used) return -1;
+	if (!dma_source->used)
+		return -1;
 
 	channel_count = dma_source->channel_count;
-	if (channel_count < 8) dma_reg->irq_pending0 = (7 << channel_count);
+	if (channel_count < 8)
+		dma_reg->irq_pending0 = (7 << channel_count);
 	else
 		dma_reg->irq_pending1 = (7 << (channel_count - 8));
 
@@ -365,7 +380,8 @@ int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len) {
 				break;
 			}
 		}
-		if (valid) printk_debug("DMA: test check valid\n");
+		if (valid)
+			printk_debug("DMA: test check valid\n");
 		else
 			printk_error("DMA: test check failed at %u bytes\n", i);
 	}

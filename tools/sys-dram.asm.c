@@ -19,7 +19,9 @@ void mctl_phy_ca_bit_delay_compensation(__dram_para_t *para)
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04832388) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04832388) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 4:
 				case 7:
@@ -30,7 +32,9 @@ void mctl_phy_ca_bit_delay_compensation(__dram_para_t *para)
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 			}
 		} else {
 			switch (para->dram_type) {
@@ -40,7 +44,9 @@ void mctl_phy_ca_bit_delay_compensation(__dram_para_t *para)
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307b8) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830784) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830784) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 4:
 					uVar1 = para->dram_tpr10;
@@ -55,7 +61,9 @@ void mctl_phy_ca_bit_delay_compensation(__dram_para_t *para)
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x04830788) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 8:
 			}

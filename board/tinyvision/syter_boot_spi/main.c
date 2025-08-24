@@ -128,11 +128,13 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int) image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -152,7 +154,8 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 	unsigned int size;
 	uint64_t start, time;
 
-	if (spi_nand_detect(spi) != 0) return -1;
+	if (spi_nand_detect(spi) != 0)
+		return -1;
 
 	/* get dtb size and read */
 	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
@@ -226,9 +229,13 @@ int main(void) {
 
 _spi:
 	printk_debug("SPI: init\n");
-	if (sunxi_spi_init(&sunxi_spi0) != 0) { printk_error("SPI: init failed\n"); }
+	if (sunxi_spi_init(&sunxi_spi0) != 0) {
+		printk_error("SPI: init failed\n");
+	}
 
-	if (load_spi_nand(&sunxi_spi0, &image) != 0) { printk_error("SPI-NAND: loading failed\n"); }
+	if (load_spi_nand(&sunxi_spi0, &image) != 0) {
+		printk_error("SPI-NAND: loading failed\n");
+	}
 
 	sunxi_spi_disable(&sunxi_spi0);
 

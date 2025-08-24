@@ -70,7 +70,8 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 	unsigned int size;
 	uint64_t start, time;
 
-	if (spi_nand_detect(spi) != 0) return -1;
+	if (spi_nand_detect(spi) != 0)
+		return -1;
 
 	/* get dtb size and read */
 	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
@@ -255,7 +256,9 @@ int main(void) {
 	int bootdelay = CONFIG_DEFAULT_BOOTDELAY;
 
 	/* Showing boot delays */
-	if (abortboot_single_key(bootdelay)) { goto _shell; }
+	if (abortboot_single_key(bootdelay)) {
+		goto _shell;
+	}
 
 	cmd_boot(0, NULL);
 

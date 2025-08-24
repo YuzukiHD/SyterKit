@@ -19,7 +19,13 @@
 extern "C" {
 #endif// __cplusplus
 
-typedef enum { MMC_CLK_400K = 0, MMC_CLK_25M, MMC_CLK_50M, MMC_CLK_50M_DDR, MMC_CLK_100M, MMC_CLK_150M, MMC_CLK_200M } smhc_clk_t;
+typedef enum { MMC_CLK_400K = 0,
+			   MMC_CLK_25M,
+			   MMC_CLK_50M,
+			   MMC_CLK_50M_DDR,
+			   MMC_CLK_100M,
+			   MMC_CLK_150M,
+			   MMC_CLK_200M } smhc_clk_t;
 
 typedef struct {
 	uint32_t idx;

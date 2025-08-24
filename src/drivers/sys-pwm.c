@@ -27,7 +27,15 @@
  */
 static const uint32_t pre_scal[][2] = {
 		/* reg_val clk_pre_div */
-		{0, 1}, {1, 2}, {2, 4}, {3, 8}, {4, 16}, {5, 32}, {6, 64}, {7, 128}, {8, 256},
+		{0, 1},
+		{1, 2},
+		{2, 4},
+		{3, 8},
+		{4, 16},
+		{5, 32},
+		{6, 64},
+		{7, 128},
+		{8, 256},
 };
 
 /**
@@ -43,13 +51,14 @@ static const uint32_t pre_scal[][2] = {
  * 
  * @return The remainder of the division.
  */
-#define sunxi_pwm_do_div(n, base)                                                                                                                                                  \
-	do {                                                                                                                                                                           \
-		uint32_t __base = (base);                                                                                                                                                  \
-		uint32_t __rem;                                                                                                                                                            \
-		__rem = ((uint64_t) (n)) % __base;                                                                                                                                         \
-		(n) = ((uint64_t) (n)) / __base;                                                                                                                                           \
-		if (__rem > __base / 2) ++(n);                                                                                                                                             \
+#define sunxi_pwm_do_div(n, base)          \
+	do {                                   \
+		uint32_t __base = (base);          \
+		uint32_t __rem;                    \
+		__rem = ((uint64_t) (n)) % __base; \
+		(n) = ((uint64_t) (n)) / __base;   \
+		if (__rem > __base / 2)            \
+			++(n);                         \
 	} while (0)
 
 /**
@@ -223,7 +232,9 @@ static inline uint32_t sunxi_pwm_get_pccr_reg_offset(uint32_t channel) {
 			PWM_PCCRcd, PWM_PCCRcd,// channel c, d
 			PWM_PCCRef, PWM_PCCRef,// channel e, f
 	};
-	if (channel < sizeof(pccr_regs) / sizeof(pccr_regs[0])) { return pccr_regs[channel]; }
+	if (channel < sizeof(pccr_regs) / sizeof(pccr_regs[0])) {
+		return pccr_regs[channel];
+	}
 	return PWM_PCCR01;
 }
 
@@ -257,7 +268,9 @@ static inline uint32_t sunxi_pwm_get_pdzcr_reg_offset(uint32_t channel) {
 			PWM_PDZCRcd, PWM_PDZCRcd,// channel c, d
 			PWM_PDZCRef, PWM_PDZCRef,// channel e, f
 	};
-	if (channel < sizeof(pdzcr_regs) / sizeof(pdzcr_regs[0])) { return pdzcr_regs[channel]; }
+	if (channel < sizeof(pdzcr_regs) / sizeof(pdzcr_regs[0])) {
+		return pdzcr_regs[channel];
+	}
 	return PWM_PDZCR01;
 }
 
@@ -327,7 +340,8 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 
 	entire_cycles = clock_source_clk;
 	for (pre_scal_id = 0; pre_scal_id < 9; pre_scal_id++) {
-		if (entire_cycles <= 65536) break;
+		if (entire_cycles <= 65536)
+			break;
 		for (prescale = 0; prescale < PRESCALE_MAX + 1; prescale++) {
 			entire_cycles = (clock_source_clk / pre_scal[pre_scal_id][1]) / (prescale + 1);
 			if (entire_cycles <= 65536) {
@@ -340,7 +354,8 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 	clock_source_clk = entire_cycles * config->duty_ns;
 	sunxi_pwm_do_div(clock_source_clk, config->period_ns);
 	active_cycles = clock_source_clk;
-	if (entire_cycles == 0) entire_cycles++;
+	if (entire_cycles == 0)
+		entire_cycles++;
 
 	/* config clk div_m */
 	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_DIV_M_SHIFT, PWM_DIV_M_WIDTH, div_m);
@@ -429,7 +444,8 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	reg_dead_time = pwm_clk_freq;
 
 	for (pre_scal_id = 0; pre_scal_id < 9; pre_scal_id++) {
-		if (entire_cycles <= 65536 && reg_dead_time <= 255) break;
+		if (entire_cycles <= 65536 && reg_dead_time <= 255)
+			break;
 		for (prescale = 0; prescale < PRESCALE_MAX + 1; prescale++) {
 			entire_cycles = (clk / pre_scal[pre_scal_id][1]) / (prescale + 1);
 			reg_dead_time = pwm_clk_freq;
@@ -445,7 +461,8 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	sunxi_pwm_do_div(clk, config->period_ns);
 	active_cycles = clk;
 
-	if (entire_cycles == 0) entire_cycles++;
+	if (entire_cycles == 0)
+		entire_cycles++;
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		/* config clk div_m */

@@ -50,7 +50,8 @@ int fdt_parse_prop(char const **newval, int count, char *data, int *len) {
 
 			cp = newp;
 			tmp = simple_strtoul(cp, &newp, 0);
-			if (*cp != '?') *(fdt32_t *) data = cpu_to_fdt32(tmp);
+			if (*cp != '?')
+				*(fdt32_t *) data = cpu_to_fdt32(tmp);
 			else
 				newp++;
 
@@ -81,7 +82,8 @@ int fdt_parse_prop(char const **newval, int count, char *data, int *len) {
 				newp = newval[++stridx];
 				continue;
 			}
-			if (!isxdigit(*newp)) break;
+			if (!isxdigit(*newp))
+				break;
 			tmp = simple_strtoul(newp, &newp, 16);
 			*data++ = tmp & 0xFF;
 			*len = *len + 1;
@@ -111,10 +113,12 @@ static int is_printable_string(const void *data, int len) {
 	const char *s = data;
 
 	/* zero length is not */
-	if (len == 0) return 0;
+	if (len == 0)
+		return 0;
 
 	/* must terminate with zero or '\n' */
-	if (s[len - 1] != '\0' && s[len - 1] != '\n') return 0;
+	if (s[len - 1] != '\0' && s[len - 1] != '\n')
+		return 0;
 
 	/* printable or a null byte (concatenated strings) */
 	while (((*s == '\0') || isprint(*s) || isspace(*s)) && (len > 0)) {
@@ -125,15 +129,18 @@ static int is_printable_string(const void *data, int len) {
 		 * 3) Next character not a null, continue to check.
 		 */
 		if (s[0] == '\0') {
-			if (len == 1) return 1;
-			if (s[1] == '\0') return 0;
+			if (len == 1)
+				return 1;
+			if (s[1] == '\0')
+				return 0;
 		}
 		s++;
 		len--;
 	}
 
 	/* Not the null termination, or not done yet: not printable */
-	if (*s != '\0' || (len != 0)) return 0;
+	if (*s != '\0' || (len != 0))
+		return 0;
 
 	return 1;
 }
@@ -142,7 +149,8 @@ static void print_data(const void *data, int len) {
 	int j;
 
 	/* no data, don't print */
-	if (len == 0) return;
+	if (len == 0)
+		return;
 
 	/*
 	 * It is a string, but it may have multiple strings (embedded '\0's).
@@ -151,7 +159,8 @@ static void print_data(const void *data, int len) {
 		printk(LOG_LEVEL_MUTE, "\"");
 		j = 0;
 		while (j < len) {
-			if (j > 0) printk(LOG_LEVEL_MUTE, "\", \"");
+			if (j > 0)
+				printk(LOG_LEVEL_MUTE, "\", \"");
 			printk(LOG_LEVEL_MUTE, data);
 			j += strlen(data) + 1;
 			data += strlen(data) + 1;
@@ -161,7 +170,8 @@ static void print_data(const void *data, int len) {
 	}
 
 	if ((len % 4) == 0) {
-		if (len > CMD_FDT_MAX_DUMP) printk(LOG_LEVEL_MUTE, "* 0x%p [0x%08x]", data, len);
+		if (len > CMD_FDT_MAX_DUMP)
+			printk(LOG_LEVEL_MUTE, "* 0x%p [0x%08x]", data, len);
 		else {
 			const uint32_t *p;
 
@@ -170,7 +180,8 @@ static void print_data(const void *data, int len) {
 			printk(LOG_LEVEL_MUTE, ">");
 		}
 	} else { /* anything else... hexdump */
-		if (len > CMD_FDT_MAX_DUMP) printk(LOG_LEVEL_MUTE, "* 0x%p [0x%08x]", data, len);
+		if (len > CMD_FDT_MAX_DUMP)
+			printk(LOG_LEVEL_MUTE, "* 0x%p [0x%08x]", data, len);
 		else {
 			const u8 *s;
 
@@ -231,8 +242,10 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 			case FDT_BEGIN_NODE:
 				pathp = fdt_get_name(working_fdt, nodeoffset, NULL);
 				if (level <= depth) {
-					if (pathp == NULL) pathp = "/* NULL pointer error */";
-					if (*pathp == '\0') pathp = "/"; /* root is nameless */
+					if (pathp == NULL)
+						pathp = "/* NULL pointer error */";
+					if (*pathp == '\0')
+						pathp = "/"; /* root is nameless */
 					printk(LOG_LEVEL_MUTE, "%s%s {\n", &tabs[MAX_LEVEL - level], pathp);
 				}
 				level++;
@@ -243,8 +256,11 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 				break;
 			case FDT_END_NODE:
 				level--;
-				if (level <= depth) printk(LOG_LEVEL_MUTE, "%s};\n", &tabs[MAX_LEVEL - level]);
-				if (level == 0) { level = -1; /* exit the loop */ }
+				if (level <= depth)
+					printk(LOG_LEVEL_MUTE, "%s};\n", &tabs[MAX_LEVEL - level]);
+				if (level == 0) {
+					level = -1; /* exit the loop */
+				}
 				break;
 			case FDT_PROP:
 				fdt_prop = fdt_offset_ptr(working_fdt, nodeoffset, sizeof(*fdt_prop));
@@ -256,7 +272,8 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 					return 1;
 				} else if (len == 0) {
 					/* the property has no value */
-					if (level <= depth) printk(LOG_LEVEL_MUTE, "%s%s;\n", &tabs[MAX_LEVEL - level], pathp);
+					if (level <= depth)
+						printk(LOG_LEVEL_MUTE, "%s%s;\n", &tabs[MAX_LEVEL - level], pathp);
 				} else {
 					if (level <= depth) {
 						printk(LOG_LEVEL_MUTE, "%s%s = ", &tabs[MAX_LEVEL - level], pathp);
@@ -271,7 +288,8 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 			case FDT_END:
 				return 1;
 			default:
-				if (level <= depth) printk(LOG_LEVEL_MUTE, "Unknown tag 0x%08X\n", tag);
+				if (level <= depth)
+					printk(LOG_LEVEL_MUTE, "Unknown tag 0x%08X\n", tag);
 				return 1;
 		}
 		nodeoffset = nextoffset;
@@ -291,9 +309,11 @@ int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name) {
 
 	offset = fdt_subnode_offset(fdt, parent_offset, name);
 
-	if (offset == -FDT_ERR_NOTFOUND) offset = fdt_add_subnode(fdt, parent_offset, name);
+	if (offset == -FDT_ERR_NOTFOUND)
+		offset = fdt_add_subnode(fdt, parent_offset, name);
 
-	if (offset < 0) printk_warning("FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
+	if (offset < 0)
+		printk_warning("FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
 
 	return offset;
 }

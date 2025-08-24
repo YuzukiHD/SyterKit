@@ -383,7 +383,9 @@ static unsigned outBuffer(void (*myoutchar)(void *arg, char), void *arg, const c
 	for (i = 0; i < len; i++) {
 		c = buffer[i];
 
-		if (toupper && (c >= 'a' && c <= 'z')) { c -= 'a' - 'A'; }
+		if (toupper && (c >= 'a' && c <= 'z')) {
+			c -= 'a' - 'A';
+		}
 
 		(*myoutchar)(arg, c);
 		count++;
@@ -473,7 +475,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 	while (*fmt) {
 		c = *fmt++;
 
-		if (c < ' ' || c > 'z') i = (int) CH_OTHER;
+		if (c < ' ' || c > 'z')
+			i = (int) CH_OTHER;
 		else
 			i = formatStates[c - ' '] & 0x0F;
 
@@ -493,7 +496,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 				break;
 
 			case ST_WIDTH:
-				if (c == '*') param.width = (int) va_arg(args, int);
+				if (c == '*')
+					param.width = (int) va_arg(args, int);
 				else
 					param.width = param.width * 10 + (c - '0');
 				break;
@@ -503,7 +507,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 
 			case ST_PRECIS:
 				param.flags |= FLAG_PREC;
-				if (c == '*') param.prec = (int) va_arg(args, int);
+				if (c == '*')
+					param.prec = (int) va_arg(args, int);
 				else
 					param.prec = param.prec * 10 + (c - '0');
 				break;
@@ -663,7 +668,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 						 */
 					case 's':
 						param.out = va_arg(args, char *);
-						if (param.out == 0) param.out = (char *) ms_null;
+						if (param.out == 0)
+							param.out = (char *) ms_null;
 						param.length = (int) xstrlen(param.out);
 						break;
 
@@ -689,7 +695,9 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 						 * Floating point number
 						 */
 					case 'f':
-						if (!(param.flags & FLAG_PREC)) { param.prec = 6; }
+						if (!(param.flags & FLAG_PREC)) {
+							param.prec = 6;
+						}
 
 						param.dbl = va_arg(args, DOUBLE);
 						param.values.dvalue = 0.51;
@@ -729,7 +737,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 						 * Boolean value
 						 */
 					case 'B':
-						if (va_arg(args, int) != 0) param.out = (char *) ms_true;
+						if (va_arg(args, int) != 0)
+							param.out = (char *) ms_true;
 						else
 							param.out = (char *) ms_false;
 
@@ -741,7 +750,8 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 				 * Process integer number
 				 */
 				if (param.flags & FLAG_INTEGER) {
-					if (param.prec == 0) param.prec = 1;
+					if (param.prec == 0)
+						param.prec = 1;
 
 					if (!(param.flags & FLAG_VALUE)) {
 						if (param.flags & FLAG_DECIMAL) {
@@ -782,7 +792,9 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 						}
 					}
 
-					if ((param.flags & FLAG_PREFIX) && param.values.lvalue == 0) { param.prefixlen = 0; }
+					if ((param.flags & FLAG_PREFIX) && param.values.lvalue == 0) {
+						param.prefixlen = 0;
+					}
 
 					/*
 					 * Manage signed integer
@@ -809,10 +821,13 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 						}
 					}
 
-					if ((param.flags & FLAG_BUFFER) == 0) { param.out = param.buffer + sizeof(param.buffer) - 1; }
+					if ((param.flags & FLAG_BUFFER) == 0) {
+						param.out = param.buffer + sizeof(param.buffer) - 1;
+					}
 
 #if XCFG_FORMAT_LONGLONG
-					if ((param.flags & FLAG_TYPE_MASK) == FLAG_TYPE_LONGLONG) ullong2a(&param);
+					if ((param.flags & FLAG_TYPE_MASK) == FLAG_TYPE_LONGLONG)
+						ullong2a(&param);
 					else
 						ulong2a(&param);
 #else
@@ -837,7 +852,9 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 					}
 
 				} else {
-					if (param.width && param.length > param.width) { param.length = param.width; }
+					if (param.width && param.length > param.width) {
+						param.length = param.width;
+					}
 				}
 
 				/*
@@ -846,9 +863,11 @@ unsigned xvformat(void (*outchar)(void *, char), void *arg, const char *fmt, va_
 				param.width -= (param.length + param.prefixlen);
 
 				param.count += outBuffer(outchar, arg, param.prefix, param.prefixlen, param.flags & FLAG_UPPER);
-				if (!(param.flags & FLAG_LEFT)) param.count += outChars(outchar, arg, param.pad, param.width);
+				if (!(param.flags & FLAG_LEFT))
+					param.count += outChars(outchar, arg, param.pad, param.width);
 				param.count += outBuffer(outchar, arg, param.out, param.length, param.flags & FLAG_UPPER);
-				if (param.flags & FLAG_LEFT) param.count += outChars(outchar, arg, param.pad, param.width);
+				if (param.flags & FLAG_LEFT)
+					param.count += outChars(outchar, arg, param.pad, param.width);
 		}
 	}
 

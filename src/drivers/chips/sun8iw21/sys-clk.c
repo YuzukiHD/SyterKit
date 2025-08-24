@@ -62,7 +62,8 @@ void sunxi_clk_init(void) {
 	sdelay(1);
 
 	/* Periph0 has been enabled */
-	if (read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG) & (1 << 31)) printk_debug("periph0 has been enabled\n");
+	if (read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG) & (1 << 31))
+		printk_debug("periph0 has been enabled\n");
 
 	/* AHB_Clock = CLK_SRC/M/N, PERIPH_600M / N(1) / M(3) = 200MHz */
 	write32(CCU_BASE + CCU_AHB_CLK_REG, (0x3 << 24) | 0x2);

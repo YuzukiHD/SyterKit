@@ -59,7 +59,9 @@ static int ruapu_detect_isa(const void *some_inst) {
 
 	PVOID eh = AddVectoredExceptionHandler(1, ruapu_catch_sigill);
 
-	if (setjmp(g_ruapu_jmpbuf) == 0) { ((void (*)()) some_inst)(); }
+	if (setjmp(g_ruapu_jmpbuf) == 0) {
+		((void (*)()) some_inst)();
+	}
 
 	RemoveVectoredExceptionHandler(eh);
 
@@ -93,7 +95,9 @@ static int ruapu_detect_isa(ruapu_some_inst some_inst) {
 	sa.sa_sigaction = ruapu_catch_sigill;
 	sigaction(SIGILL, &sa, &old_sa);
 
-	if (sigsetjmp(g_ruapu_jmpbuf, 1) == 0) { some_inst(); }
+	if (sigsetjmp(g_ruapu_jmpbuf, 1) == 0) {
+		some_inst();
+	}
 
 	sigaction(SIGILL, &old_sa, NULL);
 
@@ -160,14 +164,23 @@ static int ruapu_detect_isa(ruapu_some_inst some_inst) {
 #else// defined _WIN32
 
 #if defined(__i386__) || defined(__x86_64__) || __s390x__
-#define RUAPU_INSTCODE(isa, ...)                                                                                                                                                   \
-	static void ruapu_some_##isa() { asm volatile(".byte " #__VA_ARGS__ : : :); }
+#define RUAPU_INSTCODE(isa, ...)                                        \
+	static void ruapu_some_##isa() { asm volatile(".byte " #__VA_ARGS__ \
+												  :                     \
+												  :                     \
+												  :); }
 #elif __aarch64__ || __arm__ || __mips__ || __riscv || __loongarch__
-#define RUAPU_INSTCODE(isa, ...)                                                                                                                                                   \
-	static void ruapu_some_##isa() { asm volatile(".word " #__VA_ARGS__ : : :); }
+#define RUAPU_INSTCODE(isa, ...)                                        \
+	static void ruapu_some_##isa() { asm volatile(".word " #__VA_ARGS__ \
+												  :                     \
+												  :                     \
+												  :); }
 #elif __powerpc__
-#define RUAPU_INSTCODE(isa, ...)                                                                                                                                                   \
-	static void ruapu_some_##isa() { asm volatile(".long " #__VA_ARGS__ : : :); }
+#define RUAPU_INSTCODE(isa, ...)                                        \
+	static void ruapu_some_##isa() { asm volatile(".long " #__VA_ARGS__ \
+												  :                     \
+												  :                     \
+												  :); }
 #endif
 
 #endif// defined _WIN32
@@ -329,7 +342,9 @@ const char *g_ruapu_isa_supported[sizeof(g_ruapu_isa_map) / sizeof(g_ruapu_isa_m
 static void ruapu_detect_openrisc_isa() {
 	uint32_t value;
 	uint16_t addr = U(0x0000);
-	asm volatile("l.mfspr %0, r0, %1" : "=r"(value) : "K"(addr));
+	asm volatile("l.mfspr %0, r0, %1"
+				 : "=r"(value)
+				 : "K"(addr));
 	size_t j = 0;
 	for (size_t i = 0; i < sizeof(g_ruapu_isa_map) / sizeof(g_ruapu_isa_map[0]); i++) {
 		int capable = ((value) >> (5 + i)) & 0x1;
@@ -366,7 +381,8 @@ void ruapu_init() {
 int ruapu_supports(const char *isa) {
 	const char *const *isa_supported = g_ruapu_isa_supported;
 	while (*isa_supported) {
-		if (strcmp(*isa_supported, isa) == 0) return 1;
+		if (strcmp(*isa_supported, isa) == 0)
+			return 1;
 
 		isa_supported++;
 	}

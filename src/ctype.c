@@ -36,11 +36,13 @@ int isxdigit(int c) { return isdigit(c) || (((unsigned) c | 32) - 'a' < 6); }
 int toascii(int c) { return (c & 0x7f); }
 
 int tolower(int c) {
-	if (isupper(c)) return c | 32;
+	if (isupper(c))
+		return c | 32;
 	return c;
 }
 
 int toupper(int c) {
-	if (islower(c)) return c & 0x5f;
+	if (islower(c))
+		return c & 0x5f;
 	return c;
 }

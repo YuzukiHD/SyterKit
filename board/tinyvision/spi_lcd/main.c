@@ -78,12 +78,14 @@ static void LCD_Write_Bus(uint8_t dat) {
 
 	tx[0] = dat;
 	r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
-	if (r < 0) printk_error("SPI: SPI Xfer error!\n");
+	if (r < 0)
+		printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len) {
 	int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
-	if (r < 0) printk_error("SPI: SPI Xfer error!\n");
+	if (r < 0)
+		printk_error("SPI: SPI Xfer error!\n");
 }
 
 void LCD_WR_DATA(uint16_t dat) {
@@ -217,7 +219,9 @@ int main(void) {
 	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
 	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
 
-	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) { printk_error("SPI: init failed\n"); }
+	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
+		printk_error("SPI: init failed\n");
+	}
 
 	LCD_Init();
 

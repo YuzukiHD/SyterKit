@@ -83,7 +83,8 @@ static void sysmap_region_set_mem_attr(uint32_t region_index, uint32_t mem_attr)
 static inline uint32_t get_mem_region_upper_limit(uint32_t region_index) { return sysmap_region_get_upper_limit(region_index) << SYSMAP_ADDR_SHIFT; }
 
 static inline uint32_t get_mem_region_start_addr(uint32_t region_index) {
-	if (region_index == 0) return 0;
+	if (region_index == 0)
+		return 0;
 	else
 		return get_mem_region_upper_limit(region_index - 1);
 }
@@ -91,7 +92,8 @@ static inline uint32_t get_mem_region_start_addr(uint32_t region_index) {
 static inline uint32_t get_mem_region_end_addr(uint32_t region_index) { return get_mem_region_upper_limit(region_index) - 1; }
 
 static inline uint32_t get_mem_region_len(uint32_t region_index) {
-	if (region_index == 0) return get_mem_region_upper_limit(region_index);
+	if (region_index == 0)
+		return get_mem_region_upper_limit(region_index);
 	else
 		return get_mem_region_upper_limit(region_index) - get_mem_region_upper_limit(region_index - 1);
 }
@@ -116,21 +118,28 @@ static inline void setup_mem_region(uint32_t region_index, uint32_t start_addr, 
 int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr) {
 	uint32_t current_region_start_addr;
 
-	if (!IS_MEM_ADDR_ALIGNED(start_addr)) return SYSMAP_RET_INVALID_MEM_ADDR;
+	if (!IS_MEM_ADDR_ALIGNED(start_addr))
+		return SYSMAP_RET_INVALID_MEM_ADDR;
 
-	if (!len) return SYSMAP_RET_INVALID_MEM_LEN;
+	if (!len)
+		return SYSMAP_RET_INVALID_MEM_LEN;
 
-	if ((mem_attr & SYSMAP_MEM_ATTR_MASK) != mem_attr) return SYSMAP_RET_INVALID_MEM_ATTR;
+	if ((mem_attr & SYSMAP_MEM_ATTR_MASK) != mem_attr)
+		return SYSMAP_RET_INVALID_MEM_ATTR;
 
-	if (region_index >= SYSMAP_REGION_NUM) return SYSMAP_RET_REGION_IS_FULL;
+	if (region_index >= SYSMAP_REGION_NUM)
+		return SYSMAP_RET_REGION_IS_FULL;
 
 	current_region_start_addr = 0;
-	if (region_index) current_region_start_addr = get_mem_region_start_addr(region_index);
+	if (region_index)
+		current_region_start_addr = get_mem_region_start_addr(region_index);
 
-	if (start_addr < current_region_start_addr) return SYSMAP_RET_INVALID_MEM_ADDR;
+	if (start_addr < current_region_start_addr)
+		return SYSMAP_RET_INVALID_MEM_ADDR;
 
 	if (start_addr > current_region_start_addr) {
-		if (region_index == (SYSMAP_REGION_NUM - 1)) return SYSMAP_RET_REGION_NOT_ENOUGH;
+		if (region_index == (SYSMAP_REGION_NUM - 1))
+			return SYSMAP_RET_REGION_NOT_ENOUGH;
 
 		sysmap_setup_mem_region(region_index, start_addr, SYSMAP_MEM_ATTR_SO_NC_NB);
 		region_index++;

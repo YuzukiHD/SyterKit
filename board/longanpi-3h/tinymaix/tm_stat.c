@@ -14,7 +14,12 @@ limitations under the License.
 
 #if TM_ENABLE_STAT
 static const char *mdl_type_str[6] = {
-		"int8", "int16", "fp32", "fp16", "fp8 1.4.3", "fp8 1.5.2",
+		"int8",
+		"int16",
+		"fp32",
+		"fp16",
+		"fp8 1.4.3",
+		"fp8 1.5.2",
 };
 
 static const char *tml_str_tbl[TML_MAXCNT] = {
@@ -28,7 +33,13 @@ static const char *tml_str_tbl[TML_MAXCNT] = {
 };
 
 static const int tml_headsize_tbl[TML_MAXCNT] = {
-		sizeof(tml_conv2d_dw_t), sizeof(tml_gap_t), sizeof(tml_fc_t), sizeof(tml_softmax_t), sizeof(tml_reshape_t), sizeof(tml_conv2d_dw_t), sizeof(tml_add_t),
+		sizeof(tml_conv2d_dw_t),
+		sizeof(tml_gap_t),
+		sizeof(tml_fc_t),
+		sizeof(tml_softmax_t),
+		sizeof(tml_reshape_t),
+		sizeof(tml_conv2d_dw_t),
+		sizeof(tml_add_t),
 };
 
 tm_err_t tm_stat(tm_mdlbin_t *b) {

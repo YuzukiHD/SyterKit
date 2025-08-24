@@ -45,7 +45,9 @@ uint32_t phy_write_training(dram_para_t *para) {
 	do {
 	} while ((REG32(0x048308e0) & 3) != 3);
 	bVar2 = (REG32(0x048308e0) & 0xc) != 0;
-	if (bVar2) { printf("dx_low 16bit write training error  \n"); }
+	if (bVar2) {
+		printf("dx_low 16bit write training error  \n");
+	}
 	if ((para->dram_para2 & 1) == 0) {
 		do {
 		} while ((REG32(0x04830ae0) & 3) != 3);
@@ -57,23 +59,31 @@ uint32_t phy_write_training(dram_para_t *para) {
 	for (i = 0; i < 9; i = i + 1) {}
 	for (i = 0; i < 9; i = i + 1) {
 		uVar1 = *(int *) ((i + 0x120c24e) * 4) - *(int *) ((i + 0x120c23c) * 4);
-		if ((uVar1 < 7) && (printf("write dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+		if ((uVar1 < 7) && (printf("write dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+			bVar2 = true;
+		}
 	}
 	for (i = 0; i < 9; i = i + 1) {}
 	for (i = 0; i < 9; i = i + 1) {
 		uVar1 = *(int *) ((i + 0x120c257) * 4) - *(int *) ((i + 0x120c245) * 4);
-		if ((uVar1 < 7) && (printf("write dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+		if ((uVar1 < 7) && (printf("write dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+			bVar2 = true;
+		}
 	}
 	if ((para->dram_para2 & 1) == 0) {
 		for (i = 0; i < 9; i = i + 1) {}
 		for (i = 0; i < 9; i = i + 1) {
 			uVar1 = *(int *) ((i + 0x120c2ce) * 4) - *(int *) ((i + 0x120c2bc) * 4);
-			if ((uVar1 < 7) && (printf("write dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+			if ((uVar1 < 7) && (printf("write dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+				bVar2 = true;
+			}
 		}
 		for (i = 0; i < 9; i = i + 1) {}
 		for (i = 0; i < 9; i = i + 1) {
 			uVar1 = *(int *) ((i + 0x120c2d7) * 4) - *(int *) ((i + 0x120c2c5) * 4);
-			if ((uVar1 < 7) && (printf("write dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+			if ((uVar1 < 7) && (printf("write dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+				bVar2 = true;
+			}
 		}
 	}
 	REG32(0x04830190) = REG32(0x04830190) & 0xffffff9f;
@@ -117,7 +127,9 @@ uint32_t phy_read_training(dram_para_t *para) {
 	}
 	uVar1 = para->dram_para1 >> 0x10 & 0xf;
 	dqs_read_default_deskew = uVar1 << 1;
-	if (uVar1 == 0) { dqs_read_default_deskew = 0xf; }
+	if (uVar1 == 0) {
+		dqs_read_default_deskew = 0xf;
+	}
 	REG32(0x04830198) = REG32(0x04830198) & 0xfffffffc | 2;
 	REG32(0x04830804) = dqs_read_default_deskew | REG32(0x04830804) & 0xffffffc0;
 	REG32(0x04830808) = dqs_read_default_deskew | REG32(0x04830808) & 0xffffffc0;
@@ -127,7 +139,9 @@ uint32_t phy_read_training(dram_para_t *para) {
 	do {
 	} while ((REG32(0x04830840) & 0xc) != 0xc);
 	bVar2 = (REG32(0x04830840) & 3) != 0;
-	if (bVar2) { printf("dx_low 16bit read training error  \n"); }
+	if (bVar2) {
+		printf("dx_low 16bit read training error  \n");
+	}
 	if ((para->dram_para2 & 1) == 0) {
 		do {
 		} while ((REG32(0x04830a40) & 0xc) != 0xc);
@@ -139,23 +153,31 @@ uint32_t phy_read_training(dram_para_t *para) {
 	for (i = 0; i < 9; i = i + 1) {}
 	for (i = 0; i < 9; i = i + 1) {
 		uVar1 = *(int *) ((i + 0x120c226) * 4) - *(int *) ((i + 0x120c214) * 4);
-		if ((uVar1 < 7) && (printf("read dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+		if ((uVar1 < 7) && (printf("read dx0_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+			bVar2 = true;
+		}
 	}
 	for (i = 0; i < 9; i = i + 1) {}
 	for (i = 0; i < 9; i = i + 1) {
 		uVar1 = *(int *) ((i + 0x120c22f) * 4) - *(int *) ((i + 0x120c21d) * 4);
-		if ((uVar1 < 7) && (printf("read dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+		if ((uVar1 < 7) && (printf("read dx1_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+			bVar2 = true;
+		}
 	}
 	if ((para->dram_para2 & 1) == 0) {
 		for (i = 0; i < 9; i = i + 1) {}
 		for (i = 0; i < 9; i = i + 1) {
 			uVar1 = *(int *) ((i + 0x120c2a6) * 4) - *(int *) ((i + 0x120c294) * 4);
-			if ((uVar1 < 7) && (printf("read dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+			if ((uVar1 < 7) && (printf("read dx2_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+				bVar2 = true;
+			}
 		}
 		for (i = 0; i < 9; i = i + 1) {}
 		for (i = 0; i < 9; i = i + 1) {
 			uVar1 = *(int *) ((i + 0x120c2af) * 4) - *(int *) ((i + 0x120c29d) * 4);
-			if ((uVar1 < 7) && (printf("read dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) { bVar2 = true; }
+			if ((uVar1 < 7) && (printf("read dx3_dq%d delay_width_error =0x%x \n", i - 1, uVar1), (para->dram_tpr10 & 0x10000000) == 0)) {
+				bVar2 = true;
+			}
 		}
 	}
 	REG32(0x04830190) = REG32(0x04830190) & 0xfffffffc;
@@ -188,15 +210,19 @@ uint32_t phy_read_calibration(dram_para_t *para) {
 	uint32_t read_calibration_error;
 
 	bVar1 = false;
-	if (para->dram_type == 4) { REG32(0x04830054) = REG32(0x04830054) | 2; }
+	if (para->dram_type == 4) {
+		REG32(0x04830054) = REG32(0x04830054) | 2;
+	}
 	if ((para->dram_para2 & 1) == 0) {
 		do {
-			if ((REG32(0x04830184) & 0xf) == 0xf) goto LAB_0001231a;
+			if ((REG32(0x04830184) & 0xf) == 0xf)
+				goto LAB_0001231a;
 		} while ((REG32(0x04830184) >> 5 & 1) == 0);
 		bVar1 = true;
 	} else {
 		do {
-			if ((REG32(0x04830184) & 3) == 3) goto LAB_0001231a;
+			if ((REG32(0x04830184) & 3) == 3)
+				goto LAB_0001231a;
 		} while ((REG32(0x04830184) >> 5 & 1) == 0);
 		bVar1 = true;
 	}
@@ -204,12 +230,14 @@ LAB_0001231a:
 	if ((para->dram_para2 & 0x1000) != 0) {
 		if ((para->dram_para2 & 1) == 0) {
 			do {
-				if ((REG32(0x04830184) & 0xf) == 0xf) goto LAB_00012422;
+				if ((REG32(0x04830184) & 0xf) == 0xf)
+					goto LAB_00012422;
 			} while ((REG32(0x04830184) >> 5 & 1) == 0);
 			bVar1 = true;
 		} else {
 			do {
-				if ((REG32(0x04830184) & 3) == 3) goto LAB_00012422;
+				if ((REG32(0x04830184) & 3) == 3)
+					goto LAB_00012422;
 			} while ((REG32(0x04830184) >> 5 & 1) == 0);
 			bVar1 = true;
 		}
@@ -253,7 +281,9 @@ uint32_t phy_write_leveling(dram_para_t *para) {
 			j = i + 0x2e;
 		}
 		iVar3 = *(int *) ((j + 0x120c096) * 4);
-		if ((iVar3 == 0) || (iVar3 == 0x3f)) { bVar1 = true; }
+		if ((iVar3 == 0) || (iVar3 == 0x3f)) {
+			bVar1 = true;
+		}
 	}
 	if ((para->dram_para2 & 0x1000) != 0) {
 		if ((para->dram_para2 & 1) == 0) {
@@ -314,7 +344,9 @@ void mctl_phy_ca_bit_delay_compensation(dram_para_t *para) {
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04832388) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04832388) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 4:
 				case 7:
@@ -325,7 +357,9 @@ void mctl_phy_ca_bit_delay_compensation(dram_para_t *para) {
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307e4) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 			}
 		} else {
 			switch (para->dram_type) {
@@ -335,7 +369,9 @@ void mctl_phy_ca_bit_delay_compensation(dram_para_t *para) {
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x048307b8) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830784) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830784) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 4:
 					uVar1 = para->dram_tpr10;
@@ -350,7 +386,9 @@ void mctl_phy_ca_bit_delay_compensation(dram_para_t *para) {
 					REG32(0x048307dc) = (para->dram_tpr10 & 0xf) << 1;
 					REG32(0x04830788) = (para->dram_tpr10 >> 8 & 0xf) << 1;
 					REG32(0x048307e0) = REG32(0x048307dc);
-					if ((para->dram_para2 & 0x1000) != 0) { REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1; }
+					if ((para->dram_para2 & 0x1000) != 0) {
+						REG32(0x04830790) = (para->dram_tpr10 >> 0xc & 0xf) << 1;
+					}
 					break;
 				case 8:
 					break;
@@ -365,32 +403,56 @@ void mctl_drive_odt_config(dram_para_t *para) {
 
 	REG32(0x0483038c) = para->dram_dx_dri & 0x1f;
 	REG32(0x04830388) = REG32(0x0483038c);
-	if (para->dram_type == 8) { REG32(0x0483038c) = 4; }
+	if (para->dram_type == 8) {
+		REG32(0x0483038c) = 4;
+	}
 	REG32(0x048303cc) = para->dram_dx_dri >> 8 & 0x1f;
 	REG32(0x048303c8) = REG32(0x048303cc);
-	if (para->dram_type == 8) { REG32(0x048303cc) = 4; }
+	if (para->dram_type == 8) {
+		REG32(0x048303cc) = 4;
+	}
 	REG32(0x0483040c) = para->dram_dx_dri >> 0x10 & 0x1f;
 	REG32(0x04830408) = REG32(0x0483040c);
-	if (para->dram_type == 8) { REG32(0x0483040c) = 4; }
+	if (para->dram_type == 8) {
+		REG32(0x0483040c) = 4;
+	}
 	REG32(0x0483044c) = para->dram_dx_dri >> 0x18 & 0x1f;
 	REG32(0x04830448) = REG32(0x0483044c);
-	if (para->dram_type == 8) { REG32(0x0483044c) = 4; }
+	if (para->dram_type == 8) {
+		REG32(0x0483044c) = 4;
+	}
 	REG32(0x04830340) = para->dram_ca_dri & 0x1f;
 	REG32(0x04830344) = REG32(0x04830340);
 	REG32(0x04830348) = para->dram_ca_dri >> 8 & 0x1f;
 	REG32(0x0483034c) = REG32(0x04830348);
 	REG32(0x04830384) = para->dram_dx_odt & 0x1f;
-	if ((para->dram_type == 4) || (REG32(0x04830380) = REG32(0x04830384), para->dram_type == 7)) { REG32(0x04830380) = 0; }
-	if (para->dram_type == 8) { REG32(0x04830384) = 0; }
+	if ((para->dram_type == 4) || (REG32(0x04830380) = REG32(0x04830384), para->dram_type == 7)) {
+		REG32(0x04830380) = 0;
+	}
+	if (para->dram_type == 8) {
+		REG32(0x04830384) = 0;
+	}
 	REG32(0x048303c4) = para->dram_dx_odt >> 8 & 0x1f;
-	if ((para->dram_type == 4) || (REG32(0x048303c0) = REG32(0x048303c4), para->dram_type == 7)) { REG32(0x048303c0) = 0; }
-	if (para->dram_type == 8) { REG32(0x048303c4) = 0; }
+	if ((para->dram_type == 4) || (REG32(0x048303c0) = REG32(0x048303c4), para->dram_type == 7)) {
+		REG32(0x048303c0) = 0;
+	}
+	if (para->dram_type == 8) {
+		REG32(0x048303c4) = 0;
+	}
 	REG32(0x04830404) = para->dram_dx_odt >> 0x10 & 0x1f;
-	if ((para->dram_type == 4) || (REG32(0x04830400) = REG32(0x04830404), para->dram_type == 7)) { REG32(0x04830400) = 0; }
-	if (para->dram_type == 8) { REG32(0x04830404) = 0; }
+	if ((para->dram_type == 4) || (REG32(0x04830400) = REG32(0x04830404), para->dram_type == 7)) {
+		REG32(0x04830400) = 0;
+	}
+	if (para->dram_type == 8) {
+		REG32(0x04830404) = 0;
+	}
 	REG32(0x04830444) = para->dram_dx_odt >> 0x18 & 0x1f;
-	if ((para->dram_type == 4) || (REG32(0x04830440) = REG32(0x04830444), para->dram_type == 7)) { REG32(0x04830440) = 0; }
-	if (para->dram_type == 8) { REG32(0x04830444) = 0; }
+	if ((para->dram_type == 4) || (REG32(0x04830440) = REG32(0x04830444), para->dram_type == 7)) {
+		REG32(0x04830440) = 0;
+	}
+	if (para->dram_type == 8) {
+		REG32(0x04830444) = 0;
+	}
 	return;
 }
 
@@ -441,7 +503,9 @@ void phy_para_config(dram_para_t *para) {
 	uint32_t TCL;
 
 	uVar1 = para->dram_type;
-	if (uVar1 == 8) { REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f; }
+	if (uVar1 == 8) {
+		REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f;
+	}
 	if ((para->dram_para2 & 1) == 0) {
 		reg_val = REG32(0x0483003c) & 0xfffffff0 | 0xf;
 	} else {
@@ -503,7 +567,9 @@ void phy_para_config(dram_para_t *para) {
 			reg_val = REG32(0x04830004) | 5;
 	}
 	REG32(0x04830004) = reg_val | 8;
-	if (para->dram_clk < 0x2a1) { REG32(0x04830020) = 0xf; }
+	if (para->dram_clk < 0x2a1) {
+		REG32(0x04830020) = 0xf;
+	}
 	if (para->dram_clk < 0x1f5) {
 		REG32(0x04830144) = REG32(0x04830144) | 0x80;
 		REG32(0x0483014c) = REG32(0x0483014c) & 0xffffff1f | 0x20;
@@ -530,7 +596,9 @@ void mctl_phy_dx_bit_delay_compensation(dram_para_t *para) {
 		REG32(0x04830060) = REG32(0x04830060) & 0xfffffffe;
 		REG32(0x04830008) = REG32(0x04830008) | 8;
 		REG32(0x04830190) = REG32(0x04830190) & 0xffffffef;
-		if (para->dram_type == 8) { REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f; }
+		if (para->dram_type == 8) {
+			REG32(0x04830004) = REG32(0x04830004) & 0xffffff7f;
+		}
 		uVar1 = para->dram_tpr11 & 0x3f;
 		for (i = 0; i < 9; i = i + 1) {
 			*(uint32_t *) (i * 8 + 0x4830484) = uVar1;
@@ -689,7 +757,9 @@ uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
 		} else {
 			for (i = 0; i < 5; i = i + 1) {
 				ret_val = phy_write_leveling(para);
-				if (ret_val == 1) { i = 5; }
+				if (ret_val == 1) {
+					i = 5;
+				}
 			}
 		}
 		if (ret_val == 0) {
@@ -703,10 +773,14 @@ uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
 		} else {
 			for (i = 0; i < 5; i = i + 1) {
 				ret_val = phy_read_calibration(para);
-				if (ret_val == 1) { i = 5; }
+				if (ret_val == 1) {
+					i = 5;
+				}
 			}
 		}
-		if (ret_val == 0) { bVar1 = true; }
+		if (ret_val == 0) {
+			bVar1 = true;
+		}
 	}
 	if (((para->dram_tpr10 & 0x400000) != 0) && (!bVar1)) {
 		if ((para->dram_tpr10 & 0x80000) == 0) {
@@ -714,7 +788,9 @@ uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
 		} else {
 			for (i = 0; i < 5; i = i + 1) {
 				ret_val = phy_read_training(para);
-				if (ret_val == 1) { i = 5; }
+				if (ret_val == 1) {
+					i = 5;
+				}
 			}
 		}
 		if (ret_val == 0) {
@@ -728,7 +804,9 @@ uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
 		} else {
 			for (i = 0; i < 5; i = i + 1) {
 				ret_val = phy_write_training(para);
-				if (ret_val == 1) { i = 5; }
+				if (ret_val == 1) {
+					i = 5;
+				}
 			}
 		}
 		if (ret_val == 0) {
@@ -742,7 +820,9 @@ uint32_t ddrphy_phyinit_C_initPhyConfig(dram_para_t *para) {
 		} else {
 			bVar1 = false;
 		}
-		if (bVar1) { return 0; }
+		if (bVar1) {
+			return 0;
+		}
 	} else {
 		if (((bVar2) || (bVar1)) || ((bVar3 || (bVar4)))) {
 			bVar1 = true;
@@ -911,7 +991,9 @@ uint32_t auto_scan_dram_rank_width(dram_para_t *para) {
 			if (uVar1 == 0) {
 				para->dram_para2 = 1;
 				uVar1 = mctl_core_init(para);
-				if (uVar1 == 0) { return 0; }
+				if (uVar1 == 0) {
+					return 0;
+				}
 				printf("[AUTO DEBUG]16 bit,1 ranks training success!\n");
 			} else {
 				printf("[AUTO DEBUG]16 bit,2 ranks training success!\n");
@@ -988,10 +1070,12 @@ uint32_t auto_scan_dram_size(dram_para_t *para) {
 				} else {
 					uVar1 = j * 4 + 0x40000000;
 				}
-				if (uVar1 != *(uint32_t *) ((1 << (i + 5 & 0xff)) + 0x40000000 + j * 4)) break;
+				if (uVar1 != *(uint32_t *) ((1 << (i + 5 & 0xff)) + 0x40000000 + j * 4))
+					break;
 				cnt = cnt + 1;
 			}
-			if (cnt == 0x10) break;
+			if (cnt == 0x10)
+				break;
 		}
 		if (i == 1) {
 			bg_num = 1;
@@ -1008,12 +1092,16 @@ uint32_t auto_scan_dram_size(dram_para_t *para) {
 				} else {
 					uVar1 = j * 4 + 0x40000000;
 				}
-				if (uVar1 != *(uint32_t *) ((1 << (iVar3 + i & 0xff)) + 0x40000000 + j * 4)) break;
+				if (uVar1 != *(uint32_t *) ((1 << (iVar3 + i & 0xff)) + 0x40000000 + j * 4))
+					break;
 				cnt = cnt + 1;
 			}
-			if (cnt == 0x10) break;
+			if (cnt == 0x10)
+				break;
 		}
-		if (10 < i) { i = 0xb; }
+		if (10 < i) {
+			i = 0xb;
+		}
 		uVar1 = i;
 		for (i = 2; i < 3; i = i + 1) {
 			cnt = 0;
@@ -1023,12 +1111,16 @@ uint32_t auto_scan_dram_size(dram_para_t *para) {
 				} else {
 					uVar6 = j * 4 + 0x40000000;
 				}
-				if (uVar6 != *(uint32_t *) ((1 << ((uVar5 & 0xf) + iVar3 + i & 0xff)) + 0x40000000 + j * 4)) break;
+				if (uVar6 != *(uint32_t *) ((1 << ((uVar5 & 0xf) + iVar3 + i & 0xff)) + 0x40000000 + j * 4))
+					break;
 				cnt = cnt + 1;
 			}
-			if (cnt == 0x10) break;
+			if (cnt == 0x10)
+				break;
 		}
-		if (2 < i) { i = 3; }
+		if (2 < i) {
+			i = 3;
+		}
 		uVar5 = i;
 		if (para->dram_type == 4) {
 			para->dram_para1 = 0x6118;
@@ -1064,12 +1156,16 @@ uint32_t auto_scan_dram_size(dram_para_t *para) {
 					} else {
 						uVar2 = j * 4 + 0x40000000;
 					}
-					if (uVar2 != *(uint32_t *) ((1 << ((uVar8 >> 0xc & 3) + (uVar7 & 0xf) + (uVar6 >> 0xe & 3) + iVar3 + i & 0xff)) + 0x40000000 + j * 4)) break;
+					if (uVar2 != *(uint32_t *) ((1 << ((uVar8 >> 0xc & 3) + (uVar7 & 0xf) + (uVar6 >> 0xe & 3) + iVar3 + i & 0xff)) + 0x40000000 + j * 4))
+						break;
 					cnt = cnt + 1;
 				}
-				if (cnt == 0x10) break;
+				if (cnt == 0x10)
+					break;
 			}
-			if (0x10 < i) { i = 0x11; }
+			if (0x10 < i) {
+				i = 0x11;
+			}
 			para->dram_para1 = i << 4 | uVar1 | uVar5 << 0xc | bg_num << 0xe;
 			para->dram_tpr10 = uVar4;
 			uVar4 = 1;
@@ -1082,7 +1178,9 @@ uint32_t auto_scan_dram_config(dram_para_t *para) {
 	uint32_t uVar1;
 	uint32_t ret_val;
 
-	if (((para->dram_tpr13 & 0x4000) == 0) && (uVar1 = auto_scan_dram_rank_width(para), uVar1 == 0)) { return 0; }
+	if (((para->dram_tpr13 & 0x4000) == 0) && (uVar1 = auto_scan_dram_rank_width(para), uVar1 == 0)) {
+		return 0;
+	}
 	uVar1 = auto_scan_dram_size(para);
 	if (uVar1 == 0) {
 		uVar1 = 0;
@@ -1116,7 +1214,8 @@ uint32_t dramc_simple_wr_test(uint32_t dram_size, uint32_t test_length) {
 			return 0;
 		}
 		iVar2 = *(int *) (iVar1 + i * 4 + 0x40000000);
-		if (iVar2 != i + 0xfedcba98) break;
+		if (iVar2 != i + 0xfedcba98)
+			break;
 		iVar2 = *(int *) ((i + 0x10000000) * 4);
 		if (iVar2 != i + 0x1234567) {
 			printf("DRAM simple test FAIL-----%x != %x at address %x\n", iVar2, i + 0x1234567, (i + 0x10000000) * 4);
@@ -1158,7 +1257,9 @@ void mctl_com_set_controller_before_phy(dram_para_t *para) {
 void mctl_com_set_controller_dbi(dram_para_t *para) {
 	uint32_t reg_val;
 
-	if ((para->dram_tpr13 & 0x20000000) != 0) { REG32(0x048201c0) = REG32(0x048201c0) | 4; }
+	if ((para->dram_tpr13 & 0x20000000) != 0) {
+		REG32(0x048201c0) = REG32(0x048201c0) | 4;
+	}
 	return;
 }
 
@@ -1279,20 +1380,28 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 		tfaw = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(10, uVar3);
 		trrd = (uint8_t) uVar1;
-		if (trrd < 2) { trrd = '\x02'; }
+		if (trrd < 2) {
+			trrd = '\x02';
+		}
 		uVar1 = auto_cal_timing(0xf, uVar3);
 		trcd = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(0x35, uVar3);
 		trc = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(8, uVar3);
 		txp = (uint8_t) uVar1;
-		if (txp < 2) { txp = '\x02'; }
+		if (txp < 2) {
+			txp = '\x02';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		twtr = (uint8_t) uVar1;
-		if (twtr < 2) { twtr = '\x02'; }
+		if (twtr < 2) {
+			twtr = '\x02';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		trtp = (uint8_t) uVar1;
-		if (trtp < 2) { trtp = '\x02'; }
+		if (trtp < 2) {
+			trtp = '\x02';
+		}
 		auto_cal_timing(0xf, uVar3);
 		uVar1 = auto_cal_timing(0xf, uVar3);
 		trp = (uint8_t) uVar1;
@@ -1309,26 +1418,38 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 		tfaw = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(8, uVar3);
 		trrd = (uint8_t) uVar1;
-		if (trrd < 2) { trrd = '\x02'; }
+		if (trrd < 2) {
+			trrd = '\x02';
+		}
 		uVar1 = auto_cal_timing(6, uVar3);
 		trrd_s = (uint8_t) uVar1;
-		if (trrd_s < 2) { trrd_s = '\x02'; }
+		if (trrd_s < 2) {
+			trrd_s = '\x02';
+		}
 		uVar1 = auto_cal_timing(10, uVar3);
 		tmrd_pda = (uint8_t) uVar1;
-		if (tmrd_pda < 8) { tmrd_pda = '\b'; }
+		if (tmrd_pda < 8) {
+			tmrd_pda = '\b';
+		}
 		uVar1 = auto_cal_timing(0xf, uVar3);
 		trcd = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(0x31, uVar3);
 		trc = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(6, uVar3);
 		txp = (uint8_t) uVar1;
-		if (txp < 2) { txp = '\x02'; }
+		if (txp < 2) {
+			txp = '\x02';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		twtr = (uint8_t) uVar1;
-		if (twtr < 2) { twtr = '\x02'; }
+		if (twtr < 2) {
+			twtr = '\x02';
+		}
 		uVar1 = auto_cal_timing(3, uVar3);
 		twtr_s = (uint8_t) uVar1;
-		if (twtr_s == '\0') { twtr_s = '\x01'; }
+		if (twtr_s == '\0') {
+			twtr_s = '\x01';
+		}
 		uVar1 = auto_cal_timing(0xf, uVar3);
 		trp = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(0x22, uVar3);
@@ -1342,24 +1463,36 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 		tccd = '\x02';
 		uVar1 = auto_cal_timing(0x32, uVar3);
 		tfaw = (uint8_t) uVar1;
-		if (tfaw < 4) { tfaw = '\x04'; }
+		if (tfaw < 4) {
+			tfaw = '\x04';
+		}
 		uVar1 = auto_cal_timing(10, uVar3);
 		trrd = (uint8_t) uVar1;
-		if (trrd == '\0') { trrd = '\x01'; }
+		if (trrd == '\0') {
+			trrd = '\x01';
+		}
 		uVar1 = auto_cal_timing(0x18, uVar3);
 		trcd = (uint8_t) uVar1;
-		if (trcd < 2) { trcd = '\x02'; }
+		if (trcd < 2) {
+			trcd = '\x02';
+		}
 		uVar1 = auto_cal_timing(0x46, uVar3);
 		trc = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(8, uVar3);
 		txp = (uint8_t) uVar1;
-		if (txp < 2) { txp = '\x02'; }
+		if (txp < 2) {
+			txp = '\x02';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		twtr = (uint8_t) uVar1;
-		if (twtr < 2) { twtr = '\x02'; }
+		if (twtr < 2) {
+			twtr = '\x02';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		trtp = (uint8_t) uVar1;
-		if (trtp < 2) { trtp = '\x02'; }
+		if (trtp < 2) {
+			trtp = '\x02';
+		}
 		auto_cal_timing(0xf, uVar3);
 		uVar1 = auto_cal_timing(0x1b, uVar3);
 		trp = (uint8_t) uVar1;
@@ -1376,21 +1509,31 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 		tfaw = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(10, uVar3);
 		trrd = (uint8_t) uVar1;
-		if (trrd < 2) { trrd = '\x02'; }
+		if (trrd < 2) {
+			trrd = '\x02';
+		}
 		uVar1 = auto_cal_timing(0x12, uVar3);
 		trcd = (uint8_t) uVar1;
-		if (trcd < 2) { trcd = '\x02'; }
+		if (trcd < 2) {
+			trcd = '\x02';
+		}
 		uVar1 = auto_cal_timing(0x41, uVar3);
 		trc = (uint8_t) uVar1;
 		uVar1 = auto_cal_timing(8, uVar3);
 		txp = (uint8_t) uVar1;
-		if (txp < 2) { txp = '\x02'; }
+		if (txp < 2) {
+			txp = '\x02';
+		}
 		uVar1 = auto_cal_timing(10, uVar3);
 		twtr = (uint8_t) uVar1;
-		if (twtr < 4) { twtr = '\x04'; }
+		if (twtr < 4) {
+			twtr = '\x04';
+		}
 		uVar1 = auto_cal_timing(8, uVar3);
 		trtp = (uint8_t) uVar1;
-		if (trtp < 4) { trtp = '\x04'; }
+		if (trtp < 4) {
+			trtp = '\x04';
+		}
 		auto_cal_timing(0x12, uVar3);
 		uVar1 = auto_cal_timing(0x15, uVar3);
 		trp = (uint8_t) uVar1;
@@ -1409,13 +1552,19 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 			tmod = '\f';
 			uVar1 = auto_cal_timing(8, uVar3);
 			tcke = (uint8_t) uVar1;
-			if (tcke < 2) { tcke = '\x02'; }
+			if (tcke < 2) {
+				tcke = '\x02';
+			}
 			uVar1 = auto_cal_timing(10, uVar3);
 			tcksrx = (uint8_t) uVar1;
-			if (tcksrx < 3) { tcke = '\x06'; }
+			if (tcksrx < 3) {
+				tcke = '\x06';
+			}
 			uVar1 = auto_cal_timing(10, uVar3);
 			tcksre = (uint8_t) uVar1;
-			if (tcksre < 3) { tcke = '\x06'; }
+			if (tcksre < 3) {
+				tcke = '\x06';
+			}
 			tckesr = tcke + '\x01';
 			trasmax = (uint8_t) (uVar3 / 0xf);
 			tcl = '\a';
@@ -1425,7 +1574,9 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 			para->dram_mr0 = 0x1f14;
 			para->dram_mr2 = 0x20;
 			para->dram_mr3 = 0;
-			if ((uint32_t) trp + (uint32_t) trtp < 9) { trtp = '\t' - trp; }
+			if ((uint32_t) trp + (uint32_t) trtp < 9) {
+				trtp = '\t' - trp;
+			}
 			twtp = '\x0e';
 			twr2rd = twtr + '\a';
 			trd2wr = '\x05';
@@ -1435,16 +1586,24 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 			tmrd = '\x04';
 			uVar1 = auto_cal_timing(0xf, uVar3);
 			tmod = (uint8_t) uVar1;
-			if (tmod < 0xc) { tmod = '\f'; }
+			if (tmod < 0xc) {
+				tmod = '\f';
+			}
 			uVar1 = auto_cal_timing(5, uVar3);
 			tcke = (uint8_t) uVar1;
-			if (tcke < 2) { tcke = '\x02'; }
+			if (tcke < 2) {
+				tcke = '\x02';
+			}
 			uVar1 = auto_cal_timing(10, uVar3);
 			tcksrx = (uint8_t) uVar1;
-			if (tcksrx < 3) { tcksrx = '\x03'; }
+			if (tcksrx < 3) {
+				tcksrx = '\x03';
+			}
 			uVar1 = auto_cal_timing(10, uVar3);
 			tcksre = (uint8_t) uVar1;
-			if (tcksre < 3) { tcksre = '\x03'; }
+			if (tcksre < 3) {
+				tcksre = '\x03';
+			}
 			tckesr = tcke + '\x01';
 			uVar1 = auto_cal_timing(0xaa, uVar3);
 			txs_fast = (uint8_t) (uVar1 >> 5);
@@ -1459,7 +1618,9 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 			para->dram_mr0 = 0x520;
 			para->dram_mr2 = 8;
 			trtp = '\x04';
-			if (trp + 4 < 9) { trtp = '\t' - trp; }
+			if (trp + 4 < 9) {
+				trtp = '\t' - trp;
+			}
 			twtp = '\x0e';
 			twr2rd = twtr + '\a';
 			twr2rd_s = twtr_s + '\a';
@@ -1488,23 +1649,35 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 		case 8:
 			uVar1 = auto_cal_timing(0xe, uVar3);
 			tmrw = (uint8_t) uVar1;
-			if (tmrw < 5) { tmrw = '\x05'; }
+			if (tmrw < 5) {
+				tmrw = '\x05';
+			}
 			uVar1 = auto_cal_timing(0xe, uVar3);
 			tmrd = (uint8_t) uVar1;
-			if (tmrd < 5) { tmrd = '\x05'; }
+			if (tmrd < 5) {
+				tmrd = '\x05';
+			}
 			tmod = '\f';
 			uVar1 = auto_cal_timing(0xf, uVar3);
 			tcke = (uint8_t) uVar1;
-			if (tcke < 2) { tcke = '\x02'; }
+			if (tcke < 2) {
+				tcke = '\x02';
+			}
 			uVar1 = auto_cal_timing(2, uVar3);
 			tcksrx = (uint8_t) uVar1;
-			if (tcksrx < 2) { tcksrx = '\x02'; }
+			if (tcksrx < 2) {
+				tcksrx = '\x02';
+			}
 			uVar1 = auto_cal_timing(5, uVar3);
 			tcksre = (uint8_t) uVar1;
-			if (tcksre < 2) { tcksre = '\x02'; }
+			if (tcksre < 2) {
+				tcksre = '\x02';
+			}
 			uVar1 = auto_cal_timing(0xf, uVar3);
 			tckesr = (uint8_t) uVar1;
-			if (tckesr < 2) { tckesr = '\x02'; }
+			if (tckesr < 2) {
+				tckesr = '\x02';
+			}
 			trasmax = (uint8_t) ((int) ((_trfc >> 0x10) * 9) >> 5);
 			uVar1 = auto_cal_timing(4, uVar3);
 			uVar3 = auto_cal_timing(1, uVar3);
@@ -1534,7 +1707,9 @@ void mctl_com_set_channel_timing(dram_para_t *para) {
 	REG32(0x04820134) = 0xa100002;
 	REG32(0x04820138) = (uint32_t) txsr;
 	reg_val = REG32(0x048200d0) & 0x3fffffff;
-	if (uVar4 == 7) { reg_val = REG32(0x048200d0) & 0x3c00ffff | 0x4f0000; }
+	if (uVar4 == 7) {
+		reg_val = REG32(0x048200d0) & 0x3c00ffff | 0x4f0000;
+	}
 	if (uVar4 == 8) {
 		reg_val = reg_val & 0xfffff000 | 0x3f0;
 	} else {
@@ -1586,7 +1761,9 @@ void mctl_com_set_controller_address_map(dram_para_t *para) {
 	uVar2 = para->dram_para1 >> 4 & 0xff;
 	uVar3 = para->dram_para1 >> 0xc & 3;
 	uVar4 = para->dram_para1 >> 0xe & 3;
-	if ((para->dram_para2 & 0xf) != 0) { uVar1 = uVar1 - 1; }
+	if ((para->dram_para2 & 0xf) != 0) {
+		uVar1 = uVar1 - 1;
+	}
 	REG32(0x04820208) = uVar4 << 0x18 | uVar4 << 8 | uVar4 << 0x10;
 	switch (uVar1) {
 		case 8:
@@ -1737,14 +1914,20 @@ void mctl_com_set_controller_config(dram_para_t *para) {
 
 void mctl_com_init(dram_para_t *para) {
 	mctl_com_set_controller_config(para);
-	if (para->dram_type == 4) { mctl_com_set_controller_geardown_mode(para); }
-	if ((para->dram_type == 3) || (para->dram_type == 4)) { mctl_com_set_controller_2T_mode(para); }
+	if (para->dram_type == 4) {
+		mctl_com_set_controller_geardown_mode(para);
+	}
+	if ((para->dram_type == 3) || (para->dram_type == 4)) {
+		mctl_com_set_controller_2T_mode(para);
+	}
 	mctl_com_set_controller_odt(para);
 	mctl_com_set_controller_address_map(para);
 	mctl_com_set_channel_timing(para);
 	REG32(0x04820030) = 0;
 	mctl_com_set_controller_update(para);
-	if ((para->dram_type == 4) || (para->dram_type == 8)) { mctl_com_set_controller_dbi(para); }
+	if ((para->dram_type == 4) || (para->dram_type == 8)) {
+		mctl_com_set_controller_dbi(para);
+	}
 	mctl_com_set_controller_before_phy(para);
 	return;
 }
@@ -1752,7 +1935,9 @@ void mctl_com_init(dram_para_t *para) {
 void mctl_com_set_bus_config(dram_para_t *para) {
 	uint32_t reg_val;
 
-	if (para->dram_type == 8) { REG32(0x03102ea8) = REG32(0x03102ea8) | 1; }
+	if (para->dram_type == 8) {
+		REG32(0x03102ea8) = REG32(0x03102ea8) | 1;
+	}
 	REG32(0x04820250) = REG32(0x04820250) & 0xffff00ff | 0x3000;
 	return;
 }
@@ -1801,9 +1986,13 @@ int init_DRAM(dram_para_t *para) {
 				para->dram_para2 = para->dram_para2 & 0xffff | dram_size << 0x10;
 			}
 			printf("DRAM SIZE =%d MBytes, para1 = %x, para2 = %x, dram_tpr13 = %x\n", dram_size, para->dram_para1, para->dram_para2, para->dram_tpr13);
-			if ((para->dram_tpr13 & 0x1000000) != 0) { REG32(0x04820030) = REG32(0x04820030) | 9; }
+			if ((para->dram_tpr13 & 0x1000000) != 0) {
+				REG32(0x04820030) = REG32(0x04820030) | 9;
+			}
 			uVar1 = dramc_simple_wr_test(dram_size, 0x1000);
-			if (uVar1 != 0) { dram_size = 0; }
+			if (uVar1 != 0) {
+				dram_size = 0;
+			}
 		}
 	}
 	return dram_size;

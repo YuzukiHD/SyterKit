@@ -107,7 +107,12 @@ int cmd_bt(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(load), msh_define_command(read), msh_define_command(write), msh_define_command(bt), msh_define_command(reset), msh_command_end,
+		msh_define_command(load),
+		msh_define_command(read),
+		msh_define_command(write),
+		msh_define_command(bt),
+		msh_define_command(reset),
+		msh_command_end,
 };
 
 int main(void) {

@@ -36,7 +36,9 @@ static uint32_t usb_dma_used[SUNXI_USB_DMA_MAX];
 static int lowlevel_usb_dma_set_channal_para(uint64_t husb, uint32_t dma_chan, uint32_t trans_dir, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 	uint32_t reg_val = 0;											/**< The value to be written to the register */
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Read the current value of the register */
 	reg_val &= ~((1 << 4) | (0xf << 0));											/**< Clear the bits related to transfer direction and endpoint type */
 	reg_val |= ((trans_dir & 1) << 4);												/**< Set the transfer direction bit in the register */
@@ -60,7 +62,9 @@ static int lowlevel_usb_dma_set_packet_len(uint64_t husb, uint32_t dma_chan, uin
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 	uint32_t reg_val = 0;											/**< The value to be written to the register */
 
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 
 	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Read the current value of the register */
 	reg_val &= ~(0x7ff << 16);														/**< Clear the bits related to packet length */
@@ -91,7 +95,9 @@ static int lowlevel_usb_dma_start(uint64_t husb, uint32_t dma_chan, uint32_t add
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 	uint32_t reg_val;
 
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 
 	if (pkt_len & 0x03) { /**< Check if the packet length is not a multiple of 4 bytes */
 		return -1;
@@ -130,7 +136,9 @@ static int lowlevel_usb_dma_int_stop(uint64_t husb, uint32_t dma_chan) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 	uint32_t reg_val;
 
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 
 	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Read the current value of the DMA enable register */
 	reg_val &= ~(1 << (dma_chan & 0xff));						  /**< Disable the specified DMA channel */
@@ -151,7 +159,9 @@ static int lowlevel_usb_dma_int_stop(uint64_t husb, uint32_t dma_chan) {
 static int lowlevel_usb_dma_int_query(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 
 	return readl(usbc_otg->base_addr + USBC_REG_o_DMA_STATUS); /**< Read and return the current DMA status */
 }
@@ -168,7 +178,9 @@ static int lowlevel_usb_dma_int_query(uint64_t husb) {
 static int lowlevel_usb_dma_int_clear(uint64_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
 
-	if (usbc_otg == NULL) { return -1; }
+	if (usbc_otg == NULL) {
+		return -1;
+	}
 
 	writel(0xff, usbc_otg->base_addr + USBC_REG_o_DMA_STATUS); /**< Clear the DMA status register */
 
@@ -215,7 +227,9 @@ int usb_dma_request(void) {
 
 int usb_dma_release(uint32_t dma_index) {
 	int ret = usb_index_check(dma_index);
-	if (ret) { return ret; }
+	if (ret) {
+		return ret;
+	}
 
 	usb_dma_used[dma_index] = 0; /**< Mark the DMA channel as unused */
 
@@ -224,28 +238,36 @@ int usb_dma_release(uint32_t dma_index) {
 
 int usb_dma_setting(uint32_t dma_index, uint32_t trans_dir, uint32_t ep) {
 	int ret = usb_index_check(dma_index);
-	if (ret) { return ret; }
+	if (ret) {
+		return ret;
+	}
 
 	return lowlevel_usb_dma_set_channal_para(usb_hd, dma_index, trans_dir, ep);
 }
 
 int usb_dma_set_pktlen(uint32_t dma_index, uint32_t pkt_len) {
 	int ret = usb_index_check(dma_index);
-	if (ret) { return ret; }
+	if (ret) {
+		return ret;
+	}
 
 	return lowlevel_usb_dma_set_packet_len(usb_hd, dma_index, pkt_len);
 }
 
 int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes) {
 	int ret = usb_index_check(dma_index);
-	if (ret) { return ret; }
+	if (ret) {
+		return ret;
+	}
 
 	return lowlevel_usb_dma_start(usb_hd, dma_index, addr, bytes);
 }
 
 int usb_dma_stop(uint32_t dma_index) {
 	int ret = usb_index_check(dma_index);
-	if (ret) { return ret; }
+	if (ret) {
+		return ret;
+	}
 
 	return lowlevel_usb_dma_int_stop(usb_hd, dma_index);
 }

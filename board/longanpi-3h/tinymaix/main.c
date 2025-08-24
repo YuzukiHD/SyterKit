@@ -313,7 +313,8 @@ int main(void) {
 	TM_PRINTF("Picture of Data: \n");
 	for (int i = 0; i < 28 * 28; i++) {
 		TM_PRINTF("%3d,", mnist_pic[i]);
-		if (i % 28 == 27) TM_PRINTF("\n");
+		if (i % 28 == 27)
+			TM_PRINTF("\n");
 	}
 
 	tm_mat_t in_uint8 = {3, 28, 28, 1, {(mtype_t *) mnist_pic}};
@@ -335,7 +336,8 @@ int main(void) {
 	TM_DBGT_START();
 	res = tm_run(&mdl, &in, outs);
 	TM_DBGT(" MNIST Run");
-	if (res == TM_OK) parse_output(outs);
+	if (res == TM_OK)
+		parse_output(outs);
 	else
 		TM_PRINTF("tm run error: %d\n", res);
 	tm_unload(&mdl);
