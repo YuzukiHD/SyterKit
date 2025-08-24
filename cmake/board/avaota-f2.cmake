@@ -29,7 +29,7 @@ set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 # Configure compiler flags based on ENABLE_HARDFP option
-set(CMAKE_COMMON_FLAGS "-nostdlib -Os -nostdinc -fdata-sections -march=rv32imafcxthead -mabi=ilp32f -mcpu=e907f")
+set(CMAKE_COMMON_FLAGS "-nostdlib -Os -nostdinc -fdata-sections -mcpu=e907f")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
