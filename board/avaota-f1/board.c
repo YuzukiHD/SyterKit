@@ -284,6 +284,26 @@ void show_chip() {
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 
+extern uint8_t current_hosc_freq;
+int sunxi_hosc_detect(void) {
+	uint32_t val = readl(CCU_HOSC_FREQ_DET_REG);
+
+	writel(val & (~HOSC_FREQ_DET_HOSC_CLEAR_MASK), CCU_HOSC_FREQ_DET_REG);
+	writel(val | HOSC_FREQ_DET_HOSC_ENABLE_DETECT, CCU_HOSC_FREQ_DET_REG);
+
+	while (!(HOSC_FREQ_DET_HOSC_FREQ_READY_CLEAR_MASK & readl(CCU_HOSC_FREQ_DET_REG)))
+		;
+
+	val = (readl(CCU_HOSC_FREQ_DET_REG) & HOSC_FREQ_DET_HOSC_FREQ_DET_CLEAR_MASK) >> HOSC_FREQ_DET_HOSC_FREQ_DET_OFFSET;
+	if (val < ((HOSC_24M_COUNTER + HOSC_40M_COUNTER) / 2)) {
+		current_hosc_freq = HOSC_FREQ_24M;
+		return HOSC_FREQ_24M;
+	} else {
+		current_hosc_freq = HOSC_FREQ_40M;
+		return HOSC_FREQ_40M;
+	}
+}
+
 void sysmap_init(void) {
 	sysmap_add_mem_region(0x00000000, 0x10000000, SYSMAP_MEM_ATTR_RAM);
 	sysmap_add_mem_region(0x10000000, 0x02000000, SYSMAP_MEM_ATTR_RAM);
