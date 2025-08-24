@@ -103,7 +103,9 @@ int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff
 	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP1530_RUNTIME_ADDR);
 }
 
-int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) { return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP1530_RUNTIME_ADDR); }
+int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
+	return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP1530_RUNTIME_ADDR);
+}
 
 void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev) {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); }

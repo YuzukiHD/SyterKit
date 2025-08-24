@@ -51,4 +51,6 @@ void mdelay(uint32_t ms) {
 	while (time_ms() - now < ms) {};
 }
 
-uint32_t time_ms(void) { return get_arch_counter() / 24000; }
+uint32_t time_ms(void) {
+	return get_arch_counter() / 24000;
+}

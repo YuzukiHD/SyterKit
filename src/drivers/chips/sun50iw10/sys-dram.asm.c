@@ -1998,4 +1998,6 @@ int init_DRAM(dram_para_t *para) {
 	return dram_size;
 }
 
-uint32_t sunxi_dram_init(void *para) { return init_DRAM((dram_para_t *) para); }
+uint32_t sunxi_dram_init(void *para) {
+	return init_DRAM((dram_para_t *) para);
+}

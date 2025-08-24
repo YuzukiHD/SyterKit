@@ -68,7 +68,9 @@ static phys_addr_t set_img_va_to_pa(phys_addr_t vaddr, vaddr_range_t *map, uint3
 	return paddr;
 }
 
-int load_elf32_image(phys_addr_t img_addr) { return load_elf32_image_remap(img_addr, &default_addr_mapping); }
+int load_elf32_image(phys_addr_t img_addr) {
+	return load_elf32_image_remap(img_addr, &default_addr_mapping);
+}
 
 int load_elf32_image_remap(phys_addr_t img_addr, vaddr_map_t *map) {
 	Elf32_Ehdr *ehdr = NULL;

@@ -13,7 +13,9 @@
 
 static uint32_t init_timestamp = 0;
 
-void set_timer_count() { init_timestamp = (uint32_t) time_us(); }
+void set_timer_count() {
+	init_timestamp = (uint32_t) time_us();
+}
 
 /*
  * 64bit arch timer.CNTPCT
@@ -31,12 +33,16 @@ uint64_t get_arch_counter(void) {
 /*
  * get current time.(millisecond)
  */
-uint32_t time_ms(void) { return get_arch_counter() / 24000; }
+uint32_t time_ms(void) {
+	return get_arch_counter() / 24000;
+}
 
 /*
  * get current time.(microsecond)
  */
-uint64_t time_us(void) { return get_arch_counter() / (uint64_t) 24; }
+uint64_t time_us(void) {
+	return get_arch_counter() / (uint64_t) 24;
+}
 
 void udelay(uint64_t us) {
 	uint64_t now;
@@ -63,4 +69,6 @@ void sdelay(uint32_t loops) {
 	);
 }
 
-uint32_t get_init_timestamp() { return init_timestamp; }
+uint32_t get_init_timestamp() {
+	return init_timestamp;
+}

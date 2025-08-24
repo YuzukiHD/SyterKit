@@ -11,9 +11,13 @@
 
 extern sunxi_serial_t uart_dbg;
 
-static void timer_500ms_cb(void *arg, uint32_t event) { printk_info("Timer 500ms callback\n"); }
+static void timer_500ms_cb(void *arg, uint32_t event) {
+	printk_info("Timer 500ms callback\n");
+}
 
-static void timer_1500ms_run2_cb(void *arg, uint32_t event) { printk_info("Timer 500ms run 2 times callback\n"); }
+static void timer_1500ms_run2_cb(void *arg, uint32_t event) {
+	printk_info("Timer 500ms run 2 times callback\n");
+}
 
 int main(void) {
 	sunxi_serial_init(&uart_dbg);

@@ -486,7 +486,9 @@ static void sunxi_mass_usb_rx_dma_isr(void *p_arg) {
  *
  * @param p_arg: Pointer to a void argument (not used)
  */
-static void sunxi_mass_usb_tx_dma_isr(void *p_arg) { printk_trace("USB MASS: dma int for usb tx occur\n"); }
+static void sunxi_mass_usb_tx_dma_isr(void *p_arg) {
+	printk_trace("USB MASS: dma int for usb tx occur\n");
+}
 /**
  * sunxi_mass_standard_req_op - Handle standard USB Mass Storage requests
  *

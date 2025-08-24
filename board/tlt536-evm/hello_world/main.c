@@ -74,7 +74,9 @@ open_fail:
 	return ret;
 }
 
-static int fatfs_loadimage(char *filename, BYTE *dest) { return fatfs_loadimage_size(filename, dest, NULL); }
+static int fatfs_loadimage(char *filename, BYTE *dest) {
+	return fatfs_loadimage_size(filename, dest, NULL);
+}
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");

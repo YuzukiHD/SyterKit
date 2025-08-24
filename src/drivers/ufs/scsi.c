@@ -68,9 +68,13 @@ static void scsi_setup_start(scsi_cmd_t *pccb) {
 	pccb->msgout[0] = SCSI_IDENTIFY;
 }
 
-static int scsi_exec(ufs_device_t *dev, scsi_cmd_t *pccb) { return 0; }
+static int scsi_exec(ufs_device_t *dev, scsi_cmd_t *pccb) {
+	return 0;
+}
 
-static int scsi_bus_reset(ufs_device_t *dev) { return 0; }
+static int scsi_bus_reset(ufs_device_t *dev) {
+	return 0;
+}
 
 static int scsi_read_capacity(ufs_device_t *dev, scsi_cmd_t *pccb, uint64_t *capacity, uint64_t *blksz) {
 	*capacity = 0;
@@ -191,9 +195,11 @@ static int scsi_detect_dev(ufs_device_t *dev, int target, int lun, blk_desc_t *d
 	return 0;
 }
 
-uint64_t scsi_read(ufs_device_t *dev, uint64_t blknr, uint64_t blkcnt, const void *buffer) {}
+uint64_t scsi_read(ufs_device_t *dev, uint64_t blknr, uint64_t blkcnt, const void *buffer) {
+}
 
-uint64_t scsi_write(ufs_device_t *dev, uint64_t blknr, uint64_t blkcnt, const void *buffer) {}
+uint64_t scsi_write(ufs_device_t *dev, uint64_t blknr, uint64_t blkcnt, const void *buffer) {
+}
 
 int scsi_scan_dev(ufs_device_t *dev) {
 	ufs_device_t *bdev;

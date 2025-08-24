@@ -55,7 +55,9 @@ static void sysmap_region_set_mem_attr(uint32_t region_index, uint32_t mem_attr)
 	writel(mem_attr, reg_addr);
 }
 
-static inline uint32_t get_mem_region_upper_limit(uint32_t region_index) { return sysmap_region_get_upper_limit(region_index) << SYSMAP_ADDR_SHIFT; }
+static inline uint32_t get_mem_region_upper_limit(uint32_t region_index) {
+	return sysmap_region_get_upper_limit(region_index) << SYSMAP_ADDR_SHIFT;
+}
 
 static inline uint32_t get_mem_region_start_addr(uint32_t region_index) {
 	if (region_index == 0)
@@ -64,7 +66,9 @@ static inline uint32_t get_mem_region_start_addr(uint32_t region_index) {
 		return get_mem_region_upper_limit(region_index - 1);
 }
 
-static inline uint32_t get_mem_region_end_addr(uint32_t region_index) { return get_mem_region_upper_limit(region_index) - 1; }
+static inline uint32_t get_mem_region_end_addr(uint32_t region_index) {
+	return get_mem_region_upper_limit(region_index) - 1;
+}
 
 static inline uint32_t get_mem_region_len(uint32_t region_index) {
 	if (region_index == 0)
@@ -73,13 +77,17 @@ static inline uint32_t get_mem_region_len(uint32_t region_index) {
 		return get_mem_region_upper_limit(region_index) - get_mem_region_upper_limit(region_index - 1);
 }
 
-static inline uint32_t get_mem_region_attr(uint32_t region_index) { return sysmap_region_get_mem_attr(region_index) & SYSMAP_MEM_ATTR_MASK; }
+static inline uint32_t get_mem_region_attr(uint32_t region_index) {
+	return sysmap_region_get_mem_attr(region_index) & SYSMAP_MEM_ATTR_MASK;
+}
 
 static inline void set_mem_region_upper_limit(uint32_t region_index, uint32_t upper_limit_addr) {
 	sysmap_region_set_upper_limit(region_index, upper_limit_addr >> SYSMAP_ADDR_SHIFT);
 }
 
-static inline void set_mem_region_attr(uint32_t region_index, uint32_t mem_attr) { sysmap_region_set_mem_attr(region_index, mem_attr & SYSMAP_MEM_ATTR_MASK); }
+static inline void set_mem_region_attr(uint32_t region_index, uint32_t mem_attr) {
+	sysmap_region_set_mem_attr(region_index, mem_attr & SYSMAP_MEM_ATTR_MASK);
+}
 
 static inline void sysmap_setup_mem_region(uint32_t region_index, uint32_t upper_limit_addr, uint32_t mem_attr) {
 	set_mem_region_attr(region_index, mem_attr);
@@ -168,7 +176,9 @@ void sysmap_dump_region_info(void) {
  * before any subsequent instructions are executed, particularly useful 
  * for ensuring memory consistency.
  */
-void data_sync_barrier(void) { asm volatile("fence.i"); }
+void data_sync_barrier(void) {
+	asm volatile("fence.i");
+}
 
 /**
  * @brief Initialize the cache configuration.
@@ -207,7 +217,9 @@ void icache_enable(void) {
  * This function initializes the cache and enables both data and
  * instruction caches for the SV39 memory management unit.
  */
-void mmu_enable(void) { return; }
+void mmu_enable(void) {
+	return;
+}
 
 /**
  * @brief Flush a range of the data cache.
@@ -247,7 +259,9 @@ void invalidate_dcache_range(uint64_t start, uint64_t end) {
  * cache lines are written back to the main memory. It ensures that the data in the cache
  * is coherent with the memory.
  */
-void flush_dcache_all() { asm volatile("dcache.call"); }
+void flush_dcache_all() {
+	asm volatile("dcache.call");
+}
 
 /**
  * @brief Invalidates the entire data cache.
@@ -256,4 +270,6 @@ void flush_dcache_all() { asm volatile("dcache.call"); }
  * data remains in the cache. This operation discards the cache contents and ensures that
  * the next access will fetch fresh data from memory.
  */
-void invalidate_dcache_all() { asm volatile("dcache.ciall"); }
+void invalidate_dcache_all() {
+	asm volatile("dcache.ciall");
+}

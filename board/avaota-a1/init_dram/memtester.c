@@ -38,7 +38,9 @@ union {
 	ul val;
 } mword16;
 
-uint32_t rand32() { return time_ms(); }
+uint32_t rand32() {
+	return time_ms();
+}
 
 char progress[] = "-\\|/";
 #define PROGRESSLEN 4
