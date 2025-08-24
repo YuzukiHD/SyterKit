@@ -10,8 +10,8 @@
 #include <timer.h>
 #include <types.h>
 
-static uint32_t init_timestamp = 0; /**< Timestamp for initialization. */
-uint32_t current_hosc_freq = 24;	/**< Current frequency of the high-speed oscillator (HOSC) in MHz. */
+static uint32_t init_timestamp; /**< Timestamp for initialization. */
+uint8_t current_hosc_freq;		/**< Current frequency of the high-speed oscillator (HOSC) in MHz. */
 
 /**
  * @brief Detect the current high-speed oscillator (HOSC) frequency.
@@ -22,24 +22,9 @@ uint32_t current_hosc_freq = 24;	/**< Current frequency of the high-speed oscill
  *
  * @return Current HOSC frequency in MHz (either 24 or 40).
  */
-
-static int sunxi_hosc_detect(void) {
-	uint32_t val = readl(CCU_HOSC_FREQ_DET_REG);
-
-	writel(val & (~HOSC_FREQ_DET_HOSC_CLEAR_MASK), CCU_HOSC_FREQ_DET_REG);
-	writel(val | HOSC_FREQ_DET_HOSC_ENABLE_DETECT, CCU_HOSC_FREQ_DET_REG);
-
-	while (!(HOSC_FREQ_DET_HOSC_FREQ_READY_CLEAR_MASK & readl(CCU_HOSC_FREQ_DET_REG)))
-		;
-
-	val = (readl(CCU_HOSC_FREQ_DET_REG) & HOSC_FREQ_DET_HOSC_FREQ_DET_CLEAR_MASK) >> HOSC_FREQ_DET_HOSC_FREQ_DET_OFFSET;
-	if (val < ((HOSC_24M_COUNTER + HOSC_40M_COUNTER) / 2)) {
-		current_hosc_freq = HOSC_FREQ_24M;
-		return HOSC_FREQ_24M;
-	} else {
-		current_hosc_freq = HOSC_FREQ_40M;
-		return HOSC_FREQ_40M;
-	}
+int __attribute__((weak)) sunxi_hosc_detect(void) {
+	current_hosc_freq = 24;
+	return 0;
 }
 
 /**

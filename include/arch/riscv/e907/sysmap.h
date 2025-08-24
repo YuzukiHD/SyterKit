@@ -3,6 +3,8 @@
 #ifndef __SYSMAP_H__
 #define __SYSMAP_H__
 
+#include <reg-ncat.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
