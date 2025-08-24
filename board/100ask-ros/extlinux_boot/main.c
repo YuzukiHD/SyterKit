@@ -162,7 +162,9 @@ open_fail:
 	return ret;
 }
 
-static int fatfs_loadimage(char *filename, BYTE *dest) { return fatfs_loadimage_size(filename, dest, NULL); }
+static int fatfs_loadimage(char *filename, BYTE *dest) {
+	return fatfs_loadimage_size(filename, dest, NULL);
+}
 
 static int load_sdcard(image_info_t *image) {
 	FATFS fs;
@@ -303,7 +305,9 @@ static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t s
 	return p - (char *) buf;
 }
 
-static char to_hex_char(uint8_t value) { return (value < 10) ? ('0' + value) : ('A' + value - 10); }
+static char to_hex_char(uint8_t value) {
+	return (value < 10) ? ('0' + value) : ('A' + value - 10);
+}
 
 static void chip_sid_to_mac(uint32_t chip_sid[4], uint8_t mac_address[6]) {
 	mac_address[3] = chip_sid[0] & 0xFF;

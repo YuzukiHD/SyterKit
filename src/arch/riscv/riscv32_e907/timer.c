@@ -72,7 +72,9 @@ uint64_t get_arch_counter(void) {
  *
  * @return Current time in milliseconds.
  */
-uint32_t time_ms(void) { return (uint32_t) (get_arch_counter() / (uint64_t) (current_hosc_freq * 1000)); }
+uint32_t time_ms(void) {
+	return (uint32_t) (get_arch_counter() / (uint64_t) (current_hosc_freq * 1000));
+}
 
 /**
  * @brief Get the current time in microseconds.
@@ -82,7 +84,9 @@ uint32_t time_ms(void) { return (uint32_t) (get_arch_counter() / (uint64_t) (cur
  *
  * @return Current time in microseconds.
  */
-uint64_t time_us(void) { return get_arch_counter() / (uint64_t) current_hosc_freq; }
+uint64_t time_us(void) {
+	return get_arch_counter() / (uint64_t) current_hosc_freq;
+}
 
 /**
  * @brief Delay execution for a specified number of microseconds.
@@ -108,7 +112,9 @@ void udelay(uint64_t us) {
  *
  * @param ms Number of milliseconds to delay.
  */
-void mdelay(uint32_t ms) { udelay(ms * 1000); }
+void mdelay(uint32_t ms) {
+	udelay(ms * 1000);
+}
 
 /**
  * @brief Delay execution for a specified number of loops (microseconds).
@@ -118,7 +124,9 @@ void mdelay(uint32_t ms) { udelay(ms * 1000); }
  *
  * @param loops Number of microsecond loops to delay.
  */
-void sdelay(uint32_t loops) { udelay(loops); }
+void sdelay(uint32_t loops) {
+	udelay(loops);
+}
 
 /**
  * @brief Get the initialization timestamp.
@@ -127,4 +135,6 @@ void sdelay(uint32_t loops) { udelay(loops); }
  *
  * @return The initialization timestamp in microseconds.
  */
-uint32_t get_init_timestamp() { return init_timestamp; }
+uint32_t get_init_timestamp() {
+	return init_timestamp;
+}

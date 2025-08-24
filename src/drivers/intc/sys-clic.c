@@ -38,11 +38,17 @@ static inline void sunxi_clic_set_irq_ctrl_bit(uint32_t reg_addr, uint8_t mask, 
 	writeb(reg_data, reg_addr);
 }
 
-static inline void sunxi_clic_set_enable(uint32_t reg_addr, int enabled) { sunxi_clic_set_irq_ctrl_bit(reg_addr, IE_BIT_MASK, enabled); }
+static inline void sunxi_clic_set_enable(uint32_t reg_addr, int enabled) {
+	sunxi_clic_set_irq_ctrl_bit(reg_addr, IE_BIT_MASK, enabled);
+}
 
-static inline void sunxi_clic_set_pending(uint32_t reg_addr, int pending) { sunxi_clic_set_irq_ctrl_bit(reg_addr, IP_BIT_MASK, pending); }
+static inline void sunxi_clic_set_pending(uint32_t reg_addr, int pending) {
+	sunxi_clic_set_irq_ctrl_bit(reg_addr, IP_BIT_MASK, pending);
+}
 
-static inline void sunxi_clic_set_vec_mode(uint32_t reg_addr, int vec_mode) { sunxi_clic_set_irq_ctrl_bit(reg_addr, HW_VECTOR_IRQ_BIT_MASK, vec_mode); }
+static inline void sunxi_clic_set_vec_mode(uint32_t reg_addr, int vec_mode) {
+	sunxi_clic_set_irq_ctrl_bit(reg_addr, HW_VECTOR_IRQ_BIT_MASK, vec_mode);
+}
 
 static inline void sunxi_clic_set_trigger_type(uint32_t reg_addr, irq_trigger_type_t type) {
 	uint8_t reg_data, field_value;

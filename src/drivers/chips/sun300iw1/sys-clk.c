@@ -287,6 +287,10 @@ void sunxi_clk_dump() {
 /* we got hosc freq in arch/timer.c */
 extern uint32_t current_hosc_freq;
 
-uint32_t sunxi_clk_get_hosc_type() { return current_hosc_freq; }
+uint32_t sunxi_clk_get_hosc_type() {
+	return current_hosc_freq;
+}
 
-uint32_t sunxi_clk_get_peri1x_rate() { return 192; /* PERI_192M */ }
+uint32_t sunxi_clk_get_peri1x_rate() {
+	return 192; /* PERI_192M */
+}

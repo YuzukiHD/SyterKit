@@ -176,7 +176,8 @@ uint32_t sunxi_clk_get_hosc_type() {
 	}
 }
 
-void sunxi_clk_reset(void) {}
+void sunxi_clk_reset(void) {
+}
 
 uint32_t sunxi_clk_get_peri1x_rate() {
 	uint32_t reg32;

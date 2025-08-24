@@ -119,7 +119,9 @@ extern "C" {
 #ifndef SWIG /* This function is not useful in Python */
 const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
 #endif
-static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen) { return (void *) (uintptr_t) fdt_offset_ptr(fdt, offset, checklen); }
+static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen) {
+	return (void *) (uintptr_t) fdt_offset_ptr(fdt, offset, checklen);
+}
 
 uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
 
@@ -767,7 +769,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset, const char 
  *		-FDT_ERR_TRUNCATED, standard meanings
  */
 const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name, int *lenp);
-static inline void *fdt_getprop_w(void *fdt, int nodeoffset, const char *name, int *lenp) { return (void *) (uintptr_t) fdt_getprop(fdt, nodeoffset, name, lenp); }
+static inline void *fdt_getprop_w(void *fdt, int nodeoffset, const char *name, int *lenp) {
+	return (void *) (uintptr_t) fdt_getprop(fdt, nodeoffset, name, lenp);
+}
 
 /**
  * fdt_get_phandle - retrieve the phandle of a given node
@@ -1301,7 +1305,9 @@ static inline int fdt_setprop_inplace_u64(void *fdt, int nodeoffset, const char 
  * This is an alternative name for fdt_setprop_inplace_u32()
  * Return: 0 on success, negative libfdt error number otherwise.
  */
-static inline int fdt_setprop_inplace_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) { return fdt_setprop_inplace_u32(fdt, nodeoffset, name, val); }
+static inline int fdt_setprop_inplace_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) {
+	return fdt_setprop_inplace_u32(fdt, nodeoffset, name, val);
+}
 
 /**
  * fdt_nop_property - replace a property with nop tags
@@ -1411,7 +1417,9 @@ static inline int fdt_property_u64(void *fdt, const char *name, uint64_t val) {
 }
 
 #ifndef SWIG /* Not available in Python */
-static inline int fdt_property_cell(void *fdt, const char *name, uint32_t val) { return fdt_property_u32(fdt, name, val); }
+static inline int fdt_property_cell(void *fdt, const char *name, uint32_t val) {
+	return fdt_property_u32(fdt, name, val);
+}
 #endif
 
 /**
@@ -1653,7 +1661,9 @@ static inline int fdt_setprop_u64(void *fdt, int nodeoffset, const char *name, u
  *
  * Return: 0 on success, negative libfdt error value otherwise.
  */
-static inline int fdt_setprop_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) { return fdt_setprop_u32(fdt, nodeoffset, name, val); }
+static inline int fdt_setprop_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) {
+	return fdt_setprop_u32(fdt, nodeoffset, name, val);
+}
 
 /**
  * fdt_setprop_string - set a property to a string value
@@ -1820,7 +1830,9 @@ static inline int fdt_appendprop_u64(void *fdt, int nodeoffset, const char *name
  *
  * Return: 0 on success, negative libfdt error value otherwise.
  */
-static inline int fdt_appendprop_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) { return fdt_appendprop_u32(fdt, nodeoffset, name, val); }
+static inline int fdt_appendprop_cell(void *fdt, int nodeoffset, const char *name, uint32_t val) {
+	return fdt_appendprop_u32(fdt, nodeoffset, name, val);
+}
 
 /**
  * fdt_appendprop_string - append a string to a property

@@ -120,9 +120,13 @@ static void default_isr(void *data) {
 		;
 }
 
-static void gic_sgi_handler(uint32_t irq_no) { printk_debug("GIC: SGI irq %d coming... \n", irq_no); }
+static void gic_sgi_handler(uint32_t irq_no) {
+	printk_debug("GIC: SGI irq %d coming... \n", irq_no);
+}
 
-static void gic_ppi_handler(uint32_t irq_no) { printk_debug("GIC: PPI irq %d coming... \n", irq_no); }
+static void gic_ppi_handler(uint32_t irq_no) {
+	printk_debug("GIC: PPI irq %d coming... \n", irq_no);
+}
 
 static void gic_spi_handler(uint32_t irq_no) {
 	if (sunxi_int_handlers[irq_no].func != default_isr) {

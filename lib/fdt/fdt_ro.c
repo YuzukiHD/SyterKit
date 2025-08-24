@@ -92,7 +92,9 @@ fail:
 	return NULL;
 }
 
-const char *fdt_string(const void *fdt, int stroffset) { return fdt_get_string(fdt, stroffset, NULL); }
+const char *fdt_string(const void *fdt, int stroffset) {
+	return fdt_get_string(fdt, stroffset, NULL);
+}
 
 static int fdt_string_eq_(const void *fdt, int stroffset, const char *s, int len) {
 	int slen;
@@ -219,7 +221,9 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset, const char *name, in
 	return offset; /* error */
 }
 
-int fdt_subnode_offset(const void *fdt, int parentoffset, const char *name) { return fdt_subnode_offset_namelen(fdt, parentoffset, name, strlen(name)); }
+int fdt_subnode_offset(const void *fdt, int parentoffset, const char *name) {
+	return fdt_subnode_offset_namelen(fdt, parentoffset, name, strlen(name));
+}
 
 int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen) {
 	const char *end = path + namelen;
@@ -265,7 +269,9 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen) {
 	return offset;
 }
 
-int fdt_path_offset(const void *fdt, const char *path) { return fdt_path_offset_namelen(fdt, path, strlen(path)); }
+int fdt_path_offset(const void *fdt, const char *path) {
+	return fdt_path_offset_namelen(fdt, path, strlen(path));
+}
 
 const char *fdt_get_name(const void *fdt, int nodeoffset, int *len) {
 	const struct fdt_node_header *nh = fdt_offset_ptr_(fdt, nodeoffset);
@@ -432,7 +438,9 @@ const void *fdt_getprop_by_offset(const void *fdt, int offset, const char **name
 	return prop->data;
 }
 
-const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name, int *lenp) { return fdt_getprop_namelen(fdt, nodeoffset, name, strlen(name), lenp); }
+const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name, int *lenp) {
+	return fdt_getprop_namelen(fdt, nodeoffset, name, strlen(name), lenp);
+}
 
 uint32_t fdt_get_phandle(const void *fdt, int nodeoffset) {
 	const fdt32_t *php;
@@ -460,7 +468,9 @@ const char *fdt_get_alias_namelen(const void *fdt, const char *name, int namelen
 	return fdt_getprop_namelen(fdt, aliasoffset, name, namelen, NULL);
 }
 
-const char *fdt_get_alias(const void *fdt, const char *name) { return fdt_get_alias_namelen(fdt, name, strlen(name)); }
+const char *fdt_get_alias(const void *fdt, const char *name) {
+	return fdt_get_alias_namelen(fdt, name, strlen(name));
+}
 
 int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen) {
 	int pdepth = 0, p = 0;

@@ -32,7 +32,9 @@
  * before any subsequent instructions are executed, particularly useful 
  * for ensuring memory consistency.
  */
-void data_sync_barrier(void) { asm volatile("fence.i"); }
+void data_sync_barrier(void) {
+	asm volatile("fence.i");
+}
 
 /**
  * @brief Initialize the cache configuration.

@@ -37,7 +37,9 @@ static int fdt_rw_probe_(void *fdt) {
 			return err_;                      \
 	}
 
-static inline unsigned int fdt_data_size_(void *fdt) { return fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt); }
+static inline unsigned int fdt_data_size_(void *fdt) {
+	return fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt);
+}
 
 static int fdt_splice_(void *fdt, void *splicepoint, int oldlen, int newlen) {
 	char *p = splicepoint;
@@ -332,7 +334,9 @@ int fdt_add_subnode_namelen(void *fdt, int parentoffset, const char *name, int n
 	return offset;
 }
 
-int fdt_add_subnode(void *fdt, int parentoffset, const char *name) { return fdt_add_subnode_namelen(fdt, parentoffset, name, strlen(name)); }
+int fdt_add_subnode(void *fdt, int parentoffset, const char *name) {
+	return fdt_add_subnode_namelen(fdt, parentoffset, name, strlen(name));
+}
 
 int fdt_del_node(void *fdt, int nodeoffset) {
 	int endoffset;

@@ -103,4 +103,5 @@ dram_para_t dram_para = {
 		.dram_tpr13 = 0x34050100,
 };
 
-void clean_syterkit_data(void) {}
+void clean_syterkit_data(void) {
+}
