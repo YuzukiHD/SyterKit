@@ -65,3 +65,7 @@ endif()
 if(CONFIG_BOARD_TLT536-EVM)
     add_subdirectory(tlt536-evm)
 endif()
+
+if(CONFIG_BOARD_AVAOTA-F2)
+    add_subdirectory(avaota-f2)
+endif()
