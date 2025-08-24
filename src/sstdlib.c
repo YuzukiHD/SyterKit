@@ -33,11 +33,17 @@ static unsigned int decode_digit(int ch) {
 	return ch <= '9' ? ch - '0' : ch - 'a' + 0xa;
 }
 
-int simple_abs(int n) { return ((n < 0) ? -n : n); }
+int simple_abs(int n) {
+	return ((n < 0) ? -n : n);
+}
 
-int simple_atoi(const char *nptr) { return (int) simple_strtol(nptr, NULL, 10); }
+int simple_atoi(const char *nptr) {
+	return (int) simple_strtol(nptr, NULL, 10);
+}
 
-long long simple_atoll(const char *nptr) { return (long long) simple_strtoll(nptr, NULL, 10); }
+long long simple_atoll(const char *nptr) {
+	return (long long) simple_strtoll(nptr, NULL, 10);
+}
 
 long simple_strtol(const char *cp, char **endp, unsigned int base) {
 	if (*cp == '-')
@@ -63,9 +69,13 @@ unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
 	return result;
 }
 
-unsigned long simple_hextoul(const char *cp, char **endp) { return simple_strtoul(cp, endp, 16); }
+unsigned long simple_hextoul(const char *cp, char **endp) {
+	return simple_strtoul(cp, endp, 16);
+}
 
-unsigned long simple_dectoul(const char *cp, char **endp) { return simple_strtoul(cp, endp, 10); }
+unsigned long simple_dectoul(const char *cp, char **endp) {
+	return simple_strtoul(cp, endp, 10);
+}
 
 long strtol(const char *cp, char **endp, unsigned int base) {
 	if (*cp == '-')
@@ -159,9 +169,13 @@ long trailing_strtoln_end(const char *str, const char *end, char const **endp) {
 	return -1;
 }
 
-long trailing_strtoln(const char *str, const char *end) { return trailing_strtoln_end(str, end, NULL); }
+long trailing_strtoln(const char *str, const char *end) {
+	return trailing_strtoln_end(str, end, NULL);
+}
 
-long trailing_strtol(const char *str) { return trailing_strtoln(str, NULL); }
+long trailing_strtol(const char *str) {
+	return trailing_strtoln(str, NULL);
+}
 
 void str_to_upper(const char *in, char *out, size_t len) {
 	for (; len > 0 && *in; len--) *out++ = toupper(*in++);

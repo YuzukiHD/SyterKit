@@ -169,9 +169,13 @@ static uint32_t extract_mid(sdmmc_t *card) {
 		return UNSTUFF_BITS(card->cid, 120, 8);
 }
 
-static uint32_t extract_oid(sdmmc_t *card) { return (card->cid[0] >> 8) & 0xffff; }
+static uint32_t extract_oid(sdmmc_t *card) {
+	return (card->cid[0] >> 8) & 0xffff;
+}
 
-static uint32_t extract_prv(sdmmc_t *card) { return (card->cid[2] >> 24); }
+static uint32_t extract_prv(sdmmc_t *card) {
+	return (card->cid[2] >> 24);
+}
 
 static uint32_t extract_psn(sdmmc_t *card) {
 	if (card->version & SD_VERSION_SD) {

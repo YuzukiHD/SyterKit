@@ -4,7 +4,8 @@
 #include <log.h>
 #include <timer.h>
 
-void __attribute__((weak)) show_chip(void) {}
+void __attribute__((weak)) show_chip(void) {
+}
 
 void show_banner(void) {
 	printk(LOG_LEVEL_MUTE, "\n");

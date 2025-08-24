@@ -272,6 +272,10 @@ int usb_dma_stop(uint32_t dma_index) {
 	return lowlevel_usb_dma_int_stop(usb_hd, dma_index);
 }
 
-int usb_dma_int_query(uint32_t dma_index) { return lowlevel_usb_dma_int_query(usb_hd); }
+int usb_dma_int_query(uint32_t dma_index) {
+	return lowlevel_usb_dma_int_query(usb_hd);
+}
 
-int usb_dma_int_clear(void) { return lowlevel_usb_dma_int_clear(usb_hd); }
+int usb_dma_int_clear(void) {
+	return lowlevel_usb_dma_int_clear(usb_hd);
+}

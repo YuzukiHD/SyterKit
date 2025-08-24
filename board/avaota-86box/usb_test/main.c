@@ -26,7 +26,9 @@ extern sunxi_serial_t uart_dbg;
 
 extern dram_para_t dram_para;
 
-void arm32_do_irq(struct arm_regs_t *regs) { do_irq(regs); }
+void arm32_do_irq(struct arm_regs_t *regs) {
+	do_irq(regs);
+}
 
 int main(void) {
 	sunxi_serial_init(&uart_dbg);

@@ -11,4 +11,6 @@
 
 #include <reg-ncat.h>
 
-void sys_reset() { write32(SUNXI_WDOG_BASE + 0x08, (0x16aa << 16) | (0x1 << 0)); }
+void sys_reset() {
+	write32(SUNXI_WDOG_BASE + 0x08, (0x16aa << 16) | (0x1 << 0));
+}

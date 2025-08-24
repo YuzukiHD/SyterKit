@@ -131,7 +131,9 @@ int fdt_create_with_flags(void *buf, int bufsize, uint32_t flags) {
 	return 0;
 }
 
-int fdt_create(void *buf, int bufsize) { return fdt_create_with_flags(buf, bufsize, 0); }
+int fdt_create(void *buf, int bufsize) {
+	return fdt_create_with_flags(buf, bufsize, 0);
+}
 
 int fdt_resize(void *fdt, void *buf, int bufsize) {
 	size_t headsize, tailsize;

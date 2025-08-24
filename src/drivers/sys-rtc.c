@@ -20,7 +20,9 @@
  * @param index The index of the RTC register to write data to.
  * @param val The value to write to the RTC register.
  */
-void rtc_write_data(int index, uint32_t val) { writel(val, SUNXI_RTC_DATA_BASE + index * 4); }
+void rtc_write_data(int index, uint32_t val) {
+	writel(val, SUNXI_RTC_DATA_BASE + index * 4);
+}
 
 /**
  * Read data from the RTC register at the specified index.
@@ -28,7 +30,9 @@ void rtc_write_data(int index, uint32_t val) { writel(val, SUNXI_RTC_DATA_BASE +
  * @param index The index of the RTC register to read data from.
  * @return The value read from the RTC register.
  */
-uint32_t rtc_read_data(int index) { return readl(SUNXI_RTC_DATA_BASE + index * 4); }
+uint32_t rtc_read_data(int index) {
+	return readl(SUNXI_RTC_DATA_BASE + index * 4);
+}
 
 /**
  * Set the FEL (Fastboot External Loader) flag in the RTC register.
@@ -76,7 +80,9 @@ void rtc_set_dram_para(uint32_t dram_para_addr) {
  *
  * @return The value of the FEL flag (0 or 1).
  */
-uint32_t rtc_probe_fel_flag(void) { return rtc_read_data(RTC_FEL_INDEX) == EFEX_FLAG ? 1 : 0; }
+uint32_t rtc_probe_fel_flag(void) {
+	return rtc_read_data(RTC_FEL_INDEX) == EFEX_FLAG ? 1 : 0;
+}
 
 /**
  * Clear the FEL (Fastboot External Loader) flag in the RTC register.

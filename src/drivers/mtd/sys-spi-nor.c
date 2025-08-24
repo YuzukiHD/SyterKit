@@ -235,7 +235,9 @@ static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) { sunxi_spi_transfer(spi, SPI_IO_SINGLE, (void *) info.opcode_write_enable, 1, NULL, 0); }
+static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) {
+	sunxi_spi_transfer(spi, SPI_IO_SINGLE, (void *) info.opcode_write_enable, 1, NULL, 0);
+}
 
 
 /**

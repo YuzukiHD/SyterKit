@@ -464,4 +464,5 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 	}
 }
 
-static void dummy_interrupt_function(void *data) {}
+static void dummy_interrupt_function(void *data) {
+}
