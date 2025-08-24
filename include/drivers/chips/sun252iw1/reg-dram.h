@@ -3,7 +3,7 @@
 #ifndef __SUN252IW1_REG_DRAM_H__
 #define __SUN252IW1_REG_DRAM_H__
 
-#define SDRAM_BASE (0x80000000)
+#define SDRAM_BASE (0x40000000)
 
 #define MCTL_COM_BASE (0x43102000)
 #define MCTL_COM_WORK_MODE0 (0x00)
