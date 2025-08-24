@@ -1,4 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * (C) Copyright 2013-2025
+ * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
+ * 
+ * original from bsp uboot defines
+ */
 
 #ifndef __SUN55IW3_REG_CCU_H__
 #define __SUN55IW3_REG_CCU_H__
