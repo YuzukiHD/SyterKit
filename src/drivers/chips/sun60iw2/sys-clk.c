@@ -13,7 +13,7 @@
 
 #include <sys-clk.h>
 
-#define PLL_REG_CONF(x)                                                                                                                                                            \
+#define PLL_REG_CONF(x) \
 	{ x, BIT(x##_PLL_FREF_SEL_OFFSET) }
 
 #define CPU_PLL_FACTOR_N_24M(x) (((x) + (24) - 1) / (24))
@@ -23,9 +23,19 @@ const struct pll_reg_config {
 	uint32_t reg_addr;
 	uint32_t ref_sel_offset;
 } pll_ctrl_regs[] = {
-		PLL_REG_CONF(PLL_DDR_CTRL_REG),	   PLL_REG_CONF(PLL_PERI0_CTRL_REG),  PLL_REG_CONF(PLL_PERI1_CTRL_REG), PLL_REG_CONF(PLL_GPU0_CTRL_REG), PLL_REG_CONF(PLL_VIDEO0_CTRL_REG),
-		PLL_REG_CONF(PLL_VIDEO1_CTRL_REG), PLL_REG_CONF(PLL_VIDEO2_CTRL_REG), PLL_REG_CONF(PLL_VE0_CTRL_REG),	PLL_REG_CONF(PLL_VE1_CTRL_REG),	 PLL_REG_CONF(PLL_AUDIO0_CTRL_REG),
-		PLL_REG_CONF(PLL_AUDIO1_CTRL_REG), PLL_REG_CONF(PLL_NPU_CTRL_REG),	  PLL_REG_CONF(PLL_DE_CTRL_REG),
+		PLL_REG_CONF(PLL_DDR_CTRL_REG),
+		PLL_REG_CONF(PLL_PERI0_CTRL_REG),
+		PLL_REG_CONF(PLL_PERI1_CTRL_REG),
+		PLL_REG_CONF(PLL_GPU0_CTRL_REG),
+		PLL_REG_CONF(PLL_VIDEO0_CTRL_REG),
+		PLL_REG_CONF(PLL_VIDEO1_CTRL_REG),
+		PLL_REG_CONF(PLL_VIDEO2_CTRL_REG),
+		PLL_REG_CONF(PLL_VE0_CTRL_REG),
+		PLL_REG_CONF(PLL_VE1_CTRL_REG),
+		PLL_REG_CONF(PLL_AUDIO0_CTRL_REG),
+		PLL_REG_CONF(PLL_AUDIO1_CTRL_REG),
+		PLL_REG_CONF(PLL_NPU_CTRL_REG),
+		PLL_REG_CONF(PLL_DE_CTRL_REG),
 };
 
 static inline void set_pll_parent(void) {

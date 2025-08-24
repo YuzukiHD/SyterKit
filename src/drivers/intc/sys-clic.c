@@ -31,7 +31,8 @@ static int sunxi_plat_irq_init(void) {
 
 static inline void sunxi_clic_set_irq_ctrl_bit(uint32_t reg_addr, uint8_t mask, int is_set) {
 	uint8_t reg_data = readb(reg_addr);
-	if (is_set) reg_data |= mask;
+	if (is_set)
+		reg_data |= mask;
 	else
 		reg_data &= ~mask;
 	writeb(reg_data, reg_addr);
@@ -70,7 +71,8 @@ static int sunxi_clic_init(const struct irq_controller *ic) {
 
 	irq_cnt = (reg_data & IRQ_CNT_MASK) >> IRQ_CNT_SHIFT;
 	printk_trace("CLIC: irq_cnt:%d ic->irq_cnt:%d\n", irq_cnt, ic->irq_cnt);
-	if (ic->irq_cnt != irq_cnt) return -1;
+	if (ic->irq_cnt != irq_cnt)
+		return -1;
 	preemption_bits = (reg_data & CTRL_REG_BITS_MASK) >> CTRL_REG_BITS_SHIFT;
 	preemption_bits <<= PREEMPTION_PRIORITY_BITS_SHIFT;
 	preemption_bits &= PREEMPTION_PRIORITY_BITS_MASK;
@@ -111,12 +113,14 @@ static int sunxi_clic_irq_disable(const struct irq_controller *ic, uint32_t irq_
 }
 
 static int sunxi_clic_irq_is_enabled(const struct irq_controller *ic, uint32_t irq_id) {
-	if (readb((ic->reg_base_addr + CLIC_INT_X_IE_REG_OFF(irq_id))) & IE_BIT_MASK) return 1;
+	if (readb((ic->reg_base_addr + CLIC_INT_X_IE_REG_OFF(irq_id))) & IE_BIT_MASK)
+		return 1;
 	return 0;
 }
 
 static int sunxi_clic_irq_is_pending(const struct irq_controller *ic, uint32_t irq_id) {
-	if (readb((ic->reg_base_addr + CLIC_INT_X_IP_REG_OFF(irq_id))) & IP_BIT_MASK) return 1;
+	if (readb((ic->reg_base_addr + CLIC_INT_X_IP_REG_OFF(irq_id))) & IP_BIT_MASK)
+		return 1;
 	return 0;
 }
 
@@ -129,7 +133,8 @@ static int sunxi_clic_irq_set_pending(const struct irq_controller *ic, uint32_t 
 
 static int sunxi_clic_irq_set_trigger_type(const struct irq_controller *ic, uint32_t irq_id, irq_trigger_type_t type) {
 	uint32_t reg_addr;
-	if (type == IRQ_TRIGGER_TYPE_EDGE_BOTH) return -1;
+	if (type == IRQ_TRIGGER_TYPE_EDGE_BOTH)
+		return -1;
 	reg_addr = ic->reg_base_addr + CLIC_INT_X_ATTR_REG_OFF(irq_id);
 	sunxi_clic_set_trigger_type(reg_addr, type);
 	return 0;
@@ -142,11 +147,15 @@ static void default_isr(void *data) {
 }
 
 static void sunxi_clic_spi_handler(int irq_no) {
-	if (sunxi_int_handlers[irq_no].func != default_isr) { sunxi_int_handlers[irq_no].func(sunxi_int_handlers[irq_no].data); }
+	if (sunxi_int_handlers[irq_no].func != default_isr) {
+		sunxi_int_handlers[irq_no].func(sunxi_int_handlers[irq_no].data);
+	}
 }
 
 void irq_free_handler(int irq) {
-	if (irq >= CLIC_IRQ_NUM) { return; }
+	if (irq >= CLIC_IRQ_NUM) {
+		return;
+	}
 	sunxi_int_handlers[irq].data = NULL;
 	sunxi_int_handlers[irq].func = default_isr;
 }
@@ -170,7 +179,9 @@ int irq_disable(int irq_no) {
 }
 
 void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
-	if (irq >= CLIC_IRQ_NUM || !handle_irq) { return; }
+	if (irq >= CLIC_IRQ_NUM || !handle_irq) {
+		return;
+	}
 	sunxi_int_handlers[irq].data = data;
 	sunxi_int_handlers[irq].func = handle_irq;
 }

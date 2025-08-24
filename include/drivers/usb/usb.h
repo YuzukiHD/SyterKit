@@ -158,7 +158,7 @@ typedef struct sunxi_usb_setup_req_s {
 #define SUNXI_USB_DEVICE_DETECT (1)
 #define SUNXI_USB_DEVICE_MASS (2)
 
-#define sunxi_usb_module_init(name, state_init, state_exit, state_reset, standard_req_op, nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr)                                  \
+#define sunxi_usb_module_init(name, state_init, state_exit, state_reset, standard_req_op, nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr) \
 	sunxi_usb_setup_req_t setup_req_##name = {state_init, state_exit, state_reset, standard_req_op, nonstandard_req_op, state_loop, dma_rx_isr, dma_tx_isr};
 
 #define sunxi_usb_module_reg(name) sunxi_udev_active = &setup_req_##name

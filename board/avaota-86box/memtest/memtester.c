@@ -165,7 +165,9 @@ int test_div_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	ul q = rand_ul();
 
 	for (i = 0; i < count; i++) {
-		if (!q) { q++; }
+		if (!q) {
+			q++;
+		}
 		*p1++ /= q;
 		*p2++ /= q;
 	}
@@ -225,7 +227,9 @@ int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -248,7 +252,9 @@ int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -269,7 +275,9 @@ int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		for (i = 0; i < count; i++) { *p1++ = *p2++ = (ul) UL_BYTE(j); }
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -296,7 +304,9 @@ int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -323,7 +333,9 @@ int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -351,7 +363,9 @@ int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 	return 0;
@@ -376,7 +390,9 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
 			for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
 			printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 			printk(LOG_LEVEL_MUTE, "testing %3u", k * 8 + j);
-			if (compare_regions(bufa, bufb, count)) { return -1; }
+			if (compare_regions(bufa, bufb, count)) {
+				return -1;
+			}
 		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
@@ -408,7 +424,9 @@ int test_8bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 				uart_putchar(progress[++j % PROGRESSLEN]);
 			}
 		}
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b \b");
 	return 0;
@@ -439,7 +457,9 @@ int test_16bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 				uart_putchar(progress[++j % PROGRESSLEN]);
 			}
 		}
-		if (compare_regions(bufa, bufb, count)) { return -1; }
+		if (compare_regions(bufa, bufb, count)) {
+			return -1;
+		}
 	}
 	printk(LOG_LEVEL_MUTE, "\b \b");
 	return 0;
@@ -490,7 +510,8 @@ static int do_memtester(uint64_t start_addr, uint32_t dram_size, uint64_t test_s
 		printk(LOG_LEVEL_MUTE, "bad\n");
 	}
 	for (i = 0;; i++) {
-		if (!tests[i].name) break;
+		if (!tests[i].name)
+			break;
 
 		printk(LOG_LEVEL_MUTE, "  %-20s: ", tests[i].name);
 

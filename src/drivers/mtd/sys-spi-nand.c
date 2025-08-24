@@ -160,7 +160,8 @@ static int spi_nand_info(sunxi_spi_t *spi) {
 	tx[0] = OPCODE_READ_ID; /* Command to read SPI NAND ID */
 	tx[1] = 0x0;
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 5); /* Perform SPI transfer */
-	if (r < 0) return r;
+	if (r < 0)
+		return r;
 
 	printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
@@ -197,7 +198,8 @@ static int spi_nand_info(sunxi_spi_t *spi) {
 
 	tx[0] = OPCODE_READ_ID;									  /* Command to read SPI NAND ID */
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 5); /* Perform SPI transfer */
-	if (r < 0) return r;
+	if (r < 0)
+		return r;
 
 	printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
@@ -249,7 +251,8 @@ __attribute__((unused)) static int spi_nand_reset(sunxi_spi_t *spi) {
 
 	tx[0] = OPCODE_RESET;									 /* Command to reset SPI NAND */
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
-	if (r < 0) return -1;
+	if (r < 0)
+		return -1;
 
 	udelay(100 * 1000); /* Delay for 100 milliseconds */
 
@@ -271,7 +274,8 @@ static int spi_nand_get_config(sunxi_spi_t *spi, uint8_t addr, uint8_t *val) {
 	tx[0] = OPCODE_READ_STATUS;								   /* Command to read status register */
 	tx[1] = addr;											   /* Address to read from */
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, val, 1); /* Perform SPI transfer */
-	if (r < 0) return -1;
+	if (r < 0)
+		return -1;
 
 	return 0; /* Return success */
 }
@@ -292,7 +296,8 @@ static int spi_nand_set_config(sunxi_spi_t *spi, uint8_t addr, uint8_t val) {
 	tx[1] = addr;											 /* Address to write to */
 	tx[2] = val;											 /* Value to be written */
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 3, 0, 0); /* Perform SPI transfer */
-	if (r < 0) return -1;
+	if (r < 0)
+		return -1;
 
 	return 0; /* Return success */
 }
@@ -314,7 +319,8 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi) {
 
 	do {
 		r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 1); /* Perform SPI transfer */
-		if (r < 0) break;
+		if (r < 0)
+			break;
 		timeout--;
 		if (!timeout) {
 			printk_warning("SPI NAND: wait busy timeout\n");
@@ -335,7 +341,8 @@ int spi_nand_detect(sunxi_spi_t *spi) {
 	uint8_t val; /* Configuration value */
 
 	spi_nand_reset(spi);
-	if (!spi_nand_wait_while_busy(spi)) return -1;
+	if (!spi_nand_wait_while_busy(spi))
+		return -1;
 
 	if (spi_nand_info(spi) == 0) {
 		if ((spi_nand_get_config(spi, CONFIG_ADDR_PROTECT, &val) == 0) && (val != 0x0)) {
@@ -461,7 +468,9 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 
 		// With Winbond, we use continuous mode which has 1 more dummy
 		// This allows us to not load each page
-		if (info.id.mfr == SPI_NAND_MFR_WINBOND) { txlen++; }
+		if (info.id.mfr == SPI_NAND_MFR_WINBOND) {
+			txlen++;
+		}
 
 		ca = address & (info.page_size - 1);
 

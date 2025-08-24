@@ -50,7 +50,9 @@ static uint32_t _port_base_get(gpio_t pin) {
 	uint32_t port = pin >> PIO_NUM_IO_BITS;
 
 	/* PL PM PN in R_PIO */
-	if (port >= GPIO_PORTL) { return SUNXI_RPIO_BASE + (port - GPIO_PORTL) * GPIO_OFFSET; }
+	if (port >= GPIO_PORTL) {
+		return SUNXI_RPIO_BASE + (port - GPIO_PORTL) * GPIO_OFFSET;
+	}
 	/* PA PB PC PD PE PF PG PH PI PJ PK in PIO */
 	return SUNXI_PIO_BASE + port * GPIO_OFFSET;
 }

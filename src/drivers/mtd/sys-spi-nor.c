@@ -97,9 +97,11 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 	tx[2] = 0x0;
 	tx[3] = 0x0;
 	tx[4] = 0x0;
-	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->header, sizeof(sfdp_header_t))) return 0;
+	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->header, sizeof(sfdp_header_t)))
+		return 0;
 
-	if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') || (sfdp->header.sign[2] != 'D') || (sfdp->header.sign[3] != 'P')) return 0;
+	if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') || (sfdp->header.sign[2] != 'D') || (sfdp->header.sign[3] != 'P'))
+		return 0;
 
 	sfdp->header.nph = sfdp->header.nph > SFDP_MAX_NPH ? sfdp->header.nph + 1 : SFDP_MAX_NPH;
 	for (i = 0; i < sfdp->header.nph; i++) {
@@ -109,7 +111,8 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 		tx[2] = (addr >> 8) & 0xff;
 		tx[3] = (addr >> 0) & 0xff;
 		tx[4] = 0x0;
-		if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->parameter_header[i], sizeof(sfdp_parameter_header_t))) return 0;
+		if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->parameter_header[i], sizeof(sfdp_parameter_header_t)))
+			return 0;
 	}
 	for (i = 0; i < sfdp->header.nph; i++) {
 		if ((sfdp->parameter_header[i].idlsb == 0x00) && (sfdp->parameter_header[i].idmsb == 0xff)) {
@@ -145,7 +148,8 @@ static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id) {
 	uint8_t rx[3];
 
 	tx[0] = NOR_OPCODE_RDID;
-	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 3)) return 0;
+	if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 1, rx, 3))
+		return 0;
 	*id = (rx[0] << 16) | (rx[1] << 8) | (rx[2] << 0);
 	return 1;
 }
@@ -283,10 +287,12 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 		/* Basic flash parameter table 1th dword */
 		v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
 
-		if ((info.capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2)) info.address_length = 3;
+		if ((info.capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2))
+			info.address_length = 3;
 		else
 			info.address_length = 4;
-		if (((v >> 0) & 0x3) == 0x1) info.opcode_erase_4k = (v >> 8) & 0xff;
+		if (((v >> 0) & 0x3) == 0x1)
+			info.opcode_erase_4k = (v >> 8) & 0xff;
 		else
 			info.opcode_erase_4k = 0x00;
 		info.opcode_erase_32k = 0x00;
@@ -363,7 +369,8 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 			default:
 				break;
 		}
-		if (info.opcode_erase_4k != 0x00) info.blksz = 4096;
+		if (info.opcode_erase_4k != 0x00)
+			info.blksz = 4096;
 		else if (info.opcode_erase_32k != 0x00)
 			info.blksz = 32768;
 		else if (info.opcode_erase_64k != 0x00)
@@ -378,7 +385,8 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 		if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor < 5)) {
 			/* Basic flash parameter table 1th dword */
 			v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
-			if ((v >> 2) & 0x1) info.write_granularity = 64;
+			if ((v >> 2) & 0x1)
+				info.write_granularity = 64;
 			else
 				info.write_granularity = 1;
 		} else if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor >= 5)) {
@@ -522,7 +530,8 @@ uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uin
 	uint8_t *pbuf = buf;
 	uint32_t len;
 
-	if (info.read_granularity == 1) len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
+	if (info.read_granularity == 1)
+		len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
 	else
 		len = info.read_granularity;
 	while (cnt > 0) {
@@ -570,8 +579,10 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 
 	if (tmp > 0) {
 		len = blksz - tmp;
-		if (rxlen < len) len = rxlen;
-		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1) return ret;
+		if (rxlen < len)
+			len = rxlen;
+		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
+			return ret;
 		memcpy((void *) buf, (const void *) (&buf[tmp]), len);
 		buf += len;
 		rxlen -= len;
@@ -583,7 +594,8 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 
 	if (tmp > 0) {
 		len = tmp * blksz;
-		if (spi_nor_read_block(spi, buf, blkno, tmp) != tmp) return ret;
+		if (spi_nor_read_block(spi, buf, blkno, tmp) != tmp)
+			return ret;
 		buf += len;
 		rxlen -= len;
 		ret += len;
@@ -592,7 +604,8 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 
 	if (rxlen > 0) {
 		len = rxlen;
-		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1) return ret;
+		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
+			return ret;
 		memcpy((void *) buf, (const void *) (&buf[0]), len);
 		ret += len;
 	}

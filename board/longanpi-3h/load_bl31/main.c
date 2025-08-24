@@ -160,7 +160,8 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	// printk_info("FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
 	// ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
@@ -169,11 +170,13 @@ static int load_sdcard(image_info_t *image) {
 
 	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
 	ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);

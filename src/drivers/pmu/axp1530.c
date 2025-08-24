@@ -65,9 +65,11 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
 	}
 
 	/* Set over temperature shutdown functtion */
-	if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, &axp_val)) return -1;
+	if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, &axp_val))
+		return -1;
 	axp_val |= (0x1 << 1);
-	if (sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, axp_val)) return -1;
+	if (sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, axp_val))
+		return -1;
 
 	return 0;
 }

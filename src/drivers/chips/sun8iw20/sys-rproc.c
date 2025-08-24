@@ -17,7 +17,8 @@ static void sram_remap_set(int value) {
 	uint32_t val = 0;
 
 	val = readl(SUNXI_SYSCRL_BASE + SRAMC_SRAM_REMAP_REG);
-	if (value) val &= ~(1 << BIT_SRAM_REMAP_ENABLE);
+	if (value)
+		val &= ~(1 << BIT_SRAM_REMAP_ENABLE);
 	else
 		val |= (1 << BIT_SRAM_REMAP_ENABLE);
 	writel(val, SUNXI_SYSCRL_BASE + SRAMC_SRAM_REMAP_REG);

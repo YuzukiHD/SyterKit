@@ -22,9 +22,13 @@
 static axp_contrl_info *get_ctrl_info_from_tbl(char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size) {
 	int i = 0;
 	for (i = 0; i < axp_ctrl_tbl_size; i++) {
-		if (!strncmp(name, axp_ctrl_tbl[i].name, strlen(axp_ctrl_tbl[i].name))) { break; }
+		if (!strncmp(name, axp_ctrl_tbl[i].name, strlen(axp_ctrl_tbl[i].name))) {
+			break;
+		}
 	}
-	if (i >= axp_ctrl_tbl_size) { return NULL; }
+	if (i >= axp_ctrl_tbl_size) {
+		return NULL;
+	}
 	return (axp_ctrl_tbl + i);
 }
 
@@ -34,7 +38,9 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 	uint8_t base_step = 0;
 
 	p_item = get_ctrl_info_from_tbl(name, axp_ctrl_tbl, axp_ctrl_tbl_size);
-	if (!p_item) { return -1; }
+	if (!p_item) {
+		return -1;
+	}
 
 	if ((set_vol > 0) && (p_item->min_vol)) {
 		if (set_vol < p_item->min_vol) {
@@ -43,12 +49,16 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 			set_vol = p_item->max_vol;
 		}
 
-		if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) { return -1; }
+		if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) {
+			return -1;
+		}
 
 		reg_value &= ~p_item->cfg_reg_mask;
 
 		for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {
-			if ((set_vol > p_item->axp_step_tbl[i].step_max_vol) && (set_vol < p_item->axp_step_tbl[i + 1].step_min_vol)) { set_vol = p_item->axp_step_tbl[i].step_max_vol; }
+			if ((set_vol > p_item->axp_step_tbl[i].step_max_vol) && (set_vol < p_item->axp_step_tbl[i + 1].step_min_vol)) {
+				set_vol = p_item->axp_step_tbl[i].step_max_vol;
+			}
 			if (p_item->axp_step_tbl[i].step_max_vol >= set_vol) {
 				reg_value |= ((base_step + ((set_vol - p_item->axp_step_tbl[i].step_min_vol) / p_item->axp_step_tbl[i].step_val)) << p_item->reg_addr_offset);
 				if (p_item->axp_step_tbl[i].regation) {
@@ -62,17 +72,25 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 			}
 		}
 
-		if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->cfg_reg_addr, reg_value)) { return -1; }
+		if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->cfg_reg_addr, reg_value)) {
+			return -1;
+		}
 	}
 
-	if (onoff < 0) { return 0; }
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) { return -1; }
+	if (onoff < 0) {
+		return 0;
+	}
+	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) {
+		return -1;
+	}
 	if (onoff == 0) {
 		reg_value &= ~(1 << p_item->ctrl_bit_ofs);
 	} else {
 		reg_value |= (1 << p_item->ctrl_bit_ofs);
 	}
-	if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->ctrl_reg_addr, reg_value)) { return -1; }
+	if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->ctrl_reg_addr, reg_value)) {
+		return -1;
+	}
 	return 0;
 }
 
@@ -84,13 +102,21 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
 	int vol;
 
 	p_item = get_ctrl_info_from_tbl(name, axp_ctrl_tbl, axp_ctrl_tbl_size);
-	if (!p_item) { return -1; }
+	if (!p_item) {
+		return -1;
+	}
 
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) { return -1; }
+	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) {
+		return -1;
+	}
 
-	if (!(reg_value & (0x01 << p_item->ctrl_bit_ofs))) { return 0; }
+	if (!(reg_value & (0x01 << p_item->ctrl_bit_ofs))) {
+		return 0;
+	}
 
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) { return -1; }
+	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) {
+		return -1;
+	}
 	reg_value &= p_item->cfg_reg_mask;
 	reg_value >>= p_item->reg_addr_offset;
 	for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {

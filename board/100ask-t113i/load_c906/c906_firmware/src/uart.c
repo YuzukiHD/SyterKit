@@ -24,7 +24,8 @@ static int v_printf_str_to_num(const char *fmt, int *num) {
 	res = 0;
 	for (p = fmt; *fmt != '\0'; p++) {
 		isd = (*p >= '0' && *p <= '9');
-		if (!isd) break;
+		if (!isd)
+			break;
 		d = *p - '0';
 		res *= 10;
 		res += d;
@@ -40,12 +41,14 @@ static void v_printf_num_to_str(uint32_t a, int ish, int pl, int pc) {
 
 	for (i = 0; i < sizeof(buf); i++) buf[i] = pc;
 	base = 10;
-	if (ish) base = 16;
+	if (ish)
+		base = 16;
 
 	idx = 0;
 	do {
 		t = a % base;
-		if (t >= 10) buf[idx] = t - 10 + 'a';
+		if (t >= 10)
+			buf[idx] = t - 10 + 'a';
 		else
 			buf[idx] = t + '0';
 		a /= base;
@@ -53,8 +56,10 @@ static void v_printf_num_to_str(uint32_t a, int ish, int pl, int pc) {
 	} while (a > 0);
 
 	if (pl > 0) {
-		if (pl >= sizeof(buf)) pl = sizeof(buf) - 1;
-		if (idx < pl) idx = pl;
+		if (pl >= sizeof(buf))
+			pl = sizeof(buf) - 1;
+		if (idx < pl)
+			idx = pl;
 	}
 	buf[idx] = '\0';
 
@@ -75,7 +80,8 @@ static int v_printf(const char *fmt, va_list va) {
 		if (*p == '%') {
 			q = p;
 			p++;
-			if (*p >= '0' && *p <= '9') p += v_printf_str_to_num(p, &pl);
+			if (*p >= '0' && *p <= '9')
+				p += v_printf_str_to_num(p, &pl);
 			f = *p;
 		}
 		if ((f == 'd') || (f == 'x')) {

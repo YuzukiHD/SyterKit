@@ -29,7 +29,9 @@ static int read_token(parse_state_t *pstate) {
 	while (1) {
 		char ch = *pstate->readpos;
 
-		if (ch == '\0') { break; /* end of input */ }
+		if (ch == '\0') {
+			break; /* end of input */
+		}
 		readcount++;
 
 		/*  We are in quote */
@@ -157,7 +159,9 @@ const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char 
 				/*
              * No more chars to read. Case II
              */
-				if (stopchar == '\0') { return cmdline; }
+				if (stopchar == '\0') {
+					return cmdline;
+				}
 
 				/*
              * End of command by ';'.

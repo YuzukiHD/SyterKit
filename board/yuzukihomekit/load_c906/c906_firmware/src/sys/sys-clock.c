@@ -10,7 +10,8 @@
 
 static inline uint64_t counter() {
 	uint64_t cnt;
-	__asm__ __volatile__("csrr %0, time\n" : "=r"(cnt)::"memory");
+	__asm__ __volatile__("csrr %0, time\n"
+						 : "=r"(cnt)::"memory");
 	return cnt;
 }
 

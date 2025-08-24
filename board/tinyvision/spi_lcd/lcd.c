@@ -68,21 +68,24 @@ void LCD_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t c
 	delta_y = y2 - y1;
 	uRow = x1;//画线起点坐标
 	uCol = y1;
-	if (delta_x > 0) incx = 1;//设置单步方向
+	if (delta_x > 0)
+		incx = 1;//设置单步方向
 	else if (delta_x == 0)
 		incx = 0;//垂直线
 	else {
 		incx = -1;
 		delta_x = -delta_x;
 	}
-	if (delta_y > 0) incy = 1;
+	if (delta_y > 0)
+		incy = 1;
 	else if (delta_y == 0)
 		incy = 0;//水平线
 	else {
 		incy = -1;
 		delta_y = -delta_y;
 	}
-	if (delta_x > delta_y) distance = delta_x;//选取基本增量坐标轴
+	if (delta_x > delta_y)
+		distance = delta_x;//选取基本增量坐标轴
 	else
 		distance = delta_y;
 	for (t = 0; t < distance + 1; t++) {
@@ -163,7 +166,8 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
 	num = num - ' ';									//得到偏移后的值
 	LCD_Address_Set(x, y, x + sizex - 1, y + sizey - 1);//设置光标位置
 	for (i = 0; i < TypefaceNum; i++) {
-		if (sizey == 12) temp = ascii_1206[num][i];//调用6x12字体
+		if (sizey == 12)
+			temp = ascii_1206[num][i];//调用6x12字体
 		else if (sizey == 16)
 			temp = ascii_1608[num][i];//调用8x16字体
 		else if (sizey == 24)
@@ -175,7 +179,8 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
 		for (t = 0; t < 8; t++) {
 			if (!mode)//非叠加模式
 			{
-				if (temp & (0x01 << t)) LCD_WR_DATA(fc);
+				if (temp & (0x01 << t))
+					LCD_WR_DATA(fc);
 				else
 					LCD_WR_DATA(bc);
 				m++;
@@ -185,7 +190,8 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
 				}
 			} else//叠加模式
 			{
-				if (temp & (0x01 << t)) LCD_DrawPoint(x, y, fc);//画一个点
+				if (temp & (0x01 << t))
+					LCD_DrawPoint(x, y, fc);//画一个点
 				x++;
 				if ((x - x0) == sizex) {
 					x = x0;

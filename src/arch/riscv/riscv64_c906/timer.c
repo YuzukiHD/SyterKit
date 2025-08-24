@@ -22,7 +22,10 @@ void set_timer_count() { init_timestamp = (uint32_t) time_us(); }
 uint64_t get_arch_counter(void) {
 	uint64_t cnt = 0;
 
-	asm volatile("csrr %0, time\n" : "=r"(cnt) : : "memory");
+	asm volatile("csrr %0, time\n"
+				 : "=r"(cnt)
+				 :
+				 : "memory");
 
 	return cnt;
 }

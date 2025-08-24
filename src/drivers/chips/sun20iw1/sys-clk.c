@@ -75,7 +75,8 @@ static void set_pll_periph0(void) {
 	uint32_t val;
 
 	/* Periph0 has been enabled */
-	if (read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG) & (1 << 31)) return;
+	if (read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG) & (1 << 31))
+		return;
 
 	/* Change psi src to osc24m */
 	val = read32(CCU_BASE + CCU_PSI_CLK_REG);
