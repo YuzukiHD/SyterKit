@@ -16,7 +16,7 @@
 #include <sys-dram.h>
 #include <sys-rtc.h>
 
-#define INIT_DRAM_BIN_BASE 0x07280000
+#define INIT_DRAM_BIN_BASE 0x0004cee8
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
@@ -38,6 +38,8 @@ uint32_t sunxi_dram_init(void *para) {
 
 	printk_debug("DRAM: load dram init from 0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);
 	memcpy(dst, src, __ddr_bin_end - __ddr_bin_start);
+
+	dump_hex(dst, 0x100);
 
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
 	rtc_set_start_time_ms();
