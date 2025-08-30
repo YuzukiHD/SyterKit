@@ -158,7 +158,7 @@ int pmu_axp8191_init(sunxi_i2c_t *i2c_dev) {
 		axp_val |= 0x80;
 		sunxi_i2c_write(i2c_dev, AXP8191_RUNTIME_ADDR, AXP8191_DC2OUT_VOL + i, axp_val);
 	}
-	
+
 	return AXP8191_CHIP_ID;
 }
 

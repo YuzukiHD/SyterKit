@@ -49,7 +49,7 @@ int pmu_axp333_init(sunxi_i2c_t *i2c_dev) {
 	axp_val &= 0xCF;
 	if (axp_val == AXP333_CHIP_ID) {
 		printk_info("PMU: Found AXP333 PMU\n");
-		
+
 		reg_value = 0;
 		sunxi_i2c_read(i2c_dev, AXP333_RUNTIME_ADDR, AXP333_CHIP_ID_REG, &reg_value);
 		reg_value |= 0x10;
@@ -69,7 +69,7 @@ int pmu_axp333_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
 }
 
 void pmu_axp333_dump(sunxi_i2c_t *i2c_dev) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { 
-		printk_debug("PMU: AXP333 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp333_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); 
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
+		printk_debug("PMU: AXP333 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp333_get_vol(i2c_dev, axp_ctrl_tbl[i].name));
 	}
 }
