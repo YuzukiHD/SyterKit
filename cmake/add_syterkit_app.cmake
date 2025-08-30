@@ -16,7 +16,7 @@ function(add_syterkit_app target_name)
 
     # Set properties for the target, including link dependencies and libraries
     set_target_properties(${target_name}_fel PROPERTIES LINK_DEPENDS "${LINK_SCRIPT_FEL}")
-    target_link_libraries(${target_name}_fel ${APP_COMMON_LIBRARY} -T"${LINK_SCRIPT_FEL}" -flto -nostdlib -Wl,-gc-sections -Wl,-z,noexecstack,-Map,${target_name}_fel.map)
+    target_link_libraries(${target_name}_fel -Wl,--whole-archive ${APP_COMMON_LIBRARY} ${APP_LINK_LIBRARY} -Wl,--no-whole-archive -T"${LINK_SCRIPT_FEL}" -flto -nostdlib -Wl,-gc-sections -Wl,-z,noexecstack,-Map,${target_name}_fel.map)
 
     # Add custom commands for post-build actions
     add_custom_command(
@@ -35,7 +35,7 @@ function(add_syterkit_app target_name)
     add_executable(${target_name}_bin ${APP_COMMON_SOURCE} ${ARGN})
 
     set_target_properties(${target_name}_bin PROPERTIES LINK_DEPENDS "${LINK_SCRIPT_BIN}")
-    target_link_libraries(${target_name}_bin ${APP_COMMON_LIBRARY} -T"${LINK_SCRIPT_BIN}" -flto -nostdlib -Wl,-gc-sections -Wl,-z,noexecstack,-Map,${target_name}_bin.map)
+    target_link_libraries(${target_name}_bin -Wl,--whole-archive ${APP_COMMON_LIBRARY} ${APP_LINK_LIBRARY} -Wl,--no-whole-archive -T"${LINK_SCRIPT_BIN}" -flto -nostdlib -Wl,-gc-sections -Wl,-z,noexecstack,-Map,${target_name}_bin.map)
 
     add_custom_command(
         TARGET ${target_name}_bin
