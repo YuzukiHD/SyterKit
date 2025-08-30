@@ -63,7 +63,7 @@ int main(void) {
 	
 	pmu_axp333_dump(&i2c_pmu);
 	
-	//sunxi_dram_init((void *)&dram_para);
+	sunxi_dram_init((void *)&dram_para);
 	
 	syterkit_shell_attach(NULL);
 
