@@ -108,6 +108,11 @@
         <File Name="../../../include/arch/riscv/types.h">
           <FileOption/>
         </File>
+        <VirtualDirectory Name="e907">
+          <File Name="../../../include/arch/riscv/e907/sysmap.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
       </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="cli">
@@ -209,6 +214,12 @@
             <FileOption/>
           </File>
           <File Name="../../../include/drivers/pmu/reg/reg-axp2202.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/pmu/reg/reg-axp8191.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../include/drivers/pmu/reg/reg-axp333.h">
             <FileOption/>
           </File>
         </VirtualDirectory>
@@ -361,6 +372,12 @@
     </File>
     <VirtualDirectory Name="arch">
       <VirtualDirectory Name="riscv32_e907">
+        <File Name="../../../src/arch/riscv/riscv32_e907/backtrace.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/arch/riscv/riscv32_e907/cache.c">
+          <FileOption/>
+        </File>
         <File Name="../../../src/arch/riscv/riscv32_e907/exception.c">
           <FileOption/>
         </File>
@@ -377,9 +394,6 @@
           <FileOption/>
         </File>
         <File Name="../../../src/arch/riscv/riscv32_e907/timer.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../src/arch/riscv/riscv32_e907/backtrace.c">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -450,6 +464,12 @@
           <FileOption/>
         </File>
         <File Name="../../../src/drivers/pmu/axp2202.c" ExcludeProjConfig="">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/pmu/axp8191.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../src/drivers/pmu/axp333.c">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -528,17 +548,6 @@
       <FileOption/>
     </File>
   </VirtualDirectory>
-  <DebugSessions>
-    <watchExpressions/>
-    <memoryExpressions>0x20181C8;;;</memoryExpressions>
-    <statistics>;;32;;MHZ;;up</statistics>
-    <peripheralTabs/>
-    <WatchDisplayFormat>1</WatchDisplayFormat>
-    <LocalDisplayFormat>1</LocalDisplayFormat>
-    <debugLayout/>
-    <memoryTabColSizeExpressions>100:4;100:8;100:8;100:8;</memoryTabColSizeExpressions>
-    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
-  </DebugSessions>
   <BuildConfigs>
     <BuildConfig Name="BuildSet">
       <Target>
@@ -607,8 +616,8 @@
         <UseHardFloat>no</UseHardFloat>
         <UseEnhancedLRW>yes</UseEnhancedLRW>
         <UseContinueBuild>no</UseContinueBuild>
-        <ToolchainID/>
-        <ToolchainVersion/>
+        <ToolchainID>XTGccElfNewlib</ToolchainID>
+        <ToolchainVersion>latest</ToolchainVersion>
         <UseSemiHost>no</UseSemiHost>
       </Target>
       <Output>
@@ -640,11 +649,11 @@
         <Tools/>
       </User>
       <Compiler>
-        <Define>CONFIG_CHIP_SUN252IW1;DEBUG_MODE</Define>
+        <Define>CONFIG_CHIP_SUN252IW1;TRACE_MODE</Define>
         <Undefine/>
-        <Optim>Optimize aggressive size (-Oz)</Optim>
+        <Optim>None (-O0)</Optim>
         <DebugLevel>Default (-g)</DebugLevel>
-        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun252iw1/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/mtd/;../../../include/drivers/intc/</IncludePath>
+        <IncludePath>$(ProjectPath);$(ProjectPath)/../../../include/arch/riscv/e907;../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/chips/sun252iw1/;../../../include/drivers/intc/;../../../include/drivers/mmc/;../../../include/drivers/mtd/;../../../include/drivers/pmu/;../../../include/drivers/pmu/reg/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/</IncludePath>
         <OtherFlags>-nostdlib -nostdinc -mcpu=e907f -Wno-restrict -Wno-int-to-pointer-cast -Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-parentheses</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
@@ -661,7 +670,7 @@
       <Asm>
         <Define/>
         <Undefine/>
-        <IncludePath>$(ProjectPath);../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/chips/sun300iw1/;../../../include/drivers/mmc/;../../../include/drivers/pmu/reg/;../../../include/drivers/pmu/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/intc/</IncludePath>
+        <IncludePath>$(ProjectPath);$(ProjectPath)/../../../include/arch/riscv/e907;../../../include/;../../../include/arch/riscv/;../../../include/cli/;../../../include/drivers/;../../../include/drivers/chips/;../../../include/drivers/chips/sun300iw1/;../../../include/drivers/intc/;../../../include/drivers/mmc/;../../../include/drivers/pmu/;../../../include/drivers/pmu/reg/;../../../include/drivers/reg/;../../../include/drivers/usb/;../../../include/image/;../../../include/lib/elf/;../../../include/lib/fatfs/;../../../include/lib/fdt/</IncludePath>
         <OtherFlags/>
         <DebugLevel>none</DebugLevel>
       </Asm>
@@ -764,4 +773,15 @@
       </Flash>
     </BuildConfig>
   </BuildConfigs>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions>0x02001000;0x02000540;;</memoryExpressions>
+    <statistics>;;32;;MHZ;;up</statistics>
+    <peripheralTabs/>
+    <WatchDisplayFormat>1</WatchDisplayFormat>
+    <LocalDisplayFormat>1</LocalDisplayFormat>
+    <debugLayout/>
+    <memoryTabColSizeExpressions>100:4;100:4;100:8;100:8;</memoryTabColSizeExpressions>
+    <QuickWatchDisplayFormat>1</QuickWatchDisplayFormat>
+  </DebugSessions>
 </Project>

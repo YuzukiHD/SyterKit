@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
 #ifndef __REG_AXP2101_H__
 #define __REG_AXP2101_H__
 

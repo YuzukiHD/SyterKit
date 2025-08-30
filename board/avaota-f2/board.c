@@ -23,6 +23,28 @@
 #include <sys-spi.h>
 #include <sys-uart.h>
 
+sunxi_serial_t uart_dbg_ph1 = {
+		.base = SUNXI_UART0_BASE,
+		.id = 0,
+		.baud_rate = UART_BAUDRATE_115200,
+		.dlen = UART_DLEN_8,
+		.stop = UART_STOP_BIT_0,
+		.parity = UART_PARITY_NO,
+		.gpio_pin =
+				{
+						.gpio_tx = {GPIO_PIN(GPIO_PORTH, 9), GPIO_PERIPH_MUX5},
+						.gpio_rx = {GPIO_PIN(GPIO_PORTH, 10), GPIO_PERIPH_MUX5},
+				},
+		.uart_clk =
+				{
+						.gate_reg_base = SUNXI_CCU_BASE + UART_BGR_REG,
+						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
+						.rst_reg_base = SUNXI_CCU_BASE + UART_BGR_REG,
+						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
+						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+				},
+};
+
 sunxi_serial_t uart_dbg = {
 		.base = SUNXI_UART0_BASE,
 		.id = 0,
@@ -32,16 +54,35 @@ sunxi_serial_t uart_dbg = {
 		.parity = UART_PARITY_NO,
 		.gpio_pin =
 				{
-						.gpio_tx = {GPIO_PIN(GPIO_PORTL, 4), GPIO_PERIPH_MUX3},
-						.gpio_rx = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX3},
+						.gpio_tx = {GPIO_PIN(GPIO_PORTH, 13), GPIO_PERIPH_MUX6},
+						.gpio_rx = {GPIO_PIN(GPIO_PORTH, 14), GPIO_PERIPH_MUX6},
 				},
 		.uart_clk =
 				{
-						.gate_reg_base = SUNXI_CCU_BASE + CCU_UART_BGR_REG,
+						.gate_reg_base = SUNXI_CCU_BASE + UART_BGR_REG,
 						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCU_BASE + CCU_UART_BGR_REG,
+						.rst_reg_base = SUNXI_CCU_BASE + UART_BGR_REG,
 						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
 						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
+				},
+};
+
+sunxi_i2c_t i2c_pmu = {
+		.base = SUNXI_TWI0_BASE,
+		.id = SUNXI_I2C0,
+		.speed = SUNXI_I2C_SPEED_400K,
+		.gpio =
+				{
+						.gpio_scl = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX2},
+						.gpio_sda = {GPIO_PIN(GPIO_PORTL, 6), GPIO_PERIPH_MUX2},
+				},
+		.i2c_clk =
+				{
+						.gate_reg_base = SUNXI_CCU_BASE + TWI_BGR_REG,
+						.gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
+						.rst_reg_base = SUNXI_CCU_BASE + TWI_BGR_REG,
+						.rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
+						.parent_clk = 24000000,
 				},
 };
 

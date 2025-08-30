@@ -117,6 +117,8 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
 	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) {
 		return -1;
 	}
+	
+	printk_trace("PMU: %s reg_val = 0x%x\n", name, reg_value);
 	reg_value &= p_item->cfg_reg_mask;
 	reg_value >>= p_item->reg_addr_offset;
 	for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {

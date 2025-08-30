@@ -25,14 +25,40 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
+extern sunxi_serial_t uart_dbg_ph1;
 extern sunxi_serial_t uart_dbg;
+extern sunxi_i2c_t i2c_pmu;
+
+void sunxi_pmc_config(void)
+{
+	if (!(readl(SUNXI_RTC_PMC_BYPASS_STATUS) & BIT(0))) {
+		/* if PMC bypass, restore all IO to GPIO */
+		writel(BIT(0) | BIT(1) | BIT(2) | BIT(5), SUNXI_RTC_IOMODE_CTL);
+	}
+}
 
 int main(void) {
 	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 
+	sunxi_clk_dump();
+	
+	sunxi_clk_init();
+
 	printk_info("Hello World!\n");
+	
+	sunxi_clk_dump();
+	
+	sunxi_pmc_config();
+	
+	sunxi_i2c_init(&i2c_pmu);
+
+	pmu_axp333_init(&i2c_pmu);
+	
+	pmu_axp333_dump(&i2c_pmu);
+	
+	syterkit_shell_attach(NULL);
 
 	abort();
 
