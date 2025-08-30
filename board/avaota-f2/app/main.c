@@ -25,9 +25,12 @@
 #include <cli_shell.h>
 #include <cli_termesc.h>
 
+#include <e907/sysmap.h>
+
 extern sunxi_serial_t uart_dbg_ph1;
 extern sunxi_serial_t uart_dbg;
 extern sunxi_i2c_t i2c_pmu;
+extern dram_para_t dram_para;
 
 void sunxi_pmc_config(void)
 {
@@ -56,7 +59,11 @@ int main(void) {
 
 	pmu_axp333_init(&i2c_pmu);
 	
+	pmu_axp333_set_vol(&i2c_pmu, "dcdc2", 1500, 1);
+	
 	pmu_axp333_dump(&i2c_pmu);
+	
+	//sunxi_dram_init((void *)&dram_para);
 	
 	syterkit_shell_attach(NULL);
 
