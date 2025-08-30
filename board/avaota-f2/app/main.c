@@ -32,8 +32,7 @@ extern sunxi_serial_t uart_dbg;
 extern sunxi_i2c_t i2c_pmu;
 extern dram_para_t dram_para;
 
-void sunxi_pmc_config(void)
-{
+void sunxi_pmc_config(void) {
 	if (!(readl(SUNXI_RTC_PMC_BYPASS_STATUS) & BIT(0))) {
 		/* if PMC bypass, restore all IO to GPIO */
 		writel(BIT(0) | BIT(1) | BIT(2) | BIT(5), SUNXI_RTC_IOMODE_CTL);
@@ -41,30 +40,42 @@ void sunxi_pmc_config(void)
 }
 
 int main(void) {
+	uint32_t start, time;
+
 	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 
+	sysmap_dump_region_info();
+
 	sunxi_clk_dump();
-	
+
 	sunxi_clk_init();
 
 	printk_info("Hello World!\n");
-	
+
 	sunxi_clk_dump();
-	
+
 	sunxi_pmc_config();
-	
+
 	sunxi_i2c_init(&i2c_pmu);
 
 	pmu_axp333_init(&i2c_pmu);
-	
+
 	pmu_axp333_set_vol(&i2c_pmu, "dcdc2", 1500, 1);
-	
+
 	pmu_axp333_dump(&i2c_pmu);
-	
-	sunxi_dram_init((void *)&dram_para);
-	
+
+	sunxi_dram_init((void *) &dram_para);
+
+	start = time_ms();
+
+	memcpy((void *) 0x40000000, (void *) 0x50000000, 16 * 1024 * 1024);
+
+	time = time_ms() - start + 1;
+
+	printk_info("memcpy in %ums at %.2fMB/S\n", time, (float) (16 * 1024 * 1024 / time) / 1024.0f);
+
 	syterkit_shell_attach(NULL);
 
 	abort();

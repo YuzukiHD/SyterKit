@@ -496,7 +496,7 @@ static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	uint32_t clk_m = 0, clk_n = 0, _2_pow_clk_n = 1, duty = 0, src_clk = 0;
 	uint32_t divider, sclk_real; /* the real clock frequency */
-	
+
 	/* I2C_CLK = parent_clk / ( 2^CLK_N * (CLK_M + 1) *10) */
 	src_clk = i2c_dev->i2c_clk.parent_clk / 10;
 

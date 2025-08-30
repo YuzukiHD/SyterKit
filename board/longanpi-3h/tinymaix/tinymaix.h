@@ -218,12 +218,12 @@ typedef struct {
 	uint32_t reserve;  //for 8byte align
 
 	uint32_t ws_oft;//weight scale oft from this layer start
-					//skip bias scale: bias_scale = weight_scale*in_scale
-	uint32_t w_oft; //weight oft from this layer start
-	uint32_t b_oft; //bias oft from this layer start
-					//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-					//      fused in advance (when convert model)
-} tml_conv2d_dw_t;	//compatible with conv2d and dwconv2d
+			//skip bias scale: bias_scale = weight_scale*in_scale
+	uint32_t w_oft;//weight oft from this layer start
+	uint32_t b_oft;//bias oft from this layer start
+				   //note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+				   //      fused in advance (when convert model)
+} tml_conv2d_dw_t; //compatible with conv2d and dwconv2d
 
 typedef struct {
 	tml_head_t h;
@@ -262,11 +262,11 @@ typedef struct {
 
 
 	uint32_t ws_oft;//weight scale oft from this layer start
-					//skip bias scale: bias_scale = weight_scale*in_scale
-	uint32_t w_oft; //weight oft from this layer start
-	uint32_t b_oft; //bias oft from this layer start
-					//note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
-					//      fused in advance (when convert model)
+			//skip bias scale: bias_scale = weight_scale*in_scale
+	uint32_t w_oft;//weight oft from this layer start
+	uint32_t b_oft;//bias oft from this layer start
+				   //note: bias[c] = bias[c] + (-out_zp)*sum(w[c*chi*maxk:(c+1)*chi*maxk])
+				   //      fused in advance (when convert model)
 } tml_dwconv2d_t;
 
 typedef struct {

@@ -18,6 +18,7 @@
 #include <e907/sysmap.h>
 
 /* #define DEBUG_SYSMAP */
+#define DEBUG_SYSMAP
 #define L1_CACHE_BYTES (32) /**< Size of L1 cache line in bytes. */
 
 enum sysmap_ret_code {
@@ -136,9 +137,9 @@ int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr) 
 void sysmap_dump_region_info(void) {
 #ifdef DEBUG_SYSMAP
 	uint32_t i, mem_attr;
-	char mem_attr_so_str[4] = {0};// Buffer for "SO" or "WO"
-	char mem_attr_cache_str[6] = {0};	  // Buffer for "_C_" or "_NC_"
-	char mem_attr_buff_str[3] = {0};	  // Buffer for "B" or "NB"
+	char mem_attr_so_str[4] = {0};	 // Buffer for "SO" or "WO"
+	char mem_attr_cache_str[6] = {0};// Buffer for "_C_" or "_NC_"
+	char mem_attr_buff_str[3] = {0}; // Buffer for "B" or "NB"
 	uint32_t len;
 
 	printk_debug("E907 SYSMAP INFO:\n");
