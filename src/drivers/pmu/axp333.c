@@ -61,7 +61,7 @@ int pmu_axp333_init(sunxi_i2c_t *i2c_dev) {
 }
 
 int pmu_axp333_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
-	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2101_RUNTIME_ADDR);
+	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP333_RUNTIME_ADDR);
 }
 
 int pmu_axp333_get_vol(sunxi_i2c_t *i2c_dev, char *name) {

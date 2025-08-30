@@ -15,6 +15,30 @@ void printk(int level, const char *fmt, ...) {
 	uint32_t seconds = now_timestamp / (1000 * 1000);
 	uint32_t milliseconds = now_timestamp % (1000 * 1000);
 
+#ifdef DISBALE_COLOR_PRINTK
+	switch (level) {
+		case LOG_LEVEL_TRACE:
+			uart_printf("[%5lu.%06lu][T] ", seconds, milliseconds);
+			break;
+		case LOG_LEVEL_DEBUG:
+			uart_printf("[%5lu.%06lu][D] ", seconds, milliseconds);
+			break;
+		case LOG_LEVEL_INFO:
+			uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
+			break;
+		case LOG_LEVEL_WARNING:
+			uart_printf("[%5lu.%06lu][W] ", seconds, milliseconds);
+			break;
+		case LOG_LEVEL_ERROR:
+			uart_printf("[%5lu.%06lu][E] ", seconds, milliseconds);
+			break;
+		case LOG_LEVEL_BACKTRACE:
+			uart_printf("[%5lu.%06lu][B] ", seconds, milliseconds);
+		case LOG_LEVEL_MUTE:
+		default:
+			break;
+	}
+#else
 	switch (level) {
 		case LOG_LEVEL_TRACE:
 			uart_printf("[%5lu.%06lu][\033[30mT\033[37m] ", seconds, milliseconds);
@@ -37,6 +61,7 @@ void printk(int level, const char *fmt, ...) {
 		default:
 			break;
 	}
+#endif
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;

@@ -133,12 +133,12 @@ int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr) 
 	return SYSMAP_RET_OK;
 }
 
-#ifdef DEBUG_SYSMAP
 void sysmap_dump_region_info(void) {
+#ifdef DEBUG_SYSMAP
 	uint32_t i, mem_attr;
 	char mem_attr_so_str[4] = {0};// Buffer for "SO" or "WO"
-	char mem_attr_cache_str[5];	  // Buffer for "_C_" or "_NC_"
-	char mem_attr_buff_str[3];	  // Buffer for "B" or "NB"
+	char mem_attr_cache_str[6] = {0};	  // Buffer for "_C_" or "_NC_"
+	char mem_attr_buff_str[3] = {0};	  // Buffer for "B" or "NB"
 	uint32_t len;
 
 	printk_debug("E907 SYSMAP INFO:\n");
@@ -166,8 +166,9 @@ void sysmap_dump_region_info(void) {
 		printk_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i, get_mem_region_start_addr(i), get_mem_region_end_addr(i),
 					 get_mem_region_len(i), mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
 	}
-}
 #endif
+	return;
+}
 
 /**
  * @brief Insert a data synchronization barrier.
