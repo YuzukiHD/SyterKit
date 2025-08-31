@@ -122,7 +122,7 @@ uint64_t sunxi_get_dram_size();
  *         Typically returns zero on success and a non-zero value on 
  *         failure.
  */
-uint64_t sunxi_dram_init(void *para);
+uint32_t sunxi_dram_init(void *para);
 
 #ifdef __cplusplus
 }
