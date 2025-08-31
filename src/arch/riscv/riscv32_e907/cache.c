@@ -200,7 +200,7 @@ void cache_init(void) {														   // Configure cache options
  * cache control register.
  */
 void dcache_enable(void) {
-	csr_write(mhcr, MHCR_DE);// Set the data cache enable bit
+	csr_set(mhcr, MHCR_DE);// Set the data cache enable bit
 }
 
 /**

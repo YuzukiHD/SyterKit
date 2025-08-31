@@ -75,6 +75,10 @@ _start:
 
 	jal cache_init
 
+	jal icache_enable
+
+	jal dcache_enable
+
 	fence.i
 
 	jal main
