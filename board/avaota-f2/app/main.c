@@ -68,14 +68,6 @@ int main(void) {
 
 	sunxi_dram_init((void *) &dram_para);
 
-	start = time_ms();
-
-	memcpy((void *) 0x40000000, (void *) 0x50000000, 16 * 1024 * 1024);
-
-	time = time_ms() - start + 1;
-
-	printk_info("memcpy in %ums at %.2fMB/S\n", time, (float) (16 * 1024 * 1024 / time) / 1024.0f);
-
 	syterkit_shell_attach(NULL);
 
 	abort();
