@@ -14,7 +14,7 @@
 #include <sys-clk.h>
 
 #define PLL_REG_CONF(x) \
-	{ x, BIT(x##_PLL_FREF_SEL_OFFSET) }
+	{ x, (1 << x##_PLL_FREF_SEL_OFFSET) }
 
 #define CPU_PLL_FACTOR_N_24M(x) (((x) + (24) - 1) / (24))
 #define CPU_PLL_FACTOR_N_26M(x) (((x) + (26) - 1) / (26))

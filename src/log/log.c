@@ -93,6 +93,24 @@ int printf(const char *fmt, ...) {
 	return 0;
 }
 
+int printf_dram(const char *fmt, ...) {
+	uint32_t now_timestamp = time_us() - get_init_timestamp();
+	uint32_t seconds = now_timestamp / (1000 * 1000);
+	uint32_t milliseconds = now_timestamp % (1000 * 1000);
+
+	uart_printf("[%5lu.%06lu][\033[36mI\033[37m] ", seconds, milliseconds);
+
+	va_list args;
+	va_start(args, fmt);
+	va_list args_copy;
+	va_copy(args_copy, args);
+	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	va_end(args);
+	va_end(args_copy);
+
+	return 0;
+}
+
 void dump_hex(uint32_t start_addr, uint32_t count) {
 	uint8_t *ptr = (uint8_t *) start_addr;
 	uint32_t end_addr = start_addr + count;

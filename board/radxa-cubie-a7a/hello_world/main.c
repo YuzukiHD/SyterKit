@@ -25,6 +25,12 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 
+extern uint32_t dram_para[32];
+
+extern void board_common_init(void);
+
+extern int init_DRAM(int type, void *buff);
+
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
 int cmd_bt(int argc, const char **argv) {
@@ -42,6 +48,8 @@ int main(void) {
 
 	show_banner();
 
+	board_common_init();
+
 	sunxi_i2c_init(&i2c_pmu);
 
 	sunxi_clk_init();
@@ -55,6 +63,8 @@ int main(void) {
 	sunxi_dram_init(NULL);
 
 	printk_info("Hello World!\n");
+
+	init_DRAM(0, dram_para);
 
 	syterkit_shell_attach(commands);
 

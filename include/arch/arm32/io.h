@@ -4,6 +4,7 @@
 #define __IO_H__
 
 #include <stdint.h>
+#include <types.h>
 
 /**
  * Define a bit mask for the specified bit position.
