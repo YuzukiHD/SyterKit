@@ -56,7 +56,7 @@ _start:
 	fence.i
 
 	/* Setup exception vectors */
-	la a0, vectors
+	la a0, irq_handler
 	ori	a0, a0, 3
 	csrw mtvec, a0
 	
@@ -90,11 +90,11 @@ clbss_1:
 	ret
 
 	/*
-	* Exception vectors.
+	* IRQ Handler
 	*/
-	.align 6
+	.align 2
 	.globl vectors
-vectors:
+irq_handler:
 	csrw mscratch, sp
 	addi sp, sp, -(37 * REGSZ)
 	SREG x1, 1 * REGSZ(x2)
@@ -178,3 +178,61 @@ vectors:
 	LREG x31, 31 * REGSZ(a0)
 	LREG x10, 10 * REGSZ(a0)
 	mret
+
+	/*
+	* Exception vectors.
+	*/
+.section .vectors, "aw", @progbits
+	.align 6
+	.globl vectors
+	.type vectors, @object
+vectors:
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    /* External interrupts */
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
+    .long irq_handler
