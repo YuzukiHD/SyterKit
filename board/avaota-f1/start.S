@@ -12,8 +12,6 @@ _start:
 
 	/* disable interrupt */
 	csrw mie, zero
-	
-	/* clean regs */
 	li 	x1, 0
 	li 	x2, 0
 	li 	x3, 0
@@ -61,7 +59,7 @@ _start:
 	la a0, irq_handler
 	ori	a0, a0, 3
 	csrw mtvec, a0
-	
+
 	/* Setup int vectors */
 	la a0, vectors
 	csrw mtvt, a0
@@ -189,52 +187,6 @@ irq_handler:
 	.globl vectors
 	.type vectors, @object
 vectors:
+	.rept (16)
     .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    /* External interrupts */
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
-    .long irq_handler
+	.endr
