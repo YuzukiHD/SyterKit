@@ -110,7 +110,8 @@ dram_para_t dram_para = {
 		.dram_tpr10 = 0x0,
 		.dram_tpr11 = 0x00460000,
 		.dram_tpr12 = 0x00000055,
-		.dram_tpr13 = 0x34010100};
+		.dram_tpr13 = 0x34010100,
+};
 
 void show_chip() {
 	uint32_t chip_sid[4];
