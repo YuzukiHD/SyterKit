@@ -122,4 +122,8 @@ void show_chip() {
 	printk_info("Model: AvaotaSBC Avaota F2 board.\n");
 	printk_info("Core: XuanTie E907 RISC-V Core.\n");
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+	printk_info("dump brom log:\n");
+	printk_info("==================================\n");
+	printk_info("%s", (char *) 0x00120000);
+	printk_info("==================================\n");
 }
