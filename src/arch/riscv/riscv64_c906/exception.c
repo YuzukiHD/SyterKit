@@ -300,7 +300,11 @@ static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn) {
 }
 
 static void redirect_trap(void) {
+#ifdef CONFIG_RISCV_COMPILER_GCC_10
 	csr_write(sbadaddr, csr_read(mbadaddr));
+#else
+	csr_write(stval, csr_read(mtval));
+#endif
 	csr_write(sepc, csr_read(mepc));
 	csr_write(scause, csr_read(mcause));
 	csr_write(mepc, csr_read(stvec));
