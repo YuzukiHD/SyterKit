@@ -26,10 +26,12 @@ void __usdelay(unsigned long us) {
 }
 
 void csi_l2c_clear_invalid_all(void) {
+	invalidate_dcache_all();
 	return;
 }
 
 void csi_l2c_clear_all(void) {
+	flush_dcache_all();
 	return;
 }
 
