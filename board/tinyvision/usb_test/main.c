@@ -23,7 +23,7 @@
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 extern sunxi_serial_t uart_dbg;
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci0;
 extern dram_para_t dram_para;
 
 void arm32_do_irq(struct arm_regs_t *regs) {
@@ -62,14 +62,14 @@ int main(void) {
 
 	sunxi_dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000);
 
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
-	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
-	}
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed\n");
-	}
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+    } else {
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+    }
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk_warning("SMHC: init failed\n");
+    }
 
 	sunxi_usb_attach_module(SUNXI_USB_DEVICE_MASS);
 
