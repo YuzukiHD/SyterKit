@@ -12,6 +12,7 @@
 #include <timer.h>
 
 #include <mmu.h>
+#include <cache.h>
 
 #include <sys-clk.h>
 #include <sys-gpio.h>
