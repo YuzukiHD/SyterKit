@@ -245,7 +245,7 @@ const uint32_t dram_para[32] = {
 		0x802f3333,
 		0xc7c5c4c2,
 		0x3533302f,
-		DRAM_TRAINING_FULL,
+		DRAM_TRAINING_HALF,
 		0x48484848,
 };
 
