@@ -191,20 +191,23 @@ fn align_up_to(len: u64, target_align: u64) -> u64 {
     }
 }
 
+const FAIL_NOR_FLASH: &[u8] = b"Can't detect any spi nor flash";
+const FAIL_NAND_FLASH: &[u8] = b"Can't detect any spi nand flash";
+
 fn xtask_detect_flash_type(xfel: &str) -> FlashType {
     trace!("detect flash type with xfel '{}'", xfel);
     let mut command = Command::new(xfel);
     command.arg("spinor");
-    let status = command.status().unwrap();
-    trace!("xfel spinor returned {}", status);
-    if status.success() {
+    let output = command.output().unwrap();
+    trace!("xfel spinor returned output: {:?}", output);
+    if output.status.success() && !output.stdout.trim_ascii_end().ends_with(FAIL_NOR_FLASH) {
         return FlashType::Nor;
     }
     let mut command = Command::new(xfel);
     command.arg("spinand");
-    let status = command.status().unwrap();
-    trace!("xfel spinand returned {}", status);
-    if status.success() {
+    let output = command.output().unwrap();
+    trace!("xfel spinand returned output: {:?}", output);
+    if output.status.success() && !output.stdout.trim_ascii_end().ends_with(FAIL_NAND_FLASH) {
         return FlashType::Nand;
     }
     error!("cannot detect any flash");
