@@ -211,25 +211,11 @@ static inline void invalidate_dcache_range(uint64_t start, uint64_t end) {
 }
 
 static inline void flush_dcache_all() {
-	/* Clean and invalidate entire data cache */
-	__asm__ __volatile__(
-			"mcr p15, 0, %0, c7, c14, 0" /* Clean all data cache */
-			:
-			: "r"(0)
-			: "memory");
-
 	/* Ensure all operations are complete */
 	data_sync_barrier();
 }
 
 static inline void invalidate_dcache_all() {
-	/* Invalidate entire data cache */
-	__asm__ __volatile__(
-			"mcr p15, 0, %0, c7, c6, 0" /* Invalidate all data cache */
-			:
-			: "r"(0)
-			: "memory");
-
 	/* Ensure all operations are complete */
 	data_sync_barrier();
 }
