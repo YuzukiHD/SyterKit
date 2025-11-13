@@ -101,38 +101,38 @@ sunxi_sdhci_t sdhci0 = {
 				},
 };
 
-uint32_t dram_para[32] = {
-		1200,	   // dram_clk
-		8,		   // dram_type
-		0x08080808,// dram_dx_odt
-		0x0e0e0e0e,// dram_dx_dri
-		0x88030e0e,// dram_ca_dri
+uint32_t dram_para[128] = {
+		2400,	   // dram_clk
+		9,		   // dram_type
+		0x0e0e0e0e,// dram_dx_odt
+		0x0f0f0f0f,// dram_dx_dri
+		0xec030e0f,// dram_ca_dri
 		0,		   // dram_para0
-		0x311a,	   // dram_para1
+		0xa10a,	   // dram_para1
 		0x1001,	   // dram_para2
-		0x0,	   // dram_mr0
-		0x8c,	   // dram_mr1
+		0,		   // dram_mr0
+		0,		   // dram_mr1
 		0,		   // dram_mr2
-		0x33,	   // dram_mr3
-		0x0,	   // dram_mr4
-		0x0,	   // dram_mr5
-		0x0,	   // dram_mr6
-		0x4,	   // dram_mr11
-		0x72,	   // dram_mr12
-		0x8,	   // dram_mr13
-		0x1d,	   // dram_mr14
+		0x6,	   // dram_mr3
+		0,		   // dram_mr4
+		0,		   // dram_mr5
+		0,		   // dram_mr6
+		0x12,	   // dram_mr11
+		0x44,	   // dram_mr12
+		0,		   // dram_mr13
+		0x34,	   // dram_mr14
 		0,		   // dram_mr16
-		0,		   // dram_mr17
-		0x24,	   // dram_mr22
-		0,		   // dram_tpr0
+		0x06,	   // dram_mr17
+		0,		   // dram_mr22
+		0x4040,	   // dram_tpr0
 		0,		   // dram_tpr1
-		0x11080503,// dram_tpr2
-		0x200000,  // dram_tpr3
-		0x402a,	   // dram_tpr6
-		0x721f0000,// dram_tpr10
+		0x170b070, // dram_tpr2
+		0x3800,	   // dram_tpr3
+		0x3514,	   // dram_tpr6
+		0x325f0000,// dram_tpr10
 		0,		   // dram_tpr11
 		0,		   // dram_tpr12
-		0x60,	   // dram_tpr13
+		0x10061,   // dram_tpr13
 		0		   // dram_tpr14
 };
 
