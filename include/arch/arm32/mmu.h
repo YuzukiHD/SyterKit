@@ -1,3 +1,10 @@
+/**
+ * @file mmu.h
+ * @brief Memory Management Unit (MMU) interface for ARM32 architecture.
+ *
+ * This header file provides functions and definitions for managing the Memory Management Unit
+ * on ARM32 architecture. It includes functions for enabling/disabling MMU and MMU control operations.
+ */
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 #ifndef __MMU_H__
@@ -8,16 +15,33 @@ extern "C" {
 #endif
 
 #include "timer.h"
+#include "barrier.h"
+#include "cache.h"
+#include "interrupt.h"
 
+/**
+ * @brief ARM32 register structure.
+ *
+ * This structure defines the layout of ARM32 general purpose and special registers.
+ * It is typically used for context switching or exception handling.
+ */
 struct arm_regs_t {
-	uint32_t esp;
-	uint32_t cpsr;
-	uint32_t r[13];
-	uint32_t sp;
-	uint32_t lr;
-	uint32_t pc;
+	uint32_t esp;	/**< Extended stack pointer */
+	uint32_t cpsr;	/**< Current Program Status Register */
+	uint32_t r[13]; /**< General purpose registers R0-R12 */
+	uint32_t sp;	/**< Stack pointer (R13) */
+	uint32_t lr;	/**< Link register (R14) */
+	uint32_t pc;	/**< Program counter (R15) */
 };
 
+/**
+ * @brief Read the ARM32 system control register (CP15, c1).
+ *
+ * This function reads the value of the ARM32 system control register (CP15, c1),
+ * which controls various system features including MMU, caches, and alignment checking.
+ *
+ * @return The value of the system control register.
+ */
 static inline uint32_t arm32_read_p15_c1(void) {
 	uint32_t value;
 
@@ -29,6 +53,15 @@ static inline uint32_t arm32_read_p15_c1(void) {
 	return value;
 }
 
+/**
+ * @brief Write to the ARM32 system control register (CP15, c1).
+ *
+ * This function writes a value to the ARM32 system control register (CP15, c1),
+ * which controls various system features including MMU, caches, and alignment checking.
+ * A read-back is performed to ensure the write is completed.
+ *
+ * @param value The value to write to the system control register.
+ */
 static inline void arm32_write_p15_c1(uint32_t value) {
 	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
 						 :
@@ -37,28 +70,18 @@ static inline void arm32_write_p15_c1(uint32_t value) {
 	arm32_read_p15_c1();
 }
 
-static inline void arm32_interrupt_enable(void) {
-	uint32_t tmp;
-
-	__asm__ __volatile__("mrs %0, cpsr\n"
-						 "bic %0, %0, #(1<<7)\n"
-						 "msr cpsr_cxsf, %0"
-						 : "=r"(tmp)
-						 :
-						 : "memory");
-}
-
-static inline void arm32_interrupt_disable(void) {
-	uint32_t tmp;
-
-	__asm__ __volatile__("mrs %0, cpsr\n"
-						 "orr %0, %0, #(1<<7)\n"
-						 "msr cpsr_cxsf, %0"
-						 : "=r"(tmp)
-						 :
-						 : "memory");
-}
-
+/**
+ * @brief Enable the ARM32 MMU with specific memory configuration.
+ *
+ * This function initializes and enables the Memory Management Unit (MMU) for ARM32 architecture.
+ * It sets up page tables with appropriate memory attributes and configures the MMU control registers.
+ *
+ * @param dram_base Base address of DRAM memory.
+ * @param dram_size Size of DRAM memory in megabytes.
+ *
+ * @note The function creates a 1MB section-based page table in the highest 16MB of DRAM.
+ *       It configures different memory regions with appropriate caching attributes.
+ */
 static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size) {
 	uint32_t mmu_base;
 
@@ -134,6 +157,13 @@ static inline void arm32_mmu_enable(const uint32_t dram_base, uint32_t dram_size
 	asm volatile("isb");
 }
 
+/**
+ * @brief Disable the ARM32 MMU and clear caches.
+ *
+ * This function disables the Memory Management Unit (MMU), instruction cache,
+ * and data cache. It also invalidates the instruction cache, branch predictor,
+ * and ensures all operations are completed with memory barriers.
+ */
 static inline void arm32_mmu_disable(void) {
 	uint32_t reg;
 
@@ -164,31 +194,6 @@ static inline void arm32_mmu_disable(void) {
 	asm volatile("dsb");
 	/* ISB - make sure the instruction stream sees it */
 	asm volatile("isb");
-}
-
-static inline void arm32_dcache_enable(void) {
-	uint32_t value = arm32_read_p15_c1();
-	arm32_write_p15_c1(value | (1 << 2));
-}
-
-static inline void arm32_dcache_disable(void) {
-	uint32_t value = arm32_read_p15_c1();
-	arm32_write_p15_c1(value & ~(1 << 2));
-}
-
-static inline void arm32_icache_enable(void) {
-	uint32_t value = arm32_read_p15_c1();
-	arm32_write_p15_c1(value | (1 << 12));
-}
-
-static inline void arm32_icache_disable(void) {
-	uint32_t value = arm32_read_p15_c1();
-	arm32_write_p15_c1(value & ~(1 << 12));
-}
-
-static inline void data_sync_barrier(void) {
-	asm volatile("DSB");
-	asm volatile("ISB");
 }
 
 #ifdef __cplusplus

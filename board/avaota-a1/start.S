@@ -158,7 +158,7 @@ reset:
 	orrne   r0, r0, #ARMV7_SVC_MODE           @ set SVC mode
 	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
 	msr     cpsr,r0
-	
+
 	bl set_timer_count
 
 	bl neon_enable

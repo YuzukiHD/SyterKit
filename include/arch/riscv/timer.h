@@ -51,7 +51,7 @@ uint64_t time_us(void);
  *
  * @param us Number of microseconds to delay.
  */
-void udelay(uint64_t us);
+void udelay(uint32_t us);
 
 /**
  * @brief Delay execution for a specified number of milliseconds.

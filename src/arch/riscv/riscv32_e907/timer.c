@@ -96,7 +96,7 @@ uint64_t time_us(void) {
  *
  * @param us Number of microseconds to delay.
  */
-void udelay(uint64_t us) {
+void udelay(uint32_t us) {
 	uint64_t t1, t2;
 
 	t1 = get_arch_counter();

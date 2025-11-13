@@ -3,6 +3,7 @@
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 SEARCH_DIR(.)
+ENTRY(_start)
 
 /* Memory Spaces Definitions */
 MEMORY
@@ -12,7 +13,7 @@ MEMORY
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
-MIN_STACK_SIZE = 0x100; /* 4B */
+MIN_STACK_SIZE = 0x100; /* 256B */
 STACK_SIZE = 0x1000; /* 4KB */
 
 /* Section Definitions */

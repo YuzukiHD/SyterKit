@@ -44,7 +44,7 @@ uint64_t time_us(void) {
 	return get_arch_counter() / (uint64_t) 24;
 }
 
-void udelay(uint64_t us) {
+void udelay(uint32_t us) {
 	uint64_t now;
 
 	now = time_us();

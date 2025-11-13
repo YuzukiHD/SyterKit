@@ -1,5 +1,6 @@
 export RISCV_ROOT_PATH=/home/yuzuki/sdk/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/
 export RISCV_ROOT_PATH=/home/yuzuki/sdk/Xuantie-900-gcc-elf-newlib-x86_64-V3.2.0/bin/
+export LINARO_GCC_721_PATH=/home/yuzuki/sdk/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin/
 
 find ../cmake/board/ -name "*.cmake" -type f | while read file; do
     cmake -B ./build-$(basename "$file") -DCMAKE_BUILD_TYPE=Release -DCMAKE_BOARD_FILE=$(basename "$file") ..

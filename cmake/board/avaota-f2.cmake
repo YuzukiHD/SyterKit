@@ -4,8 +4,8 @@ set(CONFIG_ARCH_RISCV32 True)
 set(CONFIG_ARCH_RISCV32_CORE_E907 True)
 set(CONFIG_CHIP_SUN252IW1 True)
 set(CONFIG_CHIP_MMC_V2 True)
+set(CONFIG_CHIP_WITHPMU True)
 set(CONFIG_BOARD_AVAOTA-F2 True)
-set(CONFIG_CHIP_MINSYS True)
 
 add_definitions(-DCONFIG_CHIP_SUN252IW1)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
@@ -29,7 +29,7 @@ set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
 set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
 
 # Configure compiler flags based on ENABLE_HARDFP option
-set(CMAKE_COMMON_FLAGS "-nostdlib -Os -nostdinc -fdata-sections -mcpu=e907f")
+set(CMAKE_COMMON_FLAGS "-nostdlib -Os -nostdinc -flto -fdata-sections -mcpu=e907f")
 
 # Disable specific warning flags for C and C++ compilers
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-shift-count-overflow -Wno-builtin-declaration-mismatch -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
