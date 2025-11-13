@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
 #ifndef __G_AXP_H__
 #define __G_AXP_H__
 
@@ -106,6 +108,7 @@ DEFINE_AXP_PMU(axp1530);
 DEFINE_AXP_PMU(axp2202);
 DEFINE_AXP_PMU(axp2101);
 DEFINE_AXP_PMU(axp8191);
+DEFINE_AXP_PMU(axp333);
 
 /* Extra */
 /**

@@ -3,6 +3,7 @@
 OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv", "elf32-littleriscv")
 OUTPUT_ARCH("riscv")
 SEARCH_DIR(.)
+ENTRY(_start)
 
 /* Memory Spaces Definitions */
 MEMORY
@@ -53,7 +54,7 @@ SECTIONS
 
     PROVIDE(__spl_end = .);
     PROVIDE(__spl_size = __spl_end - __spl_start);
-    PROVIDE(__code_start_address = 0x02000000);
+    PROVIDE(__code_start_address = 0x00100000);
 
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :

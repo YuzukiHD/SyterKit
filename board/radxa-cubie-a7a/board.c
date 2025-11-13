@@ -101,6 +101,41 @@ sunxi_sdhci_t sdhci0 = {
 				},
 };
 
+uint32_t dram_para[32] = {
+		1200,	   // dram_clk
+		8,		   // dram_type
+		0x08080808,// dram_dx_odt
+		0x0e0e0e0e,// dram_dx_dri
+		0x88030e0e,// dram_ca_dri
+		0,		   // dram_para0
+		0x311a,	   // dram_para1
+		0x1001,	   // dram_para2
+		0x0,	   // dram_mr0
+		0x8c,	   // dram_mr1
+		0,		   // dram_mr2
+		0x33,	   // dram_mr3
+		0x0,	   // dram_mr4
+		0x0,	   // dram_mr5
+		0x0,	   // dram_mr6
+		0x4,	   // dram_mr11
+		0x72,	   // dram_mr12
+		0x8,	   // dram_mr13
+		0x1d,	   // dram_mr14
+		0,		   // dram_mr16
+		0,		   // dram_mr17
+		0x24,	   // dram_mr22
+		0,		   // dram_tpr0
+		0,		   // dram_tpr1
+		0x11080503,// dram_tpr2
+		0x200000,  // dram_tpr3
+		0x402a,	   // dram_tpr6
+		0x721f0000,// dram_tpr10
+		0,		   // dram_tpr11
+		0,		   // dram_tpr12
+		0x60,	   // dram_tpr13
+		0		   // dram_tpr14
+};
+
 void neon_enable(void) {
 	/* Set the CPACR for access to CP10 and CP11*/
 	asm volatile("LDR r0, =0xF00000");
@@ -109,6 +144,41 @@ void neon_enable(void) {
 	asm volatile("MOV r3, #0x40000000");
 	/*@VMSR FPEXC, r3*/
 	asm volatile("MCR p10, 7, r3, c8, c0, 0");
+}
+
+typedef enum {
+	SUNXI_SOC_VER_INVALID = -1,
+	SUNXI_SOC_VER_A = 0,
+	SUNXI_SOC_VER_B = 1,
+	SUNXI_SOC_VER_C = 2,
+} sunxi_soc_version_t;
+
+static sunxi_soc_version_t sunxi_get_soc_ver(void) {
+	uint32_t value;
+
+	value = readl(SUNXI_SOC_VER_REG);
+	value &= SUNXI_SOC_VER_MASK;
+
+	return SUNXI_SOC_VER_A + value;
+}
+
+static void sunxi_pll_ldo_init(sunxi_soc_version_t version) {
+	if (version == SUNXI_SOC_VER_A) {
+		writel(0xA7070025, PLL_LDO_REG);
+		writel(0xA7070025, PLL_LDO_REG);
+	} else if (version == SUNXI_SOC_VER_B) {
+		writel(0xA7060025, PLL_LDO_REG);
+		writel(0xA7060025, PLL_LDO_REG);
+	}
+}
+
+void board_common_init(void) {
+	sunxi_soc_version_t version = sunxi_get_soc_ver();
+
+	if (version == SUNXI_SOC_VER_B)
+		writel(0x01155550, SUNXI_PIO_BASE + GPIO_POW_MODE_REG);
+
+	sunxi_pll_ldo_init(version);
 }
 
 void clean_syterkit_data(void) {

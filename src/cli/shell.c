@@ -5,11 +5,17 @@
 #include <string.h>
 #include <types.h>
 
+#include <log.h>
+
 #include "cli.h"
 #include "cli_history.h"
 #include "cli_termesc.h"
 
 const msh_command_entry *msh_user_commands;
+
+const msh_command_entry empty_commands[] = {
+		msh_command_end,
+};
 
 int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 	char linebuf[MSH_CMDLINE_CHAR_MAX];
@@ -22,6 +28,9 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 	/* set msh_user_commands */
 	if (cmdlist != NULL) {
 		msh_user_commands = cmdlist;
+	} else {
+		/* avoid read NULL ptr */
+		msh_user_commands = empty_commands;
 	}
 
 	msh_set_prompt("SyterKit> ");
@@ -60,7 +69,6 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 			}
 			uart_puts("\n");
 #endif
-
 			ret_command = msh_do_command(msh_user_commands, argc, (const char **) argv);
 
 			if (ret_command < 0) {

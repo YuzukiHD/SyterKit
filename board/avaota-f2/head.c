@@ -56,7 +56,7 @@ typedef struct boot_file_head {
 extern uint32_t __spl_size[];
 extern uint32_t __code_start_address[];
 
-const __attribute__((section(".boot0_head"))) boot_file_head_t boot_head = {
+const __attribute__((section(".boot0_head"))) __attribute__((used)) boot_file_head_t boot_head = {
 		.jump_instruction = JUMP_INSTRUCTION,
 		.magic = BOOT0_MAGIC,
 		.check_sum = STAMP_VALUE,

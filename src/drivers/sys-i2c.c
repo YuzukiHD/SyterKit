@@ -35,6 +35,7 @@
 #define I2C_DATAREAD_NACK 0x58
 #define I2C_DATAREAD_ACK 0x50
 
+#ifdef I2C_DEBUG
 __attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	printk_debug("i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
@@ -48,6 +49,7 @@ __attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev) {
 	printk_debug("i2c->lcr   :\t0x%x:0x%x\n", &i2c->lcr, i2c->lcr);
 	printk_debug("i2c->dvfs  :\t0x%x:0x%x\n", &i2c->dvfs, i2c->dvfs);
 }
+#endif
 
 static int32_t sunxi_i2c_send_byteaddr(sunxi_i2c_t *i2c_dev, uint32_t byteaddr) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
@@ -495,6 +497,7 @@ static void sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev) {
 	uint32_t clk_m = 0, clk_n = 0, _2_pow_clk_n = 1, duty = 0, src_clk = 0;
 	uint32_t divider, sclk_real; /* the real clock frequency */
 
+	/* I2C_CLK = parent_clk / ( 2^CLK_N * (CLK_M + 1) *10) */
 	src_clk = i2c_dev->i2c_clk.parent_clk / 10;
 
 	divider = src_clk / i2c_dev->speed; /* 400kHz or 100kHz */
@@ -535,6 +538,10 @@ set_clk:
 		duty = TWI_CLK_DUTY;
 		i2c->clk &= ~(duty);
 	}
+
+#ifdef I2C_DEBUG
+	i2c_debug(i2c_dev);
+#endif
 }
 
 /**
@@ -587,9 +594,11 @@ static inline void sunxi_i2c_bus_en(sunxi_i2c_t *i2c_dev) {
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 	/* Config I2C SCL and SDA pins */
 	sunxi_gpio_init(i2c_dev->gpio.gpio_scl.pin, i2c_dev->gpio.gpio_scl.mux);
+	sunxi_gpio_set_pull(i2c_dev->gpio.gpio_scl.pin, GPIO_PULL_UP);
 	sunxi_gpio_init(i2c_dev->gpio.gpio_sda.pin, i2c_dev->gpio.gpio_sda.mux);
+	sunxi_gpio_set_pull(i2c_dev->gpio.gpio_sda.pin, GPIO_PULL_UP);
 
-	printk_debug("I2C: Init GPIO for I2C, base = 0x%08x, id = %d\n", i2c_dev->base, i2c_dev->id);
+	printk_debug("I2C: base = 0x%08x, id = %d\n", i2c_dev->base, i2c_dev->id);
 
 	sunxi_i2c_bus_clk_open(i2c_dev);
 
@@ -600,6 +609,10 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 	sunxi_i2c_bus_en(i2c_dev);
 
 	printk_debug("I2C: Bus open done.\n");
+
+#ifdef I2C_DEBUG
+	i2c_debug(i2c_dev);
+#endif
 
 	i2c_dev->status = true;
 }

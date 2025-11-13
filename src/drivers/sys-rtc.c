@@ -3,6 +3,7 @@
 #include <io.h>
 #include <log.h>
 #include <mmu.h>
+#include <cache.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>

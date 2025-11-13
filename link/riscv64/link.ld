@@ -3,6 +3,7 @@
 OUTPUT_FORMAT("elf64-littleriscv", "elf64-littleriscv", "elf64-littleriscv")
 OUTPUT_ARCH("riscv")
 SEARCH_DIR(.)
+ENTRY(_start)
 
 /* Memory Spaces Definitions */
 MEMORY

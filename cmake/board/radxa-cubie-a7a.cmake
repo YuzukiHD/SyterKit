@@ -21,7 +21,7 @@ set(CONFIG_USE_DRAM_PAYLOAD True)
 set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD True)
 set(CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH "${CMAKE_SOURCE_DIR}/payloads/sun60iw2_libdram")
 set(CONFIG_USE_DRAM_PAYLOAD_BIN_PATH "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}/output/ddr.bin")
-set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/avaota-nas/payloads/init_dram_bin.c")
+set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/radxa-cubie-a7a/payloads/init_dram_bin.c")
 set(CONFIG_USE_DRAM_PAYLOAD_SECTION "init_dram_bin")
 
 # Set the cross-compile toolchain

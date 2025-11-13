@@ -34,6 +34,8 @@ extern "C" {
 #define SYSMAP_ADDR_ALIGN_SIZE (1 << SYSMAP_ADDR_SHIFT)
 #define IS_MEM_ADDR_ALIGNED(addr) (!(addr & (SYSMAP_ADDR_ALIGN_SIZE - 1)))
 
+void sysmap_dump_region_info(void);
+
 #ifdef __cplusplus
 }
 #endif

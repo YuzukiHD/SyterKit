@@ -12,6 +12,7 @@
 #include <timer.h>
 
 #include <mmu.h>
+#include <cache.h>
 
 #include <sys-clk.h>
 #include <sys-gpio.h>
@@ -23,6 +24,13 @@
 sunxi_sdhci_host_t g_mmc_host;
 sunxi_sdhci_timing_t g_mmc_timing;
 mmc_t g_mmc;
+
+static void sunxi_sdhci_sync_all_cache(void) {
+	flush_dcache_all();
+	invalidate_dcache_all();
+	data_sync_barrier();
+	wmb();
+}
 
 /**
  * @brief Enable clock for the SDHC controller.
@@ -681,7 +689,8 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		remain = SMHC_DES_BUFFER_MAX_LEN;
 	}
 
-	data_sync_barrier();
+	sunxi_sdhci_sync_all_cache();
+
 	for (size_t i = 0; i < buff_frag_num; i++, des_idx++) {
 		memset((void *) &pdes[des_idx], 0, sizeof(sunxi_sdhci_desc_t));
 		pdes[des_idx].des_chain = 1;
@@ -715,10 +724,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 					 (uint32_t) ((uint32_t *) &pdes[des_idx])[2], (uint32_t) ((uint32_t *) &pdes[des_idx])[3]);
 #endif// SMHC_DMA_TRACE
 	}
-
-	data_sync_barrier();
-	wmb();
-
+	sunxi_sdhci_sync_all_cache();
 	/*
 	 * GCTRLREG
 	 * GCTRL[2]     : DMA reset
@@ -1095,6 +1101,8 @@ out:
 		mmc_host->reg->dmac = 0;
 		mmc_host->reg->gctrl &= ~SMHC_GCTRL_DMA_ENABLE;
 	}
+
+	sunxi_sdhci_sync_all_cache();
 
 	if (error_code) {
 		mmc_host->reg->gctrl = SMHC_GCTRL_HARDWARE_RESET;
