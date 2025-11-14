@@ -25,7 +25,7 @@ extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 
-extern uint32_t dram_para[32];
+extern uint32_t dram_para[128];
 
 extern void board_common_init(void);
 
@@ -38,8 +38,18 @@ int cmd_bt(int argc, const char **argv) {
 	return 0;
 }
 
+msh_declare_command(ddr_test);
+msh_define_help(ddr_test, "ddr w/r test", "Usage: ddr_test\n");
+int cmd_ddr_test(int argc, const char **argv) {
+	dump_hex(SDRAM_BASE, 0x100);
+	memset((void *) SDRAM_BASE, 0x5A, 0x2000);
+	dump_hex(SDRAM_BASE, 0x100);
+	return 0;
+}
+
 const msh_command_entry commands[] = {
 		msh_define_command(bt),
+		msh_define_command(ddr_test),
 		msh_command_end,
 };
 
