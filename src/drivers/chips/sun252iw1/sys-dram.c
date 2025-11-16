@@ -39,7 +39,7 @@ int set_ddr_voltage(unsigned int vol_val) {
 	return 0;
 }
 
-uint64_t sunxi_get_dram_size() {
+uint32_t sunxi_get_dram_size() {
 	return dram_size;
 }
 

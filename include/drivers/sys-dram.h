@@ -106,7 +106,7 @@ typedef struct {
  * 
  * @return The size of the DRAM in bytes.
  */
-uint64_t sunxi_get_dram_size();
+uint32_t sunxi_get_dram_size();
 
 /**
  * @brief Initialize the DRAM.
