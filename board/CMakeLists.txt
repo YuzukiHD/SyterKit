@@ -69,3 +69,7 @@ endif()
 if(CONFIG_BOARD_AVAOTA-F2)
     add_subdirectory(avaota-f2)
 endif()
+
+if(CONFIG_BOARD_AVAOTA_M1)
+    add_subdirectory(avaota-m1)
+endif()
