@@ -17,6 +17,8 @@ extern "C" {
 #include <sun300iw1/reg-rproc.h>
 #elif defined(CONFIG_CHIP_SUN55IW6)
 #include <sun55iw6/reg-rproc.h>
+#elif defined(CONFIG_CHIP_SUN65IW1)
+#include <sun65iw1/reg-rproc.h>
 #endif
 
 #ifdef __cplusplus
