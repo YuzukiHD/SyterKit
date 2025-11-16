@@ -27,8 +27,6 @@ extern sunxi_sdhci_t sdhci0;
 
 extern uint32_t dram_para[128];
 
-extern void board_common_init(void);
-
 extern int init_DRAM(int type, void *buff);
 
 msh_declare_command(bt);
@@ -58,7 +56,7 @@ int main(void) {
 
 	show_banner();
 
-	board_common_init();
+	syterkit_shell_attach(commands);
 
 	abort();
 
