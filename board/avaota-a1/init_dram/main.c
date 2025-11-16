@@ -67,7 +67,7 @@ int main(void) {
 
 	enable_sram_a3();
 
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	uint32_t dram_size = sunxi_dram_init(dram_para);
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 	printk_info("DRAM: DRAM Size = %dMB", dram_size);
 
