@@ -17,13 +17,6 @@ add_definitions(-DCONFIG_CHIP_GPIO_V3)
 add_definitions(-DCONFIG_FATFS_CACHE_SIZE=0xFFFFFFF)
 add_definitions(-DCONFIG_FATFS_CACHE_ADDR=0x60000000)
 
-set(CONFIG_USE_DRAM_PAYLOAD True)
-set(CONFIG_USE_PREBUILT_DRAM_PAYLOAD True)
-set(CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH "${CMAKE_SOURCE_DIR}/payloads/sun60iw2_libdram")
-set(CONFIG_USE_DRAM_PAYLOAD_BIN_PATH "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}/output/ddr.bin")
-set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/radxa-cubie-a7a/payloads/init_dram_bin.c")
-set(CONFIG_USE_DRAM_PAYLOAD_SECTION "init_dram_bin")
-
 # Set the cross-compile toolchain
 if(DEFINED ENV{LINARO_GCC_721_PATH})
     file(TO_CMAKE_PATH $ENV{LINARO_GCC_721_PATH} LINARO_GCC_721_PATH)
@@ -51,23 +44,3 @@ set(ARCH_BIN_SRAM_LENGTH "256K")
 
 set(ARCH_FEL_START_ADDRESS "0x00048c00")
 set(ARCH_FEL_SRAM_LENGTH "240K")
-
-if(NOT CONFIG_USE_PREBUILT_DRAM_PAYLOAD)
-    # Create an external project and build it
-    ExternalProject_Add(
-        init_dram
-        PREFIX init_dram
-        SOURCE_DIR "${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}"
-        INSTALL_COMMAND ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND make -C ${CONFIG_USE_DRAM_PAYLOAD_SOURCE_PATH}
-        BUILD_IN_SOURCE 1
-    )
-
-    # Create inital init dram bin file for build
-    add_custom_command(
-        TARGET init_dram
-        POST_BUILD COMMAND ${CMAKE_BIN2ARRAY} ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH} ${CONFIG_USE_DRAM_PAYLOAD_SECTION}
-        COMMENT "Generate DRAM LIB Payload ${CONFIG_USE_DRAM_PAYLOAD_BIN_PATH} for ${CONFIG_USE_DRAM_PAYLOAD_FILE_PATH}"
-    )
-endif()

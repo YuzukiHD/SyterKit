@@ -75,7 +75,6 @@ int main(void) {
 
 	printk_error("Detected DRAM size: %u MB\n", dram_size);
 	
-
 	printk_info("Hello World!\n");
 
 	syterkit_shell_attach(commands);
