@@ -8,6 +8,7 @@
 #include <log.h>
 
 #include <common.h>
+#include <mmu.h>
 
 #include <mmc/sys-sdhci.h>
 
@@ -70,12 +71,11 @@ int main(void) {
 
 	pmu_axp8191_dump(&i2c_pmu);
 
-	uint32_t dram_size = sunxi_dram_init(dram_para);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	sunxi_dram_init(NULL);
 
-	printk_error("Detected DRAM size: %u MB\n", dram_size);
-	
 	printk_info("Hello World!\n");
+
+	init_DRAM(0, dram_para);
 
 	syterkit_shell_attach(commands);
 
