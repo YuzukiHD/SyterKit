@@ -40,7 +40,3 @@ uint32_t sunxi_dram_init(void *para) {
 	dram_size = init_DRAM(0, para);
 	return dram_size;
 }
-
-uint32_t sunxi_dram_init(void *para) {
-	return 0;
-}
