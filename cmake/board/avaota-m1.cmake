@@ -8,6 +8,8 @@ set(CONFIG_CHIP_DCACHE True)
 set(CONFIG_CHIP_GPIO_V4 True)
 set(CONFIG_BOARD_AVAOTA_M1 True)
 
+set(CONFIG_CHIP_MINSYS True)
+
 add_definitions(-DCONFIG_CHIP_SUN65IW1) 
 add_definitions(-DCONFIG_CHIP_DCACHE)
 add_definitions(-DCONFIG_CHIP_MMC_V2)
