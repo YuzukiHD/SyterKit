@@ -39,8 +39,8 @@ set(CMAKE_COMMON_FLAGS "-nostdlib -nostdinc -Os -march=armv8-a -mthumb-interwork
 set(CMAKE_C_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
 set(CMAKE_CXX_DISABLE_WARN_FLAGS "-Wno-int-to-pointer-cast")
 
-set(ARCH_BIN_START_ADDRESS "0x00047000")
-set(ARCH_BIN_SRAM_LENGTH "256K")
+set(ARCH_BIN_START_ADDRESS "0x44000")
+set(ARCH_BIN_SRAM_LENGTH "140K")
 
-set(ARCH_FEL_START_ADDRESS "0x00048c00")
-set(ARCH_FEL_SRAM_LENGTH "240K")
+set(ARCH_FEL_START_ADDRESS "0x4c000")
+set(ARCH_FEL_SRAM_LENGTH "140K")
