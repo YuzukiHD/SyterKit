@@ -49,86 +49,138 @@ const msh_command_entry commands[] = {
 		msh_command_end,
 };
 
+/* Resource Control Register Configuration Macros */
+#define RES_CTRL_BASE_VAL   0x19190000  /* Base value for resource control registers */
+#define RES_VAL_MASK        0xF         /* Resource configuration value mask */
+
+/**
+ * @brief Initialize resource controller
+ * 
+ * Read resource configuration values from SID registers and set corresponding
+ * resource control registers including DSI, CSI, USB, EDP, HS_COMBO, and DDR
+ */
 static void sunxi_res_ctrl_init(void) {
-	uint8_t reg_val;
-
-	reg_val = readl(SID_RES0_1_BASE) >> 24;
-	if ((reg_val & 0xFF) == 0)
+	/* Read resource configuration field from SID register */
+	uint8_t sid_res_value = (uint8_t)(readl(SID_RES0_1_BASE) >> 24);
+	
+	/* No initialization needed if resource configuration value is 0 */
+	if (sid_res_value == 0) {
 		return;
-
-	uint8_t res0_val = (reg_val >> 0) & 0xF;
-	writel((0x19190000 | (res0_val & 0xF)), INT_DSI_RES_CTRL_REG);
-	writel((0x19190000 | res0_val), INT_CSI_RES_CTRL_REG);
-	writel((0x19190000 | res0_val), INT_USB_RES_CTRL_REG);
-
-	uint8_t res1_val = (reg_val >> 4) & 0xF;
-	writel((0x19190000 | res1_val), INT_EDP_RES_CTRL_REG);
-	writel((0x19190000 | res1_val), INT_HS_COMBO_RES_CTRL_REG);
-	writel((0x19190000 | res1_val), INT_DDR_RES_CTRL_REG);
-
-	return;
-}
-
-static void sunxi_board_power_init(void) {
-	uint32_t sys_vol, gpu_vol;
-	uint32_t efuse;
-	uint32_t efuse_ext;
-
-	efuse = (readl(SUNXI_SID_BASE + 0x200 + 0x14) & 0xff0000) >> 16;
-	efuse_ext = (readl(SUNXI_SID_BASE + 0x200 + 0x14) & 0xff000000) >> 24;
-	if (efuse_ext) {
-		efuse = efuse_ext;
 	}
 
-	switch (efuse) {
-		/* VF0/VF4-2/VF3: sys-0.9v gpu-0.94v */
+	/* Extract res0 configuration value (lower 4 bits) and configure corresponding resources */
+	uint8_t res0_value = sid_res_value & RES_VAL_MASK;
+	writel(RES_CTRL_BASE_VAL | res0_value, INT_DSI_RES_CTRL_REG);
+	writel(RES_CTRL_BASE_VAL | res0_value, INT_CSI_RES_CTRL_REG);
+	writel(RES_CTRL_BASE_VAL | res0_value, INT_USB_RES_CTRL_REG);
+
+	/* Extract res1 configuration value (upper 4 bits) and configure corresponding resources */
+	uint8_t res1_value = (sid_res_value >> 4) & RES_VAL_MASK;
+	writel(RES_CTRL_BASE_VAL | res1_value, INT_EDP_RES_CTRL_REG);
+	writel(RES_CTRL_BASE_VAL | res1_value, INT_HS_COMBO_RES_CTRL_REG);
+	writel(RES_CTRL_BASE_VAL | res1_value, INT_DDR_RES_CTRL_REG);
+}
+
+/* Voltage Configuration Related Macros */
+#define DEFAULT_SYS_VOLTAGE     900     /* Default system voltage 0.9V */
+#define DEFAULT_GPU_VOLTAGE     940     /* Default GPU voltage 0.94V */
+#define VDD_DCDC1_VOLTAGE       1050    /* DCDC1 voltage 1.05V */
+#define VDD_3V3_VOLTAGE         3300    /* 3.3V voltage */
+#define VDD_1V8_VOLTAGE         1800    /* 1.8V voltage */
+
+/* EFUSE Related Register Offset and Mask */
+#define EFUSE_ADDR_OFFSET       0x214   /* EFUSE register offset */
+#define EFUSE_MASK              0xFF0000    /* EFUSE mask */
+#define EFUSE_EXT_MASK          0xFF000000  /* Extended EFUSE mask */
+#define EFUSE_SHIFT             16      /* EFUSE shift */
+#define EFUSE_EXT_SHIFT         24      /* Extended EFUSE shift */
+
+/**
+ * @brief Voltage configuration structure
+ */
+typedef struct {
+	uint32_t sys_voltage;  /* System voltage value (mV) */
+	uint32_t gpu_voltage;  /* GPU voltage value (mV) */
+} voltage_config_t;
+
+/**
+ * @brief Get voltage configuration based on EFUSE value
+ * 
+ * @param efuse_value Value read from EFUSE register
+ * @return voltage_config_t Voltage configuration structure
+ */
+static voltage_config_t get_voltage_config(uint8_t efuse_value) {
+	voltage_config_t config = {
+		.sys_voltage = DEFAULT_SYS_VOLTAGE,
+		.gpu_voltage = DEFAULT_GPU_VOLTAGE
+	};
+
+	/* Determine voltage configuration based on EFUSE value */
+	switch (efuse_value) {
 		case 0x00:
 		case 0x24:
 		case 0x03:
-			sys_vol = 900;
-			gpu_vol = 940;
+			/* Use default values, no modification needed */
 			break;
-		/* VF1/VF4-4: sys-0.9v gpu-0.9v */
 		case 0x01:
-			sys_vol = 900;
-			gpu_vol = 980;
+			config.gpu_voltage = 980;
 			break;
 		case 0x44:
-			sys_vol = 900;
-			gpu_vol = 900;
+			config.gpu_voltage = 900;
 			break;
-		/* VF4-3: sys-0.92v gpu-0.96v */
 		case 0x34:
-			sys_vol = 920;
-			gpu_vol = 960;
+			config.sys_voltage = 920;
+			config.gpu_voltage = 960;
 			break;
-		/* default: sys-0.9v gpu-0.94v */
+		/* Use default voltage configuration for other cases */
 		default:
-			sys_vol = 900;
-			gpu_vol = 940;
 			break;
 	}
 
-	sunxi_i2c_init(&i2c_pmu);
+	return config;
+}
 
+/**
+ * @brief Initialize board power system
+ * 
+ * 1. Read EFUSE value to determine voltage configuration
+ * 2. Initialize I2C and PMU chips
+ * 3. Configure each power rail voltage based on SOC version and EFUSE value
+ */
+static void sunxi_board_power_init(void) {
+	/* Read EFUSE value to determine voltage configuration */
+	uint32_t efuse_reg_value = readl(SUNXI_SID_BASE + EFUSE_ADDR_OFFSET);
+	uint8_t efuse_value = (uint8_t)((efuse_reg_value & EFUSE_MASK) >> EFUSE_SHIFT);
+	uint8_t efuse_ext_value = (uint8_t)((efuse_reg_value & EFUSE_EXT_MASK) >> EFUSE_EXT_SHIFT);
+
+	/* Use extended EFUSE value if available */
+	if (efuse_ext_value) {
+		efuse_value = efuse_ext_value;
+	}
+
+	/* Get voltage configuration */
+	voltage_config_t volt_config = get_voltage_config(efuse_value);
+
+	/* Initialize I2C controller and PMU chips */
+	sunxi_i2c_init(&i2c_pmu);
 	pmu_axp2202_init(&i2c_pmu);
 	pmu_axp1530_init(&i2c_pmu);
 
-	if (readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK < 2)
-		sys_vol = gpu_vol;
+	/* For early SOC versions, system voltage should equal GPU voltage */
+	if ((readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK) < 2) {
+		volt_config.sys_voltage = volt_config.gpu_voltage;
+	}
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1050, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", sys_vol, 1);
+	/* Configure PMU AXP2202 voltages */
+	pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", VDD_DCDC1_VOLTAGE, 1);
+	pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", volt_config.sys_voltage, 1);
+	pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", VDD_3V3_VOLTAGE, 1);
+	pmu_axp2202_set_vol(&i2c_pmu, "bldo3", VDD_1V8_VOLTAGE, 1);
 
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1000, 1);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1000, 1);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", gpu_vol, 1);
-
-	/* dcdc4 for 3v3 */
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
-
-	/* bldo3 for 1v8 */
-	pmu_axp2202_set_vol(&i2c_pmu, "bldo3", 1800, 1);
+	/* Configure PMU AXP1530 voltages */
+	pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1000, 1); /* Fixed 1.0V */
+	pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1000, 1); /* Fixed 1.0V */
+	pmu_axp1530_set_vol(&i2c_pmu, "dcdc3", volt_config.gpu_voltage, 1);
 }
 
 int main(void) {
