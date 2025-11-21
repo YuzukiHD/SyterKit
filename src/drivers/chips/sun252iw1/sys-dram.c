@@ -19,7 +19,7 @@
 
 extern int init_DRAM(int type, void *buff);
 
-static uint64_t dram_size;
+static uint32_t dram_size;
 
 void __usdelay(unsigned long us) {
 	udelay(us);

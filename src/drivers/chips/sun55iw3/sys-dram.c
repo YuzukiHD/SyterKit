@@ -18,7 +18,7 @@
 
 extern int init_DRAM(int type, void *buff);
 
-static uint64_t dram_size;
+static uint32_t dram_size;
 
 int set_ddr_voltage(unsigned int vol_val) {
 	/* ddr voltage already set in main */

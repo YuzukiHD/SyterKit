@@ -102,39 +102,49 @@ sunxi_sdhci_t sdhci0 = {
 };
 
 uint32_t dram_para[128] = {
-		2400,	   // dram_clk
-		9,		   // dram_type
-		0x0e0e0e0e,// dram_dx_odt
-		0x0f0f0f0f,// dram_dx_dri
-		0xec030e0f,// dram_ca_dri
-		0,		   // dram_para0
-		0xa10a,	   // dram_para1
-		0x1001,	   // dram_para2
-		0,		   // dram_mr0
-		0,		   // dram_mr1
-		0,		   // dram_mr2
-		0x6,	   // dram_mr3
-		0,		   // dram_mr4
-		0,		   // dram_mr5
-		0,		   // dram_mr6
-		0x12,	   // dram_mr11
-		0x44,	   // dram_mr12
-		0,		   // dram_mr13
-		0x34,	   // dram_mr14
-		0,		   // dram_mr16
-		0x06,	   // dram_mr17
-		0,		   // dram_mr22
-		0x4040,	   // dram_tpr0
-		0,		   // dram_tpr1
-		0x170b070, // dram_tpr2
-		0x3800,	   // dram_tpr3
-		0x3514,	   // dram_tpr6
-		0x325f0000,// dram_tpr10
-		0,		   // dram_tpr11
-		0,		   // dram_tpr12
-		0x10061,   // dram_tpr13
-		0		   // dram_tpr14
+		1008,	   // dram_clk
+		8,		   // dram_type
+		0x07070707,// dram_dx_odt
+		0x0C0C0C0C,// dram_dx_dri
+		0x0C0C0C,  // dram_ca_dri
+		0x59595B5D,// dram_para0
+		0x310a,	   // dram_para1
+		0x01000,   // dram_para2
+		0x0,	   // dram_mr0
+		0x0,	   // dram_mr1
+		0x0,	   // dram_mr2
+		0x33,	   // dram_mr3
+		0x3,	   // dram_mr4
+		0x0,	   // dram_mr5
+		0x0,	   // dram_mr6
+		0x66,	   // dram_mr11
+		0x30,	   // dram_mr12
+		0x0,	   // dram_mr13
+		0x20,	   // dram_mr14
+		0x0,	   // dram_mr16
+		0x0,	   // dram_mr17
+		0x2,	   // dram_mr22
+		0,		   // dram_tpr0
+		0x28282828,// dram_tpr1
+		0,		   // dram_tpr2
+		0,		   // dram_tpr3
+		0x103F353F,// dram_tpr6
+		0x00004B00,// dram_tpr10
+		0x65656667,// dram_tpr11
+		0x18161718,// dram_tpr12
+		0x00000051,// dram_tpr13
+		0x010701f5 // dram_tpr14
 };
+
+int sunxi_nsi_init(void) {
+	writel(0x40005, 0x2402C00 + 0x6c);
+	writel(0xFF, 0x2402600 + 0x14);
+	writel(0xFF, 0x2402800 + 0x14);
+	writel(0xFF, 0x2402a00 + 0x14);
+	writel(0x1, 0x2400000 + 0xc);
+	writel(0x1, 0x2400200 + 0xc);
+	return 0;
+}
 
 void neon_enable(void) {
 	/* Set the CPACR for access to CP10 and CP11*/
@@ -145,14 +155,6 @@ void neon_enable(void) {
 	/*@VMSR FPEXC, r3*/
 	asm volatile("MCR p10, 7, r3, c8, c0, 0");
 }
-
-typedef enum {
-	SUNXI_SOC_VER_INVALID = -1,
-	SUNXI_SOC_VER_A = 0,
-	SUNXI_SOC_VER_B = 1,
-	SUNXI_SOC_VER_C = 2,
-} sunxi_soc_version_t;
-
 
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */
