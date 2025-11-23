@@ -15,13 +15,14 @@
 #include <sys-gpio.h>
 #include <sys-i2c.h>
 #include <sys-sid.h>
+#include <mmc/sys-sdhci.h>
 #include <sys-sdcard.h>
 #include <sys-spi.h>
 #include <sys-uart.h>
 
 extern sunxi_serial_t uart_dbg;
 extern uint32_t dram_para[32];
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
 extern sunxi_i2c_t i2c_pmu;
 
 static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
@@ -58,14 +59,14 @@ int main(void) {
 	sunxi_clk_dump();
 
 	/* Initialize the SD host controller. */
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+	if (sunxi_sdhci_init(&sdhci2) != 0) {
+		printk_error("SMHC: %s controller init failed\n", sdhci2.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		printk_info("SMHC: %s controller initialized\n", sdhci2.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&card0, &sdhci2) != 0) {
 		printk_warning("SMHC: init failed\n");
 	}
 

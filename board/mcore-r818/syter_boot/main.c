@@ -51,7 +51,7 @@
 
 extern sunxi_serial_t uart_dbg;
 extern sunxi_i2c_t i2c_pmu;
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci0;
 extern uint32_t dram_para[32];
 
 extern int ar100s_gpu_fix(void);
