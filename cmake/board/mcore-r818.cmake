@@ -7,7 +7,7 @@ set(CONFIG_CHIP_WITHPMU True)
 set(CONFIG_CHIP_GPIO_V1 True)
 set(CONFIG_CHIP_MINSTACK False)
 
-set(CONFIG_BOARD_100ASK_ROS True)
+set(CONFIG_BOARD_MCORE-R818 True)
 
 add_definitions(-DCONFIG_CHIP_GPIO_V1)
 add_definitions(-DCONFIG_CHIP_SUN50IW10)
@@ -20,7 +20,16 @@ set(CONFIG_USE_DRAM_PAYLOAD_FILE_PATH "${CMAKE_SOURCE_DIR}/board/100ask-ros/payl
 set(CONFIG_USE_DRAM_PAYLOAD_SECTION "init_dram_bin")
 
 # Set the cross-compile toolchain
-set(CROSS_COMPILE "arm-none-eabi-")
+if(DEFINED ENV{LINARO_GCC_721_PATH})
+    file(TO_CMAKE_PATH $ENV{LINARO_GCC_721_PATH} LINARO_GCC_721_PATH)
+else()
+    message(FATAL_ERROR "LINARO_GCC_721_PATH for gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi env must be defined")
+endif()
+
+# Set the cross-compile toolchain
+set(LINARO_GCC_721_PATH ${LINARO_GCC_721_PATH} CACHE STRING "root path to gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi toolchain")
+
+set(CROSS_COMPILE "${LINARO_GCC_721_PATH}/arm-linux-gnueabi-")
 set(CROSS_COMPILE ${CROSS_COMPILE} CACHE STRING "CROSS_COMPILE Toolchain")
 
 # Set the C and C++ compilers

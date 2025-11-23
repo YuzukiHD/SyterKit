@@ -15,7 +15,7 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 | 100ask-d1-h                                                  | D1-H          | C906 RISC-V                                   | `100ask-d1-h.cmake`      |
 | dongshanpi-aict                                              | V853          | Cortex A7                                     | `dongshanpi-aict.cmake`  |
 | project-yosemite                                             | V853          | Cortex A7                                     | `project-yosemite.cmake` |
-| 100ask ROS                                                   | R818          | Quad-Core Cortex A53                          | `100ask-ros.cmake`       |
+| mCore-R818                                                   | R818          | Quad-Core Cortex A53                          | `mcore-r818.cmake`       |
 | [longanpi-3h](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618          | Quad-Core Cortex A53                          | `longanpi-3h.cmake`      |
 | Avaota A1                                                    | T527/A527     | Octa-Core Cortex A55                          | `avaota-a1.cmake`        |
 | Radxa Cubie A7A                                              | A733          | Dual-Core Cortex A76 + Hexa-Core Cortex A55   | `radxa-cubie-a7a.cmake`  |

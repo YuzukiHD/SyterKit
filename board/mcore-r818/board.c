@@ -180,3 +180,26 @@ int ar100s_gpu_fix(void) {
 
 	return 0;
 }
+
+void show_chip() {
+	uint32_t chip_sid[4];
+	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	printk_info("Model: mCore-R818 Core Board.\n");
+	printk_info("Core: Quad-Core Cortex-A53\n");
+	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+
+	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
+
+	switch (chip_markid_sid) {
+		case 0x1000:
+			printk_info("Chip type = R818\n");
+			break;
+		default:
+			printk_info("Chip type = UNKNOW\n");
+			break;
+	}
+}
