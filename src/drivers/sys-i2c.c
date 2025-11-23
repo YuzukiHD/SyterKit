@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sys-i2c.c
+ * @brief System I2C (Inter-Integrated Circuit) driver for Allwinner (sunxi) platforms
+ * @details This file implements I2C communication functionality for Allwinner SoCs,
+ *          supporting standard I2C master operations including initialization,
+ *          read/write transactions, clock configuration, and bus reset. The driver
+ *          handles both 100kHz (standard) and 400kHz (fast) I2C speeds.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -17,22 +26,94 @@
 #include "reg-ncat.h"
 #include "sys-i2c.h"
 
+/**
+ * @def I2C_WRITE
+ * @brief I2C write transaction type
+ */
 #define I2C_WRITE 0
+
+/**
+ * @def I2C_READ
+ * @brief I2C read transaction type
+ */
 #define I2C_READ 1
 
+/**
+ * @def I2C_OK
+ * @brief I2C operation successful status
+ */
 #define I2C_OK 0
+
+/**
+ * @def I2C_NOK
+ * @brief I2C operation failed general status
+ */
 #define I2C_NOK 1
+
+/**
+ * @def I2C_NACK
+ * @brief I2C operation failed with NACK status
+ */
 #define I2C_NACK 2
+
+/**
+ * @def I2C_NOK_LA
+ * @brief I2C operation failed with lost arbitration status
+ */
 #define I2C_NOK_LA 3   /* Lost arbitration */
+
+/**
+ * @def I2C_NOK_TOUT
+ * @brief I2C operation failed with timeout status
+ */
 #define I2C_NOK_TOUT 4 /* time out */
 
+/**
+ * @def I2C_START_TRANSMIT
+ * @brief I2C status code for successful start condition transmission
+ */
 #define I2C_START_TRANSMIT 0x08
+
+/**
+ * @def I2C_RESTART_TRANSMIT
+ * @brief I2C status code for successful repeated start condition transmission
+ */
 #define I2C_RESTART_TRANSMIT 0x10
+
+/**
+ * @def I2C_ADDRWRITE_ACK
+ * @brief I2C status code for successful slave address write with ACK
+ */
 #define I2C_ADDRWRITE_ACK 0x18
+
+/**
+ * @def I2C_ADDRREAD_ACK
+ * @brief I2C status code for successful slave address read with ACK
+ */
 #define I2C_ADDRREAD_ACK 0x40
+
+/**
+ * @def I2C_DATAWRITE_ACK
+ * @brief I2C status code for successful data write with ACK
+ */
 #define I2C_DATAWRITE_ACK 0x28
+
+/**
+ * @def I2C_READY
+ * @brief I2C status code for bus ready state
+ */
 #define I2C_READY 0xf8
+
+/**
+ * @def I2C_DATAREAD_NACK
+ * @brief I2C status code for successful data read with NACK
+ */
 #define I2C_DATAREAD_NACK 0x58
+
+/**
+ * @def I2C_DATAREAD_ACK
+ * @brief I2C status code for successful data read with ACK
+ */
 #define I2C_DATAREAD_ACK 0x50
 
 #ifdef I2C_DEBUG
@@ -51,6 +132,13 @@ __attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev) {
 }
 #endif
 
+/**
+ * @brief Send a byte address over I2C
+ * @details Sends a single byte address to the I2C device and waits for acknowledgment.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param byteaddr Byte address to send
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_send_byteaddr(sunxi_i2c_t *i2c_dev, uint32_t byteaddr) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 
@@ -75,6 +163,12 @@ static int32_t sunxi_i2c_send_byteaddr(sunxi_i2c_t *i2c_dev, uint32_t byteaddr) 
 	return I2C_OK;
 }
 
+/**
+ * @brief Generate I2C start condition
+ * @details Generates a start condition on the I2C bus to initiate communication.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_send_start(sunxi_i2c_t *i2c_dev) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 
@@ -100,6 +194,14 @@ static int32_t sunxi_i2c_send_start(sunxi_i2c_t *i2c_dev) {
 }
 
 
+/**
+ * @brief Send I2C slave address with read/write bit
+ * @details Transmits the slave address along with read/write bit and waits for acknowledgment.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param saddr Slave device address
+ * @param rw Read (1) or Write (0) operation
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_send_slave_addr(sunxi_i2c_t *i2c_dev, uint32_t saddr, uint32_t rw) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	int32_t time = 0xffff;
@@ -132,6 +234,12 @@ static int32_t sunxi_i2c_send_slave_addr(sunxi_i2c_t *i2c_dev, uint32_t saddr, u
 	return I2C_OK;
 }
 
+/**
+ * @brief Generate I2C repeated start condition
+ * @details Generates a repeated start condition on the I2C bus to change operation mode.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_send_restart(sunxi_i2c_t *i2c_dev) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	int32_t time = 0xffff;
@@ -155,6 +263,12 @@ static int32_t sunxi_i2c_send_restart(sunxi_i2c_t *i2c_dev) {
 	return I2C_OK;
 }
 
+/**
+ * @brief Generate I2C stop condition
+ * @details Generates a stop condition on the I2C bus to terminate communication.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_stop(sunxi_i2c_t *i2c_dev) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	int32_t time = 0xffff;
@@ -177,6 +291,14 @@ static int32_t sunxi_i2c_stop(sunxi_i2c_t *i2c_dev) {
 	return I2C_OK;
 }
 
+/**
+ * @brief Receive data from I2C device
+ * @details Receives multiple bytes of data from an I2C device, handling ACK/NACK appropriately.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param data_addr Buffer to store received data
+ * @param data_count Number of bytes to receive
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int32_t sunxi_i2c_get_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uint32_t data_count) {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *) i2c_dev->base;
 	int32_t time = 0xffff;
@@ -304,6 +426,17 @@ static int32_t sunxi_i2c_send_data(sunxi_i2c_t *i2c_dev, uint8_t *data_addr, uin
  * @param len Length of the data to be read
  * @return int Number of status
  */
+/**
+ * @brief Internal I2C read function
+ * @details Performs a complete I2C read transaction, including start, address, register, and data transfer.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param chip Device address
+ * @param addr Register address to read from
+ * @param alen Length of the register address (1-3 bytes)
+ * @param buffer Buffer to store read data
+ * @param len Number of bytes to read
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int _sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, int alen, uint8_t *buffer, int len) {
 	int i, ret, addrlen;
 	char *slave_reg;
@@ -368,6 +501,17 @@ i2c_read_err_occur:
  * @param len Length of the data
  * @return int Number of status
  */
+/**
+ * @brief Internal I2C write function
+ * @details Performs a complete I2C write transaction, including start, address, register, and data transfer.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param chip Device address
+ * @param addr Register address to write to
+ * @param alen Length of the register address (1-3 bytes)
+ * @param buffer Buffer containing data to write
+ * @param len Number of bytes to write
+ * @return I2C_OK on success, negative error code on failure
+ */
 static int _sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t chip, uint32_t addr, int alen, uint8_t *buffer, int len) {
 	int i, ret, ret0, addrlen;
 	char *slave_reg;
@@ -412,6 +556,15 @@ i2c_write_err_occur:
 	return ret0;
 }
 
+/**
+ * @brief Write a single byte to I2C device register
+ * @details Writes a single byte to a specified register on an I2C device.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param addr I2C device address
+ * @param reg Register address to write to
+ * @param data Byte value to write
+ * @return I2C_OK on success, I2C_NOK if I2C controller is not initialized
+ */
 int sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t data) {
 	if (!i2c_dev->status)
 		return I2C_NOK;
@@ -419,6 +572,15 @@ int sunxi_i2c_write(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t da
 	return _sunxi_i2c_write(i2c_dev, addr, reg, 1, &data, 1);
 }
 
+/**
+ * @brief Read a single byte from I2C device register
+ * @details Reads a single byte from a specified register on an I2C device.
+ * @param i2c_dev Pointer to the I2C device structure
+ * @param addr I2C device address
+ * @param reg Register address to read from
+ * @param data Pointer to store the read byte
+ * @return I2C_OK on success, I2C_NOK if I2C controller is not initialized
+ */
 int sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t *data) {
 	if (!i2c_dev->status)
 		return I2C_NOK;
@@ -591,6 +753,12 @@ static inline void sunxi_i2c_bus_en(sunxi_i2c_t *i2c_dev) {
 }
 
 
+/**
+ * @brief Initialize I2C controller and bus
+ * @details Initializes the I2C controller by configuring GPIO pins, enabling clocks,
+ *          resetting the bus, setting clock frequency, and enabling the I2C controller.
+ * @param i2c_dev Pointer to the I2C device structure containing configuration parameters
+ */
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 	/* Config I2C SCL and SDA pins */
 	sunxi_gpio_init(i2c_dev->gpio.gpio_scl.pin, i2c_dev->gpio.gpio_scl.mux);

@@ -1,5 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sys-pwm.c
+ * @brief System PWM (Pulse Width Modulation) driver for Allwinner (sunxi) platforms
+ * @details This file implements PWM functionality for Allwinner SoCs, supporting
+ *          multiple channels with configurable frequency, duty cycle, polarity,
+ *          and dead zone timing. It provides both single-channel and dual-channel
+ *          binding modes, with support for pulse mode operations.
+ *          The driver handles various clock sources including APB and oscillator
+ *          clocks, and provides fine-grained control over PWM output parameters.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
