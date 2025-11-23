@@ -1,4 +1,13 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
+/**
+ * @file sys-uart.c
+ * @brief Allwinner Platform UART (Universal Asynchronous Receiver/Transmitter) Driver
+ *
+ * This file implements the UART driver for Allwinner platforms. The UART driver provides
+ * functionality for serial communication, including initialization, configuration,
+ * and basic input/output operations. It supports various UART settings such as baud rate,
+ * parity, stop bits, and data length.
+ *
+ * SPDX-License-Identifier: GPL-2.0+ */
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +23,14 @@
 
 #include <sys-clk.h>
 
+/**
+ * @brief Initialize the UART clock
+ * 
+ * This function configures the UART clock by setting the reset control and enabling
+ * the clock gate for the UART module. It prepares the UART hardware for further configuration.
+ *
+ * @param[in] uart Pointer to the UART structure containing clock configuration
+ */
 void sunxi_serial_clock_init(sunxi_serial_t *uart) {
 	sunxi_clk_t uart_clk = uart->uart_clk;
 	/* Set CLK RST */
@@ -24,6 +41,16 @@ void sunxi_serial_clock_init(sunxi_serial_t *uart) {
 	setbits_le32(uart_clk.gate_reg_base, BIT(uart_clk.gate_reg_offset));
 }
 
+/**
+ * @brief Initialize the UART interface
+ * 
+ * This function initializes the UART interface by configuring the clock, baud rate,
+ * line control settings (parity, stop bits, data length), FIFO control, and GPIO pins.
+ * It sets up the UART for serial communication based on the provided configuration.
+ *
+ * @param[in] uart Pointer to the UART structure containing complete configuration
+ *                 including base address, clock settings, baud rate, and GPIO pins
+ */
 void sunxi_serial_init(sunxi_serial_t *uart) {
 	sunxi_serial_clock_init(uart);
 
@@ -72,6 +99,15 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
 	sunxi_gpio_init(uart->gpio_pin.gpio_rx.pin, uart->gpio_pin.gpio_rx.mux);
 }
 
+/**
+ * @brief Output a character to the UART
+ * 
+ * This function sends a single character to the UART transmit buffer. It waits until
+ * the transmit holding register is empty before writing the character.
+ *
+ * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
+ * @param[in] c The character to be transmitted
+ */
 void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
 	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
@@ -81,6 +117,15 @@ void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
 	serial_reg->thr = c;
 }
 
+/**
+ * @brief Read a character from the UART
+ * 
+ * This function reads a single character from the UART receive buffer. It waits until
+ * data is available before reading.
+ *
+ * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
+ * @return The received character
+ */
 char __attribute__((weak)) sunxi_serial_getc(void *arg) {
 	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
@@ -90,6 +135,15 @@ char __attribute__((weak)) sunxi_serial_getc(void *arg) {
 	return serial_reg->rbr;
 }
 
+/**
+ * @brief Check if a character is available to read from the UART
+ * 
+ * This function checks the UART line status register to determine if there is
+ * data available in the receive buffer.
+ *
+ * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
+ * @return Non-zero value if data is available, zero otherwise
+ */
 int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
 	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
