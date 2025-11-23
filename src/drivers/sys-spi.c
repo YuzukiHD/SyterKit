@@ -1,4 +1,21 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
+/**
+ * @file sys-spi.c
+ * @brief Allwinner Platform SPI Controller Driver
+ *
+ * This file implements the SPI (Serial Peripheral Interface) controller driver
+ * for Allwinner platforms. The SPI driver provides functionality for initializing
+ * and controlling the SPI interface, including clock configuration, data transfer,
+ * GPIO setup, and DMA operations. It supports various SPI modes, data widths,
+ * and transfer methods (polling and DMA).
+ *
+ * The driver supports different I/O modes including single, dual, and quad SPI,
+ * making it suitable for interfacing with various SPI devices such as flash memory,
+ * sensors, and other peripheral devices.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * Copyright (c) 2023, Allwinner Technology Co., Ltd.
+ */
 
 #if LOG_LEVEL_DEFAULT <= LOG_LEVEL_DEBUG
 /* #define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG */
