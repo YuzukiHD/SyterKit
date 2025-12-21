@@ -27,6 +27,8 @@ extern "C" {
 #include <sun252iw1/reg-ccu.h>
 #elif defined(CONFIG_CHIP_SUN65IW1)
 #include <sun65iw1/reg-ccu.h>
+#elif defined(CONFIG_CHIP_SUN8IW22)
+#include <sun8iw22/reg-ccu.h>
 #else
 #error "Unsupported chip"
 #endif
