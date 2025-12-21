@@ -27,7 +27,7 @@ typedef struct {
 	uint8_t mfr;  /**< Manufacturer ID byte. */
 	uint16_t dev; /**< Device ID (16-bits) for identifying the specific NAND device. */
 	uint8_t dlen; /**< Length of the ID (in bytes). */
-} __attribute__((packed)) spi_nand_id_t;
+} spi_nand_id_t;
 
 /**
  * @brief Represents the specific information of a NAND Flash device.
