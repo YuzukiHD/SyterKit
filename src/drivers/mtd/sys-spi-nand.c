@@ -8,7 +8,7 @@
 #include <types.h>
 
 #include <timer.h>
-
+#include <common.h>
 #include <log.h>
 
 #include <sys-clk.h>
@@ -77,6 +77,7 @@ static const spi_nand_info_t spi_nand_infos[] = {
 		{"GD5F2GQ5UExxG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x52, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
 		{"GD5F4GQ4UCxIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xb4, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
 		{"GD5F4GQ4RCxIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xa4, 1}, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
+		{"GD5F2GM7UExIG", {.mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x92, 1}, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX},
 
 		/* Macronix */
 		{"MX35LF1GE4AB", {.mfr = SPI_NAND_MFR_MACRONIX, .dev = 0x12, 1}, 2048, 64, 64, 1024, 1, 1, SPI_IO_DUAL_RX},
@@ -197,6 +198,7 @@ static int spi_nand_info(sunxi_spi_t *spi) {
 	}
 
 	tx[0] = OPCODE_READ_ID;									  /* Command to read SPI NAND ID */
+	tx[1] = 0x0;
 	r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 5); /* Perform SPI transfer */
 	if (r < 0)
 		return r;
@@ -369,7 +371,7 @@ int spi_nand_detect(sunxi_spi_t *spi) {
 		}
 
 		printk_info("SPI-NAND: %s detected\n", info.name);
-
+		
 		return 0; /* Return success */
 	}
 
