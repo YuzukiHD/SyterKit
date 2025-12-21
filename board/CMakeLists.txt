@@ -70,6 +70,10 @@ if(CONFIG_BOARD_AVAOTA-F2)
     add_subdirectory(avaota-f2)
 endif()
 
-if(CONFIG_BOARD_AVAOTA_M1)
+if(CONFIG_BOARD_AVAOTA-M1)
     add_subdirectory(avaota-m1)
+endif()
+
+if(CONFIG_BOARD_TLT153-MINIEVM)
+    add_subdirectory(tlt153-minievm)
 endif()
