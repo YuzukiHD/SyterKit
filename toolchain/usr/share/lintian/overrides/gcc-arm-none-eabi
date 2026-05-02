@@ -1,5 +1,0 @@
-#
-# All of the libgcc bits are non-native, which is kinda the point
-#
-gcc-arm-none-eabi binary: binary-from-other-architecture
-gcc-arm-none-eabi binary: binary-without-manpage
