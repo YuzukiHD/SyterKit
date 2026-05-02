@@ -267,32 +267,6 @@ typedef enum {
 	FR_NOT_ENABLED, /* (12) The volume has no work area */
 	FR_NO_FILESYSTEM, /* (13) There is no valid FAT volume */
 	FR_MKFS_ABORTED, /* (14) The f_mkfs() aborted due to any problem */
-
-	/* Extended NO_FILESYSTEM error codes (100+) for debugging */
-	FR_NO_FS_NO_FAT_VOLUME = 100, /* No FAT volume found at all */
-	FR_NO_FS_NO_FAT12_16_32,      /* Not FAT12/16/32 */
-	FR_NO_FS_EXFAT_BAD_VERSION,   /* exFAT version not 1.0 */
-	FR_NO_FS_NOT_EXFAT,           /* Not exFAT */
-	FR_NO_FS_64BIT_LBA,           /* Cannot access in 32-bit LBA */
-	FR_NO_FS_NOT_1_FAT,           /* Supports only 1 FAT */
-	FR_NO_FS_INVALID_FATSZ,       /* Must be 1..32768 sectors per FAT */
-	FR_NO_FS_TOO_MANY_CLUSTERS,   /* Too many clusters */
-	FR_NO_FS_VOL_TOO_SMALL,       /* Volume size smaller than required */
-	FR_NO_FS_NO_ACTIVE_PARTITION, /* No active partition found */
-	FR_NO_FS_WRONG_CLUSTER,       /* Wrong cluster number */
-	FR_NO_FS_FRAGMENTED_BITMAP,   /* Fragmented bitmap */
-	FR_NO_FS_BAD_BPB_BYTSPERSEC,  /* BPB_BytsPerSec != physical sector size */
-	FR_NO_FS_INVALID_NUMFAT,      /* Must be 1 or 2 FATs */
-	FR_NO_FS_BAD_SECSIZE,         /* Sector size not power of 2 */
-	FR_NO_FS_NOT_SECTOR_ALIGNED,  /* Not sector aligned */
-	FR_NO_FS_ZERO_ROOTENT,        /* Root entry count must not be 0 (FAT12/16) */
-	FR_NO_FS_INVALID_VOL_SIZE,    /* Invalid volume size */
-	FR_NO_FS_INVALID_VOL_SIZE2,   /* Invalid volume size (alt) */
-	FR_NO_FS_GENERAL,             /* General filesystem error */
-	FR_NO_FS_FAT32_BAD_REV,       /* FAT32 revision not 0.0 */
-	FR_NO_FS_FAT32_ROOTENT_NOT_0, /* FAT32 BPB_RootEntCnt must be 0 */
-	FR_NO_FS_FAT12_16_ROOTENT_0,  /* FAT12/16 BPB_RootEntCnt must not be 0 */
-	FR_NO_FS_FATSZ_TOO_SMALL,     /* BPB_FATSz less than needed */
 	FR_TIMEOUT, /* (15) Could not get a grant to access the volume within defined period */
 	FR_LOCKED, /* (16) The operation is rejected according to the file sharing policy */
 	FR_NOT_ENOUGH_CORE, /* (17) LFN working buffer could not be allocated */
