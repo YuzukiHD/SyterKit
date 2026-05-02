@@ -80,7 +80,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_spi_t sunxi_spi0;
 
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci0;
 
 extern dram_para_t dram_para;
 
@@ -595,6 +595,7 @@ int main(void) {
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 	strcpy(image.config_filename, CONFIG_CONFIG_FILENAME);
 
+<<<<<<< HEAD
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
@@ -602,6 +603,15 @@ int main(void) {
 	} else {
 		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
 	}
+=======
+    /* Initialize the SD host controller. */
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+        goto _shell;
+    } else {
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name);
+    }
+>>>>>>> b962915e (sdmmc)
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&card0, &sdhci0) != 0) {

@@ -80,7 +80,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_spi_t sunxi_spi0;
 
-extern sdhci_t sdhci2;
+extern sunxi_sdhci_t sdhci2;
 
 extern dram_para_t dram_para;
 
@@ -125,7 +125,8 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+    printk_info("FATFS: read in %ums at %.2fMB/S\n", time,
+                (f32) (total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -137,11 +138,13 @@ static int load_sdcard(image_info_t *image) {
 	int ret;
 	uint32_t start;
 
-	uint32_t test_time;
-	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
-	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+    uint32_t test_time;
+    start = time_ms();
+    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    test_time = time_ms() - start;
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -530,12 +533,82 @@ int cmd_boot(int argc, const char **argv) {
 	return 0;
 }
 
+msh_declare_command(read);
+msh_define_help(read, "read SMHC", "Usage: read LBA CNT\n");
+int cmd_read(int argc, const char **argv) {
+    uint32_t start;
+    uint32_t test_time;
+    uint32_t lba_start;
+    uint32_t lba_cnt;
+    char *endptr;
+
+    if (argc != 3) {
+        printk_debug("Invalid arguments. Usage: read LBA CNT\n");
+        return 0;
+    }
+
+    lba_start = (uint32_t) strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        printk_debug("Invalid LBA start: %s\n", argv[1]);
+        return 0;
+    }
+    lba_cnt = (uint32_t) strtol(argv[2], &endptr, 10);
+    if (*endptr != '\0') {
+        printk_debug("Invalid LBA count: %s\n", argv[2]);
+        return 0;
+    }
+
+    printk_debug("Clear Buffer data\n");
+    memset((void *) SDRAM_BASE, 0xFF, 0x80000);
+    dump_hex(SDRAM_BASE, lba_cnt * 512);
+
+    printk_debug("Read data to buffer data\n");
+
+    start = time_ms();
+    sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), lba_start, lba_cnt);
+    test_time = time_ms() - start;
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+                 (lba_cnt * 512) / 1024, test_time,
+                 (lba_cnt * 512) / test_time);
+    dump_hex(SDRAM_BASE, lba_cnt * 512);
+    return 0;
+}
+
+msh_declare_command(write);
+msh_define_help(write, "test", "Usage: write\n");
+int cmd_write(int argc, const char **argv) {
+    uint32_t start;
+    uint32_t test_time;
+
+    printk_debug("Set Buffer data\n");
+    memset((void *) SDRAM_BASE, 0x00, 0x2000);
+    memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
+
+    start = time_ms();
+    sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+    test_time = time_ms() - start;
+    printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n",
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+                 (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+    return 0;
+}
+
 const msh_command_entry commands[] = {
+<<<<<<< HEAD
 		msh_define_command(bootargs),
 		msh_define_command(reload),
 		msh_define_command(boot),
 		msh_define_command(print),
 		msh_command_end,
+=======
+        msh_define_command(read),
+        msh_define_command(write),
+        msh_define_command(bootargs),
+        msh_define_command(reload),
+        msh_define_command(boot),
+        msh_define_command(print),
+        msh_command_end,
+>>>>>>> b962915e (sdmmc)
 };
 
 /* 
@@ -595,6 +668,7 @@ int main(void) {
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 	strcpy(image.config_filename, CONFIG_CONFIG_FILENAME);
 
+<<<<<<< HEAD
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci2) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci2.name);
@@ -602,6 +676,15 @@ int main(void) {
 	} else {
 		printk_info("SMHC: %s controller v%x initialized\n", sdhci2.name, sdhci2.reg->vers);
 	}
+=======
+    /* Initialize the SD host controller. */
+    if (sunxi_sdhci_init(&sdhci2) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+        goto _shell;
+    } else {
+        printk_info("SMHC: %s controller v%x initialized\n", sdhci2.name);
+    }
+>>>>>>> b962915e (sdmmc)
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&card0, &sdhci2) != 0) {

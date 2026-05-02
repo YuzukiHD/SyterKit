@@ -11,3 +11,6 @@ prebuilt/
 .vscode/c_cpp_properties.json
 
 target/
+toolchain/*
+*.ubi
+*.ubifs

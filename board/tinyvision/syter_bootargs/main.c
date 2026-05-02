@@ -55,7 +55,7 @@ extern sunxi_serial_t uart_dbg;
 
 extern sunxi_spi_t sunxi_spi0;
 
-extern sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci0;
 
 extern dram_para_t dram_para;
 
@@ -340,16 +340,16 @@ int main(void) {
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
-		goto _shell;
-	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
-	}
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed\n");
-		goto _shell;
-	}
+    if (sunxi_sdhci_init(&sdhci0) != 0) {
+        printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+        goto _shell;
+    } else {
+        printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+    }
+    if (sdmmc_init(&card0, &sdhci0) != 0) {
+        printk_warning("SMHC: init failed\n");
+        goto _shell;
+    }
 
 	if (load_sdcard(&image) != 0) {
 		printk_warning("SMHC: loading failed\n");
