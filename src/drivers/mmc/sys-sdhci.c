@@ -345,6 +345,7 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 		mmc_host->reg->ntsr = 0x0;
 	}
 
+<<<<<<< HEAD
 	if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
 		/* If using DDR mod to 4 */
 		if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
@@ -360,10 +361,28 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 			module_clk = clk * 2;
 		}
 	}
+=======
+    if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
+        /* If using DDR mod to 4 */
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            module_clk = clk * 4;
+        } else {
+            module_clk = clk * 2;
+        }
+    } else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
+        /* If using DDR mod to 4 */
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            module_clk = clk * 4;
+        } else {
+            module_clk = clk * 2;
+        }
+    }
+>>>>>>> fff3de6b (4bit emmc  support)
 
 	/* Now set mclk */
 	sunxi_sdhci_set_mclk(sdhci, module_clk);
 
+<<<<<<< HEAD
 	/* Now set clock by mclk we get */
 	if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
 		if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
@@ -381,11 +400,31 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 	}
 	/* Set host clock */
 	printk_trace("SMHC: get round clk %luHz, mod_clk %luHz\n", mmc->clock, module_clk);
+=======
+    /* Now set clock by mclk we get */
+    if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            mmc->clock = sunxi_sdhci_get_mclk(sdhci) / 4;
+        } else {
+            mmc->clock = sunxi_sdhci_get_mclk(sdhci) / 2;
+        }
+    } else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
+        /* If using DDR mod to 4 */
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            mmc->clock = sunxi_sdhci_get_mclk(sdhci) / 4;
+        } else {
+            mmc->clock = sunxi_sdhci_get_mclk(sdhci) / 2;
+        }
+    }
+    /* Set host clock */
+    printk_trace("SMHC: get round clk %luHz, mod_clk %luHz\n", mmc->clock, module_clk);
+>>>>>>> fff3de6b (4bit emmc  support)
 
 	/* enable mclk */
 	setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
 	printk_trace("SMHC: mclkbase 0x%x\n", readl(sdhci->sdhci_clk.reg_base));
 
+<<<<<<< HEAD
 	/* Configure SMHC_CLKDIV to open clock for devices */
 	reg_val = mmc_host->reg->clkcr;
 	reg_val &= ~(0xff);
@@ -400,6 +439,22 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 		}
 	}
 	mmc_host->reg->clkcr = reg_val;
+=======
+    /* Configure SMHC_CLKDIV to open clock for devices */
+    reg_val = mmc_host->reg->clkcr;
+    reg_val &= ~(0xff);
+    if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            reg_val |= 0x1;
+        }
+    } else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
+        /* If using DDR mod to 4 */
+        if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
+            reg_val |= 0x1;
+        }
+    }
+    mmc_host->reg->clkcr = reg_val;
+>>>>>>> fff3de6b (4bit emmc  support)
 
 	if (sunxi_sdhci_update_clk(sdhci)) {
 		return -1;
