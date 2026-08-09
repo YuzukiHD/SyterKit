@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config DRIVER_I2C
+	bool "I2C controller support"

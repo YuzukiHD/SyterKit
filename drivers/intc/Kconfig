@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config DRIVER_CLIC
+	bool "Core-local interrupt controller support"
+	depends on ARCH_RISCV32_CORE_E907
+
+config DRIVER_GIC
+	bool "Generic interrupt controller support"
+	depends on ARCH_ARM32

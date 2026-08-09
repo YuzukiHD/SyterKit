@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config DRIVER_MMC_V2
+	bool "MMC controller v2 support"
+
+source "drivers/mmc/host/Kconfig"

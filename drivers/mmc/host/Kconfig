@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config DRIVER_MMC_HOST
+	bool "MMC host controller support"
+	depends on DRIVER_MMC_V2

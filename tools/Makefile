@@ -4,6 +4,7 @@ BUILD_DIR=$(CURDIR)/build
 MKSUNXI  = mksunxi
 BINTOARR = bin2array 
 BINTOASM = bin2asm
+MKBACKTRACE = mkbacktrace
 
 MKSUNXI_CSRC    = mksunxi.c
 MKSUNXI_COBJS   = $(addprefix $(BUILD_DIR)/,$(MKSUNXI_CSRC:.c=.o))
@@ -14,6 +15,9 @@ BINTOARR_COBJS   = $(addprefix $(BUILD_DIR)/,$(BINTOARR_CSRC:.c=.o))
 BINTOASM_CSRC   = bin2asm.c
 BINTOASM_COBJS   = $(addprefix $(BUILD_DIR)/,$(BINTOASM_CSRC:.c=.o))
 
+MKBACKTRACE_CSRC = mkbacktrace.c
+MKBACKTRACE_COBJS = $(addprefix $(BUILD_DIR)/,$(MKBACKTRACE_CSRC:.c=.o))
+
 INCLUDES = -I includes
 CFLAGS   = -O2 -std=gnu99 $(INCLUDES)
 CXXFLAGS = -O2 -std=gnu++11 $(INCLUDES)
@@ -22,7 +26,7 @@ CC  ?= gcc
 CXX ?= g++
 
 all: tools
-tools: $(BUILD_DIR) $(MKSUNXI) $(BINTOARR) $(BINTOASM)
+tools: $(BUILD_DIR) $(MKSUNXI) $(BINTOARR) $(BINTOASM) $(MKBACKTRACE)
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
@@ -32,6 +36,7 @@ clean:
 	rm -f $(MKSUNXI)
 	rm -f $(BINTOARR)
 	rm -f $(BINTOASM)
+	rm -f $(MKBACKTRACE)
 
 $(BUILD_DIR)/%.o : %.c
 	@echo "  CC    $<"
@@ -49,3 +54,6 @@ $(BINTOARR): $(BINTOARR_COBJS)
 
 $(BINTOASM): $(BINTOASM_COBJS)
 	@$(CC) $(CFLAGS) $(BUILD_DIR)/bin2asm.o -o $(BINTOASM)
+
+$(MKBACKTRACE): $(MKBACKTRACE_COBJS)
+	@$(CC) $(CFLAGS) $(BUILD_DIR)/mkbacktrace.o -o $(MKBACKTRACE)

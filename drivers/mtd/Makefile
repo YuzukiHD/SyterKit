@@ -1,0 +1,2 @@
+# SPDX-License-Identifier: GPL-2.0+
+obj-y += spi-nand.o spi-nor.o

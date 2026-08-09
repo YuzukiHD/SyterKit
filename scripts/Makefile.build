@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+src := $(srctree)/$(obj)
+out := $(objtree)/.obj/$(obj)
+
+include $(objtree)/include/config/auto.conf
+kbuild-file := $(if $(wildcard $(src)/Kbuild),$(src)/Kbuild,$(src)/Makefile)
+include $(kbuild-file)
+
+local-objects := $(filter %.o,$(obj-y))
+subdirs := $(patsubst %/,%,$(filter %/,$(obj-y)))
+objects := $(addprefix $(out)/,$(local-objects))
+subtargets := $(addprefix $(out)/,$(addsuffix /built-in.o,$(subdirs)))
+deps := $(objects:.o=.d)
+target := $(out)/built-in.o
+
+.PHONY: all FORCE
+all: $(target)
+
+$(target): $(objects) $(subtargets)
+	@mkdir -p $(dir $@)
+	@$(RM) $@
+	@$(LD) $(KBUILD_LDFLAGS) -r -o $@ $^
+
+$(out)/%/built-in.o: FORCE
+	@$(MAKE) -f $(srctree)/scripts/Makefile.build obj=$(obj)/$*
+
+$(out)/%.o: $(src)/%.c $(objtree)/include/generated/autoconf.h
+	@mkdir -p $(dir $@)
+	@echo "  CC      $(patsubst $(srctree)/%,%,$<)"
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(ccflags-y) \
+		$(CFLAGS_$(@F)) -MMD -MP -c $< -o $@
+
+$(out)/%.o: $(src)/%.S $(objtree)/include/generated/autoconf.h
+	@mkdir -p $(dir $@)
+	@echo "  AS      $(patsubst $(srctree)/%,%,$<)"
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(asflags-y) \
+		$(AFLAGS_$(@F)) -MMD -MP -c $< -o $@
+
+-include $(deps)
+
+FORCE:

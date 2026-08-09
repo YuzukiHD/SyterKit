@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_MCORE_R818
+	bool "MCore R818"
+	depends on ARCH_ARM32 && CPU_ARMV8
+	select SOC_SUN50IW10

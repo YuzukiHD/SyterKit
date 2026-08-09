@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_AVAOTA_M1
+	bool "Avaota M1"
+	depends on ARCH_ARM32 && CPU_ARMV8
+	select SOC_SUN65IW1

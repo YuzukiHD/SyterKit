@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice
+	prompt "GPIO controller version"
+	optional
+
+config DRIVER_GPIO_V1
+	bool "GPIO controller v1"
+
+config DRIVER_GPIO_V2
+	bool "GPIO controller v2"
+
+config DRIVER_GPIO_V3
+	bool "GPIO controller v3"
+
+config DRIVER_GPIO_V4
+	bool "GPIO controller v4"
+
+endchoice
