@@ -1,0 +1,127 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <types.h>
+
+#include <log.h>
+#include <mmu.h>
+
+#include <cli/cli.h>
+#include <cli/cli_shell.h>
+#include <cli/cli_termesc.h>
+
+#include <drivers/dram.h>
+#include <drivers/gpio.h>
+#include <drivers/i2c.h>
+#include <drivers/pmu/axp.h>
+#include <drivers/sdcard.h>
+#include <drivers/sid.h>
+#include <drivers/spi.h>
+#include <drivers/serial.h>
+
+extern sunxi_serial_t uart_dbg;
+extern sunxi_i2c_t i2c_pmu;
+extern sunxi_sdhci_t sdhci0;
+extern sunxi_sdhci_t sdhci2;
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+
+msh_declare_command(reload);
+msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
+int cmd_reload(int argc, const char **argv) {
+	if (sdmmc_init(&card0, &sdhci0) != 0) {
+		printk_error("SMHC: init failed\n");
+		return 0;
+	}
+	return 0;
+}
+
+msh_declare_command(read);
+msh_define_help(read, "test", "Usage: read\n");
+int cmd_read(int argc, const char **argv) {
+	uint32_t start;
+	uint32_t test_time;
+
+	printk_debug("Clear Buffer data\n");
+	memset((void *) SDRAM_BASE, 0x00, 0x2000);
+	dump_hex(SDRAM_BASE, 0x100);
+
+	printk_debug("Read data to buffer data\n");
+
+	start = time_ms();
+	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	test_time = time_ms() - start;
+	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	dump_hex(SDRAM_BASE, 0x100);
+	return 0;
+}
+
+msh_declare_command(write);
+msh_define_help(write, "test", "Usage: write\n");
+int cmd_write(int argc, const char **argv) {
+	uint32_t start;
+	uint32_t test_time;
+
+	printk_debug("Set Buffer data\n");
+	memset((void *) SDRAM_BASE, 0x00, 0x2000);
+	memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
+
+	start = time_ms();
+	sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	test_time = time_ms() - start;
+	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	return 0;
+}
+
+const msh_command_entry commands[] = {
+		msh_define_command(reload),
+		msh_define_command(read),
+		msh_define_command(write),
+		msh_command_end,
+};
+
+int main(void) {
+	sunxi_serial_init(&uart_dbg);
+
+	show_banner();
+
+	sunxi_gpio_power_mode_init();
+
+	sunxi_i2c_init(&i2c_pmu);
+
+	pmu_axp2202_init(&i2c_pmu);
+
+	pmu_axp2202_dump(&i2c_pmu);
+
+	arm32_dcache_enable();
+
+	arm32_icache_enable();
+
+	sunxi_clk_init();
+
+	sunxi_clk_dump();
+
+	printk_info("Hello World!\n");
+
+	/* Initialize the SD host controller. */
+	if (sunxi_sdhci_init(&sdhci0) != 0) {
+		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+	} else {
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+	}
+
+	/* Initialize the SD card and check if initialization is successful. */
+	if (sdmmc_init(&card0, &sdhci0) != 0) {
+		printk_warning("SMHC: init failed\n");
+	} else {
+		printk_debug("Card OK!\n");
+	}
+
+	syterkit_shell_attach(commands);
+
+	abort();
+
+	return 0;
+}
