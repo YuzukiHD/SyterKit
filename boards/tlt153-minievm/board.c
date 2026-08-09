@@ -46,6 +46,7 @@ sunxi_serial_t uart_dbg = {
 						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
 				},
 };
+SUNXI_SERIAL_DEVICE(uart_dbg);
 
 sunxi_sdhci_t sdhci0 = {
 		.name = "sdhci0",

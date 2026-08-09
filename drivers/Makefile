@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+obj-y += core.o
 obj-$(CONFIG_DRIVER_CLK) += clk/
 obj-$(CONFIG_DRIVER_DMA) += dma/
 obj-y += gpio/

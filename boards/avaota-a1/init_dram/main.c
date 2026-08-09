@@ -26,7 +26,6 @@ extern void rtc_set_vccio_det_spare(void);
 
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	arm32_dcache_enable();
 	arm32_icache_enable();

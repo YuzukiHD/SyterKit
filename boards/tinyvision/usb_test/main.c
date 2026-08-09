@@ -33,7 +33,6 @@ void arm32_do_irq(struct arm_regs_t *regs) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	/* Display the bootloader banner. */
 	show_banner();

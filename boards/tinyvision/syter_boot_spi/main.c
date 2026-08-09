@@ -190,7 +190,6 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

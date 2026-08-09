@@ -18,7 +18,6 @@ extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

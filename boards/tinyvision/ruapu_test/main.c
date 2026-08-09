@@ -27,7 +27,6 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

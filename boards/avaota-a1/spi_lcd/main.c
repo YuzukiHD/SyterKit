@@ -239,7 +239,6 @@ void LCD_Fill_All(uint16_t color) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

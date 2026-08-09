@@ -209,7 +209,6 @@ static void LCD_Init(void) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	sunxi_clk_init();
 

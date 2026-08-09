@@ -644,7 +644,6 @@ _error:
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	arm32_dcache_enable();
 	arm32_icache_enable();

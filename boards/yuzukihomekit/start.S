@@ -171,6 +171,8 @@ reset:
 
 	bl set_timer_count
 
+	bl do_initcalls
+
 	bl main
 
 clear_bss:

@@ -1,0 +1,1 @@
+TEST PASS core_initcall

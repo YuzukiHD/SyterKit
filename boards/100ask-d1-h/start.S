@@ -49,6 +49,8 @@ _start:
 
 	jal set_timer_count
 
+	jal do_initcalls
+
 	jal main
 
 clear_bss:

@@ -28,7 +28,6 @@ static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

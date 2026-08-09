@@ -19,6 +19,7 @@
 #include <io.h>
 #include <timer.h>
 
+#include <driver.h>
 #include <log.h>
 #include <drivers/serial.h>
 
@@ -151,3 +152,19 @@ int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
 
 	return serial_reg->lsr & 1;
 }
+
+static int sunxi_serial_probe(struct device *device) {
+	sunxi_serial_t *uart = device_get_platform_data(device);
+
+	if (uart == NULL || uart->base == 0U || uart->baud_rate == 0U)
+		return DRIVER_ERROR_INVALID;
+	sunxi_serial_init(uart);
+	return DRIVER_OK;
+}
+
+static struct driver sunxi_serial_driver = {
+		.name = "sunxi-serial",
+		.compatible = SUNXI_SERIAL_COMPATIBLE,
+		.probe = sunxi_serial_probe,
+};
+early_builtin_driver(sunxi_serial_driver);

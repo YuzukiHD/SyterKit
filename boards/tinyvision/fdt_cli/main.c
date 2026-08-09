@@ -378,7 +378,6 @@ const msh_command_entry commands[] = {
 
 int main(void) {
 	/* Initialize UART debug interface */
-	sunxi_serial_init(&uart_dbg);
 
 	/* Print boot screen */
 	show_banner();

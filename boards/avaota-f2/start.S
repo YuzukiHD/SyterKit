@@ -81,6 +81,8 @@ _start:
 
 	fence.i
 
+	jal do_initcalls
+
 	jal main
 
 clear_bss:

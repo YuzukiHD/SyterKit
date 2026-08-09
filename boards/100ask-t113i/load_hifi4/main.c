@@ -147,7 +147,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);// Initialize the serial interface for debugging
 
 	show_banner();// Display a banner
 

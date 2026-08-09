@@ -33,6 +33,18 @@ SECTIONS
 		KEEP(*(.note.gnu.build-id))
 	} > ram :text
 	.rodata : ALIGN(16) { *(.rdata .rdata.* .rodata .rodata.*) } > ram :text
+	.initcalls : ALIGN(8) {
+		__initcall_start = .;
+		__initcallearly_start = .;
+		KEEP(*(.initcallearly.init))
+		__initcall1_start = .;
+		KEEP(*(.initcall1.init))
+		__initcall6_start = .;
+		KEEP(*(.initcall6.init))
+		__initcall7_start = .;
+		KEEP(*(.initcall7.init))
+		__initcall_end = .;
+	} > ram :text
 	.data : ALIGN(16) { *(.data .data.* .sdata .sdata.*) } > ram :data
 
 	PROVIDE(__spl_end = .);
@@ -42,7 +54,7 @@ SECTIONS
 	.bss (NOLOAD) : {
 		. = ALIGN(4);
 		_sbss = .;
-		*(.bss .bss.* COMMON)
+		*(.sbss .sbss.* .bss .bss.* COMMON)
 		. = ALIGN(4);
 		_ebss = .;
 	} > ram :data

@@ -273,7 +273,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	printk_info("Checking SoC Version...\n");
 

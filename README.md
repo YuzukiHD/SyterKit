@@ -44,3 +44,8 @@ standalone BL33 images, while `make artifacts` builds every output class togethe
 - `scripts/kconfig/`: source-built Kconfig front ends
 - `tools/`: host-side image tools written in C
 - `utils/`: standalone target-side utility firmware and build checks
+
+The common driver runtime is deliberately flat: static devices match static
+drivers and are initialized through four boot-time initcall levels. The full
+contract and migration example are documented in
+[Driver model and initcalls](docs/driver-model.md).
