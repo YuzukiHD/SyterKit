@@ -1,0 +1,3 @@
+[submodule "tools/dt2c"]
+	path = tools/dt2c
+	url = https://github.com/YuzukiTsuru/dt2c.git

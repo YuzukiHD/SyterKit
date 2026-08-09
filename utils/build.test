@@ -91,6 +91,7 @@ validate_board_outputs() {
 test_kconfig_lifecycle() {
 	local config_obj="${objtree}/config-lifecycle"
 	local lifecycle_log="${log_dir}/config-lifecycle.log"
+	local mixed_goals_log="${log_dir}/mixed-goals.log"
 
 	make -C "${srctree}" O="${config_obj}" mrproper
 	make -C "${srctree}" O="${config_obj}" tinyvision_defconfig
@@ -108,6 +109,17 @@ test_kconfig_lifecycle() {
 		<(sed -n '/^CONFIG_/p' "${srctree}/configs/tinyvision_defconfig" | sort) \
 		<(sed -n '/^CONFIG_/p' "${config_obj}/defconfig" | sort)
 	make -C "${srctree}" O="${config_obj}" syncconfig
+	if make -C "${srctree}" O="${config_obj}" \
+			CROSS_COMPILE="${arm_cross_compile}" \
+			DT2C="${config_obj}/missing-dt2c" prepare tools \
+			>"${mixed_goals_log}" 2>&1; then
+		die "prepare tools skipped dt2c with a configured board"
+	fi
+	grep -Fq 'dt2c was not found; set DT2C=/path/to/dt2c' \
+		"${mixed_goals_log}" || {
+		cat "${mixed_goals_log}" >&2
+		die "prepare tools did not reach the dt2c availability check"
+	}
 	make -C "${srctree}" O="${config_obj}" \
 		CROSS_COMPILE="${arm_cross_compile}" prepare tools
 

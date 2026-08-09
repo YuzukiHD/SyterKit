@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "MCore R818";
+	compatible = "syterkit,mcore-r818";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	pinctrl {
+		uart0_pins: uart0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 9 2>,
+				<SUNXI_GPIO_PORT_B 10 2>;
+		};
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		uart0: serial@5000000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <0x05000000 0x400>;
+			current-speed = <115200>;
+			clock-frequency = <24000000>;
+			allwinner,uart-id = <0>;
+			allwinner,clock-gate = <0x0300190c 0>;
+			allwinner,reset = <0x0300190c 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+			status = "okay";
+		};
+	};
+};

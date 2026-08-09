@@ -94,6 +94,9 @@ typedef struct {
 	sunxi_serial_dlen_t dlen;		   /* Data length configuration */
 } sunxi_serial_t;
 
+/** @brief Debug console selected from the board device tree. */
+extern sunxi_serial_t uart_dbg;
+
 #define SERIAL_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
 #define SERIAL_DEFAULT_CLK_GATE_OFFSET(x) (x)
 

@@ -22,8 +22,11 @@
 #include <driver.h>
 #include <log.h>
 #include <drivers/serial.h>
+#include <dt-compatible/serial-dt.h>
 
 #include <drivers/clk.h>
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-uart");
 
 /**
  * @brief Initialize the UART clock
@@ -159,8 +162,25 @@ static int sunxi_serial_probe(struct device *device) {
 	if (uart == NULL || uart->base == 0U || uart->baud_rate == 0U)
 		return DRIVER_ERROR_INVALID;
 	sunxi_serial_init(uart);
+	device_set_driver_data(device, uart);
 	return DRIVER_OK;
 }
+
+static struct device sunxi_serial_console_device = {
+		.name = "stdout",
+		.compatible = SUNXI_SERIAL_COMPATIBLE,
+		.platform_data = &uart_dbg,
+};
+
+static int sunxi_serial_register_console(void) {
+	int result;
+
+	result = sunxi_serial_dt_read_config(&uart_dbg);
+	if (result != DRIVER_OK)
+		return result;
+	return device_register(&sunxi_serial_console_device);
+}
+early_initcall(sunxi_serial_register_console);
 
 static struct driver sunxi_serial_driver = {
 		.name = "sunxi-serial",

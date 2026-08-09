@@ -28,6 +28,16 @@ sudo apt-get update
 sudo apt-get install gcc-arm-none-eabi build-essential flex bison libncurses-dev pkg-config -y
 ```
 
+Initialize the pinned [dt2c](https://github.com/YuzukiTsuru/dt2c) submodule:
+
+```shell
+git submodule update --init tools/dt2c
+```
+
+The default Linux x86_64 generator is a checked-in musl static executable, so
+Rust is not required. Other platforms build from the submodule with Cargo, or
+can provide `DT2C=/path/to/dt2c` and `DT2C_INCLUDE=/path/to/include`.
+
 Select a board configuration and build all applications provided by that board:
 
 ```shell
@@ -119,7 +129,8 @@ xfel spinor write 0x0 spi.img
 The 0.5 driver core uses static `device` and `driver` descriptors with
 compatible-string matching and linker-collected initcalls. See
 [Driver model and initcalls](driver-model.md) for the runtime contract and
-examples.
+examples. Board devices are described with DTS and compiled into static C data;
+see [Compile-time device tree](devicetree.md).
 
 ## How the device boot up
 

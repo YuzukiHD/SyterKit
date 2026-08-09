@@ -1,0 +1,67 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	pinctrl {
+		uart0_pins: uart0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 8 6>,
+				<SUNXI_GPIO_PORT_B 9 6>;
+		};
+
+		uart1_pins: uart1-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_H 13 5>,
+				<SUNXI_GPIO_PORT_H 14 5>;
+		};
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		uart0: serial@1000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <0x1000 0x400>;
+			current-speed = <115200>;
+			clock-frequency = <24000000>;
+			allwinner,uart-id = <0>;
+			allwinner,clock-gate = <0x2000 0>;
+			allwinner,reset = <0x2000 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+			status = "okay";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		uart1: serial@2000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <0x2000 0x400>;
+			current-speed = <1500000>;
+			clock-frequency = <24000000>;
+			allwinner,uart-id = <1>;
+			allwinner,clock-gate = <0x3000 1>;
+			allwinner,reset = <0x3000 17>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart1_pins>;
+			data-bits = <7>;
+			stop-bits = <2>;
+			parity = "even";
+			status = "okay";
+		};
+	};
+};

@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Install build dependencies
         run: |
@@ -53,6 +55,17 @@ jobs:
             'Xuantie-900 elf newlib gcc Toolchain V3.2.0 B-20250627'
           echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
             >> "${GITHUB_ENV}"
+
+      - name: Verify dt2c distributions
+        run: |
+          tools/bin/dt2c generate --help
+          file tools/bin/dt2c | grep -F 'static-pie linked'
+          ! readelf -d tools/bin/dt2c | grep -q '(NEEDED)'
+          rustup toolchain install stable --profile minimal
+          source_build="${RUNNER_TEMP}/dt2c-source-build"
+          make O="${source_build}" \
+            DT2C="${source_build}/.obj/tools/dt2c/release/dt2c" \
+            CARGO="cargo +stable" dt2c-check
 
       - name: Build all board configurations
         env:

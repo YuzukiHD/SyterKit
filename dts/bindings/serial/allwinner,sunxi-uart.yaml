@@ -1,0 +1,48 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner UART used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-uart
+  reg:
+    type: reg
+  current-speed:
+    type: uint32
+  clock-frequency:
+    type: uint32
+  allwinner,uart-id:
+    type: uint32
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  data-bits:
+    type: uint32
+    default: 8
+  stop-bits:
+    type: uint32
+    default: 1
+  parity:
+    type: string
+    default: none
+    enum: [none, odd, even]
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - current-speed
+  - clock-frequency
+  - allwinner,uart-id
+  - allwinner,clock-gate
+  - allwinner,reset
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true

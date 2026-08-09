@@ -36,7 +36,10 @@ no_dot_config_targets := config menuconfig olddefconfig syncconfig defconfig \
 	savedefconfig %_defconfig clean mrproper help list-defconfigs check tools \
 	utilities list-utilities test docs
 
-ifeq ($(filter $(no_dot_config_targets),$(MAKECMDGOALS)),)
+ifeq ($(strip $(MAKECMDGOALS)),)
+-include $(auto_conf)
+-include $(auto_conf).cmd
+else ifneq ($(strip $(filter-out $(no_dot_config_targets),$(MAKECMDGOALS))),)
 -include $(auto_conf)
 -include $(auto_conf).cmd
 endif
@@ -49,7 +52,8 @@ arch_inc := arch/$(arch_dir)/include
 include_dirs := include $(arch_inc)
 
 KBUILD_CPPFLAGS := -I$(objtree)/include/generated \
-	$(addprefix -I$(srctree)/,$(include_dirs)) -include $(auto_header)
+	$(addprefix -I$(srctree)/,$(include_dirs)) \
+	-I$(srctree)/dts/include -include $(auto_header)
 KBUILD_CFLAGS := -nostdlib -nostdinc -ffreestanding -fno-builtin \
 	-fno-common -fno-stack-protector -ffunction-sections -fdata-sections \
 	-Wall
@@ -89,18 +93,35 @@ OBJDUMP ?= $(CROSS_COMPILE)objdump
 SIZE ?= $(CROSS_COMPILE)size
 HOSTCC ?= cc
 DOXYGEN ?= doxygen
+include $(srctree)/scripts/Makefile.dt2c
 FIRMWARE_CROSS_COMPILE ?= riscv64-unknown-elf-
 BL33_CROSS_COMPILE ?= arm-none-eabi-
 
+ifneq ($(board),)
+board_dts := $(srctree)/boards/$(board)/board.dts
+dt2c_bindings := $(srctree)/dts/bindings
+dt2c_out := $(objtree)/.obj/boards/$(board)/dt2c
+dt2c_driver_manifest := $(dt2c_out)/selected-drivers
+dt2c_driver_sources := $(if $(filter y,$(CONFIG_DRIVER_SERIAL)),\
+	$(srctree)/drivers/serial/serial.c)
+dt2c_include := $(dt2c_out)/include
+dt2c_header := $(dt2c_include)/generated/fdt_generated.h
+dt2c_depfile := $(dt2c_out)/devicetree.d
+dt2c_report := $(dt2c_out)/devicetree.json
+KBUILD_CPPFLAGS += -I$(dt2c_include)
+KBUILD_CPPFLAGS += -I$(DT2C_INCLUDE)
+-include $(dt2c_depfile)
+endif
+
 apps := $(apps-y)
 
-export srctree objtree CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC
+export srctree objtree CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC DT2C DT2C_INCLUDE
 export KBUILD_CPPFLAGS KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_LDFLAGS
 
 .PHONY: all artifacts image images prepare tools utilities firmware check config \
 	menuconfig olddefconfig syncconfig defconfig savedefconfig list-defconfigs \
 	list-apps list-firmware list-utilities test docs help clean mrproper \
-	board-kconfig FORCE
+	board-kconfig dt2c-check FORCE
 
 ifneq ($(wildcard $(auto_conf)),)
 all: images
@@ -179,7 +200,7 @@ utility_rel_root := utilities
 list-utilities:
 	@printf '%s\n' $(utility_dirs)
 
-prepare: $(objtree)/include/generated/config.h
+prepare: $(objtree)/include/generated/config.h $(dt2c_header)
 
 git_hash := $(shell git -C $(srctree) rev-parse --short HEAD 2>/dev/null || echo unknown)
 $(objtree)/include/generated/config.h: $(auto_header) $(srctree)/Makefile
@@ -196,6 +217,34 @@ $(objtree)/include/generated/config.h: $(auto_header) $(srctree)/Makefile
 		echo '#define PROJECT_C_COMPILER_VERSION "'$$($(CC) -dumpfullversion -dumpversion)'"'; \
 		echo '#endif'; \
 	} > $@
+
+ifneq ($(board),)
+$(dt2c_driver_manifest): $(dt2c_driver_sources) $(auto_conf) \
+		$(srctree)/Makefile
+	@mkdir -p $(dir $@)
+	@tmp=$@.tmp; : > $$tmp; \
+	for source in $(dt2c_driver_sources); do \
+		printf '%s\n' "$$source" >> $$tmp; \
+	done; \
+	if cmp -s $$tmp $@; then \
+		$(RM) $$tmp; touch $@; \
+	else \
+		mv $$tmp $@; \
+	fi
+
+$(dt2c_header): $(board_dts) $(dt2c_driver_manifest) $(dt2c_path) \
+		| dt2c-check
+	@mkdir -p $(dir $@)
+	@echo "  DT2C   boards/$(board)/board.dts"
+	@$(dt2c_path) generate \
+		--dts $(board_dts) \
+		--bindings $(dt2c_bindings) \
+		--drivers $(dt2c_driver_manifest) \
+		--header $(dt2c_header) \
+		--depfile $(dt2c_depfile) \
+		--report $(dt2c_report) \
+		-I $(srctree)/dts/include
+endif
 
 build_dirs := core lib drivers arch/$(arch_dir) boards/$(board)
 common_builtins := $(addprefix $(objtree)/.obj/,$(addsuffix /built-in.o,$(build_dirs)))
@@ -344,7 +393,7 @@ endef
 $(foreach app,$(apps),$(eval $(call app_template,$(app))))
 
 host_tools := mksunxi bin2array bin2asm mkbacktrace
-tools: $(addprefix $(objtree)/tools/,$(host_tools))
+tools: $(addprefix $(objtree)/tools/,$(host_tools)) dt2c-check
 
 utilities:
 	@set -e; for utility_dir in $(utility_dirs); do \
@@ -371,7 +420,7 @@ firmware:
 check:
 	@$(srctree)/utils/check-build-structure.sh
 
-test:
+test: dt2c-check
 	@$(MAKE) --no-print-directory -C $(srctree)/test
 
 docs:
