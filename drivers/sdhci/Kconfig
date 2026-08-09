@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config DRIVER_SDHCI
+	bool "SD host controller interface support"

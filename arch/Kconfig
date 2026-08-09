@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Architecture"
+
+choice
+	prompt "Architecture"
+	optional
+
+config ARCH_ARM32
+	bool "ARM 32-bit"
+
+config ARCH_RISCV32
+	bool "RISC-V 32-bit"
+
+config ARCH_RISCV64
+	bool "RISC-V 64-bit"
+
+endchoice
+
+choice
+	prompt "ARM processor core"
+	depends on ARCH_ARM32
+	optional
+
+config CPU_CORTEX_A7
+	bool "Cortex-A7"
+
+config CPU_ARMV8
+	bool "ARMv8-A"
+
+config CPU_ARMV8_2
+	bool "ARMv8.2-A"
+
+endchoice
+
+choice
+	prompt "RISC-V processor core"
+	depends on ARCH_RISCV32 || ARCH_RISCV64
+	optional
+
+config ARCH_RISCV32_CORE_E907
+	bool "Xuantie E907"
+	depends on ARCH_RISCV32
+
+config ARCH_RISCV64_CORE_C906
+	bool "Xuantie C906"
+	depends on ARCH_RISCV64
+
+endchoice
+
+config ARM_HARDFP
+	bool "Use the hard-float ABI"
+	depends on CPU_CORTEX_A7
+
+config ARCH_MINSTACK
+	bool "Use the minimal startup stack"
+
+config ARCH_DCACHE
+	bool "Enable the data cache"
+
+config BACKTRACE
+	bool
+
+choice
+	prompt "Backtrace implementation"
+	depends on ARCH_ARM32 || ARCH_RISCV32_CORE_E907 || ARCH_RISCV64_CORE_C906
+	optional
+
+config BACKTRACE_MIN
+	bool "Minimal address-only backtrace"
+	select BACKTRACE
+	help
+	  Print raw return addresses with the smallest runtime and image-size
+	  overhead.
+
+config BACKTRACE_FULL
+	bool "Full symbolized backtrace"
+	select BACKTRACE
+	help
+	  Generate a symbol table for each output ELF and print function names,
+	  offsets, and sizes in the call trace.
+
+endchoice
+
+config SOC_SUN20IW1
+	bool
+config SOC_SUN252IW1
+	bool
+config SOC_SUN300IW1
+	bool
+config SOC_SUN50IW9
+	bool
+config SOC_SUN50IW10
+	bool
+config SOC_SUN55IW3
+	bool
+config SOC_SUN55IW6
+	bool
+config SOC_SUN60IW2
+	bool
+config SOC_SUN65IW1
+	bool
+config SOC_SUN8IW20
+	bool
+config SOC_SUN8IW21
+	bool
+config SOC_SUN8IW22
+	bool
+
+endmenu

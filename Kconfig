@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+mainmenu "SyterKit Configuration"
+
+source "arch/Kconfig"
+source "drivers/Kconfig"
+source "lib/Kconfig"
+source "boards/Kconfig"
+
+menu "Build options"
+
+choice
+	prompt "Build mode"
+	optional
+
+config BUILD_RELEASE
+	bool "Release"
+
+config BUILD_DEBUG
+	bool "Debug"
+
+config BUILD_TRACE
+	bool "Trace"
+
+endchoice
+
+config OPTIMIZE_FOR_SIZE
+	bool "Optimize for size"
+
+endmenu

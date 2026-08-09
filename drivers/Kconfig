@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Device drivers"
+
+source "drivers/clk/Kconfig"
+source "drivers/dma/Kconfig"
+source "drivers/gpio/Kconfig"
+source "drivers/i2c/Kconfig"
+source "drivers/intc/Kconfig"
+source "drivers/mmc/Kconfig"
+source "drivers/mtd/Kconfig"
+source "drivers/pmu/Kconfig"
+source "drivers/pwm/Kconfig"
+source "drivers/dram/Kconfig"
+source "drivers/remoteproc/Kconfig"
+source "drivers/rng/Kconfig"
+source "drivers/rtc/Kconfig"
+source "drivers/sdhci/Kconfig"
+source "drivers/serial/Kconfig"
+source "drivers/soc/Kconfig"
+source "drivers/spi/Kconfig"
+source "drivers/ufs/Kconfig"
+source "drivers/usb/Kconfig"
+
+endmenu
