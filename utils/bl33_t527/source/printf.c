@@ -58,26 +58,28 @@ void uart_log_putchar(void *arg, char c) {
 }
 
 // Output a formatted string to the standard output
-void uart_printf(const char *fmt, ...) {
+int uart_printf(const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	int count = xvformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
+	return count;
 }
 
-void printf(const char *fmt, ...) {
+int printf(const char *fmt, ...) {
 	uint32_t now_timestamp = time_us() - init_timestamp;
 	uint32_t seconds = now_timestamp / (1000 * 1000);
 	uint32_t milliseconds = now_timestamp % (1000 * 1000);
-	uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
+	int count = uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	count += xvformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
+	return count;
 }
