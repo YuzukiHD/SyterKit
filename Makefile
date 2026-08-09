@@ -115,7 +115,9 @@ dt2c_driver_sources := $(if $(filter y,$(CONFIG_DRIVER_SERIAL)),\
 	$(srctree)/drivers/pmu/axp333.c \
 	$(srctree)/drivers/pmu/axp8191.c) \
 	$(if $(filter y,$(CONFIG_DRIVER_SPI)),\
-	$(srctree)/drivers/spi/spi.c)
+	$(srctree)/drivers/spi/spi.c) \
+	$(if $(filter y,$(CONFIG_DRIVER_PWM)),\
+	$(srctree)/drivers/pwm/pwm.c)
 dt2c_include := $(dt2c_out)/include
 dt2c_header := $(dt2c_include)/generated/fdt_generated.h
 dt2c_depfile := $(dt2c_out)/devicetree.d

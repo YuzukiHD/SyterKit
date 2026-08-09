@@ -1,0 +1,44 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner PWM controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-pwm
+  reg:
+    type: reg
+  "#pwm-cells":
+    type: uint32
+  allwinner,pwm-id:
+    type: uint32
+  clock-frequency:
+    type: uint32
+  allwinner,apb-clock-frequency:
+    type: uint32
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  allwinner,channel-config:
+    type: uint32-array
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - "#pwm-cells"
+  - allwinner,pwm-id
+  - clock-frequency
+  - allwinner,apb-clock-frequency
+  - allwinner,clock-gate
+  - allwinner,reset
+  - allwinner,channel-config
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true
