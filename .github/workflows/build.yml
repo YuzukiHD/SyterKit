@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+name: Build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  make:
+    name: Build, Kconfig, and API tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            bison \
+            build-essential \
+            ca-certificates \
+            curl \
+            doxygen \
+            flex \
+            gcc-arm-none-eabi \
+            libncurses-dev \
+            pkg-config \
+            qemu-user \
+            ripgrep
+
+      - name: Install Xuantie RISC-V toolchain
+        env:
+          TOOLCHAIN_URL: https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1751370399722/Xuantie-900-gcc-elf-newlib-x86_64-V3.2.0-20250627.tar.gz
+          TOOLCHAIN_SHA256: 80c174c6445f7565bc082d328045021862a63beddfad8c393c534e2d9523dc3b
+        run: |
+          archive="${RUNNER_TEMP}/xuantie-toolchain.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/xuantie"
+          curl --fail --location --retry 3 --output "${archive}" \
+            "${TOOLCHAIN_URL}"
+          echo "${TOOLCHAIN_SHA256}  ${archive}" | sha256sum --check --strict
+          tar --extract --gzip --strip-components=1 \
+            --directory "${RUNNER_TEMP}/xuantie" --file "${archive}"
+          toolchain="${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-"
+          "${toolchain}gcc" --version | grep -F \
+            'Xuantie-900 elf newlib gcc Toolchain V3.2.0 B-20250627'
+          echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
+            >> "${GITHUB_ENV}"
+
+      - name: Build all board configurations
+        env:
+          ARM_CROSS_COMPILE: arm-none-eabi-
+          O: ${{ runner.temp }}/syterkit-build
+        run: utils/build.test
+
+      - name: Run API and QEMU tests
+        env:
+          ARM_CROSS_COMPILE: arm-none-eabi-
+          O: ${{ runner.temp }}/syterkit-test
+        run: make test
+
+      - name: Check API documentation
+        run: make docs
