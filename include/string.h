@@ -11,7 +11,7 @@ extern "C" {
 #endif// __cplusplus
 
 /**
- * Copies the values of 'cnt' bytes from memory area 'src' to memory area 'dst'.
+ * @brief Copies the values of 'cnt' bytes from memory area 'src' to memory area 'dst'.
  *
  * @param dst The destination memory area.
  * @param src The source memory area.
@@ -21,7 +21,7 @@ extern "C" {
 void *memcpy(void *dst, const void *src, int cnt) __attribute__((optimize("O0")));
 
 /**
- * Sets the first 'cnt' bytes of the memory area pointed to by 'dst' to the specified value 'val'.
+ * @brief Sets the first 'cnt' bytes of the memory area pointed to by 'dst' to the specified value 'val'.
  *
  * @param dst The memory area to be filled.
  * @param val The value to be set.
@@ -31,7 +31,7 @@ void *memcpy(void *dst, const void *src, int cnt) __attribute__((optimize("O0"))
 void *memset(void *dst, int val, int cnt) __attribute__((optimize("O0")));
 
 /**
- * Compares the first 'cnt' bytes of the memory areas 'dst' and 'src'.
+ * @brief Compares the first 'cnt' bytes of the memory areas 'dst' and 'src'.
  *
  * @param dst The first memory area to compare.
  * @param src The second memory area to compare.
@@ -41,7 +41,7 @@ void *memset(void *dst, int val, int cnt) __attribute__((optimize("O0")));
 int memcmp(const void *dst, const void *src, unsigned int cnt) __attribute__((optimize("O0")));
 
 /**
- * Calculates the length of the string 'str', excluding the terminating null byte.
+ * @brief Calculates the length of the string 'str', excluding the terminating null byte.
  *
  * @param str The input string.
  * @return The length of the input string.
@@ -49,7 +49,7 @@ int memcmp(const void *dst, const void *src, unsigned int cnt) __attribute__((op
 unsigned int strlen(const char *str) __attribute__((optimize("O0")));
 
 /**
- * Calculates the length of the string 's', but not more than 'n' characters.
+ * @brief Calculates the length of the string 's', but not more than 'n' characters.
  *
  * @param s The input string.
  * @param n The maximum number of characters to examine.
@@ -58,7 +58,7 @@ unsigned int strlen(const char *str) __attribute__((optimize("O0")));
 unsigned int strnlen(const char *s, unsigned int n) __attribute__((optimize("O0")));
 
 /**
- * Copies the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dst'.
+ * @brief Copies the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dst'.
  *
  * @param dst The destination buffer.
  * @param src The source string.
@@ -67,7 +67,7 @@ unsigned int strnlen(const char *s, unsigned int n) __attribute__((optimize("O0"
 char *strcpy(char *dst, const char *src) __attribute__((optimize("O0")));
 
 /**
- * Copies up to 'n' characters from the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dest'.
+ * @brief Copies up to 'n' characters from the string pointed to by 'src', including the terminating null byte, to the buffer pointed to by 'dest'.
  *
  * @param dest The destination buffer.
  * @param src The source string.
@@ -77,7 +77,7 @@ char *strcpy(char *dst, const char *src) __attribute__((optimize("O0")));
 char *strncpy(char *dest, const char *src, unsigned int n) __attribute__((optimize("O0")));
 
 /**
- * Appends the string pointed to by 'src', including the terminating null byte, to the end of the string pointed to by 'dst'.
+ * @brief Appends the string pointed to by 'src', including the terminating null byte, to the end of the string pointed to by 'dst'.
  *
  * @param dst The destination string.
  * @param src The source string.
@@ -86,7 +86,7 @@ char *strncpy(char *dest, const char *src, unsigned int n) __attribute__((optimi
 char *strcat(char *dst, const char *src) __attribute__((optimize("O0")));
 
 /**
- * Compares the string pointed to by 'p1' to the string pointed to by 'p2'.
+ * @brief Compares the string pointed to by 'p1' to the string pointed to by 'p2'.
  *
  * @param p1 The first string to compare.
  * @param p2 The second string to compare.
@@ -95,7 +95,7 @@ char *strcat(char *dst, const char *src) __attribute__((optimize("O0")));
 int strcmp(const char *p1, const char *p2) __attribute__((optimize("O0")));
 
 /**
- * Compares at most the first 'cnt' characters of the string pointed to by 'p1' to the string pointed to by 'p2'.
+ * @brief Compares at most the first 'cnt' characters of the string pointed to by 'p1' to the string pointed to by 'p2'.
  *
  * @param p1 The first string to compare.
  * @param p2 The second string to compare.
@@ -105,7 +105,7 @@ int strcmp(const char *p1, const char *p2) __attribute__((optimize("O0")));
 int strncmp(const char *p1, const char *p2, unsigned int cnt) __attribute__((optimize("O0")));
 
 /**
- * Finds the first occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
+ * @brief Finds the first occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
  *
  * @param s The input string.
  * @param c The character to search for.
@@ -114,7 +114,7 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt) __attribute__((opt
 char *strchr(const char *s, int c) __attribute__((optimize("O0")));
 
 /**
- * Finds the last occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
+ * @brief Finds the last occurrence of the character 'c' (converted to a char) in the string pointed to by 's', including the terminating null byte.
  *
  * @param s The input string.
  * @param c The character to search for.
@@ -123,7 +123,7 @@ char *strchr(const char *s, int c) __attribute__((optimize("O0")));
 char *strrchr(const char *s, int c) __attribute__((optimize("O0")));
 
 /**
- * Finds the first occurrence of the substring 'what' in the string 's'.
+ * @brief Finds the first occurrence of the substring 'what' in the string 's'.
  *
  * @param s The input string.
  * @param what The substring to search for.
@@ -132,17 +132,17 @@ char *strrchr(const char *s, int c) __attribute__((optimize("O0")));
 char *strstr(const char *s, const char *what) __attribute__((optimize("O0")));
 
 /**
- * Locates the first occurrence of the character 'value' (converted to an unsigned char) in the first 'num' bytes of the memory area pointed to by 'ptr'.
+ * @brief Locates the first occurrence of the character 'value' (converted to an unsigned char) in the first 'num' bytes of the memory area pointed to by 'ptr'.
  *
  * @param ptr The input memory area.
  * @param value The value to search for.
  * @param num The number of bytes to examine.
  * @return A pointer to the located character, or NULL if the character does not occur in the memory area.
  */
-void *memchr(void *ptr, int value, unsigned int num) __attribute__((optimize("O0")));
+void *memchr(const void *ptr, int value, unsigned int num) __attribute__((optimize("O0")));
 
 /**
- * Copies 'count' bytes from the memory area 'src' to the memory area 'dest'. The memory areas may overlap.
+ * @brief Copies 'count' bytes from the memory area 'src' to the memory area 'dest'. The memory areas may overlap.
  *
  * @param dest The destination memory area.
  * @param src The source memory area.

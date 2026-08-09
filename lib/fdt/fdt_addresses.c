@@ -4,12 +4,12 @@
  * Copyright (C) 2014 David Gibson <david@gibson.dropbear.id.au>
  * Copyright (C) 2018 embedded brains GmbH
  */
-#include "libfdt_env.h"
+#include <lib/fdt/libfdt_env.h>
 
-#include <fdt.h>
-#include <libfdt.h>
+#include <lib/fdt/fdt.h>
+#include <lib/fdt/libfdt.h>
 
-#include "libfdt_internal.h"
+#include <lib/fdt/libfdt_internal.h>
 
 static int fdt_cells(const void *fdt, int nodeoffset, const char *name) {
 	const fdt32_t *c;

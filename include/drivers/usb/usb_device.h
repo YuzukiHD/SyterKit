@@ -202,7 +202,7 @@
 #define USB_TEST_MODE 0x02
 
 /**
- * Disable all transfer types for the USB device.
+ * @brief Disable all transfer types for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -211,7 +211,7 @@ static inline void usb_device_transfer_type_default(uint32_t addr) {
 }
 
 /**
- * Set the control transfer type for the USB device.
+ * @brief Set the control transfer type for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -220,7 +220,7 @@ static inline void usb_device_transfer_type_ctrl(uint32_t addr) {
 }
 
 /**
- * Set the ISO transfer type for the USB device.
+ * @brief Set the ISO transfer type for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -229,7 +229,7 @@ static inline void usb_device_transfer_type_iso(uint32_t addr) {
 }
 
 /**
- * Set the interrupt transfer type for the USB device.
+ * @brief Set the interrupt transfer type for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -238,7 +238,7 @@ static inline void usb_device_transfer_type_int(uint32_t addr) {
 }
 
 /**
- * Set the bulk transfer type for the USB device.
+ * @brief Set the bulk transfer type for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -247,7 +247,7 @@ static inline void usb_device_transfer_type_bulk(uint32_t addr) {
 }
 
 /**
- * Disable all transfer modes for the USB device.
+ * @brief Disable all transfer modes for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -256,7 +256,7 @@ static inline void usb_device_transfer_mode_default(uint32_t addr) {
 }
 
 /**
- * Set the mode to High Speed (HS) for the USB device.
+ * @brief Set the mode to High Speed (HS) for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -265,7 +265,7 @@ static inline void usb_device_transfer_mode_hs(uint32_t addr) {
 }
 
 /**
- * Set the mode to Full Speed (FS) for the USB device.
+ * @brief Set the mode to Full Speed (FS) for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -274,7 +274,7 @@ static inline void usb_device_transfer_mode_fs(uint32_t addr) {
 }
 
 /**
- * Set the mode to Low Speed (LS) for the USB device.
+ * @brief Set the mode to Low Speed (LS) for the USB device.
  *
  * Notice: This is Fake LS, we use it as FS
  * 
@@ -286,7 +286,7 @@ static inline void usb_device_transfer_mode_ls(uint32_t addr) {
 
 
 /**
- * Configure Endpoint 0 (EP0) in default mode for the USB device.
+ * @brief Configure Endpoint 0 (EP0) in default mode for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -295,7 +295,7 @@ static inline void usb_device_ep0_config_ep0_default(uint32_t addr) {
 }
 
 /**
- * Configure Endpoint 0 (EP0) for the USB device.
+ * @brief Configure Endpoint 0 (EP0) for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -304,7 +304,7 @@ static inline void usb_device_ep0_config_ep0(uint32_t addr) {
 }
 
 /**
- * Check if Endpoint 0 (EP0) has received data ready flag for the USB device.
+ * @brief Check if Endpoint 0 (EP0) has received data ready flag for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
@@ -314,7 +314,7 @@ static inline uint32_t usb_device_ep0_get_read_data_ready(uint32_t addr) {
 }
 
 /**
- * Check if Endpoint 0 (EP0) has write data ready flag for the USB device.
+ * @brief Check if Endpoint 0 (EP0) has write data ready flag for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
@@ -324,7 +324,7 @@ static inline uint32_t usb_device_ep0_get_write_data_ready(uint32_t addr) {
 }
 
 /**
- * Clear the read data half flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Clear the read data half flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -333,7 +333,7 @@ static inline void usb_device_ep0_read_data_half(uint32_t addr) {
 }
 
 /**
- * Clear the read data complete flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Clear the read data complete flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -342,7 +342,7 @@ static inline void usb_device_ep0_read_data_complete(uint32_t addr) {
 }
 
 /**
- * Clear the write data half flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Clear the write data half flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -351,7 +351,7 @@ static inline void usb_device_ep0_write_data_half(uint32_t addr) {
 }
 
 /**
- * Set the write data complete flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Set the write data complete flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -360,17 +360,17 @@ static inline void usb_device_ep0_write_data_complete(uint32_t addr) {
 }
 
 /**
- * Check if Endpoint 0 (EP0) has the stall flag set for the USB device.
+ * @brief Check if Endpoint 0 (EP0) has the stall flag set for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static uint32_t usb_device_ep0_get_stall(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_stall(uint32_t addr) {
 	return usb_get_bit16(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(addr));
 }
 
 /**
- * Set the send stall flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Set the send stall flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -379,7 +379,7 @@ static inline void usb_device_ep0_send_stall(uint32_t addr) {
 }
 
 /**
- * Clear the stall flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Clear the stall flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -389,17 +389,17 @@ static inline void usb_device_ep0_clear_stall(uint32_t addr) {
 }
 
 /**
- * Check if Endpoint 0 (EP0) has the setup end flag set for the USB device.
+ * @brief Check if Endpoint 0 (EP0) has the setup end flag set for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
 	return usb_get_bit16(USBC_BP_CSR0_D_SETUP_END, USBC_REG_CSR0(addr));
 }
 
 /**
- * Clear the setup end flag for Endpoint 0 (EP0) of the USB device.
+ * @brief Clear the setup end flag for Endpoint 0 (EP0) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -408,7 +408,7 @@ static inline void usb_device_ep0_clear_setup_end(uint32_t addr) {
 }
 
 /**
- * Enable ISO transfer for the USB device.
+ * @brief Enable ISO transfer for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -417,7 +417,7 @@ static inline void usb_device_tx_iso_ep_enable(uint32_t addr) {
 }
 
 /**
- * Enable interrupt transfer for the USB device.
+ * @brief Enable interrupt transfer for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -426,7 +426,7 @@ static inline void usb_device_tx_int_ep_enable(uint32_t addr) {
 }
 
 /**
- * Enable bulk transfer for the USB device.
+ * @brief Enable bulk transfer for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -435,7 +435,7 @@ static inline void usb_device_tx_bulk_ep_enable(uint32_t addr) {
 }
 
 /**
- * Configure the default settings for the transmit endpoint (EP) of the USB device.
+ * @brief Configure the default settings for the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -447,7 +447,7 @@ static inline void usb_device_tx_config_ep_default(uint32_t addr) {
 }
 
 /**
- * Clear the DMA transfer flag for the USB device.
+ * @brief Clear the DMA transfer flag for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -460,7 +460,7 @@ static inline void usb_device_clear_dma_trans(uint32_t addr) {
 }
 
 /**
- * Configure the DMA transfer settings for the USB device.
+ * @brief Configure the DMA transfer settings for the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -473,7 +473,7 @@ static inline void usb_device_config_dma_trans(uint32_t addr) {
 }
 
 /**
- * Configure the transmit endpoint (EP) of the USB device.
+ * @brief Configure the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  * @param ts_type The transfer type of the EP.
@@ -519,7 +519,7 @@ static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint
 }
 
 /**
- * Configure the DMA transfer settings for the transmit endpoint (EP) of the USB device.
+ * @brief Configure the DMA transfer settings for the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -536,7 +536,7 @@ static inline void usb_device_tx_config_ep_dma(uint32_t addr) {
 }
 
 /**
- * Clear the DMA transfer flag for the transmit endpoint (EP) of the USB device.
+ * @brief Clear the DMA transfer flag for the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -556,7 +556,7 @@ static inline void usb_device_tx_clear_ep_dma(uint32_t addr) {
 }
 
 /**
- * Check if the transmit endpoint (EP) is ready to write data for the USB device.
+ * @brief Check if the transmit endpoint (EP) is ready to write data for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the write data ready flag.
@@ -571,7 +571,7 @@ static inline uint32_t usb_device_tx_get_write_data_ready(uint32_t addr) {
 }
 
 /**
- * Check if the FIFO of the transmit endpoint (EP) is empty for the USB device.
+ * @brief Check if the FIFO of the transmit endpoint (EP) is empty for the USB device.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the FIFO empty flag.
@@ -586,7 +586,7 @@ static inline uint32_t usb_device_tx_get_write_data_ready_fifo_empty(uint32_t ad
 }
 
 /**
- * Write half of the data to the transmit endpoint (EP) of the USB device.
+ * @brief Write half of the data to the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -600,7 +600,7 @@ static inline void usb_device_tx_write_data_half(uint32_t addr) {
 }
 
 /**
- * Write all of the data to the transmit endpoint (EP) of the USB device.
+ * @brief Write all of the data to the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -614,7 +614,7 @@ static inline void usb_device_tx_write_data_complete(uint32_t addr) {
 }
 
 /**
- * Send a stall signal and flush the FIFO of the transmit endpoint (EP) of the USB device.
+ * @brief Send a stall signal and flush the FIFO of the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -623,7 +623,7 @@ static inline void usb_device_tx_send_stall(uint32_t addr) {
 }
 
 /**
- * Check if the transmit endpoint (EP) of the USB device is stalled.
+ * @brief Check if the transmit endpoint (EP) of the USB device is stalled.
  *
  * @param addr The address of the USB device.
  * @return Returns the status of the stall flag.
@@ -633,7 +633,7 @@ static inline uint32_t usb_device_tx_get_ep_stall(uint32_t addr) {
 }
 
 /**
- * Clear the stall signal and reset the FIFO of the transmit endpoint (EP) of the USB device.
+ * @brief Clear the stall signal and reset the FIFO of the transmit endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -646,7 +646,7 @@ static inline void usb_device_tx_clear_stall(uint32_t addr) {
 }
 
 /**
- * Enable the isochronous transfer type for the receive endpoint (EP) of the USB device.
+ * @brief Enable the isochronous transfer type for the receive endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -655,7 +655,7 @@ static inline void usb_device_rx_enable_iso_ep(uint32_t addr) {
 }
 
 /**
- * Enable the interrupt transfer type for the receive endpoint (EP) of the USB device.
+ * @brief Enable the interrupt transfer type for the receive endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -664,7 +664,7 @@ static inline void usb_device_rx_enable_int_ep(uint32_t addr) {
 }
 
 /**
- * Enable the bulk transfer type for the receive endpoint (EP) of the USB device.
+ * @brief Enable the bulk transfer type for the receive endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -673,7 +673,7 @@ static inline void usb_device_rx_enable_bulk_ep(uint32_t addr) {
 }
 
 /**
- * Configure the default settings for the receive endpoint (EP) of the USB device.
+ * @brief Configure the default settings for the receive endpoint (EP) of the USB device.
  *
  * @param addr The address of the USB device.
  */
@@ -964,55 +964,55 @@ static inline void usb_device_rx_flush_fifo(uint32_t addr) {
 }
 
 /**
- * Set the default address for the USB device.
+ * @brief Set the default address for the USB device.
  *
  * @param husb The USB device handle.
  */
-void usb_device_set_address_default(uint64_t husb);
+void usb_device_set_address_default(uintptr_t husb);
 
 /**
- * Set the address for the USB device.
+ * @brief Set the address for the USB device.
  *
  * @param husb The USB device handle.
  * @param address The address to set.
  */
-void usb_device_set_address(uint64_t husb, uint8_t address);
+void usb_device_set_address(uintptr_t husb, uint8_t address);
 
 /**
- * Query the transfer mode of the USB device.
+ * @brief Query the transfer mode of the USB device.
  *
  * @param husb The USB device handle.
  * @return The transfer mode.
  */
-uint32_t usb_device_query_transfer_mode(uint64_t husb);
+uint32_t usb_device_query_transfer_mode(uintptr_t husb);
 
 /**
- * Configure the transfer mode of the USB device.
+ * @brief Configure the transfer mode of the USB device.
  *
  * @param husb The USB device handle.
  * @param ts_type The transfer mode type.
  * @param speed_mode The speed mode.
  */
-void usb_device_config_transfer_mode(uint64_t husb, uint8_t ts_type, uint8_t speed_mode);
+void usb_device_config_transfer_mode(uintptr_t husb, uint8_t ts_type, uint8_t speed_mode);
 
 /**
- * Switch the USB device connection on or off.
+ * @brief Switch the USB device connection on or off.
  *
  * @param husb The USB device handle.
  * @param is_on Whether to turn the connection on (1) or off (0).
  */
-void usb_device_connect_switch(uint64_t husb, uint32_t is_on);
+void usb_device_connect_switch(uintptr_t husb, uint32_t is_on);
 
 /**
- * Query the power status of the USB device.
+ * @brief Query the power status of the USB device.
  *
  * @param husb The USB device handle.
  * @return The power status.
  */
-uint32_t usb_device_query_power_status(uint64_t husb);
+uint32_t usb_device_query_power_status(uintptr_t husb);
 
 /**
- * Configure an endpoint of the USB device.
+ * @brief Configure an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ts_type The transfer mode type.
@@ -1021,139 +1021,139 @@ uint32_t usb_device_query_power_status(uint64_t husb);
  * @param ep_maxpkt The maximum packet size of the endpoint.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep(uint64_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
+int usb_device_config_ep(uintptr_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
 
 /**
- * Configure a default endpoint of the USB device.
+ * @brief Configure a default endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep_default(uint64_t husb, uint32_t ep_type);
+int usb_device_config_ep_default(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Configure an endpoint of the USB device to use DMA.
+ * @brief Configure an endpoint of the USB device to use DMA.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep_dma(uint64_t husb, uint32_t ep_type);
+int usb_device_config_ep_dma(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Clear the DMA configuration for an endpoint of the USB device.
+ * @brief Clear the DMA configuration for an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_clear_ep_dma(uint64_t husb, uint32_t ep_type);
+int usb_device_clear_ep_dma(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Get the stall status of an endpoint of the USB device.
+ * @brief Get the stall status of an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 1 if stalled, 0 if not stalled.
  */
-int usb_device_get_ep_stall(uint64_t husb, uint32_t ep_type);
+int usb_device_get_ep_stall(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Send a stall condition on an endpoint of the USB device.
+ * @brief Send a stall condition on an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_ep_send_stall(uint64_t husb, uint32_t ep_type);
+int usb_device_ep_send_stall(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Clear the stall condition on an endpoint of the USB device.
+ * @brief Clear the stall condition on an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_ep_clear_stall(uint64_t husb, uint32_t ep_type);
+int usb_device_ep_clear_stall(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Get the setup end status of the control endpoint of the USB device.
+ * @brief Get the setup end status of the control endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @return The setup end status.
  */
-uint32_t usb_device_ctrl_get_setup_end(uint64_t husb);
+uint32_t usb_device_ctrl_get_setup_end(uintptr_t husb);
 
 /**
- * Clear the setup end status of the control endpoint of the USB device.
+ * @brief Clear the setup end status of the control endpoint of the USB device.
  *
  * @param husb The USB device handle.
  */
-void usb_device_ctrl_clear_setup_end(uint64_t husb);
+void usb_device_ctrl_clear_setup_end(uintptr_t husb);
 
 /**
- * Check the write data status of an endpoint of the USB device.
+ * @brief Check the write data status of an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @param complete Whether the write operation is complete (1) or not (0).
  * @return 0 on success, -1 on failure.
  */
-int usb_device_write_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete);
+int usb_device_write_data_status(uintptr_t husb, uint32_t ep_type, uint32_t complete);
 
 /**
- * Check the read data status of an endpoint of the USB device.
+ * @brief Check the read data status of an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @param complete Whether the read operation is complete (1) or not (0).
  * @return 0 on success, -1 on failure.
  */
-int usb_device_read_data_status(uint64_t husb, uint32_t ep_type, uint32_t complete);
+int usb_device_read_data_status(uintptr_t husb, uint32_t ep_type, uint32_t complete);
 
 /**
- * Check if there is ready data to be read from an endpoint of the USB device.
+ * @brief Check if there is ready data to be read from an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_read_data_ready(uint64_t husb, uint32_t ep_type);
+uint32_t usb_device_get_read_data_ready(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Check if an endpoint of the USB device is ready to write data.
+ * @brief Check if an endpoint of the USB device is ready to write data.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_write_data_ready(uint64_t husb, uint32_t ep_type);
+uint32_t usb_device_get_write_data_ready(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Check if the FIFO of an endpoint of the USB device is empty and ready to write data.
+ * @brief Check if the FIFO of an endpoint of the USB device is empty and ready to write data.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  * @return 1 if ready, 0 if not ready.
  */
-uint32_t usb_device_get_write_data_ready_fifo_empty(uint64_t husb, uint32_t ep_type);
+uint32_t usb_device_get_write_data_ready_fifo_empty(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Enable ISO update for the USB device.
+ * @brief Enable ISO update for the USB device.
  *
  * @param husb The USB device handle.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_iso_update_enable(uint64_t husb);
+int usb_device_iso_update_enable(uintptr_t husb);
 
 /**
- * Flush the FIFO of an endpoint of the USB device.
+ * @brief Flush the FIFO of an endpoint of the USB device.
  *
  * @param husb The USB device handle.
  * @param ep_type The endpoint type.
  */
-void usb_device_flush_fifo(uint64_t husb, uint32_t ep_type);
+void usb_device_flush_fifo(uintptr_t husb, uint32_t ep_type);
 
 
 #endif// __USB_DEVICE_H__

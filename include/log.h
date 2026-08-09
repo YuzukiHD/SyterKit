@@ -10,7 +10,7 @@
 
 #include <timer.h>
 
-#include <sys-uart.h>
+#include <drivers/serial.h>
 
 #include "xformat.h"
 
@@ -38,34 +38,40 @@ extern "C" {
 
 #endif// LOG_LEVEL_DEFAULT
 
+#define no_printk(level, fmt, ...)                 \
+	do {                                         \
+		if (0)                                 \
+			printk(level, fmt, ##__VA_ARGS__); \
+	} while (0)
+
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
 #define printk_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
 #else
-#define printk_trace(fmt, ...) ((void) 0)
+#define printk_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
 #define printk_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
 #else
-#define printk_debug(fmt, ...) ((void) 0)
+#define printk_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_INFO
 #define printk_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
 #else
-#define printk_info(fmt, ...) ((void) 0)
+#define printk_info(fmt, ...) no_printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_WARNING
 #define printk_warning(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 #else
-#define printk_warning(fmt, ...) ((void) 0)
+#define printk_warning(fmt, ...) no_printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_ERROR
 #define printk_error(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 #else
-#define printk_error(fmt, ...) ((void) 0)
+#define printk_error(fmt, ...) no_printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 #endif
 
 /**
@@ -124,7 +130,7 @@ int printf(const char *fmt, ...);
  * @param start_addr The starting address of the memory region to dump.
  * @param count The number of bytes to dump.
  */
-void dump_hex(uint32_t start_addr, uint32_t count);
+void dump_hex(uintptr_t start_addr, uint32_t count);
 
 #ifdef __cplusplus
 }

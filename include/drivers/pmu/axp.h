@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <sys-i2c.h>
+#include <drivers/i2c.h>
 
 #include "reg-axp.h"
 
@@ -19,7 +19,7 @@ extern "C" {
 #endif// __cplusplus
 
 /**
- * Structure describing a voltage step of the power domain.
+ * @brief Structure describing a voltage step of the power domain.
  */
 typedef struct _axp_step_info {
 	uint32_t step_min_vol;// Minimum voltage level for the step.
@@ -29,7 +29,7 @@ typedef struct _axp_step_info {
 } axp_step_info_t;
 
 /**
- * Structure describing the control information of a power domain.
+ * @brief Structure describing the control information of a power domain.
  */
 typedef struct _axp_contrl_info {
 	char name[8];					// Name of the power domain.
@@ -112,7 +112,7 @@ DEFINE_AXP_PMU(axp333);
 
 /* Extra */
 /**
- * Set the dual phase function on the AXP1530 PMU.
+ * @brief Set the dual phase function on the AXP1530 PMU.
  *
  * @param i2c_dev Pointer to the I2C device structure.
  * @return 0 if successful, -1 if an error occurred.

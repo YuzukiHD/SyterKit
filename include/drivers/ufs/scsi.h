@@ -144,18 +144,13 @@ typedef struct scsi_cmd {
 #define SCSI_WRITE_SAME 0x41		  /* Write Same (O) */
 
 /**
- * struct scsi_plat - stores information about SCSI controller
- *
- * @base: Controller base address
- * @max_lun: Maximum number of logical units
- * @max_id: Maximum number of target ids
- * @max_bytes_per_req: Maximum number of bytes per read/write request
+ * @brief Store SCSI controller limits and addressing information.
  */
 typedef struct scsi_plat {
-	uint64_t base;
-	uint64_t max_lun;
-	uint64_t max_id;
-	uint64_t max_bytes_per_req;
+	uint64_t base; /**< Controller base address. */
+	uint64_t max_lun; /**< Maximum number of logical units. */
+	uint64_t max_id; /**< Maximum number of target IDs. */
+	uint64_t max_bytes_per_req; /**< Maximum transfer size in bytes. */
 } scsi_plat_t;
 
 #define SCSI_IDENTIFY 0xC0 /* not used */

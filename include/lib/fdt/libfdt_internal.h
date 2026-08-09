@@ -5,7 +5,7 @@
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  */
-#include <fdt.h>
+#include <lib/fdt/fdt.h>
 
 #ifdef __cplusplus
 extern "C" {

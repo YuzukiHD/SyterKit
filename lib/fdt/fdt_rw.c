@@ -3,12 +3,12 @@
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  */
-#include "libfdt_env.h"
+#include <lib/fdt/libfdt_env.h>
 
-#include <fdt.h>
-#include <libfdt.h>
+#include <lib/fdt/fdt.h>
+#include <lib/fdt/libfdt.h>
 
-#include "libfdt_internal.h"
+#include <lib/fdt/libfdt_internal.h>
 
 static int fdt_blocks_misordered_(const void *fdt, int mem_rsv_size, int struct_size) {
 	return (fdt_off_mem_rsvmap(fdt) < FDT_ALIGN(sizeof(struct fdt_header), 8)) || (fdt_off_dt_struct(fdt) < (fdt_off_mem_rsvmap(fdt) + mem_rsv_size)) ||

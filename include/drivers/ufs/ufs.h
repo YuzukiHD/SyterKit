@@ -412,89 +412,64 @@ typedef struct utp_transfer_cmd_desc {
 } utp_transfer_cmd_desc_t;
 
 /**
- * struct request_desc_header - Descriptor Header common to both UTRD and UTMRD
- * @dword0: Descriptor Header DW0
- * @dword1: Descriptor Header DW1
- * @dword2: Descriptor Header DW2
- * @dword3: Descriptor Header DW3
+ * @brief Store the descriptor header shared by UTRD and UTMRD.
  */
 typedef struct request_desc_header {
-	uint32_t dword_0;
-	uint32_t dword_1;
-	uint32_t dword_2;
-	uint32_t dword_3;
+	uint32_t dword_0; /**< Descriptor header DW0. */
+	uint32_t dword_1; /**< Descriptor header DW1. */
+	uint32_t dword_2; /**< Descriptor header DW2. */
+	uint32_t dword_3; /**< Descriptor header DW3. */
 } request_desc_header_t;
 
 /**
- * struct utp_transfer_req_desc - UTRD structure
- * @header: UTRD header DW-0 to DW-3
- * @command_desc_base_addr_lo: UCD base address low DW-4
- * @command_desc_base_addr_hi: UCD base address high DW-5
- * @response_upiu_length: response UPIU length DW-6
- * @response_upiu_offset: response UPIU offset DW-6
- * @prd_table_length: Physical region descriptor length DW-7
- * @prd_table_offset: Physical region descriptor offset DW-7
+ * @brief Describe a UTP transfer request.
  */
 typedef struct utp_transfer_req_desc {
 	/* DW 0-3 */
-	request_desc_header_t header;
+	request_desc_header_t header; /**< UTRD header DW0 through DW3. */
 
 	/* DW 4-5*/
-	uint32_t command_desc_base_addr_lo;
-	uint32_t command_desc_base_addr_hi;
+	uint32_t command_desc_base_addr_lo; /**< UCD base address low word. */
+	uint32_t command_desc_base_addr_hi; /**< UCD base address high word. */
 
 	/* DW 6 */
-	uint16_t response_upiu_length;
-	uint16_t response_upiu_offset;
+	uint16_t response_upiu_length; /**< Response UPIU length. */
+	uint16_t response_upiu_offset; /**< Response UPIU offset. */
 
 	/* DW 7 */
-	uint16_t prd_table_length;
-	uint16_t prd_table_offset;
+	uint16_t prd_table_length; /**< Physical region descriptor count. */
+	uint16_t prd_table_offset; /**< Physical region descriptor offset. */
 } utp_transfer_req_desc_t;
 
 /**
- * struct utp_upiu_header - UPIU header structure
- * @dword_0: UPIU header DW-0
- * @dword_1: UPIU header DW-1
- * @dword_2: UPIU header DW-2
+ * @brief Store a UPIU header.
  */
 typedef struct utp_upiu_header {
-	uint32_t dword_0;
-	uint32_t dword_1;
-	uint32_t dword_2;
+	uint32_t dword_0; /**< UPIU header DW0. */
+	uint32_t dword_1; /**< UPIU header DW1. */
+	uint32_t dword_2; /**< UPIU header DW2. */
 } utp_upiu_header_t;
 
 /**
- * struct utp_upiu_query - upiu request buffer structure for
- * query request.
- * @opcode: command to perform B-0
- * @idn: a value that indicates the particular type of data B-1
- * @index: Index to further identify data B-2
- * @selector: Index to further identify data B-3
- * @reserved_osf: spec reserved field B-4,5
- * @length: number of descriptor bytes to read/write B-6,7
- * @value: Attribute value to be written DW-5
- * @reserved: spec reserved DW-6,7
+ * @brief Store the operating-system fields of a query request.
  */
 typedef struct utp_upiu_query {
-	uint8_t opcode;
-	uint8_t idn;
-	uint8_t index;
-	uint8_t selector;
-	uint16_t reserved_osf;
-	uint16_t length;
-	uint32_t value;
-	uint32_t reserved[2];
+	uint8_t opcode; /**< Operation code in byte 0. */
+	uint8_t idn; /**< Data identifier in byte 1. */
+	uint8_t index; /**< Data index in byte 2. */
+	uint8_t selector; /**< Data selector in byte 3. */
+	uint16_t reserved_osf; /**< Reserved field in bytes 4 and 5. */
+	uint16_t length; /**< Descriptor transfer length in bytes 6 and 7. */
+	uint32_t value; /**< Attribute value in DW5. */
+	uint32_t reserved[2]; /**< Reserved DW6 and DW7. */
 } utp_upiu_query_t;
 
 /**
- * struct utp_upiu_cmd - Command UPIU structure
- * @data_transfer_len: Data Transfer Length DW-3
- * @cdb: Command Descriptor Block CDB DW-4 to DW-7
+ * @brief Store the command-specific fields of a command UPIU.
  */
 typedef struct utp_upiu_cmd {
-	uint32_t exp_data_transfer_len;
-	uint8_t cdb[UFS_CDB_SIZE];
+	uint32_t exp_data_transfer_len; /**< Expected transfer length in DW3. */
+	uint8_t cdb[UFS_CDB_SIZE]; /**< Command descriptor block in DW4 through DW7. */
 } utp_upiu_cmd_t;
 
 /*
@@ -519,80 +494,60 @@ typedef struct utp_task_req_desc {
 } utp_task_req_desc_t;
 
 /**
- * struct utp_upiu_req - general upiu request structure
- * @header:UPIU header structure DW-0 to DW-2
- * @sc: fields structure for scsi command DW-3 to DW-7
- * @qr: fields structure for query request DW-3 to DW-7
+ * @brief Store a general UPIU request.
  */
 //#pragma anon_unions
 typedef struct utp_upiu_req {
-	utp_upiu_header_t header;
+	utp_upiu_header_t header; /**< UPIU header in DW0 through DW2. */
 	union {
-		utp_upiu_cmd_t sc;
-		utp_upiu_query_t qr;
-		utp_upiu_query_t tr;
+		utp_upiu_cmd_t sc; /**< SCSI command fields. */
+		utp_upiu_query_t qr; /**< Query request fields. */
+		utp_upiu_query_t tr; /**< Task request fields. */
 		/* use utp_upiu_query to host the 4 dwords of uic command */
-		utp_upiu_query_t uc;
+		utp_upiu_query_t uc; /**< UIC command fields. */
 	};
 } utp_upiu_req_t;
 
 /**
- * struct utp_cmd_rsp - Response UPIU structure
- * @residual_transfer_count: Residual transfer count DW-3
- * @reserved: Reserved double words DW-4 to DW-7
- * @sense_data_len: Sense data length DW-8 U16
- * @sense_data: Sense data field DW-8 to DW-12
+ * @brief Store the command-specific fields of a response UPIU.
  */
 typedef struct utp_cmd_rsp {
-	uint32_t residual_transfer_count;
-	uint32_t reserved[4];
-	uint16_t sense_data_len;
-	uint8_t sense_data[RESPONSE_UPIU_SENSE_DATA_LENGTH];
+	uint32_t residual_transfer_count; /**< Residual transfer count in DW3. */
+	uint32_t reserved[4]; /**< Reserved DW4 through DW7. */
+	uint16_t sense_data_len; /**< Sense-data length in DW8. */
+	uint8_t sense_data[RESPONSE_UPIU_SENSE_DATA_LENGTH]; /**< Sense data. */
 } utp_cmd_rsp_t;
 
 /**
- * struct utp_upiu_rsp - general upiu response structure
- * @header: UPIU header structure DW-0 to DW-2
- * @sr: fields structure for scsi command DW-3 to DW-12
- * @qr: fields structure for query request DW-3 to DW-7
+ * @brief Store a general UPIU response.
  */
 typedef struct utp_upiu_rsp {
-	utp_upiu_header_t header;
+	utp_upiu_header_t header; /**< UPIU header in DW0 through DW2. */
 	union {
-		utp_cmd_rsp_t sr;
-		utp_upiu_query_t qr;
+		utp_cmd_rsp_t sr; /**< SCSI response fields. */
+		utp_upiu_query_t qr; /**< Query response fields. */
 	};
 } utp_upiu_rsp_t;
 
 #define MAX_MODEL_LEN 16
 /**
- * ufs_dev_desc - ufs device details from the device descriptor
- *
- * @wmanufacturerid: card details
- * @model: card model
+ * @brief Store identifying information read from a UFS device descriptor.
  */
 typedef struct ufs_dev_desc {
-	uint16_t wmanufacturerid;
-	char model[MAX_MODEL_LEN + 1];
+	uint16_t wmanufacturerid; /**< Device manufacturer identifier. */
+	char model[MAX_MODEL_LEN + 1]; /**< Null-terminated device model. */
 } ufs_dev_desc_t;
 
 /**
- * struct uic_command - UIC command structure
- * @command: UIC command
- * @argument1: UIC command argument 1
- * @argument2: UIC command argument 2
- * @argument3: UIC command argument 3
- * @cmd_active: Indicate if UIC command is outstanding
- * @result: UIC command result
- * @done: UIC command completion
+ * @brief Track an outstanding UIC command and its result.
  */
 typedef struct uic_command {
-	uint32_t command;
-	uint32_t argument1;
-	uint32_t argument2;
-	uint32_t argument3;
-	int cmd_active;
-	int result;
+	uint32_t command; /**< UIC command code. */
+	uint32_t argument1; /**< UIC command argument 1. */
+	uint32_t argument2; /**< UIC command argument 2. */
+	uint32_t argument3; /**< UIC command argument 3. */
+	int cmd_active; /**< Nonzero while the command is outstanding. */
+	int result; /**< Command result. */
 } uic_command_t;
 
 
@@ -626,45 +581,36 @@ enum uic_link_state {
 #define ATTR_SET_ST 1  /* STATIC */
 
 /**
- * struct ufs_query_req - parameters for building a query request
- * @query_func: UPIU header query function
- * @upiu_req: the query request data
+ * @brief Store the parameters used to build a UFS query request.
  */
 typedef struct ufs_query_req {
-	uint8_t query_func;
-	utp_upiu_query_t upiu_req;
+	uint8_t query_func; /**< UPIU query function. */
+	utp_upiu_query_t upiu_req; /**< Query request data. */
 } ufs_query_req_t;
 
 /**
- * struct ufs_query_resp - UPIU QUERY
- * @response: device response code
- * @upiu_res: query response data
+ * @brief Store a UFS query response.
  */
 typedef struct ufs_query_res {
-	uint8_t response;
-	utp_upiu_query_t upiu_res;
+	uint8_t response; /**< Device response code. */
+	utp_upiu_query_t upiu_res; /**< Query response data. */
 } ufs_query_res_t;
 
 /**
- * struct ufs_query - holds relevant data structures for query request
- * @request: request upiu and function
- * @descriptor: buffer for sending/receiving descriptor
- * @response: response upiu and response
+ * @brief Group the request, descriptor buffer, and response for a UFS query.
  */
 typedef struct ufs_query {
-	ufs_query_req_t request;
-	uint8_t *descriptor;
-	ufs_query_res_t response;
+	ufs_query_req_t request; /**< Query request. */
+	uint8_t *descriptor; /**< Descriptor transfer buffer. */
+	ufs_query_res_t response; /**< Query response. */
 } ufs_query_t;
 
 /**
- * struct ufs_dev_cmd - all assosiated fields with device management commands
- * @type: device management command type - Query, NOP OUT
- * @tag_wq: wait queue until free command slot is available
+ * @brief Store state associated with a UFS device-management command.
  */
 typedef struct ufs_dev_cmd {
-	enum dev_cmd_type type;
-	ufs_query_t query;
+	enum dev_cmd_type type; /**< Device-management command type. */
+	ufs_query_t query; /**< Query command state. */
 } ufs_dev_cmd_t;
 
 typedef struct ufs_desc_size {

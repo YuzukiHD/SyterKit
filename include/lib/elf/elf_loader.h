@@ -25,7 +25,7 @@ typedef struct vaddr_map {
 } vaddr_map_t;
 
 /**
- * Extracts the entry address from an ELF32 image loaded at 'base'.
+ * @brief Extracts the entry address from an ELF32 image loaded at 'base'.
  *
  * @param base The base address of the ELF32 image.
  * @return The entry address of the ELF32 image.
@@ -33,7 +33,7 @@ typedef struct vaddr_map {
 phys_addr_t elf32_get_entry_addr(phys_addr_t base);
 
 /**
- * Loads an ELF32 image into memory starting at 'img_addr'.
+ * @brief Loads an ELF32 image into memory starting at 'img_addr'.
  *
  * @param img_addr The starting address to load the ELF32 image.
  * @return 0 if successful, -1 otherwise.
@@ -41,7 +41,7 @@ phys_addr_t elf32_get_entry_addr(phys_addr_t base);
 int load_elf32_image(phys_addr_t img_addr);
 
 /**
- * Loads an ELF32 image into memory starting at 'img_addr', with remap va to pa
+ * @brief Loads an ELF32 image into memory starting at 'img_addr', with remap va to pa
  *
  * @param img_addr The starting address to load the ELF32 image.
  * @param map The address mapping table.
@@ -50,7 +50,7 @@ int load_elf32_image(phys_addr_t img_addr);
 int load_elf32_image_remap(phys_addr_t img_addr, vaddr_map_t *map);
 
 /**
- * Extracts the entry address from an ELF64 image loaded at 'base'.
+ * @brief Extracts the entry address from an ELF64 image loaded at 'base'.
  *
  * @param base The base address of the ELF64 image.
  * @return The entry address of the ELF64 image.
@@ -58,7 +58,7 @@ int load_elf32_image_remap(phys_addr_t img_addr, vaddr_map_t *map);
 phys_addr_t elf64_get_entry_addr(phys_addr_t base);
 
 /**
- * Loads an ELF64 image into memory starting at 'img_addr'.
+ * @brief Loads an ELF64 image into memory starting at 'img_addr'.
  *
  * @param img_addr The starting address to load the ELF64 image.
  * @return 0 if successful, -1 otherwise.

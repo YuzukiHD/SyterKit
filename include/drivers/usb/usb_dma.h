@@ -20,7 +20,7 @@
  * 
  * @return 0 on success
  */
-int usb_dma_init(uint64_t husb);
+int usb_dma_init(uintptr_t husb);
 
 /**
  * @brief Request a USB DMA channel
@@ -92,15 +92,13 @@ int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes);
 int usb_dma_stop(uint32_t dma_index);
 
 /**
- * @brief Query the interrupt status of a USB DMA channel
+ * @brief Query the interrupt status of all USB DMA channels
  *
  * This function is used to query the interrupt status of a USB DMA channel.
  *
- * @param dma_index The DMA index to query
- * 
- * @return The interrupt status of the DMA channel
+ * @return The interrupt status bitmap
  */
-int usb_dma_int_query(uint32_t dma_index);
+int usb_dma_int_query(void);
 
 /**
  * @brief Clear the interrupt status of all USB DMA channels
