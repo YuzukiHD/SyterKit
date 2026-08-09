@@ -25,8 +25,11 @@
 
 #include <drivers/clk.h>
 #include <drivers/pwm.h>
+#include <dt2c/dt.h>
 
 #define PRESCALE_MAX 256
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-pwm");
 
 /**
  * @brief Pre-scaler values for clock division.
@@ -104,7 +107,10 @@ static inline void sunxi_pwm_reg_set(uint32_t reg, uint32_t reg_shift, uint32_t 
  */
 static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel) {
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
-		sunxi_gpio_init(pwm->channel[pwm->channel->bind_channel].pin.pin, pwm->channel[pwm->channel->bind_channel].pin.mux);
+		uint32_t bind_channel = pwm->channel[channel].bind_channel;
+
+		sunxi_gpio_init(pwm->channel[bind_channel].pin.pin,
+				pwm->channel[bind_channel].pin.mux);
 	}
 	sunxi_gpio_init(pwm->channel[channel].pin.pin, pwm->channel[channel].pin.mux);
 }
@@ -417,6 +423,10 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	channels[0] = channel;
 	channels[1] = pwm->channel[channel].bind_channel;
 	dead_time = pwm->channel[channel].dead_time;
+	if (channels[1] < 0 ||
+	    channels[1] >= (int) SUNXI_PWM_CHANNEL_MAX ||
+	    !(pwm->channel_mask & BIT(channels[1])))
+		return -1;
 
 	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x1);
 
@@ -561,12 +571,16 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel) {
 	int channels[PWM_BIND_NUM] = {0};
 	channels[0] = channel;
 	channels[1] = pwm->channel[channel].bind_channel;
+	if (channels[1] < 0 ||
+	    channels[1] >= (int) SUNXI_PWM_CHANNEL_MAX ||
+	    !(pwm->channel_mask & BIT(channels[1])))
+		return -1;
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		/* Close gate */
-		clrbits_le32(pwm->base + PWM_PCGR, BIT(i));
+		clrbits_le32(pwm->base + PWM_PCGR, BIT(channels[i]));
 		/* clear clk src to osc */
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(i), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 	}
 
 	/* clear pdzcr select */
@@ -621,7 +635,8 @@ int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *conf
 		return -1;
 	}
 
-	if (channel >= pwm->channel_size) {
+	if (channel < 0 || channel >= (int) SUNXI_PWM_CHANNEL_MAX ||
+	    !(pwm->channel_mask & BIT(channel))) {
 		printk_warning("PWM: channel %d is out of scoop\n", channel);
 		return -1;
 	}
@@ -651,7 +666,8 @@ int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel) {
 		return -1;
 	}
 
-	if (channel >= pwm->channel_size) {
+	if (channel < 0 || channel >= (int) SUNXI_PWM_CHANNEL_MAX ||
+	    !(pwm->channel_mask & BIT(channel))) {
 		printk_warning("PWM: channel %d is out of scoop\n", channel);
 		return -1;
 	}

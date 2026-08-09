@@ -110,6 +110,7 @@ typedef enum {
 
 #define TIME_1_SECOND 1000000000
 #define PWM_BIND_NUM (2)
+#define SUNXI_PWM_CHANNEL_MAX 16U
 
 /**
  * @brief PWM operation modes.
@@ -191,14 +192,15 @@ typedef struct sunxi_pwm_clk_src {
  * the base address, channel settings, clock source settings, and the module's operational status.
  */
 typedef struct sunxi_pwm {
-	uintptr_t base;			  /**< The base address of the PWM hardware module. */
-	uint8_t id;					  /**< The PWM module ID. */
-	sunxi_pwm_channel_t *channel; /**< Pointer to the array of PWM channels. */
-	uint32_t channel_size;		  /**< The number of PWM channels. */
-	sunxi_clk_t pwm_bus_clk;	  /**< Clock for the PWM bus. */
-	sunxi_clk_t pwm_clk;		  /**< The main clock for the PWM module. */
-	sunxi_pwm_clk_src_t clk_src;  /**< The clock sources for the PWM module. */
-	bool status;				  /**< The operational status of the PWM module (enabled/disabled). */
+	uintptr_t base; /**< The base address of the PWM hardware module. */
+	uint8_t id; /**< The PWM module ID. */
+	int dt_node; /**< Compiled device-tree node offset. */
+	sunxi_pwm_channel_t channel[SUNXI_PWM_CHANNEL_MAX];
+	uint32_t channel_mask; /**< Bitmask of configured channels. */
+	sunxi_clk_t pwm_bus_clk; /**< Clock for the PWM bus. */
+	sunxi_clk_t pwm_clk; /**< The main clock for the PWM module. */
+	sunxi_pwm_clk_src_t clk_src; /**< The clock sources for the PWM module. */
+	bool status; /**< The operational status of the PWM module. */
 } sunxi_pwm_t;
 
 /**
