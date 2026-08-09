@@ -24,12 +24,13 @@
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
+#include <dt-compatible/dma-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 extern sunxi_serial_t uart_dbg;
 extern uint32_t dram_para[96];
 extern uint32_t dram_para_trained[96];
 extern sunxi_sdhci_t sdhci0;
-extern sunxi_spi_t sunxi_spi0;
 
 #define CONFIG_HEAP_BASE (0x44800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -110,8 +111,15 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_dma_t dma;
+	sunxi_spi_t spi;
 
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+		printk_error("SPI: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
@@ -134,15 +142,15 @@ int main(void) {
 		}
 	}
 
-	if (sunxi_spi_init(&sunxi_spi0) != 0) {
+	if (sunxi_spi_init(&spi) != 0) {
 		printk_error("SPI: init failed\n");
 	} else {
 		printk_info("SPI controller initialized\n");
-		if (spi_nand_detect(&sunxi_spi0) != 0)
+		if (spi_nand_detect(&spi) != 0)
 			printk_error("SPI: SPI-NAND init failed\n");
 	}
 
-	spi_nand_read(&sunxi_spi0, (uint8_t *) SDRAM_BASE, 0x0, 0x100);
+	spi_nand_read(&spi, (uint8_t *) SDRAM_BASE, 0x0, 0x100);
 
 	dump_hex(SDRAM_BASE, 0x100);
 

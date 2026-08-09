@@ -242,7 +242,6 @@ static int sunxi_clk_pre_initcall(void) {
 	sunxi_clk_pre_init();
 	return 0;
 }
-early_initcall(sunxi_clk_pre_initcall);
 
 void sunxi_clk_dump() {
 	uint32_t reg_val = 0;
@@ -303,3 +302,5 @@ uint32_t sunxi_clk_get_hosc_type() {
 uint32_t sunxi_clk_get_peri1x_rate() {
 	return 192; /* PERI_192M */
 }
+
+early_initcall(sunxi_clk_pre_initcall);

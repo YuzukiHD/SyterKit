@@ -11,6 +11,9 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt2c/dt.h>
+
+DT2C_DRIVER_COMPAT("x-powers,axp8191");
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -127,49 +130,53 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
-int pmu_axp8191_init(sunxi_i2c_t *i2c_dev) {
+int pmu_axp8191_init(axp_pmu_t *pmu) {
 	uint8_t axp_val;
 	int ret;
 
-	if (!i2c_dev->status) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP8191) ||
+	    !pmu->i2c->status) {
 		printk_warning("PMU: I2C not init\n");
 		return -1;
 	}
 
-	if ((ret = sunxi_i2c_read(i2c_dev, AXP8191_RUNTIME_ADDR, AXP8191_CHIP_ID, &axp_val))) {
+	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_CHIP_ID, &axp_val))) {
 		printk_warning("PMU: Probe target device AXP8191 failed. ret = %d\n", ret);
 		return -1;
 	}
 
 	if (axp_val == AXP8191_IC_TYPE) {
-		printk_info("PMU: Found AXP318W PMU, Addr 0x%02x\n", AXP8191_RUNTIME_ADDR);
+		printk_info("PMU: Found AXP318W PMU, Addr 0x%02x\n",
+			    pmu->address);
 	} else {
 		printk_warning("PMU: AXP PMU Check error\n");
 		return -1;
 	}
 
-	sunxi_i2c_read(i2c_dev, AXP8191_DCDC_POWER_ON_OFF_CTL1, AXP8191_CHIP_ID, &axp_val);
+	sunxi_i2c_read(pmu->i2c, pmu->address,
+		       AXP8191_DCDC_POWER_ON_OFF_CTL1, &axp_val);
 	axp_val |= 0x08;
-	sunxi_i2c_write(i2c_dev, AXP8191_DCDC_POWER_ON_OFF_CTL1, AXP8191_CHIP_ID, axp_val);
+	sunxi_i2c_write(pmu->i2c, pmu->address,
+			AXP8191_DCDC_POWER_ON_OFF_CTL1, axp_val);
 
 	/* enable dcdc2~dcdc9 dvm */
 	for (int i = 0; i <= (AXP8191_DC9OUT_VOL - AXP8191_DC2OUT_VOL); i++) {
-		sunxi_i2c_read(i2c_dev, AXP8191_RUNTIME_ADDR, AXP8191_DC2OUT_VOL + i, &axp_val);
+		sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, &axp_val);
 		axp_val |= 0x80;
-		sunxi_i2c_write(i2c_dev, AXP8191_RUNTIME_ADDR, AXP8191_DC2OUT_VOL + i, axp_val);
+		sunxi_i2c_write(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, axp_val);
 	}
 
 	return AXP8191_CHIP_ID;
 }
 
-int pmu_axp8191_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
-	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP8191_RUNTIME_ADDR);
+int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff) {
+	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-int pmu_axp8191_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
-	return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP8191_RUNTIME_ADDR);
+int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name) {
+	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-void pmu_axp8191_dump(sunxi_i2c_t *i2c_dev) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); }
+void pmu_axp8191_dump(axp_pmu_t *pmu) {
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name)); }
 }

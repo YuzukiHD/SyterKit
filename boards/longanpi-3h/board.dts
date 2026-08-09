@@ -9,11 +9,34 @@
 	model = "LonganPi 3H";
 	compatible = "syterkit,longanpi-3h";
 
+	aliases {
+		dma0 = &dma0;
+		i2c0 = &i2c0;
+		pmu0 = &pmu0;
+		spi0 = &spi0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
 
 	pinctrl {
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 1 4>,
+				<SUNXI_GPIO_PORT_C 0 4>,
+				<SUNXI_GPIO_PORT_C 2 4>,
+				<SUNXI_GPIO_PORT_C 3 4>,
+				<SUNXI_GPIO_PORT_C 4 4>,
+				<SUNXI_GPIO_PORT_C 5 4>;
+		};
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 3>,
+				<SUNXI_GPIO_PORT_L 1 3>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_H 0 2>,
@@ -26,6 +49,52 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		dma0: dma-controller@3002000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x03002000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0x03001804 0>;
+			allwinner,clock-gate = <0x0300170c 0>;
+			allwinner,reset = <0x0300170c 16>;
+			status = "okay";
+		};
+
+		spi0: spi@5010000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <0>;
+			reg = <0x05010000 0x1000>;
+			clock-frequency = <75000000>;
+			allwinner,module-clock = <0x03001940 1 8 300000000 0>;
+			allwinner,clock-gate = <0x0300196c 0>;
+			allwinner,reset = <0x0300196c 16>;
+			dmas = <&dma0 22>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi0_pins>;
+			status = "okay";
+		};
+
+		i2c0: i2c@7081400 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x07081400 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <6>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x0701019c 0>;
+			allwinner,reset = <0x0701019c 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+			pmu0: pmic@36 {
+				compatible = "x-powers,axp1530";
+				reg = <0x36>;
+				status = "okay";
+			};
+		};
 
 		uart0: serial@5000000 {
 			compatible = "allwinner,sunxi-uart";

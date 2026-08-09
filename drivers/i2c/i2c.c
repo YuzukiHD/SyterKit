@@ -25,6 +25,10 @@
 
 #include <drivers/reg/reg-ncat.h>
 #include <drivers/i2c.h>
+#include <driver.h>
+#include <dt-compatible/i2c-dt.h>
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-i2c");
 
 /**
  * @def I2C_WRITE
@@ -738,6 +742,9 @@ static inline void sunxi_i2c_bus_en(sunxi_i2c_t *i2c_dev) {
  * @param i2c_dev Pointer to the I2C device structure containing configuration parameters
  */
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
+	if (i2c_dev == NULL || i2c_dev->base == 0U)
+		return;
+
 	/* Config I2C SCL and SDA pins */
 	sunxi_gpio_init(i2c_dev->gpio.gpio_scl.pin, i2c_dev->gpio.gpio_scl.mux);
 	sunxi_gpio_set_pull(i2c_dev->gpio.gpio_scl.pin, GPIO_PULL_UP);

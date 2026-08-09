@@ -20,6 +20,10 @@
 extern "C" {
 #endif// __cplusplus
 
+#ifndef SUNXI_DMA_MAX
+#define SUNXI_DMA_MAX 4
+#endif
+
 typedef struct {
 	uint32_t volatile config;
 	uint32_t volatile source_addr;
@@ -88,6 +92,8 @@ typedef struct {
 	sunxi_dma_channel_reg_t channel[16]; /* 0x100 dma channel register */
 } sunxi_dma_reg_t;
 
+typedef struct sunxi_dma sunxi_dma_t;
+
 typedef struct {
 	uint32_t used;
 	uint32_t channel_count;
@@ -95,13 +101,21 @@ typedef struct {
 	uint32_t reserved;
 	sunxi_dma_desc_t *desc;
 	sunxi_dma_irq_handler_t dma_func;
+	sunxi_dma_t *owner;
 } sunxi_dma_source_t;
 
-typedef struct {
+struct sunxi_dma {
+	int dt_node;
 	uintptr_t dma_reg_base;
 	sunxi_clk_t dma_clk;
 	sunxi_clk_t bus_clk;
-} sunxi_dma_t;
+	int interrupt_count;
+	bool initialized;
+	sunxi_dma_source_t channel_source[SUNXI_DMA_MAX];
+	sunxi_dma_desc_t channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
+};
+
+#define SUNXI_DMA_COMPATIBLE "allwinner,sunxi-dma"
 
 #define DMA_DEFAULT_CLK_RST_OFFSET (16)
 #define DMA_DEFAULT_CLK_GATE_OFFSET (0)
@@ -119,18 +133,20 @@ void sunxi_dma_exit(sunxi_dma_t *dma);
 /**
  * @brief Request a DMA channel of the specified type.
  *
+ * @param dma DMA controller to allocate the channel from.
  * @param dmatype The type of DMA channel to request.
  * @return The DMA channel number if successful, or an error code if failed.
  */
-uintptr_t sunxi_dma_request(uint32_t dmatype);
+uintptr_t sunxi_dma_request(sunxi_dma_t *dma, uint32_t dmatype);
 
 /**
  * @brief Request a DMA channel from the last allocated channel of the specified type.
  *
+ * @param dma DMA controller to allocate the channel from.
  * @param dmatype The type of DMA channel to request.
  * @return The DMA channel number if successful, or an error code if failed.
  */
-uintptr_t sunxi_dma_request_from_last(uint32_t dmatype);
+uintptr_t sunxi_dma_request_from_last(sunxi_dma_t *dma, uint32_t dmatype);
 
 /**
  * @brief Release a previously requested DMA channel.
@@ -232,11 +248,13 @@ int sunxi_dma_free_int(uintptr_t dma_fd);
 /**
  * @brief Perform a test DMA transfer between the specified source and destination addresses.
  *
+ * @param dma DMA controller used for the test transfer.
  * @param src_addr Pointer to the source address.
  * @param dst_addr Pointer to the destination address.
  * @return 0 if successful, or an error code if failed.
  */
-int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len);
+int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr,
+		   uint32_t len);
 
 #ifdef __cplusplus
 }

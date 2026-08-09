@@ -11,6 +11,9 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt2c/dt.h>
+
+DT2C_DRIVER_COMPAT("x-powers,axp1530");
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -31,16 +34,17 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
-int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
+int pmu_axp1530_init(axp_pmu_t *pmu) {
 	uint8_t axp_val;
 	int ret;
 
-	if (!i2c_dev->status) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530) ||
+	    !pmu->i2c->status) {
 		printk_warning("PMU: I2C not init\n");
 		return -1;
 	}
 
-	if ((ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val))) {
+	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP1530_VERSION, &axp_val))) {
 		printk_warning("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
 		return -1;
 	}
@@ -65,20 +69,22 @@ int pmu_axp1530_init(sunxi_i2c_t *i2c_dev) {
 	}
 
 	/* Set over temperature shutdown functtion */
-	if (sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, &axp_val))
+	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, &axp_val))
 		return -1;
 	axp_val |= (0x1 << 1);
-	if (sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, axp_val))
+	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, axp_val))
 		return -1;
 
 	return 0;
 }
 
-int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev) {
+int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu) {
 	uint8_t axp_val;
 	int ret;
 
-	if ((ret = sunxi_i2c_read(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_VERSION, &axp_val))) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530))
+		return -1;
+	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP1530_VERSION, &axp_val))) {
 		printk_warning("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
 		return -1;
 	}
@@ -92,21 +98,21 @@ int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev) {
 			return -1;
 	}
 
-	sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E);
-	sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_DCDC_MODE_CTRL2, 0x02);
-	sunxi_i2c_write(i2c_dev, AXP1530_RUNTIME_ADDR, AXP1530_POWER_DOMN_SEQUENCE, 0x22);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_DCDC_MODE_CTRL2, 0x02);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, 0x22);
 
 	return 0;
 }
 
-int pmu_axp1530_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
-	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP1530_RUNTIME_ADDR);
+int pmu_axp1530_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff) {
+	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-int pmu_axp1530_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
-	return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP1530_RUNTIME_ADDR);
+int pmu_axp1530_get_vol(axp_pmu_t *pmu, char *name) {
+	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-void pmu_axp1530_dump(sunxi_i2c_t *i2c_dev) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); }
+void pmu_axp1530_dump(axp_pmu_t *pmu) {
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp_ctrl_tbl[i].name)); }
 }

@@ -25,6 +25,8 @@
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
@@ -51,7 +53,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 
@@ -559,26 +560,33 @@ _error:
 }
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	ar100s_gpu_fix();
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
 	sunxi_clk_dump();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&i2c_pmu);
+	pmu_axp2202_init(&pmu);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1100, 1);
+	pmu_axp2202_set_vol(&pmu, "dcdc1", 1100, 1);
+	pmu_axp2202_set_vol(&pmu, "dcdc3", 1100, 1);
 
-	pmu_axp2202_dump(&i2c_pmu);
+	pmu_axp2202_dump(&pmu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	uint32_t dram_size = sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 

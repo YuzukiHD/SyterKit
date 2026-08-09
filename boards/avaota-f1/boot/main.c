@@ -62,11 +62,9 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_spi_t sunxi_spi0;
 
 extern sunxi_sdhci_t sdhci0;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern dram_para_t dram_para;
 

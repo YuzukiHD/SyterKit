@@ -8,6 +8,7 @@
 #include <types.h>
 
 #include <common.h>
+#include <driver.h>
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
@@ -32,10 +33,14 @@ static axp_contrl_info *get_ctrl_info_from_tbl(char *name, axp_contrl_info *axp_
 	return (axp_ctrl_tbl + i);
 }
 
-int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr) {
+int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff,
+		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size) {
 	uint8_t reg_value, i;
 	axp_contrl_info *p_item = NULL;
 	uint8_t base_step = 0;
+
+	if (pmu == NULL || pmu->i2c == NULL || pmu->address == 0U)
+		return -1;
 
 	p_item = get_ctrl_info_from_tbl(name, axp_ctrl_tbl, axp_ctrl_tbl_size);
 	if (!p_item) {
@@ -49,7 +54,8 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 			set_vol = p_item->max_vol;
 		}
 
-		if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) {
+		if (sunxi_i2c_read(pmu->i2c, pmu->address,
+				   p_item->cfg_reg_addr, &reg_value)) {
 			return -1;
 		}
 
@@ -72,7 +78,8 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 			}
 		}
 
-		if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->cfg_reg_addr, reg_value)) {
+		if (sunxi_i2c_write(pmu->i2c, pmu->address,
+				    p_item->cfg_reg_addr, reg_value)) {
 			return -1;
 		}
 	}
@@ -80,7 +87,8 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 	if (onoff < 0) {
 		return 0;
 	}
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) {
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   p_item->ctrl_reg_addr, &reg_value)) {
 		return -1;
 	}
 	if (onoff == 0) {
@@ -88,25 +96,31 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
 	} else {
 		reg_value |= (1 << p_item->ctrl_bit_ofs);
 	}
-	if (sunxi_i2c_write(i2c_dev, axp_addr, p_item->ctrl_reg_addr, reg_value)) {
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    p_item->ctrl_reg_addr, reg_value)) {
 		return -1;
 	}
 	return 0;
 }
 
-int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr) {
+int axp_get_vol(axp_pmu_t *pmu, char *name,
+		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size) {
 	uint8_t reg_value, i;
 	axp_contrl_info *p_item = NULL;
 	uint8_t base_step1 = 0;
 	uint8_t base_step2 = 0;
 	int vol;
 
+	if (pmu == NULL || pmu->i2c == NULL || pmu->address == 0U)
+		return -1;
+
 	p_item = get_ctrl_info_from_tbl(name, axp_ctrl_tbl, axp_ctrl_tbl_size);
 	if (!p_item) {
 		return -1;
 	}
 
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->ctrl_reg_addr, &reg_value)) {
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   p_item->ctrl_reg_addr, &reg_value)) {
 		return -1;
 	}
 
@@ -114,7 +128,8 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
 		return 0;
 	}
 
-	if (sunxi_i2c_read(i2c_dev, axp_addr, p_item->cfg_reg_addr, &reg_value)) {
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   p_item->cfg_reg_addr, &reg_value)) {
 		return -1;
 	}
 

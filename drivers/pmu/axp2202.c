@@ -11,8 +11,9 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt2c/dt.h>
 
-static uint32_t AXP2202_RUNTIME_ADDR = 0x0;
+DT2C_DRIVER_COMPAT("x-powers,axp2202");
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -69,76 +70,76 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
-int pmu_axp2202_init(sunxi_i2c_t *i2c_dev) {
+int pmu_axp2202_init(axp_pmu_t *pmu) {
 	uint8_t axp_val;
-	if (!i2c_dev->status) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202) ||
+	    !pmu->i2c->status) {
 		printk_warning("PMU: I2C not init\n");
 		return -1;
 	}
 
-	/* Try to probe AXP717B */
-	if (sunxi_i2c_read(i2c_dev, AXP2202_B_RUNTIME_ADDR, AXP2202_CHIP_ID_EXT, &axp_val)) {
-		/* AXP717B probe fail, Try to probe AXP717C */
-		if (sunxi_i2c_read(i2c_dev, AXP2202_C_RUNTIME_ADDR, AXP2202_CHIP_ID_EXT, &axp_val)) {
-			/* AXP717C probe fail */
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP2202_CHIP_ID_EXT, &axp_val)) {
+		if (pmu->fallback_address == 0U ||
+		    sunxi_i2c_read(pmu->i2c, pmu->fallback_address,
+				   AXP2202_CHIP_ID_EXT, &axp_val)) {
 			printk_warning("PMU: AXP2202 PMU Read error\n");
 			return -1;
-		} else {
-			AXP2202_RUNTIME_ADDR = AXP2202_C_RUNTIME_ADDR;
 		}
-	} else {
-		AXP2202_RUNTIME_ADDR = AXP2202_B_RUNTIME_ADDR;
+		pmu->address = pmu->fallback_address;
 	}
 
 	if (axp_val != 0x02) {
 		printk_warning("PMU: AXP PMU Check error\n");
 		return -1;
 	} else {
-		printk_info("PMU: Found AXP717 PMU, Addr 0x%02x\n", AXP2202_RUNTIME_ADDR);
+		printk_info("PMU: Found AXP717 PMU, Addr 0x%02x\n",
+			    pmu->address);
 	}
 
 	/* limit run current to 2A */
 	axp_val = 0x26;
-	sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_VBUS_CUR_SET, axp_val);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_VBUS_CUR_SET, axp_val);
 
 	/* set adc channel0 enable */
-	sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_ADC_CH0, &axp_val);
+	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_ADC_CH0, &axp_val);
 	axp_val |= 0x33;
-	sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_ADC_CH0, axp_val);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_ADC_CH0, axp_val);
 
 	/*pmu set vsys min*/
-	sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_VSYS_MIN, &axp_val);
+	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_VSYS_MIN, &axp_val);
 	axp_val = 0x06;
-	sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_VSYS_MIN, axp_val);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_VSYS_MIN, axp_val);
 
 	/*pmu dcdc1 uvp disable */
-	sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_DCDC_PWEOFF_EN, &axp_val);
+	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_DCDC_PWEOFF_EN, &axp_val);
 	axp_val &= ~(1 << 0);
-	sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_DCDC_PWEOFF_EN, axp_val);
+	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_DCDC_PWEOFF_EN, axp_val);
 
-	sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_CHIP_VER_EXT, &axp_val);
+	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_VER_EXT, &axp_val);
 
 	if (axp_val) {
-		sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_MODULE_EN, &axp_val);
+		sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_MODULE_EN, &axp_val);
 		axp_val |= 0x10;
-		sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_MODULE_EN, axp_val);
+		sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_MODULE_EN, axp_val);
 	} else {
-		sunxi_i2c_read(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_MODULE_EN, &axp_val);
+		sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_MODULE_EN, &axp_val);
 		axp_val &= 0xEF;
-		sunxi_i2c_write(i2c_dev, AXP2202_RUNTIME_ADDR, AXP2202_MODULE_EN, axp_val);
+		sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_MODULE_EN, axp_val);
 	}
 
 	return 0;
 }
 
-int pmu_axp2202_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff) {
-	return axp_set_vol(i2c_dev, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2202_RUNTIME_ADDR);
+int pmu_axp2202_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff) {
+	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl,
+			   ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-int pmu_axp2202_get_vol(sunxi_i2c_t *i2c_dev, char *name) {
-	return axp_get_vol(i2c_dev, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl), AXP2202_RUNTIME_ADDR);
+int pmu_axp2202_get_vol(axp_pmu_t *pmu, char *name) {
+	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-void pmu_axp2202_dump(sunxi_i2c_t *i2c_dev) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(i2c_dev, axp_ctrl_tbl[i].name)); }
+void pmu_axp2202_dump(axp_pmu_t *pmu) {
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp_ctrl_tbl[i].name)); }
 }

@@ -9,11 +9,22 @@
 	model = "Radxa Cubie A7A";
 	compatible = "syterkit,radxa-cubie-a7a";
 
+	aliases {
+		i2c0 = &i2c0;
+		pmu0 = &pmu0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
 
 	pinctrl {
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 9 2>,
@@ -26,6 +37,27 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		i2c0: i2c@7083000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x07083000 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <6>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x0701019c 0>;
+			allwinner,reset = <0x0701019c 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+			pmu0: pmic@36 {
+				compatible = "x-powers,axp8191";
+				reg = <0x36>;
+				status = "okay";
+			};
+		};
 
 		uart0: serial@2500000 {
 			compatible = "allwinner,sunxi-uart";

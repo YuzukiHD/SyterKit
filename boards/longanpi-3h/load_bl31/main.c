@@ -23,6 +23,8 @@
 #include <drivers/dram.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 #include <drivers/rtc.h>
 #include <drivers/sdcard.h>
 #include <drivers/sid.h>
@@ -53,7 +55,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern uint32_t dram_para[32];
 
@@ -211,34 +212,42 @@ _loop:
 	goto _loop;
 }
 
-void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
-	int temp_vol, src_vol = pmu_axp1530_get_vol(&i2c_pmu, power_name);
+void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
+			 uint32_t voltage) {
+	int temp_vol, src_vol = pmu_axp1530_get_vol(pmu, power_name);
 	if (src_vol > voltage) {
-		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1); }
 	} else if (src_vol < voltage) {
-		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp1530_set_vol(&i2c_pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1); }
 	}
 	mdelay(30); /* Delay 300ms for pmu bootup */
 }
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
 	sunxi_clk_dump();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp1530_init(&i2c_pmu);
+	pmu_axp1530_init(&pmu);
 
-	set_pmu_fin_voltage("dcdc2", 1100);
+	set_pmu_fin_voltage(&pmu, "dcdc2", 1100);
 
-	set_pmu_fin_voltage("dcdc3", 1100);
+	set_pmu_fin_voltage(&pmu, "dcdc3", 1100);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	uint32_t dram_size = sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 

@@ -103,7 +103,19 @@ dt2c_bindings := $(srctree)/dts/bindings
 dt2c_out := $(objtree)/.obj/boards/$(board)/dt2c
 dt2c_driver_manifest := $(dt2c_out)/selected-drivers
 dt2c_driver_sources := $(if $(filter y,$(CONFIG_DRIVER_SERIAL)),\
-	$(srctree)/drivers/serial/serial.c)
+	$(srctree)/drivers/serial/serial.c) \
+	$(if $(filter y,$(CONFIG_DRIVER_DMA)),\
+	$(srctree)/drivers/dma/dma.c) \
+	$(if $(filter y,$(CONFIG_DRIVER_I2C)),\
+	$(srctree)/drivers/i2c/i2c.c) \
+	$(if $(filter y,$(CONFIG_DRIVER_PMIC_AXP)),\
+	$(srctree)/drivers/pmu/axp1530.c \
+	$(srctree)/drivers/pmu/axp2101.c \
+	$(srctree)/drivers/pmu/axp2202.c \
+	$(srctree)/drivers/pmu/axp333.c \
+	$(srctree)/drivers/pmu/axp8191.c) \
+	$(if $(filter y,$(CONFIG_DRIVER_SPI)),\
+	$(srctree)/drivers/spi/spi.c)
 dt2c_include := $(dt2c_out)/include
 dt2c_header := $(dt2c_include)/generated/fdt_generated.h
 dt2c_depfile := $(dt2c_out)/devicetree.d

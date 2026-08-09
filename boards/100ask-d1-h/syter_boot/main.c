@@ -77,7 +77,6 @@ IniEntry entries[CONFIG_MAX_ENTRY];
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
 

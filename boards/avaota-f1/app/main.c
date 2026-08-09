@@ -19,6 +19,8 @@
 #include <drivers/mtd/spi-nand.h>
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dma-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 #include <common.h>
 
@@ -28,9 +30,6 @@
 
 extern sunxi_serial_t uart_dbg;
 extern dram_para_t dram_para;
-extern sunxi_dma_t sunxi_dma;
-extern sunxi_i2c_t sunxi_i2c0;
-extern sunxi_spi_t sunxi_spi0;
 extern sunxi_sdhci_t sdhci0;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 4 * 1024// (unit: 512B sectors)
@@ -117,7 +116,15 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_dma_t dma;
+	sunxi_spi_t spi;
+
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+		printk_error("SPI: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	printk_info("Hello World!\n");
 
@@ -129,14 +136,14 @@ int main(void) {
 
 	sunxi_dram_init(&dram_para);
 
-	sunxi_spi_init(&sunxi_spi0);
+	sunxi_spi_init(&spi);
 
-	spi_nor_detect(&sunxi_spi0);
+	spi_nor_detect(&spi);
 
 	memset((void *) 0x81000000, 0x0, 0x1000);
 
 	uint32_t time = time_ms();
-	spi_nor_read(&sunxi_spi0, (void *) 0x81000000, 0x0, 1024 * 1024 * 4);
+	spi_nor_read(&spi, (void *) 0x81000000, 0x0, 1024 * 1024 * 4);
 	uint32_t time_end = time_ms();
 
 	printk_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));

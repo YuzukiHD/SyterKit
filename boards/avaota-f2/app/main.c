@@ -19,6 +19,8 @@
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/pmu/axp.h>
 #include <drivers/spi.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 
 #include <common.h>
 
@@ -30,7 +32,6 @@
 
 extern sunxi_serial_t uart_dbg_ph1;
 extern sunxi_serial_t uart_dbg;
-extern sunxi_i2c_t i2c_pmu;
 extern dram_para_t dram_para;
 
 void sunxi_pmc_config(void) {
@@ -41,8 +42,15 @@ void sunxi_pmc_config(void) {
 }
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sysmap_dump_region_info();
 
@@ -56,13 +64,13 @@ int main(void) {
 
 	sunxi_pmc_config();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp333_init(&i2c_pmu);
+	pmu_axp333_init(&pmu);
 
-	pmu_axp333_set_vol(&i2c_pmu, "dcdc2", 1500, 1);
+	pmu_axp333_set_vol(&pmu, "dcdc2", 1500, 1);
 
-	pmu_axp333_dump(&i2c_pmu);
+	pmu_axp333_dump(&pmu);
 
 	sunxi_dram_init((void *) &dram_para);
 

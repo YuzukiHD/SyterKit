@@ -30,6 +30,9 @@
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/dma-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
@@ -41,9 +44,7 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_i2c_t i2c_pmu;
 
-extern sunxi_dma_t sunxi_dma;
 
 extern uint32_t dram_para[32];
 
@@ -75,7 +76,6 @@ sunxi_spi_t sunxi_spi0_lcd = {
 						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
 						.parent_clk = 300000000,
 				},
-		.dma_handle = &sunxi_dma,
 };
 
 static gpio_mux_t lcd_dc_pins = {
@@ -239,8 +239,19 @@ void LCD_Fill_All(uint16_t color) {
 }
 
 int main(void) {
+	axp_pmu_t primary_pmu;
+	axp_pmu_t secondary_pmu;
+	sunxi_dma_t dma;
+	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
@@ -250,24 +261,24 @@ int main(void) {
 
 	set_rpio_power_mode();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&i2c_pmu);
+	pmu_axp2202_init(&primary_pmu);
 
-	pmu_axp1530_init(&i2c_pmu);
+	pmu_axp1530_init(&secondary_pmu);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc1", 1100, 1);
 
-	pmu_axp1530_set_dual_phase(&i2c_pmu);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1100, 1);
+	pmu_axp1530_set_dual_phase(&secondary_pmu);
+	pmu_axp1530_set_vol(&secondary_pmu, "dcdc1", 1100, 1);
+	pmu_axp1530_set_vol(&secondary_pmu, "dcdc2", 1100, 1);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", 920, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1160, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc2", 920, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc3", 1160, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc4", 3300, 1);
 
-	pmu_axp2202_dump(&i2c_pmu);
-	pmu_axp1530_dump(&i2c_pmu);
+	pmu_axp2202_dump(&primary_pmu);
+	pmu_axp1530_dump(&secondary_pmu);
 
 	enable_sram_a3();
 
@@ -290,6 +301,7 @@ int main(void) {
 	sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
 
 
+	sunxi_spi0_lcd.dma_handle = &dma;
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
 	}
