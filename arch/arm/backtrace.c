@@ -15,28 +15,28 @@
 
 /**
  * @brief Maximum limit for backtrace scanning.
- * 
- * This constant defines the maximum limit for scanning the backtrace. 
- * The backtrace function will scan instructions and stack frames 
+ *
+ * This constant defines the maximum limit for scanning the backtrace.
+ * The backtrace function will scan instructions and stack frames
  * up to this size. If the limit is exceeded, the backtrace operation will fail.
  */
 #define BT_SCAN_MAX_LIMIT 4096
 
 /**
  * @brief Maximum number of backtrace levels.
- * 
- * This constant defines the maximum depth of the backtrace. It limits 
+ *
+ * This constant defines the maximum depth of the backtrace. It limits
  * how many stack frames the backtrace function can unwind before stopping.
  */
 #define BT_LEVEL_LIMIT 64
 
 /**
  * @brief Converts a program counter (PC) value to an address.
- * 
- * This macro takes a program counter (PC) value and converts it to 
+ *
+ * This macro takes a program counter (PC) value and converts it to
  * a valid address by clearing the least significant bit. This operation
  * is commonly used to align PC addresses properly for instruction fetch.
- * 
+ *
  * @param pc The program counter value to convert.
  * @return The corresponding address, aligned to a 2-byte boundary.
  */
@@ -44,11 +44,11 @@
 
 /**
  * @brief Determines the length of an instruction in bytes based on its encoding.
- * 
+ *
  * This macro computes the length of an instruction in bytes, given a 32-bit
  * instruction encoding. The length is determined based on specific bit patterns
  * in the instruction word.
- * 
+ *
  * @param x The instruction encoding (32-bit).
  * @return The length of the instruction in bytes (either 2, 4, 6, or 8).
  */
@@ -58,11 +58,11 @@
 
 /**
  * @brief Extracts a specific bit field from a value.
- * 
- * This macro extracts a bit field from a value `x` based on the specified 
- * high and low bit positions. The bits are masked and shifted to the 
+ *
+ * This macro extracts a bit field from a value `x` based on the specified
+ * high and low bit positions. The bits are masked and shifted to the
  * right, leaving the desired bit field.
- * 
+ *
  * @param x The value from which to extract the bit field.
  * @param high The index of the highest bit (inclusive).
  * @param low The index of the lowest bit (inclusive).
@@ -88,7 +88,7 @@
  * @brief Macro to check if the program counter (PC) is in THUMB mode
  *
  * This macro checks whether the given program counter address (PC) points to the THUMB mode.
- * According to ARM architecture, if the least significant bit (LSB) of the program counter (PC) is 1, 
+ * According to ARM architecture, if the least significant bit (LSB) of the program counter (PC) is 1,
  * the instruction set is in THUMB mode.
  *
  * @param pc The program counter (typically the address of an instruction)
@@ -98,7 +98,7 @@
 
 /**
  * @brief Pointer to the start of the image in memory.
- * 
+ *
  * This variable marks the start address of the memory region that
  * contains the program image. It is used to check if a program counter
  * (PC) value falls within the valid range of executable memory.
@@ -108,7 +108,7 @@ extern uint8_t __spl_end[];
 
 /**
  * @brief Pointer to the end of the stack service region.
- * 
+ *
  * This variable marks the end address of the memory region used for the
  * stack service. It is used to check if a program counter (PC) value falls
  * within the valid memory region, preventing access to out-of-bounds memory.
@@ -118,11 +118,11 @@ extern uint8_t __stack_srv_start[];
 
 /**
  * @brief Checks whether a given program counter (PC) address is within a valid range.
- * 
+ *
  * This function checks if the provided PC (program counter) value lies within
  * the memory region between `__spl_start` and `__stack_srv_end`. It ensures that
  * the PC value points to a valid memory address in the executable region of the program.
- * 
+ *
  * @param pc The program counter value to check.
  * @return 1 if the PC is within the valid address range, 0 otherwise.
  */
@@ -155,7 +155,7 @@ static inline int backtrace_check_stack_address(const void *address) {
  * These values indicate a 32-bit Thumb instruction.
  *
  * @param ic A 16-bit uint32_teger representing the Thumb instruction to be checked.
- * 
+ *
  * @return Returns 1 if the instruction is a 32-bit Thumb instruction (i.e., its top 5 bits match
  *         0x1D, 0x1E, or 0x1F), otherwise returns 0.
  */
@@ -212,8 +212,8 @@ static uint32_t thumb_expand_imm12(uint32_t inst) {
  * @param LR A pointer to the Link Register value (the return address).
  * @param state A pointer to a boolean representing the processor state. It can be either
  *              ARM_STATE or THUMB_STATE.
- * 
- * @return The offset to be applied to the LR, typically 2 or 4 bytes, depending on the 
+ *
+ * @return The offset to be applied to the LR, typically 2 or 4 bytes, depending on the
  *         type of instruction found.
  */
 static int find_lr_offset(char *LR, bool *state, bool emit) {
@@ -277,11 +277,11 @@ static int find_lr_offset(char *LR, bool *state, bool emit) {
  * @brief Retrieves the next Thumb instruction from the given addresses.
  *
  * This function fetches the next instruction in the Thumb instruction set from two 16-bit
- * instruction addresses. It checks whether the instruction is a 32-bit Thumb-2 instruction 
- * (Thumb-32), and if so, combines the two 16-bit values to form a 32-bit instruction. It 
+ * instruction addresses. It checks whether the instruction is a 32-bit Thumb-2 instruction
+ * (Thumb-32), and if so, combines the two 16-bit values to form a 32-bit instruction. It
  * also updates the offset and returns the appropriate instruction.
  *
- * The function uses the `lsb` (least significant bit) flag to determine which part of the 
+ * The function uses the `lsb` (least significant bit) flag to determine which part of the
  * instruction to select when the instruction is not Thumb-32.
  *
  * @param error A pointer to an integer that will be set to `-1` in case of an error.
@@ -290,7 +290,7 @@ static int find_lr_offset(char *LR, bool *state, bool emit) {
  * @param ins16_l_addr Address of the low part of the instruction (16 bits).
  * @param lsb Flag indicating whether to fetch the least significant bit of the instruction.
  * @param thumb32bit A pointer to an integer that will be set to `1` if a Thumb-32 instruction is detected, otherwise `0`.
- * 
+ *
  * @return Returns the 32-bit instruction if Thumb-32 is detected, otherwise returns the appropriate 16-bit instruction.
  */
 static int thumb_get_next_inst(int *error, int *offset, char *ins16_h_addr, char *ins16_l_addr, int lsb, int *thumb32bit) {
@@ -336,14 +336,14 @@ static int thumb_get_next_inst(int *error, int *offset, char *ins16_h_addr, char
 /**
  * @brief Calculates the frame size for a `push` or `store-multiple` instruction that includes the link register (lr).
  *
- * This function processes a Thumb instruction to determine the frame size (number of registers pushed) 
- * based on the presence of the link register (`lr`). It checks both Thumb-2 (32-bit) and Thumb-1 (16-bit) 
+ * This function processes a Thumb instruction to determine the frame size (number of registers pushed)
+ * based on the presence of the link register (`lr`). It checks both Thumb-2 (32-bit) and Thumb-1 (16-bit)
  * instructions and computes the frame size accordingly.
  *
  * @param inst The instruction to analyze (32-bit Thumb instruction).
- * @param offset Pointer to an integer that will be set to `1` if a push or store-multiple instruction is found, 
+ * @param offset Pointer to an integer that will be set to `1` if a push or store-multiple instruction is found,
  *               otherwise `0`.
- * @param thumb32bit A flag indicating whether the instruction is a 32-bit Thumb instruction (`1` if Thumb-32, 
+ * @param thumb32bit A flag indicating whether the instruction is a 32-bit Thumb instruction (`1` if Thumb-32,
  *                   `0` if Thumb-16).
  *
  * @return The number of registers pushed (frame size) or `-1` if no matching instruction is found.
@@ -388,12 +388,12 @@ static int thumb_get_push_lr_ins_framesize(uint32_t inst, int *offset, int thumb
 /**
  * @brief Calculate the frame size based on the instruction and determine the stack adjustment.
  *
- * This function analyzes Thumb instructions to determine the frame size of a function prologue, 
+ * This function analyzes Thumb instructions to determine the frame size of a function prologue,
  * based on push or stack adjustment operations. It handles both 16-bit and 32-bit Thumb instructions.
  *
  * @param inst The instruction to analyze (32-bit).
  * @param thumb32bit Flag indicating whether the instruction is a 32-bit Thumb instruction (1 for Thumb-32, 0 for Thumb-16).
- * 
+ *
  * @return The calculated frame size (number of registers pushed or stack adjusted), or -1 if no match is found.
  */
 static int thumb_backtrace_stack_push(uint32_t inst, int thumb32bit) {
@@ -466,13 +466,13 @@ static int thumb_read_instruction(char *address, uint32_t *instruction,
  * @brief Perform a backtrace from the stack and retrieve the next return address and program counter (PC).
  *
  * This function traverses the stack to reconstruct a backtrace by parsing Thumb instructions and
- * calculating the correct stack pointer (SP), program counter (PC), and link register (LR). It 
+ * calculating the correct stack pointer (SP), program counter (PC), and link register (LR). It
  * uses the Thumb instruction set to decode stack frames and returns the updated SP, PC, and LR values.
- * 
+ *
  * @param pSP Pointer to the current stack pointer (SP).
  * @param pPC Pointer to the current program counter (PC).
  * @param pLR Pointer to the current link register (LR).
- * 
+ *
  * @return 1 if the backtrace completes, 0 if no link register is found, or -1
  *         if an address or instruction cannot be parsed.
  */
@@ -556,14 +556,14 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 /**
  * @brief Analyzes an ARM instruction to determine the frame size and the offset for the link register (LR).
- * 
- * This function inspects the provided ARM instruction to detect specific types of instructions 
- * related to pushing the link register (LR) onto the stack. It calculates the size of the stack frame 
+ *
+ * This function inspects the provided ARM instruction to detect specific types of instructions
+ * related to pushing the link register (LR) onto the stack. It calculates the size of the stack frame
  * and determines the offset of the link register, if applicable.
  *
  * @param inst The ARM instruction to be analyzed (32-bit uint32_teger).
  * @param offset Pointer to an integer where the offset of LR will be stored.
- * 
+ *
  * @return The size of the stack frame in terms of the number of registers pushed, or -1 if no relevant instruction is found.
  */
 static int arm_get_push_lr_ins_framesize(uint32_t inst, int *offset) {
@@ -603,13 +603,13 @@ static int arm_get_push_lr_ins_framesize(uint32_t inst, int *offset) {
 
 /**
  * @brief Analyzes an ARM instruction to determine the frame size for stack operations.
- * 
- * This function inspects the provided ARM instruction to determine the size of the stack frame 
+ *
+ * This function inspects the provided ARM instruction to determine the size of the stack frame
  * based on common instructions such as `sub sp, sp, #imm`, `push`, `vpush`, and `str xxx, [sp, #-4]!`.
  * It returns the size of the stack frame in terms of the number of words (4-byte units) affected by the instruction.
  *
  * @param inst The ARM instruction to be analyzed (32-bit uint32_teger).
- * 
+ *
  * @return The size of the stack frame in terms of the number of 4-byte words, or -1 if no relevant instruction is found.
  */
 static int arm_backtrace_stack_push(uint32_t inst) {
@@ -657,16 +657,16 @@ static int arm_backtrace_stack_push(uint32_t inst) {
 
 /**
  * @brief Performs backtrace from the stack to find the return address and program counter.
- * 
- * This function attempts to deduce the return address (LR) and program counter (PC) by analyzing 
- * the stack and the instructions around it. It parses the stack to find the correct frame size, 
- * validates the text addresses, and adjusts the program counter based on the instruction state 
+ *
+ * This function attempts to deduce the return address (LR) and program counter (PC) by analyzing
+ * the stack and the instructions around it. It parses the stack to find the correct frame size,
+ * validates the text addresses, and adjusts the program counter based on the instruction state
  * (ARM/Thumb).
  *
  * @param pSP Pointer to the current stack pointer (SP).
  * @param pPC Pointer to the current program counter (PC).
  * @param pLR Pointer to the link register (LR).
- * 
+ *
  * @return 1 if a valid return address is found, 0 if the backtrace is incomplete, and -1 if an error occurs.
  */
 static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
@@ -772,15 +772,15 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 /**
  * @brief Backtrace from stack based on program counter (PC) state.
- * 
- * This function performs a backtrace by checking if the current code is running in ARM or Thumb 
- * state and calls the appropriate backtrace function accordingly. If the program counter (PC) 
+ *
+ * This function performs a backtrace by checking if the current code is running in ARM or Thumb
+ * state and calls the appropriate backtrace function accordingly. If the program counter (PC)
  * address is invalid, it returns an error.
  *
  * @param pSP Pointer to the stack pointer.
  * @param pPC Pointer to the program counter.
  * @param pLR Pointer to the link register.
- * 
+ *
  * @return 0 if backtrace was successful, -1 if the PC is invalid or an error occurred.
  */
 static int backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
@@ -800,14 +800,14 @@ static int backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 /**
  * @brief Pop a frame from the stack for Thumb instructions.
  *
- * This function processes a Thumb instruction to determine the frame size 
- * and updates the stack pointer change flag. It distinguishes between normal 
+ * This function processes a Thumb instruction to determine the frame size
+ * and updates the stack pointer change flag. It distinguishes between normal
  * "pop" and vector "vpop" instructions.
- * 
+ *
  * @param inst The Thumb instruction to analyze.
  * @param sp_change Pointer to a flag that will be set to 1 if the stack pointer changes.
  * @param thumb32bit Flag indicating if the instruction is Thumb-32 bit (true) or not (false).
- * 
+ *
  * @return The size of the frame to pop, or -1 if no valid "pop" instruction is found.
  */
 static int thumb_backtrace_stack_pop(uint32_t inst, uint8_t *sp_change, int thumb32bit) {
@@ -837,14 +837,14 @@ static int thumb_backtrace_stack_pop(uint32_t inst, uint8_t *sp_change, int thum
 /**
  * @brief Process the return instruction for Thumb mode and determine the frame size.
  *
- * This function checks if the current instruction is a return instruction, such as 
- * "bx lr", which is used for returning from functions in ARM architecture. 
- * It specifically handles the case for Thumb mode instructions and sets the 
+ * This function checks if the current instruction is a return instruction, such as
+ * "bx lr", which is used for returning from functions in ARM architecture.
+ * It specifically handles the case for Thumb mode instructions and sets the
  * frame size appropriately.
- * 
+ *
  * @param inst The Thumb instruction to analyze.
  * @param thumb32bit Flag indicating if the instruction is Thumb-32 bit (true) or not (false).
- * 
+ *
  * @return 0 if the return instruction is detected, otherwise the frame size (or -1 if not detected).
  */
 static int thumb_backtrace_return_pop(uint32_t inst, int thumb32bit) {
@@ -866,14 +866,14 @@ static int thumb_backtrace_return_pop(uint32_t inst, int thumb32bit) {
 /**
  * @brief Calculate the frame size for a "push" instruction in Thumb mode.
  *
- * This function checks if the instruction is a "push" instruction or a "sub sp" instruction 
- * in Thumb-32 bit mode. It determines the frame size based on the instruction and sets 
+ * This function checks if the instruction is a "push" instruction or a "sub sp" instruction
+ * in Thumb-32 bit mode. It determines the frame size based on the instruction and sets
  * the jump flag if needed.
- * 
+ *
  * @param inst The Thumb instruction to analyze.
  * @param jump Pointer to a flag that will be set to 1 if the instruction is a "push".
  * @param thumb32bit Flag indicating if the instruction is Thumb-32 bit (true) or not (false).
- * 
+ *
  * @return The calculated frame size, or -1 if the instruction does not match "push" or "sub sp".
  */
 static int thumb_get_push_ins_framesize(uint32_t inst, uint8_t *jump, int thumb32bit) {
@@ -900,11 +900,11 @@ static int thumb_get_push_ins_framesize(uint32_t inst, uint8_t *jump, int thumb3
 
 /**
  * @brief Perform a backtrace from the Link Register (LR) in Thumb mode.
- * 
- * This function extracts the frame size from the LR and updates the SP and PC 
- * based on the Thumb instruction set. It scans the instructions, identifies 
+ *
+ * This function extracts the frame size from the LR and updates the SP and PC
+ * based on the Thumb instruction set. It scans the instructions, identifies
  * the backtrace points, and handles stack frame adjustments.
- * 
+ *
  * @param pSP Pointer to the stack pointer.
  * @param pPC Pointer to the program counter.
  * @param LR The link register address to backtrace from.
@@ -1017,15 +1017,15 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
 
 /**
  * @brief Analyze the ARM instruction to determine the frame size for backtrace.
- * 
- * This function interprets an ARM instruction and determines the frame size based on the 
+ *
+ * This function interprets an ARM instruction and determines the frame size based on the
  * instruction type. It handles the following instructions:
  * - `pop {..., pc}`: Pops the program counter (pc) from the stack.
  * - `bx lr`: Branches to the link register (lr), effectively returning from a function.
  * - `ldr pc, [sp], #4`: Loads the program counter (pc) from the stack and updates the stack pointer.
  *
  * @param inst The ARM instruction to analyze.
- * 
+ *
  * @return The size of the frame affected by the instruction.
  */
 static int arm_backtrace_return_pop(uint32_t inst) {
@@ -1048,8 +1048,8 @@ static int arm_backtrace_return_pop(uint32_t inst) {
 
 /**
  * @brief Analyze the ARM instruction to determine the frame size for stack pop operations.
- * 
- * This function interprets an ARM instruction and determines the frame size based on the 
+ *
+ * This function interprets an ARM instruction and determines the frame size based on the
  * instruction type. It handles the following instructions:
  * - `add sp, sp, #imm`: Adds an immediate value to the stack pointer (sp).
  * - `pop {...}`: Pops a set of registers from the stack.
@@ -1057,7 +1057,7 @@ static int arm_backtrace_return_pop(uint32_t inst) {
  * - `ldr xxx, [sp], #4`: Loads a value from the stack into a register and updates the stack pointer.
  *
  * @param inst The ARM instruction to analyze.
- * 
+ *
  * @return The size of the frame affected by the instruction.
  */
 static int arm_backtrace_stack_pop(uint32_t inst) {
@@ -1091,17 +1091,17 @@ static int arm_backtrace_stack_pop(uint32_t inst) {
 
 /**
  * @brief Perform backtrace from the link register (LR) to determine the stack pointer (SP) and program counter (PC).
- * 
- * This function performs a backtrace from the provided LR (link register) to locate the stack pointer 
- * and program counter of the current function. It checks the validity of addresses, scans instructions 
- * to compute the stack frame size, and adjusts the program counter based on the ARM instruction set state 
+ *
+ * This function performs a backtrace from the provided LR (link register) to locate the stack pointer
+ * and program counter of the current function. It checks the validity of addresses, scans instructions
+ * to compute the stack frame size, and adjusts the program counter based on the ARM instruction set state
  * (ARM or Thumb).
  *
  * @param pSP A pointer to the stack pointer (SP) to be updated.
  * @param pPC A pointer to the program counter (PC) to be updated.
  * @param LR The link register value from which the backtrace will begin.
- * 
- * @return 1 if backtrace is successful with no offset, 0 if backtrace is successful with offset, 
+ *
+ * @return 1 if backtrace is successful with no offset, 0 if backtrace is successful with offset,
  *         or -1 if there is an error during the process.
  */
 static int arm_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
@@ -1180,10 +1180,10 @@ static int arm_backtrace_from_lr(int **pSP, char **pPC, char *LR) {
 
 /**
  * @brief Perform a backtrace from the Link Register (LR).
- * 
+ *
  * This function determines whether the current address is in Thumb mode or ARM mode
  * and calls the appropriate backtrace function based on the result.
- * 
+ *
  * @param pSP Pointer to the stack pointer.
  * @param pPC Pointer to the program counter.
  * @param LR The link register address to backtrace from.
@@ -1202,18 +1202,18 @@ static int backtrace_from_lr(int **pSP, char **pPC, char *LR) {
  * @brief Perform a backtrace to find the call stack.
  *
  * This function attempts to walk the call stack by analyzing the program counter (PC),
- * stack pointer (SP), and link register (LR) to determine the sequence of function calls 
+ * stack pointer (SP), and link register (LR) to determine the sequence of function calls
  * leading to the current execution point.
- * 
+ *
  * The backtrace process works by using the stack and link register to trace the call hierarchy,
  * logging each level of the backtrace, and attempting recovery from any errors.
  * If the backtrace from the stack fails, it will attempt to trace using the link register (LR).
- * 
+ *
  * @param PC The current program counter (PC), typically pointing to the instruction where the backtrace starts.
  * @param SP The current stack pointer (SP), pointing to the top of the stack.
  * @param LR The link register (LR), used to store return addresses for function calls.
- * 
- * @return The number of backtrace levels successfully traversed. 
+ *
+ * @return The number of backtrace levels successfully traversed.
  *         Returns 0 if no valid backtrace could be performed.
  */
 int backtrace(char *PC, long *SP, char *LR) {
@@ -1275,12 +1275,12 @@ int backtrace_from_context(const struct backtrace_context *context) {
  * This function captures the current program counter (PC), stack pointer (SP),
  * link register (LR), and current processor status register (CPSR). It uses inline assembly
  * to obtain these values, then performs a backtrace to provide insight into the function call stack.
- * 
+ *
  * The function also checks if the processor is in THUMB mode based on the CPSR state and adjusts
- * the program counter (PC) accordingly. If the program counter or stack pointer is invalid, 
+ * the program counter (PC) accordingly. If the program counter or stack pointer is invalid,
  * the function will return early with a status of 0.
  *
- * @return The result of the backtrace function, representing the number of successfully 
+ * @return The result of the backtrace function, representing the number of successfully
  *         traced backtrace levels, or 0 if the stack pointer (SP) or program counter (PC) is invalid.
  */
 static int __attribute__((noinline, used)) dump_stack_from_context(long *SP,

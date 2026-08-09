@@ -30,10 +30,10 @@
 
 /**
  * @brief Pre-scaler values for clock division.
- * 
+ *
  * This constant array maps register values (`reg_val`) to corresponding clock pre-divider values (`clk_pre_div`).
  * The array is used to configure the pre-scaler for clock division in PWM or similar hardware modules.
- * 
+ *
  * The first element in each pair is the register value, and the second element is the associated clock division factor.
  */
 static const uint32_t pre_scal[][2] = {
@@ -51,15 +51,15 @@ static const uint32_t pre_scal[][2] = {
 
 /**
  * @brief Perform division with rounding for PWM calculations.
- * 
+ *
  * This macro performs a division operation on a given number `n` by `base`, and applies rounding
  * to the result. The division is done by casting both operands to `uint64_t` to avoid overflow
  * for large values. If the remainder is greater than half of `base`, the quotient is incremented
  * by 1, implementing rounding to the nearest integer.
- * 
+ *
  * @param n       The numerator, which will be updated with the quotient.
  * @param base    The divisor.
- * 
+ *
  * @return The remainder of the division.
  */
 #define sunxi_pwm_do_div(n, base)          \
@@ -74,11 +74,11 @@ static const uint32_t pre_scal[][2] = {
 
 /**
  * @brief Set the value of a specific field in a PWM register.
- * 
+ *
  * This function modifies a specific field in the PWM register by shifting and masking the data.
  * It reads the current register value, applies the mask and shift to set the field value, and writes
  * the modified value back to the register.
- * 
+ *
  * @param reg         The base address of the register.
  * @param reg_shift   The bit position to shift the data for the specific field.
  * @param reg_width   The width (size) of the field to be modified (in bits).
@@ -91,14 +91,14 @@ static inline void sunxi_pwm_reg_set(uint32_t reg, uint32_t reg_shift, uint32_t 
 /**
  * @brief Initialize the GPIO for a specific PWM channel.
  *
- * This function initializes the GPIO pins associated with a given PWM channel. If the channel is bound 
- * to another channel (via a binding mode), the GPIO for the bound channel is also initialized. The 
- * initialization process involves configuring the pin and its multiplexing function as defined in the 
+ * This function initializes the GPIO pins associated with a given PWM channel. If the channel is bound
+ * to another channel (via a binding mode), the GPIO for the bound channel is also initialized. The
+ * initialization process involves configuring the pin and its multiplexing function as defined in the
  * PWM controller structure.
  *
  * @param pwm Pointer to the PWM controller structure.
  * @param channel The PWM channel number (0-15) whose GPIO needs to be initialized.
- * 
+ *
  * @note If the specified channel is in the "PWM_CHANNEL_BIND" mode, the GPIO for the bound channel will
  *       also be initialized first before initializing the specified channel's GPIO.
  */
@@ -112,14 +112,14 @@ static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel) {
 /**
  * @brief Initialize the PWM clock by configuring the bus and peripheral clocks.
  *
- * This function initializes the PWM clock by enabling the necessary bus and peripheral clocks. It 
- * handles the clock reset and gate control for both the bus and peripheral clocks. If the PWM uses 
- * a bus clock, it will configure the bus clock by setting the reset bit and opening the clock gate. 
+ * This function initializes the PWM clock by enabling the necessary bus and peripheral clocks. It
+ * handles the clock reset and gate control for both the bus and peripheral clocks. If the PWM uses
+ * a bus clock, it will configure the bus clock by setting the reset bit and opening the clock gate.
  * Similarly, if the PWM uses a separate clock, the function will configure it in the same manner.
- * 
+ *
  * @param pwm Pointer to the PWM controller structure.
- * 
- * @note This function checks for both bus and peripheral clock configuration, and applies clock 
+ *
+ * @note This function checks for both bus and peripheral clock configuration, and applies clock
  *       reset and gate operations accordingly. It also introduces a small delay (`udelay(10)`) to ensure
  *       proper clock stabilization after gating the clock.
  */
@@ -149,11 +149,11 @@ static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
  * @brief Deinitialize the PWM clock and gate/reset control.
  *
  * This function disables the clock and resets the PWM controller by clearing the appropriate
- * bits in the clock gate and reset registers. It handles both bus and standalone clocks, 
+ * bits in the clock gate and reset registers. It handles both bus and standalone clocks,
  * depending on the configuration of the PWM structure.
  *
  * @param pwm Pointer to the PWM controller structure.
- * 
+ *
  * @note This function will only affect the clock if the corresponding clock base addresses
  *       are properly initialized in the PWM structure.
  */
@@ -204,8 +204,8 @@ static inline void sunxi_pwm_disable_controller(sunxi_pwm_t *pwm, int channel) {
 /**
  * @brief Set the polarity of a specific PWM channel.
  *
- * This function sets the polarity for the specified PWM channel. The polarity determines the 
- * active state of the PWM signal (high or low). If the polarity is set to 1, the PWM signal 
+ * This function sets the polarity for the specified PWM channel. The polarity determines the
+ * active state of the PWM signal (high or low). If the polarity is set to 1, the PWM signal
  * is active high; if set to 0, the PWM signal is active low.
  *
  * @param pwm Pointer to the PWM controller structure.
@@ -226,14 +226,14 @@ static inline void sunxi_pwm_set_porality(sunxi_pwm_t *pwm, int channel, sunxi_p
  * @brief Get the PCC register offset for a given PWM channel.
  *
  * This function returns the corresponding PWM PCCR register offset based on the input channel.
- * The channels are mapped to the register offsets in a predefined array. If the provided channel 
+ * The channels are mapped to the register offsets in a predefined array. If the provided channel
  * is out of the valid range, the function returns the offset for channel 0.
  *
  * @param channel The PWM channel number (0-15).
- * 
+ *
  * @return The corresponding PCC register offset for the given channel.
- * 
- * @note This function assumes that the channel is within a valid range (0-15). If the channel is 
+ *
+ * @note This function assumes that the channel is within a valid range (0-15). If the channel is
  *       outside this range, the default value of PWM_PCCR01 is returned.
  */
 static inline uint32_t sunxi_pwm_get_pccr_reg_offset(uint32_t channel) {
@@ -255,7 +255,7 @@ static inline uint32_t sunxi_pwm_get_pccr_reg_offset(uint32_t channel) {
 
 /**
  * @brief Get the register offset for the PWM dead zone control register (PDZCR) for a specific channel.
- * 
+ *
  * This function maps each PWM channel to its corresponding PDZCR register offset. The function returns
  * the register offset based on the given channel number. The mapping for channels is as follows:
  * - Channel 0 and 1 -> PWM_PDZCR01
@@ -266,9 +266,9 @@ static inline uint32_t sunxi_pwm_get_pccr_reg_offset(uint32_t channel) {
  * - Channel a and b -> PWM_PDZCRab
  * - Channel c and d -> PWM_PDZCRcd
  * - Channel e and f -> PWM_PDZCRef
- * 
+ *
  * @param channel The PWM channel number (0-15).
- * 
+ *
  * @return The register offset corresponding to the given PWM channel.
  *         Returns PWM_PDZCR01 for invalid channel numbers.
  */
@@ -291,7 +291,7 @@ static inline uint32_t sunxi_pwm_get_pdzcr_reg_offset(uint32_t channel) {
 
 /**
  * @brief Configures a single PWM channel with the given configuration parameters.
- * 
+ *
  * This function sets up the PWM configuration for a specific channel. It configures the clock source,
  * the period, duty cycle, polarity, and other related settings based on the provided configuration.
  * It also adjusts the frequency and duty cycle to ensure they are within valid ranges and applies the
@@ -300,13 +300,13 @@ static inline uint32_t sunxi_pwm_get_pdzcr_reg_offset(uint32_t channel) {
  * @param pwm Pointer to the `sunxi_pwm_t` structure representing the PWM controller.
  * @param channel The PWM channel number to configure.
  * @param config Pointer to a `sunxi_pwm_config_t` structure containing the PWM configuration parameters.
- * 
+ *
  * @return 0 on success, -1 if there is an error in the configuration.
- * 
+ *
  * @note The function configures the PWM clock source based on the period (frequency) provided in
  *       the configuration. It can select between APB or OSC clock sources, and sets the prescaler
  *       and divider values to achieve the desired frequency and duty cycle.
- * 
+ *
  * @warning The `period_ns` in the configuration should not be zero and must be greater than `duty_ns`.
  */
 static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *config) {
@@ -396,15 +396,15 @@ set_done:
 /**
  * @brief Configure and bind a PWM channel with specific settings.
  *
- * This function configures the PWM settings for the specified channel, binds it with 
- * another channel, and sets up various parameters such as clock source, duty cycle, 
- * dead time, active cycles, and period cycles. It also handles the configuration 
+ * This function configures the PWM settings for the specified channel, binds it with
+ * another channel, and sets up various parameters such as clock source, duty cycle,
+ * dead time, active cycles, and period cycles. It also handles the configuration
  * for pulse mode and GPIO initialization for the PWM output.
  *
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to configure (0-based index).
  * @param config Pointer to the PWM configuration structure.
- * 
+ *
  * @return 0 on success, -1 on error (e.g., invalid duty time or dead zone).
  */
 static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *config) {
@@ -523,13 +523,13 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 
 /**
  * @brief Release a single PWM channel.
- * 
- * This function handles the release of a single PWM channel. It disables the PWM controller for the 
+ *
+ * This function handles the release of a single PWM channel. It disables the PWM controller for the
  * specified channel, closes the clock gate, and resets the clock source to the oscillator.
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to release (0-based index).
- * 
+ *
  * @return 0 on success.
  */
 static int sunxi_pwm_release_single(sunxi_pwm_t *pwm, int channel) {
@@ -547,14 +547,14 @@ static int sunxi_pwm_release_single(sunxi_pwm_t *pwm, int channel) {
 
 /**
  * @brief Release a bound PWM channel.
- * 
- * This function handles the release of a bound PWM channel. It disables the clock for both the 
- * primary and bound channels, resets the clock source to the oscillator, and clears the 
+ *
+ * This function handles the release of a bound PWM channel. It disables the clock for both the
+ * primary and bound channels, resets the clock source to the oscillator, and clears the
  * corresponding dead zone control register for the first channel in the binding.
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The primary PWM channel to release (0-based index).
- * 
+ *
  * @return 0 on success.
  */
 static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel) {
@@ -577,10 +577,10 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel) {
 
 /**
  * @brief Initialize the PWM instance.
- * 
- * This function initializes the PWM instance by setting up the necessary clocks and 
+ *
+ * This function initializes the PWM instance by setting up the necessary clocks and
  * marking the PWM as initialized (status set to true).
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_init(sunxi_pwm_t *pwm) {
@@ -590,11 +590,11 @@ void sunxi_pwm_init(sunxi_pwm_t *pwm) {
 
 /**
  * @brief Deinitialize the PWM instance.
- * 
+ *
  * This function deinitializes the PWM instance by deactivating the clocks and
- * re-initializing the GPIOs for each channel. It also marks the PWM as uninitialized 
+ * re-initializing the GPIOs for each channel. It also marks the PWM as uninitialized
  * (status set to false).
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_deinit(sunxi_pwm_t *pwm) {
@@ -604,7 +604,7 @@ void sunxi_pwm_deinit(sunxi_pwm_t *pwm) {
 
 /**
  * @brief Set configuration for a PWM channel.
- * 
+ *
  * This function sets the configuration for the specified PWM channel. It checks if the PWM is initialized,
  * validates the channel index, and then applies the configuration either for a bound channel or a single channel
  * based on the current channel mode.
@@ -612,7 +612,7 @@ void sunxi_pwm_deinit(sunxi_pwm_t *pwm) {
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to configure (0-based index).
  * @param config Pointer to the PWM configuration structure containing the settings.
- * 
+ *
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *config) {
@@ -635,14 +635,14 @@ int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *conf
 
 /**
  * @brief Release the PWM channel.
- * 
- * This function releases the specified PWM channel. It checks if the PWM is initialized, 
- * validates the channel index, and then either releases a bound channel or a single channel 
+ *
+ * This function releases the specified PWM channel. It checks if the PWM is initialized,
+ * validates the channel index, and then either releases a bound channel or a single channel
  * based on the current channel mode.
  *
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to release (0-based index).
- * 
+ *
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel) {
