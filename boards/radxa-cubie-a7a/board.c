@@ -25,29 +25,6 @@
 #include <drivers/spi.h>
 #include <drivers/serial.h>
 
-sunxi_serial_t uart_dbg = {
-		.base = SUNXI_UART0_BASE,
-		.id = 0,
-		.baud_rate = UART_BAUDRATE_115200,
-		.dlen = UART_DLEN_8,
-		.stop = UART_STOP_BIT_0,
-		.parity = UART_PARITY_NO,
-		.gpio_pin =
-				{
-						.gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
-						.gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
-				},
-		.uart_clk =
-				{
-						.gate_reg_base = SUNXI_CCU_BASE + UART0_BGR_REG,
-						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCU_BASE + UART0_BGR_REG,
-						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
-				},
-};
-SUNXI_SERIAL_DEVICE(uart_dbg);
-
 sunxi_i2c_t i2c_pmu = {
 		.base = SUNXI_RTWI_BASE,
 		.id = SUNXI_R_I2C0,

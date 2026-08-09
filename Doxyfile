@@ -865,6 +865,7 @@ WARN_LOGFILE           =
 
 INPUT                  = README.md \
                          docs/driver-model.md \
+                         docs/devicetree.md \
                          arch \
                          boards \
                          core \
@@ -927,6 +928,7 @@ EXCLUDE                = boards/longanpi-3h/tinymaix \
                          lib/fatfs \
                          lib/fdt \
                          test/out \
+                         tools/dt2c \
                          utils/bl33/source/xformat.c \
                          utils/bl33/include/xformat.h \
                          utils/bl33_t527/source/xformat.c \

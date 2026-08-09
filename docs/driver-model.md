@@ -2,7 +2,7 @@
 
 SyterKit uses a small, static driver core inspired by the Linux device model.
 It intentionally has only two runtime objects: `struct device` describes one
-board-owned instance, and `struct driver` provides matching, probe, and remove
+static instance, and `struct driver` provides matching, probe, and remove
 callbacks. There are no bus, class, module, reference-counting, or dynamic
 allocation layers.
 
@@ -52,6 +52,11 @@ static struct device example0 = {
 builtin_device(example0);
 ```
 
+Drivers may instead derive static platform data and device descriptors from the
+board DTS. Such drivers read the generated tree directly through dt2c so the
+compiler can fold fixed properties, then register with the same driver core.
+See [Compile-time device tree](devicetree.md) for that path.
+
 `driver_data` is reserved for state produced by the driver. Use
 `device_set_driver_data()` and `device_get_driver_data()` rather than changing
 board-owned platform data. The core clears `driver_data` after failed probes and
@@ -86,8 +91,8 @@ again.
 Callbacks in the same level still run in link order, matching the Linux
 initcall model; the counter provides identity rather than priority. Dependencies
 within a level must therefore be reflected in Kbuild object order. The
-Sun300iw1 clock object precedes the serial object so its pre-clock callback runs
-before the early serial driver and board device registrations.
+Sun300iw1 clock object precedes the serial object, so its pre-clock callback
+runs before the early serial driver and console-device callbacks.
 
 Use `early_builtin_driver()` and `early_builtin_device()` for descriptors that
 must bind at the early level. The Sunxi debug UART uses this path, so board

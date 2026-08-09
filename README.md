@@ -7,8 +7,20 @@ from the C, Flex, and Bison sources in `scripts/kconfig`.
 ## Configure and build
 
 Install a suitable cross compiler plus the host build dependencies (`make`, a C
-compiler, Flex, Bison, pkg-config, and ncurses development headers). Then select a
-board configuration and build:
+compiler, Flex, Bison, pkg-config, and ncurses development headers). Initialize
+the pinned [dt2c](https://github.com/YuzukiTsuru/dt2c) source and headers after
+cloning:
+
+```sh
+git submodule update --init tools/dt2c
+```
+
+Linux x86_64 builds use the checked-in, musl-linked `tools/bin/dt2c` without a
+Rust toolchain. Other hosts build dt2c from the submodule with Cargo. An
+external release can be selected with `DT2C=/path/to/dt2c` and, when needed,
+`DT2C_INCLUDE=/path/to/include`.
+
+Select a board configuration and build:
 
 ```sh
 make tinyvision_defconfig
@@ -39,13 +51,15 @@ standalone BL33 images, while `make artifacts` builds every output class togethe
 - `configs/`: one maintainable defconfig per board
 - `core/`: boot framework, logging, CLI, and image loading
 - `drivers/`: driver subsystems; each driver directory owns its Kconfig and Makefile
+- `dts/`: dt2c bindings, DTS includes, and compile-time compatibility readers
 - `include/`: common public interfaces
 - `lib/`: freestanding C and imported library routines
 - `scripts/kconfig/`: source-built Kconfig front ends
-- `tools/`: host-side image tools written in C
+- `tools/`: host tools, the pinned dt2c source, and its prebuilt Linux binary
 - `utils/`: standalone target-side utility firmware and build checks
 
 The common driver runtime is deliberately flat: static devices match static
 drivers and are initialized through four boot-time initcall levels. The full
 contract and migration example are documented in
-[Driver model and initcalls](docs/driver-model.md).
+[Driver model and initcalls](docs/driver-model.md). Board hardware is compiled
+from Linux-style DTS as described in [Compile-time device tree](docs/devicetree.md).

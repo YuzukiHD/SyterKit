@@ -11,7 +11,7 @@
 
 #include <uart.h>
 
-extern sunxi_serial_t uart_dbg;
+sunxi_serial_t uart_dbg;
 
 void uart_log_putchar(void *arg, char c) {
 	(void) arg;

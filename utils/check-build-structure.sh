@@ -3,6 +3,7 @@
 set -euo pipefail
 
 srctree="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+third_party_dt2c="${srctree}/tools/dt2c"
 status=0
 
 fail() {
@@ -11,13 +12,15 @@ fail() {
 }
 
 kconfig_symbols() {
-	find "${srctree}" -type f -name 'Kconfig*' -exec sed -n -E \
+	find "${srctree}" -path "${third_party_dt2c}" -prune -o \
+		-type f -name 'Kconfig*' -exec sed -n -E \
 		's/^[[:space:]]*(menuconfig|config)[[:space:]]+([^[:space:]]+).*/\2/p' {} + |
 		sort -u
 }
 
 make_config_symbols() {
-	find "${srctree}" -path "${srctree}/scripts/kconfig" -prune -o \
+	find "${srctree}" \( -path "${srctree}/scripts/kconfig" \
+		-o -path "${third_party_dt2c}" \) -prune -o \
 		-type f \( -name Makefile -o -name '*.mk' \) -print0 |
 		xargs -0 -r rg -o --no-filename --replace '$1' \
 			'(?:^|[^A-Z0-9_])(CONFIG_[A-Z0-9_]+)' |
@@ -35,7 +38,8 @@ doxygen_source_files() {
 	find "${srctree}/arch" "${srctree}/boards" "${srctree}/core" \
 		"${srctree}/drivers" "${srctree}/include" "${srctree}/lib" \
 		"${srctree}/test" "${srctree}/tools" "${srctree}/utils" \
-		\( -path "${srctree}/include/lib/fdt" \
+		\( -path "${third_party_dt2c}" \
+			-o -path "${srctree}/include/lib/fdt" \
 			-o -path "${srctree}/lib/fdt" \
 			-o -path "${srctree}/include/lib/fatfs" \
 			-o -path "${srctree}/lib/fatfs" \
@@ -109,7 +113,7 @@ if rg -n '^[[:space:]]*\*[[:space:]]+@macro([[:space:]]|$)|^[[:space:]]*\*[[:spa
 	fail "use @def for macros and argument-free @file commands"
 fi
 
-if grep -R -n -E --include='Kconfig*' \
+if grep -R -n -E --exclude-dir=dt2c --include='Kconfig*' \
 		'^[[:space:]]*(default|def_bool)[[:space:]]+y([[:space:]]|$)' "${srctree}"; then
 	fail "Kconfig must not enable options with default y"
 fi
@@ -156,6 +160,7 @@ while IFS= read -r board_dir; do
 	relative_dir="${board_dir#${srctree}/}"
 	[[ -f "${board_dir}/Kconfig" ]] || fail "${relative_dir} has no Kconfig"
 	[[ -f "${board_dir}/Makefile" ]] || fail "${relative_dir} has no Makefile"
+	[[ -f "${board_dir}/board.dts" ]] || fail "${relative_dir} has no board.dts"
 	[[ -f "${srctree}/configs/$(basename -- "${board_dir}")_defconfig" ]] || \
 		fail "${relative_dir} has no matching defconfig"
 done < <(find "${srctree}/boards" -mindepth 1 -maxdepth 1 -type d | sort)
@@ -205,23 +210,25 @@ if grep -n -E -- '-m(cpu|arch|abi|fpu|float-abi)(=|[[:space:]])' "${srctree}/Mak
 	fail "CPU and ABI flags belong in arch/*/Makefile"
 fi
 
-if grep -R -n --include='Makefile' --include='*.mk' --include='*.c' \
+if grep -R -n --exclude-dir=dt2c --include='Makefile' --include='*.mk' --include='*.c' \
 		--include='*.h' --include='*.S' -- '-Wno-' "${srctree}"; then
 	fail "warning suppression flags are not allowed"
 fi
 
 for forbidden_dir in linux sunxi sstdlib cmake rust; do
-	if find "${srctree}" -type d -name "${forbidden_dir}" -print -quit | grep -q .; then
+	if find "${srctree}" -path "${third_party_dt2c}" -prune -o \
+			-type d -name "${forbidden_dir}" -print -quit | grep -q .; then
 		fail "forbidden directory name: ${forbidden_dir}"
 	fi
 done
 
-if find "${srctree}" -type f \( -name CMakeLists.txt -o -name '*.cmake' \
+if find "${srctree}" -path "${third_party_dt2c}" -prune -o \
+		-type f \( -name CMakeLists.txt -o -name '*.cmake' \
 		-o -name Cargo.toml -o -name '*.rs' \) -print -quit | grep -q .; then
 	fail "CMake and Rust build files are not allowed"
 fi
 
-if grep -R -n -E --include='Makefile' --include='*.mk' --include='*.c' \
+if grep -R -n -E --exclude-dir=dt2c --include='Makefile' --include='*.mk' --include='*.c' \
 		--include='*.h' --include='*.S' \
 		'(^|[/<])sstdlib([/.>]|$)|include/linux|<linux/' "${srctree}"; then
 	fail "legacy or Linux header paths are not allowed"
