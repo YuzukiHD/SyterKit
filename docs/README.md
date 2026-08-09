@@ -1,8 +1,10 @@
-# SyterKit Intro
+# SyterKit 0.5
 
 ![SyterKit LOGO_Thin](https://github.com/YuzukiHD/SyterKit/assets/12003087/e6135860-1a6a-4cb4-b0f6-71af8eca1509)
 
-SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality.
+SyterKit is a bare-metal firmware framework for Allwinner SoCs. Version 0.5 uses
+GNU Make, Kbuild-style object lists, and a Kconfig front end compiled from the
+sources in this repository.
 
 # Getting Started
 
@@ -11,42 +13,41 @@ SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit uti
 
 ## Building SyterKit From Scratch
 
-Building SyterKit is a straightforward process that only requires setting up the environment for compilation on a Linux operating system. The software packages required by SyterKit include:
+The host requires GNU Make, a C compiler, Flex, Bison, pkg-config, ncurses
+development headers, and a cross compiler suitable for the selected target.
 
 - `gcc-arm-none-eabi`
-- `CMake`
+- `flex`
+- `bison`
+- `libncurses-dev`
 
 For commonly used Ubuntu systems, they can be installed using the following command:
 
 ```shell
 sudo apt-get update
-sudo apt-get install gcc-arm-none-eabi cmake build-essential -y
+sudo apt-get install gcc-arm-none-eabi build-essential flex bison libncurses-dev pkg-config -y
 ```
 
-Then create a folder to store the compiled output files and navigate to it:
+Select a board configuration and build all applications provided by that board:
 
 ```shell
-mkdir build
-cd build
+make tinyvision_defconfig
+make -j$(nproc)
 ```
 
-Finally, run the following commands to compile SyterKit:
-
-```shell
-cmake -DCMAKE_BOARD_FILE={Board_config_file.cmake} ..
-make
-```
-
-For example, if you want to compile SyterKit for the TinyVision platform, you need the following command:
+Out-of-tree builds use the same `O=` convention as the Linux kernel:
 
 ```bash
-cmake -DCMAKE_BOARD_FILE=tinyvision.cmake ..
-make
+make O=out tinyvision_defconfig
+make O=out -j$(nproc)
 ```
 
-The compiled executable files will be located in `build/board/{board_name}/{app_name}`.
+Run `make list-defconfigs` to see every supported board. After configuration,
+`make <application>` builds only that application. Images are written to
+`build/<board>/<application>/`, or under the selected `O` directory.
 
-The SyterKit project will compile two versions: firmware ending with `.elf` is for USB booting and requires bootloading by PC-side software, while firmware ending with `.bin` is for flashing and can be written into storage devices such as TF cards and SPI NAND.
+Each application produces FEL, SD/eMMC, and SPI `.bin` images. ELF files and map
+files are retained in the same application directory for debugging.
 
 - For SD Card, You need to flash the `xxx_card.bin`
 - For SPI NAND/SPI NOR, You need to flash the `xxx_spi.bin`
@@ -56,13 +57,13 @@ The SyterKit project will compile two versions: firmware ending with `.elf` is f
 After build the firmware, you can flash it into the TF card. For the V851s platform, you can write it to either an 8K offset or a 128K offset. Generally, if the TF card uses MBR format, write it with an 8K offset. If it uses GPT format, write it with a 128K offset. Assuming `/dev/sdb` is the target TF card, you can use the following command to write it with an 8K offset:
 
 ```shell
-sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=8
+sudo dd if=syter_boot_card.bin of=/dev/sdb bs=1024 seek=8
 ```
 
 If it is a GPT partition table, you need to write it with a 128K offset:
 
 ```shell
-sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128
+sudo dd if=syter_boot_card.bin of=/dev/sdb bs=1024 seek=128
 ```
 
 ### Creating the Firmware for SPI NAND
@@ -70,9 +71,9 @@ sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128
 For SPI NAND, we need to create the firmware for SPI NAND by writing SyterKit to the corresponding positions:
 
 ```shell
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_spi.bin of=spi.img bs=2k
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=64
 ```
 
 You can also include the Linux kernel and device tree in the firmware:
@@ -93,9 +94,9 @@ xfel spinand write 0x0 spi.img
 For SPI NOR, we need to create the firmware for SPI NOR by writing SyterKit to the corresponding positions:
 
 ```shell
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
+dd if=syter_boot_spi.bin of=spi.img bs=2k
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=64
 ```
 
 You can also include the Linux kernel and device tree in the firmware:
@@ -344,4 +345,3 @@ Specific operations include:
 8. Displaying information about the corrected bootloader header and the bootloader size.
 
 You can find this tool in `tools/mksunxi.c`
-
