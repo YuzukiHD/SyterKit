@@ -1,0 +1,1 @@
+TEST PASS driver_rtc_mock

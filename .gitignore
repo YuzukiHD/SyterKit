@@ -3,6 +3,7 @@
 /.obj/
 /.kconfig/
 /build/
+/test/out/
 /docs/api/
 /defconfig
 /include/config/

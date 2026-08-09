@@ -1,0 +1,10 @@
+CHECK jal PASS
+CHECK jalr PASS
+CHECK c.jal PASS
+CHECK c.jalr PASS
+CHECK non-call PASS
+CHECK sw-ra-scan PASS
+CHECK sw-ra-offset PASS
+CHECK addi-sp PASS
+CHECK ret PASS
+TEST PASS backtrace_e907_decoder_qemu

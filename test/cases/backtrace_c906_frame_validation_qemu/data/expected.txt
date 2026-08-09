@@ -1,0 +1,4 @@
+CHECK valid-chain PASS
+CHECK misaligned-fp PASS
+CHECK outside-stack PASS
+TEST PASS backtrace_c906_frame_validation_qemu

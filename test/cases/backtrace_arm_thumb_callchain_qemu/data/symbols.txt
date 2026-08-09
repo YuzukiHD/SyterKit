@@ -1,0 +1,3 @@
+thumb_level_three
+thumb_level_two
+thumb_level_one
