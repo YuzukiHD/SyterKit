@@ -154,8 +154,9 @@ compile_mmc_host() {
 
 	make -C "${srctree}" O="${coverage_obj}" mrproper
 	make -C "${srctree}" O="${coverage_obj}" "${board_defconfig}"
-	sed -i -E '/^CONFIG_DRIVER_MMC_(V2|HOST)=y$/d; \
-		/^# CONFIG_DRIVER_MMC_(V2|HOST) is not set$/d' \
+	sed -i -E \
+		-e '/^CONFIG_DRIVER_MMC_(V2|HOST)=y$/d' \
+		-e '/^# CONFIG_DRIVER_MMC_(V2|HOST) is not set$/d' \
 		"${coverage_obj}/.config"
 	{
 		printf 'CONFIG_DRIVER_MMC_V2=y\n'
