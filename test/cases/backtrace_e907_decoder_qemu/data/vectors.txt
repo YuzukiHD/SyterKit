@@ -1,0 +1,7 @@
+jal=0x000000ef,size=4
+jalr=0x000280e7,size=4
+c.jal=0x2001,size=2
+c.jalr=0x9282,size=2
+sw-ra-12-sp=0x00112623,offset-words=3
+addi-sp-minus-32=0xfe010113,frame-words=8
+ret=0x00008067

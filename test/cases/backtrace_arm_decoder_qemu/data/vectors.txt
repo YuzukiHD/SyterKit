@@ -1,0 +1,7 @@
+thumb-sub-255=0xf1ad0dff,frame-words=63
+thumb-sub-256=0xf5ad7d80,frame-words=64
+thumb-replicated-imm=0xf1ad1dff,value=0x00ff00ff
+arm-sub-256=0xe24ddc01,frame-words=64
+thumb-sub-16=0x0000b084,frame-words=4
+arm-bx-lr=0xe12fff1e
+thumb-bx-lr=0x00004770

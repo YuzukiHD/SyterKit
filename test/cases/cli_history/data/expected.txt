@@ -1,0 +1,1 @@
+TEST PASS cli_history

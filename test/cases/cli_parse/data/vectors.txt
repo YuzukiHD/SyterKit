@@ -1,0 +1,5 @@
+echo alpha beta|3|echo|alpha|beta
+say "hello world"|2|say|hello world
+one 'two three';next|2|one|two three|next
+path a\ b|2|path|a b
+bad "quote|-1
