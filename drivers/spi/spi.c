@@ -31,28 +31,11 @@
 
 #include <log.h>
 
+#include <driver.h>
 #include <drivers/spi.h>
+#include <dt2c/dt.h>
 
-/* DMA Handler */
-/**
- * @brief DMA configuration structure for SPI RX (Receive)
- * 
- * This structure is used for configuring the Direct Memory Access (DMA) 
- * controller for SPI data reception. It is placed in the section ".data" 
- * of the memory.
- */
-static __attribute__((section(".data"))) sunxi_dma_set_t spi_rx_dma;
-
-/**
- * @brief DMA handler for SPI
- * 
- * This variable holds the DMA handler for SPI operations. It is used to
- * manage the DMA transfer during SPI communication. It is initialized to 0
- * by default.
- */
-static uintptr_t spi_dma_handler;
-
-
+DT2C_DRIVER_COMPAT("allwinner,sunxi-spi");
 /**
  * @brief Perform a software reset on the SPI controller
  * 
@@ -452,8 +435,8 @@ static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len
  * @param[in] len The number of bytes to read from the SPI receive FIFO.
  * 
  * @note This function uses DMA for data transfer, so it requires the DMA controller
- *       to be set up and ready to handle the transfer. The DMA handler `spi_dma_handler`
- *       must be initialized properly before calling this function.
+ *       to be set up and ready to handle the transfer. The controller's DMA
+ *       handler must be initialized before calling this function.
  * 
  * @warning If the DMA transfer fails, a warning message will be printed using
  *          `printk_warning`.
@@ -469,13 +452,14 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
 	spi_reg->fifo_ctl |= SPI_FIFO_CTL_RX_DRQEN;
 
 	// Start the DMA transfer
-	ret = sunxi_dma_start(spi_dma_handler, (uintptr_t) &spi_reg->rxdata, (uintptr_t) buf, len);
+	ret = sunxi_dma_start(spi->dma_handler, (uintptr_t) &spi_reg->rxdata,
+			      (uintptr_t) buf, len);
 	if (ret) {
 		printk_warning("SPI: DMA transfer failed\n");
 	}
 
 	// Wait for the DMA transfer to complete
-	while (sunxi_dma_querystatus(spi_dma_handler))
+	while (sunxi_dma_querystatus(spi->dma_handler))
 		;
 }
 
@@ -565,36 +549,40 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi) {
 	sunxi_dma_init(spi->dma_handle);
 
 	// Request a DMA channel for normal transfer.
-	spi_dma_handler = sunxi_dma_request(DMAC_DMATYPE_NORMAL);
+	spi->dma_handler = sunxi_dma_request(spi->dma_handle,
+					    DMAC_DMATYPE_NORMAL);
 
-	if (spi_dma_handler == 0) {
+	if (spi->dma_handler == 0) {
 		printk_error("SPI: DMA channel request failed\n");
 		return -1;
 	}
 
 	/* Configure SPI RX DMA transfer settings */
-	spi_rx_dma.loop_mode = 0;				// No loop mode for DMA transfer.
-	spi_rx_dma.wait_cyc = 0x8;				// Wait cycles set to 8.
-	spi_rx_dma.data_block_size = 1 * 32 / 8;// Data block size is 32 bits (4 bytes).
+	spi->rx_dma.loop_mode = 0;				// No loop mode for DMA transfer.
+	spi->rx_dma.wait_cyc = 0x8;				// Wait cycles set to 8.
+	spi->rx_dma.data_block_size = 1 * 32 / 8;// Data block size is 32 bits (4 bytes).
 
-	// Configure source (SPI0) settings for DMA.
-	spi_rx_dma.channel_cfg.src_drq_type = DMAC_CFG_TYPE_SPI0;			  // Source is SPI0.
-	spi_rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE;// Source address is I/O mode.
-	spi_rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST;		  // 8-byte burst length for source.
-	spi_rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT;// Source data width is 32 bits.
+	// Configure the source request line for this SPI controller.
+	spi->rx_dma.channel_cfg.src_drq_type = spi->dma_rx_drq != 0U ?
+			spi->dma_rx_drq : (uint8_t) (DMAC_CFG_TYPE_SPI0 + spi->id);
+	spi->rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE;// Source address is I/O mode.
+	spi->rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST;		  // 8-byte burst length for source.
+	spi->rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT;// Source data width is 32 bits.
+	spi->rx_dma.channel_cfg.reserved0 = 0;
 
 	// Configure destination (DRAM) settings for DMA.
-	spi_rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM;				   // Destination is DRAM.
-	spi_rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;// Destination address is linear mode.
-	spi_rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST;		   // 8-byte burst length for destination.
-	spi_rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT;	   // Destination data width is 32 bits.
+	spi->rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM;				   // Destination is DRAM.
+	spi->rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE;// Destination address is linear mode.
+	spi->rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST;		   // 8-byte burst length for destination.
+	spi->rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT;	   // Destination data width is 32 bits.
+	spi->rx_dma.channel_cfg.reserved1 = 0;
 
 	// Install DMA interrupt handler and enable interrupts.
-	sunxi_dma_install_int(spi_dma_handler, NULL);
-	sunxi_dma_enable_int(spi_dma_handler);
+	sunxi_dma_install_int(spi->dma_handler, NULL);
+	sunxi_dma_enable_int(spi->dma_handler);
 
 	// Set DMA transfer settings.
-	sunxi_dma_setting(spi_dma_handler, &spi_rx_dma);
+	sunxi_dma_setting(spi->dma_handler, &spi->rx_dma);
 
 	return 0;// Success
 }
@@ -612,8 +600,11 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi) {
  * @note This function is typically called when SPI DMA operations are no longer required.
  */
 static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
-	// Disable DMA interrupts for the current SPI DMA channel.
-	sunxi_dma_disable_int(spi_dma_handler);
+	if (spi->dma_handler == 0U)
+		return 0;
+	sunxi_dma_disable_int(spi->dma_handler);
+	sunxi_dma_release(spi->dma_handler);
+	spi->dma_handler = 0U;
 
 	return 0;// Success
 }
@@ -865,6 +856,19 @@ static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
 	sunxi_spi_reset_fifo(spi);
 }
 
+static inline __attribute__((always_inline)) bool
+sunxi_spi_gpio_available(gpio_mux_t gpio) {
+	return gpio.mux >= GPIO_PERIPH_MUX2 && gpio.mux < GPIO_DISABLED;
+}
+
+static inline __attribute__((always_inline)) bool
+sunxi_spi_clock_managed(const sunxi_spi_t *spi) {
+	return spi->spi_clk.spi_clock_cfg_base != 0U &&
+	       spi->parent_clk_reg.parent_clk != 0U &&
+	       spi->parent_clk_reg.gate_reg_base != 0U &&
+	       spi->parent_clk_reg.rst_reg_base != 0U;
+}
+
 /**
  * @brief Configures the GPIO pins for SPI communication.
  * 
@@ -876,16 +880,24 @@ static void sunxi_spi_bus_init(sunxi_spi_t *spi) {
  */
 static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
 	/* Config SPI pins */
-	sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
-	sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
-	sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
-	sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
-	sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
-	sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_cs))
+		sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_sck))
+		sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_mosi))
+		sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_miso))
+		sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_wp))
+		sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_hold))
+		sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
 
 	/* Floating by default */
-	sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
-	sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_wp))
+		sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
+	if (sunxi_spi_gpio_available(spi->gpio.gpio_hold))
+		sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
 }
 
 /**
@@ -900,14 +912,17 @@ static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
  * @return 0 on success.
  */
 int sunxi_spi_init(sunxi_spi_t *spi) {
+	if (spi == NULL || spi->base == 0U)
+		return -1;
+
 	/* if set dma handle, we using dma mode */
-	if (spi->dma_handle != NULL) {
-		sunxi_spi_dma_init(spi);
-	}
+	if (spi->dma_handle != NULL && sunxi_spi_dma_init(spi) != 0)
+		return -1;
 
 	sunxi_spi_gpio_init(spi);
 
-	sunxi_spi_clk_init(spi);
+	if (sunxi_spi_clock_managed(spi))
+		sunxi_spi_clk_init(spi);
 
 	sunxi_spi_bus_init(spi);
 
@@ -923,9 +938,13 @@ int sunxi_spi_init(sunxi_spi_t *spi) {
  * @param spi Pointer to the SPI structure containing configuration and register information.
  */
 void sunxi_spi_disable(sunxi_spi_t *spi) {
+	if (spi == NULL || spi->base == 0U)
+		return;
 	sunxi_spi_disable_bus(spi); /**< Disable the SPI bus */
-	sunxi_spi_dma_deinit(spi);	/**< Deinitialize the DMA */
-	sunxi_spi_clk_deinit(spi);	/**< Deinitialize the SPI clock */
+	if (spi->dma_handle != NULL)
+		sunxi_spi_dma_deinit(spi); /**< Deinitialize the DMA */
+	if (sunxi_spi_clock_managed(spi))
+		sunxi_spi_clk_deinit(spi); /**< Deinitialize the SPI clock */
 }
 
 /**
@@ -940,8 +959,11 @@ void sunxi_spi_disable(sunxi_spi_t *spi) {
  * @return 0 on success.
  */
 int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk) {
+	if (spi == NULL || spi->base == 0U || clk == 0U)
+		return -1;
 	spi->clk_rate = clk;				   /**< Update the SPI clock rate */
-	sunxi_spi_clk_init(spi);			   /**< Reinitialize the SPI clock with the new rate */
+	if (sunxi_spi_clock_managed(spi))
+		sunxi_spi_clk_init(spi); /**< Reinitialize the SPI clock with the new rate */
 	sunxi_spi_bus_init(spi);			   /**< Reinitialize the SPI bus */
 	sunxi_spi_config_transer_control(spi); /**< Reconfigure the transfer control */
 	return 0;							   /**< Return success */
@@ -998,7 +1020,7 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 	}
 
 	if (rxbuf && rxlen) {
-		if (rxlen > 64) {
+		if (rxlen > 64 && spi->dma_handler != 0U) {
 			sunxi_spi_read_by_dma(spi, rxbuf, rxlen); /**< Use DMA for large receive buffers */
 		} else {
 			sunxi_spi_read_rx_fifo(spi, rxbuf, rxlen); /**< Use FIFO for smaller receive buffers */

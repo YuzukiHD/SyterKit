@@ -3,51 +3,24 @@
 #ifndef __DT_COMPATIBLE_SERIAL_DT_H__
 #define __DT_COMPATIBLE_SERIAL_DT_H__
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include <driver.h>
 #include <drivers/serial.h>
-#include <dt2c/dt.h>
+#include <dt-compatible/pinctrl-dt.h>
 
 static inline __attribute__((always_inline)) bool
 sunxi_serial_dt_string_equal(const char *value, int length,
 			     const char *expected, size_t expected_length) {
-	return value != NULL && length == (int) expected_length + 1 &&
-	       value[expected_length] == '\0' &&
-	       __builtin_memcmp(value, expected, expected_length) == 0;
+	return syterkit_dt_string_equal(value, length, expected, expected_length);
 }
 
 static inline __attribute__((always_inline)) const dt2c_fdt32_t *
 sunxi_serial_dt_cells(int node, const char *name, size_t count) {
-	const dt2c_fdt32_t *cells;
-	int length;
-
-	cells = (const dt2c_fdt32_t *) dt2c_fdt_getprop(
-			DT2C_FDT_COMPILED_TREE, node, name, &length);
-	if (cells == NULL || count > (size_t) 0x7fffffffU / sizeof(*cells) ||
-	    length != (int) (count * sizeof(*cells)))
-		return NULL;
-	return cells;
+	return syterkit_dt_cells(node, name, count);
 }
 
 static inline __attribute__((always_inline)) bool
 sunxi_serial_dt_node_available(int node) {
-	while (node >= 0) {
-		const char *status;
-		int length;
-
-		status = (const char *) dt2c_fdt_getprop(
-				DT2C_FDT_COMPILED_TREE, node, "status", &length);
-		if (status != NULL &&
-		    !sunxi_serial_dt_string_equal(status, length, "okay", 4) &&
-		    !sunxi_serial_dt_string_equal(status, length, "ok", 2))
-			return false;
-		node = dt2c_fdt_parent_offset(DT2C_FDT_COMPILED_TREE, node);
-	}
-
-	return node == -DT2C_FDT_ERR_NOTFOUND;
+	return syterkit_dt_node_available(node);
 }
 
 static inline __attribute__((always_inline)) int
@@ -79,18 +52,15 @@ sunxi_serial_dt_stdout_node(void) {
 static inline __attribute__((always_inline)) int
 sunxi_serial_dt_read_config(sunxi_serial_t *uart) {
 	const dt2c_fdt32_t *clock_gate;
-	const dt2c_fdt32_t *pinctrl_cells;
 	const dt2c_fdt32_t *pins;
 	const dt2c_fdt32_t *reg;
 	const dt2c_fdt32_t *reset;
 	const dt2c_fdt32_t *value_cell;
-	const char *pinctrl_name;
 	const char *parity;
-	sunxi_serial_t config = {0};
+	sunxi_serial_t config;
 	uint32_t value;
 	int length;
 	int node;
-	int pinctrl;
 
 	if (uart == NULL)
 		return DRIVER_ERROR_INVALID;
@@ -132,34 +102,10 @@ sunxi_serial_dt_read_config(sunxi_serial_t *uart) {
 	    config.uart_clk.rst_reg_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
-	pinctrl_name = (const char *) dt2c_fdt_getprop(
-			DT2C_FDT_COMPILED_TREE, node, "pinctrl-names", &length);
-	if (!sunxi_serial_dt_string_equal(pinctrl_name, length, "default", 7))
+	pins = syterkit_dt_pinctrl_cells(node, 6);
+	if (!syterkit_dt_gpio(pins, 0, &config.gpio_pin.gpio_tx) ||
+	    !syterkit_dt_gpio(pins, 3, &config.gpio_pin.gpio_rx))
 		return DRIVER_ERROR_INVALID;
-	pinctrl_cells = sunxi_serial_dt_cells(node, "pinctrl-0", 1);
-	if (pinctrl_cells == NULL)
-		return DRIVER_ERROR_INVALID;
-	pinctrl = dt2c_fdt_node_offset_by_phandle(
-			DT2C_FDT_COMPILED_TREE,
-			dt2c_fdt32_to_cpu(pinctrl_cells[0]));
-	if (pinctrl < 0)
-		return DRIVER_ERROR_INVALID;
-	pins = sunxi_serial_dt_cells(pinctrl, "allwinner,pins", 6);
-	if (pins == NULL)
-		return DRIVER_ERROR_INVALID;
-	if (dt2c_fdt32_to_cpu(pins[0]) > GPIO_PORTN ||
-	    dt2c_fdt32_to_cpu(pins[1]) >= 32U ||
-	    dt2c_fdt32_to_cpu(pins[2]) > GPIO_DISABLED ||
-	    dt2c_fdt32_to_cpu(pins[3]) > GPIO_PORTN ||
-	    dt2c_fdt32_to_cpu(pins[4]) >= 32U ||
-	    dt2c_fdt32_to_cpu(pins[5]) > GPIO_DISABLED)
-		return DRIVER_ERROR_INVALID;
-	config.gpio_pin.gpio_tx.pin = GPIO_PIN(dt2c_fdt32_to_cpu(pins[0]),
-					       dt2c_fdt32_to_cpu(pins[1]));
-	config.gpio_pin.gpio_tx.mux = (uint8_t) dt2c_fdt32_to_cpu(pins[2]);
-	config.gpio_pin.gpio_rx.pin = GPIO_PIN(dt2c_fdt32_to_cpu(pins[3]),
-					       dt2c_fdt32_to_cpu(pins[4]));
-	config.gpio_pin.gpio_rx.mux = (uint8_t) dt2c_fdt32_to_cpu(pins[5]);
 
 	value_cell = sunxi_serial_dt_cells(node, "data-bits", 1);
 	if (value_cell == NULL)

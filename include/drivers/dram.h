@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <types.h>
 
+#include <drivers/pmu/axp.h>
+
 #include <drivers/reg/reg-dram.h>
 
 #ifdef __cplusplus
@@ -123,6 +125,16 @@ uint32_t sunxi_get_dram_size();
  *         failure.
  */
 uint32_t sunxi_dram_init(void *para);
+
+/**
+ * @brief Initialize DRAM with PMU devices used by voltage callbacks.
+ * @param para SoC-specific DRAM parameters.
+ * @param primary Primary PMU, or NULL when DRAM setup does not use one.
+ * @param secondary Secondary PMU, or NULL when unused.
+ * @return Detected DRAM size or a platform-specific error value.
+ */
+uint32_t sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
+				  axp_pmu_t *secondary);
 
 #ifdef __cplusplus
 }

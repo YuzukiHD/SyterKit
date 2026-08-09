@@ -21,21 +21,6 @@
 #include <drivers/spi.h>
 #include <drivers/serial.h>
 
-sunxi_spi_t sunxi_spi0 = {
-		.base = SUNXI_SPI0_BASE,
-		.id = 0,
-		.clk_rate = 75 * 1000 * 1000,
-		.gpio =
-				{
-						.gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-						.gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-						.gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-						.gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-						.gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX4},
-						.gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX4},
-				},
-};
-
 sdhci_t sdhci0 = {
 		.name = "sdhci0",
 		.id = 0,

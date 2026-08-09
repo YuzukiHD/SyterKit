@@ -25,6 +25,8 @@
 #include <drivers/spi.h>
 #include <drivers/dma.h>
 #include <drivers/mtd/spi-nand.h>
+#include <dt-compatible/dma-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 #include <lib/fatfs/ff.h>
 #include <lib/fdt/libfdt.h>
@@ -59,7 +61,6 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_spi_t sunxi_spi0;
 
 extern dram_para_t dram_para;
 
@@ -104,6 +105,25 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 	return 0;
 }
 
+static int load_from_spi(image_info_t *image) {
+	sunxi_dma_t dma;
+	sunxi_spi_t spi;
+	int result;
+
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+		printk_error("SPI: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_spi_init(&spi) != 0) {
+		printk_error("SPI: init failed\n");
+		return -1;
+	}
+	result = load_spi_nand(&spi, image);
+	sunxi_spi_disable(&spi);
+	return result;
+}
+
 static int abortboot_single_key(int bootdelay) {
 	int abort = 0;
 	unsigned long ts;
@@ -137,12 +157,7 @@ static int abortboot_single_key(int bootdelay) {
 msh_declare_command(reload);
 msh_define_help(reload, "rescan SPI NAND and reload DTB, Kernel zImage", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
-	if (sunxi_spi_init(&sunxi_spi0) != 0) {
-		printk_error("SPI: init failed\n");
-		return 0;
-	}
-
-	if (load_spi_nand(&sunxi_spi0, &image) != 0) {
+	if (load_from_spi(&image) != 0) {
 		printk_error("SPI-NAND: loading failed\n");
 		return 0;
 	}
@@ -155,9 +170,6 @@ int cmd_boot(int argc, const char **argv) {
 	/* Initialize variables for kernel entry point and SD card access. */
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, uint32_t params);
-
-	/* Disable SPI controller, clean up and exit the DMA subsystem. */
-	sunxi_spi_disable(&sunxi_spi0);
 
 	/* Set up boot parameters for the kernel. */
 	if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
@@ -235,16 +247,8 @@ int main(void) {
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 
-	/* Initialize the SPI controller. */
-	if (sunxi_spi_init(&sunxi_spi0) != 0) {
-		printk_error("SPI: init failed\n");
-		goto _shell;
-	} else {
-		printk_info("SPI: spi0 controller initialized\n");
-	}
-
 	/* Load the DTB, kernel image from the SPI NAND. */
-	if (load_spi_nand(&sunxi_spi0, &image) != 0) {
+	if (load_from_spi(&image) != 0) {
 		printk_error("SPI-NAND: loading failed\n");
 		goto _shell;
 	}

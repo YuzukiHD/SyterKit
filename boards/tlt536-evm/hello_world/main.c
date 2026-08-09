@@ -20,9 +20,10 @@
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 
 extern sunxi_serial_t uart_dbg;
-extern sunxi_i2c_t i2c_pmu;
 extern sunxi_sdhci_t sdhci0;
 extern sunxi_sdhci_t sdhci2;
 
@@ -83,16 +84,23 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_gpio_power_mode_init();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&i2c_pmu);
+	pmu_axp2202_init(&pmu);
 
-	pmu_axp2202_dump(&i2c_pmu);
+	pmu_axp2202_dump(&pmu);
 
 	arm32_dcache_enable();
 

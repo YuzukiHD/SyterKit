@@ -43,6 +43,27 @@ typedef struct _axp_contrl_info {
 	axp_step_info_t axp_step_tbl[4];// Voltage step table for the domain.
 } axp_contrl_info;
 
+typedef enum {
+	AXP_PMU_AXP1530,
+	AXP_PMU_AXP2101,
+	AXP_PMU_AXP2202,
+	AXP_PMU_AXP333,
+	AXP_PMU_AXP8191,
+} axp_pmu_type_t;
+
+typedef struct axp_pmu {
+	sunxi_i2c_t *i2c;
+	uint8_t address;
+	uint8_t fallback_address;
+	axp_pmu_type_t type;
+} axp_pmu_t;
+
+static inline bool axp_pmu_matches(const axp_pmu_t *pmu,
+				   axp_pmu_type_t type) {
+	return pmu != NULL && pmu->i2c != NULL && pmu->address != 0U &&
+	       pmu->type == type;
+}
+
 /* Common function */
 
 /**
@@ -57,7 +78,8 @@ typedef struct _axp_contrl_info {
  * @param axp_addr AXP device address.
  * @return Integer indicating the success status of the operation.
  */
-int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr);
+int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff,
+		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
 
 /**
  * @brief Get the voltage value for a specific power domain controlled by AXP.
@@ -69,7 +91,8 @@ int axp_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff, axp_co
  * @param axp_addr AXP device address.
  * @return The voltage value of the specified power domain.
  */
-int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size, uint8_t axp_addr);
+int axp_get_vol(axp_pmu_t *pmu, char *name,
+		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
 
 /* define AXP pmu */
 
@@ -98,10 +121,10 @@ int axp_get_vol(sunxi_i2c_t *i2c_dev, char *name, axp_contrl_info *axp_ctrl_tbl,
  * @param name The name of the PMU chip (e.g., axp2202, axp221, etc.).
  */
 #define DEFINE_AXP_PMU(name)                                                            \
-	int pmu_##name##_init(sunxi_i2c_t *i2c_dev);                                        \
-	int pmu_##name##_get_vol(sunxi_i2c_t *i2c_dev, char *name);                         \
-	int pmu_##name##_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff); \
-	void pmu_##name##_dump(sunxi_i2c_t *i2c_dev);
+	int pmu_##name##_init(axp_pmu_t *pmu);                                        \
+	int pmu_##name##_get_vol(axp_pmu_t *pmu, char *name);                         \
+	int pmu_##name##_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff); \
+	void pmu_##name##_dump(axp_pmu_t *pmu);
 
 /* AXP PMU defines */
 DEFINE_AXP_PMU(axp1530);
@@ -117,7 +140,7 @@ DEFINE_AXP_PMU(axp333);
  * @param i2c_dev Pointer to the I2C device structure.
  * @return 0 if successful, -1 if an error occurred.
  */
-int pmu_axp1530_set_dual_phase(sunxi_i2c_t *i2c_dev);
+int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu);
 
 #ifdef __cplusplus
 }

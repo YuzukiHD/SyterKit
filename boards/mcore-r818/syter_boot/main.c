@@ -23,6 +23,8 @@
 #include <drivers/dram.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 #include <drivers/rtc.h>
 #include <drivers/sdcard.h>
 #include <drivers/sid.h>
@@ -51,7 +53,6 @@
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 extern sunxi_serial_t uart_dbg;
-extern sunxi_i2c_t i2c_pmu;
 extern sunxi_sdhci_t sdhci0;
 extern uint32_t dram_para[32];
 
@@ -205,12 +206,13 @@ _loop:
 	goto _loop;
 }
 
-static void set_pmu_fin_voltage(char *power_name, uint32_t voltage) {
-	int temp_vol, src_vol = pmu_axp2202_get_vol(&i2c_pmu, power_name);
+static void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
+				uint32_t voltage) {
+	int temp_vol, src_vol = pmu_axp2202_get_vol(pmu, power_name);
 	if (src_vol > voltage) {
-		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp2202_set_vol(&i2c_pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1); }
 	} else if (src_vol < voltage) {
-		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp2202_set_vol(&i2c_pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1); }
 	}
 	mdelay(30); /* Delay 300ms for pmu bootup */
 }
@@ -273,28 +275,35 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	printk_info("Checking SoC Version...\n");
 
 	ar100s_gpu_fix();
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
 	sunxi_clk_dump();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&i2c_pmu);
+	pmu_axp2202_init(&pmu);
 
-	set_pmu_fin_voltage("dcdc1", 1100);
-	set_pmu_fin_voltage("dcdc3", 1100);
+	set_pmu_fin_voltage(&pmu, "dcdc1", 1100);
+	set_pmu_fin_voltage(&pmu, "dcdc3", 1100);
 
-	pmu_axp2202_dump(&i2c_pmu);
+	pmu_axp2202_dump(&pmu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	uint32_t dram_size = sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 

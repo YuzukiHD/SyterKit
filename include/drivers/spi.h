@@ -95,9 +95,15 @@ typedef struct {
 	uint32_t clk_rate;			/**< Clock rate for the SPI device */
 	sunxi_spi_gpio_t gpio;		/**< GPIO configuration for the SPI device */
 	sunxi_dma_t *dma_handle;	/**< DMA handle for the SPI device */
+	uint8_t dma_rx_drq;		/**< DMA request line used for SPI RX */
 	sunxi_clk_t parent_clk_reg; /**< Parent clock register configuration */
 	sunxi_spi_clk_t spi_clk;	/**< SPI clock configuration */
+	sunxi_dma_set_t rx_dma;	/**< Per-controller RX DMA configuration */
+	uintptr_t dma_handler;	/**< Per-controller RX DMA channel */
 } sunxi_spi_t;
+
+#define SUNXI_SPI_COMPATIBLE "allwinner,sunxi-spi"
+#define SUNXI_SPI_CONTROLLER_MAX 5
 
 #define MAX_FIFU (64)						   /**< Maximum FIFO size set to 64. */
 #define SPI_CLK_SEL_PERIPH_300M (0x1)		   /**< Selects the SPI peripheral clock to 300 MHz. */

@@ -9,11 +9,33 @@
 	model = "Avaota F1";
 	compatible = "syterkit,avaota-f1";
 
+	aliases {
+		dma0 = &dma0;
+		i2c0 = &i2c0;
+		spi0 = &spi0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
 
 	pinctrl {
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 10 3>,
+				<SUNXI_GPIO_PORT_C 9 3>,
+				<SUNXI_GPIO_PORT_C 8 3>,
+				<SUNXI_GPIO_PORT_C 11 3>,
+				<SUNXI_GPIO_PORT_C 6 3>,
+				<SUNXI_GPIO_PORT_C 7 3>;
+		};
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_A 3 4>,
+				<SUNXI_GPIO_PORT_A 4 4>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_L 4 3>,
@@ -26,6 +48,44 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		dma0: dma-controller@43002000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x43002000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0x42001088 2>;
+			allwinner,clock-gate = <0x42001080 9>;
+			allwinner,reset = <0x42001090 9>;
+			status = "okay";
+		};
+
+		spi0: spi@44025000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <0>;
+			reg = <0x44025000 0x1000>;
+			clock-frequency = <100000000>;
+			allwinner,module-clock = <0x4200101c 1 16 307200000 2>;
+			allwinner,clock-gate = <0x42001084 4>;
+			allwinner,reset = <0x42001094 4>;
+			dmas = <&dma0 22>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi0_pins>;
+			status = "okay";
+		};
+
+		i2c0: i2c@42502000 {
+			compatible = "allwinner,sunxi-i2c";
+			reg = <0x42502000 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <0>;
+			allwinner,parent-clock-frequency = <192000000>;
+			allwinner,clock-gate = <0x42001080 14>;
+			allwinner,reset = <0x42001090 14>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+		};
 
 		uart0: serial@42500000 {
 			compatible = "allwinner,sunxi-uart";

@@ -9,11 +9,22 @@
 	model = "Avaota F2";
 	compatible = "syterkit,avaota-f2";
 
+	aliases {
+		i2c0 = &i2c0;
+		pmu0 = &pmu0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
 
 	pinctrl {
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 5 2>,
+				<SUNXI_GPIO_PORT_L 6 2>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_H 13 6>,
@@ -26,6 +37,27 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		i2c0: i2c@2502000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x02502000 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <0>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x0200191c 0>;
+			allwinner,reset = <0x0200191c 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+			pmu0: pmic@36 {
+				compatible = "x-powers,axp333";
+				reg = <0x36>;
+				status = "okay";
+			};
+		};
 
 		uart0: serial@2500000 {
 			compatible = "allwinner,sunxi-uart";

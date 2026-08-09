@@ -46,25 +46,6 @@ sunxi_serial_t uart_dbg_ph1 = {
 				},
 };
 
-sunxi_i2c_t i2c_pmu = {
-		.base = SUNXI_TWI0_BASE,
-		.id = SUNXI_I2C0,
-		.speed = SUNXI_I2C_SPEED_400K,
-		.gpio =
-				{
-						.gpio_scl = {GPIO_PIN(GPIO_PORTL, 5), GPIO_PERIPH_MUX2},
-						.gpio_sda = {GPIO_PIN(GPIO_PORTL, 6), GPIO_PERIPH_MUX2},
-				},
-		.i2c_clk =
-				{
-						.gate_reg_base = SUNXI_CCU_BASE + TWI_BGR_REG,
-						.gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCU_BASE + TWI_BGR_REG,
-						.rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = 24000000,
-				},
-};
-
 dram_para_t dram_para = {
 		.dram_clk = 1056,
 		.dram_type = 3,

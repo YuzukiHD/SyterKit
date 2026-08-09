@@ -17,6 +17,7 @@
 #include <drivers/dma.h>
 #include <drivers/dram.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dma-dt.h>
 
 #include "lcd.h"
 #include "lcd_init.h"
@@ -28,7 +29,6 @@ extern sunxi_serial_t uart_dbg;
 
 extern dram_para_t dram_para;
 
-extern sunxi_dma_t sunxi_dma;
 
 static sunxi_spi_t sunxi_spi0_lcd = {
 		.base = 0x04025000,
@@ -55,7 +55,6 @@ static sunxi_spi_t sunxi_spi0_lcd = {
 						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
 						.parent_clk = 300000000,
 				},
-		.dma_handle = &sunxi_dma,
 };
 
 static gpio_mux_t lcd_dc_pins = {
@@ -209,6 +208,12 @@ static void LCD_Init(void) {
 }
 
 int main(void) {
+	sunxi_dma_t dma;
+
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK) {
+		printk_error("DMA: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
@@ -224,6 +229,7 @@ int main(void) {
 	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
 	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
 
+	sunxi_spi0_lcd.dma_handle = &dma;
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
 	}

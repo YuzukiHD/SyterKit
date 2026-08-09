@@ -48,7 +48,6 @@
 #define SPI_LCD_COLOR_CYAN 0x7FFF
 #define SPI_LCD_COLOR_YELLOW 0xFFE0
 
-extern sunxi_dma_t sunxi_dma;
 
 static sunxi_spi_t sunxi_spi0_lcd = {
 		.base = SUNXI_R_SPI_BASE,
@@ -74,7 +73,6 @@ static sunxi_spi_t sunxi_spi0_lcd = {
 						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
 						.parent_clk = 300000000,
 				},
-		.dma_handle = &sunxi_dma,
 };
 
 static gpio_mux_t lcd_dc_pins = {
@@ -156,11 +154,12 @@ static void LCD_Fill_All(uint16_t color) {
 	free(video_mem);
 }
 
-static void LCD_Init(void) {
+static void LCD_Init(sunxi_dma_t *dma) {
 	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
 	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
 	sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
 
+	sunxi_spi0_lcd.dma_handle = dma;
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
 	}

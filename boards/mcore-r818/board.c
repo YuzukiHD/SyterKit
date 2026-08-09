@@ -99,25 +99,6 @@ sunxi_sdhci_t sdhci2 = {
 				},
 };
 
-sunxi_i2c_t i2c_pmu = {
-		.base = SUNXI_RTWI_BASE,
-		.id = SUNXI_R_I2C0,
-		.speed = SUNXI_I2C_SPEED_400K,
-		.gpio =
-				{
-						.gpio_scl = {GPIO_PIN(GPIO_PORTL, 0), GPIO_PERIPH_MUX2},
-						.gpio_sda = {GPIO_PIN(GPIO_PORTL, 1), GPIO_PERIPH_MUX2},
-				},
-		.i2c_clk =
-				{
-						.gate_reg_base = SUNXI_RTWI_BRG_REG,
-						.gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_RTWI_BRG_REG,
-						.rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = 24000000,
-				},
-};
-
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();

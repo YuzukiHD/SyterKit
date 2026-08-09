@@ -61,52 +61,6 @@ sunxi_sdhci_t sdhci0 = {
 				},
 };
 
-sunxi_dma_t sunxi_dma = {
-		.dma_reg_base = SUNXI_DMA_BASE,
-		.bus_clk =
-				{
-						.gate_reg_base = SUNXI_CCM_BASE + MBUS_CLK_GATE_EN_REG,
-						.gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
-				},
-		.dma_clk =
-				{
-						.rst_reg_base = SUNXI_CCM_BASE + DMA0_GAR_REG,
-						.rst_reg_offset = DMA_DEFAULT_CLK_RST_OFFSET,
-						.gate_reg_base = SUNXI_CCM_BASE + DMA0_GAR_REG,
-						.gate_reg_offset = DMA_DEFAULT_CLK_GATE_OFFSET,
-				},
-};
-
-sunxi_spi_t sunxi_spi0 = {
-		.base = SUNXI_SPI0_BASE,
-		.id = 0,
-		.clk_rate = 100 * 1000 * 1000,
-		.gpio =
-				{
-						.gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
-						.gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
-						.gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX3},
-						.gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX3},
-						.gpio_wp = {GPIO_PIN(GPIO_PORTC, 4), GPIO_PERIPH_MUX3},
-						.gpio_hold = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
-				},
-		.spi_clk =
-				{
-						.spi_clock_cfg_base = SUNXI_CCM_BASE + SPI0_CLK_REG,
-						.spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
-						.spi_clock_source = SPI0_CLK_REG_CLK_SRC_SEL_PERI0_300M,
-				},
-		.parent_clk_reg =
-				{
-						.rst_reg_base = SUNXI_CCM_BASE + SPI0_GAR_REG,
-						.rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
-						.gate_reg_base = SUNXI_CCM_BASE + SPI0_GAR_REG,
-						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
-						.parent_clk = 300000000,
-				},
-		.dma_handle = &sunxi_dma,
-};
-
 uint32_t dram_para[96] = {
 		1200,	   // dram_clk
 		4,		   // dram_type

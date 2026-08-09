@@ -17,48 +17,11 @@
 
 #include <log.h>
 
+#include <driver.h>
 #include <drivers/dma.h>
+#include <dt2c/dt.h>
 
-/**
- * @def SUNXI_DMA_MAX
- * @brief Maximum number of DMA channels supported
- * @details Define the maximum number of DMA channels available in the system.
- *          Defaults to 4 if not already defined.
- */
-#ifndef SUNXI_DMA_MAX
-#define SUNXI_DMA_MAX 4
-#endif
-
-/**
- * @brief Interrupt count tracking variable
- * @details Tracks the number of active DMA interrupts
- */
-static int dma_int_cnt = 0;
-
-/**
- * @brief DMA initialization status
- * @details Tracks whether DMA has been initialized (-1 = not initialized, >=0 = initialized)
- */
-static int dma_init_ok = -1;
-
-/**
- * @brief Array of DMA channel source structures
- * @details Stores information about each DMA channel's state and configuration
- */
-static sunxi_dma_source_t dma_channel_source[SUNXI_DMA_MAX];
-
-/**
- * @brief Array of DMA descriptor structures
- * @details Stores DMA transfer descriptors for each channel, aligned to 64 bytes
- */
-static sunxi_dma_desc_t dma_channel_desc[SUNXI_DMA_MAX] __attribute__((aligned(64)));
-
-/**
- * @brief Base address of DMA registers
- * @details Stores the base address of the DMA controller registers
- */
-static uintptr_t DMA_REG_BASE;
-
+DT2C_DRIVER_COMPAT("allwinner,sunxi-dma");
 /**
  * @brief Initialize DMA clock
  * @details Configures the clock settings for the DMA controller, including bus clock gating,
@@ -82,12 +45,11 @@ void sunxi_dma_clk_init(sunxi_dma_t *dma) {
  */
 void sunxi_dma_init(sunxi_dma_t *dma) {
 	int i = 0;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
+	sunxi_dma_reg_t *dma_reg;
 
-	DMA_REG_BASE = dma->dma_reg_base;
-
-	if (dma_init_ok > 0)
+	if (dma == NULL || dma->dma_reg_base == 0U || dma->initialized)
 		return;
+	dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
 
 	sunxi_dma_clk_init(dma);
 
@@ -104,17 +66,19 @@ void sunxi_dma_init(sunxi_dma_t *dma) {
 	dma_reg->auto_gate |= 0x7 << 0;
 
 	// Initialize all channel sources to zero
-	memset((void *) dma_channel_source, 0, SUNXI_DMA_MAX * sizeof(sunxi_dma_source_t));
+	memset((void *) dma->channel_source, 0,
+	       SUNXI_DMA_MAX * sizeof(sunxi_dma_source_t));
 
 	// Set up each DMA channel
 	for (i = 0; i < SUNXI_DMA_MAX; i++) {
-		dma_channel_source[i].used = 0;
-		dma_channel_source[i].channel = &(dma_reg->channel[i]);
-		dma_channel_source[i].desc = &dma_channel_desc[i];
+		dma->channel_source[i].used = 0;
+		dma->channel_source[i].channel = &(dma_reg->channel[i]);
+		dma->channel_source[i].desc = &dma->channel_desc[i];
+		dma->channel_source[i].owner = dma;
 	}
 
-	dma_int_cnt = 0;
-	dma_init_ok = 1;
+	dma->interrupt_count = 0;
+	dma->initialized = true;
 }
 
 /**
@@ -124,16 +88,20 @@ void sunxi_dma_init(sunxi_dma_t *dma) {
  */
 void sunxi_dma_exit(sunxi_dma_t *dma) {
 	uintptr_t dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
+	sunxi_dma_reg_t *dma_reg;
+
+	if (dma == NULL || !dma->initialized)
+		return;
+	dma_reg = (sunxi_dma_reg_t *) dma->dma_reg_base;
 
 	/* Free any DMA channels that haven't been released */
 	for (int i = 0; i < SUNXI_DMA_MAX; i++) {
-		if (dma_channel_source[i].used == 1) {
-			dma_channel_source[i].channel->enable = 0;
-			dma_fd = (uintptr_t) &dma_channel_source[i];
+		if (dma->channel_source[i].used == 1) {
+			dma->channel_source[i].channel->enable = 0;
+			dma_fd = (uintptr_t) &dma->channel_source[i];
 			sunxi_dma_disable_int(dma_fd);
 			sunxi_dma_free_int(dma_fd);
-			dma_channel_source[i].used = 0;
+			dma->channel_source[i].used = 0;
 		}
 	}
 
@@ -148,8 +116,7 @@ void sunxi_dma_exit(sunxi_dma_t *dma) {
 	dma_reg->irq_pending0 = 0xffffffff;
 	dma_reg->irq_pending1 = 0xffffffff;
 
-	// Decrement initialization counter
-	dma_init_ok--;
+	dma->initialized = false;
 }
 
 /**
@@ -158,12 +125,15 @@ void sunxi_dma_exit(sunxi_dma_t *dma) {
  * @param dmatype Type of DMA channel to request (currently unused)
  * @return Handle to the requested DMA channel, or 0 if no channels are available
  */
-uintptr_t sunxi_dma_request_from_last(uint32_t dmatype) {
+uintptr_t sunxi_dma_request_from_last(sunxi_dma_t *dma, uint32_t dmatype) {
+	(void) dmatype;
+	if (dma == NULL || !dma->initialized)
+		return 0;
 	for (int i = SUNXI_DMA_MAX - 1; i >= 0; i--) {
-		if (dma_channel_source[i].used == 0) {
-			dma_channel_source[i].used = 1;
-			dma_channel_source[i].channel_count = i;
-			return (uintptr_t) &dma_channel_source[i];
+		if (dma->channel_source[i].used == 0) {
+			dma->channel_source[i].used = 1;
+			dma->channel_source[i].channel_count = i;
+			return (uintptr_t) &dma->channel_source[i];
 		}
 	}
 
@@ -176,13 +146,16 @@ uintptr_t sunxi_dma_request_from_last(uint32_t dmatype) {
  * @param dmatype Type of DMA channel to request (currently unused)
  * @return Handle to the requested DMA channel, or 0 if no channels are available
  */
-uintptr_t sunxi_dma_request(uint32_t dmatype) {
+uintptr_t sunxi_dma_request(sunxi_dma_t *dma, uint32_t dmatype) {
+	(void) dmatype;
+	if (dma == NULL || !dma->initialized)
+		return 0;
 	for (int i = 0; i < SUNXI_DMA_MAX; i++) {
-		if (dma_channel_source[i].used == 0) {
-			dma_channel_source[i].used = 1;
-			dma_channel_source[i].channel_count = i;
+		if (dma->channel_source[i].used == 0) {
+			dma->channel_source[i].used = 1;
+			dma->channel_source[i].channel_count = i;
 			printk_debug("DMA: provide channel %u\n", i);
-			return (uintptr_t) &dma_channel_source[i];
+			return (uintptr_t) &dma->channel_source[i];
 		}
 	}
 
@@ -198,7 +171,7 @@ uintptr_t sunxi_dma_request(uint32_t dmatype) {
 int sunxi_dma_release(uintptr_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
 
-	if (!dma_source->used) {
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL) {
 		return -1;
 	}
 
@@ -224,10 +197,12 @@ int sunxi_dma_setting(uintptr_t dma_fd, sunxi_dma_set_t *cfg) {
 	uint32_t commit_para;
 	sunxi_dma_set_t *dma_set = cfg;
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_desc_t *desc = dma_source->desc;
+	sunxi_dma_desc_t *desc;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || dma_set == NULL || !dma_source->used ||
+	    dma_source->owner == NULL)
 		return -1;
+	desc = dma_source->desc;
 
 	// Configure descriptor link for loop mode
 	if (dma_set->loop_mode)
@@ -256,11 +231,13 @@ int sunxi_dma_setting(uintptr_t dma_fd, sunxi_dma_set_t *cfg) {
  */
 int sunxi_dma_start(uintptr_t dma_fd, uintptr_t saddr, uintptr_t daddr, uint32_t bytes) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_channel_reg_t *channel = dma_source->channel;
-	sunxi_dma_desc_t *desc = dma_source->desc;
+	sunxi_dma_channel_reg_t *channel;
+	sunxi_dma_desc_t *desc;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	channel = dma_source->channel;
+	desc = dma_source->desc;
 
 	/* Configure descriptor */
 	desc->source_addr = (uint32_t) saddr;
@@ -282,10 +259,11 @@ int sunxi_dma_start(uintptr_t dma_fd, uintptr_t saddr, uintptr_t daddr, uint32_t
  */
 int sunxi_dma_stop(uintptr_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_channel_reg_t *channel = dma_source->channel;
+	sunxi_dma_channel_reg_t *channel;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	channel = dma_source->channel;
 	
 	// Disable the channel
 	channel->enable = 0;
@@ -302,10 +280,11 @@ int sunxi_dma_stop(uintptr_t dma_fd) {
 int sunxi_dma_querystatus(uintptr_t dma_fd) {
 	uint32_t channel_count;
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+	sunxi_dma_reg_t *dma_reg;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	dma_reg = (sunxi_dma_reg_t *) dma_source->owner->dma_reg_base;
 
 	channel_count = dma_source->channel_count;
 
@@ -322,11 +301,12 @@ int sunxi_dma_querystatus(uintptr_t dma_fd) {
  */
 int sunxi_dma_install_int(uintptr_t dma_fd, void *p) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+	sunxi_dma_reg_t *dma_reg;
 	uint8_t channel_count;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	dma_reg = (sunxi_dma_reg_t *) dma_source->owner->dma_reg_base;
 
 	channel_count = dma_source->channel_count;
 
@@ -355,11 +335,12 @@ int sunxi_dma_install_int(uintptr_t dma_fd, void *p) {
  */
 int sunxi_dma_enable_int(uintptr_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+	sunxi_dma_reg_t *dma_reg;
 	uint8_t channel_count;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	dma_reg = (sunxi_dma_reg_t *) dma_source->owner->dma_reg_base;
 
 	channel_count = dma_source->channel_count;
 	if (channel_count < 8) {
@@ -381,7 +362,7 @@ int sunxi_dma_enable_int(uintptr_t dma_fd) {
 	}
 
 	// Increment interrupt count
-	dma_int_cnt++;
+	dma_source->owner->interrupt_count++;
 
 	return 0;
 }
@@ -394,11 +375,12 @@ int sunxi_dma_enable_int(uintptr_t dma_fd) {
  */
 int sunxi_dma_disable_int(uintptr_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+	sunxi_dma_reg_t *dma_reg;
 	uint8_t channel_count;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	dma_reg = (sunxi_dma_reg_t *) dma_source->owner->dma_reg_base;
 
 	channel_count = dma_source->channel_count;
 	if (channel_count < 8) {
@@ -420,8 +402,8 @@ int sunxi_dma_disable_int(uintptr_t dma_fd) {
 	}
 
 	/* Decrement interrupt count */
-	if (dma_int_cnt > 0)
-		dma_int_cnt--;
+	if (dma_source->owner->interrupt_count > 0)
+		dma_source->owner->interrupt_count--;
 
 	return 0;
 }
@@ -434,11 +416,12 @@ int sunxi_dma_disable_int(uintptr_t dma_fd) {
  */
 int sunxi_dma_free_int(uintptr_t dma_fd) {
 	sunxi_dma_source_t *dma_source = (sunxi_dma_source_t *) dma_fd;
-	sunxi_dma_reg_t *dma_reg = (sunxi_dma_reg_t *) DMA_REG_BASE;
+	sunxi_dma_reg_t *dma_reg;
 	uint8_t channel_count;
 
-	if (!dma_source->used)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
 		return -1;
+	dma_reg = (sunxi_dma_reg_t *) dma_source->owner->dma_reg_base;
 
 	channel_count = dma_source->channel_count;
 	// Clear pending interrupts
@@ -463,17 +446,25 @@ int sunxi_dma_free_int(uintptr_t dma_fd) {
  * @brief Test DMA functionality
  * @details Performs a DMA transfer test between two memory regions, verifies data integrity,
  *          and reports transfer performance.
+ * @param dma DMA controller used for the test transfer
  * @param src_addr Source memory address for test transfer
  * @param dst_addr Destination memory address for test transfer
  * @param len Length of data to transfer in bytes
  * @return 0 on success, -1 if channel request failed, -2 if transfer timed out
  */
-int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len) {
+int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr,
+		   uint32_t len) {
 	sunxi_dma_set_t dma_set;
 	uint32_t st = 0;
 	uint32_t timeout;
 	uintptr_t dma_fd;
 	uint32_t i, valid;
+
+	if (dma == NULL)
+		return -1;
+	sunxi_dma_init(dma);
+	if (!dma->initialized)
+		return -1;
 
 	// Align length to 4-byte boundary
 	len = ALIGN(len, 4);
@@ -498,7 +489,7 @@ int sunxi_dma_test(uint32_t *src_addr, uint32_t *dst_addr, uint32_t len) {
 	dma_set.channel_cfg.reserved1 = 0;
 
 	// Request a DMA channel
-	dma_fd = sunxi_dma_request(0);
+	dma_fd = sunxi_dma_request(dma, 0);
 	if (!dma_fd) {
 		printk_error("DMA: can't request dma\n");
 		return -1;

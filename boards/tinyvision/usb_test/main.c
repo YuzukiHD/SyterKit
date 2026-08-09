@@ -20,6 +20,7 @@
 #include <drivers/dram.h>
 #include <drivers/rtc.h>
 #include <drivers/usb/usb.h>
+#include <dt-compatible/dma-dt.h>
 
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -33,9 +34,14 @@ void arm32_do_irq(struct arm_regs_t *regs) {
 }
 
 int main(void) {
+	sunxi_dma_t dma;
 
 	/* Display the bootloader banner. */
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK) {
+		printk_error("DMA: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
@@ -61,7 +67,8 @@ int main(void) {
 	sunxi_clk_dump();
 
 
-	sunxi_dma_test((uint32_t *) 0x41008000, (uint32_t *) 0x40008000, 1024 * 1024 * 8);
+	sunxi_dma_test(&dma, (uint32_t *) 0x41008000,
+		       (uint32_t *) 0x40008000, 1024 * 1024 * 8);
 
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);

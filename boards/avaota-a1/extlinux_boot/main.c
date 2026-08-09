@@ -25,6 +25,9 @@
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/dma-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
@@ -60,7 +63,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 extern sunxi_sdhci_t sdhci2;
@@ -644,11 +646,22 @@ _error:
 }
 
 int main(void) {
+	axp_pmu_t primary_pmu;
+	axp_pmu_t secondary_pmu;
+	sunxi_dma_t dma;
+	sunxi_i2c_t i2c;
 
 	arm32_dcache_enable();
 	arm32_icache_enable();
 
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	rtc_set_vccio_det_spare();
 
@@ -658,28 +671,28 @@ int main(void) {
 
 	sunxi_clk_dump();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&i2c_pmu);
+	pmu_axp2202_init(&primary_pmu);
 
-	pmu_axp1530_init(&i2c_pmu);
+	pmu_axp1530_init(&secondary_pmu);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc1", 1100, 1);
 
-	pmu_axp1530_set_dual_phase(&i2c_pmu);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc1", 1100, 1);
-	pmu_axp1530_set_vol(&i2c_pmu, "dcdc2", 1100, 1);
+	pmu_axp1530_set_dual_phase(&secondary_pmu);
+	pmu_axp1530_set_vol(&secondary_pmu, "dcdc1", 1100, 1);
+	pmu_axp1530_set_vol(&secondary_pmu, "dcdc2", 1100, 1);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc2", 920, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", 1160, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc4", 3300, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc2", 920, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc3", 1160, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "dcdc4", 3300, 1);
 
-	pmu_axp2202_set_vol(&i2c_pmu, "bldo3", 1800, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "bldo1", 1800, 1);
-	pmu_axp2202_set_vol(&i2c_pmu, "cldo1", 2100, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "bldo3", 1800, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "bldo1", 1800, 1);
+	pmu_axp2202_set_vol(&primary_pmu, "cldo1", 2100, 1);
 
-	pmu_axp2202_dump(&i2c_pmu);
-	pmu_axp1530_dump(&i2c_pmu);
+	pmu_axp2202_dump(&primary_pmu);
+	pmu_axp1530_dump(&secondary_pmu);
 
 	sunxi_clk_set_cpu_pll(1416);
 
@@ -697,7 +710,7 @@ int main(void) {
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-	LCD_Init();
+	LCD_Init(&dma);
 
 	sunxi_nsi_init();
 

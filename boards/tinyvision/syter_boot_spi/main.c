@@ -20,6 +20,8 @@
 #include <drivers/spi.h>
 #include <drivers/dma.h>
 #include <drivers/mtd/spi-nand.h>
+#include <dt-compatible/dma-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 #include <lib/fdt/libfdt.h>
 #include <lib/fatfs/ff.h>
@@ -53,7 +55,6 @@ extern sunxi_serial_t uart_dbg;
 
 extern dram_para_t dram_para;
 
-extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
 
@@ -190,8 +191,15 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 
 
 int main(void) {
+	sunxi_dma_t dma;
+	sunxi_spi_t spi;
 
 	show_banner();
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+		printk_error("SPI: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_clk_init();
 
@@ -228,15 +236,15 @@ int main(void) {
 
 _spi:
 	printk_debug("SPI: init\n");
-	if (sunxi_spi_init(&sunxi_spi0) != 0) {
+	if (sunxi_spi_init(&spi) != 0) {
 		printk_error("SPI: init failed\n");
 	}
 
-	if (load_spi_nand(&sunxi_spi0, &image) != 0) {
+	if (load_spi_nand(&spi, &image) != 0) {
 		printk_error("SPI-NAND: loading failed\n");
 	}
 
-	sunxi_spi_disable(&sunxi_spi0);
+	sunxi_spi_disable(&spi);
 
 _boot:
 	if (zImage_loader((unsigned char *) image.dest, &entry_point)) {

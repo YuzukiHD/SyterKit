@@ -9,11 +9,26 @@
 	model = "Avaota 86Box";
 	compatible = "syterkit,avaota-86box";
 
+	aliases {
+		dma0 = &dma0;
+		spi0 = &spi0;
+	};
+
 	chosen {
 		stdout-path = &uart0;
 	};
 
 	pinctrl {
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 1 4>,
+				<SUNXI_GPIO_PORT_C 0 4>,
+				<SUNXI_GPIO_PORT_C 2 4>,
+				<SUNXI_GPIO_PORT_C 3 4>,
+				<SUNXI_GPIO_PORT_C 4 4>,
+				<SUNXI_GPIO_PORT_C 5 4>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 8 6>,
@@ -26,6 +41,31 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		dma0: dma-controller@3002000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x03002000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0x02001804 0>;
+			allwinner,clock-gate = <0x0200170c 0>;
+			allwinner,reset = <0x0200170c 16>;
+			status = "okay";
+		};
+
+		spi0: spi@4025000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <0>;
+			reg = <0x04025000 0x1000>;
+			clock-frequency = <75000000>;
+			allwinner,module-clock = <0x02001940 1 8 300000000 0>;
+			allwinner,clock-gate = <0x0200196c 0>;
+			allwinner,reset = <0x0200196c 16>;
+			dmas = <&dma0 22>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi0_pins>;
+			status = "okay";
+		};
 
 		uart0: serial@2500000 {
 			compatible = "allwinner,sunxi-uart";

@@ -63,7 +63,6 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_spi_t sunxi_spi0;
 
 #if defined(CONFIG_DRIVER_MMC_V2)
 extern sunxi_sdhci_t sdhci0;

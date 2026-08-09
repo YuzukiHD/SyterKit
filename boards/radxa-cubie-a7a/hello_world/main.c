@@ -18,6 +18,8 @@
 #include <drivers/sdcard.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/pmu-dt.h>
 
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
@@ -25,7 +27,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern sunxi_sdhci_t sdhci0;
 
@@ -58,22 +59,29 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	axp_pmu_t pmu;
+	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+		printk_error("PMU: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	board_common_init();
 
-	sunxi_i2c_init(&i2c_pmu);
+	sunxi_i2c_init(&i2c);
 
 	sunxi_clk_init();
 
 	sunxi_clk_dump();
 
-	pmu_axp8191_init(&i2c_pmu);
+	pmu_axp8191_init(&pmu);
 
-	pmu_axp8191_dump(&i2c_pmu);
+	pmu_axp8191_dump(&pmu);
 
-	sunxi_dram_init(NULL);
+	sunxi_dram_init_with_pmu(NULL, &pmu, NULL);
 
 	printk_info("Hello World!\n");
 

@@ -38,12 +38,15 @@ typedef struct {
  */
 typedef struct {
 	uintptr_t base;		   /**< Base address of the I2C hardware registers. */
+	int dt_node;		   /**< Compiled devicetree node for child devices. */
 	uint8_t id;			   /**< ID of the I2C device. */
 	uint32_t speed;		   /**< Desired I2C speed (in Hz). */
 	sunxi_i2c_gpio_t gpio; /**< GPIO configuration for the I2C lines. */
 	sunxi_clk_t i2c_clk;   /**< Clock configuration for the I2C device. */
 	bool status;		   /**< Operational status of the I2C device. */
 } sunxi_i2c_t;
+
+#define SUNXI_I2C_COMPATIBLE "allwinner,sunxi-i2c"
 
 /**
  * @brief Enumeration of I2C speeds.

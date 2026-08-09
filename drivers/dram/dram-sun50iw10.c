@@ -16,14 +16,17 @@
 #include <drivers/pmu/axp.h>
 
 static uint32_t dram_size;
+static axp_pmu_t *dram_pmu;
 
-extern sunxi_i2c_t i2c_pmu;
 
 extern int init_DRAM(int type, void *buff);
 
 int set_ddr_voltage(int set_vol) {
 	printk_info("Set DRAM Voltage to %dmv\n", set_vol);
-	pmu_axp2202_set_vol(&i2c_pmu, "dcdc3", set_vol, 1);
+	if (axp_pmu_matches(dram_pmu, AXP_PMU_AXP2202))
+		pmu_axp2202_set_vol(dram_pmu, "dcdc3", set_vol, 1);
+	else if (axp_pmu_matches(dram_pmu, AXP_PMU_AXP1530))
+		pmu_axp1530_set_vol(dram_pmu, "dcdc3", set_vol, 1);
 	return 0;
 }
 
@@ -39,4 +42,11 @@ uint32_t sunxi_get_dram_size() {
 uint32_t sunxi_dram_init(void *para) {
 	dram_size = init_DRAM(0, para);
 	return dram_size;
+}
+
+uint32_t sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
+				  axp_pmu_t *secondary) {
+	(void) secondary;
+	dram_pmu = primary;
+	return sunxi_dram_init(para);
 }

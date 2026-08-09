@@ -17,6 +17,8 @@
 
 #include <log.h>
 
+#include <drivers/dram.h>
+
 /**
  * @brief Get the total DRAM size
  * @details This weak function returns the total size of the system DRAM in bytes.
@@ -24,7 +26,7 @@
  *          the actual DRAM size detected for the specific SoC and board configuration.
  * @return Total DRAM size in bytes. Default implementation returns 0.
  */
-uint64_t __attribute__((weak)) sunxi_get_dram_size() {
+uint32_t __attribute__((weak)) sunxi_get_dram_size() {
 	return 0;
 }
 
@@ -40,4 +42,12 @@ uint64_t __attribute__((weak)) sunxi_get_dram_size() {
  */
 uint32_t __attribute__((weak)) sunxi_dram_init(void *para) {
 	return 0;
+}
+
+uint32_t __attribute__((weak))
+sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
+			 axp_pmu_t *secondary) {
+	(void) primary;
+	(void) secondary;
+	return sunxi_dram_init(para);
 }

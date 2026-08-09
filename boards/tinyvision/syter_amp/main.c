@@ -80,7 +80,6 @@ sunxi_serial_t uart_e907 = {
 				},
 };
 
-extern sunxi_spi_t sunxi_spi0;
 
 extern sdhci_t sdhci0;
 

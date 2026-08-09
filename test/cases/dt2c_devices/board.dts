@@ -6,11 +6,54 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
+	aliases {
+		dma0 = &dma0;
+		dma1 = &dma1;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		pmu0 = &pmu0;
+		pmu1 = &pmu1;
+		spi0 = &spi0;
+		spi4 = &spi4;
+	};
+
 	chosen {
 		stdout-path = &uart1;
 	};
 
 	pinctrl {
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 1 4>,
+				<SUNXI_GPIO_PORT_C 0 4>,
+				<SUNXI_GPIO_PORT_C 2 4>,
+				<SUNXI_GPIO_PORT_C 3 4>,
+				<SUNXI_GPIO_PORT_C 4 4>,
+				<SUNXI_GPIO_PORT_C 5 4>;
+		};
+
+		spi4_pins: spi4-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 1 5>,
+				<SUNXI_GPIO_PORT_D 0 5>,
+				<SUNXI_GPIO_PORT_D 2 5>,
+				<SUNXI_GPIO_PORT_D 3 5>,
+				<SUNXI_GPIO_PORT_D 4 5>,
+				<SUNXI_GPIO_PORT_D 5 5>;
+		};
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+
+		i2c1_pins: i2c1-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 4 3>,
+				<SUNXI_GPIO_PORT_B 5 3>;
+		};
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 8 6>,
@@ -47,6 +90,98 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		dma0: dma-controller@7000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x7000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0x8000 2>;
+			allwinner,clock-gate = <0x8100 3>;
+			allwinner,reset = <0x8200 19>;
+			status = "okay";
+		};
+
+		dma1: dma-controller@9000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x9000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0xa000 4>;
+			allwinner,clock-gate = <0xa100 5>;
+			allwinner,reset = <0xa200 21>;
+			status = "okay";
+		};
+
+		spi0: spi@b000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <0>;
+			reg = <0xb000 0x1000>;
+			clock-frequency = <75000000>;
+			allwinner,module-clock = <0xc000 1 8 300000000 0>;
+			allwinner,clock-gate = <0xc100 6>;
+			allwinner,reset = <0xc200 22>;
+			dmas = <&dma1 27>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi0_pins>;
+			status = "okay";
+		};
+
+		spi4: spi@d000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <4>;
+			reg = <0xd000 0x1000>;
+			clock-frequency = <50000000>;
+			allwinner,module-clock = <0xe000 2 16 200000000 1>;
+			allwinner,clock-gate = <0xe100 7>;
+			allwinner,reset = <0xe200 23>;
+			dmas = <&dma0 31>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi4_pins>;
+			status = "okay";
+		};
+
+		i2c0: i2c@3000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3000 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <6>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x4000 0>;
+			allwinner,reset = <0x4000 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+			pmu0: pmic@34 {
+				compatible = "x-powers,axp2202";
+				reg = <0x34>, <0x35>;
+				status = "okay";
+			};
+		};
+
+		i2c1: i2c@5000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x5000 0x400>;
+			clock-frequency = <100000>;
+			allwinner,i2c-id = <1>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x6000 1>;
+			allwinner,reset = <0x6000 17>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c1_pins>;
+			status = "okay";
+
+			pmu1: pmic@36 {
+				compatible = "x-powers,axp1530";
+				reg = <0x36>;
+				status = "okay";
+			};
+		};
 
 		uart1: serial@2000 {
 			compatible = "allwinner,sunxi-uart";

@@ -1,0 +1,29 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner DMA controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-dma
+  reg:
+    type: reg
+  "#dma-cells":
+    type: uint32
+  allwinner,mbus-clock-gate:
+    type: uint32-array
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - "#dma-cells"
+  - allwinner,mbus-clock-gate
+  - allwinner,clock-gate
+  - allwinner,reset
+
+dt2c,device: true

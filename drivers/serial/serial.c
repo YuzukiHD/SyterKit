@@ -180,11 +180,12 @@ static int sunxi_serial_register_console(void) {
 		return result;
 	return device_register(&sunxi_serial_console_device);
 }
-early_initcall(sunxi_serial_register_console);
 
 static struct driver sunxi_serial_driver = {
 		.name = "sunxi-serial",
 		.compatible = SUNXI_SERIAL_COMPATIBLE,
 		.probe = sunxi_serial_probe,
 };
+
+early_initcall(sunxi_serial_register_console);
 early_builtin_driver(sunxi_serial_driver);
