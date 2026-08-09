@@ -1,7 +1,7 @@
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 
-#include <elf-em.h>
+#include <lib/elf/elf-em.h>
 #include <types.h>
 
 #ifdef __cplusplus

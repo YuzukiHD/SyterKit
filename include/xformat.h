@@ -35,7 +35,9 @@ extern "C" {
 /**
  * Define XCFG_FORMAT_FLOAT=0 to remove floating point support
  */
+#ifndef XCFG_FORMAT_FLOAT
 #define XCFG_FORMAT_FLOAT 1
+#endif
 
 /**
  * Define to 1 to support long long type (prefix ll)

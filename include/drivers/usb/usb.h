@@ -124,7 +124,7 @@ struct usb_device_request {
 } __attribute__((packed));
 
 typedef struct sunxi_udc {
-	uint64_t usbc_hd;
+	uintptr_t usbc_hd;
 	uint32_t address;	  /* device address, allocated by the host */
 	uint32_t speed;		  /* flag: is it high speed? */
 	uint32_t bulk_ep_max; /* maximum packet size for bulk endpoints */
@@ -202,7 +202,6 @@ sunxi_usb_module_ext(SUNXI_USB_DEVICE_MASS);
  *                    - SUNXI_USB_DEVICE_DETECT: USB device detect module
  *                    - SUNXI_USB_DEVICE_MASS: USB mass storage module
  *
- * @return none
  */
 void sunxi_usb_attach_module(uint32_t device_type);
 
@@ -215,9 +214,7 @@ void sunxi_usb_attach_module(uint32_t device_type);
  * the USB device by setting the transfer mode and speed, configuring DMA, etc.
  * Finally, it enables interrupts and opens the USB device.
  *
- * @return 0 on success, -1 on failure
- *
- * @param none
+ * @return 0 on success, -1 on failure.
  */
 int sunxi_usb_init();
 
@@ -229,7 +226,6 @@ int sunxi_usb_init();
  *
  * @param usbc_base The base address of the USB controller
  * @param ep_index  The index of the endpoint to dump registers for
- * @return none
  */
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index);
 
@@ -239,8 +235,6 @@ void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index);
  * This function resets all endpoints of the Allwinner A64 USB controller by calling
  * the sunxi_usb_bulk_ep_reset() function to reset the bulk endpoints.
  *
- * @param none
- * @return none
  */
 void sunxi_usb_ep_reset();
 
@@ -251,8 +245,6 @@ void sunxi_usb_ep_reset();
  * DISCONNECT, SOF, endpoint 0 (EP0), and data transfers for both transmit (TX) and receive (RX) endpoints.
  * It also handles DMA interrupts for both TX and RX endpoints.
  *
- * @param None
- * @return None
  */
 void sunxi_usb_irq();
 
@@ -265,8 +257,6 @@ void sunxi_usb_irq();
  * the USB device state by calling sunxi_udev_active->state_loop(&sunxi_ubuf)
  * multiple times.
  *
- * @param none
- * @return none
  */
 void sunxi_usb_attach();
 
@@ -276,7 +266,6 @@ void sunxi_usb_attach();
  * This function runs the USB device state machine loop once by calling
  * sunxi_udev_active->state_loop(&sunxi_ubuf) and returning the result.
  *
- * @param none
  * @return The result of sunxi_udev_active->state_loop(&sunxi_ubuf)
  */
 int sunxi_usb_extern_loop();
@@ -303,8 +292,6 @@ int sunxi_usb_extern_loop();
  *    - Enable interrupts for the endpoint.
  * 4. Restore the previously active endpoint.
  *
- * @param none
- * @return none
  */
 void sunxi_usb_bulk_ep_reset();
 

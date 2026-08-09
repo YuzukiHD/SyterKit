@@ -148,188 +148,199 @@ static inline void usb_controller_int_disable_rx_all(uint32_t addr) {
 }
 
 /**
- * Open the USB OTG controller.
+ * @brief Open the USB OTG controller.
  *
  * @param otg_no The OTG controller number.
  * @return Returns the status of the operation.
  */
-uint32_t usb_controller_open_otg(uint32_t otg_no);
+uintptr_t usb_controller_open_otg(uint32_t otg_no);
 
 /**
- * Close the USB OTG controller.
+ * @brief Close the USB OTG controller.
  *
  * @param husb The handle to the USB controller.
  * @return Returns the status of the operation.
  */
-int usb_controller_close_otg(uint64_t husb);
+int usb_controller_close_otg(uintptr_t husb);
 
 /**
- * Set the ID status for the USB controller.
+ * @brief Set the ID status for the USB controller.
  *
  * @param husb The handle to the USB controller.
  * @param id_type The type of ID status to set.
  */
-void usb_controller_force_id_status(uint64_t husb, uint32_t id_type);
+void usb_controller_force_id_status(uintptr_t husb, uint32_t id_type);
 
 /**
- * Force the VBUS valid state for the USB controller.
+ * @brief Force the VBUS valid state for the USB controller.
  *
  * @param husb The handle to the USB controller.
  * @param vbus_type The type of VBUS state to force.
  */
-void usb_controller_force_vbus_valid(uint64_t husb, uint32_t vbus_type);
+void usb_controller_force_vbus_valid(uintptr_t husb, uint32_t vbus_type);
 
 /**
- * Enable the ID pull-up resistor for the USB controller.
+ * @brief Enable the ID pull-up resistor for the USB controller.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_id_pull_enable(uint64_t husb);
+void usb_controller_id_pull_enable(uintptr_t husb);
 
 /**
- * Disable the ID pull-up resistor for the USB controller.
+ * @brief Disable the ID pull-up resistor for the USB controller.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_id_pull_disable(uint64_t husb);
+void usb_controller_id_pull_disable(uintptr_t husb);
 
 /**
- * Enable the DP/DM pull-up resistors for the USB controller.
+ * @brief Enable the DP/DM pull-up resistors for the USB controller.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_dpdm_pull_enable(uint64_t husb);
+void usb_controller_dpdm_pull_enable(uintptr_t husb);
 
 /**
- * Disable the DP/DM pull-up resistors for the USB controller.
+ * @brief Disable the DP/DM pull-up resistors for the USB controller.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_dpdm_pull_disable(uint64_t husb);
+void usb_controller_dpdm_pull_disable(uintptr_t husb);
 
 /**
- * Disable all miscellaneous USB interrupts.
+ * @brief Disable all miscellaneous USB interrupts.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_int_disable_usb_misc_all(uint64_t husb);
+void usb_controller_int_disable_usb_misc_all(uintptr_t husb);
 
 /**
- * Disable all endpoint-specific interrupts.
+ * @brief Disable all endpoint-specific interrupts.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint to disable interrupts for.
  */
-void usb_controller_int_disable_ep_all(uint64_t husb, uint32_t ep_type);
+void usb_controller_int_disable_ep_all(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Enable specific miscellaneous USB interrupts.
+ * @brief Enable specific miscellaneous USB interrupts.
  *
  * @param husb The handle to the USB controller.
  * @param mask The interrupt mask to enable.
  */
-void usb_controller_int_enable_usb_misc_uint(uint64_t husb, uint32_t mask);
+void usb_controller_int_enable_usb_misc_uint(uintptr_t husb, uint32_t mask);
 
 /**
- * Disable specific miscellaneous USB interrupts.
+ * @brief Disable specific miscellaneous USB interrupts.
  *
  * @param husb The handle to the USB controller.
  * @param mask The interrupt mask to enable.
  */
-void usb_controller_int_disable_usb_misc_uint(uint64_t husb, uint32_t mask);
+void usb_controller_int_disable_usb_misc_uint(uintptr_t husb, uint32_t mask);
 
 /**
- * Enable interrupts for a specific endpoint.
+ * @brief Enable interrupts for a specific endpoint.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint to enable interrupts for.
  * @param ep_index The index of the endpoint to enable interrupts for.
  */
-void usb_controller_int_enable_ep(uint64_t husb, uint32_t ep_type, uint32_t ep_index);
+void usb_controller_int_enable_ep(uintptr_t husb, uint32_t ep_type, uint32_t ep_index);
 
 /**
- * Get the pending interrupt status for a specific endpoint.
+ * @brief Get the pending interrupt status for a specific endpoint.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint.
  * @return Returns the pending interrupt status.
  */
-uint32_t usb_controller_int_ep_pending(uint64_t husb, uint32_t ep_type);
+uint32_t usb_controller_int_ep_pending(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Clear the pending interrupt flag for a specific endpoint.
+ * @brief Clear the pending interrupt flag for a specific endpoint.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint.
  * @param ep_index The index of the endpoint.
  */
-void usb_controller_int_clear_ep_pending(uint64_t husb, uint32_t ep_type, uint8_t ep_index);
+void usb_controller_int_clear_ep_pending(uintptr_t husb, uint32_t ep_type, uint8_t ep_index);
 
 /**
- * Clear the pending interrupt flags for all endpoints of a specific type.
+ * @brief Clear the pending interrupt flags for all endpoints of a specific type.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint.
  */
-void usb_controller_int_clear_ep_pending_all(uint64_t husb, uint32_t ep_type);
+void usb_controller_int_clear_ep_pending_all(uintptr_t husb, uint32_t ep_type);
 
 /**
- * Get the pending miscellaneous interrupt status.
+ * @brief Get the pending miscellaneous interrupt status.
  *
  * @param husb The handle to the USB controller.
  * @return Returns the pending miscellaneous interrupt status.
  */
-uint32_t usb_controller_int_misc_pending(uint64_t husb);
+uint32_t usb_controller_int_misc_pending(uintptr_t husb);
 
 /**
- * Clear the pending miscellaneous interrupt flag.
+ * @brief Clear the pending miscellaneous interrupt flag.
  *
  * @param husb The handle to the USB controller.
  * @param mask The interrupt mask to clear.
  */
-void usb_controller_int_clear_misc_pending(uint64_t husb, uint32_t mask);
+void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask);
 
 /**
- * Clear the pending miscellaneous interrupt flags for all interrupts.
+ * @brief Clear the pending miscellaneous interrupt flags for all interrupts.
  *
  * @param husb The handle to the USB controller.
  */
-void usb_controller_int_clear_misc_pending_all(uint64_t husb);
+void usb_controller_int_clear_misc_pending_all(uintptr_t husb);
 
 /**
- * Get the active endpoint for the USB controller.
+ * @brief Get the active endpoint for the USB controller.
  *
  * @param husb The handle to the USB controller.
  * @return Returns the active endpoint.
  */
-uint32_t usb_controller_get_active_ep(uint64_t husb);
+uint32_t usb_controller_get_active_ep(uintptr_t husb);
 
 /**
- * Disable interrupts for a specific endpoint.
+ * @brief Disable interrupts for a specific endpoint.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint.
  * @param ep_index The index of the endpoint.
  */
-void usb_controller_int_disable_ep(uint64_t husb, uint32_t ep_type, uint8_t ep_index);
+void usb_controller_int_disable_ep(uintptr_t husb, uint32_t ep_type, uint8_t ep_index);
 
 /**
- * Select the active endpoint for the USB controller.
+ * @brief Select the active endpoint for the USB controller.
  *
  * @param husb The handle to the USB controller.
  * @param ep_index The index of the endpoint to select as active.
  */
-void usb_controller_select_active_ep(uint64_t husb, uint8_t ep_index);
+void usb_controller_select_active_ep(uintptr_t husb, uint8_t ep_index);
 
 /**
- * Configure the FIFO for a default transmit endpoint.
+ * @brief Select PIO or DMA access for a USB endpoint.
+ *
+ * @param[in] husb USB controller handle.
+ * @param[in] io_type USBC_IO_TYPE_PIO or USBC_IO_TYPE_DMA.
+ * @param[in] ep_type USBC_EP_TYPE_TX or USBC_EP_TYPE_RX.
+ * @param[in] ep_index Endpoint index.
+ */
+void usb_controller_select_bus(uintptr_t husb, uint32_t io_type,
+			       uint32_t ep_type, uint32_t ep_index);
+
+/**
+ * @brief Configure the FIFO for a default transmit endpoint.
  *
  * @param addr The address of the USB controller.
  */
 void usb_controller_config_fifo_tx_ep_default(uint32_t addr);
 
 /**
- * Configure the FIFO for a transmit endpoint.
+ * @brief Configure the FIFO for a transmit endpoint.
  *
  * @param addr The address of the USB controller.
  * @param is_double_fifo Whether the endpoint has double buffering enabled.
@@ -339,14 +350,14 @@ void usb_controller_config_fifo_tx_ep_default(uint32_t addr);
 void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr);
 
 /**
- * Configure the FIFO for a default receive endpoint.
+ * @brief Configure the FIFO for a default receive endpoint.
  *
  * @param addr The address of the USB controller.
  */
 void usb_controller_config_fifo_rx_ep_default(uint32_t addr);
 
 /**
- * Configure the FIFO for a receive endpoint.
+ * @brief Configure the FIFO for a receive endpoint.
  *
  * @param addr The address of the USB controller.
  * @param is_double_fifo Whether the endpoint has double buffering enabled.
@@ -356,7 +367,7 @@ void usb_controller_config_fifo_rx_ep_default(uint32_t addr);
 void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr);
 
 /**
- * Configure the FIFO for a specific endpoint.
+ * @brief Configure the FIFO for a specific endpoint.
  *
  * @param husb The handle to the USB controller.
  * @param ep_type The type of endpoint.
@@ -364,150 +375,80 @@ void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, ui
  * @param fifo_size The size of the FIFO.
  * @param fifo_addr The base address of the FIFO.
  */
-void usb_controller_config_fifo(uint64_t husb, uint32_t ep_type, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr);
+void usb_controller_config_fifo(uintptr_t husb, uint32_t ep_type, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr);
 
-/*
- * Function name: usb_controller_get_vbus_status
+/**
+ * @brief Get the VBUS status of a USB controller.
  *
- * @param husb: The USB controller handle. (Input)
- *
- * @return Returns the VBUS status value.
- *
- * Description:
- * This function gets the VBUS status of the USB controller.
- * It takes the USB controller handle as an input parameter.
- * The function first checks if the USB controller handle is not NULL.
- * It then reads the device control register to get the VBUS status.
- * The read value is shifted right by the VBUS bit position to get the VBUS status value.
- * The function uses a switch statement to check and return the corresponding VBUS status values.
- * If the VBUS status value is not recognized, it returns the default "below session end" status value.
+ * @param husb USB controller handle.
+ * @return The current VBUS status, or the below-session-end status if the
+ *         hardware value is not recognized.
  */
-uint32_t usb_controller_get_vbus_status(uint64_t husb);
+uint32_t usb_controller_get_vbus_status(uintptr_t husb);
 
-/*
- * Function name: usb_controller_read_len_from_fifo
- * 
- * @param husb: The USB controller handle. (Input)
- * @param ep_type: The endpoint type. (Input)
- * 
- * @return Returns the length of data available in the FIFO for the given endpoint type.
+/**
+ * @brief Read the number of bytes available in an endpoint FIFO.
  *
- * Description:
- * This function reads the length of data available in the FIFO for the given endpoint type using the USB controller.
- * The function first checks if the USB controller handle is not NULL.
- * Then, the function reads the length from the appropriate register based on the endpoint type provided.
- * If the endpoint type is USBC_EP_TYPE_EP0, the count is read from the COUNT0 register.
- * If the endpoint type is USBC_EP_TYPE_TX, the count is 0 since this is an endpoint for transmitting data.
- * If the endpoint type is USBC_EP_TYPE_RX, the count is read from the RXCOUNT register.
- * Finally, the function returns the total length of data available in the FIFO for the given endpoint type.
+ * @param husb USB controller handle.
+ * @param ep_type Endpoint type.
+ * @return The number of bytes available, or zero for a TX endpoint or an
+ *         invalid controller handle.
  */
-uint32_t usb_controller_read_len_from_fifo(uint64_t husb, uint32_t ep_type);
+uint32_t usb_controller_read_len_from_fifo(uintptr_t husb, uint32_t ep_type);
 
-/*
- * Function name: usb_controller_write_packet
- * 
- * @param husb: The USB controller handle. (Input)
- * @param fifo: The FIFO number to write the packet to. (Input)
- * @param cnt: The number of bytes to write. (Input)
- * @param buff: The buffer containing the data to be written. (Input)
- * 
- * @return Returns the total number of bytes written.
+/**
+ * @brief Write a packet to a USB endpoint FIFO.
  *
- * Description:
- * This function writes a packet of data to the specified FIFO using the USB controller.
- * The function first checks if the USB controller handle and the data buffer are not NULL.
- * Then, it adjusts the data by converting the buffer pointer to a 32-bit or 8-bit pointer based on the length.
- * The function then writes the data to the FIFO in chunks of 4 bytes (32-bit) until all 32-bit chunks are written.
- * After that, it processes the remaining non-4-byte part by writing 1 byte at a time.
- * Finally, the function returns the total number of bytes written.
+ * @param husb USB controller handle.
+ * @param fifo FIFO address.
+ * @param cnt Number of bytes to write.
+ * @param buff Buffer containing the packet data.
+ * @return The number of bytes written, or zero if an argument is invalid.
  */
-uint32_t usb_controller_write_packet(uint64_t husb, uint32_t fifo, uint32_t cnt, void *buff);
+uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff);
 
-/*
- * Function name: usb_controller_read_packet
- * 
- * @param husb: The USB controller handle. (Input)
- * @param fifo: The FIFO number to read the packet from. (Input)
- * @param cnt: The number of bytes to read. (Input)
- * @param buff: The buffer to store the read data. (Output)
- * 
- * @return Returns the total number of bytes read.
+/**
+ * @brief Read a packet from a USB endpoint FIFO.
  *
- * Description:
- * This function reads a packet of data from the specified FIFO using the USB controller.
- * The function first checks if the USB controller handle and the data buffer are not NULL.
- * Then, it adjusts the data by converting the buffer pointer to a 32-bit or 8-bit pointer based on the length.
- * The function then reads the data from the FIFO in chunks of 4 bytes (32-bit) until all 32-bit chunks are read.
- * After that, it processes the remaining non-4-byte part by reading 1 byte at a time.
- * Finally, the function returns the total number of bytes read.
+ * @param husb USB controller handle.
+ * @param fifo FIFO address.
+ * @param cnt Number of bytes to read.
+ * @param buff Buffer that receives the packet data.
+ * @return The number of bytes read, or zero if an argument is invalid.
  */
-uint32_t usb_controller_read_packet(uint64_t husb, uint32_t fifo, uint32_t cnt, void *buff);
+uint32_t usb_controller_read_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff);
 
-/*
- * Function name: usb_controller_config_fifo_base
+/**
+ * @brief Configure the SRAM region used by the USB FIFO.
  *
- * @param husb: The USB controller handle. (Input)
- * @param sram_base: The base address of the SRAM to be mapped to the USB FIFO. (Input)
- * @param fifo_mode: The mode of the FIFO. (Input)
- *
- * Description:
- * This function maps the SRAM region D to be used by the USB FIFO.
- * It takes the USB controller handle, the base address of the SRAM, and the FIFO mode as input parameters.
- * The function first checks if the USB controller handle is not NULL.
- * If the USB port number of the controller is 0, it sets the FIFO address and size for port 0.
- * The FIFO size is set to 8KB (8192 bytes).
- * Finally, the function returns.
+ * @param husb USB controller handle.
+ * @param sram_base Base address of the SRAM mapped to the FIFO.
  */
-void usb_controller_config_fifo_base(uint64_t husb, uint32_t sram_base);
+void usb_controller_config_fifo_base(uintptr_t husb, uint32_t sram_base);
 
-/*
- * Function name: usb_controller_get_port_fifo_start_addr
+/**
+ * @brief Get the start address of a USB controller port FIFO.
  *
- * @param husb: The USB controller handle. (Input)
- *
- * @return Returns the start address of the port FIFO.
- *
- * Description:
- * This function gets the start address of the port FIFO in the USB controller.
- * It takes the USB controller handle as an input parameter.
- * The function first checks if the USB controller handle is not NULL.
- * If the port number in the USB controller handle is 0, it returns the start address of port 0 FIFO.
- * If the port number is 1, it returns the start address of port 1 FIFO.
- * If the port number is neither 0 nor 1, it returns the start address of port 2 FIFO.
+ * @param husb USB controller handle.
+ * @return The start address of the port FIFO.
  */
-uint32_t usb_controller_get_port_fifo_start_addr(uint64_t husb);
+uint32_t usb_controller_get_port_fifo_start_addr(uintptr_t husb);
 
-/*
- * Function name: usb_controller_get_port_fifo_size
+/**
+ * @brief Get the size of a USB controller port FIFO.
  *
- * @param husb: The USB controller handle. (Input)
- *
- * @return Returns the size of the port FIFO.
- *
- * Description:
- * This function gets the size of the port FIFO in the USB controller.
- * It takes the USB controller handle as an input parameter.
- * The function first checks if the USB controller handle is not NULL.
- * If the port number in the USB controller handle is 0, it returns the size of port 0 FIFO.
- * Otherwise, it returns the size of port 1 FIFO. As same as port2 FIFO.
+ * @param husb USB controller handle.
+ * @return The size of the port FIFO in bytes.
  */
-uint32_t usb_controller_get_port_fifo_size(uint64_t husb);
+uint32_t usb_controller_get_port_fifo_size(uintptr_t husb);
 
-/*
- * Function name: usb_controller_select_fifo
+/**
+ * @brief Select the FIFO for a USB endpoint.
  *
- * @param husb: The USB controller handle. (Input)
- * @param ep_index: The endpoint index. (Input)
- *
- * @return Returns the FIFO address for the specified endpoint.
- *
- * Description:
- * This function selects the FIFO for the specified endpoint in the USB controller.
- * It takes the USB controller handle and the endpoint index as input parameters.
- * The function first checks if the USB controller handle is not NULL.
- * If it is NULL, it returns 0.
- * Otherwise, it calculates and returns the FIFO address for the specified endpoint.
+ * @param husb USB controller handle.
+ * @param ep_index Endpoint index.
+ * @return The endpoint FIFO address, or zero if the controller handle is invalid.
  */
-uint32_t usb_controller_select_fifo(uint64_t husb, uint32_t ep_index);
+uint32_t usb_controller_select_fifo(uintptr_t husb, uint32_t ep_index);
 
 #endif// __USB_CONTROLLER_H__

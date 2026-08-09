@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <reg-ncat.h>
+#include <drivers/reg/reg-ncat.h>
 
 #include <io.h>
 
@@ -44,7 +44,7 @@
 #define USBC_REG_o_RXTYPE 0x008E
 #define USBC_REG_o_RXINTERVAL 0x008F
 
-#define USBC_REG_o_CONFIGDATA 0x00c0 /**/
+#define USBC_REG_o_CONFIGDATA 0x00c0
 
 #define USBC_REG_o_EPFIFO0 0x0000
 #define USBC_REG_o_EPFIFO1 0x0004

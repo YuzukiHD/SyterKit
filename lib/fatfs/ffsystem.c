@@ -2,7 +2,7 @@
 /* A Sample Code of User Provided OS Dependent Functions for FatFs        */
 /*------------------------------------------------------------------------*/
 
-#include "ff.h"
+#include <lib/fatfs/ff.h>
 
 #if FF_USE_LFN == 3 /* Use dynamic memory allocation */
 

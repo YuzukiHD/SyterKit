@@ -6,9 +6,9 @@
 #include <string.h>
 #include <types.h>
 
-#include <elf.h>
-#include <elf_helpers.h>
-#include <elf_loader.h>
+#include <lib/elf/elf.h>
+#include <lib/elf/elf_helpers.h>
+#include <lib/elf/elf_loader.h>
 
 #include <log.h>
 
@@ -146,5 +146,5 @@ void *elf32_find_segment_addr(phys_addr_t elf_addr, const char *seg_name) {
 	if (!shdr)
 		return NULL;
 
-	return (void *) shdr->sh_addr;
+	return (void *) (uintptr_t) shdr->sh_addr;
 }

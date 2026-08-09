@@ -4,12 +4,12 @@
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "libfdt_env.h"
+#include <lib/fdt/libfdt_env.h>
 
-#include <fdt.h>
-#include <libfdt.h>
+#include <lib/fdt/fdt.h>
+#include <lib/fdt/libfdt.h>
 
-#include "libfdt_internal.h"
+#include <lib/fdt/libfdt_internal.h>
 
 struct fdt_errtabent {
 	const char *str;

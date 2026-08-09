@@ -3,7 +3,7 @@
 #ifndef __CLI_HISTORY_H__
 #define __CLI_HISTORY_H__
 
-#include "cli_config.h"
+#include <cli/cli_config.h>
 
 int get_history_count();
 

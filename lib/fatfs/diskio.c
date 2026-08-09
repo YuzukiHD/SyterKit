@@ -6,13 +6,13 @@
 /* This is an example of glue functions to attach various exsisting      */
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
-#include "ff.h" /* Obtains integer types */
+#include <lib/fatfs/ff.h> /* Obtains integer types */
 
-#include "diskio.h"
+#include <lib/fatfs/diskio.h>
 
-#include <sys-dma.h>
-#include <sys-dram.h>
-#include <sys-sdcard.h>
+#include <drivers/dma.h>
+#include <drivers/dram.h>
+#include <drivers/sdcard.h>
 
 static DSTATUS Stat = STA_NOINIT; /* Disk status */
 

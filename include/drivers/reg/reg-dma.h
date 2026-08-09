@@ -3,7 +3,7 @@
 #ifndef __REG_DMA_H__
 #define __REG_DMA_H__
 
-#include <reg-ncat.h>
+#include <drivers/reg/reg-ncat.h>
 
 #ifdef __cplusplus
 extern "C" {

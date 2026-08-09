@@ -6,9 +6,9 @@
 #include <string.h>
 #include <types.h>
 
-#include <elf.h>
-#include <elf_helpers.h>
-#include <elf_loader.h>
+#include <lib/elf/elf.h>
+#include <lib/elf/elf_helpers.h>
+#include <lib/elf/elf_loader.h>
 
 #include <log.h>
 
@@ -47,16 +47,16 @@ int load_elf64_image(phys_addr_t img_addr) {
 	void *dst = NULL;
 	void *src = NULL;
 
-	ehdr = (Elf64_Ehdr *) img_addr;
+	ehdr = (Elf64_Ehdr *) (uintptr_t) img_addr;
 
 	print_elf64_ehdr(ehdr);
 
-	phdr = (Elf64_Phdr *) (img_addr + ehdr->e_phoff);
+	phdr = (Elf64_Phdr *) (uintptr_t) (img_addr + ehdr->e_phoff);
 
 	/* load elf program segment */
 	for (i = 0; i < ehdr->e_phnum; ++i, ++phdr) {
-		dst = (void *) ((phys_addr_t) phdr->p_paddr);
-		src = (void *) (img_addr + phdr->p_offset);
+		dst = (void *) (uintptr_t) phdr->p_paddr;
+		src = (void *) (uintptr_t) (img_addr + phdr->p_offset);
 
 		if (phdr->p_type != PT_LOAD)
 			continue;
@@ -102,7 +102,7 @@ void *elf64_find_segment_offset(phys_addr_t elf_addr, const char *seg_name) {
 	if (!shdr)
 		return NULL;
 
-	return (void *) elf_addr + shdr->sh_offset;
+	return (void *) ((uintptr_t) elf_addr + (uintptr_t) shdr->sh_offset);
 }
 
 void *elf64_find_segment_addr(phys_addr_t elf_addr, const char *seg_name) {
@@ -112,5 +112,5 @@ void *elf64_find_segment_addr(phys_addr_t elf_addr, const char *seg_name) {
 	if (!shdr)
 		return NULL;
 
-	return (void *) shdr->sh_addr;
+	return (void *) (uintptr_t) shdr->sh_addr;
 }
