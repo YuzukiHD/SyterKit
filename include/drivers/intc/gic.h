@@ -1,26 +1,34 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef _SYS_GIC_H_
-#define _SYS_GIC_H_
+#ifndef __DRIVERS_INTC_GIC_H__
+#define __DRIVERS_INTC_GIC_H__
 
-#include <io.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
 #include <common.h>
-#include <log.h>
 
 #include <drivers/intc/intc.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/reg/reg-gic.h>
+#define SUNXI_GIC_COMPATIBLE "arm,gic-400"
+#define SUNXI_GIC_MAX_IRQS 256U
+
+typedef struct sunxi_gic {
+	int dt_node;
+	uintptr_t distributor_base;
+	size_t distributor_size;
+	uintptr_t cpu_interface_base;
+	size_t cpu_interface_size;
+	uint32_t irq_count;
+	bool initialized;
+} sunxi_gic_t;
+
+struct arm_regs_t;
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif /* __cplusplus */
 
 /**
  * @brief Handles the IRQ with ARM registers
@@ -28,6 +36,22 @@ extern "C" {
  * @param regs Pointer to the ARM registers
  */
 void do_irq(struct arm_regs_t *regs);
+
+/**
+ * @brief Initializes a GIC instance.
+ *
+ * @param gic GIC instance populated from the static devicetree.
+ * @return 0 on success, or an error code.
+ */
+int sunxi_gic_init(sunxi_gic_t *gic);
+
+/**
+ * @brief Shuts down a GIC instance.
+ *
+ * @param gic Initialized GIC instance.
+ * @return 0 on success, or an error code.
+ */
+int sunxi_gic_exit(sunxi_gic_t *gic);
 
 /**
  * @brief Initializes the interrupt mechanism
@@ -60,6 +84,6 @@ int sunxi_gic_cpu_interface_exit(void);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif /* __cplusplus */
 
-#endif// _SYS_GIC_H_
+#endif /* __DRIVERS_INTC_GIC_H__ */

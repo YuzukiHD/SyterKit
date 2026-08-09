@@ -11,61 +11,16 @@
 #include <common.h>
 
 #include <drivers/clk.h>
+#include <drivers/sid.h>
+#include <dt-compatible/sid-dt.h>
 #include <drivers/reg/reg-ncat.h>
+#include <drivers/reg/reg-ccu.h>
 
 #include <mmu.h>
 
-#include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
-#include <drivers/sdcard.h>
-#include <drivers/dram.h>
-
-sdhci_t sdhci0 = {
-		.name = "sdhci0",
-		.id = 0,
-		.reg = (sdhci_reg_t *) 0x04020000,
-		.voltage = MMC_VDD_27_36,
-		.width = MMC_BUS_WIDTH_4,
-		.clock = MMC_CLK_50M,
-		.removable = 0,
-		.isspi = FALSE,
-		.skew_auto_mode = TRUE,
-		.sdhci_pll = CCU_MMC_CTRL_PLL_PERIPH1X,
-		.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-		.gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-		.gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-		.gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-		.gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-		.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-};
-
-dram_para_t dram_para = {
-		.dram_clk = 528,
-		.dram_type = 2,
-		.dram_zq = 0x7b7bf9,
-		.dram_odt_en = 0x0,
-		.dram_para1 = 0x00d2,
-		.dram_para2 = 0x0,
-		.dram_mr0 = 0xe73,
-		.dram_mr1 = 0x02,
-		.dram_mr2 = 0x0,
-		.dram_mr3 = 0x0,
-		.dram_tpr0 = 0x00471992,
-		.dram_tpr1 = 0x0131a10c,
-		.dram_tpr2 = 0x00057041,
-		.dram_tpr3 = 0xb4787896,
-		.dram_tpr4 = 0x0,
-		.dram_tpr5 = 0x48484848,
-		.dram_tpr6 = 0x48,
-		.dram_tpr7 = 0x1621121e,
-		.dram_tpr8 = 0x0,
-		.dram_tpr9 = 0x0,
-		.dram_tpr10 = 0x00000000,
-		.dram_tpr11 = 0x00000022,
-		.dram_tpr12 = 0x00000077,
-		.dram_tpr13 = 0x34000100,
-};
+#include <drivers/rtc.h>
 
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -79,33 +34,38 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void rtc_set_vccio_det_spare(void) {
-	u32 val = 0;
-	val = readl(SUNXI_RTC_BASE + 0x1f4);
+void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc) {
+	uint32_t val = rtc_read_data(rtc, 0x3d);
 	val &= ~(0xff << 4);
 	val |= (VCCIO_THRESHOLD_VOLTAGE_2_9 | FORCE_DETECTER_OUTPUT);
 	val &= ~VCCIO_DET_BYPASS_EN;
-	writel(val, SUNXI_RTC_BASE + 0x1f4);
+	rtc_write_data(rtc, 0x3d, val);
 }
 
-void sys_ldo_check(void) {
+void sys_ldo_check(const sunxi_ccu_t *ccu) {
+	sunxi_sid_t sid;
 	uint32_t reg_val = 0;
 	uint32_t roughtrim_val = 0, finetrim_val = 0;
 
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return;
+	}
+
 	/* reset */
-	reg_val = readl(CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
+	reg_val = readl(sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
 	reg_val &= ~(1 << 16);
-	writel(reg_val, CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
+	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
 
 	sdelay(2);
 
 	reg_val |= (1 << 16);
-	writel(reg_val, CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
+	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
 
 	/* enable AUDIO gating */
-	reg_val = readl(CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
+	reg_val = readl(sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
 	reg_val |= (1 << 0);
-	writel(reg_val, CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
+	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
 
 	/* enable pcrm CTRL */
 	reg_val = readl(ANA_PWR_RST_REG);
@@ -114,9 +74,9 @@ void sys_ldo_check(void) {
 
 	/* read efuse */
 	printk_debug("Audio: avcc calibration\n");
-	reg_val = readl(SUNXI_SID_SRAM_BASE + 0x28);
+	reg_val = sunxi_sid_read_sram(&sid, 0x28U);
 	roughtrim_val = (reg_val >> 0) & 0xF;
-	reg_val = readl(SUNXI_SID_SRAM_BASE + 0x24);
+	reg_val = sunxi_sid_read_sram(&sid, 0x24U);
 	finetrim_val = (reg_val >> 16) & 0xFF;
 
 	if (roughtrim_val == 0 && finetrim_val == 0) {

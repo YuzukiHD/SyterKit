@@ -7,15 +7,14 @@
 
 #include <backtrace.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 #include <mmu.h>
 #include <stdlib.h>
 
-#include <drivers/mmc/sdhci.h>
-
 #include <drivers/dram.h>
-#include <drivers/sdcard.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
@@ -28,13 +27,9 @@
 extern sunxi_serial_t uart_dbg;
 
 
-extern sunxi_sdhci_t sdhci0;
-
-extern uint32_t dram_para[128];
 
 extern void board_common_init(void);
 
-extern int init_DRAM(int type, void *buff);
 
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
@@ -59,6 +54,8 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -73,19 +70,26 @@ int main(void) {
 
 	sunxi_i2c_init(&i2c);
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
+
+	sunxi_clk_dump(&ccu);
 
 	pmu_axp8191_init(&pmu);
 
 	pmu_axp8191_dump(&pmu);
 
-	sunxi_dram_init_with_pmu(NULL, &pmu, NULL);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", &pmu, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	printk_info("Hello World!\n");
-
-	init_DRAM(0, dram_para);
 
 	syterkit_shell_attach(commands);
 

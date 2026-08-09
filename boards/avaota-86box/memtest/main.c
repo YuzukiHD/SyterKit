@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -22,38 +23,49 @@
 
 #include <drivers/dram.h>
 #include <drivers/rtc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dram-dt.h>
 
 #include "memtester.c"
 
 extern sunxi_serial_t uart_dbg;
 
-extern dram_para_t dram_para;
+static sunxi_dram_t dram;
 
 /* 
  * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
+	sunxi_ccu_t ccu;
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
 	show_banner();
 
 	/* Initialize the system clock. */
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
 	printk_debug("enable mmu ok\n");
 
 	/* Dump information about the system clocks. */
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 #define DRAM_TEST_SIZE 32 * 1024 * 1024
 #define DRAM_SIZE_BYTE dram_size * 1024 * 1024

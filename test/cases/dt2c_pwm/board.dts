@@ -12,7 +12,14 @@
 		pwm1 = &pwm1;
 	};
 
-	pinctrl {
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
 		pwm0_pins: pwm0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_E 0 4>,

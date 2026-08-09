@@ -21,11 +21,14 @@ typedef enum {
 	RES_PARERR	/* 4: Invalid Parameter */
 } DRESULT;
 
+struct sdmmc_pdata;
+
 /*---------------------------------------*/
 /* Prototypes for disk control functions */
 
 DSTATUS disk_initialize(BYTE pdrv);
 DSTATUS disk_status(BYTE pdrv);
+DRESULT disk_set_device(BYTE pdrv, struct sdmmc_pdata *device);
 DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count);
 DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count);
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff);

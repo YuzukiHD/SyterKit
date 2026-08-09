@@ -21,6 +21,7 @@ sunxi_pwm_dt_read_config(sunxi_pwm_t *pwm, int node) {
 	const dt2c_fdt32_t *pwm_cells;
 	const dt2c_fdt32_t *reg;
 	const dt2c_fdt32_t *reset;
+	sunxi_gpio_t gpio_controller;
 	sunxi_pwm_t config = {0};
 	uint32_t channel_count;
 	uint32_t channel_mask = 0U;
@@ -51,7 +52,8 @@ sunxi_pwm_dt_read_config(sunxi_pwm_t *pwm, int node) {
 
 	channel_count = (uint32_t) channel_length /
 			(SUNXI_PWM_CHANNEL_CONFIG_CELLS * sizeof(*channel_cells));
-	pins = syterkit_dt_pinctrl_cells(node, (size_t) channel_count * 3U);
+	pins = syterkit_dt_pinctrl_cells(node, (size_t) channel_count * 3U,
+					&gpio_controller);
 	if (channel_count == 0U || channel_count > SUNXI_PWM_CHANNEL_MAX ||
 	    pins == NULL || dt2c_fdt32_to_cpu(pwm_cells[0]) != 3U ||
 	    dt2c_fdt32_to_cpu(reg[0]) == 0U ||
@@ -81,8 +83,9 @@ sunxi_pwm_dt_read_config(sunxi_pwm_t *pwm, int node) {
 		    (mode == PWM_CHANNEL_BIND &&
 		     (bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
 		      bind_channel == channel || dead_time == 0U)) ||
-		    !syterkit_dt_gpio(pins, (size_t) index * 3U,
-				       &config.channel[channel].pin))
+		    !syterkit_dt_pinctrl_gpio(
+				    pins, (size_t) index * 3U, &gpio_controller,
+				    &config.channel[channel].pin))
 			return DRIVER_ERROR_INVALID;
 
 		config.channel[channel].channel_mode =

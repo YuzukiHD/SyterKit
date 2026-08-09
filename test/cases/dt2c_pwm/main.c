@@ -22,6 +22,8 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(BIT(0) | BIT(1) | BIT(2) | BIT(3), pwm0.channel_mask);
 	TEST_EQ(GPIO_PIN(GPIO_PORTE, 0), pwm0.channel[0].pin.pin);
 	TEST_EQ(GPIO_PERIPH_MUX4, pwm0.channel[0].pin.mux);
+	TEST_EQ(0x02000000U, pwm0.channel[0].pin.base);
+	TEST_EQ(4, pwm0.channel[0].pin.bank);
 	TEST_EQ(PWM_CHANNEL_BIND, pwm0.channel[2].channel_mode);
 	TEST_EQ(3U, pwm0.channel[2].bind_channel);
 	TEST_EQ(4000U, pwm0.channel[2].dead_time);

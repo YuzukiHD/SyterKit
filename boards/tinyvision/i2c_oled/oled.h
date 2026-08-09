@@ -69,6 +69,6 @@ void OLED_ShowString(uint8_t x, uint8_t y, const char *str, uint8_t size1, uint8
 void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size1, uint8_t mode);
 
 /* 初始化 OLED */
-void OLED_Init(void);
+int OLED_Init(void);
 
 #endif

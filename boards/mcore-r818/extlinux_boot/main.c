@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -18,20 +19,24 @@
 
 #include <drivers/clk.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
-#include <drivers/rtc.h>
-#include <drivers/sdcard.h>
+#include <dt-compatible/rtc-dt.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
+#include <dt-compatible/sid-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
 #include <lib/fdt/libfdt.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdhci.h>
 #include <uart.h>
 
 #define CONFIG_BL31_FILENAME "bl31.bin"
@@ -53,12 +58,11 @@
 
 extern sunxi_serial_t uart_dbg;
 
+extern unsigned char ar100code_bin[];
+extern unsigned int ar100code_bin_len;
 
-extern sunxi_sdhci_t sdhci0;
-
-extern uint32_t dram_para[32];
-
-extern int ar100s_gpu_fix(void);
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t mmc_card = {0};
 
 typedef struct atf_head {
 	uint32_t jump_instruction; /* jumping to real code */
@@ -177,7 +181,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -214,9 +218,9 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-void jmp_to_arm64(uint32_t addr) {
+void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr) {
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
-	rtc_set_start_time_ms();
+	rtc_set_start_time_ms(rtc);
 
 	/* set the cpu boot entry addr: */
 	write32(RVBARADDR0_L, addr);
@@ -344,7 +348,8 @@ static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str
 	return mac_address_str;
 }
 
-static int load_extlinux(image_info_t *image, uint32_t dram_size) {
+static int load_extlinux(image_info_t *image, uint32_t dram_size,
+			 const sunxi_sid_t *sid) {
 	FATFS fs;
 	FRESULT fret;
 	ext_linux_data_t data = {0};
@@ -510,10 +515,10 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
 
 	/* Append bootargs mac address */
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+	chip_sid[0] = sunxi_sid_read_sram(sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(sid, 0xcU);
 
 	char mac_address_str[18];
 	char *mac0_address = get_mac_address_from_sid(chip_sid, mac_address_str);
@@ -560,21 +565,42 @@ _error:
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_remoteproc_t ar100;
+	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
-
-	ar100s_gpu_fix();
+	sunxi_rtc_t rtc;
+	sunxi_sid_t sid;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
+	    sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) !=
+			    DRIVER_OK ||
+	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK ||
+	    sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("Board: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_remoteproc_load_buffer(&ar100, ar100code_bin,
+					 ar100code_bin_len) != DRIVER_OK) {
+		printk_error("AR100: firmware load failed\n");
+		return -1;
+	}
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
+
+	sunxi_clk_dump(&ccu);
 
 	sunxi_i2c_init(&i2c);
 
@@ -586,7 +612,11 @@ int main(void) {
 	pmu_axp2202_dump(&pmu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", &pmu, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
@@ -614,10 +644,10 @@ int main(void) {
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed, Retrying...\n");
 		mdelay(30);
-		if (sdmmc_init(&card0, &sdhci0) != 0) {
+		if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
 			printk_warning("SMHC: init failed\n");
 			goto _fail;
 		}
@@ -629,7 +659,7 @@ int main(void) {
 		goto _fail;
 	}
 
-	if (load_extlinux(&image, dram_size) != 0) {
+	if (load_extlinux(&image, dram_size, &sid) != 0) {
 		printk_error("EXTLINUX: load extlinux failed\n");
 		goto _fail;
 	}
@@ -646,7 +676,7 @@ int main(void) {
 
 	clean_syterkit_data();
 
-	jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+	jmp_to_arm64(&rtc, CONFIG_BL31_LOAD_ADDR);
 
 	printk_info("Back to SyterKit\n");
 

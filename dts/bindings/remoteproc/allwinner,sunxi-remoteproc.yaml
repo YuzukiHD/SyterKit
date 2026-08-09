@@ -1,0 +1,44 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner remote processors used by SyterKit
+
+properties:
+  compatible:
+    type: string
+    enum:
+      - allwinner,sun20iw1-hifi4
+      - allwinner,sun300iw1-a27l2
+      - allwinner,sun50iw10-ar100
+      - allwinner,sun55iw3-e906
+      - allwinner,sun8iw20-c906
+      - allwinner,sun8iw20-hifi4
+      - allwinner,sun8iw21-e907
+  reg:
+    type: reg
+  firmware-name:
+    type: string
+  memory-region:
+    type: phandle
+  allwinner,firmware-format:
+    type: string
+    enum: [elf32, elf64, raw]
+  allwinner,entry-address:
+    type: uint32
+  allwinner,address-map:
+    type: uint32-array
+  allwinner,auxiliary-firmware-names:
+    type: string-array
+  allwinner,auxiliary-memory-regions:
+    type: phandle-array
+  allwinner,rtc:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - firmware-name
+  - memory-region
+  - allwinner,firmware-format
+dt2c,device: true

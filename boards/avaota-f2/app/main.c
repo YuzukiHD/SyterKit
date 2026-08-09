@@ -7,14 +7,16 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <drivers/clk.h>
 #include <drivers/dma.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
-#include <drivers/sdcard.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdcard.h>
+#include <drivers/mmc/sdhci.h>
 #include <drivers/mtd/spi-nand.h>
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/pmu/axp.h>
@@ -30,9 +32,6 @@
 
 #include <e907/sysmap.h>
 
-extern sunxi_serial_t uart_dbg_ph1;
-extern sunxi_serial_t uart_dbg;
-extern dram_para_t dram_para;
 
 void sunxi_pmc_config(void) {
 	if (!(readl(SUNXI_RTC_PMC_BYPASS_STATUS) & BIT(0))) {
@@ -42,6 +41,8 @@ void sunxi_pmc_config(void) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -54,13 +55,18 @@ int main(void) {
 
 	sysmap_dump_region_info();
 
-	sunxi_clk_dump();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_init();
+	sunxi_clk_dump(&ccu);
+
+	sunxi_clk_init(&ccu);
 
 	printk_info("Hello World!\n");
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	sunxi_pmc_config();
 
@@ -72,7 +78,11 @@ int main(void) {
 
 	pmu_axp333_dump(&pmu);
 
-	sunxi_dram_init((void *) &dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	syterkit_shell_attach(NULL);
 

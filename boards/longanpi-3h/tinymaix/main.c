@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 #include <mmu.h>
@@ -17,6 +18,7 @@
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
 
 #include "tinymaix.h"
@@ -24,7 +26,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern uint32_t dram_para[32];
 
 
 extern void set_cpu_poweroff(void);
@@ -266,6 +267,8 @@ static void parse_output(tm_mat_t *outs) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -276,9 +279,14 @@ int main(void) {
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
+
+	sunxi_clk_dump(&ccu);
 
 	set_cpu_poweroff();
 
@@ -304,14 +312,18 @@ int main(void) {
 	pmu_axp1530_dump(&pmu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	TM_DBGT_INIT();
 	TM_PRINTF("Running MNIST Test\n");

@@ -9,8 +9,9 @@
 
 #include <log.h>
 
-#include <drivers/reg/reg-ncat.h>
+#include <driver.h>
 #include <drivers/gpio.h>
+#include <dt2c/driver.h>
 
 enum {
 	GPIO_CFG0 = 0x80,
@@ -67,15 +68,11 @@ static inline uint32_t _port_num(gpio_t pin) {
  * @param pin The GPIO pin number.
  * @return The base address of the port register.
  */
-static uint32_t _port_base_get(gpio_t pin) {
-	uint32_t port = pin >> PIO_NUM_IO_BITS;
+static uintptr_t _port_base_get(const gpio_mux_t *gpio) {
+	uint32_t port = gpio->pin >> PIO_NUM_IO_BITS;
 
-	/* PL PM PN in R_PIO */
-	if (port >= GPIO_PORTL) {
-		return SUNXI_RPIO_BASE + (port - GPIO_PORTL) * R_GPIO_OFFSET;
-	}
-	/* PA PB PC PD PE PF PG PH PI PJ PK in PIO */
-	return SUNXI_PIO_BASE + port * GPIO_OFFSET;
+	return gpio->base + gpio->bank *
+		       (port >= GPIO_PORTL ? R_GPIO_OFFSET : GPIO_OFFSET);
 }
 
 /**
@@ -100,12 +97,22 @@ static inline uint32_t _pin_num(gpio_t pin) {
  * @param pin The GPIO pin to initialize.
  * @param cfg The configuration value for the GPIO pin.
  */
-void sunxi_gpio_init(gpio_t pin, int cfg) {
-	uint32_t port_type = _port_num(pin);
-	uint32_t port_addr = _port_base_get(pin);
-	uint32_t pin_num = _pin_num(pin);
-	uint32_t addr;
+void sunxi_gpio_init(const gpio_mux_t *gpio) {
+	gpio_t pin;
+	uint32_t port_type;
+	uintptr_t port_addr;
+	uint32_t pin_num;
+	uintptr_t addr;
 	uint32_t val;
+	int cfg;
+
+	if (gpio == NULL)
+		return;
+	pin = gpio->pin;
+	cfg = gpio->mux;
+	port_type = _port_num(pin);
+	port_addr = _port_base_get(gpio);
+	pin_num = _pin_num(pin);
 
 	if (port_type >= GPIO_PORTL) {
 		addr = port_addr + R_GPIO_CFG0 + ((pin_num >> 3) << 2);
@@ -132,11 +139,17 @@ void sunxi_gpio_init(gpio_t pin, int cfg) {
  * @param pin The GPIO pin to set the value for.
  * @param value The value to set (0 or 1).
  */
-void sunxi_gpio_set_value(gpio_t pin, int value) {
-	uint32_t port_type = _port_num(pin);
-	uint32_t port_addr = _port_base_get(pin);
-	uint32_t pin_num = _pin_num(pin);
+void sunxi_gpio_set_value(const gpio_mux_t *gpio, int value) {
+	uint32_t port_type;
+	uintptr_t port_addr;
+	uint32_t pin_num;
 	uint32_t val;
+
+	if (gpio == NULL)
+		return;
+	port_type = _port_num(gpio->pin);
+	port_addr = _port_base_get(gpio);
+	pin_num = _pin_num(gpio->pin);
 	if (port_type >= GPIO_PORTL) {
 		val = read32(port_addr + R_GPIO_DAT);
 		val &= ~(1 << pin_num);
@@ -158,11 +171,17 @@ void sunxi_gpio_set_value(gpio_t pin, int value) {
  * @param pin The GPIO pin to read the value from.
  * @return The value of the GPIO pin (0 or 1).
  */
-int sunxi_gpio_read(gpio_t pin) {
-	uint32_t port_type = _port_num(pin);
-	uint32_t port_addr = _port_base_get(pin);
-	uint32_t pin_num = _pin_num(pin);
+int sunxi_gpio_read(const gpio_mux_t *gpio) {
+	uint32_t port_type;
+	uintptr_t port_addr;
+	uint32_t pin_num;
 	uint32_t val;
+
+	if (gpio == NULL)
+		return -1;
+	port_type = _port_num(gpio->pin);
+	port_addr = _port_base_get(gpio);
+	pin_num = _pin_num(gpio->pin);
 	if (port_type >= GPIO_PORTL) {
 		val = read32(port_addr + R_GPIO_DAT);
 		return !!(val & (1 << pin_num));
@@ -180,12 +199,18 @@ int sunxi_gpio_read(gpio_t pin) {
  * @param pin The GPIO pin to set the pull configuration for.
  * @param pull The pull configuration to set (GPIO_PULL_UP, GPIO_PULL_DOWN, or GPIO_PULL_NONE).
  */
-void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
-	uint32_t port_type = _port_num(pin);
-	uint32_t port_addr = _port_base_get(pin);
-	uint32_t pin_num = _pin_num(pin);
-	uint32_t addr;
+void sunxi_gpio_set_pull(const gpio_mux_t *gpio, enum gpio_pull_t pull) {
+	uint32_t port_type;
+	uintptr_t port_addr;
+	uint32_t pin_num;
+	uintptr_t addr;
 	uint32_t val, v;
+
+	if (gpio == NULL)
+		return;
+	port_type = _port_num(gpio->pin);
+	port_addr = _port_base_get(gpio);
+	pin_num = _pin_num(gpio->pin);
 
 	switch (pull) {
 		case GPIO_PULL_UP:
@@ -219,7 +244,7 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
 		write32(addr, val);
 	}
 
-	printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n", pin, addr, read32(addr), v);
+	printk_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n", gpio->pin, (uint32_t) addr, read32(addr), v);
 }
 
 /**
@@ -230,12 +255,18 @@ void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull) {
  * @param pin The GPIO pin to set the drive strength for.
  * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
  */
-void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv) {
-	uint32_t port_type = _port_num(pin);
-	uint32_t port_addr = _port_base_get(pin);
-	uint32_t pin_num = _pin_num(pin);
-	uint32_t addr;
+void sunxi_gpio_set_drv(const gpio_mux_t *gpio, gpio_drv_t drv) {
+	uint32_t port_type;
+	uintptr_t port_addr;
+	uint32_t pin_num;
+	uintptr_t addr;
 	uint32_t val;
+
+	if (gpio == NULL)
+		return;
+	port_type = _port_num(gpio->pin);
+	port_addr = _port_base_get(gpio);
+	pin_num = _pin_num(gpio->pin);
 
 	if (port_type >= GPIO_PORTL) {
 		addr = port_addr + R_GPIO_DRV0 + ((pin_num >> 4) << 2);
@@ -251,5 +282,7 @@ void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv) {
 		write32(addr, val);
 	}
 
-	printk_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n", pin, addr, read32(addr), drv);
+	printk_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n", gpio->pin, (uint32_t) addr, read32(addr), drv);
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-pinctrl");

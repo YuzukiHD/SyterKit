@@ -1,0 +1,17 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner RTC scratch registers used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-rtc
+  reg:
+    type: reg
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+
+dt2c,device: true

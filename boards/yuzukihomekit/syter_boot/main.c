@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -25,13 +26,16 @@
 #include <drivers/dram.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
 
 #include "fdt_wrapper.h"
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
 #include "uart.h"
 
@@ -63,11 +67,10 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
+static sunxi_dram_t dram;
 
-extern sdhci_t sdhci0;
-
-
-extern dram_para_t dram_para;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 image_info_t image;
 
@@ -347,23 +350,37 @@ const msh_command_entry commands[] = {
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
+	sunxi_ccu_t ccu;
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	/* Initialize the system clock. */
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
 	/* Dump information about the system clocks. */
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	/* Clear the image_info_t struct. */
 	memset(&image, 0, sizeof(image_info_t));
@@ -381,7 +398,7 @@ int main(void) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
@@ -391,6 +408,7 @@ int main(void) {
 			goto _shell;
 		}
 	}
+	disk_set_device(0, &card0);
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image) != 0) {

@@ -6,6 +6,7 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <config.h>
 #include <log.h>
@@ -19,11 +20,14 @@
 #include <cli/cli_termesc.h>
 
 #include <drivers/dram.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
 
 #include "fdt_wrapper.h"
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
 
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -37,9 +41,10 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern dram_para_t dram_para;
+static sunxi_dram_t dram;
 
-extern sdhci_t sdhci0;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -362,6 +367,7 @@ int cmd_reload(int argc, const char **argv) {
 		printk_error("SMHC: init failed\n");
 		return 0;
 	}
+	disk_set_device(0, &card0);
 
 	if (load_sdcard(&image) != 0) {
 		printk_error("SMHC: loading failed\n");
@@ -377,19 +383,33 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_ccu_t ccu;
 	/* Initialize UART debug interface */
 
 	/* Print boot screen */
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	/* Initialize clock */
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	/* Initialize DRAM */
-	sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	/* Print clock information */
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	/* Clear image structure */
 	memset(&image, 0, sizeof(image_info_t));
@@ -405,7 +425,7 @@ int main(void) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize SD card */
@@ -413,6 +433,7 @@ int main(void) {
 		printk_error("SMHC: init failed\n");
 		goto _shell;
 	}
+	disk_set_device(0, &card0);
 
 	/* Load DTB file from SD card */
 	if (load_sdcard(&image) != 0) {

@@ -1,0 +1,20 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner Security ID controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-sid
+  reg:
+    type: reg
+  allwinner,efuse-hv-switch:
+    type: uint32
+    description: Optional high-voltage switch register used for eFuse writes
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+
+dt2c,device: true

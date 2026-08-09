@@ -53,6 +53,8 @@ sunxi_pmu_dt_read_config(axp_pmu_t *pmu, int node, sunxi_i2c_t *i2c) {
 	const dt2c_fdt32_t *reg;
 	int length;
 	axp_pmu_t config = {0};
+	uint32_t address;
+	uint32_t fallback_address;
 
 	if (pmu == NULL || node < 0 || !syterkit_dt_node_available(node) ||
 	    !sunxi_pmu_dt_type(node, &config.type))
@@ -65,13 +67,14 @@ sunxi_pmu_dt_read_config(axp_pmu_t *pmu, int node, sunxi_i2c_t *i2c) {
 	if (reg == NULL || (length != (int) sizeof(*reg) &&
 			    length != (int) (2U * sizeof(*reg))))
 		return DRIVER_ERROR_INVALID;
-	config.address = (uint8_t) dt2c_fdt32_to_cpu(reg[0]);
-	config.fallback_address = length == (int) (2U * sizeof(*reg)) ?
-			(uint8_t) dt2c_fdt32_to_cpu(reg[1]) : 0U;
-	if (config.address == 0U || config.address > 0x7fU ||
-	    config.fallback_address > 0x7fU ||
-	    config.fallback_address == config.address)
+	address = dt2c_fdt32_to_cpu(reg[0]);
+	fallback_address = length == (int) (2U * sizeof(*reg)) ?
+			dt2c_fdt32_to_cpu(reg[1]) : 0U;
+	if (address == 0U || address > 0x7fU || fallback_address > 0x7fU ||
+	    fallback_address == address)
 		return DRIVER_ERROR_INVALID;
+	config.address = (uint8_t) address;
+	config.fallback_address = (uint8_t) fallback_address;
 	*pmu = config;
 	return DRIVER_OK;
 }

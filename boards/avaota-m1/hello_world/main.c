@@ -11,14 +11,15 @@
 #include <common.h>
 #include <stdlib.h>
 
-#include <drivers/mmc/sdhci.h>
-
+#include <drivers/reg/reg-ncat.h>
 #include <drivers/dram.h>
-#include <drivers/sdcard.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
+#include <drivers/sid.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/sid-dt.h>
 
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
@@ -26,10 +27,6 @@
 
 extern sunxi_serial_t uart_dbg;
 
-
-extern sunxi_sdhci_t sdhci0;
-
-extern uint32_t dram_para[128];
 
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
@@ -63,9 +60,10 @@ const msh_command_entry commands[] = {
  * Read resource configuration values from SID registers and set corresponding
  * resource control registers including DSI, CSI, USB, EDP, HS_COMBO, and DDR
  */
-static void sunxi_res_ctrl_init(void) {
+static void sunxi_res_ctrl_init(const sunxi_sid_t *sid) {
 	/* Read resource configuration field from SID register */
-	uint8_t sid_res_value = (uint8_t)(readl(SID_RES0_1_BASE) >> 24);
+	uint8_t sid_res_value =
+		(uint8_t) (sunxi_sid_read_sram(sid, 0x40U) >> 24);
 	
 	/* No initialization needed if resource configuration value is 0 */
 	if (sid_res_value == 0) {
@@ -93,7 +91,7 @@ static void sunxi_res_ctrl_init(void) {
 #define VDD_1V8_VOLTAGE         1800    /* 1.8V voltage */
 
 /* EFUSE Related Register Offset and Mask */
-#define EFUSE_ADDR_OFFSET       0x214   /* EFUSE register offset */
+#define EFUSE_SRAM_OFFSET       0x14    /* EFUSE SRAM mirror offset */
 #define EFUSE_MASK              0xFF0000    /* EFUSE mask */
 #define EFUSE_EXT_MASK          0xFF000000  /* Extended EFUSE mask */
 #define EFUSE_SHIFT             16      /* EFUSE shift */
@@ -151,10 +149,12 @@ static voltage_config_t get_voltage_config(uint8_t efuse_value) {
  * 2. Initialize I2C and PMU chips
  * 3. Configure each power rail voltage based on SOC version and EFUSE value
  */
-static void sunxi_board_power_init(sunxi_i2c_t *i2c, axp_pmu_t *primary,
+static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c,
+				   axp_pmu_t *primary,
 				   axp_pmu_t *secondary) {
 	/* Read EFUSE value to determine voltage configuration */
-	uint32_t efuse_reg_value = readl(SUNXI_SID_BASE + EFUSE_ADDR_OFFSET);
+	uint32_t efuse_reg_value =
+		sunxi_sid_read_sram(sid, EFUSE_SRAM_OFFSET);
 	uint8_t efuse_value = (uint8_t)((efuse_reg_value & EFUSE_MASK) >> EFUSE_SHIFT);
 	uint8_t efuse_ext_value = (uint8_t)((efuse_reg_value & EFUSE_EXT_MASK) >> EFUSE_EXT_SHIFT);
 
@@ -189,11 +189,17 @@ static void sunxi_board_power_init(sunxi_i2c_t *i2c, axp_pmu_t *primary,
 }
 
 int main(void) {
+	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
 	sunxi_i2c_t i2c;
+	sunxi_sid_t sid;
 
-	sunxi_res_ctrl_init();
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_res_ctrl_init(&sid);
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
@@ -203,9 +209,14 @@ int main(void) {
 		return -1;
 	}
 
-	sunxi_board_power_init(&i2c, &primary_pmu, &secondary_pmu);
+	sunxi_board_power_init(&sid, &i2c, &primary_pmu, &secondary_pmu);
 
-	sunxi_dram_init_with_pmu(dram_para, &primary_pmu, &secondary_pmu);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", &primary_pmu,
+				     &secondary_pmu) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	syterkit_shell_attach(commands);
 

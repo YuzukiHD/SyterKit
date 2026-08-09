@@ -8,18 +8,21 @@
 
 #include <backtrace.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <drivers/clk.h>
 #include <drivers/dma.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
-#include <drivers/sdcard.h>
-#include <drivers/sdhci.h>
-#include <drivers/mtd/spi-nand.h>
+#include <drivers/mmc/sdcard.h>
+#include <drivers/mmc/sdhci.h>
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/spi.h>
 #include <dt-compatible/dma-dt.h>
+#include <dt-compatible/mmc-dt.h>
+#include <dt-compatible/spi-nor-dt.h>
 #include <dt-compatible/spi-dt.h>
 
 #include <common.h>
@@ -29,8 +32,9 @@
 #include <cli/cli_termesc.h>
 
 extern sunxi_serial_t uart_dbg;
-extern dram_para_t dram_para;
-extern sunxi_sdhci_t sdhci0;
+
+static sdmmc_pdata_t sd_card;
+static sunxi_sdhci_t sdhci0;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 4 * 1024// (unit: 512B sectors)
 #define CHUNK_SIZE 0x20000
@@ -48,7 +52,7 @@ int cmd_read(int argc, const char **argv) {
 	printk_debug("Read data to buffer data\n");
 
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&sd_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(SDRAM_BASE, 0x100);
@@ -66,7 +70,7 @@ int cmd_write(int argc, const char **argv) {
 	memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
 
 	start = time_ms();
-	sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_write(&sd_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
@@ -82,7 +86,7 @@ int cmd_load(int argc, const char **argv) {
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&sd_card, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed\n");
 	} else {
 		printk_debug("Card OK!\n");
@@ -116,34 +120,51 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	sunxi_dma_t dma;
+	spi_nor_t nor;
 	sunxi_spi_t spi;
 
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
-	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+	    spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
 		printk_error("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	printk_info("Hello World!\n");
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	printk_info("CLK init finish\n");
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
-	sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	sunxi_spi_init(&spi);
 
-	spi_nor_detect(&spi);
+	spi_nor_detect(&nor);
 
 	memset((void *) 0x81000000, 0x0, 0x1000);
 
 	uint32_t time = time_ms();
-	spi_nor_read(&spi, (void *) 0x81000000, 0x0, 1024 * 1024 * 4);
+	spi_nor_read(&nor, (void *) 0x81000000, 0x0, 1024 * 1024 * 4);
 	uint32_t time_end = time_ms();
 
 	printk_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));

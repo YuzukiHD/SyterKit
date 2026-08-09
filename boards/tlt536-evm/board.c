@@ -15,91 +15,14 @@
 
 #include <mmu.h>
 
-#include <drivers/mmc/sdhci.h>
-
 #include <drivers/dram.h>
 #include <drivers/gpio.h>
+#include <dt-compatible/gpio-dt.h>
 #include <drivers/i2c.h>
-#include <drivers/sdcard.h>
 #include <drivers/sid.h>
+#include <dt-compatible/sid-dt.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
-
-sunxi_sdhci_t sdhci0 = {
-		.name = "sdhci0",
-		.id = MMC_CONTROLLER_0,
-		.reg_base = SUNXI_SMHC0_BASE,
-		.sdhci_mmc_type = MMC_TYPE_SD,
-		.max_clk = 50000000,
-		.width = SMHC_WIDTH_4BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-						.gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
-						.cd_level = GPIO_LEVEL_LOW,
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = SUNXI_CCU_BASE + SMHC0_BGR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCU_BASE + SMHC0_BGR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = SUNXI_CCU_BASE + SMHC0_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 300000000,
-				},
-};
-
-sunxi_sdhci_t sdhci2 = {
-		.name = "sdhci2",
-		.id = MMC_CONTROLLER_2,
-		.reg_base = SUNXI_SMHC2_BASE,
-		.sdhci_mmc_type = MMC_TYPE_EMMC,
-		.max_clk = 5200000,
-		.width = SMHC_WIDTH_8BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						.gpio_clk = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTC, 13), GPIO_PERIPH_MUX3},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTC, 15), GPIO_PERIPH_MUX3},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTC, 8), GPIO_PERIPH_MUX3},
-						.gpio_d4 = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
-						.gpio_d5 = {GPIO_PIN(GPIO_PORTC, 11), GPIO_PERIPH_MUX3},
-						.gpio_d6 = {GPIO_PIN(GPIO_PORTC, 14), GPIO_PERIPH_MUX3},
-						.gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
-						.gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
-						.gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = SUNXI_CCU_BASE + SMHC2_BGR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(2),
-						.rst_reg_base = SUNXI_CCU_BASE + SMHC2_BGR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(2),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = SUNXI_CCU_BASE + SMHC2_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 800000000,
-				},
-};
 
 void neon_enable(void) {
 	/* set NSACR, both Secure and Non-secure access are allowed to NEON */
@@ -127,30 +50,42 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-#define GPIO_POW_MOD_SEL (SUNXI_GPIO_BASE + 0x40)
-#define R_GPIO_POW_MOD_SEL (SUNXI_R_GPIO_BASE + 0x340)
 #define GPIO_POW_MOD_SEL_MASK (0x033ffff3)
 #define R_GPIO_POW_MOD_SEL_MASK (0xf)
 
 void sunxi_gpio_power_mode_init(void) {
+	sunxi_gpio_t pio;
+	sunxi_gpio_t r_pio;
 	uint32_t reg_val;
-	reg_val = readl(GPIO_POW_MOD_SEL);
+
+	if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK ||
+	    sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
+		printk_error("GPIO: invalid PIO devicetree configuration\n");
+		return;
+	}
+	reg_val = readl(pio.base + 0x40);
 	reg_val &= ~GPIO_POW_MOD_SEL_MASK;
 	reg_val |= 0x022AAAA2;
-	writel(reg_val, GPIO_POW_MOD_SEL);
+	writel(reg_val, pio.base + 0x40);
 
-	reg_val = readl(R_GPIO_POW_MOD_SEL);
+	reg_val = readl(r_pio.base + 0x340);
 	reg_val &= ~R_GPIO_POW_MOD_SEL_MASK;
 	reg_val |= 0xA;
-	writel(reg_val, R_GPIO_POW_MOD_SEL);
+	writel(reg_val, r_pio.base + 0x340);
 }
 
 void show_chip() {
+	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return;
+	}
+	chip_sid[0] = sunxi_sid_read_sram(&sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(&sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(&sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(&sid, 0xcU);
 
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 

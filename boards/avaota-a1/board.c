@@ -15,159 +15,13 @@
 
 #include <mmu.h>
 
-#include <drivers/mmc/sdhci.h>
-
 #include <drivers/dram.h>
 #include <drivers/gpio.h>
+#include <dt-compatible/gpio-dt.h>
 #include <drivers/i2c.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
-#include <drivers/serial.h>
-
-sunxi_serial_t uart_dbg_1m5 = {
-		.base = SUNXI_UART0_BASE,
-		.id = 0,
-		.baud_rate = UART_BAUDRATE_1500000,
-		.dlen = UART_DLEN_8,
-		.stop = UART_STOP_BIT_0,
-		.parity = UART_PARITY_NO,
-		.gpio_pin =
-				{
-						.gpio_tx = {GPIO_PIN(GPIO_PORTB, 9), GPIO_PERIPH_MUX2},
-						.gpio_rx = {GPIO_PIN(GPIO_PORTB, 10), GPIO_PERIPH_MUX2},
-				},
-		.uart_clk =
-				{
-						.gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
-				},
-};
-
-sunxi_sdhci_t sdhci0 = {
-		.name = "sdhci0",
-		.id = MMC_CONTROLLER_0,
-		.reg_base = SUNXI_SMHC0_BASE,
-		.sdhci_mmc_type = MMC_TYPE_SD,
-		.max_clk = 50000000,
-		.width = SMHC_WIDTH_4BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-						.gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
-						.cd_level = GPIO_LEVEL_LOW,
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = CCU_BASE + CCU_SMHC0_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 300000000,
-				},
-};
-
-sunxi_sdhci_t sdhci2 = {
-		.name = "sdhci2",
-		.id = MMC_CONTROLLER_2,
-		.reg_base = SUNXI_SMHC2_BASE,
-		.sdhci_mmc_type = MMC_TYPE_EMMC,
-		.max_clk = 5200000,
-		.width = SMHC_WIDTH_8BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						.gpio_clk = {GPIO_PIN(GPIO_PORTC, 5), GPIO_PERIPH_MUX3},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTC, 6), GPIO_PERIPH_MUX3},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTC, 10), GPIO_PERIPH_MUX3},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTC, 13), GPIO_PERIPH_MUX3},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTC, 15), GPIO_PERIPH_MUX3},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTC, 8), GPIO_PERIPH_MUX3},
-						.gpio_d4 = {GPIO_PIN(GPIO_PORTC, 9), GPIO_PERIPH_MUX3},
-						.gpio_d5 = {GPIO_PIN(GPIO_PORTC, 11), GPIO_PERIPH_MUX3},
-						.gpio_d6 = {GPIO_PIN(GPIO_PORTC, 14), GPIO_PERIPH_MUX3},
-						.gpio_d7 = {GPIO_PIN(GPIO_PORTC, 16), GPIO_PERIPH_MUX3},
-						.gpio_ds = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX3},
-						.gpio_rst = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX3},
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(2),
-						.rst_reg_base = CCU_BASE + CCU_SMHC_BGR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(2),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = CCU_BASE + CCU_SMHC2_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 800000000,
-				},
-};
-
-enum dram_training_type {
-	DRAM_TRAINING_OFF = 0x60,
-	DRAM_TRAINING_HALF = 0x860,
-	DRAM_TRAINING_FULL = 0xc60,
-};
-
-const uint32_t dram_para[32] = {
-		1200,
-		0x8,
-		0x7070707,
-		0xd0d0d0d,
-		0xe0e,
-		0x84848484,
-		0x310a,
-		0x8000000,
-		0x0,
-		0x34,
-		0x1b,
-		0x33,
-		0x3,
-		0x0,
-		0x0,
-		0x4,
-		0x72,
-		0x0,
-		0x8,
-		0x0,
-		0x0,
-		0x26,
-		0x80808080,
-		0x6060606,
-		0x0,
-		0x74000000,
-		0x38000000,
-		0x802f3333,
-		0xc7c5c4c2,
-		0x3533302f,
-		DRAM_TRAINING_HALF,
-		0x48484848,
-};
-
-const char *dram_para_name[2] = {
-		"dram_para00",
-		"dram_para24",
-};
-
+#include <dt-compatible/sid-dt.h>
 void neon_enable(void) {
 	/* set NSACR, both Secure and Non-secure access are allowed to NEON */
 	asm volatile("MRC p15, 0, r0, c1, c1, 2");
@@ -202,14 +56,18 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void rtc_set_vccio_det_spare(void) {
-}
-
 void set_rpio_power_mode(void) {
-	uint32_t reg_val = read32(SUNXI_R_GPIO_BASE + 0x348);
+	sunxi_gpio_t r_pio;
+	uint32_t reg_val;
+
+	if (sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
+		printk_error("GPIO: invalid R_PIO devicetree configuration\n");
+		return;
+	}
+	reg_val = read32(r_pio.base + 0x348);
 	if (reg_val & 0x1) {
 		printk_debug("PL gpio voltage : 1.8V \n");
-		write32(SUNXI_R_GPIO_BASE + 0x340, 0x1);
+		write32(r_pio.base + 0x340, 0x1);
 	} else {
 		printk_debug("PL gpio voltage : 3.3V \n");
 	}
@@ -247,25 +105,18 @@ int sunxi_nsi_init(void) {
 	return 0;
 }
 
-void enable_sram_a3() {
-	uint32_t reg_val;
-
-	/* De-assert PUBSRAM Clock and Gating */
-	reg_val = readl(RISCV_PUBSRAM_CFG_REG);
-	reg_val |= RISCV_PUBSRAM_RST;
-	reg_val |= RISCV_PUBSRAM_GATING;
-	writel(reg_val, RISCV_PUBSRAM_CFG_REG);
-
-	/* assert */
-	writel(0, RISCV_CFG_BGR_REG);
-}
-
 void show_chip() {
+	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return;
+	}
+	chip_sid[0] = sunxi_sid_read_sram(&sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(&sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(&sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(&sid, 0xcU);
 
 	printk_info("Model: AvaotaSBC Avaota A1 board.\n");
 	printk_info("Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");

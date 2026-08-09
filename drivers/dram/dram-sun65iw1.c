@@ -12,6 +12,7 @@
 #include <jmp.h>
 #include <log.h>
 
+#include <dt2c/driver.h>
 #include <drivers/reg/reg-ncat.h>
 
 #include <drivers/dram.h>
@@ -21,7 +22,6 @@
 #include <drivers/pmu/reg/reg-axp2202.h>
 
 
-static uint32_t dram_size;
 static axp_pmu_t *dram_primary_pmu;
 static axp_pmu_t *dram_secondary_pmu;
 
@@ -108,19 +108,14 @@ void __usdelay(unsigned long us) {
 }
 
 
-uint32_t sunxi_get_dram_size() {
-	return dram_size;
-}
-
-uint32_t sunxi_dram_init(void *para) {
+uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
+	if (dram == NULL || dram->parameter_count == 0U)
+		return 0U;
+	dram_primary_pmu = dram->primary_pmu;
+	dram_secondary_pmu = dram->secondary_pmu;
 	get_vdd_sys_pmu_id();
-	dram_size = init_DRAM(0, para);
-	return dram_size;
+	dram->size = init_DRAM(0, dram->parameters);
+	return dram->size;
 }
 
-uint32_t sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
-				  axp_pmu_t *secondary) {
-	dram_primary_pmu = primary;
-	dram_secondary_pmu = secondary;
-	return sunxi_dram_init(para);
-}
+DT2C_DRIVER_COMPAT("allwinner,sun65iw1-dram");

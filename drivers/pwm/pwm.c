@@ -25,11 +25,9 @@
 
 #include <drivers/clk.h>
 #include <drivers/pwm.h>
-#include <dt2c/dt.h>
+#include <dt2c/driver.h>
 
 #define PRESCALE_MAX 256
-
-DT2C_DRIVER_COMPAT("allwinner,sunxi-pwm");
 
 /**
  * @brief Pre-scaler values for clock division.
@@ -109,37 +107,21 @@ static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel) {
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
 		uint32_t bind_channel = pwm->channel[channel].bind_channel;
 
-		sunxi_gpio_init(pwm->channel[bind_channel].pin.pin,
-				pwm->channel[bind_channel].pin.mux);
+		sunxi_gpio_init(&pwm->channel[bind_channel].pin);
 	}
-	sunxi_gpio_init(pwm->channel[channel].pin.pin, pwm->channel[channel].pin.mux);
+	sunxi_gpio_init(&pwm->channel[channel].pin);
 }
 
 /**
  * @brief Initialize the PWM clock by configuring the bus and peripheral clocks.
  *
- * This function initializes the PWM clock by enabling the necessary bus and peripheral clocks. It
- * handles the clock reset and gate control for both the bus and peripheral clocks. If the PWM uses
- * a bus clock, it will configure the bus clock by setting the reset bit and opening the clock gate.
- * Similarly, if the PWM uses a separate clock, the function will configure it in the same manner.
+ * This function initializes the PWM clock by configuring its reset and gate controls.
  *
  * @param pwm Pointer to the PWM controller structure.
  *
- * @note This function checks for both bus and peripheral clock configuration, and applies clock
- *       reset and gate operations accordingly. It also introduces a small delay (`udelay(10)`) to ensure
- *       proper clock stabilization after gating the clock.
+ * @note A short delay allows the gate state to stabilize before it is enabled.
  */
 static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
-	/* if using bus clk */
-	if (pwm->pwm_bus_clk.gate_reg_base) {
-		/* Set CLK RST */
-		setbits_le32(pwm->pwm_bus_clk.rst_reg_base, BIT(pwm->pwm_bus_clk.rst_reg_offset));
-		/* Open Gate */
-		clrbits_le32(pwm->pwm_bus_clk.gate_reg_base, BIT(pwm->pwm_bus_clk.gate_reg_offset));
-		udelay(10);
-		setbits_le32(pwm->pwm_bus_clk.gate_reg_base, BIT(pwm->pwm_bus_clk.gate_reg_offset));
-	}
-
 	/* if using clk */
 	if (pwm->pwm_clk.gate_reg_base) {
 		/* Set CLK RST */
@@ -155,8 +137,7 @@ static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
  * @brief Deinitialize the PWM clock and gate/reset control.
  *
  * This function disables the clock and resets the PWM controller by clearing the appropriate
- * bits in the clock gate and reset registers. It handles both bus and standalone clocks,
- * depending on the configuration of the PWM structure.
+ * bits in the clock gate and reset registers.
  *
  * @param pwm Pointer to the PWM controller structure.
  *
@@ -164,14 +145,6 @@ static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
  *       are properly initialized in the PWM structure.
  */
 static inline void sunxi_pwm_clk_deinit(sunxi_pwm_t *pwm) {
-	/* if using bus clk */
-	if (pwm->pwm_bus_clk.gate_reg_base) {
-		/* Close Gate */
-		clrbits_le32(pwm->pwm_bus_clk.gate_reg_base, BIT(pwm->pwm_bus_clk.gate_reg_offset));
-		/* Assert CLK RST */
-		clrbits_le32(pwm->pwm_bus_clk.rst_reg_base, BIT(pwm->pwm_bus_clk.rst_reg_offset));
-	}
-
 	/* if using clk */
 	if (pwm->pwm_clk.gate_reg_base) {
 		/* Close Gate */
@@ -678,3 +651,5 @@ int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel) {
 		return sunxi_pwm_release_single(pwm, channel);
 	}
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-pwm");

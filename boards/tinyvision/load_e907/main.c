@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <mmu.h>
 #include <common.h>
@@ -14,38 +15,28 @@
 
 #include <drivers/dram.h>
 #include <drivers/remoteproc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
 
-#include <lib/elf/elf_loader.h>
 #include <lib/fatfs/ff.h>
-
-#define CONFIG_RISCV_ELF_FILENAME "e907.elf"
-#define CONFIG_RISCV_ELF_LOADADDR (0x41008000)
+#include <lib/fatfs/diskio.h>
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
 extern sunxi_serial_t uart_dbg;
 
-extern sdhci_t sdhci0;
+static sunxi_dram_t dram;
 
-extern dram_para_t dram_para;
-
-#define FILENAME_MAX_LEN 64
-typedef struct {
-	unsigned int offset;
-	unsigned int length;
-	unsigned char *dest;
-
-	char filename[FILENAME_MAX_LEN];
-} image_info_t;
-
-image_info_t image;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(const char *filename, BYTE *dest) {
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -88,10 +79,11 @@ open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(sunxi_remoteproc_t *remoteproc) {
 	FATFS fs;
 	FRESULT fret;
 	int ret;
+	size_t index;
 	uint32_t start;
 
 	uint32_t test_time;
@@ -110,10 +102,17 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
-	ret = fatfs_loadimage(image->filename, image->dest);
-	if (ret)
-		return ret;
+	for (index = 0U; index < remoteproc->firmware_count; ++index) {
+		const sunxi_remoteproc_firmware_t *firmware =
+				&remoteproc->firmware[index];
+
+		printk_info("FATFS: read %s addr=%x\n", firmware->name,
+			    (unsigned int) firmware->load_address);
+		ret = fatfs_loadimage(firmware->name,
+				      (BYTE *) firmware->load_address);
+		if (ret)
+			return ret;
+	}
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -129,50 +128,62 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_remoteproc_t e907;
 
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK ||
+	    sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
+		printk_error("Board: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_dram_init(&dram_para);
+	sunxi_clk_init(&ccu);
 
-	sunxi_clk_dump();
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
-	memset(&image, 0, sizeof(image_info_t));
-
-	image.dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
-
-	strcpy(image.filename, CONFIG_RISCV_ELF_FILENAME);
+	sunxi_clk_dump(&ccu);
 
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 		return 0;
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
 	}
+	disk_set_device(0, &card0);
 
-	if (load_sdcard(&image) != 0) {
+	if (load_sdcard(&e907) != 0) {
 		printk_error("SMHC: loading failed\n");
 		return 0;
 	}
 
-	sunxi_e907_clock_reset();
-
-	uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
-	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
-
-	if (load_elf32_image((phys_addr_t) image.dest)) {
-		printk_error("RISC-V ELF load FAIL\n");
+	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK ||
+	    sunxi_remoteproc_prepare(&e907) != DRIVER_OK ||
+	    sunxi_remoteproc_load(&e907) != DRIVER_OK) {
+		printk_error("RISC-V E907: prepare or load failed\n");
+		return 0;
 	}
+	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t) e907.entry);
 
-	sunxi_e907_clock_init(elf_run_addr);
-
-	dump_e907_clock();
+	if (sunxi_remoteproc_start(&e907) != DRIVER_OK) {
+		printk_error("RISC-V E907: start failed\n");
+		return 0;
+	}
+	sunxi_remoteproc_dump(&e907);
 
 	printk_info("RISC-V E907 Core now Running... \n");
 

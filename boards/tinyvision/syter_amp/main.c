@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <mmu.h>
 #include <common.h>
@@ -16,21 +17,23 @@
 
 #include <drivers/dram.h>
 #include <drivers/remoteproc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
+#include <dt-compatible/serial-dt.h>
 
-#include <lib/elf/elf_loader.h>
 #include <lib/fdt/libfdt.h>
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_RISCV_ELF_FILENAME "e907.elf"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-#define CONFIG_RISCV_ELF_LOADADDR (0x40008000)
 #define CONFIG_DTB_LOAD_ADDR (0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 
@@ -46,48 +49,20 @@ typedef struct {
 	unsigned int of_offset;
 	unsigned char *of_dest;
 
-	unsigned int elf_offset;
-	unsigned char *elf_dest;
-
 	char filename[FILENAME_MAX_LEN];
 	char of_filename[FILENAME_MAX_LEN];
-	char elf_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-extern sunxi_serial_t uart_dbg;
+static sunxi_dram_t dram;
 
-extern dram_para_t dram_para;
-
-sunxi_serial_t uart_e907 = {
-		.base = 0x02500C00,
-		.id = 3,
-		.baud_rate = UART_BAUDRATE_115200,
-		.dlen = UART_DLEN_8,
-		.stop = UART_STOP_BIT_0,
-		.parity = UART_PARITY_NO,
-		.gpio_pin =
-				{
-						.gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
-						.gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
-				},
-		.uart_clk =
-				{
-						.gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(3),
-						.rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(3),
-						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
-				},
-};
-
-
-extern sdhci_t sdhci0;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(const char *filename, BYTE *dest) {
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -130,10 +105,12 @@ open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image,
+		       sunxi_remoteproc_t *remoteproc) {
 	FATFS fs;
 	FRESULT fret;
 	int ret;
+	size_t index;
 	uint32_t start;
 
 	uint32_t test_time;
@@ -162,10 +139,17 @@ static int load_sdcard(image_info_t *image) {
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->elf_filename, (unsigned int) image->elf_dest);
-	ret = fatfs_loadimage(image->elf_filename, image->elf_dest);
-	if (ret)
-		return ret;
+	for (index = 0U; index < remoteproc->firmware_count; ++index) {
+		const sunxi_remoteproc_firmware_t *firmware =
+				&remoteproc->firmware[index];
+
+		printk_info("FATFS: read %s addr=%x\n", firmware->name,
+			    (unsigned int) firmware->load_address);
+		ret = fatfs_loadimage(firmware->name,
+				      (BYTE *) firmware->load_address);
+		if (ret)
+			return ret;
+	}
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -181,56 +165,78 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_remoteproc_t e907;
+	sunxi_serial_t uart_e907;
+
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_serial_dt_read_alias(&uart_e907, "uart-e907") != DRIVER_OK ||
+	    sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
+		printk_error("Board: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	sunxi_serial_init(&uart_e907);
 
 	show_banner();
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_dram_init(&dram_para);
+	sunxi_clk_init(&ccu);
+
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, unsigned int params);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	memset(&image, 0, sizeof(image_info_t));
 
 	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
 	image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-	image.elf_dest = (uint8_t *) CONFIG_RISCV_ELF_LOADADDR;
 
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
-	strcpy(image.elf_filename, CONFIG_RISCV_ELF_FILENAME);
 
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed, back to FEL\n");
 	}
+	disk_set_device(0, &card0);
 
-	if (load_sdcard(&image) != 0) {
+	if (load_sdcard(&image, &e907) != 0) {
 		printk_warning("SMHC: loading failed, back to FEL\n");
 		goto _fel;
 	}
 
-	sunxi_e907_clock_reset();
-
-	uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.dest);
-	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
-
-	if (load_elf32_image((phys_addr_t) image.dest)) {
-		printk_error("RISC-V ELF load FAIL\n");
+	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK ||
+	    sunxi_remoteproc_prepare(&e907) != DRIVER_OK ||
+	    sunxi_remoteproc_load(&e907) != DRIVER_OK) {
+		printk_error("RISC-V E907: prepare or load failed\n");
+		goto _fel;
 	}
+	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t) e907.entry);
 
-	sunxi_e907_clock_init(elf_run_addr);
-
-	dump_e907_clock();
+	if (sunxi_remoteproc_start(&e907) != DRIVER_OK) {
+		printk_error("RISC-V E907: start failed\n");
+		goto _fel;
+	}
+	sunxi_remoteproc_dump(&e907);
 
 	printk_info("RISC-V E907 Core now Running... \n");
 

@@ -1,81 +1,85 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
-#include <log.h>
-
-#include <drivers/clk.h>
-
+#include <driver.h>
 #include <drivers/remoteproc.h>
+#include <dt2c/driver.h>
+#include <interrupt.h>
+#include <io.h>
+#include <timer.h>
 
-/**
- * @brief Boot the A27L2 processor.
- * 
- * This function configures clocks, reset controls, and cache settings to boot the A27L processor.
- * It performs a series of hardware register operations to ensure the processor is in the correct state 
- * during boot-up.
- * 
- * @param addr The address to start the A27L processor. This is typically the entry point of a program or firmware.
- * 
- * @note 
- * - This function disables interrupts on entry and performs necessary clock and reset settings before 
- *   booting the A27L2 processor.
- * - Ensure that relevant registers and addresses are properly initialized before calling this function.
- * - The function uses assembly instructions to directly manipulate hardware registers, thus requiring 
- *   the compiler to understand the embedded assembly code.
- * 
- * @warning 
- * - Make sure the relevant hardware state is ready before invoking this function to avoid undefined behavior.
- */
-void sunxi_ansc_boot(uint32_t addr) {
-	uint32_t reg_val = 0;
+#include <drivers/reg/reg-ccu.h>
+#include <drivers/reg/reg-rproc.h>
 
-	/* Disable IRQ (Interrupt Request) */
-	asm volatile("csrc mstatus, 0x8");
+enum sun300iw1_a27l2_register {
+	SUN300IW1_A27L2_PMU_AON,
+	SUN300IW1_A27L2_CCU_AON,
+	SUN300IW1_A27L2_CCU_APP,
+	SUN300IW1_A27L2_CFG,
+};
 
-	/* Enable wake-up control for A27L */
-	setbits_le32(SUNXI_WAKUP_CTRL_REG, SUNXI_A27L_WAKUP_EN);
+static int sun300iw1_a27l2_start(sunxi_remoteproc_t *remoteproc) {
+	uint32_t cache_flags = 0x103fU;
+	uintptr_t pmu_aon =
+			remoteproc->registers[SUN300IW1_A27L2_PMU_AON].base;
+	uintptr_t ccu_aon =
+			remoteproc->registers[SUN300IW1_A27L2_CCU_AON].base;
+	uintptr_t ccu_app =
+			remoteproc->registers[SUN300IW1_A27L2_CCU_APP].base;
+	uintptr_t cfg = remoteproc->registers[SUN300IW1_A27L2_CFG].base;
 
-	/* Enable A27L2 clock */
-	writel(A27L2_CLK_REG_A27L2_CLK_EN_CLOCK_IS_ON << A27L2_CLK_REG_A27L2_CLK_EN_OFFSET, CCU_A27_CLK_REG);
+	if (remoteproc->entry == 0U)
+		return DRIVER_ERROR_INVALID;
 
-	/* Enable MT clock for A27L2 */
-	writel(CCU_A27L2_MTCLK_EN, SUNXI_CCU_APP_BASE + CCU_A27L2_MTCLK_REG);
+	interrupt_disable();
+	setbits_le32(pmu_aon + A27L_WAKEUP_CTRL_REG, A27L_WAKEUP_EN);
+	writel(A27L2_CLK_REG_A27L2_CLK_EN_CLOCK_IS_ON <<
+		       A27L2_CLK_REG_A27L2_CLK_EN_OFFSET,
+	       ccu_aon + A27L2_CLK_REG);
+	writel(CCU_A27L2_MTCLK_EN, ccu_app + CCU_A27L2_MTCLK_REG);
+	clrsetbits_le32(
+		ccu_app + CCU_APP_CLK_REG,
+		CCU_APP_CLK_REG_A27L2_BUSCLKDIV_CLEAR_MASK,
+		CCU_APP_CLK_REG_A27L2_BUSCLKDIV_DIV2 <<
+				CCU_APP_CLK_REG_A27L2_BUSCLKDIV_OFFSET |
+			CCU_APP_CLK_REG_A27_MSGBOX_HCLKEN_CLOCK_IS_ON <<
+				CCU_APP_CLK_REG_A27_MSGBOX_HCLKEN_OFFSET |
+			CCU_APP_CLK_REG_A27L2_CFG_CLKEN_CLOCK_IS_ON <<
+				CCU_APP_CLK_REG_A27L2_CFG_CLKEN_OFFSET);
 
-	/* Configure clock division and enable necessary clocks */
-	clrsetbits_le32((SUNXI_CCU_APP_BASE + CCU_APP_CLK_REG), CCU_APP_CLK_REG_A27L2_BUSCLKDIV_CLEAR_MASK,
-					CCU_APP_CLK_REG_A27L2_BUSCLKDIV_DIV2 << CCU_APP_CLK_REG_A27L2_BUSCLKDIV_OFFSET |
-							CCU_APP_CLK_REG_A27_MSGBOX_HCLKEN_CLOCK_IS_ON << CCU_APP_CLK_REG_A27_MSGBOX_HCLKEN_OFFSET |
-							CCU_APP_CLK_REG_A27L2_CFG_CLKEN_CLOCK_IS_ON << CCU_APP_CLK_REG_A27L2_CFG_CLKEN_OFFSET);
-
-	/* Disable Instruction Cache */
-	asm volatile("li %0, 0x103f\n" /* Load immediate value 0x103f into flags */
-				 "csrc mhcr, %0"   /* Clear the specified bits in mhcr register */
-				 :
-				 : "r"(reg_val));
-
-	/* Delay for 10 microseconds */
+	/* MHCR is T-Head custom CSR 0x7c1. */
+	csr_clear(0x7c1, cache_flags);
 	udelay(10);
-
-	/* Assert the reset for A27 and TWI2 */
-	setbits_le32((SUNXI_CCU_APP_BASE + BUS_Reset1_REG),
-				 BUS_Reset1_REG_A27_RSTN_SW_DE_ASSERT << BUS_Reset1_REG_A27_RSTN_SW_OFFSET | BUS_Reset1_REG_PRESETN_TWI2_SW_DE_ASSERT << BUS_Reset1_REG_PRESETN_TWI2_SW_OFFSET);
-
-	/* Write the start address to the A27L start address register */
-	writel(addr, SUNXI_A27L_START_ADD_REG);
-
-	/* Set WFI (Wait For Interrupt) mode */
-	writel(0x0, SUNXI_A27L_WFI_MODE_REG);
-
-	/* Wait until the start address register indicates the processor is ready */
-	while (readl(SUNXI_A27L_START_ADD_REG) == 0x0)
-		;
-
-	/* De-assert reset for A27 */
-	setbits_le32((SUNXI_CCU_APP_BASE + BUS_Reset1_REG), BUS_Reset1_REG_A27_RSTN_SW_DE_ASSERT << BUS_Reset1_REG_A27_RSTN_SW_OFFSET);
+	setbits_le32(ccu_app + BUS_Reset1_REG,
+		       BUS_Reset1_REG_A27_RSTN_SW_DE_ASSERT <<
+			       BUS_Reset1_REG_A27_RSTN_SW_OFFSET |
+			       BUS_Reset1_REG_PRESETN_TWI2_SW_DE_ASSERT <<
+			       BUS_Reset1_REG_PRESETN_TWI2_SW_OFFSET);
+	writel((uint32_t) remoteproc->entry, cfg + A27L_START_ADDR_REG);
+	writel(0U, cfg + A27L_WFI_MODE_REG);
+	setbits_le32(ccu_app + BUS_Reset1_REG,
+		       BUS_Reset1_REG_A27_RSTN_SW_DE_ASSERT <<
+			       BUS_Reset1_REG_A27_RSTN_SW_OFFSET);
+	return DRIVER_OK;
 }
+
+static const sunxi_remoteproc_ops_t sun300iw1_a27l2_ops = {
+	.start = sun300iw1_a27l2_start,
+};
+
+int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
+			  sunxi_remoteproc_variant_t variant) {
+	if (remoteproc == NULL ||
+	    variant != SUNXI_REMOTEPROC_VARIANT_SUN300IW1_A27L2 ||
+	    remoteproc->register_count != 4U ||
+	    remoteproc->registers[SUN300IW1_A27L2_PMU_AON].size < 0x68U ||
+	    remoteproc->registers[SUN300IW1_A27L2_CCU_AON].size < 0x58cU ||
+	    remoteproc->registers[SUN300IW1_A27L2_CCU_APP].size < 0x98U ||
+	    remoteproc->registers[SUN300IW1_A27L2_CFG].size < 0x208U)
+		return DRIVER_ERROR_INVALID;
+	remoteproc->ops = &sun300iw1_a27l2_ops;
+	return DRIVER_OK;
+}
+
+DT2C_DRIVER_COMPAT("allwinner,sun300iw1-a27l2");

@@ -6,6 +6,7 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <mmu.h>
 
 #include <cli/cli.h>
@@ -16,23 +17,25 @@
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <drivers/pmu/axp.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
 #include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
 
 extern sunxi_serial_t uart_dbg;
-extern sunxi_sdhci_t sdhci0;
-extern sunxi_sdhci_t sdhci2;
+
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t mmc_card = {0};
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv) {
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
 	}
@@ -52,7 +55,7 @@ int cmd_read(int argc, const char **argv) {
 	printk_debug("Read data to buffer data\n");
 
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	sdmmc_blk_read(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(SDRAM_BASE, 0x100);
@@ -70,7 +73,7 @@ int cmd_write(int argc, const char **argv) {
 	memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
 
 	start = time_ms();
-	sdmmc_blk_write(&card0, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	sdmmc_blk_write(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
@@ -84,10 +87,15 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_ccu_t ccu;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
 	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
@@ -106,9 +114,14 @@ int main(void) {
 
 	arm32_icache_enable();
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
+
+	sunxi_clk_dump(&ccu);
 
 	printk_info("Hello World!\n");
 
@@ -120,7 +133,7 @@ int main(void) {
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed\n");
 	} else {
 		printk_debug("Card OK!\n");

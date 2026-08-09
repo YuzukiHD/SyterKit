@@ -32,26 +32,15 @@ syterkit_dt_cells(int node, const char *name, size_t count) {
 
 static inline __attribute__((always_inline)) bool
 syterkit_dt_node_available(int node) {
-	while (node >= 0) {
-		const char *status;
-		int length;
-
-		status = (const char *) dt2c_fdt_getprop(
-				DT2C_FDT_COMPILED_TREE, node, "status", &length);
-		if (status != NULL &&
-		    !syterkit_dt_string_equal(status, length, "okay", 4) &&
-		    !syterkit_dt_string_equal(status, length, "ok", 2))
-			return false;
-		node = dt2c_fdt_parent_offset(DT2C_FDT_COMPILED_TREE, node);
-	}
-
-	return node == -DT2C_FDT_ERR_NOTFOUND;
+	return dt2c_fdt_node_is_available(DT2C_FDT_COMPILED_TREE, node) > 0;
 }
 
 static inline __attribute__((always_inline)) int
 syterkit_dt_alias_node(const char *alias, const char *compatible) {
 	int node;
 
+	if (alias == NULL)
+		return -DT2C_FDT_ERR_BADVALUE;
 	node = dt2c_fdt_alias_node_offset(DT2C_FDT_COMPILED_TREE, alias);
 	if (node < 0)
 		return node;

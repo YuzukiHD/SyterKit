@@ -11,6 +11,7 @@
 #include <types.h>
 
 #include <drivers/reg/reg-smhc.h>
+#include <drivers/clk.h>
 #include <drivers/gpio.h>
 
 #include <log.h>
@@ -82,6 +83,7 @@ typedef struct sunxi_sdhci_pinctrl {
 	gpio_mux_t gpio_ds;
 	gpio_mux_t gpio_rst;
 	gpio_mux_t gpio_cd;
+	bool has_card_detect;
 	uint8_t cd_level;
 } sunxi_sdhci_pinctrl_t;
 
@@ -91,18 +93,29 @@ typedef struct sunxi_sdhci_timing {
 	uint8_t auto_timing;
 } sunxi_sdhci_timing_t;
 
+#define SUNXI_SDHCI_CLOCK_SOURCE_COUNT 4U
+
 typedef struct sunxi_sdhci_clk {
 	uintptr_t reg_base;
+	uint32_t source_rates[SUNXI_SDHCI_CLOCK_SOURCE_COUNT];
 	uint8_t factor_n;
 	uint8_t reg_factor_n_offset;
 	uint8_t factor_m;
 	uint8_t reg_factor_m_offset;
-	uint8_t clk_sel;
-	uint32_t parent_clk;
+	uint8_t default_clk_sel;
 } sunxi_sdhci_clk_t;
 
+static inline uint32_t
+sunxi_sdhci_clk_source_rate(const sunxi_sdhci_clk_t *clock,
+			    uint32_t source) {
+	if (clock == NULL || source >= SUNXI_SDHCI_CLOCK_SOURCE_COUNT)
+		return 0U;
+	return clock->source_rates[source];
+}
+
 typedef struct sunxi_sdhci {
-	char *name;
+	const char *name;
+	int dt_node;
 	uintptr_t reg_base;
 	uint32_t id;
 	uint32_t width;
@@ -110,21 +123,17 @@ typedef struct sunxi_sdhci {
 	sunxi_sdhci_clk_t sdhci_clk;
 	uint32_t max_clk;
 	uint32_t dma_des_addr;
+	uint32_t dma_des_size;
 	sunxi_sdhci_type_t sdhci_mmc_type;
 
 	/* Pinctrl info */
 	sunxi_sdhci_pinctrl_t pinctrl;
 
 	/* Private data */
-	mmc_t *mmc;
-	sunxi_sdhci_host_t *mmc_host;
-	sunxi_sdhci_timing_t *timing_data;
+	mmc_t mmc;
+	sunxi_sdhci_host_t mmc_host;
+	sunxi_sdhci_timing_t timing_data;
 } sunxi_sdhci_t;
-
-#define SDHCI_DEFAULT_CLK_RST_OFFSET(x) (16 + x)
-#define SDHCI_DEFAULT_CLK_GATE_OFFSET(x) (x)
-#define SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET (0)
-#define SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET (8)
 
 /**
  * @brief Initialize the SDHC controller.

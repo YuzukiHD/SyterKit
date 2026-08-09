@@ -52,9 +52,12 @@ writes, and section garbage collection removes the generated tree storage and
 lookup helpers from the firmware image.
 
 There is no generic OF layer, runtime node array, or target-side DTB parser for
-the board tree. Each driver owns its device selection, immutable configuration,
-and static runtime state. It then registers an ordinary `struct device` with the
-flat driver core. Existing board-owned platform devices remain supported.
+the board tree. Applications normally declare a driver instance and populate it
+through that driver's always-inline reader. System services such as the console
+and interrupt controller select their fixed instance from an initcall. The flat
+driver core remains available where automatic probing is useful. Resources for
+migrated driver instances come from the compiled board tree. SoC-global early
+init, reset/handoff, and silicon-workaround registers remain platform-defined.
 
 ## UART example
 
@@ -108,19 +111,15 @@ To migrate another device type:
 
 1. Add a binding below `dts/bindings/` and set `dt2c,device: true` when an
    enabled node must have a selected driver.
-2. Add `DT2C_DRIVER_COMPAT("vendor,device")` to the driver and include that
-   source in the Kconfig-derived `dt2c_driver_sources` selection. Make writes
-   dt2c's required manifest into the object tree; there is no source-tree list.
+2. Add `DT2C_DRIVER_COMPAT("vendor,device")` to the driver source. Make follows
+   the enabled Kbuild `obj-y` graph recursively and writes those source paths to
+   dt2c's manifest in the object tree; there is no hand-maintained source list.
 3. Describe each board instance in `boards/<board>/board.dts` with a Linux-style
    compatible, resources, phandles, and status.
 4. Put always-inline compatibility readers below `dts/include/dt-compatible/`,
-   read fixed properties through `<dt2c/dt.h>`, then register driver-owned
-   static configuration and runtime state.
+   read fixed properties through `<dt2c/dt.h>`, and populate an explicit driver
+   instance selected by alias, phandle, parent, or another fixed relationship.
 
 Keep node offsets and property names visible at the dt2c call site. Moving
 lookups behind an out-of-line generic property API prevents constant folding
 and needlessly retains the compiled tree in SRAM-constrained images.
-
-The current migration intentionally leaves non-UART board resources in
-`board.c`; they can move one driver at a time without changing existing
-application-facing `sunxi_*` APIs.

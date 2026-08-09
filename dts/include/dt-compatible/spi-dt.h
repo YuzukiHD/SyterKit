@@ -13,14 +13,20 @@ sunxi_spi_dt_dma(int node, sunxi_dma_t *supplied_dma, sunxi_dma_t **dma,
 		 uint8_t *rx_drq) {
 	const dt2c_fdt32_t *cells;
 	int dma_node;
+	int length;
 	uint32_t drq;
 
-	cells = syterkit_dt_cells(node, "dmas", 2);
+	cells = (const dt2c_fdt32_t *) dt2c_fdt_getprop(
+			DT2C_FDT_COMPILED_TREE, node, "dmas", &length);
 	if (cells == NULL) {
+		if (length != -DT2C_FDT_ERR_NOTFOUND)
+			return DRIVER_ERROR_INVALID;
 		*dma = NULL;
 		*rx_drq = 0U;
 		return DRIVER_OK;
 	}
+	if (length != (int) (2U * sizeof(*cells)))
+		return DRIVER_ERROR_INVALID;
 	dma_node = dt2c_fdt_node_offset_by_phandle(
 			DT2C_FDT_COMPILED_TREE, dt2c_fdt32_to_cpu(cells[0]));
 	drq = dt2c_fdt32_to_cpu(cells[1]);
@@ -46,13 +52,15 @@ sunxi_spi_dt_read_config(sunxi_spi_t *spi, int node,
 	const dt2c_fdt32_t *reset;
 	const dt2c_fdt32_t *value;
 	sunxi_dma_t *dma;
-	sunxi_spi_gpio_t gpio;
+	sunxi_gpio_t gpio_controller;
+	sunxi_spi_gpio_t gpio = {0};
 	uint32_t cdr_mode;
 	uint32_t clock_rate;
 	uint32_t parent_clock;
 	uint32_t source;
 	uint32_t id;
 	uint8_t rx_drq;
+	size_t pin_cell_count;
 
 	if (spi == NULL || node < 0 ||
 	    !syterkit_dt_node_available(node) ||
@@ -69,10 +77,12 @@ sunxi_spi_dt_read_config(sunxi_spi_t *spi, int node,
 	module_clock = syterkit_dt_cells(node, "allwinner,module-clock", 5);
 	clock_gate = syterkit_dt_cells(node, "allwinner,clock-gate", 2);
 	reset = syterkit_dt_cells(node, "allwinner,reset", 2);
-	pins = syterkit_dt_pinctrl_cells(node, 18);
+	pins = syterkit_dt_pinctrl(node, &pin_cell_count, &gpio_controller);
 	if (id >= SUNXI_SPI_CONTROLLER_MAX || reg == NULL || value == NULL ||
 	    module_clock == NULL ||
-	    clock_gate == NULL || reset == NULL || pins == NULL)
+	    clock_gate == NULL || reset == NULL || pins == NULL ||
+	    pin_cell_count < 9U || pin_cell_count > 18U ||
+	    pin_cell_count % 3U != 0U)
 		return DRIVER_ERROR_INVALID;
 
 	clock_rate = dt2c_fdt32_to_cpu(value[0]);
@@ -90,16 +100,26 @@ sunxi_spi_dt_read_config(sunxi_spi_t *spi, int node,
 	      dt2c_fdt32_to_cpu(reset[0]) == 0U)) ||
 	    dt2c_fdt32_to_cpu(clock_gate[1]) >= 32U ||
 	    dt2c_fdt32_to_cpu(reset[1]) >= 32U ||
-	    !syterkit_dt_gpio(pins, 0, &gpio.gpio_cs) ||
-	    !syterkit_dt_gpio(pins, 3, &gpio.gpio_sck) ||
-	    !syterkit_dt_gpio(pins, 6, &gpio.gpio_mosi) ||
-	    !syterkit_dt_gpio(pins, 9, &gpio.gpio_miso) ||
-	    !syterkit_dt_gpio(pins, 12, &gpio.gpio_wp) ||
-	    !syterkit_dt_gpio(pins, 15, &gpio.gpio_hold) ||
+	    !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller,
+				      &gpio.gpio_cs) ||
+	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller,
+				      &gpio.gpio_sck) ||
+	    !syterkit_dt_pinctrl_gpio(pins, 6, &gpio_controller,
+				      &gpio.gpio_mosi) ||
+	    (pin_cell_count >= 12U &&
+	     !syterkit_dt_pinctrl_gpio(pins, 9, &gpio_controller,
+				       &gpio.gpio_miso)) ||
+	    (pin_cell_count >= 15U &&
+	     !syterkit_dt_pinctrl_gpio(pins, 12, &gpio_controller,
+				       &gpio.gpio_wp)) ||
+	    (pin_cell_count >= 18U &&
+	     !syterkit_dt_pinctrl_gpio(pins, 15, &gpio_controller,
+				       &gpio.gpio_hold)) ||
 	    sunxi_spi_dt_dma(node, supplied_dma, &dma, &rx_drq) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
 
 	spi->base = (uintptr_t) dt2c_fdt32_to_cpu(reg[0]);
+	spi->dt_node = node;
 	spi->id = (uint8_t) id;
 	spi->clk_rate = clock_rate;
 	spi->gpio = gpio;

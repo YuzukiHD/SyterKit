@@ -33,9 +33,8 @@
 
 #include <driver.h>
 #include <drivers/spi.h>
-#include <dt2c/dt.h>
+#include <dt2c/driver.h>
 
-DT2C_DRIVER_COMPAT("allwinner,sunxi-spi");
 /**
  * @brief Perform a software reset on the SPI controller
  * 
@@ -101,6 +100,13 @@ static inline void sunxi_spi_set_cs(sunxi_spi_t *spi, uint8_t cs) {
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 	spi_reg->tc &= ~SPI_TC_SS_MASK;			/* SS-chip select, clear two bits */
 	spi_reg->tc |= cs << SPI_TC_SS_BIT_POS; /* Set chip select */
+}
+
+int sunxi_spi_select(sunxi_spi_t *spi, uint8_t chip_select) {
+	if (spi == NULL || spi->base == 0U || chip_select > 3U)
+		return -1;
+	sunxi_spi_set_cs(spi, chip_select);
+	return 0;
 }
 
 /**
@@ -629,7 +635,7 @@ static int sunxi_spi_dma_deinit(sunxi_spi_t *spi) {
  */
 static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
 	uint32_t reg_val = 0;
-	uint32_t src = 0, clk = 0, sclk_freq = 0;
+	uint32_t src = 0, sclk_freq = 0;
 	uint32_t n, m;
 
 	// Read the SPI clock configuration register.
@@ -640,22 +646,11 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi) {
 	n = (reg_val >> spi->spi_clk.spi_clock_factor_n_offset) & 0x3;
 	m = ((reg_val >> 0) & 0xf) + 1;
 
-	// Determine the clock source based on the extracted value (src).
-	switch (src) {
-		case 0:
-			clk = 24000000;// Source clock is 24 MHz (likely an external reference clock).
-			break;
-		case 1:
-		case 2:
-			clk = spi->parent_clk_reg.parent_clk;// Use parent clock.
-			break;
-		default:
-			clk = 0;// Invalid clock source.
-			break;
-	}
+	if (src != spi->spi_clk.spi_clock_source)
+		return 0;
 
 	// Calculate the actual SPI clock frequency using the clock source, divider (n), and multiplier (m).
-	sclk_freq = clk / (1 << n) / m;
+	sclk_freq = spi->parent_clk_reg.parent_clk / (1U << n) / m;
 
 	// Print trace message with SPI clock frequency and register values for debugging.
 	printk_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
@@ -881,23 +876,23 @@ sunxi_spi_clock_managed(const sunxi_spi_t *spi) {
 static void sunxi_spi_gpio_init(sunxi_spi_t *spi) {
 	/* Config SPI pins */
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_cs))
-		sunxi_gpio_init(spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_cs);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_sck))
-		sunxi_gpio_init(spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_sck);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_mosi))
-		sunxi_gpio_init(spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_mosi);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_miso))
-		sunxi_gpio_init(spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_miso);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_wp))
-		sunxi_gpio_init(spi->gpio.gpio_wp.pin, spi->gpio.gpio_wp.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_wp);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_hold))
-		sunxi_gpio_init(spi->gpio.gpio_hold.pin, spi->gpio.gpio_hold.mux);
+		sunxi_gpio_init(&spi->gpio.gpio_hold);
 
 	/* Floating by default */
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_wp))
-		sunxi_gpio_set_pull(spi->gpio.gpio_wp.pin, GPIO_PULL_UP);
+		sunxi_gpio_set_pull(&spi->gpio.gpio_wp, GPIO_PULL_UP);
 	if (sunxi_spi_gpio_available(spi->gpio.gpio_hold))
-		sunxi_gpio_set_pull(spi->gpio.gpio_hold.pin, GPIO_PULL_UP);
+		sunxi_gpio_set_pull(&spi->gpio.gpio_hold, GPIO_PULL_UP);
 }
 
 /**
@@ -1050,3 +1045,5 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 
 	return rxlen + txlen; /**< Return the total number of transferred bytes (TX + RX) */
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-spi");

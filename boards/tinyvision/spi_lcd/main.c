@@ -6,6 +6,7 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 #include <jmp.h>
@@ -18,6 +19,8 @@
 #include <drivers/dram.h>
 #include <drivers/spi.h>
 #include <dt-compatible/dma-dt.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 #include "lcd.h"
 #include "lcd_init.h"
@@ -27,52 +30,19 @@
 
 extern sunxi_serial_t uart_dbg;
 
-extern dram_para_t dram_para;
+static sunxi_dram_t dram;
 
 
-static sunxi_spi_t sunxi_spi0_lcd = {
-		.base = 0x04025000,
-		.id = 0,
-		.clk_rate = 75 * 1000 * 1000,
-		.gpio =
-				{
-						.gpio_cs = {GPIO_PIN(GPIO_PORTC, 1), GPIO_PERIPH_MUX4},
-						.gpio_sck = {GPIO_PIN(GPIO_PORTC, 0), GPIO_PERIPH_MUX4},
-						.gpio_mosi = {GPIO_PIN(GPIO_PORTC, 2), GPIO_PERIPH_MUX4},
-						.gpio_miso = {GPIO_PIN(GPIO_PORTC, 3), GPIO_PERIPH_MUX4},
-				},
-		.spi_clk =
-				{
-						.spi_clock_cfg_base = CCU_BASE + CCU_SPI0_CLK_REG,
-						.spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
-						.spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
-				},
-		.parent_clk_reg =
-				{
-						.rst_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
-						.rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
-						.gate_reg_base = CCU_BASE + CCU_SPI_BGR_REG,
-						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
-						.parent_clk = 300000000,
-				},
-};
-
-static gpio_mux_t lcd_dc_pins = {
-		.pin = GPIO_PIN(GPIO_PORTC, 4),
-		.mux = GPIO_OUTPUT,
-};
-
-static gpio_mux_t lcd_res_pins = {
-		.pin = GPIO_PIN(GPIO_PORTC, 5),
-		.mux = GPIO_OUTPUT,
-};
+static sunxi_spi_t sunxi_spi0_lcd;
+static gpio_mux_t lcd_dc_pins;
+static gpio_mux_t lcd_res_pins;
 
 static void LCD_Set_DC(uint8_t val) {
-	sunxi_gpio_set_value(lcd_dc_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_dc_pins, val);
 }
 
 static void LCD_Set_RES(uint8_t val) {
-	sunxi_gpio_set_value(lcd_res_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_res_pins, val);
 }
 
 static void LCD_Write_Bus(uint8_t dat) {
@@ -208,16 +178,34 @@ static void LCD_Init(void) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
 	sunxi_dma_t dma;
+	int spi_node;
 
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK) {
-		printk_error("DMA: invalid devicetree configuration\n");
+	spi_node = syterkit_dt_alias_node("spi0", SUNXI_SPI_COMPATIBLE);
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_node, &dma) !=
+			DRIVER_OK ||
+	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_node,
+					 "allwinner,lcd-dc-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_node,
+					 "allwinner,lcd-reset-gpio")) {
+		printk_error("SPI LCD: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	sunxi_clk_init(&ccu);
+
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
 	printk_debug("enable mmu ok\n");
@@ -226,13 +214,11 @@ int main(void) {
 
 	printk_info("Hello World!\n");
 
-	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
-	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
-
-	sunxi_spi0_lcd.dma_handle = &dma;
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
 	}
+	sunxi_gpio_init(&lcd_dc_pins);
+	sunxi_gpio_init(&lcd_res_pins);
 
 	LCD_Init();
 
@@ -260,7 +246,7 @@ int main(void) {
 
 	clean_syterkit_data();
 
-	sunxi_clk_reset();
+	sunxi_clk_reset(&ccu);
 
 	jmp_to_fel();
 

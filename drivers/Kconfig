@@ -13,13 +13,10 @@ source "drivers/pmu/Kconfig"
 source "drivers/pwm/Kconfig"
 source "drivers/dram/Kconfig"
 source "drivers/remoteproc/Kconfig"
-source "drivers/rng/Kconfig"
 source "drivers/rtc/Kconfig"
-source "drivers/sdhci/Kconfig"
 source "drivers/serial/Kconfig"
 source "drivers/soc/Kconfig"
 source "drivers/spi/Kconfig"
-source "drivers/ufs/Kconfig"
 source "drivers/usb/Kconfig"
 
 endmenu

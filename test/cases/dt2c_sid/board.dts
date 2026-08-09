@@ -1,0 +1,64 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		sid0 = &sid0;
+		sid1 = &sid1;
+		sid-disabled = &sid_disabled;
+		sid-short = &sid_short;
+		sid-bad-switch = &sid_bad_switch;
+		sid-wrong-compatible = &sid_wrong_compatible;
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		sid_disabled: efuse@5000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x5000 0x400>;
+			allwinner,efuse-hv-switch = <0x6000>;
+			status = "okay";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		sid0: efuse@1000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x1000 0x400>;
+			allwinner,efuse-hv-switch = <0x3000>;
+			status = "okay";
+		};
+
+		sid1: efuse@2000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x2000 0x400>;
+		};
+
+		sid_short: efuse@7000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x7000 0x100>;
+			allwinner,efuse-hv-switch = <0x8000>;
+		};
+
+		sid_bad_switch: efuse@a000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0xa000 0x400>;
+			allwinner,efuse-hv-switch = <0xb002>;
+		};
+
+		sid_wrong_compatible: efuse@c000 {
+			compatible = "vendor,other-sid";
+			reg = <0xc000 0x400>;
+			allwinner,efuse-hv-switch = <0xd000>;
+		};
+	};
+};

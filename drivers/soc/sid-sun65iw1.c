@@ -1,15 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <barrier.h>
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <types.h>
+#include "sid-internal.h"
 
-#include <log.h>
-
-#include <common.h>
-
-#include <drivers/sid.h>
+const sunxi_sid_section_t sunxi_sid_sections[] = {{0}};
+const size_t sunxi_sid_section_count = 0;

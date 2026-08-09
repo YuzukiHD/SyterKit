@@ -7,16 +7,17 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <mmu.h>
 #include <common.h>
 #include <jmp.h>
 
 #include <drivers/dram.h>
-#include <drivers/mtd/spi-nand.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
 
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
@@ -25,6 +26,7 @@
 #include <image/image_loader.h>
 
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
@@ -34,10 +36,6 @@
 
 #define CONFIG_DTB_LOAD_ADDR (0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
-
-// 128KB erase sectors, so place them starting from 2nd sector
-#define CONFIG_SPINAND_DTB_ADDR (128 * 2048)
-#define CONFIG_SPINAND_KERNEL_ADDR (256 * 2048)
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -54,10 +52,10 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
+static sunxi_dram_t dram;
 
-extern sdhci_t sdhci0;
-
-extern dram_para_t dram_para;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 image_info_t image;
 
@@ -151,45 +149,6 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
-	linux_zimage_header_t *hdr;
-	unsigned int size;
-	uint64_t start, time;
-
-	if (spi_nand_detect(spi) != 0)
-		return -1;
-
-	/* get dtb size and read */
-	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
-	if (fdt_check_header(image->of_dest)) {
-		printk_error("SPI-NAND: DTB verification failed\n");
-		return -1;
-	}
-
-	size = fdt_totalsize(image->of_dest);
-	printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
-	start = time_us();
-	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) size);
-	time = time_us() - start;
-	printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32) (size / time));
-
-	/* get kernel size and read */
-	spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) sizeof(linux_zimage_header_t));
-	hdr = (linux_zimage_header_t *) image->dest;
-	if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
-		printk_debug("SPI-NAND: zImage verification failed\n");
-		return -1;
-	}
-	size = hdr->end - hdr->start;
-	printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
-	start = time_us();
-	spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) size);
-	time = time_us() - start;
-	printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32) (size / time));
-
-	return 0;
-}
-
 msh_declare_command(bootargs);
 msh_define_help(bootargs, "get/set bootargs for kernel",
 				"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
@@ -272,6 +231,7 @@ int cmd_reload(int argc, const char **argv) {
 		printk_error("SMHC: init failed\n");
 		return 0;
 	}
+	disk_set_device(0, &card0);
 
 	if (load_sdcard(&image) != 0) {
 		printk_error("SMHC: loading failed\n");
@@ -322,14 +282,28 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
+	sunxi_ccu_t ccu;
 
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_dram_init(&dram_para);
+	sunxi_clk_init(&ccu);
 
-	sunxi_clk_dump();
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
+
+	sunxi_clk_dump(&ccu);
 
 	memset(&image, 0, sizeof(image_info_t));
 
@@ -343,12 +317,13 @@ int main(void) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed\n");
 		goto _shell;
 	}
+	disk_set_device(0, &card0);
 
 	if (load_sdcard(&image) != 0) {
 		printk_warning("SMHC: loading failed\n");

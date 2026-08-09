@@ -1,51 +1,59 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <barrier.h>
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
+#include <string.h>
 
-#include <jmp.h>
 #include <log.h>
 
+#include <dt2c/driver.h>
 #include <drivers/dram.h>
 #include <drivers/rtc.h>
-
-#define INIT_DRAM_BIN_BASE 0x48000
-
-#define SUNXI_RTC_BASE (0x07000000)
-#define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
-
-#define RTC_FEL_INDEX 2
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
-uint32_t sunxi_dram_init(void *para) {
-	uint8_t *src = __ddr_bin_start;
-	uint8_t *dst = (uint8_t *) INIT_DRAM_BIN_BASE;
+uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
+	uintptr_t image_start = (uintptr_t) __ddr_bin_start;
+	uintptr_t image_end = (uintptr_t) __ddr_bin_end;
+	const uint8_t *src;
+	uint8_t *dst;
+	uint32_t *para_data;
+	size_t image_size;
 
-	if (para == NULL) {
+	if (dram == NULL || dram->parameter_count == 0U ||
+	    dram->rtc.data_base == 0U || dram->init_code_base == 0U ||
+	    dram->init_code_size == 0U || image_end <= image_start) {
 		printk_error("DRAM: please provide DRAM para\n");
+		return 0U;
 	}
+	image_size = (size_t) (image_end - image_start);
+	if (image_size > dram->init_code_size ||
+	    dram->init_code_base + dram->init_code_size < dram->init_code_base) {
+		printk_error("DRAM: init code region is too small\n");
+		return 0U;
+	}
+	src = (const uint8_t *) image_start;
+	dst = (uint8_t *) dram->init_code_base;
 
-	uint32_t *para_data = (uint32_t *) para;
+	para_data = dram->parameters;
 
 	/* Set DRAM driver clk and training data to */
 	if (para_data[0] != 0x0) {
-		rtc_set_dram_para((uint32_t) para);
+		rtc_set_dram_para(&dram->rtc, (uint32_t) (uintptr_t) para_data);
 	}
 
-	printk_debug("DRAM: load dram init from 0x%08x -> 0x%08x size: %08x\n", src, dst, __ddr_bin_end - __ddr_bin_start);
-	memcpy(dst, src, __ddr_bin_end - __ddr_bin_start);
+	printk_debug("DRAM: load dram init from 0x%08lx -> 0x%08lx size: %08lx\n",
+		     (unsigned long) image_start,
+		     (unsigned long) dram->init_code_base,
+		     (unsigned long) image_size);
+	memcpy(dst, src, image_size);
 
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
-	rtc_set_start_time_ms();
+	rtc_set_start_time_ms(&dram->rtc);
 
-	printk_debug("DRAM: Now jump to 0x%08x run DRAMINIT\n", dst);
+	printk_debug("DRAM: Now jump to 0x%08lx run DRAMINIT\n",
+		     (unsigned long) dram->init_code_base);
 
 	__asm__ __volatile__("isb sy"
 						 :
@@ -59,12 +67,14 @@ uint32_t sunxi_dram_init(void *para) {
 						 :
 						 :
 						 : "memory");
-	((void (*)(void))((void *) INIT_DRAM_BIN_BASE))();
+	((void (*)(void))((void *) dram->init_code_base))();
 
-	uint32_t dram_size = rtc_read_data(RTC_FEL_INDEX);
+	dram->size = rtc_read_data(&dram->rtc, RTC_FEL_INDEX);
 
 	/* And Restore RTC Flag */
-	rtc_clear_fel_flag();
+	rtc_clear_fel_flag(&dram->rtc);
 
-	return dram_size;
+	return dram->size;
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sun50iw9-dram");

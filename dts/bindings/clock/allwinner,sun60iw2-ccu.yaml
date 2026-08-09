@@ -1,0 +1,18 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner sun60iw2 clock controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sun60iw2-ccu
+  reg:
+    type: reg
+  reg-names:
+    type: string-array
+    const: [ccu, cpu-pll, rtc]
+    description: Ordered as ccu, cpu-pll, rtc.
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required: [compatible, reg, reg-names]
+dt2c,device: true

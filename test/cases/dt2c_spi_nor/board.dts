@@ -1,0 +1,111 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		spi0 = &spi0;
+		spi1 = &spi1;
+		nor0 = &nor0;
+		nor1 = &nor1;
+		nor-disabled = &nor_disabled;
+		nor-bad-cs = &nor_bad_cs;
+		nor-bad-frequency = &nor_bad_frequency;
+		nor-wrong-compatible = &nor_wrong_compatible;
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 1 4>,
+				<SUNXI_GPIO_PORT_C 0 4>,
+				<SUNXI_GPIO_PORT_C 2 4>,
+				<SUNXI_GPIO_PORT_C 3 4>;
+		};
+
+		spi1_pins: spi1-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 1 5>,
+				<SUNXI_GPIO_PORT_D 0 5>,
+				<SUNXI_GPIO_PORT_D 2 5>,
+				<SUNXI_GPIO_PORT_D 3 5>;
+		};
+	};
+
+	spi0: spi@1000 {
+		compatible = "allwinner,sunxi-spi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		allwinner,spi-id = <0>;
+		reg = <0x1000 0x1000>;
+		clock-frequency = <50000000>;
+		allwinner,module-clock = <0x3000 1 8 300000000 0>;
+		allwinner,clock-gate = <0x3100 6>;
+		allwinner,reset = <0x3200 22>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi0_pins>;
+		status = "okay";
+
+		nor0: flash@0 {
+			compatible = "jedec,spi-nor";
+			reg = <0>;
+			spi-max-frequency = <24000000>;
+		};
+
+		nor1: flash@1 {
+			compatible = "jedec,spi-nor";
+			reg = <1>;
+			spi-max-frequency = <50000000>;
+		};
+
+		nor_disabled: flash@2 {
+			compatible = "jedec,spi-nor";
+			reg = <2>;
+			spi-max-frequency = <50000000>;
+			status = "disabled";
+		};
+
+		nor_bad_cs: flash@4 {
+			compatible = "jedec,spi-nor";
+			reg = <4>;
+			spi-max-frequency = <50000000>;
+		};
+
+		nor_bad_frequency: flash@3 {
+			compatible = "jedec,spi-nor";
+			reg = <3>;
+			spi-max-frequency = <100000001>;
+		};
+
+		nor_wrong_compatible: other@3 {
+			compatible = "vendor,other-flash";
+			reg = <3>;
+			spi-max-frequency = <50000000>;
+		};
+	};
+
+	spi1: spi@2000 {
+		compatible = "allwinner,sunxi-spi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		allwinner,spi-id = <1>;
+		reg = <0x2000 0x1000>;
+		clock-frequency = <50000000>;
+		allwinner,module-clock = <0x4000 1 8 300000000 0>;
+		allwinner,clock-gate = <0x4100 7>;
+		allwinner,reset = <0x4200 23>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi1_pins>;
+		status = "okay";
+	};
+};

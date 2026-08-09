@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-config DRIVER_MMC_HOST
-	bool "MMC host controller support"
-	depends on DRIVER_MMC_V2
+# The selected SoC chooses its MMC host implementation in this directory's
+# Makefile. DRIVER_MMC controls the parent directory.

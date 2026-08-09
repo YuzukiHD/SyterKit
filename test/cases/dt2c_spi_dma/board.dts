@@ -10,10 +10,19 @@
 		dma0 = &dma0;
 		dma1 = &dma1;
 		spi0 = &spi0;
+		spi2 = &spi2;
+		spi3 = &spi3;
 		spi4 = &spi4;
 	};
 
-	pinctrl {
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
 		spi0_pins: spi0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_C 1 4>,
@@ -84,6 +93,34 @@
 			allwinner,clock-gate = <0xe100 7>;
 			allwinner,reset = <0xe200 23>;
 			dmas = <&dma0 31>;
+			dma-names = "rx";
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi4_pins>;
+			status = "okay";
+		};
+
+		spi2: spi@f000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <2>;
+			reg = <0xf000 0x1000>;
+			clock-frequency = <25000000>;
+			allwinner,module-clock = <0xf100 1 8 300000000 0>;
+			allwinner,clock-gate = <0xf200 8>;
+			allwinner,reset = <0xf300 24>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi4_pins>;
+			status = "okay";
+		};
+
+		spi3: spi@10000 {
+			compatible = "allwinner,sunxi-spi";
+			allwinner,spi-id = <3>;
+			reg = <0x10000 0x1000>;
+			clock-frequency = <25000000>;
+			allwinner,module-clock = <0x10100 1 8 300000000 0>;
+			allwinner,clock-gate = <0x10200 9>;
+			allwinner,reset = <0x10300 25>;
+			dmas = <&dma1>;
 			dma-names = "rx";
 			pinctrl-names = "default";
 			pinctrl-0 = <&spi4_pins>;

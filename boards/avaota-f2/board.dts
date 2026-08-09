@@ -10,7 +10,11 @@
 	compatible = "syterkit,avaota-f2";
 
 	aliases {
+		ccu0 = &ccu0;
+		sid0 = &sid0;
+		dram0 = &dram0;
 		i2c0 = &i2c0;
+		intc0 = &clic0;
 		pmu0 = &pmu0;
 	};
 
@@ -18,12 +22,32 @@
 		stdout-path = &uart0;
 	};
 
-	pinctrl {
-		i2c0_pins: i2c0-pins {
-			allwinner,pins =
-				<SUNXI_GPIO_PORT_L 5 2>,
-				<SUNXI_GPIO_PORT_L 6 2>;
-		};
+	ccu0: clock-controller@2001000 {
+		compatible = "allwinner,sun252iw1-ccu";
+		reg = <0x02001000 0x1000>;
+		reg-names = "ccu";
+		status = "okay";
+	};
+
+	dram0: dram-controller {
+		compatible = "allwinner,sun252iw1-dram";
+		allwinner,dram-parameters =
+			<1056 3 0x7b6bfb 1>,
+			<0x000010d2 0 0x1c70 0x2>,
+			<0x18 0 0x004a2195 0x02423190>,
+			<0x0008b061 0xb4787896 0 0x48484848>,
+			<0x48 0x1621121e 0 0>,
+			<0 0x00460000 0x55 0x34010100>;
+		status = "okay";
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
 
 		uart0_pins: uart0-pins {
 			allwinner,pins =
@@ -32,11 +56,41 @@
 		};
 	};
 
+	r_pio: pinctrl@2000540 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000540 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 5 2>,
+				<SUNXI_GPIO_PORT_L 6 2>;
+		};
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		sid0: efuse@7091000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x07091000 0x400>;
+			status = "okay";
+		};
+
+		clic0: interrupt-controller@30800000 {
+			compatible = "thead,c900-clic";
+			reg = <0x30800000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+			status = "okay";
+		};
 
 		i2c0: i2c@2502000 {
 			compatible = "allwinner,sunxi-i2c";

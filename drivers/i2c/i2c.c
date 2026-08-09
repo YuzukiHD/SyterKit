@@ -26,9 +26,7 @@
 #include <drivers/reg/reg-ncat.h>
 #include <drivers/i2c.h>
 #include <driver.h>
-#include <dt-compatible/i2c-dt.h>
-
-DT2C_DRIVER_COMPAT("allwinner,sunxi-i2c");
+#include <dt2c/driver.h>
 
 /**
  * @def I2C_WRITE
@@ -746,10 +744,10 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 		return;
 
 	/* Config I2C SCL and SDA pins */
-	sunxi_gpio_init(i2c_dev->gpio.gpio_scl.pin, i2c_dev->gpio.gpio_scl.mux);
-	sunxi_gpio_set_pull(i2c_dev->gpio.gpio_scl.pin, GPIO_PULL_UP);
-	sunxi_gpio_init(i2c_dev->gpio.gpio_sda.pin, i2c_dev->gpio.gpio_sda.mux);
-	sunxi_gpio_set_pull(i2c_dev->gpio.gpio_sda.pin, GPIO_PULL_UP);
+	sunxi_gpio_init(&i2c_dev->gpio.gpio_scl);
+	sunxi_gpio_set_pull(&i2c_dev->gpio.gpio_scl, GPIO_PULL_UP);
+	sunxi_gpio_init(&i2c_dev->gpio.gpio_sda);
+	sunxi_gpio_set_pull(&i2c_dev->gpio.gpio_sda, GPIO_PULL_UP);
 
 	printk_debug("I2C: base = %p, id = %d\n", (void *) i2c_dev->base, i2c_dev->id);
 
@@ -769,3 +767,5 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev) {
 
 	i2c_dev->status = true;
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-i2c");

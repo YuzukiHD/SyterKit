@@ -1,0 +1,164 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		hifi4-primary = &hifi4_primary;
+		hifi4-secondary = &hifi4_secondary;
+		c906 = &c906;
+		ar100 = &ar100;
+		a27l2 = &a27l2;
+		remoteproc-disabled = &remoteproc_disabled;
+		remoteproc-invalid-map = &remoteproc_invalid_map;
+		remoteproc-wrong = &remoteproc_wrong;
+		rtc0 = &rtc0;
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		firmware0: firmware@10000000 {
+			reg = <0x10000000 0x00100000>;
+			no-map;
+		};
+
+		firmware1: firmware@11000000 {
+			reg = <0x11000000 0x00200000>;
+			no-map;
+		};
+
+		opensbi: firmware@12000000 {
+			reg = <0x12000000 0x00040000>;
+			no-map;
+		};
+
+		u_boot: firmware@12100000 {
+			reg = <0x12100000 0x00400000>;
+			no-map;
+		};
+
+		ar100_sram: sram@100000 {
+			reg = <0x00100000 0x00014000>;
+			no-map;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		rtc0: rtc@7000100 {
+			compatible = "allwinner,sunxi-rtc";
+			reg = <0x07000100 0x100>;
+			status = "okay";
+		};
+
+		hifi4_primary: remoteproc@1700000 {
+			compatible = "allwinner,sun8iw20-hifi4";
+			reg = <0x03000000 0x1000>,
+			      <0x01700000 0x1000>,
+			      <0x02001000 0x1000>;
+			firmware-name = "dsp0.elf";
+			memory-region = <&firmware0>;
+			allwinner,firmware-format = "elf32";
+			allwinner,address-map =
+				<0x10000000 0x1fffffff 0x30000000>,
+				<0x30000000 0x3fffffff 0x10000000>;
+			status = "okay";
+		};
+
+		hifi4_secondary: remoteproc@1710000 {
+			compatible = "allwinner,sun8iw20-hifi4";
+			reg = <0x03100000 0x1000>,
+			      <0x01710000 0x1000>,
+			      <0x02011000 0x1000>;
+			firmware-name = "dsp1.elf";
+			memory-region = <&firmware1>;
+			allwinner,firmware-format = "elf32";
+			allwinner,entry-address = <0x100000>;
+			status = "okay";
+		};
+
+		c906: remoteproc@6010000 {
+			compatible = "allwinner,sun8iw20-c906";
+			reg = <0x02001000 0x1000>,
+			      <0x06010000 0x1000>;
+			firmware-name = "c906.elf";
+			memory-region = <&firmware0>;
+			allwinner,firmware-format = "elf64";
+			allwinner,auxiliary-firmware-names =
+				"fw_jump.bin", "u-boot.bin";
+			allwinner,auxiliary-memory-regions =
+				<&opensbi>, <&u_boot>;
+			status = "okay";
+		};
+
+			ar100: remoteproc@7000400 {
+			compatible = "allwinner,sun50iw10-ar100";
+			reg = <0x03000000 0x1000>,
+			      <0x07000400 0x400>;
+			firmware-name = "ar100s.bin";
+			memory-region = <&ar100_sram>;
+			allwinner,firmware-format = "raw";
+			allwinner,entry-address = <0>;
+			allwinner,address-map =
+				<0x00000000 0x00000fff 0x00100000>,
+				<0x00001000 0xffffffff 0x00104000>;
+			allwinner,rtc = <&rtc0>;
+				status = "okay";
+			};
+
+			a27l2: remoteproc@49100000 {
+				compatible = "allwinner,sun300iw1-a27l2";
+				reg = <0x4a011000 0x100>,
+				      <0x4a010000 0x1000>,
+				      <0x42001000 0x1000>,
+				      <0x49100000 0x1000>;
+				firmware-name = "a27l2.elf";
+				memory-region = <&firmware0>;
+				allwinner,firmware-format = "elf32";
+				status = "okay";
+			};
+
+			remoteproc_disabled: remoteproc@1720000 {
+				compatible = "allwinner,sun8iw20-hifi4";
+				reg = <0x03200000 0x1000>,
+				      <0x01720000 0x1000>,
+				      <0x02021000 0x1000>;
+				firmware-name = "disabled.elf";
+			memory-region = <&firmware0>;
+			allwinner,firmware-format = "elf32";
+			status = "disabled";
+		};
+
+		remoteproc_invalid_map: remoteproc@1730000 {
+			compatible = "allwinner,sun8iw20-hifi4";
+			reg = <0x03000000 0x1000>,
+			      <0x01700000 0x1000>,
+			      <0x02001000 0x1000>;
+			firmware-name = "invalid.elf";
+			memory-region = <&firmware0>;
+			allwinner,firmware-format = "elf32";
+			allwinner,address-map =
+				<0x2000 0x2fff 0x5000>,
+				<0x2fff 0x3fff 0x6000>;
+			status = "okay";
+		};
+
+		remoteproc_wrong: remoteproc@1740000 {
+			compatible = "vendor,wrong-remoteproc";
+			reg = <0x03000000 0x1000>,
+			      <0x01700000 0x1000>,
+			      <0x02001000 0x1000>;
+			firmware-name = "wrong.elf";
+			memory-region = <&firmware0>;
+			allwinner,firmware-format = "elf32";
+			status = "okay";
+		};
+	};
+};

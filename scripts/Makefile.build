@@ -13,9 +13,20 @@ objects := $(addprefix $(out)/,$(local-objects))
 subtargets := $(addprefix $(out)/,$(addsuffix /built-in.o,$(subdirs)))
 deps := $(objects:.o=.d)
 target := $(out)/built-in.o
+dt2c-local-sources := $(foreach object,$(local-objects),\
+	$(wildcard $(src)/$(patsubst %.o,%.c,$(object))))
 
-.PHONY: all FORCE
+.PHONY: all dt2c-manifest FORCE
 all: $(target)
+
+dt2c-manifest:
+	@for source in $(dt2c-local-sources); do \
+		printf '%s\n' "$$source"; \
+	done
+	@for subdir in $(subdirs); do \
+		$(MAKE) -f $(srctree)/scripts/Makefile.build \
+			obj=$(obj)/$$subdir dt2c-manifest; \
+	done
 
 $(target): $(objects) $(subtargets)
 	@mkdir -p $(dir $@)

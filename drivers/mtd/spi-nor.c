@@ -11,14 +11,14 @@
 
 #include <log.h>
 
+#include <driver.h>
 #include <drivers/clk.h>
 #include <drivers/dma.h>
 #include <drivers/gpio.h>
 
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/spi.h>
-
-static spi_nor_info_t info;
+#include <dt2c/driver.h>
 
 static const spi_nor_info_t spi_nor_info_table[] = {
 		{"W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0},
@@ -235,10 +235,11 @@ static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) {
-	uint8_t opcode = info.opcode_write_enable;
+static inline void spi_nor_set_write_enable(spi_nor_t *nor) {
+	uint8_t opcode = nor->info.opcode_write_enable;
 
-	sunxi_spi_transfer(spi, SPI_IO_SINGLE, &opcode, sizeof(opcode), NULL, 0);
+	sunxi_spi_transfer(nor->spi, SPI_IO_SINGLE, &opcode, sizeof(opcode),
+			   NULL, 0);
 }
 
 
@@ -266,16 +267,18 @@ static inline void spi_nor_set_write_enable(sunxi_spi_t *spi) {
  * 
  * @see spinor_read_id(), spi_nor_read_sfdp(), spi_nor_dump_sfdp(), NOR_OPCODE_WREN, NOR_OPCODE_READ, NOR_OPCODE_PROG
  */
-static inline int spi_nor_get_info(sunxi_spi_t *spi) {
+static inline int spi_nor_get_info(spi_nor_t *nor) {
 	sfdp_t sfdp;
 	const spi_nor_info_t *tmp_info;
+	spi_nor_info_t *info = &nor->info;
+	sunxi_spi_t *spi = nor->spi;
 	uint32_t v, i, id = 0x0;
 
 	spinor_read_id(spi, &id);
-	info.id = id;
+	info->id = id;
 
 	if (spi_nor_read_sfdp(spi, &sfdp)) {
-		info.name = "SPDF";
+		info->name = "SPDF";
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
 		spi_nor_dump_sfdp(&sfdp);
 #endif
@@ -283,56 +286,56 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 		v = (sfdp.basic_table.table[7] << 24) | (sfdp.basic_table.table[6] << 16) | (sfdp.basic_table.table[5] << 8) | (sfdp.basic_table.table[4] << 0);
 		if (v & (1 << 31)) {
 			v &= 0x7fffffff;
-			info.capacity = 1 << (v - 3);
+			info->capacity = 1 << (v - 3);
 		} else {
-			info.capacity = (v + 1) >> 3;
+			info->capacity = (v + 1) >> 3;
 		}
 		/* Basic flash parameter table 1th dword */
 		v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
 
-		if ((info.capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2))
-			info.address_length = 3;
+		if ((info->capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2))
+			info->address_length = 3;
 		else
-			info.address_length = 4;
+			info->address_length = 4;
 		if (((v >> 0) & 0x3) == 0x1)
-			info.opcode_erase_4k = (v >> 8) & 0xff;
+			info->opcode_erase_4k = (v >> 8) & 0xff;
 		else
-			info.opcode_erase_4k = 0x00;
-		info.opcode_erase_32k = 0x00;
-		info.opcode_erase_64k = 0x00;
-		info.opcode_erase_256k = 0x00;
+			info->opcode_erase_4k = 0x00;
+		info->opcode_erase_32k = 0x00;
+		info->opcode_erase_64k = 0x00;
+		info->opcode_erase_256k = 0x00;
 
 		/* Basic flash parameter table 8th dword */
 		v = (sfdp.basic_table.table[31] << 24) | (sfdp.basic_table.table[30] << 16) | (sfdp.basic_table.table[29] << 8) | (sfdp.basic_table.table[28] << 0);
 
 		switch ((v >> 0) & 0xff) {
 			case 12:
-				info.opcode_erase_4k = (v >> 8) & 0xff;
+				info->opcode_erase_4k = (v >> 8) & 0xff;
 				break;
 			case 15:
-				info.opcode_erase_32k = (v >> 8) & 0xff;
+				info->opcode_erase_32k = (v >> 8) & 0xff;
 				break;
 			case 16:
-				info.opcode_erase_64k = (v >> 8) & 0xff;
+				info->opcode_erase_64k = (v >> 8) & 0xff;
 				break;
 			case 18:
-				info.opcode_erase_256k = (v >> 8) & 0xff;
+				info->opcode_erase_256k = (v >> 8) & 0xff;
 				break;
 			default:
 				break;
 		}
 		switch ((v >> 16) & 0xff) {
 			case 12:
-				info.opcode_erase_4k = (v >> 24) & 0xff;
+				info->opcode_erase_4k = (v >> 24) & 0xff;
 				break;
 			case 15:
-				info.opcode_erase_32k = (v >> 24) & 0xff;
+				info->opcode_erase_32k = (v >> 24) & 0xff;
 				break;
 			case 16:
-				info.opcode_erase_64k = (v >> 24) & 0xff;
+				info->opcode_erase_64k = (v >> 24) & 0xff;
 				break;
 			case 18:
-				info.opcode_erase_256k = (v >> 24) & 0xff;
+				info->opcode_erase_256k = (v >> 24) & 0xff;
 				break;
 			default:
 				break;
@@ -342,68 +345,68 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
 		v = (sfdp.basic_table.table[35] << 24) | (sfdp.basic_table.table[34] << 16) | (sfdp.basic_table.table[33] << 8) | (sfdp.basic_table.table[32] << 0);
 		switch ((v >> 0) & 0xff) {
 			case 12:
-				info.opcode_erase_4k = (v >> 8) & 0xff;
+				info->opcode_erase_4k = (v >> 8) & 0xff;
 				break;
 			case 15:
-				info.opcode_erase_32k = (v >> 8) & 0xff;
+				info->opcode_erase_32k = (v >> 8) & 0xff;
 				break;
 			case 16:
-				info.opcode_erase_64k = (v >> 8) & 0xff;
+				info->opcode_erase_64k = (v >> 8) & 0xff;
 				break;
 			case 18:
-				info.opcode_erase_256k = (v >> 8) & 0xff;
+				info->opcode_erase_256k = (v >> 8) & 0xff;
 				break;
 			default:
 				break;
 		}
 		switch ((v >> 16) & 0xff) {
 			case 12:
-				info.opcode_erase_4k = (v >> 24) & 0xff;
+				info->opcode_erase_4k = (v >> 24) & 0xff;
 				break;
 			case 15:
-				info.opcode_erase_32k = (v >> 24) & 0xff;
+				info->opcode_erase_32k = (v >> 24) & 0xff;
 				break;
 			case 16:
-				info.opcode_erase_64k = (v >> 24) & 0xff;
+				info->opcode_erase_64k = (v >> 24) & 0xff;
 				break;
 			case 18:
-				info.opcode_erase_256k = (v >> 24) & 0xff;
+				info->opcode_erase_256k = (v >> 24) & 0xff;
 				break;
 			default:
 				break;
 		}
-		if (info.opcode_erase_4k != 0x00)
-			info.blksz = 4096;
-		else if (info.opcode_erase_32k != 0x00)
-			info.blksz = 32768;
-		else if (info.opcode_erase_64k != 0x00)
-			info.blksz = 65536;
-		else if (info.opcode_erase_256k != 0x00)
-			info.blksz = 262144;
+		if (info->opcode_erase_4k != 0x00)
+			info->blksz = 4096;
+		else if (info->opcode_erase_32k != 0x00)
+			info->blksz = 32768;
+		else if (info->opcode_erase_64k != 0x00)
+			info->blksz = 65536;
+		else if (info->opcode_erase_256k != 0x00)
+			info->blksz = 262144;
 
-		info.opcode_write_enable = NOR_OPCODE_WREN;
-		info.read_granularity = 1;
-		info.opcode_read = NOR_OPCODE_READ;
+		info->opcode_write_enable = NOR_OPCODE_WREN;
+		info->read_granularity = 1;
+		info->opcode_read = NOR_OPCODE_READ;
 
 		if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor < 5)) {
 			/* Basic flash parameter table 1th dword */
 			v = (sfdp.basic_table.table[3] << 24) | (sfdp.basic_table.table[2] << 16) | (sfdp.basic_table.table[1] << 8) | (sfdp.basic_table.table[0] << 0);
 			if ((v >> 2) & 0x1)
-				info.write_granularity = 64;
+				info->write_granularity = 64;
 			else
-				info.write_granularity = 1;
+				info->write_granularity = 1;
 		} else if ((sfdp.basic_table.major == 1) && (sfdp.basic_table.minor >= 5)) {
 			/* Basic flash parameter table 11th dword */
 			v = (sfdp.basic_table.table[43] << 24) | (sfdp.basic_table.table[42] << 16) | (sfdp.basic_table.table[41] << 8) | (sfdp.basic_table.table[40] << 0);
-			info.write_granularity = 1 << ((v >> 4) & 0xf);
+			info->write_granularity = 1 << ((v >> 4) & 0xf);
 		}
-		info.opcode_write = NOR_OPCODE_PROG;
+		info->opcode_write = NOR_OPCODE_PROG;
 		return 1;
 	} else if ((id != 0xffffff) && (id != 0)) {
 		for (i = 0; i < ARRAY_SIZE(spi_nor_info_table); i++) {
 			tmp_info = &spi_nor_info_table[i];
 			if (id == tmp_info->id) {
-				memcpy(&info, tmp_info, sizeof(spi_nor_info_t));
+				memcpy(info, tmp_info, sizeof(spi_nor_info_t));
 				return 1;
 			}
 		}
@@ -436,18 +439,21 @@ static inline int spi_nor_get_info(sunxi_spi_t *spi) {
  * the provided buffer. The function supports 3-byte or 4-byte address
  * modes, but any other address length is not supported.
  */
-static void spi_nor_read_bytes(sunxi_spi_t *spi, uint32_t addr, uint8_t *buf, uint32_t count) {
+static void spi_nor_read_bytes(spi_nor_t *nor, uint32_t addr,
+			       uint8_t *buf, uint32_t count) {
+	const spi_nor_info_t *info = &nor->info;
+	sunxi_spi_t *spi = nor->spi;
 	uint8_t tx[5];
-	switch (info.address_length) {
+	switch (info->address_length) {
 		case 3:
-			tx[0] = info.opcode_read;
+			tx[0] = info->opcode_read;
 			tx[1] = (uint8_t) (addr >> 16);
 			tx[2] = (uint8_t) (addr >> 8);
 			tx[3] = (uint8_t) (addr >> 0);
 			sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, buf, count);
 			break;
 		case 4:
-			tx[0] = info.opcode_read;
+			tx[0] = info->opcode_read;
 			tx[1] = (uint8_t) (addr >> 24);
 			tx[2] = (uint8_t) (addr >> 16);
 			tx[3] = (uint8_t) (addr >> 8);
@@ -481,16 +487,33 @@ static void spi_nor_read_bytes(sunxi_spi_t *spi, uint32_t addr, uint8_t *buf, ui
  *          4. If a chip is detected, its ID and capacity are logged to 
  *             inform the user.
  */
-int spi_nor_detect(sunxi_spi_t *spi) {
+static int spi_nor_select(spi_nor_t *nor) {
+	if (nor == NULL || nor->spi == NULL || nor->max_frequency == 0U ||
+	    sunxi_spi_select(nor->spi, nor->chip_select) != 0)
+		return -1;
+	if (nor->spi->clk_rate != nor->max_frequency)
+		return sunxi_spi_update_clk(nor->spi, nor->max_frequency);
+	return 0;
+}
+
+int spi_nor_detect(spi_nor_t *nor) {
+	spi_nor_info_t *info;
+	sunxi_spi_t *spi;
+
+	if (spi_nor_select(nor) != 0)
+		return -1;
+	info = &nor->info;
+	spi = nor->spi;
+	memset(info, 0, sizeof(*info));
 	spi_nor_chip_reset(spi);
 	spi_nor_wait_for_busy(spi);
 
-	if (!spi_nor_get_info(spi)) {
+	if (!spi_nor_get_info(nor)) {
 		printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
 		return -1;
 	}
 
-	printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info.id, info.capacity / 1024 / 1024);
+	printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
 
 	return 0;
 }
@@ -517,26 +540,34 @@ int spi_nor_detect(sunxi_spi_t *spi) {
  *
  * @details 
  * The function reads data from the SPI NAND flash memory in chunks based on the 
- * configured read granularity (`info.read_granularity`). It waits for the SPI
+ * configured read granularity (`info->read_granularity`). It waits for the SPI
  * bus to be ready before each read operation. The function will continue reading 
  * until the requested number of blocks has been fetched. If the data to be read 
  * exceeds the maximum read length (0x7FFFFFFF bytes), it adjusts the size of 
  * each read operation accordingly.
  */
-uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uint32_t blk_cnt) {
-	uint32_t addr = blk_no * info.blksz;
-	uint32_t cnt = blk_cnt * info.blksz;
+uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf,
+			    uint32_t blk_no, uint32_t blk_cnt) {
+	const spi_nor_info_t *info;
+	sunxi_spi_t *spi;
+
+	if (buf == NULL || spi_nor_select(nor) != 0 || nor->info.blksz == 0U)
+		return 0U;
+	info = &nor->info;
+	spi = nor->spi;
+	uint32_t addr = blk_no * info->blksz;
+	uint32_t cnt = blk_cnt * info->blksz;
 
 	uint8_t *pbuf = buf;
 	uint32_t len;
 
-	if (info.read_granularity == 1)
+	if (info->read_granularity == 1)
 		len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
 	else
-		len = info.read_granularity;
+		len = info->read_granularity;
 	while (cnt > 0) {
 		spi_nor_wait_for_busy(spi);
-		spi_nor_read_bytes(spi, addr, pbuf, len);
+		spi_nor_read_bytes(nor, addr, pbuf, len);
 		addr += len;
 		pbuf += len;
 		cnt -= len;
@@ -569,8 +600,14 @@ uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uin
  *          as many complete blocks as possible before potentially reading 
  *          another partial block at the end.
  */
-uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen) {
-	u64_t blksz = info.blksz;
+uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf,
+		      uint32_t addr, uint32_t rxlen) {
+	const spi_nor_info_t *info;
+
+	if (nor == NULL || buf == NULL || nor->info.blksz == 0U)
+		return 0U;
+	info = &nor->info;
+	u64_t blksz = info->blksz;
 	u64_t blkno, len, tmp;
 	u64_t ret = 0;
 
@@ -581,7 +618,7 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 		len = blksz - tmp;
 		if (rxlen < len)
 			len = rxlen;
-		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
+		if (spi_nor_read_block(nor, &buf[0], blkno, 1) != 1)
 			return ret;
 		memcpy((void *) buf, (const void *) (&buf[tmp]), len);
 		buf += len;
@@ -594,7 +631,7 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 
 	if (tmp > 0) {
 		len = tmp * blksz;
-		if (spi_nor_read_block(spi, buf, blkno, tmp) != tmp)
+		if (spi_nor_read_block(nor, buf, blkno, tmp) != tmp)
 			return ret;
 		buf += len;
 		rxlen -= len;
@@ -604,10 +641,12 @@ uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rx
 
 	if (rxlen > 0) {
 		len = rxlen;
-		if (spi_nor_read_block(spi, &buf[0], blkno, 1) != 1)
+		if (spi_nor_read_block(nor, &buf[0], blkno, 1) != 1)
 			return ret;
 		memcpy((void *) buf, (const void *) (&buf[0]), len);
 		ret += len;
 	}
 	return ret;
 }
+
+DT2C_DRIVER_COMPAT("jedec,spi-nor");

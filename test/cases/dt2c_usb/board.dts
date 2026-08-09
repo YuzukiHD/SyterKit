@@ -1,0 +1,106 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		usb0 = &usb0;
+		usb1 = &usb1;
+		usb-disabled = &usb_disabled;
+		usb-invalid-id = &usb_invalid_id;
+		usb-invalid-offset = &usb_invalid_offset;
+		usb-invalid-reset = &usb_invalid_reset;
+		usb-wrong-compatible = &usb_wrong_compatible;
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		usb_disabled: usb@3000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0x3000 0x1000>;
+			interrupts = <63>;
+			allwinner,usb-id = <2>;
+			allwinner,phy-clock = <0x5000 1>;
+			allwinner,phy-reset = <0x5000 2>;
+			allwinner,clock-gate = <0x5100 3>;
+			allwinner,reset = <0x5100 4>;
+			status = "okay";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		usb0: usb@1000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0x1000 0x1000>;
+			interrupts = <61>;
+			allwinner,usb-id = <0>;
+			allwinner,phy-clock = <0x4000 31>;
+			allwinner,phy-reset = <0x4000 30>;
+			allwinner,clock-gate = <0x4100 8>;
+			allwinner,reset = <0x4100 24>;
+			status = "okay";
+		};
+
+		usb1: usb@2000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0x2000 0x1000>;
+			interrupts = <62>;
+			allwinner,usb-id = <1>;
+			allwinner,phy-clock = <0x4200 4>;
+			allwinner,phy-reset = <0x4200 5>;
+			allwinner,clock-gate = <0x4300 6>;
+			allwinner,reset = <0x4300 7>;
+			status = "okay";
+		};
+
+		usb_invalid_id: usb@6000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0x6000 0x1000>;
+			interrupts = <64>;
+			allwinner,usb-id = <256>;
+			allwinner,phy-clock = <0x7000 1>;
+			allwinner,phy-reset = <0x7000 2>;
+			allwinner,clock-gate = <0x7100 3>;
+			allwinner,reset = <0x7100 4>;
+			status = "okay";
+		};
+
+		usb_invalid_offset: usb@8000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0x8000 0x1000>;
+			interrupts = <65>;
+			allwinner,usb-id = <2>;
+			allwinner,phy-clock = <0x9000 32>;
+			allwinner,phy-reset = <0x9000 2>;
+			allwinner,clock-gate = <0x9100 3>;
+			allwinner,reset = <0x9100 4>;
+			status = "okay";
+		};
+
+		usb_invalid_reset: usb@a000 {
+			compatible = "allwinner,sunxi-musb";
+			reg = <0xa000 0x1000>;
+			interrupts = <66>;
+			allwinner,usb-id = <2>;
+			allwinner,phy-clock = <0xb000 1>;
+			allwinner,phy-reset = <0xb100 2>;
+			allwinner,clock-gate = <0xb200 3>;
+			allwinner,reset = <0xb200 4>;
+			status = "okay";
+		};
+
+		usb_wrong_compatible: usb@c000 {
+			compatible = "vendor,other-usb";
+			reg = <0xc000 0x1000>;
+			status = "okay";
+		};
+	};
+};

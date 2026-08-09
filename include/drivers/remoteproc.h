@@ -3,183 +3,96 @@
 #ifndef __SYS_RPROC_H__
 #define __SYS_RPROC_H__
 
-#include <io.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
-#include "reg/reg-rproc.h"
+#include <drivers/rtc.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif
 
-/**
- * @brief Initialize the HiFi4 clock.
- * 
- * This function sets up the clock for the HiFi4 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_hifi4_clock_init(uint32_t addr);
+#define SUNXI_REMOTEPROC_MAX_FIRMWARES 4U
+#define SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS 4U
+#define SUNXI_REMOTEPROC_MAX_REGISTERS 4U
 
-/**
- * @brief Start the HiFi4 module.
- * 
- * This function starts the HiFi4 module, enabling its operations 
- * and functionality.
- */
-void sunxi_hifi4_start(void);
+typedef enum {
+	SUNXI_REMOTEPROC_VARIANT_INVALID = 0,
+	SUNXI_REMOTEPROC_VARIANT_SUN20IW1_HIFI4,
+	SUNXI_REMOTEPROC_VARIANT_SUN300IW1_A27L2,
+	SUNXI_REMOTEPROC_VARIANT_SUN50IW10_AR100,
+	SUNXI_REMOTEPROC_VARIANT_SUN55IW3_E906,
+	SUNXI_REMOTEPROC_VARIANT_SUN8IW20_HIFI4,
+	SUNXI_REMOTEPROC_VARIANT_SUN8IW20_C906,
+	SUNXI_REMOTEPROC_VARIANT_SUN8IW21_E907,
+} sunxi_remoteproc_variant_t;
 
-/**
- * @brief Reset the HiFi4 clock.
- * 
- * This function resets the HiFi4 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_hifi4_clock_reset(void);
+typedef enum {
+	SUNXI_REMOTEPROC_FIRMWARE_ELF32 = 0,
+	SUNXI_REMOTEPROC_FIRMWARE_ELF64,
+	SUNXI_REMOTEPROC_FIRMWARE_RAW,
+} sunxi_remoteproc_firmware_format_t;
 
-/**
- * @brief Initialize the E906 clock.
- * 
- * This function sets up the clock for the E906 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_e906_clock_init(uint32_t addr);
+typedef struct {
+	const char *name;
+	uintptr_t load_address;
+	size_t region_size;
+} sunxi_remoteproc_firmware_t;
 
-/**
- * @brief Reset the E906 clock.
- * 
- * This function resets the E906 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_e906_clock_reset(void);
+typedef struct {
+	uintptr_t device_start;
+	uintptr_t device_end;
+	uintptr_t physical_start;
+} sunxi_remoteproc_address_map_t;
 
-/** @brief Print the current E906 clock configuration. */
-void dump_e906_clock(void);
+typedef struct {
+	uintptr_t base;
+	size_t size;
+} sunxi_remoteproc_register_t;
 
-/**
- * @brief Initialize the E907 clock.
- * 
- * This function sets up the clock for the E907 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_e907_clock_init(uint32_t addr);
+struct sunxi_remoteproc;
 
-/**
- * @brief Reset the E907 clock.
- * 
- * This function resets the E907 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_e907_clock_reset(void);
+typedef struct {
+	int (*reset)(struct sunxi_remoteproc *remoteproc);
+	int (*prepare)(struct sunxi_remoteproc *remoteproc);
+	int (*start)(struct sunxi_remoteproc *remoteproc);
+	void (*dump)(const struct sunxi_remoteproc *remoteproc);
+	int (*load_buffer)(struct sunxi_remoteproc *remoteproc,
+			   const void *firmware, size_t size);
+} sunxi_remoteproc_ops_t;
 
-/** @brief Print the current E907 clock configuration. */
-void dump_e907_clock(void);
+typedef struct sunxi_remoteproc {
+	int dt_node;
+	sunxi_remoteproc_firmware_format_t format;
+	sunxi_remoteproc_firmware_t firmware[SUNXI_REMOTEPROC_MAX_FIRMWARES];
+	size_t firmware_count;
+	sunxi_remoteproc_address_map_t
+		address_map[SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS];
+	size_t address_map_count;
+	sunxi_remoteproc_register_t
+		registers[SUNXI_REMOTEPROC_MAX_REGISTERS];
+	size_t register_count;
+	uintptr_t entry;
+	bool entry_from_elf;
+	sunxi_rtc_t *rtc;
+	const sunxi_remoteproc_ops_t *ops;
+} sunxi_remoteproc_t;
 
-/**
- * @brief Initialize the C906 clock.
- * 
- * This function sets up the clock for the C906 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_c906_clock_init(uint32_t addr);
+int sunxi_remoteproc_reset(sunxi_remoteproc_t *remoteproc);
+int sunxi_remoteproc_load(sunxi_remoteproc_t *remoteproc);
+int sunxi_remoteproc_load_buffer(sunxi_remoteproc_t *remoteproc,
+				 const void *firmware, size_t size);
+int sunxi_remoteproc_prepare(sunxi_remoteproc_t *remoteproc);
+int sunxi_remoteproc_start(sunxi_remoteproc_t *remoteproc);
+void sunxi_remoteproc_dump(const sunxi_remoteproc_t *remoteproc);
 
-/**
- * @brief Reset the C906 clock.
- * 
- * This function resets the C906 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_c906_clock_reset(void);
-
-/** @brief Print the current C906 clock configuration. */
-void dump_c906_clock(void);
-
-/**
- * @brief Initialize the E902 clock.
- * 
- * This function sets up the clock for the E902 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_e902_clock_init(uint32_t addr);
-
-/**
- * @brief Reset the E902 clock.
- * 
- * This function resets the E902 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_e902_clock_reset(void);
-
-/**
- * @brief Initialize the A27L2 clock.
- * 
- * This function sets up the clock for the A27L2 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_a27l2_clock_init(uint32_t addr);
-
-/**
- * @brief Reset the A27L2 clock.
- * 
- * This function resets the A27L2 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_a27l2_clock_reset(void);
-
-/**
- * @brief Initialize the A55 clock.
- * 
- * This function sets up the clock for the A55 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_a55_clock_init(uint32_t addr);
-
-/**
- * @brief Reset the A55 clock.
- * 
- * This function resets the A55 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_a55_clock_reset(void);
-
-/**
- * @brief Initialize the A53 clock.
- * 
- * This function sets up the clock for the A53 module using the 
- * specified address for clock configuration.
- * 
- * @param addr The address used for clock initialization.
- */
-void sunxi_a53_clock_init(uint32_t addr);
-
-/**
- * @brief Reset the A53 clock.
- * 
- * This function resets the A53 clock to its default state, 
- * halting its operation temporarily.
- */
-void sunxi_a53_clock_reset(void);
-
+/* Implemented by the selected SoC remoteproc driver. */
+int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
+			  sunxi_remoteproc_variant_t variant);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif
 
-#endif// __SYS_RPROC_H__
+#endif /* __SYS_RPROC_H__ */

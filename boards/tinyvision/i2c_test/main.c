@@ -6,38 +6,33 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 
 #include <drivers/i2c.h>
 #include <drivers/serial.h>
+#include <dt-compatible/i2c-dt.h>
 
 extern sunxi_serial_t uart_dbg;
 
-sunxi_i2c_t i2c_0 = {
-		.base = 0x02502000,
-		.id = SUNXI_I2C0,
-		.speed = SUNXI_I2C_SPEED_400K,
-		.gpio =
-				{
-						.gpio_scl = {GPIO_PIN(GPIO_PORTE, 4), GPIO_PERIPH_MUX8},
-						.gpio_sda = {GPIO_PIN(GPIO_PORTE, 5), GPIO_PERIPH_MUX8},
-				},
-		.i2c_clk =
-				{
-						.gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-						.gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-						.rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = 24000000,
-				},
-};
-
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_i2c_t i2c;
 
-	sunxi_clk_init();
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK) {
+		printk_error("I2C: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_i2c_init(&i2c_0);
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
+
+	sunxi_i2c_init(&i2c);
 
 	printk_info("Hello World\n");
 
@@ -45,7 +40,7 @@ int main(void) {
 
 	while (1) {
 		printk_info("sunxi_i2c_write\n");
-		ret = sunxi_i2c_write(&i2c_0, 0x32, 0x11, 0x11);
+		ret = sunxi_i2c_write(&i2c, 0x32, 0x11, 0x11);
 		mdelay(100);
 		printk_info("sunxi_i2c_write done, ret = %08x\n", ret);
 	}

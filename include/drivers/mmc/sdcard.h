@@ -11,22 +11,16 @@
 #include <types.h>
 
 #include <drivers/mmc/mmc.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdhci.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif// __cplusplus
 
-typedef struct {
+typedef struct sdmmc_pdata {
 	sunxi_sdhci_t *hci;
 	bool online;
 } sdmmc_pdata_t;
-
-/**
- * @brief External declaration of the 'card0' SDMMC platform data structure.
- */
-extern sdmmc_pdata_t card0;
-extern sdmmc_pdata_t card2;
 
 /**
  * @brief Initialize the SD/MMC interface

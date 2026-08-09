@@ -1,68 +1,84 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
+#include <driver.h>
+#include <drivers/remoteproc.h>
+#include <dt2c/driver.h>
+#include <io.h>
 #include <log.h>
 
-#include <drivers/clk.h>
+#include <drivers/reg/reg-ccu.h>
+#include <drivers/reg/reg-rproc.h>
 
-#include <drivers/remoteproc.h>
+#define SUN55IW3_E906_PUBSRAM_CFG_OFFSET 0x0114U
+#define SUN55IW3_E906_CLK_OFFSET 0x0120U
+#define SUN55IW3_E906_CFG_BGR_OFFSET 0x0124U
+#define SUN55IW3_E906_START_OFFSET 0x0204U
 
-void sunxi_hifi4_clock_init(uint32_t addr) {
+enum sun55iw3_e906_register {
+	SUN55IW3_E906_DSP_PRCM,
+	SUN55IW3_E906_CFG,
+};
+
+static int sun55iw3_e906_start(sunxi_remoteproc_t *remoteproc) {
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
+	uintptr_t cfg = remoteproc->registers[SUN55IW3_E906_CFG].base;
+
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET,
+		RISCV_CFG_RST | RISCV_CFG_GATING);
+	write32(cfg + SUN55IW3_E906_START_OFFSET,
+		(uint32_t) remoteproc->entry);
+	value = read32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET);
+	value |= RISCV_CORE_RST | RISCV_APB_DB_RST;
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, value);
+	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
+	value |= RISCV_CLK_GATING;
+	write32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET, value);
+	return DRIVER_OK;
 }
 
-void sunxi_hifi4_start(void) {
+static int sun55iw3_e906_reset(sunxi_remoteproc_t *remoteproc) {
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
+
+	value = read32(dsp_prcm + SUN55IW3_E906_PUBSRAM_CFG_OFFSET);
+	value |= RISCV_PUBSRAM_RST | RISCV_PUBSRAM_GATING;
+	write32(dsp_prcm + SUN55IW3_E906_PUBSRAM_CFG_OFFSET, value);
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, 0U);
+	return DRIVER_OK;
 }
 
-void sunxi_hifi4_clock_reset(void) {
-}
+static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc) {
+	uint32_t factor_m;
+	uint32_t factor_n;
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
 
-void sunxi_e906_clock_init(uint32_t addr) {
-	uint32_t reg_val;
-
-	/* rv cfg rst/gating */
-	write32(RISCV_CFG_BGR_REG, RISCV_CFG_RST | RISCV_CFG_GATING);
-
-	/* set start addr */
-	write32(RISCV_STA_ADD_REG, addr);
-
-	/* de-reset */
-	reg_val = read32(RISCV_CFG_BGR_REG);
-	reg_val |= RISCV_CORE_RST | RISCV_APB_DB_RST;
-	write32(RISCV_CFG_BGR_REG, reg_val);
-
-	/* turn on clock gating reset */
-	reg_val = read32(RISCV_CLK_REG);
-	reg_val |= RISCV_CLK_GATING;
-	write32(RISCV_CLK_REG, reg_val);
-}
-
-void sunxi_e906_clock_reset(void) {
-	uint32_t reg_val;
-
-	/* De-assert PUBSRAM Clock and Gating */
-	/* Make sure no program are using !!!! */
-	reg_val = read32(RISCV_PUBSRAM_CFG_REG);
-	reg_val |= RISCV_PUBSRAM_RST;
-	reg_val |= RISCV_PUBSRAM_GATING;
-	write32(RISCV_PUBSRAM_CFG_REG, reg_val);
-
-	/* assert */
-	write32(RISCV_CFG_BGR_REG, 0x0);
-}
-
-void dump_e906_clock(void) {
-	uint32_t reg_val, factor_m, factor_n;
-
-	reg_val = read32(RISCV_CLK_REG);
-	factor_m = (reg_val & 0x1F) + 1;
-	factor_n = ((reg_val >> 8) & 0x3) + 1;
-
+	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
+	factor_m = (value & 0x1fU) + 1U;
+	factor_n = ((value >> 8) & 0x3U) + 1U;
 	printk_debug("CLK: RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n",
-			 reg_val, (reg_val >> 24) & 0x7, factor_m, factor_n);
+		     value, (value >> 24) & 0x7U, factor_m, factor_n);
 }
+
+static const sunxi_remoteproc_ops_t sun55iw3_e906_ops = {
+	.reset = sun55iw3_e906_reset,
+	.start = sun55iw3_e906_start,
+	.dump = sun55iw3_e906_dump,
+};
+
+int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
+			  sunxi_remoteproc_variant_t variant) {
+	if (remoteproc == NULL ||
+	    variant != SUNXI_REMOTEPROC_VARIANT_SUN55IW3_E906 ||
+	    remoteproc->register_count != 2U ||
+	    remoteproc->registers[SUN55IW3_E906_DSP_PRCM].size < 0x128U ||
+	    remoteproc->registers[SUN55IW3_E906_CFG].size < 0x208U)
+		return DRIVER_ERROR_INVALID;
+	remoteproc->ops = &sun55iw3_e906_ops;
+	return DRIVER_OK;
+}
+
+DT2C_DRIVER_COMPAT("allwinner,sun55iw3-e906");

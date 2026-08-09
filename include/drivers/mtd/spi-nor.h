@@ -104,6 +104,16 @@ typedef struct spi_nor_info {
 	uint8_t opcode_erase_256k;	 /**< Opcode to erase a 256K block of the SPI NOR Flash. */
 } spi_nor_info_t;
 
+#define SPI_NOR_COMPATIBLE "jedec,spi-nor"
+
+typedef struct {
+	int dt_node;
+	uint8_t chip_select;
+	uint32_t max_frequency;
+	sunxi_spi_t *spi;
+	spi_nor_info_t info;
+} spi_nor_t;
+
 /**
  * @enum SPI_NOR_OPS
  * @brief Enumeration of SPI NOR Flash operation opcodes.
@@ -171,7 +181,7 @@ enum SPI_CMD_OPS {
  *          4. If a chip is detected, its ID and capacity are logged to 
  *             inform the user.
  */
-int spi_nor_detect(sunxi_spi_t *spi);
+int spi_nor_detect(spi_nor_t *nor);
 
 /**
  * @brief Reads a block or multiple blocks of data from the SPI NAND flash memory.
@@ -201,7 +211,8 @@ int spi_nor_detect(sunxi_spi_t *spi);
  * exceeds the maximum read length (0x7FFFFFFF bytes), it adjusts the size of 
  * each read operation accordingly.
  */
-uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uint32_t blk_cnt);
+uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf,
+			    uint32_t blk_no, uint32_t blk_cnt);
 
 /**
  * @brief Reads data from the SPI NOR flash memory.
@@ -228,7 +239,8 @@ uint32_t spi_nor_read_block(sunxi_spi_t *spi, uint8_t *buf, uint32_t blk_no, uin
  *          as many complete blocks as possible before potentially reading 
  *          another partial block at the end.
  */
-uint32_t spi_nor_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen);
+uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf,
+		      uint32_t addr, uint32_t rxlen);
 
 #ifdef __cplusplus
 }
