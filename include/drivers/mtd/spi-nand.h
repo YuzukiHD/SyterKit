@@ -44,13 +44,23 @@ typedef struct {
 	spi_io_mode_t mode;		  /**< I/O mode used for communication (assumes the existence of a spi_io_mode_t type). */
 } spi_nand_info_t;
 
+#define SPI_NAND_COMPATIBLE "spi-nand"
+
+typedef struct {
+	int dt_node;
+	uint8_t chip_select;
+	uint32_t max_frequency;
+	sunxi_spi_t *spi;
+	spi_nand_info_t info;
+} spi_nand_t;
+
 /**
  * @brief Detect and initialize SPI NAND flash.
  *
  * @param spi Pointer to the sunxi_spi_t structure.
  * @return 0 on success, -1 on failure.
  */
-int spi_nand_detect(sunxi_spi_t *spi);
+int spi_nand_detect(spi_nand_t *nand);
 
 /**
  * @brief Read data from SPI NAND flash.
@@ -61,7 +71,8 @@ int spi_nand_detect(sunxi_spi_t *spi);
  * @param rxlen Number of bytes to read.
  * @return Number of bytes read on success, -1 on failure.
  */
-uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen);
+uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf,
+		       uint32_t addr, uint32_t rxlen);
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,14 @@
 	compatible = "syterkit,100ask-t113i";
 
 	aliases {
+		c906 = &c906;
+		ccu0 = &ccu0;
 		dma0 = &dma0;
+		dram0 = &dram0;
+		hifi4 = &hifi4;
+		mmc0 = &mmc0;
+		rtc0 = &rtc0;
+		sid0 = &sid0;
 		spi0 = &spi0;
 	};
 
@@ -18,7 +25,55 @@
 		stdout-path = &uart0;
 	};
 
-	pinctrl {
+	ccu0: clock-controller@2001000 {
+		compatible = "allwinner,sun8iw20-ccu";
+		reg = <0x02001000 0x1000>;
+		reg-names = "ccu";
+		status = "okay";
+	};
+
+	dram_memory: memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x80000000>;
+	};
+
+	dram0: dram-controller {
+		compatible = "allwinner,sun8iw20-dram";
+		allwinner,dram-memory = <&dram_memory>;
+		reg =
+			<0x02001000 0x1000>,
+			<0x03102000 0x1000>,
+			<0x03103000 0x1000>,
+			<0x03000000 0x1000>,
+			<0x03006000 0x1000>,
+			<0x07000400 0x400>,
+			<0x07010000 0x400>;
+		allwinner,dram-parameters =
+			<792 3 0x007b7bfb 1 0x000010d2 0>,
+			<0x00001c70 0x00000042 0x00000018 0 0x004a2195 0x02423190>,
+			<0x0008b061 0xb4787896 0 0x48484848 0x00000048 0x1620121e>,
+			<0 0 0 0x00770000 0x00000002 0x34050100>;
+		status = "okay";
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		mmc0_pins: mmc0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_F 2 2>,
+				<SUNXI_GPIO_PORT_F 3 2>,
+				<SUNXI_GPIO_PORT_F 1 2>,
+				<SUNXI_GPIO_PORT_F 0 2>,
+				<SUNXI_GPIO_PORT_F 5 2>,
+				<SUNXI_GPIO_PORT_F 4 2>;
+		};
+
 		spi0_pins: spi0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_C 1 4>,
@@ -36,11 +91,78 @@
 		};
 	};
 
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		mmc0_dma: dma-descriptors@40700000 {
+			reg = <0x40700000 0x100000>;
+			no-map;
+		};
+
+		opensbi_firmware: firmware@41fc0000 {
+			reg = <0x41fc0000 0x00040000>;
+			no-map;
+		};
+
+		u_boot_firmware: firmware@42000000 {
+			reg = <0x42000000 0x01000000>;
+			no-map;
+		};
+
+		remoteproc_firmware: firmware@45000000 {
+			reg = <0x45000000 0x01000000>;
+			no-map;
+		};
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		rtc0: rtc@7090100 {
+			compatible = "allwinner,sunxi-rtc";
+			reg = <0x07090100 0x100>;
+			status = "okay";
+		};
+
+		sid0: efuse@3006000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x03006000 0x400>;
+			allwinner,efuse-hv-switch = <0x07090204>;
+			status = "okay";
+		};
+
+		hifi4: remoteproc@1700000 {
+			compatible = "allwinner,sun8iw20-hifi4";
+			reg = <0x03000000 0x1000>,
+			      <0x01700000 0x1000>,
+			      <0x02001000 0x1000>;
+			firmware-name = "dsp.elf";
+			memory-region = <&remoteproc_firmware>;
+			allwinner,firmware-format = "elf32";
+			allwinner,address-map =
+				<0x10000000 0x1fffffff 0x30000000>,
+				<0x30000000 0x3fffffff 0x10000000>;
+			status = "okay";
+		};
+
+		c906: remoteproc@6010000 {
+			compatible = "allwinner,sun8iw20-c906";
+			reg = <0x02001000 0x1000>,
+			      <0x06010000 0x1000>;
+			firmware-name = "c906.elf";
+			memory-region = <&remoteproc_firmware>;
+			allwinner,firmware-format = "elf64";
+			allwinner,auxiliary-firmware-names =
+				"fw_jump.bin", "u-boot.bin";
+			allwinner,auxiliary-memory-regions =
+				<&opensbi_firmware>, <&u_boot_firmware>;
+			status = "okay";
+		};
 
 		dma0: dma-controller@3002000 {
 			compatible = "allwinner,sunxi-dma";
@@ -49,6 +171,25 @@
 			allwinner,mbus-clock-gate = <0x02001804 0>;
 			allwinner,clock-gate = <0x0200170c 0>;
 			allwinner,reset = <0x0200170c 16>;
+			status = "okay";
+		};
+
+		mmc0: mmc@4020000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <0x04020000 0x1000>;
+			label = "sdhci0";
+			allwinner,mmc-id = <0>;
+			bus-width = <4>;
+			max-frequency = <50000000>;
+			memory-region = <&mmc0_dma>;
+			allwinner,clock-gate = <0x0200184c 0>;
+			allwinner,reset = <0x0200184c 16>;
+			allwinner,module-clock =
+				<0x02001830 8 0 1>;
+			allwinner,clock-source-rates =
+				<24000000 300000000 600000000 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc0_pins>;
 			status = "okay";
 		};
 

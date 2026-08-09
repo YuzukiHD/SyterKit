@@ -1,0 +1,85 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		intc0 = &gic0;
+		intc-disabled = &gic_disabled;
+		intc-short-dist = &gic_short_dist;
+		intc-short-cpu = &gic_short_cpu;
+		intc-too-few-irqs = &gic_too_few_irqs;
+		intc-too-many-irqs = &gic_too_many_irqs;
+		intc-wrong-compatible = &gic_wrong_compatible;
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		gic_disabled: interrupt-controller@7000 {
+			compatible = "arm,gic-400";
+			reg = <0x7000 0x1000>, <0x9000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <223>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		gic0: interrupt-controller@1000 {
+			compatible = "arm,gic-400";
+			reg = <0x1000 0x1000>, <0x3000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <223>;
+			status = "okay";
+		};
+
+		gic_short_dist: interrupt-controller@b000 {
+			compatible = "arm,gic-400";
+			reg = <0xb000 0x800>, <0xc000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <223>;
+		};
+
+		gic_short_cpu: interrupt-controller@e000 {
+			compatible = "arm,gic-400";
+			reg = <0xe000 0x1000>, <0xf000 0x1000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <223>;
+		};
+
+		gic_too_many_irqs: interrupt-controller@11000 {
+			compatible = "arm,gic-400";
+			reg = <0x11000 0x1000>, <0x13000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <257>;
+		};
+
+		gic_too_few_irqs: interrupt-controller@14000 {
+			compatible = "arm,gic-400";
+			reg = <0x14000 0x1000>, <0x15000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <31>;
+		};
+
+		gic_wrong_compatible: interrupt-controller@16000 {
+			compatible = "vendor,other-gic";
+			reg = <0x16000 0x1000>, <0x18000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			allwinner,irq-count = <223>;
+		};
+	};
+};

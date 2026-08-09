@@ -6,11 +6,24 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
+	aliases {
+		uart-disabled = &uart_disabled;
+		uart-primary = &uart1;
+		uart-secondary = &uart2;
+	};
+
 	chosen {
 		stdout-path = &uart1;
 	};
 
-	pinctrl {
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
 		uart0_pins: uart0-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 8 6>,
@@ -29,7 +42,7 @@
 		#size-cells = <1>;
 		status = "disabled";
 
-		uart0: serial@1000 {
+		uart_disabled: serial@1000 {
 			compatible = "allwinner,sunxi-uart";
 			reg = <0x1000 0x400>;
 			current-speed = <115200>;
@@ -61,6 +74,22 @@
 			data-bits = <7>;
 			stop-bits = <2>;
 			parity = "even";
+			status = "okay";
+		};
+
+		uart2: serial@3000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <0x3000 0x400>;
+			current-speed = <57600>;
+			clock-frequency = <40000000>;
+			allwinner,uart-id = <2>;
+			allwinner,clock-gate = <0x4000 2>;
+			allwinner,reset = <0x4000 18>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+			data-bits = <8>;
+			stop-bits = <1>;
+			parity = "odd";
 			status = "okay";
 		};
 	};

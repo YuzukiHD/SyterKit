@@ -97,22 +97,8 @@ typedef struct {
 /** @brief Debug console selected from the board device tree. */
 extern sunxi_serial_t uart_dbg;
 
-#define SERIAL_DEFAULT_CLK_RST_OFFSET(x) (x + 16)
-#define SERIAL_DEFAULT_CLK_GATE_OFFSET(x) (x)
-
-#define SERIAL_DEFAULT_PARENT_CLK (24000000)
-
 /** @brief Compatible string used by the generic Sunxi serial driver. */
 #define SUNXI_SERIAL_COMPATIBLE "allwinner,sunxi-uart"
-
-/* Declare a board-owned serial configuration as an early console device. */
-#define SUNXI_SERIAL_DEVICE(serial_name)                                  \
-	static struct device serial_name##_device = {                      \
-			.name = #serial_name,                                   \
-			.compatible = SUNXI_SERIAL_COMPATIBLE,                   \
-			.platform_data = &(serial_name),                         \
-	};                                                                   \
-	early_builtin_device(serial_name##_device)
 
 /**
  * @brief Initialize the Sunxi serial interface with the specified configuration.

@@ -8,18 +8,22 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 #include <jmp.h>
 #include <mmu.h>
 
 #include <drivers/dram.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
 
 #include "fdt_wrapper.h"
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
 
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -27,33 +31,10 @@
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
-extern sunxi_serial_t uart_dbg;
+static sunxi_dram_t dram;
 
-extern dram_para_t dram_para;
-
-sunxi_serial_t uart_e907 = {
-		.base = 0x02500C00,
-		.id = 3,
-		.baud_rate = UART_BAUDRATE_115200,
-		.dlen = UART_DLEN_8,
-		.stop = UART_STOP_BIT_0,
-		.parity = UART_PARITY_NO,
-		.gpio_pin =
-				{
-						.gpio_tx = {GPIO_PIN(GPIO_PORTE, 0), GPIO_PERIPH_MUX7},
-						.gpio_rx = {GPIO_PIN(GPIO_PORTE, 1), GPIO_PERIPH_MUX7},
-				},
-		.uart_clk =
-				{
-						.gate_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.gate_reg_offset = SERIAL_DEFAULT_CLK_GATE_OFFSET(3),
-						.rst_reg_base = CCU_BASE + CCU_UART_BGR_REG,
-						.rst_reg_offset = SERIAL_DEFAULT_CLK_RST_OFFSET(3),
-						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
-				},
-};
-
-extern sdhci_t sdhci0;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -153,19 +134,33 @@ static int load_sdcard(image_info_t *image) {
 
 
 int main(void) {
+	sunxi_ccu_t ccu;
 	/* Initialize UART debug interface */
 
 	/* Print boot screen */
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 
 	/* Initialize clock */
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	/* Initialize DRAM */
-	sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	/* Print clock information */
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	/* Clear image structure */
 	memset(&image, 0, sizeof(image_info_t));
@@ -181,7 +176,7 @@ int main(void) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 		return 0;
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize SD card */
@@ -189,6 +184,7 @@ int main(void) {
 		printk_error("SMHC: init failed\n");
 		return 0;
 	}
+	disk_set_device(0, &card0);
 
 	/* Load DTB file from SD card */
 	if (load_sdcard(&image) != 0) {

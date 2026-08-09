@@ -16,8 +16,6 @@
 
 #include <drivers/mmc/sdcard.h>
 
-sdmmc_pdata_t card0;
-
 /**
  * @brief Initialize the SD/MMC interface
  *

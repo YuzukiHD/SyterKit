@@ -26,8 +26,8 @@
  *          the actual DRAM size detected for the specific SoC and board configuration.
  * @return Total DRAM size in bytes. Default implementation returns 0.
  */
-uint32_t __attribute__((weak)) sunxi_get_dram_size() {
-	return 0;
+uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram) {
+	return dram != NULL ? dram->size : 0U;
 }
 
 /**
@@ -40,14 +40,6 @@ uint32_t __attribute__((weak)) sunxi_get_dram_size() {
  *             platform implementation.
  * @return 0 on success, non-zero error code on failure. Default implementation returns 0.
  */
-uint32_t __attribute__((weak)) sunxi_dram_init(void *para) {
-	return 0;
-}
-
-uint32_t __attribute__((weak))
-sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
-			 axp_pmu_t *secondary) {
-	(void) primary;
-	(void) secondary;
-	return sunxi_dram_init(para);
+uint32_t __attribute__((weak)) sunxi_dram_init(sunxi_dram_t *dram) {
+	return dram != NULL ? dram->size : 0U;
 }

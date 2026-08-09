@@ -117,9 +117,6 @@ struct sunxi_dma {
 
 #define SUNXI_DMA_COMPATIBLE "allwinner,sunxi-dma"
 
-#define DMA_DEFAULT_CLK_RST_OFFSET (16)
-#define DMA_DEFAULT_CLK_GATE_OFFSET (0)
-
 /**
  * @brief Initialize the DMA subsystem.
  */

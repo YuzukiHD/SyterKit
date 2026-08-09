@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -23,20 +24,24 @@
 #include <drivers/reg/reg-ncat.h>
 #include <drivers/clk.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
+#include <drivers/remoteproc.h>
 #include <drivers/rtc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
 #include <dt-compatible/dma-dt.h>
+#include <dt-compatible/spi-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdhci.h>
 #include <uart.h>
 
 #define CONFIG_HEAP_BASE (0x40800000)
@@ -46,59 +51,20 @@ extern sunxi_serial_t uart_dbg;
 
 
 
-extern uint32_t dram_para[32];
 
 extern void set_rpio_power_mode(void);
 
-extern void rtc_set_vccio_det_spare(void);
-
-sunxi_spi_t sunxi_spi0_lcd = {
-		.base = SUNXI_R_SPI_BASE,
-		.id = 0,
-		.clk_rate = 75 * 1000 * 1000,
-		.gpio =
-				{
-						.gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
-						.gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
-						.gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
-				},
-		.spi_clk =
-				{
-						.spi_clock_cfg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_CLK_REG,
-						.spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
-						.spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
-				},
-		.parent_clk_reg =
-				{
-						.rst_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-						.rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
-						.gate_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
-						.parent_clk = 300000000,
-				},
-};
-
-static gpio_mux_t lcd_dc_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 13),
-		.mux = GPIO_OUTPUT,
-};
-
-static gpio_mux_t lcd_res_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 9),
-		.mux = GPIO_OUTPUT,
-};
-
-static gpio_mux_t lcd_blk_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 8),
-		.mux = GPIO_OUTPUT,
-};
+static sunxi_spi_t sunxi_spi0_lcd;
+static gpio_mux_t lcd_dc_pins;
+static gpio_mux_t lcd_res_pins;
+static gpio_mux_t lcd_blk_pins;
 
 static void LCD_Set_DC(uint8_t val) {
-	sunxi_gpio_set_value(lcd_dc_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_dc_pins, val);
 }
 
 static void LCD_Set_RES(uint8_t val) {
-	sunxi_gpio_set_value(lcd_res_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_res_pins, val);
 }
 
 static void LCD_Write_Bus(uint8_t dat) {
@@ -239,25 +205,45 @@ void LCD_Fill_All(uint16_t color) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
 	sunxi_dma_t dma;
 	sunxi_i2c_t i2c;
+	sunxi_remoteproc_t e906;
+	int spi_lcd_node;
 
 	show_banner();
+	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
+		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		return -1;
+	}
+	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
 	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
 	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK ||
+	    spi_lcd_node < 0 ||
+	    sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, &dma) != DRIVER_OK ||
+	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node,
+					 "allwinner,lcd-dc-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node,
+					 "allwinner,lcd-reset-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node,
+					 "allwinner,lcd-backlight-gpio")) {
+		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
 
-	rtc_set_vccio_det_spare();
+	sunxi_clk_dump(&ccu);
 
 	set_rpio_power_mode();
 
@@ -280,12 +266,19 @@ int main(void) {
 	pmu_axp2202_dump(&primary_pmu);
 	pmu_axp1530_dump(&secondary_pmu);
 
-	enable_sram_a3();
+	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
+		printk_error("RISC-V E906: reset failed\n");
+		return -1;
+	}
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
@@ -294,16 +287,16 @@ int main(void) {
 
 	sunxi_nsi_init();
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
-	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
-	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
-	sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
+	sunxi_gpio_init(&lcd_dc_pins);
+	sunxi_gpio_init(&lcd_res_pins);
+	sunxi_gpio_init(&lcd_blk_pins);
 
 
-	sunxi_spi0_lcd.dma_handle = &dma;
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
+		return -1;
 	}
 
 	LCD_Init();
@@ -312,7 +305,7 @@ int main(void) {
 
 	LCD_Fill_All(0xFFFF);
 
-	sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
+	sunxi_gpio_set_value(&lcd_blk_pins, 1);
 
 	mdelay(100);
 

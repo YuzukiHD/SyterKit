@@ -11,12 +11,14 @@
 #include <common.h>
 #include <log.h>
 
+#include <driver.h>
 #include <drivers/clk.h>
 #include <drivers/dma.h>
 #include <drivers/gpio.h>
 
 #include <drivers/mtd/spi-nand.h>
 #include <drivers/spi.h>
+#include <dt2c/driver.h>
 
 enum {
 	OPCODE_READ_ID = 0x9f,
@@ -143,15 +145,15 @@ static const spi_nand_info_t spi_nand_infos[] = {
 		{"XT26G01C", {.mfr = SPI_NAND_MFR_XTX, .dev = 0x11, 1}, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX},
 };
 
-static spi_nand_info_t info; /* Static variable to store SPI NAND information */
-
 /**
  * @brief Retrieve SPI NAND information.
  *
  * @param spi Pointer to the sunxi_spi_t structure.
  * @return 0 on success, -1 on failure.
  */
-static int spi_nand_info(sunxi_spi_t *spi) {
+static int spi_nand_info(spi_nand_t *nand) {
+	spi_nand_info_t *info = &nand->info;
+	sunxi_spi_t *spi = nand->spi;
 	spi_nand_info_t *info_table; /* Pointer to the SPI NAND information table */
 	spi_nand_id_t id;			 /* Structure to store the SPI NAND ID */
 	uint8_t tx[2];				 /* Transmit buffer */
@@ -184,15 +186,15 @@ static int spi_nand_info(sunxi_spi_t *spi) {
 		/* Check if the manufacturer ID and device ID match the current info table entry */
 		if (info_table->id.mfr == id.mfr && info_table->id.dev == id.dev) {
 			/* If matched, store the SPI NAND information */
-			info.name = info_table->name;
-			info.id = info_table->id;
-			info.page_size = info_table->page_size;
-			info.spare_size = info_table->spare_size;
-			info.pages_per_block = info_table->pages_per_block;
-			info.blocks_per_die = info_table->blocks_per_die;
-			info.planes_per_die = info_table->planes_per_die;
-			info.ndies = info_table->ndies;
-			info.mode = info_table->mode;
+			info->name = info_table->name;
+			info->id = info_table->id;
+			info->page_size = info_table->page_size;
+			info->spare_size = info_table->spare_size;
+			info->pages_per_block = info_table->pages_per_block;
+			info->blocks_per_die = info_table->blocks_per_die;
+			info->planes_per_die = info_table->planes_per_die;
+			info->ndies = info_table->ndies;
+			info->mode = info_table->mode;
 			return 0; /* Return success */
 		}
 	}
@@ -223,15 +225,15 @@ static int spi_nand_info(sunxi_spi_t *spi) {
 		/* Check if the manufacturer ID and device ID match the current info table entry */
 		if (info_table->id.mfr == id.mfr && info_table->id.dev == id.dev) {
 			/* If matched, store the SPI NAND information */
-			info.name = info_table->name;
-			info.id = info_table->id;
-			info.page_size = info_table->page_size;
-			info.spare_size = info_table->spare_size;
-			info.pages_per_block = info_table->pages_per_block;
-			info.blocks_per_die = info_table->blocks_per_die;
-			info.planes_per_die = info_table->planes_per_die;
-			info.ndies = info_table->ndies;
-			info.mode = info_table->mode;
+			info->name = info_table->name;
+			info->id = info_table->id;
+			info->page_size = info_table->page_size;
+			info->spare_size = info_table->spare_size;
+			info->pages_per_block = info_table->pages_per_block;
+			info->blocks_per_die = info_table->blocks_per_die;
+			info->planes_per_die = info_table->planes_per_die;
+			info->ndies = info_table->ndies;
+			info->mode = info_table->mode;
 			return 0; /* Return success */
 		}
 	}
@@ -339,21 +341,37 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi) {
  * @param spi Pointer to the sunxi_spi_t structure.
  * @return 0 on success, -1 on failure.
  */
-int spi_nand_detect(sunxi_spi_t *spi) {
+static int spi_nand_select(spi_nand_t *nand) {
+	if (nand == NULL || nand->spi == NULL || nand->max_frequency == 0U ||
+	    sunxi_spi_select(nand->spi, nand->chip_select) != 0)
+		return -1;
+	if (nand->spi->clk_rate != nand->max_frequency)
+		return sunxi_spi_update_clk(nand->spi, nand->max_frequency);
+	return 0;
+}
+
+int spi_nand_detect(spi_nand_t *nand) {
+	spi_nand_info_t *info;
+	sunxi_spi_t *spi;
 	uint8_t val; /* Configuration value */
 
+	if (spi_nand_select(nand) != 0)
+		return -1;
+	info = &nand->info;
+	spi = nand->spi;
+	memset(info, 0, sizeof(*info));
 	spi_nand_reset(spi);
 	if (!spi_nand_wait_while_busy(spi))
 		return -1;
 
-	if (spi_nand_info(spi) == 0) {
+	if (spi_nand_info(nand) == 0) {
 		if ((spi_nand_get_config(spi, CONFIG_ADDR_PROTECT, &val) == 0) && (val != 0x0)) {
 			spi_nand_set_config(spi, CONFIG_ADDR_PROTECT, 0x0);
 			spi_nand_wait_while_busy(spi);
 		}
 
 		// Disable buffer mode on Winbond (enable continuous)
-		if (info.id.mfr == (uint8_t) SPI_NAND_MFR_WINBOND) {
+		if (info->id.mfr == (uint8_t) SPI_NAND_MFR_WINBOND) {
 			if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && (val != 0x0)) {
 				val &= ~CONFIG_POS_BUF;
 				spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
@@ -361,7 +379,7 @@ int spi_nand_detect(sunxi_spi_t *spi) {
 			}
 		}
 
-		if (info.id.mfr == (uint8_t) SPI_NAND_MFR_GIGADEVICE || info.id.mfr == (uint8_t) SPI_NAND_MFR_FORESEE || info.id.mfr == (uint8_t) SPI_NAND_MFR_XTX) {
+		if (info->id.mfr == (uint8_t) SPI_NAND_MFR_GIGADEVICE || info->id.mfr == (uint8_t) SPI_NAND_MFR_FORESEE || info->id.mfr == (uint8_t) SPI_NAND_MFR_XTX) {
 			if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
 				printk_debug("SPI-NAND: enable Quad mode\n");
 				val |= (1 << 0);
@@ -370,7 +388,7 @@ int spi_nand_detect(sunxi_spi_t *spi) {
 			}
 		}
 
-		printk_info("SPI-NAND: %s detected\n", info.name);
+		printk_info("SPI-NAND: %s detected\n", info->name);
 		
 		return 0; /* Return success */
 	}
@@ -386,11 +404,13 @@ int spi_nand_detect(sunxi_spi_t *spi) {
  * @param offset Offset of the page to load.
  * @return 0 on success, -1 on failure.
  */
-static int spi_nand_load_page(sunxi_spi_t *spi, uint32_t offset) {
+static int spi_nand_load_page(spi_nand_t *nand, uint32_t offset) {
+	const spi_nand_info_t *info = &nand->info;
+	sunxi_spi_t *spi = nand->spi;
 	uint32_t pa;   /* Page address */
 	uint8_t tx[4]; /* Transmit buffer */
 
-	pa = offset / info.page_size; /* Calculate page address */
+	pa = offset / info->page_size; /* Calculate page address */
 
 	tx[0] = OPCODE_READ_PAGE;	  /* Command to read page */
 	tx[1] = (uint8_t) (pa >> 16); /* High byte of page address */
@@ -412,7 +432,16 @@ static int spi_nand_load_page(sunxi_spi_t *spi, uint32_t offset) {
  * @param rxlen Number of bytes to read.
  * @return Number of bytes read on success, -1 on failure.
  */
-uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t rxlen) {
+uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf,
+		       uint32_t addr, uint32_t rxlen) {
+	const spi_nand_info_t *info;
+	sunxi_spi_t *spi;
+
+	if (buf == NULL || spi_nand_select(nand) != 0 ||
+	    nand->info.page_size == 0U)
+		return 0U;
+	info = &nand->info;
+	spi = nand->spi;
 	uint32_t address = addr; /* Current address */
 	uint32_t cnt = rxlen;	 /* Remaining bytes to read */
 	uint32_t n;				 /* Number of bytes to read in each iteration */
@@ -422,7 +451,7 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 	uint8_t tx[6];			 /* Transmit buffer */
 
 	int read_opcode = OPCODE_READ; /* Read opcode */
-	switch (info.mode) {
+	switch (info->mode) {
 		case SPI_IO_SINGLE:
 			read_opcode = OPCODE_READ;
 			break;
@@ -441,24 +470,24 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 			return -1;
 	};
 
-	if (addr % info.page_size) {
+	if (addr % info->page_size) {
 		printk_error("spi_nand: address is not page-aligned\n");
 		return -1;
 	}
 
-	if (info.id.mfr == SPI_NAND_MFR_GIGADEVICE || info.id.mfr == SPI_NAND_MFR_FORESEE || info.id.mfr == SPI_NAND_MFR_XTX) {
+	if (info->id.mfr == SPI_NAND_MFR_GIGADEVICE || info->id.mfr == SPI_NAND_MFR_FORESEE || info->id.mfr == SPI_NAND_MFR_XTX) {
 		while (cnt > 0) {
-			ca = address & (info.page_size - 1);
-			n = cnt > (info.page_size - ca) ? (info.page_size - ca) : cnt;
+			ca = address & (info->page_size - 1);
+			n = cnt > (info->page_size - ca) ? (info->page_size - ca) : cnt;
 
-			spi_nand_load_page(spi, address);
+			spi_nand_load_page(nand, address);
 
 			tx[0] = read_opcode;
 			tx[1] = (uint8_t) (ca >> 8);
 			tx[2] = (uint8_t) (ca >> 0);
 			tx[3] = 0x0;
 
-			sunxi_spi_transfer(spi, info.mode, tx, 4, buf, n);
+			sunxi_spi_transfer(spi, info->mode, tx, 4, buf, n);
 
 			address += n;
 			buf += n;
@@ -466,15 +495,15 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 			cnt -= n;
 		}
 	} else {
-		spi_nand_load_page(spi, addr);
+		spi_nand_load_page(nand, addr);
 
 		// With Winbond, we use continuous mode which has 1 more dummy
 		// This allows us to not load each page
-		if (info.id.mfr == SPI_NAND_MFR_WINBOND) {
+		if (info->id.mfr == SPI_NAND_MFR_WINBOND) {
 			txlen++;
 		}
 
-		ca = address & (info.page_size - 1);
+		ca = address & (info->page_size - 1);
 
 		tx[0] = read_opcode;
 		tx[1] = (uint8_t) (ca >> 8);
@@ -482,8 +511,10 @@ uint32_t spi_nand_read(sunxi_spi_t *spi, uint8_t *buf, uint32_t addr, uint32_t r
 		tx[3] = 0x0;
 		tx[4] = 0x0;
 
-		sunxi_spi_transfer(spi, info.mode, tx, txlen, buf, rxlen);
+		sunxi_spi_transfer(spi, info->mode, tx, txlen, buf, rxlen);
 	}
 
 	return len; /* Return total number of bytes read */
 }
+
+DT2C_DRIVER_COMPAT("spi-nand");

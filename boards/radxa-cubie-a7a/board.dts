@@ -10,7 +10,12 @@
 	compatible = "syterkit,radxa-cubie-a7a";
 
 	aliases {
+		ccu0 = &ccu0;
+		sid0 = &sid0;
+		dram0 = &dram0;
+		gpio0 = &pio;
 		i2c0 = &i2c0;
+		mmc0 = &mmc0;
 		pmu0 = &pmu0;
 	};
 
@@ -18,11 +23,43 @@
 		stdout-path = &uart0;
 	};
 
-	pinctrl {
-		i2c0_pins: i2c0-pins {
+	ccu0: clock-controller@2002000 {
+		compatible = "allwinner,sun60iw2-ccu";
+		reg = <0x02002000 0x1000>,
+		      <0x08870000 0x4000>,
+		      <0x07090000 0x1000>;
+		reg-names = "ccu", "cpu-pll", "rtc";
+		status = "okay";
+	};
+
+	dram0: dram-controller {
+		compatible = "allwinner,sun60iw2-dram";
+		allwinner,dram-parameters =
+			<2400 9 0x0e0e0e0e 0x0f0f0f0f>,
+			<0xec030e0f 0 0xa10a 0x1001>,
+			<0 0 0 0x6 0 0 0 0x12>,
+			<0x44 0 0x34 0 0x06 0 0x4040 0>,
+			<0x0170b070 0x3800 0x3514 0x325f0000>,
+			<0 0 0x10061 0>;
+		allwinner,primary-pmu = <&pmu0>;
+		status = "okay";
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		mmc0_pins: mmc0-pins {
+			/* Existing board data does not define CLK or D3 routing. */
 			allwinner,pins =
-				<SUNXI_GPIO_PORT_L 0 2>,
-				<SUNXI_GPIO_PORT_L 1 2>;
+				<SUNXI_GPIO_PORT_F 3 2>,
+				<SUNXI_GPIO_PORT_F 1 2>,
+				<SUNXI_GPIO_PORT_F 0 2>,
+				<SUNXI_GPIO_PORT_F 5 2>;
 		};
 
 		uart0_pins: uart0-pins {
@@ -32,11 +69,64 @@
 		};
 	};
 
+	r_pio: pinctrl@7025000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x07025000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		mmc0_dma: dma-descriptors@70080000 {
+			reg = <0x70080000 0x100000>;
+			no-map;
+		};
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		sid0: efuse@3006000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x03006000 0x400>;
+			status = "okay";
+		};
+
+		mmc0: mmc@4020000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <0x04020000 0x1000>;
+			label = "sdhci0";
+			allwinner,mmc-id = <0>;
+			bus-width = <4>;
+			max-frequency = <50000000>;
+			memory-region = <&mmc0_dma>;
+			allwinner,clock-gate = <0x02002d0c 0>;
+			allwinner,reset = <0x02002d0c 16>;
+			allwinner,module-clock =
+				<0x02002d00 8 0 1>;
+			allwinner,clock-source-rates =
+				<24000000 300000000 0 0>;
+			allwinner,card-detect =
+				<&pio SUNXI_GPIO_PORT_F 6 0 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc0_pins>;
+			status = "disabled";
+		};
 
 		i2c0: i2c@7083000 {
 			compatible = "allwinner,sunxi-i2c";

@@ -6,17 +6,18 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
 
 #include <drivers/pmu/axp.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
 
 extern sunxi_serial_t uart_dbg;
-extern uint32_t dram_para[32];
 
 static void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
 				uint32_t voltage) {
@@ -30,6 +31,8 @@ static void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -40,9 +43,14 @@ int main(void) {
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_dump();
+	sunxi_clk_init(&ccu);
+
+	sunxi_clk_dump(&ccu);
 
 	sunxi_i2c_init(&i2c);
 
@@ -55,10 +63,13 @@ int main(void) {
 
 	pmu_axp2202_dump(&pmu);
 
-	printk_info("DRAM: DRAM Size = %dMB\n",
-		    sunxi_dram_init_with_pmu(&dram_para, &pmu, NULL));
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", &pmu, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	int i = 0;
 

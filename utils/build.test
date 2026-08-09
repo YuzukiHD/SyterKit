@@ -95,13 +95,13 @@ test_kconfig_lifecycle() {
 
 	make -C "${srctree}" O="${config_obj}" mrproper
 	make -C "${srctree}" O="${config_obj}" tinyvision_defconfig
-	sed -i '/^# CONFIG_DRIVER_MMC_V2 is not set$/d' "${config_obj}/.config"
+	sed -i '/^# CONFIG_BUILD_TRACE is not set$/d' "${config_obj}/.config"
 	make -C "${srctree}" O="${config_obj}" olddefconfig </dev/null 2>&1 |
 		tee "${lifecycle_log}"
 	if grep -q -E 'Error in reading or end of file|Restart config' "${lifecycle_log}"; then
 		die "olddefconfig prompted for a new symbol"
 	fi
-	grep -Fqx '# CONFIG_DRIVER_MMC_V2 is not set' "${config_obj}/.config" ||
+	grep -Fqx '# CONFIG_BUILD_TRACE is not set' "${config_obj}/.config" ||
 		die "olddefconfig did not restore the default value"
 
 	make -C "${srctree}" O="${config_obj}" savedefconfig
@@ -167,15 +167,12 @@ compile_mmc_host() {
 	make -C "${srctree}" O="${coverage_obj}" mrproper
 	make -C "${srctree}" O="${coverage_obj}" "${board_defconfig}"
 	sed -i -E \
-		-e '/^CONFIG_DRIVER_MMC_(V2|HOST)=y$/d' \
-		-e '/^# CONFIG_DRIVER_MMC_(V2|HOST) is not set$/d' \
+		-e '/^CONFIG_DRIVER_MMC=y$/d' \
+		-e '/^# CONFIG_DRIVER_MMC is not set$/d' \
 		"${coverage_obj}/.config"
-	{
-		printf 'CONFIG_DRIVER_MMC_V2=y\n'
-		printf 'CONFIG_DRIVER_MMC_HOST=y\n'
-	} >> "${coverage_obj}/.config"
+	printf 'CONFIG_DRIVER_MMC=y\n' >> "${coverage_obj}/.config"
 	make -C "${srctree}" O="${coverage_obj}" olddefconfig
-	grep -Fqx 'CONFIG_DRIVER_MMC_HOST=y' "${coverage_obj}/.config" ||
+	grep -Fqx 'CONFIG_DRIVER_MMC=y' "${coverage_obj}/.config" ||
 		die "${name} MMC host coverage configuration was not enabled"
 
 	make -C "${srctree}" O="${coverage_obj}" \

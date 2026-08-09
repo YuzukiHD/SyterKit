@@ -3,16 +3,18 @@
 #ifndef __DT_COMPATIBLE_PINCTRL_DT_H__
 #define __DT_COMPATIBLE_PINCTRL_DT_H__
 
-#include <drivers/gpio.h>
-#include <dt-compatible/dt-common.h>
+#include <dt-compatible/gpio-dt.h>
 
 static inline __attribute__((always_inline)) const dt2c_fdt32_t *
-syterkit_dt_pinctrl_cells(int node, size_t count) {
+syterkit_dt_pinctrl(int node, size_t *count, sunxi_gpio_t *controller) {
 	const dt2c_fdt32_t *pinctrl_cells;
 	const char *pinctrl_name;
+	int controller_node;
 	int length;
 	int pinctrl;
 
+	if (controller == NULL)
+		return NULL;
 	pinctrl_name = (const char *) dt2c_fdt_getprop(
 			DT2C_FDT_COMPILED_TREE, node, "pinctrl-names", &length);
 	if (!syterkit_dt_string_equal(pinctrl_name, length, "default", 7))
@@ -25,25 +27,35 @@ syterkit_dt_pinctrl_cells(int node, size_t count) {
 			dt2c_fdt32_to_cpu(pinctrl_cells[0]));
 	if (pinctrl < 0 || !syterkit_dt_node_available(pinctrl))
 		return NULL;
-	return syterkit_dt_cells(pinctrl, "allwinner,pins", count);
+	controller_node = dt2c_fdt_parent_offset(DT2C_FDT_COMPILED_TREE,
+						  pinctrl);
+	if (sunxi_gpio_dt_read_config(controller, controller_node) != DRIVER_OK)
+		return NULL;
+	pinctrl_cells = (const dt2c_fdt32_t *) dt2c_fdt_getprop(
+			DT2C_FDT_COMPILED_TREE, pinctrl, "allwinner,pins",
+			&length);
+	if (pinctrl_cells == NULL || length <= 0 ||
+	    length % (int) (SUNXI_GPIO_DT_CELLS * sizeof(*pinctrl_cells)) != 0)
+		return NULL;
+	if (count != NULL)
+		*count = (size_t) length / sizeof(*pinctrl_cells);
+	return pinctrl_cells;
+}
+
+static inline __attribute__((always_inline)) const dt2c_fdt32_t *
+syterkit_dt_pinctrl_cells(int node, size_t count,
+			  sunxi_gpio_t *controller) {
+	const dt2c_fdt32_t *cells;
+	size_t actual_count;
+
+	cells = syterkit_dt_pinctrl(node, &actual_count, controller);
+	return cells != NULL && actual_count == count ? cells : NULL;
 }
 
 static inline __attribute__((always_inline)) bool
-syterkit_dt_gpio(const dt2c_fdt32_t *pins, size_t index, gpio_mux_t *gpio) {
-	uint32_t mux;
-	uint32_t pin;
-	uint32_t port;
-
-	if (pins == NULL || gpio == NULL)
-		return false;
-	port = dt2c_fdt32_to_cpu(pins[index]);
-	pin = dt2c_fdt32_to_cpu(pins[index + 1]);
-	mux = dt2c_fdt32_to_cpu(pins[index + 2]);
-	if (port > GPIO_PORTN || pin >= 32U || mux > GPIO_DISABLED)
-		return false;
-	gpio->pin = GPIO_PIN(port, pin);
-	gpio->mux = (uint8_t) mux;
-	return true;
+syterkit_dt_pinctrl_gpio(const dt2c_fdt32_t *pins, size_t index,
+			 const sunxi_gpio_t *controller, gpio_mux_t *gpio) {
+	return sunxi_gpio_dt_read_pin(gpio, controller, pins + index);
 }
 
 #endif /* __DT_COMPATIBLE_PINCTRL_DT_H__ */

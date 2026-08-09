@@ -111,3 +111,11 @@ void invalidate_dcache_range(uint64_t start, uint64_t end) {
 	for (; i < end; i += L1_CACHE_BYTES) asm volatile("dcache.ipa a0");
 	asm volatile("sync.i");
 }
+
+void flush_dcache_all(void) {
+	asm volatile("dcache.call");
+}
+
+void invalidate_dcache_all(void) {
+	asm volatile("dcache.ciall");
+}

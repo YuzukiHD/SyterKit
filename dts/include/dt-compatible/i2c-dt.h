@@ -14,6 +14,7 @@ sunxi_i2c_dt_read_config(sunxi_i2c_t *i2c, int node) {
 	const dt2c_fdt32_t *reg;
 	const dt2c_fdt32_t *reset;
 	const dt2c_fdt32_t *value;
+	sunxi_gpio_t gpio_controller;
 	sunxi_i2c_t config = {0};
 	uint32_t id;
 
@@ -57,9 +58,12 @@ sunxi_i2c_dt_read_config(sunxi_i2c_t *i2c, int node) {
 	    config.i2c_clk.rst_reg_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
-	pins = syterkit_dt_pinctrl_cells(node, 6);
-	if (!syterkit_dt_gpio(pins, 0, &config.gpio.gpio_scl) ||
-	    !syterkit_dt_gpio(pins, 3, &config.gpio.gpio_sda))
+	pins = syterkit_dt_pinctrl_cells(node, 6, &gpio_controller);
+	if (pins == NULL ||
+	    !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller,
+				      &config.gpio.gpio_scl) ||
+	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller,
+				      &config.gpio.gpio_sda))
 		return DRIVER_ERROR_INVALID;
 	config.status = false;
 

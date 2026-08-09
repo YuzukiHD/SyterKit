@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 
 #include <mmu.h>
 #include <common.h>
@@ -15,16 +16,20 @@
 #include <image/image_loader.h>
 
 #include <drivers/dram.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <drivers/dma.h>
 #include <drivers/mtd/spi-nand.h>
 #include <dt-compatible/dma-dt.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
+#include <dt-compatible/spi-nand-dt.h>
 #include <dt-compatible/spi-dt.h>
 
 #include <lib/fdt/libfdt.h>
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -53,10 +58,10 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-extern dram_para_t dram_para;
+static sunxi_dram_t dram;
 
-
-extern sdhci_t sdhci0;
+static sunxi_sdhci_t sdhci0 = {0};
+static sdmmc_pdata_t card0 = {0};
 
 image_info_t image;
 
@@ -150,16 +155,16 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
+static int load_spi_nand(spi_nand_t *nand, image_info_t *image) {
 	linux_zimage_header_t *hdr;
 	unsigned int size;
 	uint64_t start, time;
 
-	if (spi_nand_detect(spi) != 0)
+	if (spi_nand_detect(nand) != 0)
 		return -1;
 
 	/* get dtb size and read */
-	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
+	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
 	if (fdt_check_header(image->of_dest)) {
 		printk_error("SPI-NAND: DTB verification failed\n");
 		return -1;
@@ -168,12 +173,12 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 	size = fdt_totalsize(image->of_dest);
 	printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
 	start = time_us();
-	spi_nand_read(spi, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) size);
+	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) size);
 	time = time_us() - start;
 	printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32) (size / time));
 
 	/* get kernel size and read */
-	spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) sizeof(linux_zimage_header_t));
+	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) sizeof(linux_zimage_header_t));
 	hdr = (linux_zimage_header_t *) image->dest;
 	if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
 		printk_debug("SPI-NAND: zImage verification failed\n");
@@ -182,7 +187,7 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 	size = hdr->end - hdr->start;
 	printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
 	start = time_us();
-	spi_nand_read(spi, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) size);
+	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) size);
 	time = time_us() - start;
 	printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32) (size / time));
 
@@ -191,24 +196,40 @@ int load_spi_nand(sunxi_spi_t *spi, image_info_t *image) {
 
 
 int main(void) {
+	sunxi_ccu_t ccu;
 	sunxi_dma_t dma;
+	spi_nand_t nand;
 	sunxi_spi_t spi;
 
 	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		printk_error("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
-	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK) {
+	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+	    spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
 		printk_error("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_dram_init(&dram_para);
+	sunxi_clk_init(&ccu);
+
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	sunxi_dram_init(&dram);
 
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, unsigned int params);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	memset(&image, 0, sizeof(image_info_t));
 
@@ -221,12 +242,13 @@ int main(void) {
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
 	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
+		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_warning("SMHC: init failed, trying SPI\n");
 		goto _spi;
 	}
+	disk_set_device(0, &card0);
 
 	if (load_sdcard(&image) != 0) {
 		printk(LOG_LEVEL_WARNING, "SMHC: loading failed, trying SPI\n");
@@ -240,7 +262,7 @@ _spi:
 		printk_error("SPI: init failed\n");
 	}
 
-	if (load_spi_nand(&spi, &image) != 0) {
+	if (load_spi_nand(&nand, &image) != 0) {
 		printk_error("SPI-NAND: loading failed\n");
 	}
 

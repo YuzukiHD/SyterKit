@@ -1,45 +1,56 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#ifndef _SYS_CLIC_H_
-#define _SYS_CLIC_H_
+#ifndef __DRIVERS_INTC_CLIC_H__
+#define __DRIVERS_INTC_CLIC_H__
 
-#include <io.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
-#include <common.h>
-#include <log.h>
+#include <drivers/intc/intc.h>
 
-#include <drivers/reg/reg-clic.h>
-#include <drivers/reg/reg-ncat.h>
+#define SUNXI_CLIC_COMPATIBLE "thead,c900-clic"
+#define SUNXI_CLIC_MAX_IRQS 256U
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
-
-#define CLIC_IRQ_NUM (186)
+#endif /* __cplusplus */
 
 typedef enum irq_trigger_type { IRQ_TRIGGER_TYPE_LEVEL,
 								IRQ_TRIGGER_TYPE_EDGE_RISING,
 								IRQ_TRIGGER_TYPE_EDGE_FALLING,
 								IRQ_TRIGGER_TYPE_EDGE_BOTH } irq_trigger_type_t;
 
-typedef struct irq_controller {
-	uint16_t id;
-	uint16_t irq_cnt;
-	uint16_t parent_id;
-	uint16_t irq_id;
-	uint64_t reg_base_addr;
-} irq_controller_t;
+typedef struct sunxi_clic {
+	int dt_node;
+	uintptr_t base;
+	size_t size;
+	uint32_t irq_count;
+	bool initialized;
+	irq_handler_t handlers[SUNXI_CLIC_MAX_IRQS];
+} sunxi_clic_t;
 
 /**
  * @brief Handles the IRQ
  * 
  */
 void do_irq(uint64_t cause);
+
+/**
+ * @brief Initializes a CLIC instance.
+ *
+ * @param clic CLIC instance populated from the static devicetree.
+ * @return 0 on success, or an error code.
+ */
+int sunxi_clic_init(sunxi_clic_t *clic);
+
+/**
+ * @brief Shuts down a CLIC instance.
+ *
+ * @param clic Initialized CLIC instance.
+ * @return 0 on success, or an error code.
+ */
+int sunxi_clic_exit(sunxi_clic_t *clic);
 
 /**
  * @brief Initializes the interrupt mechanism
@@ -57,6 +68,6 @@ int arch_interrupt_exit(void);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif /* __cplusplus */
 
-#endif// _SYS_CLIC_H_
+#endif /* __DRIVERS_INTC_CLIC_H__ */

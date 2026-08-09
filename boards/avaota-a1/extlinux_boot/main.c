@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -19,20 +20,26 @@
 #include <drivers/mmc/sdcard.h>
 #include <drivers/clk.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
-#include <drivers/rtc.h>
+#include <drivers/remoteproc.h>
+#include <dt-compatible/rtc-dt.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
+#include <dt-compatible/sid-dt.h>
 #include <dt-compatible/dma-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdhci.h>
 #include <uart.h>
 
 #include "spi_lcd.c"
@@ -64,15 +71,8 @@
 extern sunxi_serial_t uart_dbg;
 
 
-extern sunxi_sdhci_t sdhci0;
-extern sunxi_sdhci_t sdhci2;
 
-extern uint32_t dram_para[32];
 
-extern char *dram_para_name[32];
-
-extern void enable_sram_a3();
-extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
 extern int sunxi_nsi_init(void);
 extern void gicr_set_waker(void);
@@ -243,9 +243,9 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-void jmp_to_arm64(uint32_t addr) {
+void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr) {
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
-	rtc_set_start_time_ms();
+	rtc_set_start_time_ms(rtc);
 
 	/* set the cpu boot entry addr: */
 	write32(RVBARADDR0_L, addr);
@@ -411,7 +411,8 @@ static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str
 	return mac_address_str;
 }
 
-static int load_extlinux(image_info_t *image, uint32_t dram_size) {
+static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
+			 const sunxi_sid_t *sid) {
 	FATFS fs;
 	FRESULT fret;
 	ext_linux_data_t data = {0};
@@ -502,7 +503,8 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
 	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
-	int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE, ((uint64_t) dram_size * 1024 * 1024));
+	int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE,
+			       (uint64_t) dram->size * 1024 * 1024);
 
 	if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
 		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
@@ -574,15 +576,17 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size) {
 
 	int dram_node = fdt_find_or_add_subnode(image->of_dest, 0, "dram");
 	/* Kernel only need 0: DRAM_CLK, 24: DRAM_DIV */
-	fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[0], dram_para[0]);
-	fdt_setprop_u32(image->of_dest, dram_node, dram_para_name[1], dram_para[24]);
+	fdt_setprop_u32(image->of_dest, dram_node, "dram_para00",
+			dram->parameters[0]);
+	fdt_setprop_u32(image->of_dest, dram_node, "dram_para24",
+			dram->parameters[24]);
 
 	/* Append bootargs mac address */
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+	chip_sid[0] = sunxi_sid_read_sram(sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(sid, 0xcU);
 
 	char mac_address_str[18];
 	char *mac0_address = get_mac_address_from_sid(chip_sid, mac_address_str);
@@ -646,30 +650,51 @@ _error:
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
+	sdmmc_pdata_t emmc_card = {0};
+	sdmmc_pdata_t sd_card = {0};
+	sdmmc_pdata_t *boot_card;
 	sunxi_dma_t dma;
 	sunxi_i2c_t i2c;
+	sunxi_remoteproc_t e906;
+	sunxi_rtc_t rtc;
+	sunxi_sdhci_t emmc;
+	sunxi_sdhci_t sdmmc;
+	sunxi_sid_t sid;
 
 	arm32_dcache_enable();
 	arm32_icache_enable();
 
 	show_banner();
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
+		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
+	    sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK ||
+	    sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
 	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
 	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK ||
+	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK ||
+	    sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
+		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	rtc_set_vccio_det_spare();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_init();
+	sunxi_clk_init(&ccu);
 
 	set_rpio_power_mode();
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	sunxi_i2c_init(&i2c);
 
@@ -694,23 +719,31 @@ int main(void) {
 	pmu_axp2202_dump(&primary_pmu);
 	pmu_axp1530_dump(&secondary_pmu);
 
-	sunxi_clk_set_cpu_pll(1416);
+	sunxi_clk_set_cpu_pll(&ccu, 1416);
 
-	enable_sram_a3();
+	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
+		printk_error("RISC-V E906: reset failed\n");
+		return -1;
+	}
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init((void *) dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 
 	printk_debug("DRAM Size = %dM\n", dram_size);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-	LCD_Init(&dma);
+	if (LCD_Init(&dma) != 0)
+		return -1;
 
 	sunxi_nsi_init();
 
@@ -732,46 +765,55 @@ int main(void) {
 	strcpy(image.splash_filename, CONFIG_SPLASH_FILENAME);
 
 	/* Initialize the SD host controller. */
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+	if (sunxi_sdhci_init(&sdmmc) != 0) {
+		printk_error("SMHC: %s controller init failed\n", sdmmc.name);
 		LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 		goto _fail;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		printk_info("SMHC: %s controller initialized\n", sdmmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&sd_card, &sdmmc) != 0) {
 		printk_warning("SMHC: SDC0 init failed, init SDC2...\n");
 		/* Initialize the SD host controller. */
-		if (sunxi_sdhci_init(&sdhci2) != 0) {
-			printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+		if (sunxi_sdhci_init(&emmc) != 0) {
+			printk_error("SMHC: %s controller init failed\n", emmc.name);
 			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
-			printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+			printk_info("SMHC: %s controller initialized\n", emmc.name);
 		}
 
-		if (sdmmc_init(&card0, &sdhci2) != 0) {
+		if (sdmmc_init(&emmc_card, &emmc) != 0) {
 			printk_warning("SMHC: SDC2 init failed.\n");
 			goto _fail;
 		}
+		boot_card = &emmc_card;
+	} else {
+		boot_card = &sd_card;
 	}
+	disk_set_device(0, boot_card);
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image) != 0) {
 		printk_warning("SMHC: loading failed, try to boot from SDC2\n");
 
-		if (sunxi_sdhci_init(&sdhci2) != 0) {
-			printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+		if (boot_card == &emmc_card) {
+			printk_error("SMHC: loading boot info failed, check your boot media.\n");
+			goto _fail;
+		}
+		if (sunxi_sdhci_init(&emmc) != 0) {
+			printk_error("SMHC: %s controller init failed\n", emmc.name);
 			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
-			if (sdmmc_init(&card0, &sdhci2) != 0) {
+			if (sdmmc_init(&emmc_card, &emmc) != 0) {
 				printk_warning("SMHC: SDC2 init failed.\n");
 				goto _fail;
 			} else {
-				printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+				printk_info("SMHC: %s controller initialized\n", emmc.name);
+				disk_set_device(0, &emmc_card);
 				if (load_sdcard(&image) != 0) {
 					printk_error("SMHC: loading boot info failed, check your boot media.\n");
 					goto _fail;
@@ -782,7 +824,7 @@ int main(void) {
 
 	LCD_Open_BLK();
 
-	if (load_extlinux(&image, dram_size) != 0) {
+	if (load_extlinux(&image, &dram, &sid) != 0) {
 		printk_error("EXTLINUX: load extlinux failed\n");
 		LCD_ShowString(0, 92, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 		goto _fail;
@@ -810,7 +852,7 @@ int main(void) {
 
 	gicr_set_waker();
 
-	jmp_to_arm64(CONFIG_BL31_LOAD_ADDR);
+	jmp_to_arm64(&rtc, CONFIG_BL31_LOAD_ADDR);
 
 	printk_info("Back to SyterKit\n");
 

@@ -1,0 +1,56 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner MMC host controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-mmc
+  reg:
+    type: reg
+  label:
+    type: string
+  allwinner,mmc-id:
+    type: uint32
+  bus-width:
+    type: uint32
+    enum: [1, 4, 8]
+  max-frequency:
+    type: uint32
+  non-removable:
+    type: boolean
+  memory-region:
+    type: phandle
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  allwinner,module-clock:
+    type: uint32-array
+    description: Module clock register, N offset, M offset, and default mux source
+  allwinner,clock-source-rates:
+    type: uint32-array
+    description: Clock rates in Hz for mux sources 0 through 3; zero marks an unsupported source
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  allwinner,card-detect:
+    type: phandle-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - allwinner,mmc-id
+  - bus-width
+  - max-frequency
+  - memory-region
+  - allwinner,clock-gate
+  - allwinner,reset
+  - allwinner,module-clock
+  - allwinner,clock-source-rates
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true

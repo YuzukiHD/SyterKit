@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
+obj-y += sid.o
 obj-$(CONFIG_SOC_SUN20IW1) += sid-sun20iw1.o
+obj-$(CONFIG_SOC_SUN252IW1) += sid-sun252iw1.o
 obj-$(CONFIG_SOC_SUN300IW1) += sid-sun300iw1.o
 obj-$(CONFIG_SOC_SUN50IW9) += sid-sun50iw9.o
 obj-$(CONFIG_SOC_SUN50IW10) += sid-sun50iw10.o
@@ -9,3 +11,4 @@ obj-$(CONFIG_SOC_SUN60IW2) += sid-sun60iw2.o
 obj-$(CONFIG_SOC_SUN65IW1) += sid-sun65iw1.o
 obj-$(CONFIG_SOC_SUN8IW20) += sid-sun8iw20.o
 obj-$(CONFIG_SOC_SUN8IW21) += sid-sun8iw21.o
+obj-$(CONFIG_SOC_SUN8IW22) += sid-sun8iw22.o

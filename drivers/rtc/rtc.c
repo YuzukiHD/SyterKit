@@ -13,8 +13,8 @@
  */
 
 #include <io.h>
+#include <limits.h>
 #include <log.h>
-#include <mmu.h>
 #include <cache.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -25,7 +25,15 @@
 
 #include <drivers/reg/reg-ncat.h>
 
+#include <driver.h>
 #include <drivers/rtc.h>
+#include <dt2c/driver.h>
+
+static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {
+	return rtc != NULL && rtc->data_base != 0U && index >= 0 &&
+	       (uint32_t) index <= (UINT32_MAX / sizeof(uint32_t)) &&
+	       ((uint32_t) index + 1U) * sizeof(uint32_t) <= rtc->data_size;
+}
 
 /**
  * @brief Write data to an RTC register
@@ -33,8 +41,10 @@
  * @param index The index of the RTC register to write data to
  * @param val The value to write to the RTC register
  */
-void rtc_write_data(int index, uint32_t val) {
-	writel(val, SUNXI_RTC_DATA_BASE + index * 4);
+void rtc_write_data(const sunxi_rtc_t *rtc, int index, uint32_t val) {
+	if (!rtc_data_index_valid(rtc, index))
+		return;
+	writel(val, rtc->data_base + (uintptr_t) index * sizeof(uint32_t));
 }
 
 /**
@@ -43,8 +53,10 @@ void rtc_write_data(int index, uint32_t val) {
  * @param index The index of the RTC register to read data from
  * @return The value read from the RTC register
  */
-uint32_t rtc_read_data(int index) {
-	return readl(SUNXI_RTC_DATA_BASE + index * 4);
+uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index) {
+	if (!rtc_data_index_valid(rtc, index))
+		return 0U;
+	return readl(rtc->data_base + (uintptr_t) index * sizeof(uint32_t));
 }
 
 /**
@@ -53,11 +65,13 @@ uint32_t rtc_read_data(int index) {
  *          should enter Fastboot mode. The function verifies the write operation
  *          was successful by reading back the value.
  */
-void rtc_set_fel_flag(void) {
+void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
+	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
+		return;
 	do {
-		rtc_write_data(RTC_FEL_INDEX, EFEX_FLAG);
+		rtc_write_data(rtc, RTC_FEL_INDEX, EFEX_FLAG);
 		data_sync_barrier();
-	} while (rtc_read_data(RTC_FEL_INDEX) != EFEX_FLAG);
+	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != EFEX_FLAG);
 }
 
 /**
@@ -66,12 +80,15 @@ void rtc_set_fel_flag(void) {
  *          This value can be used for timing operations or to determine the system
  *          uptime. The function verifies the write operation was successful.
  */
-void rtc_set_start_time_ms(void) {
+void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
 	uint32_t init_time_ms = get_init_timestamp();
+
+	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
+		return;
 	do {
-		rtc_write_data(RTC_FEL_INDEX, init_time_ms);
+		rtc_write_data(rtc, RTC_FEL_INDEX, init_time_ms);
 		data_sync_barrier();
-	} while (rtc_read_data(RTC_FEL_INDEX) != init_time_ms);
+	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != init_time_ms);
 }
 
 /**
@@ -83,11 +100,13 @@ void rtc_set_start_time_ms(void) {
  * 
  * @note This function continuously attempts to set DRAM parameters until it succeeds.
  */
-void rtc_set_dram_para(uint32_t dram_para_addr) {
+void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr) {
+	if (!rtc_data_index_valid(rtc, RTC_DRAM_PARA_ADDR))
+		return;
 	do {
-		rtc_write_data(RTC_DRAM_PARA_ADDR, dram_para_addr);
+		rtc_write_data(rtc, RTC_DRAM_PARA_ADDR, dram_para_addr);
 		data_sync_barrier();
-	} while (rtc_read_data(RTC_DRAM_PARA_ADDR) != dram_para_addr);
+	} while (rtc_read_data(rtc, RTC_DRAM_PARA_ADDR) != dram_para_addr);
 }
 
 /**
@@ -95,8 +114,8 @@ void rtc_set_dram_para(uint32_t dram_para_addr) {
  * @details Reads the FEL flag from the RTC register and returns whether it is set.
  * @return 1 if the FEL flag is set, 0 otherwise
  */
-uint32_t rtc_probe_fel_flag(void) {
-	return rtc_read_data(RTC_FEL_INDEX) == EFEX_FLAG ? 1 : 0;
+uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
+	return rtc_read_data(rtc, RTC_FEL_INDEX) == EFEX_FLAG ? 1U : 0U;
 }
 
 /**
@@ -104,11 +123,13 @@ uint32_t rtc_probe_fel_flag(void) {
  * @details Clears the FEL flag in the RTC register after it has been processed.
  *          The function verifies the write operation was successful by reading back the value.
  */
-void rtc_clear_fel_flag(void) {
+void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
+	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
+		return;
 	do {
-		rtc_write_data(RTC_FEL_INDEX, 0);
+		rtc_write_data(rtc, RTC_FEL_INDEX, 0U);
 		data_sync_barrier();
-	} while (rtc_read_data(RTC_FEL_INDEX) != 0);
+	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != 0U);
 }
 
 /**
@@ -118,11 +139,13 @@ void rtc_clear_fel_flag(void) {
  * @param flag The boot mode flag value to set
  * @return 0 if successful
  */
-int rtc_set_bootmode_flag(uint8_t flag) {
+int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag) {
+	if (!rtc_data_index_valid(rtc, RTC_BOOT_INDEX))
+		return -1;
 	do {
-		rtc_write_data(RTC_BOOT_INDEX, flag);
+		rtc_write_data(rtc, RTC_BOOT_INDEX, flag);
 		data_sync_barrier();
-	} while (rtc_read_data(RTC_BOOT_INDEX) != flag);
+	} while (rtc_read_data(rtc, RTC_BOOT_INDEX) != flag);
 
 	return 0;
 }
@@ -134,11 +157,13 @@ int rtc_set_bootmode_flag(uint8_t flag) {
  *          with how the kernel reads this value.
  * @return The value of the boot mode flag
  */
-int rtc_get_bootmode_flag(void) {
+int rtc_get_bootmode_flag(const sunxi_rtc_t *rtc) {
 	uint32_t boot_flag;
 
 	/* operation should be same with kernel write rtc */
-	boot_flag = rtc_read_data(RTC_BOOT_INDEX);
+	boot_flag = rtc_read_data(rtc, RTC_BOOT_INDEX);
 
 	return boot_flag;
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-rtc");

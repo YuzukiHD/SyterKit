@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 config DRIVER_USB
-	bool "USB controller support"
-
-source "drivers/usb/module/Kconfig"
+	bool "USB host detection support"
+	depends on DRIVER_GIC || DRIVER_CLIC

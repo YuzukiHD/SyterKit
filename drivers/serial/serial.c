@@ -26,8 +26,6 @@
 
 #include <drivers/clk.h>
 
-DT2C_DRIVER_COMPAT("allwinner,sunxi-uart");
-
 /**
  * @brief Initialize the UART clock
  * 
@@ -100,8 +98,8 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
 	serial_reg->fcr = 0x7;
 
 	/* Config uart TXD and RXD pins */
-	sunxi_gpio_init(uart->gpio_pin.gpio_tx.pin, uart->gpio_pin.gpio_tx.mux);
-	sunxi_gpio_init(uart->gpio_pin.gpio_rx.pin, uart->gpio_pin.gpio_rx.mux);
+	sunxi_gpio_init(&uart->gpio_pin.gpio_tx);
+	sunxi_gpio_init(&uart->gpio_pin.gpio_rx);
 }
 
 /**
@@ -175,7 +173,7 @@ static struct device sunxi_serial_console_device = {
 static int sunxi_serial_register_console(void) {
 	int result;
 
-	result = sunxi_serial_dt_read_config(&uart_dbg);
+	result = sunxi_serial_dt_read_stdout(&uart_dbg);
 	if (result != DRIVER_OK)
 		return result;
 	return device_register(&sunxi_serial_console_device);
@@ -187,5 +185,6 @@ static struct driver sunxi_serial_driver = {
 		.probe = sunxi_serial_probe,
 };
 
+DT2C_DRIVER_COMPAT("allwinner,sunxi-uart");
 early_initcall(sunxi_serial_register_console);
 early_builtin_driver(sunxi_serial_driver);

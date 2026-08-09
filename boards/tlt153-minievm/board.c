@@ -15,121 +15,13 @@
 
 #include <mmu.h>
 
-#include <drivers/mmc/sdhci.h>
-#include <drivers/mmc/sdcard.h>
-
 #include <drivers/dram.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <drivers/sid.h>
+#include <dt-compatible/sid-dt.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
-
-sunxi_sdhci_t sdhci0 = {
-		.name = "sdhci0",
-		.id = MMC_CONTROLLER_0,
-		.reg_base = SUNXI_SMHC0_BASE,
-		.sdhci_mmc_type = MMC_TYPE_SD,
-		.max_clk = 50000000,
-		.width = SMHC_WIDTH_4BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-						.gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
-						.cd_level = GPIO_LEVEL_LOW,
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = SUNXI_CCM_BASE + SMHC0_GAR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCM_BASE + SMHC0_GAR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = SUNXI_CCM_BASE + SMHC0_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 400000000,
-				},
-};
-
-uint32_t dram_para[96] = {
-		1200,	   // dram_clk
-		4,		   // dram_type
-		0x00000808,// dram_dx_odt
-		0x00000c0c,// dram_dx_dri
-		0x0c0c0c,  // dram_ca_dri
-		0x00006060,// dram_para0
-		0x60fa,	   // dram_para1
-		0x0001,	   // dram_para2
-		0x520,	   // dram_mr0
-		0x101,	   // dram_mr1
-		0x8,	   // dram_mr2
-		0x0,	   // dram_mr3
-		0x0,	   // dram_mr4
-		0x400,	   // dram_mr5
-		0x81a,	   // dram_mr6
-		0x0,	   // dram_mr11
-		0x0,	   // dram_mr12
-		0x0,	   // dram_mr13
-		0x0,	   // dram_mr14
-		0x0,	   // dram_mr16
-		0x0,	   // dram_mr17
-		0x0,	   // dram_mr22
-		0x0,	   // dram_tpr0
-		0x0,	   // dram_tpr1
-		0x0,	   // dram_tpr2
-		0x0,	   // dram_tpr3
-		0x4000,	   // dram_tpr6
-		0x00002500,// dram_tpr10
-		0x00005050,// dram_tpr11
-		0x00002020,// dram_tpr12
-		0x00001070,// dram_tpr13
-		0x810700f5,// dram_tpr14
-};
-
-uint32_t dram_para_trained[96] = {
-		0x000004b0,// dram_clk
-		0x00000004,// dram_type
-		0x00000808,// dram_dx_odt
-		0x00000c0c,// dram_dx_dri
-		0x000c0c0c,// dram_ca_dri
-		0x00006060,// dram_para0
-		0x000060fa,// dram_para1
-		0x02000001,// dram_para2
-		0x00000964,// dram_mr0
-		0x00000101,// dram_mr1
-		0x00000018,// dram_mr2
-		0x00000000,// dram_mr3
-		0x00000000,// dram_mr4
-		0x00000400,// dram_mr5
-		0x00000813,// dram_mr6
-		0x00000000,// dram_mr11
-		0x00000000,// dram_mr12
-		0x00000000,// dram_mr13
-		0x00000000,// dram_mr14
-		0x00000000,// dram_mr16
-		0x00000000,// dram_mr17
-		0x00000000,// dram_mr22
-		0x00000000,// dram_tpr0
-		0x00000000,// dram_tpr1
-		0x00000000,// dram_tpr2
-		0x00000000,// dram_tpr3
-		0x00004000,// dram_tpr6
-		0x00002500,// dram_tpr10
-		0x00005555,// dram_tpr11
-		0x0000201f,// dram_tpr12
-		0x00007071,// dram_tpr13
-		0x010700f5,// dram_tpr14
-};
 
 void neon_enable(void) {
 	/* set NSACR, both Secure and Non-secure access are allowed to NEON */
@@ -158,11 +50,17 @@ void clean_syterkit_data(void) {
 }
 
 void show_chip() {
+	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return;
+	}
+	chip_sid[0] = sunxi_sid_read_sram(&sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(&sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(&sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(&sid, 0xcU);
 
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 

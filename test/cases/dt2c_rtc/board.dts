@@ -1,0 +1,41 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		rtc0 = &rtc0;
+		rtc-disabled = &rtc_disabled;
+		rtc-short = &rtc_short;
+		rtc-unaligned = &rtc_unaligned;
+		rtc-wrong-compatible = &rtc_wrong_compatible;
+	};
+
+	rtc0: rtc@1000 {
+		compatible = "allwinner,sunxi-rtc";
+		reg = <0x1000 0x20>;
+		status = "okay";
+	};
+
+	rtc_disabled: rtc@2000 {
+		compatible = "allwinner,sunxi-rtc";
+		reg = <0x2000 0x20>;
+		status = "disabled";
+	};
+
+	rtc_short: rtc@3000 {
+		compatible = "allwinner,sunxi-rtc";
+		reg = <0x3000 0x18>;
+	};
+
+	rtc_unaligned: rtc@4000 {
+		compatible = "allwinner,sunxi-rtc";
+		reg = <0x4000 0x1f>;
+	};
+
+	rtc_wrong_compatible: rtc@5000 {
+		compatible = "vendor,other-rtc";
+		reg = <0x5000 0x20>;
+	};
+};

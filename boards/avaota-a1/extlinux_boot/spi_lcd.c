@@ -25,15 +25,16 @@
 #include <drivers/dram.h>
 #include <drivers/i2c.h>
 #include <drivers/rtc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt-compatible/spi-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
-#include <drivers/sdhci.h>
+#include <drivers/mmc/sdhci.h>
 #include <uart.h>
 
 #define SPI_LCD_COLOR_WHITE 0xFFFF
@@ -49,53 +50,17 @@
 #define SPI_LCD_COLOR_YELLOW 0xFFE0
 
 
-static sunxi_spi_t sunxi_spi0_lcd = {
-		.base = SUNXI_R_SPI_BASE,
-		.id = 0,
-		.clk_rate = 75 * 1000 * 1000,
-		.gpio =
-				{
-						.gpio_cs = {GPIO_PIN(GPIO_PORTL, 10), GPIO_PERIPH_MUX6},
-						.gpio_sck = {GPIO_PIN(GPIO_PORTL, 11), GPIO_PERIPH_MUX6},
-						.gpio_mosi = {GPIO_PIN(GPIO_PORTL, 12), GPIO_PERIPH_MUX6},
-				},
-		.spi_clk =
-				{
-						.spi_clock_cfg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_CLK_REG,
-						.spi_clock_factor_n_offset = SPI_CLK_SEL_FACTOR_N_OFF,
-						.spi_clock_source = SPI_CLK_SEL_PERIPH_300M,
-				},
-		.parent_clk_reg =
-				{
-						.rst_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-						.rst_reg_offset = SPI_DEFAULT_CLK_RST_OFFSET(0),
-						.gate_reg_base = SUNXI_R_PRCM_BASE + SUNXI_S_SPI_BGR_REG,
-						.gate_reg_offset = SPI_DEFAULT_CLK_GATE_OFFSET(0),
-						.parent_clk = 300000000,
-				},
-};
-
-static gpio_mux_t lcd_dc_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 13),
-		.mux = GPIO_OUTPUT,
-};
-
-static gpio_mux_t lcd_res_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 9),
-		.mux = GPIO_OUTPUT,
-};
-
-static gpio_mux_t lcd_blk_pins = {
-		.pin = GPIO_PIN(GPIO_PORTL, 8),
-		.mux = GPIO_OUTPUT,
-};
+static sunxi_spi_t sunxi_spi0_lcd;
+static gpio_mux_t lcd_dc_pins;
+static gpio_mux_t lcd_res_pins;
+static gpio_mux_t lcd_blk_pins;
 
 static void LCD_Set_DC(uint8_t val) {
-	sunxi_gpio_set_value(lcd_dc_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_dc_pins, val);
 }
 
 static void LCD_Set_RES(uint8_t val) {
-	sunxi_gpio_set_value(lcd_res_pins.pin, val);
+	sunxi_gpio_set_value(&lcd_res_pins, val);
 }
 
 static void LCD_Write_Bus(uint8_t dat) {
@@ -137,7 +102,7 @@ static void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
 }
 
 static void LCD_Open_BLK() {
-	sunxi_gpio_set_value(lcd_blk_pins.pin, 1);
+	sunxi_gpio_set_value(&lcd_blk_pins, 1);
 }
 
 #define LCD_W 240
@@ -154,14 +119,29 @@ static void LCD_Fill_All(uint16_t color) {
 	free(video_mem);
 }
 
-static void LCD_Init(sunxi_dma_t *dma) {
-	sunxi_gpio_init(lcd_dc_pins.pin, lcd_dc_pins.mux);
-	sunxi_gpio_init(lcd_res_pins.pin, lcd_res_pins.mux);
-	sunxi_gpio_init(lcd_blk_pins.pin, lcd_blk_pins.mux);
+static int LCD_Init(sunxi_dma_t *dma) {
+	int spi_lcd_node;
 
-	sunxi_spi0_lcd.dma_handle = dma;
+	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
+	if (spi_lcd_node < 0 ||
+	    sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, dma) != DRIVER_OK ||
+	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node,
+					 "allwinner,lcd-dc-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node,
+					 "allwinner,lcd-reset-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node,
+					 "allwinner,lcd-backlight-gpio")) {
+		printk_error("LCD: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_gpio_init(&lcd_dc_pins);
+	sunxi_gpio_init(&lcd_res_pins);
+	sunxi_gpio_init(&lcd_blk_pins);
+
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");
+		return -1;
 	}
 
 	LCD_Set_RES(0);
@@ -246,6 +226,7 @@ static void LCD_Init(sunxi_dma_t *dma) {
 	LCD_WR_REG(0x29);
 
 	LCD_Fill_All(0x0000);
+	return 0;
 }
 
 #define SPLASH_START_X 52

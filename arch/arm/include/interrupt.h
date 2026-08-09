@@ -28,6 +28,10 @@ static inline void arm32_interrupt_enable(void) {
 						 : "memory");
 }
 
+static inline void interrupt_enable(void) {
+	arm32_interrupt_enable();
+}
+
 /**
  * @brief Disable interrupts in ARM32 mode.
  *
@@ -43,6 +47,10 @@ static inline void arm32_interrupt_disable(void) {
 						 : "=r"(tmp)
 						 :
 						 : "memory");
+}
+
+static inline void interrupt_disable(void) {
+	arm32_interrupt_disable();
 }
 
 #endif /* __INTERRUPT_H__ */

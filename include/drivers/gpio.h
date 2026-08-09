@@ -8,9 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
-#include "log.h"
+#define SUNXI_PINCTRL_COMPATIBLE "allwinner,sunxi-pinctrl"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,55 +64,63 @@ typedef uint32_t gpio_t;
 
 #define GPIO_PIN(x, y) (((uint32_t) (x << PIO_NUM_IO_BITS)) | y)
 
-typedef struct {
+typedef struct sunxi_gpio {
+	int dt_node;
+	uintptr_t base;
+	uint8_t bank_base;
+	uint8_t bank_count;
+} sunxi_gpio_t;
+
+typedef struct gpio_mux {
+	uintptr_t base;
 	gpio_t pin;
+	uint8_t bank;
 	uint8_t mux;
 } gpio_mux_t;
 
 /**
  * @brief Initialize the specified GPIO pin with the given configuration.
  *
- * @param pin The GPIO pin to initialize.
- * @param cfg The configuration value for the GPIO pin.
+ * @param gpio GPIO pin and controller configuration.
  */
-void sunxi_gpio_init(gpio_t pin, int cfg);
+void sunxi_gpio_init(const gpio_mux_t *gpio);
 
 /**
  * @brief Set the value of the specified GPIO pin.
  *
- * @param pin The GPIO pin to set the value for.
+ * @param gpio GPIO pin and controller configuration.
  * @param value The value to be set (0 or 1) for the GPIO pin.
  */
-void sunxi_gpio_set_value(gpio_t pin, int value);
+void sunxi_gpio_set_value(const gpio_mux_t *gpio, int value);
 
 /**
  * @brief Read the value of the specified GPIO pin.
  *
- * @param pin The GPIO pin to read the value from.
+ * @param gpio GPIO pin and controller configuration.
  * @return The value (0 or 1) read from the GPIO pin.
  */
-int sunxi_gpio_read(gpio_t pin);
+int sunxi_gpio_read(const gpio_mux_t *gpio);
 
 /**
  * @brief Set the pull configuration for the specified GPIO pin.
  *
- * @param pin The GPIO pin to set the pull configuration for.
+ * @param gpio GPIO pin and controller configuration.
  * @param pull The pull configuration to be set for the GPIO pin.
  */
-void sunxi_gpio_set_pull(gpio_t pin, enum gpio_pull_t pull);
+void sunxi_gpio_set_pull(const gpio_mux_t *gpio, enum gpio_pull_t pull);
 
 /**
  * @brief Sets the drive strength of a Sunxi GPIO pin.
  *
  * This function sets the drive strength for the specified GPIO pin.
  *
- * @param pin The GPIO pin to set the drive strength for.
+ * @param gpio GPIO pin and controller configuration.
  * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
  */
-void sunxi_gpio_set_drv(gpio_t pin, gpio_drv_t drv);
+void sunxi_gpio_set_drv(const gpio_mux_t *gpio, gpio_drv_t drv);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif /* __cplusplus */
 
-#endif// __SYS_GPIO_H__
+#endif /* __SYS_GPIO_H__ */

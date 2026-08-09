@@ -11,19 +11,37 @@
 		i2c1 = &i2c1;
 		pmu0 = &pmu0;
 		pmu1 = &pmu1;
+		pmu-invalid-address = &pmu_invalid_address;
+		pmu-invalid-fallback = &pmu_invalid_fallback;
 	};
 
-	pinctrl {
-		i2c0_pins: i2c0-pins {
-			allwinner,pins =
-				<SUNXI_GPIO_PORT_L 0 2>,
-				<SUNXI_GPIO_PORT_L 1 2>;
-		};
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
 
 		i2c1_pins: i2c1-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 4 3>,
 				<SUNXI_GPIO_PORT_B 5 3>;
+		};
+	};
+
+	r_pio: pinctrl@7022000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x07022000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
 		};
 	};
 
@@ -49,6 +67,18 @@
 			pmu0: pmic@34 {
 				compatible = "x-powers,axp2202";
 				reg = <0x34>, <0x35>;
+				status = "okay";
+			};
+
+			pmu_invalid_address: pmic@134 {
+				compatible = "x-powers,axp2202";
+				reg = <0x134>;
+				status = "okay";
+			};
+
+			pmu_invalid_fallback: pmic@37 {
+				compatible = "x-powers,axp2202";
+				reg = <0x37>, <0x138>;
 				status = "okay";
 			};
 		};

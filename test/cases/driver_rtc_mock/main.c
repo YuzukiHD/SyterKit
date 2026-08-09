@@ -50,6 +50,10 @@ static uint32_t parse_hex(const char *text) {
 
 void test_case_main(const char *case_dir) {
 	char data[TEST_DATA_MAX];
+	sunxi_rtc_t rtc = {
+		.data_base = 0x100U,
+		.data_size = sizeof(registers),
+	};
 	uint32_t boot_flag;
 	int length;
 
@@ -60,15 +64,16 @@ void test_case_main(const char *case_dir) {
 		return;
 	boot_flag = parse_hex(data);
 
-	rtc_set_fel_flag();
-	TEST_EQ(1, rtc_probe_fel_flag());
-	rtc_clear_fel_flag();
-	TEST_EQ(0, rtc_probe_fel_flag());
-	TEST_EQ(0, rtc_set_bootmode_flag((uint8_t) boot_flag));
-	TEST_EQ((uint8_t) boot_flag, rtc_get_bootmode_flag());
-	rtc_set_dram_para(0x87654321U);
-	TEST_EQ(0x87654321U, rtc_read_data(RTC_DRAM_PARA_ADDR));
-	rtc_set_start_time_ms();
-	TEST_EQ(0x12345678U, rtc_read_data(RTC_FEL_INDEX));
+	rtc_set_fel_flag(&rtc);
+	TEST_EQ(1, rtc_probe_fel_flag(&rtc));
+	rtc_clear_fel_flag(&rtc);
+	TEST_EQ(0, rtc_probe_fel_flag(&rtc));
+	TEST_EQ(0, rtc_set_bootmode_flag(&rtc, (uint8_t) boot_flag));
+	TEST_EQ((uint8_t) boot_flag, rtc_get_bootmode_flag(&rtc));
+	rtc_set_dram_para(&rtc, 0x87654321U);
+	TEST_EQ(0x87654321U,
+		 rtc_read_data(&rtc, RTC_DRAM_PARA_ADDR));
+	rtc_set_start_time_ms(&rtc);
+	TEST_EQ(0x12345678U, rtc_read_data(&rtc, RTC_FEL_INDEX));
 	TEST_ASSERT(barrier_count >= 5U);
 }

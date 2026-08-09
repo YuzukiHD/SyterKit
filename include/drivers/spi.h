@@ -90,6 +90,7 @@ typedef struct {
  * This struct holds the configuration for an SPI device, including its clock and GPIO settings.
  */
 typedef struct {
+	int dt_node;
 	uintptr_t base;			/**< Base address of the SPI peripheral */
 	uint8_t id;					/**< SPI device ID */
 	uint32_t clk_rate;			/**< Clock rate for the SPI device */
@@ -105,12 +106,7 @@ typedef struct {
 #define SUNXI_SPI_COMPATIBLE "allwinner,sunxi-spi"
 #define SUNXI_SPI_CONTROLLER_MAX 5
 
-#define MAX_FIFU (64)						   /**< Maximum FIFO size set to 64. */
-#define SPI_CLK_SEL_PERIPH_300M (0x1)		   /**< Selects the SPI peripheral clock to 300 MHz. */
-#define SPI_CLK_SEL_PERIPH_200M (0x2)		   /**< Selects the SPI peripheral clock to 200 MHz. */
-#define SPI_CLK_SEL_FACTOR_N_OFF (8)		   /**< Offset for the SPI clock select factor is 8. */
-#define SPI_DEFAULT_CLK_RST_OFFSET(x) (x + 16) /**< Returns the default clock reset offset, based on the SPI module number (x). */
-#define SPI_DEFAULT_CLK_GATE_OFFSET(x) (x)	   /**< Returns the default clock gate offset, based on the SPI module number (x). */
+#define MAX_FIFU (64) /**< Maximum FIFO size set to 64. */
 
 /**
  * @brief Initializes the SPI interface.
@@ -147,6 +143,15 @@ void sunxi_spi_disable(sunxi_spi_t *spi);
  * @return 0 on success.
  */
 int sunxi_spi_update_clk(sunxi_spi_t *spi, uint32_t clk);
+
+/**
+ * @brief Select one of the controller's hardware chip-select lines.
+ *
+ * @param spi Pointer to the SPI controller instance.
+ * @param chip_select Hardware chip-select index.
+ * @return 0 on success, or a negative error code.
+ */
+int sunxi_spi_select(sunxi_spi_t *spi, uint8_t chip_select);
 
 /**
  * @brief Performs SPI data transfer.

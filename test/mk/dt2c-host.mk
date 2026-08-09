@@ -22,7 +22,9 @@ DT_DRIVER_MANIFEST := $(BUILD_DIR)/selected-drivers
 dt2c_test_driver_sources := $(addprefix $(srctree)/,$(DT2C_DRIVER_SOURCES))
 dt2c_test_binding_files := $(addprefix $(srctree)/,$(DT2C_BINDINGS))
 
+ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include $(DT_DEPFILE)
+endif
 
 $(TEST_BINARY): $(DT_HEADER)
 

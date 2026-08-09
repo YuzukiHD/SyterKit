@@ -20,6 +20,12 @@ properties:
     type: phandle-array
   dma-names:
     type: string
+  allwinner,lcd-dc-gpio:
+    type: phandle-array
+  allwinner,lcd-reset-gpio:
+    type: phandle-array
+  allwinner,lcd-backlight-gpio:
+    type: phandle-array
   pinctrl-names:
     type: string
   pinctrl-0:

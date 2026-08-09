@@ -3,8 +3,6 @@
 #ifndef __REG_CLIC_H__
 #define __REG_CLIC_H__
 
-#include <drivers/reg/reg-ncat.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif// __cplusplus

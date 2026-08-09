@@ -197,7 +197,6 @@ typedef struct sunxi_pwm {
 	int dt_node; /**< Compiled device-tree node offset. */
 	sunxi_pwm_channel_t channel[SUNXI_PWM_CHANNEL_MAX];
 	uint32_t channel_mask; /**< Bitmask of configured channels. */
-	sunxi_clk_t pwm_bus_clk; /**< Clock for the PWM bus. */
 	sunxi_clk_t pwm_clk; /**< The main clock for the PWM module. */
 	sunxi_pwm_clk_src_t clk_src; /**< The clock sources for the PWM module. */
 	bool status; /**< The operational status of the PWM module. */

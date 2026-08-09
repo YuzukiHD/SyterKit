@@ -11,9 +11,7 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
-#include <dt2c/dt.h>
-
-DT2C_DRIVER_COMPAT("x-powers,axp333");
+#include <dt2c/driver.h>
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -77,3 +75,5 @@ void pmu_axp333_dump(axp_pmu_t *pmu) {
 		printk_debug("PMU: AXP333 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp333_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }
+
+DT2C_DRIVER_COMPAT("x-powers,axp333");

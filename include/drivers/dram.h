@@ -11,6 +11,7 @@
 #include <types.h>
 
 #include <drivers/pmu/axp.h>
+#include <drivers/rtc.h>
 
 #include <drivers/reg/reg-dram.h>
 
@@ -29,6 +30,40 @@ enum sunxi_dram_type {
 	SUNXI_DRAM_TYPE_LPDDR2 = 6,
 	SUNXI_DRAM_TYPE_LPDDR3 = 7,
 };
+
+#define SUNXI_DRAM_MAX_PARAM_WORDS 128U
+
+typedef struct {
+	uintptr_t base;
+	size_t size;
+} sunxi_dram_register_t;
+
+typedef struct {
+	sunxi_dram_register_t ccu;
+	sunxi_dram_register_t aon_ccu;
+	sunxi_dram_register_t mctl_com;
+	sunxi_dram_register_t mctl_phy;
+	sunxi_dram_register_t sysctrl;
+	sunxi_dram_register_t sid;
+	sunxi_dram_register_t r_cpucfg;
+	sunxi_dram_register_t r_prcm;
+	sunxi_dram_register_t pmu_rtc;
+} sunxi_dram_registers_t;
+
+typedef struct {
+	uint32_t parameters[SUNXI_DRAM_MAX_PARAM_WORDS];
+	size_t parameter_count;
+	int dt_node;
+	uint32_t size;
+	uintptr_t memory_base; /**< CPU-visible DRAM base used during training. */
+	size_t memory_size; /**< Size of the CPU-visible DRAM address window. */
+	sunxi_dram_registers_t registers;
+	uintptr_t init_code_base; /**< Reserved SRAM for external init code. */
+	size_t init_code_size; /**< Capacity of the external init code region. */
+	axp_pmu_t *primary_pmu;
+	axp_pmu_t *secondary_pmu;
+	sunxi_rtc_t rtc;
+} sunxi_dram_t;
 
 #if defined SUNXI_DRAM_PARAM_V2
 typedef struct {
@@ -108,7 +143,7 @@ typedef struct {
  * 
  * @return The size of the DRAM in bytes.
  */
-uint32_t sunxi_get_dram_size();
+uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram);
 
 /**
  * @brief Initialize the DRAM.
@@ -118,23 +153,12 @@ uint32_t sunxi_get_dram_size();
  * and other hardware settings. The user must provide a pointer to a 
  * structure containing the necessary initialization parameters.
  * 
- * @param para A pointer to a structure containing the parameters needed for 
- *              the initialization process.
+ * @param dram DRAM instance containing the mutable initialization parameters.
  * @return A status code indicating the result of the initialization. 
  *         Typically returns zero on success and a non-zero value on 
  *         failure.
  */
-uint32_t sunxi_dram_init(void *para);
-
-/**
- * @brief Initialize DRAM with PMU devices used by voltage callbacks.
- * @param para SoC-specific DRAM parameters.
- * @param primary Primary PMU, or NULL when DRAM setup does not use one.
- * @param secondary Secondary PMU, or NULL when unused.
- * @return Detected DRAM size or a platform-specific error value.
- */
-uint32_t sunxi_dram_init_with_pmu(void *para, axp_pmu_t *primary,
-				  axp_pmu_t *secondary);
+uint32_t sunxi_dram_init(sunxi_dram_t *dram);
 
 #ifdef __cplusplus
 }

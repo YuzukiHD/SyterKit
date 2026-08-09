@@ -1,87 +1,44 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <types.h>
-
 #include <common.h>
-#include <jmp.h>
-#include <mmu.h>
-#include <malloc.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
+#include <mmu.h>
 
-#include <drivers/dma.h>
+#include <drivers/clk.h>
 #include <drivers/intc/gic.h>
-#include <drivers/sdcard.h>
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
 #include <drivers/usb/usb.h>
-#include <dt-compatible/dma-dt.h>
-
-#define CONFIG_HEAP_BASE (0x40800000)
-#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
-
-extern sunxi_serial_t uart_dbg;
-extern sdhci_t sdhci0;
-extern dram_para_t dram_para;
+#include <dt-compatible/usb-dt.h>
 
 void arm32_do_irq(struct arm_regs_t *regs) {
 	do_irq(regs);
 }
 
 int main(void) {
-	sunxi_dma_t dma;
+	sunxi_ccu_t ccu;
+	sunxi_usb_t usb;
 
-	/* Display the bootloader banner. */
 	show_banner();
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK) {
-		printk_error("DMA: invalid devicetree configuration\n");
+	if (sunxi_usb_dt_read_alias(&usb, "usb0") != DRIVER_OK) {
+		printk_error("USB: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init();
-
-	printk_info("Hello World!\n");
-
-	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
-
-	/* Debug message to indicate that MMU is enabled. */
-	printk_debug("enable mmu ok\n");
-
-	/* Initialize the small memory allocator. */
-	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
-
-	/* Dump information about the system clocks. */
-	sunxi_clk_dump();
-
-
-	sunxi_dma_test(&dma, (uint32_t *) 0x41008000,
-		       (uint32_t *) 0x40008000, 1024 * 1024 * 8);
-
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
-	} else {
-		printk_info("SMHC: %s controller v%x initialized\n", sdhci0.name, sdhci0.reg->vers);
-	}
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed\n");
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
 	}
 
-	sunxi_usb_attach_module(SUNXI_USB_DEVICE_MASS);
+	sunxi_clk_init(&ccu);
 
-	if (sunxi_usb_init()) {
-		printk_info("USB init failed.\n");
+	if (sunxi_usb_init(&usb)) {
+		printk_error("USB: init failed\n");
+		return -1;
 	}
 
-	printk_info("USB init OK.\n");
-
-	sunxi_usb_attach();
+	printk_info("USB: waiting for host\n");
+	sunxi_usb_attach(&usb);
+	printk_info("USB: host detected\n");
 
 	abort();
 

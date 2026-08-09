@@ -10,19 +10,76 @@
 	compatible = "syterkit,mcore-r818";
 
 	aliases {
+		ar100 = &ar100;
+		sid0 = &sid0;
+		ccu0 = &ccu0;
+		dram0 = &dram0;
 		i2c0 = &i2c0;
+		mmc0 = &mmc0;
+		mmc2 = &mmc2;
 		pmu0 = &pmu0;
+		rtc0 = &rtc0;
 	};
 
 	chosen {
 		stdout-path = &uart0;
 	};
 
-	pinctrl {
-		i2c0_pins: i2c0-pins {
+	ccu0: clock-controller@3001000 {
+		compatible = "allwinner,sun50iw10-ccu";
+		reg = <0x03001000 0x1000>,
+		      <0x07010000 0x1000>,
+		      <0x03000000 0x1000>,
+		      <0x030f0000 0x1000>;
+		reg-names = "ccu", "r-prcm", "sysctrl", "iommu";
+		status = "okay";
+	};
+
+	dram0: dram-controller {
+		compatible = "allwinner,sun50iw10-dram";
+		allwinner,dram-parameters =
+			<0x318 0x8 0x07070707 0x0d0d0d0d>,
+			<0x0e0e 0x0d0a050c 0x30fa 0x08001000>,
+			<0x0 0x34 0x1b 0x33 0x3 0x0 0x0 0x4>,
+			<0x72 0x0 0x7 0x0 0x0 0x26 0x06060606 0x04040404>,
+			<0x0 0x74000000 0x48000000 0x00273333>,
+			<0x201c181f 0x13151513 0x7521 0x2023211f>;
+		allwinner,primary-pmu = <&pmu0>;
+		status = "okay";
+	};
+
+	pio: pinctrl@300b000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x0300b000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		mmc0_pins: mmc0-pins {
 			allwinner,pins =
-				<SUNXI_GPIO_PORT_L 0 2>,
-				<SUNXI_GPIO_PORT_L 1 2>;
+				<SUNXI_GPIO_PORT_F 2 2>,
+				<SUNXI_GPIO_PORT_F 3 2>,
+				<SUNXI_GPIO_PORT_F 1 2>,
+				<SUNXI_GPIO_PORT_F 0 2>,
+				<SUNXI_GPIO_PORT_F 5 2>,
+				<SUNXI_GPIO_PORT_F 4 2>;
+		};
+
+		mmc2_pins: mmc2-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 5 3>,
+				<SUNXI_GPIO_PORT_C 6 3>,
+				<SUNXI_GPIO_PORT_C 10 3>,
+				<SUNXI_GPIO_PORT_C 13 3>,
+				<SUNXI_GPIO_PORT_C 15 3>,
+				<SUNXI_GPIO_PORT_C 8 3>,
+				<SUNXI_GPIO_PORT_C 9 3>,
+				<SUNXI_GPIO_PORT_C 11 3>,
+				<SUNXI_GPIO_PORT_C 14 3>,
+				<SUNXI_GPIO_PORT_C 16 3>,
+				<SUNXI_GPIO_PORT_C 0 3>,
+				<SUNXI_GPIO_PORT_C 1 3>;
 		};
 
 		uart0_pins: uart0-pins {
@@ -32,11 +89,114 @@
 		};
 	};
 
+	r_pio: pinctrl@7022000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x07022000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		mmc0_dma: dma-descriptors@50080000 {
+			reg = <0x50080000 0x100000>;
+			no-map;
+		};
+
+		mmc2_dma: dma-descriptors@50880000 {
+			reg = <0x50880000 0x100000>;
+			no-map;
+		};
+
+		ar100_sram: sram@100000 {
+			reg = <0x00100000 0x00014000>;
+			no-map;
+		};
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		sid0: efuse@3006000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0x03006000 0x400>;
+			allwinner,efuse-hv-switch = <0x07000204>;
+			status = "okay";
+		};
+
+		rtc0: rtc@7000100 {
+			compatible = "allwinner,sunxi-rtc";
+			reg = <0x07000100 0x100>;
+			status = "okay";
+		};
+
+		ar100: remoteproc@7000400 {
+			compatible = "allwinner,sun50iw10-ar100";
+			reg = <0x03000000 0x1000>,
+			      <0x07000400 0x400>;
+			firmware-name = "ar100s.bin";
+			memory-region = <&ar100_sram>;
+			allwinner,firmware-format = "raw";
+			allwinner,entry-address = <0>;
+			allwinner,address-map =
+				<0x00000000 0x00000fff 0x00100000>,
+				<0x00001000 0xffffffff 0x00104000>;
+			allwinner,rtc = <&rtc0>;
+			status = "okay";
+		};
+
+		mmc0: mmc@4020000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <0x04020000 0x1000>;
+			label = "SD Card";
+			allwinner,mmc-id = <0>;
+			bus-width = <4>;
+			max-frequency = <50000000>;
+			memory-region = <&mmc0_dma>;
+			allwinner,clock-gate = <0x0300184c 0>;
+			allwinner,reset = <0x0300184c 16>;
+			allwinner,module-clock =
+				<0x03001830 8 0 1>;
+			allwinner,clock-source-rates =
+				<24000000 300000000 600000000 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc0_pins>;
+			status = "okay";
+		};
+
+		mmc2: mmc@4022000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <0x04022000 0x1000>;
+			label = "eMMC";
+			allwinner,mmc-id = <2>;
+			bus-width = <8>;
+			max-frequency = <50000000>;
+			non-removable;
+			memory-region = <&mmc2_dma>;
+			allwinner,clock-gate = <0x0300184c 2>;
+			allwinner,reset = <0x0300184c 18>;
+			allwinner,module-clock =
+				<0x03001838 8 0 1>;
+			allwinner,clock-source-rates =
+				<24000000 400000000 800000000 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc2_pins>;
+			status = "okay";
+		};
 
 		i2c0: i2c@7081400 {
 			compatible = "allwinner,sunxi-i2c";

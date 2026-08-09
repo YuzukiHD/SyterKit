@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 
-#include <barrier.h>
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -11,7 +10,6 @@
 #include <log.h>
 #include <timer.h>
 
-#include <drivers/clk.h>
 #include <drivers/gpio.h>
 
 #include <drivers/mmc/mmc.h>
@@ -28,14 +26,19 @@
  */
 int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 	uint32_t reg_val = 0x0;
-	mmc_t *mmc = sdhci->mmc;
+	uint32_t parent_rate;
+	uint32_t source;
+
+	if (sdhci == NULL || clk_hz == 0U)
+		return -1;
+	mmc_t *mmc = &sdhci->mmc;
 	sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
 
 	// Determine the clock source based on the requested frequency
 	if (clk_hz <= 4000000) {
-		clk.clk_sel = 0;// SCLK = 24000000 OSC CLK
+		source = 0U;
 	} else {
-		clk.clk_sel = 2;// SCLK = AHB PLL
+		source = clk.default_clk_sel;
 	}
 
 	if ((mmc->speed_mode == MMC_HSDDR52_DDR50) && (mmc->bus_width == SMHC_WIDTH_8BIT)) {
@@ -59,17 +62,17 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 			clk.factor_m = 2;
 			break;
 		case 52000001 ... 100000000:
-			clk.clk_sel = 1;// PERI0_800M
+			source = 1U;
 			clk.factor_n = 0;
 			clk.factor_m = 3;
 			break;
 		case 100000001 ... 150000000:
-			clk.clk_sel = 1;// PERI0_800M
+			source = 1U;
 			clk.factor_n = 0;
 			clk.factor_m = 2;
 			break;
 		case 150000001 ... 200000000:
-			clk.clk_sel = 1;// PERI0_800M
+			source = 1U;
 			clk.factor_n = 0;
 			clk.factor_m = 1;
 			break;
@@ -79,9 +82,16 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 			printk_debug("SMHC: requested frequency does not match: freq=%d, default to 52000000\n", clk_hz);
 			break;
 	}
+	parent_rate = sunxi_sdhci_clk_source_rate(&clk, source);
+	if (parent_rate == 0U) {
+		printk_debug("SMHC: unsupported clock source %u\n", source);
+		return -1;
+	}
 
 	// Configure the clock register value
-	reg_val = (clk.clk_sel << 24) | (clk.factor_n << 8) | clk.factor_m;
+	reg_val = (source << 24) |
+		  (clk.factor_n << clk.reg_factor_n_offset) |
+		  (clk.factor_m << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
 	return 0;
@@ -98,32 +108,24 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
 	uint32_t clk_hz;
 	uint32_t reg_val = 0x0;
+	uint32_t source;
+
+	if (sdhci == NULL)
+		return 0U;
 	sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
 
 	// Read the clock register value
 	reg_val = readl(clk.reg_base);
 
 	// Extract the divider values and clock source from the register value
-	clk.factor_m = reg_val & 0xf;
-	clk.factor_n = (reg_val >> 8) & 0x3;
-	clk.clk_sel = (reg_val >> 24) & 0x3;
+	clk.factor_m = (reg_val >> clk.reg_factor_m_offset) & 0xfU;
+	clk.factor_n = (reg_val >> clk.reg_factor_n_offset) & 0x3U;
+	source = (reg_val >> 24) & 0x3U;
 
-	// Calculate the current clock frequency based on the source and divider values
-	switch (clk.clk_sel) {
-		case 0:
-			clk_hz = 24000000;
-			break;
-		case 1:
-		case 3:
-			clk_hz = (sdhci->id == 2) ? 800000000 : 400000000;
-			break;
-		case 2:
-		case 4:
-			clk_hz = (sdhci->id == 2) ? 600000000 : 300000000;
-			break;
-		default:
-			printk_debug("SMHC: wrong clock source %u\n", clk.clk_sel);
-			break;
+	clk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
+	if (clk_hz == 0U) {
+		printk_debug("SMHC: unsupported clock source %u\n", source);
+		return 0U;
 	}
 
 	// Calculate the actual clock frequency based on the divider values

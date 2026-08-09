@@ -1,18 +1,34 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
 #ifndef __SYS_CLK_H__
 #define __SYS_CLK_H__
 
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
-
-#include "reg/reg-ccu.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif
+
+typedef struct sunxi_ccu {
+	int dt_node;
+	uintptr_t base;
+	size_t size;
+	uintptr_t aon_base;
+	size_t aon_size;
+	uintptr_t cpu_pll_base;
+	size_t cpu_pll_size;
+	uintptr_t cpu_sys_cfg_base;
+	size_t cpu_sys_cfg_size;
+	uintptr_t r_prcm_base;
+	size_t r_prcm_size;
+	uintptr_t sysctrl_base;
+	size_t sysctrl_size;
+	uintptr_t iommu_base;
+	size_t iommu_size;
+	uintptr_t rtc_base;
+	size_t rtc_size;
+} sunxi_ccu_t;
 
 typedef struct {
 	uintptr_t gate_reg_base;
@@ -22,78 +38,75 @@ typedef struct {
 	uint32_t parent_clk;
 } sunxi_clk_t;
 
-/**
- * @brief Initialize the global clocks.
- *
- * This function initializes the global clocks, including PLLs and clock dividers.
- */
-void sunxi_clk_init(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->base + offset;
+}
 
-/**
- * @brief Initialize the necessary clocks for minsys boot up
- *
- * This function initializes the necessary clocks for minsys boot up clocks
- */
-void sunxi_clk_pre_init(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_aon_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->aon_base + offset;
+}
 
-/**
- * @brief Get the type of High-Speed Oscillator (HOSC).
- *
- * This function retrieves the type of the High-Speed Oscillator currently being used.
- * The returned value can indicate different HOSC configurations or features supported 
- * by the system.
- *
- * @return HOSC type.
- */
-uint32_t sunxi_clk_get_hosc_type(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_cpu_pll_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->cpu_pll_base + offset;
+}
 
-/**
- * @brief Reset the global clocks.
- *
- * This function resets all global clocks to their default values.
- */
-void sunxi_clk_reset(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_cpu_sys_cfg_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->cpu_sys_cfg_base + offset;
+}
 
-/**
- * @brief Dump all clock-related register values.
- *
- * This function prints out all clock-related register values for debugging and observation.
- */
-void sunxi_clk_dump(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_r_prcm_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->r_prcm_base + offset;
+}
 
-/**
- * @brief Get the clock rate of the PERI1X bus.
- *
- * @return The clock rate of the PERI1X bus in Hz.
- */
-uint32_t sunxi_clk_get_peri1x_rate();
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_sysctrl_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->sysctrl_base + offset;
+}
 
-/**
- * @brief Get the clock rate of the PERI1X bus.
- *
- * @return The clock rate of the PERI1X bus in Hz.
- */
-uint32_t sunxi_clk_get_peri1x_rate();
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_iommu_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->iommu_base + offset;
+}
 
-/**
- * @brief Initialize USB clock.
- */
-void sunxi_usb_clk_init(void);
+static inline __attribute__((always_inline)) uintptr_t
+sunxi_ccu_rtc_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
+	return ccu->rtc_base + offset;
+}
 
-/**
- * @brief Deinitialize USB clock.
- */
-void sunxi_usb_clk_deinit(void);
+/** @brief Initialize the system clock tree. */
+void sunxi_clk_init(sunxi_ccu_t *ccu);
 
-/**
- * @brief Change the cpu freq
- * 
- * @param freq The freq of cpu want to set.
- */
-void sunxi_clk_set_cpu_pll(uint32_t freq);
+/** @brief Initialize clocks required before normal device initcalls. */
+void sunxi_clk_pre_init(sunxi_ccu_t *ccu);
+
+/** @brief Return the high-speed oscillator frequency in MHz. */
+uint32_t sunxi_clk_get_hosc_type(sunxi_ccu_t *ccu);
+
+/** @brief Reset the system clock tree to its boot configuration. */
+void sunxi_clk_reset(sunxi_ccu_t *ccu);
+
+/** @brief Dump the current system clock configuration. */
+void sunxi_clk_dump(sunxi_ccu_t *ccu);
+
+/** @brief Return the PERI1X clock rate. */
+uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu);
+
+/** @brief Initialize the USB clock gates. */
+void sunxi_usb_clk_init(sunxi_ccu_t *ccu);
+
+/** @brief Disable the USB clock gates. */
+void sunxi_usb_clk_deinit(sunxi_ccu_t *ccu);
+
+/** @brief Set the CPU PLL frequency. */
+void sunxi_clk_set_cpu_pll(sunxi_ccu_t *ccu, uint32_t freq);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif
 
-#endif// __SYS_CLK_H__
+#endif /* __SYS_CLK_H__ */

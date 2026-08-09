@@ -6,7 +6,9 @@
 #include "syter_test.h"
 
 void test_case_main(const char *case_dir) {
-	sunxi_serial_t uart;
+	sunxi_serial_t primary;
+	sunxi_serial_t secondary;
+	sunxi_serial_t stdout_uart_config;
 	int disabled_uart;
 	int stdout_uart;
 
@@ -20,21 +22,50 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(stdout_uart, sunxi_serial_dt_stdout_node());
 	TEST_ASSERT(sunxi_serial_dt_node_available(stdout_uart));
 	TEST_ASSERT(!sunxi_serial_dt_node_available(disabled_uart));
+	TEST_EQ(DRIVER_ERROR_INVALID,
+		sunxi_serial_dt_read_config(&primary, disabled_uart));
+	TEST_EQ(DRIVER_ERROR_INVALID,
+		sunxi_serial_dt_read_alias(&primary, "uart-disabled"));
+	TEST_EQ(DRIVER_ERROR_INVALID,
+		sunxi_serial_dt_read_alias(&primary, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID,
+		sunxi_serial_dt_read_alias(&primary, NULL));
 
-	TEST_EQ(DRIVER_OK, sunxi_serial_dt_read_config(&uart));
-	TEST_EQ(0x2000U, uart.base);
-	TEST_EQ(1U, uart.id);
-	TEST_EQ(1500000U, uart.baud_rate);
-	TEST_EQ(24000000U, uart.uart_clk.parent_clk);
-	TEST_EQ(0x3000U, uart.uart_clk.gate_reg_base);
-	TEST_EQ(1U, uart.uart_clk.gate_reg_offset);
-	TEST_EQ(0x3000U, uart.uart_clk.rst_reg_base);
-	TEST_EQ(17U, uart.uart_clk.rst_reg_offset);
-	TEST_EQ(GPIO_PIN(GPIO_PORTH, 13), uart.gpio_pin.gpio_tx.pin);
-	TEST_EQ(GPIO_PERIPH_MUX5, uart.gpio_pin.gpio_tx.mux);
-	TEST_EQ(GPIO_PIN(GPIO_PORTH, 14), uart.gpio_pin.gpio_rx.pin);
-	TEST_EQ(GPIO_PERIPH_MUX5, uart.gpio_pin.gpio_rx.mux);
-	TEST_EQ(UART_DLEN_7, uart.dlen);
-	TEST_EQ(UART_STOP_BIT_1, uart.stop);
-	TEST_EQ(UART_PARITY_EVEN, uart.parity);
+	TEST_EQ(DRIVER_OK,
+		sunxi_serial_dt_read_config(&primary, stdout_uart));
+	TEST_EQ(DRIVER_OK,
+		sunxi_serial_dt_read_stdout(&stdout_uart_config));
+	TEST_EQ(DRIVER_OK,
+		sunxi_serial_dt_read_alias(&secondary, "uart-secondary"));
+	TEST_EQ(primary.base, stdout_uart_config.base);
+	TEST_EQ(primary.id, stdout_uart_config.id);
+	TEST_EQ(0x2000U, primary.base);
+	TEST_EQ(1U, primary.id);
+	TEST_EQ(1500000U, primary.baud_rate);
+	TEST_EQ(24000000U, primary.uart_clk.parent_clk);
+	TEST_EQ(0x3000U, primary.uart_clk.gate_reg_base);
+	TEST_EQ(1U, primary.uart_clk.gate_reg_offset);
+	TEST_EQ(0x3000U, primary.uart_clk.rst_reg_base);
+	TEST_EQ(17U, primary.uart_clk.rst_reg_offset);
+	TEST_EQ(GPIO_PIN(GPIO_PORTH, 13), primary.gpio_pin.gpio_tx.pin);
+	TEST_EQ(GPIO_PERIPH_MUX5, primary.gpio_pin.gpio_tx.mux);
+	TEST_EQ(0x02000000U, primary.gpio_pin.gpio_tx.base);
+	TEST_EQ(7, primary.gpio_pin.gpio_tx.bank);
+	TEST_EQ(GPIO_PIN(GPIO_PORTH, 14), primary.gpio_pin.gpio_rx.pin);
+	TEST_EQ(GPIO_PERIPH_MUX5, primary.gpio_pin.gpio_rx.mux);
+	TEST_EQ(UART_DLEN_7, primary.dlen);
+	TEST_EQ(UART_STOP_BIT_1, primary.stop);
+	TEST_EQ(UART_PARITY_EVEN, primary.parity);
+
+	TEST_EQ(0x3000U, secondary.base);
+	TEST_EQ(2U, secondary.id);
+	TEST_EQ(57600U, secondary.baud_rate);
+	TEST_EQ(40000000U, secondary.uart_clk.parent_clk);
+	TEST_EQ(GPIO_PIN(GPIO_PORTB, 8), secondary.gpio_pin.gpio_tx.pin);
+	TEST_EQ(GPIO_PERIPH_MUX6, secondary.gpio_pin.gpio_tx.mux);
+	TEST_EQ(GPIO_PIN(GPIO_PORTB, 9), secondary.gpio_pin.gpio_rx.pin);
+	TEST_EQ(GPIO_PERIPH_MUX6, secondary.gpio_pin.gpio_rx.mux);
+	TEST_EQ(UART_DLEN_8, secondary.dlen);
+	TEST_EQ(UART_STOP_BIT_0, secondary.stop);
+	TEST_EQ(UART_PARITY_ODD, secondary.parity);
 }

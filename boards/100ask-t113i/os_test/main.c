@@ -6,6 +6,7 @@
 #include <types.h>
 
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <os.h>
 #include <timer.h>
 
@@ -20,8 +21,14 @@ static void timer_1500ms_run2_cb(void *arg, uint32_t event) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
 
-	sunxi_clk_init();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	sunxi_clk_init(&ccu);
 
 	printk_info("Hello World!\n");
 

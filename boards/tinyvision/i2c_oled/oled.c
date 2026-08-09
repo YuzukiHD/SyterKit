@@ -8,6 +8,7 @@
 #include <common.h>
 
 #include <drivers/i2c.h>
+#include <dt-compatible/i2c-dt.h>
 
 #include "oledfont.h"
 
@@ -19,24 +20,7 @@
 
 uint8_t OLED_GRAM[144][8]; /* 显存 */
 
-sunxi_i2c_t i2c_0 = {
-		.base = 0x02502000,
-		.id = SUNXI_I2C0,
-		.speed = SUNXI_I2C_SPEED_400K,
-		.gpio =
-				{
-						.gpio_scl = {GPIO_PIN(GPIO_PORTE, 4), GPIO_PERIPH_MUX8},
-						.gpio_sda = {GPIO_PIN(GPIO_PORTE, 5), GPIO_PERIPH_MUX8},
-				},
-		.i2c_clk =
-				{
-						.gate_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-						.gate_reg_offset = TWI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = CCU_BASE + CCU_TWI_BGR_REG,
-						.rst_reg_offset = TWI_DEFAULT_CLK_RST_OFFSET(0),
-						.parent_clk = 24000000,
-				},
-};
+static sunxi_i2c_t i2c_0;
 
 void OLED_WR_Byte(uint8_t dat, uint8_t mode) {
 	if (mode)
@@ -244,7 +228,11 @@ void OLED_Set_Pos(uint8_t x, uint8_t y) {
 	OLED_WR_Byte((x & 0x0f), OLED_CMD);
 }
 
-void OLED_Init(void) {
+int OLED_Init(void) {
+	if (sunxi_i2c_dt_read_alias(&i2c_0, "i2c0") != DRIVER_OK) {
+		printk_error("I2C: invalid devicetree configuration\n");
+		return -1;
+	}
 	sunxi_i2c_init(&i2c_0);// Init I2C
 
 	OLED_WR_Byte(0xAE, OLED_CMD);//--turn off oled panel
@@ -276,4 +264,5 @@ void OLED_Init(void) {
 	OLED_WR_Byte(0xA6, OLED_CMD);// Disable Inverse Display On (0xa6/a7)
 	OLED_Clear();
 	OLED_WR_Byte(0xAF, OLED_CMD); /*display ON*/
+	return 0;
 }

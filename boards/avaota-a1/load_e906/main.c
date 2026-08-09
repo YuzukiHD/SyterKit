@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <log.h>
+#include <dt-compatible/ccu-dt.h>
 #include <timer.h>
 
 #include <common.h>
@@ -22,25 +23,25 @@
 
 #include <drivers/clk.h>
 #include <drivers/dram.h>
+#include <dt-compatible/dram-dt.h>
 #include <drivers/i2c.h>
 #include <drivers/remoteproc.h>
 #include <drivers/rtc.h>
-#include <drivers/sdcard.h>
+#include <drivers/mmc/sdcard.h>
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
+#include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
+#include <dt-compatible/remoteproc-dt.h>
 
 #include <fdt_wrapper.h>
-#include <lib/elf/elf_loader.h>
 #include <lib/fatfs/ff.h>
-#include <drivers/sdhci.h>
+#include <lib/fatfs/diskio.h>
+#include <drivers/mmc/sdhci.h>
 #include <uart.h>
-
-#define CONFIG_E906_FILENAME "e906.bin"
-#define CONFIG_E906_LOAD_ADDR (0x48100000)
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
 
@@ -52,12 +53,7 @@
 extern sunxi_serial_t uart_dbg;
 
 
-extern sunxi_sdhci_t sdhci0;
 
-extern uint32_t dram_para[32];
-
-extern void enable_sram_a3();
-extern void rtc_set_vccio_det_spare();
 extern void set_rpio_power_mode(void);
 extern int sunxi_nsi_init(void);
 
@@ -75,17 +71,9 @@ typedef struct atf_head {
 	uint64_t dtb_base;		   /* the address of dtb */
 } atf_head_t;
 
-#define FILENAME_MAX_LEN 16
-typedef struct {
-	uint8_t *e906_dest;
-	char e906_filename[FILENAME_MAX_LEN];
-} image_info_t;
-
-image_info_t image;
-
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(const char *filename, BYTE *dest) {
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -128,15 +116,18 @@ open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(sunxi_remoteproc_t *remoteproc,
+		       sdmmc_pdata_t *card) {
 	FATFS fs;
 	FRESULT fret;
 	int ret;
+	size_t index;
 	uint32_t start;
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(card, (uint8_t *) (SDRAM_BASE), 0,
+		       CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -150,10 +141,17 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->e906_filename, (uint32_t) image->e906_dest);
-	ret = fatfs_loadimage(image->e906_filename, image->e906_dest);
-	if (ret)
-		return ret;
+	for (index = 0U; index < remoteproc->firmware_count; ++index) {
+		const sunxi_remoteproc_firmware_t *firmware =
+				&remoteproc->firmware[index];
+
+		printk_info("FATFS: read %s addr=%x\n", firmware->name,
+			    (uint32_t) firmware->load_address);
+		ret = fatfs_loadimage(firmware->name,
+				      (BYTE *) firmware->load_address);
+		if (ret)
+			return ret;
+	}
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
@@ -169,25 +167,35 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
+	sunxi_ccu_t ccu;
+	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
+	sdmmc_pdata_t card = {0};
 	sunxi_i2c_t i2c;
+	sunxi_remoteproc_t e906;
+	sunxi_sdhci_t sdmmc;
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
 	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK ||
+	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK ||
+	    sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
+		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	rtc_set_vccio_det_spare();
+	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
+		printk_error("CCU: invalid devicetree configuration\n");
+		return -1;
+	}
 
-	sunxi_clk_init();
+	sunxi_clk_init(&ccu);
 
 	set_rpio_power_mode();
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	sunxi_i2c_init(&i2c);
 
@@ -208,12 +216,19 @@ int main(void) {
 	pmu_axp2202_dump(&primary_pmu);
 	pmu_axp1530_dump(&secondary_pmu);
 
-	enable_sram_a3();
+	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
+		printk_error("RISC-V E906: reset failed\n");
+		return -1;
+	}
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	uint32_t dram_size = sunxi_dram_init(&dram_para);
+	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+		printk_error("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
 
-	sunxi_clk_dump();
+	sunxi_clk_dump(&ccu);
 
 	arm32_mmu_enable(SDRAM_BASE, dram_size);
 
@@ -222,58 +237,43 @@ int main(void) {
 
 	sunxi_nsi_init();
 
-	/* Clear the image_info_t struct. */
-	memset(&image, 0, sizeof(image_info_t));
-	image.e906_dest = (uint8_t *) CONFIG_E906_LOAD_ADDR;
-	strcpy(image.e906_filename, CONFIG_E906_FILENAME);
-
 	/* Initialize the SD host controller. */
-	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+	if (sunxi_sdhci_init(&sdmmc) != 0) {
+		printk_error("SMHC: %s controller init failed\n", sdmmc.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		printk_info("SMHC: %s controller initialized\n", sdmmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
-	if (sdmmc_init(&card0, &sdhci0) != 0) {
+	if (sdmmc_init(&card, &sdmmc) != 0) {
 		printk_warning("SMHC: init failed, Retrying...\n");
 		mdelay(30);
-		if (sdmmc_init(&card0, &sdhci0) != 0) {
+		if (sdmmc_init(&card, &sdmmc) != 0) {
 			printk_warning("SMHC: init failed\n");
 			goto _shell;
 		}
 	}
+	disk_set_device(0, &card);
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
-	if (load_sdcard(&image) != 0) {
+	if (load_sdcard(&e906, &card) != 0) {
 		printk_warning("SMHC: loading failed\n");
 		goto _shell;
 	}
 
-	sunxi_e906_clock_reset();
-
-	/* E906 need to remap addresses for some addr. */
-	vaddr_range_t e906_addr_mapping_range[] = {
-			{0x3FFC0000, 0x4003FFFF, 0x07280000},
-			{0x40400000, 0x7FFFFFFF, 0x40400000},
-	};
-
-	vaddr_map_t e906_addr_mapping = {
-			.range = e906_addr_mapping_range,
-			.range_size = sizeof(e906_addr_mapping_range) / sizeof(vaddr_range_t),
-	};
-
-	uint32_t elf_run_addr = elf32_get_entry_addr((phys_addr_t) image.e906_dest);
-	printk_info("RISC-V ELF run addr: 0x%08x\n", elf_run_addr);
-
-	if (load_elf32_image_remap((phys_addr_t) image.e906_dest, &e906_addr_mapping)) {
-		printk_error("RISC-V ELF load FAIL\n");
+	if (sunxi_remoteproc_prepare(&e906) != DRIVER_OK ||
+	    sunxi_remoteproc_load(&e906) != DRIVER_OK) {
+		printk_error("RISC-V E906: prepare or load failed\n");
+		goto _shell;
 	}
+	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t) e906.entry);
 
-	sunxi_e906_clock_init(elf_run_addr);
-
-	dump_e906_clock();
+	if (sunxi_remoteproc_start(&e906) != DRIVER_OK) {
+		printk_error("RISC-V E906: start failed\n");
+		goto _shell;
+	}
+	sunxi_remoteproc_dump(&e906);
 
 	printk_info("RISC-V E906 Core now Running... \n");
 

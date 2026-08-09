@@ -1,0 +1,67 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		intc0 = &clic0;
+		intc-disabled = &clic_disabled;
+		intc-short = &clic_short;
+		intc-too-many-irqs = &clic_too_many_irqs;
+		intc-wrong-compatible = &clic_wrong_compatible;
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		clic_disabled: interrupt-controller@3000 {
+			compatible = "thead,c900-clic";
+			reg = <0x3000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		clic0: interrupt-controller@1000 {
+			compatible = "thead,c900-clic";
+			reg = <0x1000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+			status = "okay";
+		};
+
+		clic_short: interrupt-controller@5000 {
+			compatible = "thead,c900-clic";
+			reg = <0x5000 0x1200>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+		};
+
+		clic_too_many_irqs: interrupt-controller@7000 {
+			compatible = "thead,c900-clic";
+			reg = <0x7000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <257>;
+		};
+
+		clic_wrong_compatible: interrupt-controller@9000 {
+			compatible = "vendor,other-clic";
+			reg = <0x9000 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+		};
+	};
+};

@@ -1,0 +1,26 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: ARM Generic Interrupt Controller v2 used by SyterKit
+
+properties:
+  compatible:
+    const: arm,gic-400
+  reg:
+    type: reg
+  interrupt-controller:
+    type: boolean
+  "#interrupt-cells":
+    type: uint32
+  allwinner,irq-count:
+    type: uint32
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - interrupt-controller
+  - "#interrupt-cells"
+  - allwinner,irq-count
+
+dt2c,device: true

@@ -102,28 +102,23 @@ board_dts := $(srctree)/boards/$(board)/board.dts
 dt2c_bindings := $(srctree)/dts/bindings
 dt2c_out := $(objtree)/.obj/boards/$(board)/dt2c
 dt2c_driver_manifest := $(dt2c_out)/selected-drivers
-dt2c_driver_sources := $(if $(filter y,$(CONFIG_DRIVER_SERIAL)),\
-	$(srctree)/drivers/serial/serial.c) \
-	$(if $(filter y,$(CONFIG_DRIVER_DMA)),\
-	$(srctree)/drivers/dma/dma.c) \
-	$(if $(filter y,$(CONFIG_DRIVER_I2C)),\
-	$(srctree)/drivers/i2c/i2c.c) \
-	$(if $(filter y,$(CONFIG_DRIVER_PMIC_AXP)),\
-	$(srctree)/drivers/pmu/axp1530.c \
-	$(srctree)/drivers/pmu/axp2101.c \
-	$(srctree)/drivers/pmu/axp2202.c \
-	$(srctree)/drivers/pmu/axp333.c \
-	$(srctree)/drivers/pmu/axp8191.c) \
-	$(if $(filter y,$(CONFIG_DRIVER_SPI)),\
-	$(srctree)/drivers/spi/spi.c) \
-	$(if $(filter y,$(CONFIG_DRIVER_PWM)),\
-	$(srctree)/drivers/pwm/pwm.c)
+dt2c_driver_inputs := $(shell find $(srctree)/drivers -type f \
+	\( -name '*.c' -o -name Makefile -o -name Kbuild \) -print)
 dt2c_include := $(dt2c_out)/include
 dt2c_header := $(dt2c_include)/generated/fdt_generated.h
 dt2c_depfile := $(dt2c_out)/devicetree.d
 dt2c_report := $(dt2c_out)/devicetree.json
 KBUILD_CPPFLAGS += -I$(dt2c_include)
 KBUILD_CPPFLAGS += -I$(DT2C_INCLUDE)
+
+dt2c_recorded_deps := $(filter-out %:,\
+	$(filter /%,$(file <$(dt2c_depfile))))
+dt2c_missing_deps := $(filter-out $(wildcard $(dt2c_recorded_deps)),\
+	$(dt2c_recorded_deps))
+ifneq ($(strip $(dt2c_missing_deps)),)
+# Let the manifest/header rules regenerate stale depfiles after source removal.
+$(dt2c_missing_deps):
+endif
 -include $(dt2c_depfile)
 endif
 
@@ -233,15 +228,14 @@ $(objtree)/include/generated/config.h: $(auto_header) $(srctree)/Makefile
 	} > $@
 
 ifneq ($(board),)
-$(dt2c_driver_manifest): $(dt2c_driver_sources) $(auto_conf) \
-		$(srctree)/Makefile
+$(dt2c_driver_manifest): $(dt2c_driver_inputs) $(auto_conf) \
+		$(srctree)/Makefile $(srctree)/scripts/Makefile.build FORCE
 	@mkdir -p $(dir $@)
-	@tmp=$@.tmp; : > $$tmp; \
-	for source in $(dt2c_driver_sources); do \
-		printf '%s\n' "$$source" >> $$tmp; \
-	done; \
+	@tmp=$@.tmp; \
+	$(MAKE) -f $(srctree)/scripts/Makefile.build obj=drivers \
+		dt2c-manifest > $$tmp; \
 	if cmp -s $$tmp $@; then \
-		$(RM) $$tmp; touch $@; \
+		$(RM) $$tmp; \
 	else \
 		mv $$tmp $@; \
 	fi

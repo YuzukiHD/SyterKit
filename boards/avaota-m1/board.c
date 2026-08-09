@@ -15,86 +15,13 @@
 
 #include <mmu.h>
 
-#include <drivers/mmc/sdhci.h>
-
 #include <drivers/dram.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
-#include <drivers/sdcard.h>
 #include <drivers/sid.h>
+#include <dt-compatible/sid-dt.h>
 #include <drivers/spi.h>
 #include <drivers/serial.h>
-
-sunxi_sdhci_t sdhci0 = {
-		.name = "sdhci0",
-		.id = MMC_CONTROLLER_0,
-		.reg_base = SUNXI_SMHC0_BASE,
-		.sdhci_mmc_type = MMC_TYPE_SD,
-		.max_clk = 50000000,
-		.width = SMHC_WIDTH_4BIT,
-		.dma_des_addr = SDRAM_BASE + 0x30080000,
-		.pinctrl =
-				{
-						//.gpio_clk = {GPIO_PIN(GPIO_PORTF, 2), GPIO_PERIPH_MUX2},
-						.gpio_cmd = {GPIO_PIN(GPIO_PORTF, 3), GPIO_PERIPH_MUX2},
-						.gpio_d0 = {GPIO_PIN(GPIO_PORTF, 1), GPIO_PERIPH_MUX2},
-						.gpio_d1 = {GPIO_PIN(GPIO_PORTF, 0), GPIO_PERIPH_MUX2},
-						.gpio_d2 = {GPIO_PIN(GPIO_PORTF, 5), GPIO_PERIPH_MUX2},
-						.gpio_d3 = {GPIO_PIN(GPIO_PORTF, 4), GPIO_PERIPH_MUX2},
-						.gpio_cd = {GPIO_PIN(GPIO_PORTF, 6), GPIO_INPUT},
-						.cd_level = GPIO_LEVEL_LOW,
-				},
-		.clk_ctrl =
-				{
-						.gate_reg_base = SUNXI_CCU_BASE + SMHC0_GAR_REG,
-						.gate_reg_offset = SDHCI_DEFAULT_CLK_GATE_OFFSET(0),
-						.rst_reg_base = SUNXI_CCU_BASE + SMHC0_GAR_REG,
-						.rst_reg_offset = SDHCI_DEFAULT_CLK_RST_OFFSET(0),
-				},
-		.sdhci_clk =
-				{
-						.reg_base = SUNXI_CCU_BASE + SMHC0_CLK_REG,
-						.reg_factor_n_offset = SDHCI_DEFAULT_CLK_FACTOR_N_OFFSET,
-						.reg_factor_m_offset = SDHCI_DEFAULT_CLK_FACTOR_M_OFFSET,
-						.clk_sel = 0x1,
-						.parent_clk = 300000000,
-				},
-};
-
-uint32_t dram_para[128] = {
-		1008,	   // dram_clk
-		8,		   // dram_type
-		0x07070707,// dram_dx_odt
-		0x0C0C0C0C,// dram_dx_dri
-		0x0C0C0C,  // dram_ca_dri
-		0x59595B5D,// dram_para0
-		0x310a,	   // dram_para1
-		0x01000,   // dram_para2
-		0x0,	   // dram_mr0
-		0x0,	   // dram_mr1
-		0x0,	   // dram_mr2
-		0x33,	   // dram_mr3
-		0x3,	   // dram_mr4
-		0x0,	   // dram_mr5
-		0x0,	   // dram_mr6
-		0x66,	   // dram_mr11
-		0x30,	   // dram_mr12
-		0x0,	   // dram_mr13
-		0x20,	   // dram_mr14
-		0x0,	   // dram_mr16
-		0x0,	   // dram_mr17
-		0x2,	   // dram_mr22
-		0,		   // dram_tpr0
-		0x28282828,// dram_tpr1
-		0,		   // dram_tpr2
-		0,		   // dram_tpr3
-		0x103F353F,// dram_tpr6
-		0x00004B00,// dram_tpr10
-		0x65656667,// dram_tpr11
-		0x18161718,// dram_tpr12
-		0x00000051,// dram_tpr13
-		0x010701f5 // dram_tpr14
-};
 
 int sunxi_nsi_init(void) {
 	writel(0x40005, 0x2402C00 + 0x6c);
@@ -129,11 +56,17 @@ void clean_syterkit_data(void) {
 }
 
 void show_chip() {
+	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
-	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
-	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
-	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
-	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+		printk_error("SID: invalid devicetree configuration\n");
+		return;
+	}
+	chip_sid[0] = sunxi_sid_read_sram(&sid, 0x0U);
+	chip_sid[1] = sunxi_sid_read_sram(&sid, 0x4U);
+	chip_sid[2] = sunxi_sid_read_sram(&sid, 0x8U);
+	chip_sid[3] = sunxi_sid_read_sram(&sid, 0xcU);
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	printk_info("Model: Avaota M1 board.\n");

@@ -10,7 +10,9 @@ void test_case_main(const char *case_dir) {
 	sunxi_dma_t dma0 = {0};
 	sunxi_dma_t dma1 = {0};
 	sunxi_spi_t spi0 = {0};
+	sunxi_spi_t spi2 = {0};
 	sunxi_spi_t spi4 = {0};
+	sunxi_spi_t rejected = {.base = 0xdeadbeefU};
 
 	(void) case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_dma_dt_read_alias(&dma0, "dma0"));
@@ -24,6 +26,8 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(75000000U, spi0.clk_rate);
 	TEST_EQ(GPIO_PIN(GPIO_PORTC, 1), spi0.gpio.gpio_cs.pin);
 	TEST_EQ(GPIO_PERIPH_MUX4, spi0.gpio.gpio_cs.mux);
+	TEST_EQ(0x02000000U, spi0.gpio.gpio_cs.base);
+	TEST_EQ(2, spi0.gpio.gpio_cs.bank);
 	TEST_EQ(GPIO_PIN(GPIO_PORTC, 0), spi0.gpio.gpio_sck.pin);
 	TEST_EQ(GPIO_PERIPH_MUX4, spi0.gpio.gpio_sck.mux);
 	TEST_ASSERT(spi0.dma_handle == &dma1);
@@ -33,6 +37,15 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(8U, spi0.spi_clk.spi_clock_factor_n_offset);
 	TEST_EQ(300000000U, spi0.parent_clk_reg.parent_clk);
 	TEST_EQ(SPI_CDR1_MODE, spi0.spi_clk.cdr_mode);
+
+	TEST_EQ(DRIVER_OK, sunxi_spi_dt_read_alias(&spi2, "spi2", NULL));
+	TEST_EQ(0xf000U, spi2.base);
+	TEST_ASSERT(spi2.dma_handle == NULL);
+	TEST_EQ(0U, spi2.dma_rx_drq);
+
+	TEST_EQ(DRIVER_ERROR_INVALID,
+		 sunxi_spi_dt_read_alias(&rejected, "spi3", &dma1));
+	TEST_EQ(0xdeadbeefU, rejected.base);
 
 	TEST_EQ(DRIVER_OK, sunxi_spi_dt_read_alias(&spi4, "spi4", &dma0));
 	TEST_EQ(0xd000U, spi4.base);

@@ -50,22 +50,22 @@ sunxi_serial_dt_stdout_node(void) {
 }
 
 static inline __attribute__((always_inline)) int
-sunxi_serial_dt_read_config(sunxi_serial_t *uart) {
+sunxi_serial_dt_read_config(sunxi_serial_t *uart, int node) {
 	const dt2c_fdt32_t *clock_gate;
 	const dt2c_fdt32_t *pins;
 	const dt2c_fdt32_t *reg;
 	const dt2c_fdt32_t *reset;
 	const dt2c_fdt32_t *value_cell;
 	const char *parity;
-	sunxi_serial_t config;
+	sunxi_gpio_t gpio_controller;
+	sunxi_serial_t config = {0};
 	uint32_t value;
 	int length;
-	int node;
 
-	if (uart == NULL)
-		return DRIVER_ERROR_INVALID;
-	node = sunxi_serial_dt_stdout_node();
-	if (node < 0)
+	if (uart == NULL || node < 0 ||
+	    !sunxi_serial_dt_node_available(node) ||
+	    dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node,
+					   SUNXI_SERIAL_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = sunxi_serial_dt_cells(node, "reg", 2);
@@ -102,9 +102,12 @@ sunxi_serial_dt_read_config(sunxi_serial_t *uart) {
 	    config.uart_clk.rst_reg_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
-	pins = syterkit_dt_pinctrl_cells(node, 6);
-	if (!syterkit_dt_gpio(pins, 0, &config.gpio_pin.gpio_tx) ||
-	    !syterkit_dt_gpio(pins, 3, &config.gpio_pin.gpio_rx))
+	pins = syterkit_dt_pinctrl_cells(node, 6, &gpio_controller);
+	if (pins == NULL ||
+	    !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller,
+				      &config.gpio_pin.gpio_tx) ||
+	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller,
+				      &config.gpio_pin.gpio_rx))
 		return DRIVER_ERROR_INVALID;
 
 	value_cell = sunxi_serial_dt_cells(node, "data-bits", 1);
@@ -136,6 +139,19 @@ sunxi_serial_dt_read_config(sunxi_serial_t *uart) {
 
 	*uart = config;
 	return DRIVER_OK;
+}
+
+static inline __attribute__((always_inline)) int
+sunxi_serial_dt_read_alias(sunxi_serial_t *uart, const char *alias) {
+	if (alias == NULL)
+		return DRIVER_ERROR_INVALID;
+	return sunxi_serial_dt_read_config(
+			uart, syterkit_dt_alias_node(alias, SUNXI_SERIAL_COMPATIBLE));
+}
+
+static inline __attribute__((always_inline)) int
+sunxi_serial_dt_read_stdout(sunxi_serial_t *uart) {
+	return sunxi_serial_dt_read_config(uart, sunxi_serial_dt_stdout_node());
 }
 
 #endif /* __DT_COMPATIBLE_SERIAL_DT_H__ */

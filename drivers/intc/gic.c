@@ -1,256 +1,297 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <io.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
+#include <driver.h>
+#include <initcall.h>
+#include <interrupt.h>
+#include <io.h>
 #include <log.h>
-#include <mmu.h>
-
-#include <drivers/reg/reg-ncat.h>
 
 #include <drivers/intc/gic.h>
+#include <dt-compatible/gic-dt.h>
+#include <dt2c/driver.h>
 
-static irq_handler_t sunxi_int_handlers[GIC_IRQ_NUM];
+enum {
+	GICD_CTLR = 0x0000,
+	GICD_TYPER = 0x0004,
+	GICD_ISENABLER = 0x0100,
+	GICD_ICENABLER = 0x0180,
+	GICD_ICPENDR = 0x0280,
+	GICD_ICACTIVER = 0x0380,
+	GICD_IPRIORITYR = 0x0400,
+	GICD_ITARGETSR = 0x0800,
+	GICD_ICFGR = 0x0c00,
+	GICC_CTLR = 0x0000,
+	GICC_PMR = 0x0004,
+	GICC_IAR = 0x000c,
+	GICC_EOIR = 0x0010,
+	GICC_DIR = 0x1000,
+};
 
-/**
- * @brief Get interrupts state.
- * 
- * This inline function checks the state of interrupts. It reads the value of the CPSR register using assembly instructions 
- * and returns 1 if interrupts are open (CPSR bit 7 is cleared), otherwise it returns 0.
- * 
- * @return 1 if interrupts are enabled, otherwise 0.
- */
-static inline int interrupts_is_open(void) {
-	uint64_t temp = 0;
-	__asm__ __volatile__("mrs %0, cpsr\n"
-						 : "=r"(temp)
-						 :
-						 : "memory");
-	return ((temp & 0x80) == 0) ? 1 : 0;
+#define GIC_SPURIOUS_IRQ_MIN 1022U
+#define GIC_IRQ_ID_MASK 0x3ffU
+
+static irq_handler_t sunxi_int_handlers[SUNXI_GIC_MAX_IRQS];
+static sunxi_gic_t sunxi_gic_controller;
+
+static inline uintptr_t gicd_reg(const sunxi_gic_t *gic,
+				 uint32_t offset) {
+	return gic->distributor_base + offset;
 }
 
-/**
- * @brief Set the target CPU for a specific SPI interrupt.
- * 
- * This inline function sets the target CPU for a specific SPI interrupt. It calculates the address of the target register 
- * based on the interrupt number, reads the current value of the register, modifies it to set the target CPU, and writes 
- * the modified value back to the register. The function assumes that the interrupt number is offset by 32 and that the 
- * maximum CPU ID is 15.
- * 
- * @param irq_no The interrupt number.
- * @param cpu_id The CPU ID of the target CPU.
- */
-static inline void gic_spi_set_target(int irq_no, int cpu_id) {
-	uint32_t reg_val, addr, offset;
-	irq_no -= 32;
-	/* dispatch the usb interrupt to CPU1 */
-	addr = GIC_SPI_PROC_TARG(irq_no >> 2);
-	reg_val = readl(addr);
-	offset = 8 * (irq_no & 3);
-	reg_val &= ~(0xff << offset);
-	reg_val |= (((1 << cpu_id) & 0xf) << offset);
-	writel(reg_val, addr);
-	return;
+static inline uintptr_t gicc_reg(const sunxi_gic_t *gic,
+				 uint32_t offset) {
+	return gic->cpu_interface_base + offset;
 }
 
-/**
- * @brief Initialize the GIC distributor controller
- *
- */
-static void gic_distributor_init(void) {
-	uint32_t cpumask = 0x01010101;
-	uint32_t gic_irqs;
-	uint32_t i;
-
-	writel(0x00, GIC_DIST_CON);
-
-	/* check GIC hardware configutation */
-	gic_irqs = ((readl(GIC_CON_TYPE) & 0x1f) + 1) * 32;
-	if (gic_irqs > 1020) {
-		gic_irqs = 1020;
-	}
-
-	if (gic_irqs < GIC_IRQ_NUM) {
-		printk_error("GIC: parameter config error, only support %d irqs < %d(spec define)!!\n", gic_irqs, GIC_IRQ_NUM);
-		return;
-	}
-
-	/* set trigger type to be level-triggered, active low */
-	for (i = 0; i < GIC_IRQ_NUM; i += 16) { writel(0, GIC_IRQ_MOD_CFG(i >> 4)); }
-	/* set priority */
-	for (i = GIC_SRC_SPI(0); i < GIC_IRQ_NUM; i += 4) { writel(0xa0a0a0a0, GIC_SPI_PRIO((i - 32) >> 2)); }
-	/* set processor target */
-	for (i = 32; i < GIC_IRQ_NUM; i += 4) { writel(cpumask, GIC_SPI_PROC_TARG((i - 32) >> 2)); }
-	/* disable all interrupts */
-	for (i = 32; i < GIC_IRQ_NUM; i += 32) { writel(0xffffffff, GIC_CLR_EN(i >> 5)); }
-	/* clear all interrupt active state */
-	for (i = 32; i < GIC_IRQ_NUM; i += 32) { writel(0xffffffff, GIC_ACT_CLR(i >> 5)); }
-	writel(1, GIC_DIST_CON);
-
-	return;
+static bool sunxi_gic_config_valid(const sunxi_gic_t *gic) {
+	return gic != NULL && gic->distributor_base != 0U &&
+	       gic->distributor_size >= 0x1000U &&
+	       gic->cpu_interface_base != 0U &&
+	       gic->cpu_interface_size >= 0x1004U &&
+	       gic->irq_count >= 32U &&
+	       gic->irq_count <= SUNXI_GIC_MAX_IRQS;
 }
 
-static void gic_cpuif_init(void) {
-	writel(0x00, GIC_CPU_IF_CTRL);
-	/*
-	 * Deal with the banked PPI and SGI interrupts - disable all
-	 * PPI interrupts, ensure all SGI interrupts are enabled.
-	*/
-	writel(0xffff0000, GIC_CLR_EN(0));
-	writel(0x0000ffff, GIC_SET_EN(0));
-	/* Set priority on PPI and SGI interrupts */
-	for (uint32_t i = 0; i < 16; i += 4) { writel(0xa0a0a0a0, GIC_SGI_PRIO(i >> 2)); }
-	for (uint32_t i = 16; i < 32; i += 4) { writel(0xa0a0a0a0, GIC_PPI_PRIO((i - 16) >> 2)); }
+static bool sunxi_gic_irq_valid(const sunxi_gic_t *gic, int irq) {
+	return sunxi_gic_config_valid(gic) && gic->initialized && irq >= 0 &&
+	       (uint32_t) irq < gic->irq_count;
+}
 
-	writel(0xf0, GIC_INT_PRIO_MASK);
-	writel(0x01, GIC_CPU_IF_CTRL);
-	return;
+static inline bool interrupts_are_enabled(void) {
+	uint32_t cpsr;
+
+	__asm__ __volatile__("mrs %0, cpsr" : "=r"(cpsr) : : "memory");
+	return (cpsr & BIT(7)) == 0U;
 }
 
 static void default_isr(void *data) {
-	printk_debug("default_isr():  called from IRQ %d\n", (uint32_t) data);
-	while (1)
+	printk_debug("default_isr(): called from IRQ %u\n",
+		     (uint32_t) (uintptr_t) data);
+	for (;;)
 		;
 }
 
-static void gic_sgi_handler(uint32_t irq_no) {
-	printk_debug("GIC: SGI irq %d coming... \n", irq_no);
-}
+static int gic_distributor_init(const sunxi_gic_t *gic) {
+	uint32_t hardware_irq_count;
+	uint32_t irq;
 
-static void gic_ppi_handler(uint32_t irq_no) {
-	printk_debug("GIC: PPI irq %d coming... \n", irq_no);
-}
-
-static void gic_spi_handler(uint32_t irq_no) {
-	if (sunxi_int_handlers[irq_no].func != default_isr) {
-		sunxi_int_handlers[irq_no].func(sunxi_int_handlers[irq_no].data);
+	writel(0U, gicd_reg(gic, GICD_CTLR));
+	hardware_irq_count =
+			((readl(gicd_reg(gic, GICD_TYPER)) & 0x1fU) + 1U) * 32U;
+	if (hardware_irq_count > 1020U)
+		hardware_irq_count = 1020U;
+	if (hardware_irq_count < gic->irq_count) {
+		printk_error("GIC: hardware has %u IRQs, devicetree requests %u\n",
+			     hardware_irq_count, gic->irq_count);
+		return DRIVER_ERROR_INVALID;
 	}
+
+	/* Configure SPIs as level-triggered and route them to CPU 0. */
+	for (irq = 32U; irq < gic->irq_count; irq += 16U)
+		writel(0U, gicd_reg(gic, GICD_ICFGR + (irq / 16U) * 4U));
+	for (irq = 32U; irq < gic->irq_count; irq += 4U) {
+		writel(0xa0a0a0a0U,
+		       gicd_reg(gic, GICD_IPRIORITYR + irq));
+		writel(0x01010101U,
+		       gicd_reg(gic, GICD_ITARGETSR + irq));
+	}
+	for (irq = 32U; irq < gic->irq_count; irq += 32U) {
+		writel(0xffffffffU,
+		       gicd_reg(gic, GICD_ICENABLER + (irq / 32U) * 4U));
+		writel(0xffffffffU,
+		       gicd_reg(gic, GICD_ICACTIVER + (irq / 32U) * 4U));
+	}
+
+	writel(1U, gicd_reg(gic, GICD_CTLR));
+	return DRIVER_OK;
 }
 
-/**
- * @brief Clears the pending status of the specified IRQ in the GIC
- * 
- * @param irq_no IRQ number to clear pending status
- */
-static void gic_clear_pending(uint32_t irq_no) {
-	uint32_t offset = irq_no >> 5;
-	uint32_t reg_val = (1 << (irq_no & 0x1f));
-	writel(reg_val, GIC_PEND_CLR(offset));
-	return;
+static void gic_cpu_interface_init(const sunxi_gic_t *gic) {
+	uint32_t irq;
+
+	writel(0U, gicc_reg(gic, GICC_CTLR));
+	writel(0xffff0000U, gicd_reg(gic, GICD_ICENABLER));
+	writel(0x0000ffffU, gicd_reg(gic, GICD_ISENABLER));
+	for (irq = 0U; irq < 32U; irq += 4U)
+		writel(0xa0a0a0a0U,
+		       gicd_reg(gic, GICD_IPRIORITYR + irq));
+	writel(0xf0U, gicc_reg(gic, GICC_PMR));
+	writel(1U, gicc_reg(gic, GICC_CTLR));
+}
+
+int sunxi_gic_init(sunxi_gic_t *gic) {
+	int result;
+	uint32_t irq;
+
+	if (!sunxi_gic_config_valid(gic))
+		return DRIVER_ERROR_INVALID;
+
+	gic->initialized = false;
+	for (irq = 0U; irq < gic->irq_count; irq++) {
+		sunxi_int_handlers[irq].data = (void *) (uintptr_t) irq;
+		sunxi_int_handlers[irq].func = default_isr;
+	}
+
+	result = gic_distributor_init(gic);
+	if (result != DRIVER_OK)
+		return result;
+	gic_cpu_interface_init(gic);
+	gic->initialized = true;
+	return DRIVER_OK;
+}
+
+int sunxi_gic_exit(sunxi_gic_t *gic) {
+	if (!sunxi_gic_config_valid(gic) || !gic->initialized)
+		return DRIVER_ERROR_INVALID;
+
+	writel(0U, gicc_reg(gic, GICC_CTLR));
+	writel(0U, gicd_reg(gic, GICD_CTLR));
+	gic->initialized = false;
+	return DRIVER_OK;
+}
+
+static void gic_sgi_handler(uint32_t irq) {
+	printk_debug("GIC: SGI IRQ %u\n", irq);
+}
+
+static void gic_ppi_handler(uint32_t irq) {
+	printk_debug("GIC: PPI IRQ %u\n", irq);
+}
+
+static void gic_spi_handler(uint32_t irq) {
+	irq_handler_t *handler = &sunxi_int_handlers[irq];
+
+	if (handler->func != NULL && handler->func != default_isr)
+		handler->func(handler->data);
+}
+
+static void gic_clear_pending(const sunxi_gic_t *gic, uint32_t irq) {
+	writel(BIT(irq & 0x1fU),
+	       gicd_reg(gic, GICD_ICPENDR + (irq / 32U) * 4U));
 }
 
 int arch_interrupt_init(void) {
-	for (int i = 0; i < GIC_IRQ_NUM; i++) sunxi_int_handlers[i].data = default_isr;
-	gic_distributor_init();
-	gic_cpuif_init();
-	return 0;
+	return sunxi_gic_init(&sunxi_gic_controller);
 }
 
 int arch_interrupt_exit(void) {
-	gic_distributor_init();
-	gic_cpuif_init();
-	return 0;
+	return sunxi_gic_exit(&sunxi_gic_controller);
 }
 
 int sunxi_gic_cpu_interface_init(int cpu) {
-	gic_cpuif_init();
-	return 0;
+	(void) cpu;
+	if (!sunxi_gic_config_valid(&sunxi_gic_controller) ||
+	    !sunxi_gic_controller.initialized)
+		return DRIVER_ERROR_INVALID;
+
+	gic_cpu_interface_init(&sunxi_gic_controller);
+	return DRIVER_OK;
 }
 
 int sunxi_gic_cpu_interface_exit(void) {
-	writel(0, GIC_CPU_IF_CTRL);
-	return 0;
+	if (!sunxi_gic_config_valid(&sunxi_gic_controller) ||
+	    !sunxi_gic_controller.initialized)
+		return DRIVER_ERROR_INVALID;
+
+	writel(0U, gicc_reg(&sunxi_gic_controller, GICC_CTLR));
+	return DRIVER_OK;
 }
 
 void do_irq(struct arm_regs_t *regs) {
-	uint32_t idnum = readl(GIC_INT_ACK_REG);
+	uint32_t acknowledge;
+	uint32_t irq;
 
-	if ((idnum == 1022) || (idnum == 1023)) {
-		printk_error("GIC: spurious irq !!\n");
+	(void) regs;
+	if (!sunxi_gic_controller.initialized)
 		return;
-	}
-	if (idnum >= GIC_IRQ_NUM) {
-		printk_debug("GIC: irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", idnum, GIC_IRQ_NUM - 32);
+
+	acknowledge = readl(gicc_reg(&sunxi_gic_controller, GICC_IAR));
+	irq = acknowledge & GIC_IRQ_ID_MASK;
+	if (irq >= GIC_SPURIOUS_IRQ_MIN)
 		return;
+	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, (int) irq)) {
+		printk_debug("GIC: invalid IRQ %u (source count %u)\n", irq,
+			     sunxi_gic_controller.irq_count);
+	} else if (irq < 16U) {
+		gic_sgi_handler(irq);
+	} else if (irq < 32U) {
+		gic_ppi_handler(irq);
+	} else {
+		gic_spi_handler(irq);
 	}
-	if (idnum < 16)
-		gic_sgi_handler(idnum);
-	else if (idnum < 32)
-		gic_ppi_handler(idnum);
-	else
-		gic_spi_handler(idnum);
-	writel(idnum, GIC_END_INT_REG);
-	writel(idnum, GIC_DEACT_INT_REG);
-	gic_clear_pending(idnum);
-	return;
+
+	writel(acknowledge, gicc_reg(&sunxi_gic_controller, GICC_EOIR));
+	writel(acknowledge, gicc_reg(&sunxi_gic_controller, GICC_DIR));
+	if (irq < sunxi_gic_controller.irq_count)
+		gic_clear_pending(&sunxi_gic_controller, irq);
 }
 
 void irq_free_handler(int irq) {
-	arm32_interrupt_disable();
-	if (irq >= GIC_IRQ_NUM) {
-		arm32_interrupt_enable();
+	bool restore_interrupts;
+
+	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq))
 		return;
-	}
-	sunxi_int_handlers[irq].data = NULL;
-	sunxi_int_handlers[irq].func = default_isr;
-	arm32_interrupt_enable();
-}
-
-int irq_enable(int irq_no) {
-	uint32_t reg_val;
-	uint32_t offset;
-
-	if (irq_no >= GIC_IRQ_NUM) {
-		printk_error("irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
-		return -1;
-	}
-
-	offset = irq_no >> 5;
-	reg_val = readl(GIC_SET_EN(offset));
-	reg_val |= 1 << (irq_no & 0x1f);
-	writel(reg_val, GIC_SET_EN(offset));
-	return 0;
-}
-
-int irq_disable(int irq_no) {
-	uint32_t reg_val;
-	uint32_t offset;
-
-	if (irq_no >= GIC_IRQ_NUM) {
-		printk_error("irq NO.(%d) > GIC_IRQ_NUM(%d) !!\n", irq_no, GIC_IRQ_NUM);
-		return -1;
-	}
-
-	gic_spi_set_target(irq_no, 0);
-	offset = irq_no >> 5;
-	reg_val = (1 << (irq_no & 0x1f));
-	writel(reg_val, GIC_CLR_EN(offset));
-
-	return 0;
-}
-
-void irq_install_handler(int irq, interrupt_handler_t handle_irq, void *data) {
-	int flag = interrupts_is_open();
-	//when irq_handler call this function , irq enable bit has already disabled in irq_mode,so don't need to enable I bit
-	if (flag) {
+	restore_interrupts = interrupts_are_enabled();
+	if (restore_interrupts)
 		arm32_interrupt_disable();
-		printk_error("IRQ OPEN\n");
-	}
-
-	if (irq >= GIC_IRQ_NUM || !handle_irq) {
-		goto fail;
-	}
-
-	sunxi_int_handlers[irq].data = data;
-	sunxi_int_handlers[irq].func = handle_irq;
-
-fail:
-	if (flag) {
+	sunxi_int_handlers[irq].data = (void *) (uintptr_t) irq;
+	sunxi_int_handlers[irq].func = default_isr;
+	if (restore_interrupts)
 		arm32_interrupt_enable();
-		printk_error("IRQ OPEN\n");
-	}
 }
+
+int irq_enable(int irq) {
+	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
+		printk_error("GIC: invalid IRQ %d (source count %u)\n", irq,
+			     sunxi_gic_controller.irq_count);
+		return DRIVER_ERROR_INVALID;
+	}
+
+	writel(BIT((uint32_t) irq & 0x1fU),
+	       gicd_reg(&sunxi_gic_controller,
+			 GICD_ISENABLER + ((uint32_t) irq / 32U) * 4U));
+	return DRIVER_OK;
+}
+
+int irq_disable(int irq) {
+	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
+		printk_error("GIC: invalid IRQ %d (source count %u)\n", irq,
+			     sunxi_gic_controller.irq_count);
+		return DRIVER_ERROR_INVALID;
+	}
+
+	writel(BIT((uint32_t) irq & 0x1fU),
+	       gicd_reg(&sunxi_gic_controller,
+			 GICD_ICENABLER + ((uint32_t) irq / 32U) * 4U));
+	return DRIVER_OK;
+}
+
+void irq_install_handler(int irq, interrupt_handler_t handler, void *data) {
+	bool restore_interrupts;
+
+	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq) || handler == NULL)
+		return;
+	restore_interrupts = interrupts_are_enabled();
+	if (restore_interrupts)
+		arm32_interrupt_disable();
+	sunxi_int_handlers[irq].data = data;
+	sunxi_int_handlers[irq].func = handler;
+	if (restore_interrupts)
+		arm32_interrupt_enable();
+}
+
+static int sunxi_gic_initcall(void) {
+	int result;
+
+	result = sunxi_gic_dt_read_alias(&sunxi_gic_controller, "intc0");
+	if (result != DRIVER_OK)
+		return result;
+	return arch_interrupt_init();
+}
+
+early_initcall(sunxi_gic_initcall);
+DT2C_DRIVER_COMPAT("arm,gic-400");

@@ -19,9 +19,8 @@
 
 #include <driver.h>
 #include <drivers/dma.h>
-#include <dt2c/dt.h>
+#include <dt2c/driver.h>
 
-DT2C_DRIVER_COMPAT("allwinner,sunxi-dma");
 /**
  * @brief Initialize DMA clock
  * @details Configures the clock settings for the DMA controller, including bus clock gating,
@@ -549,3 +548,5 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr,
 
 	return 0;
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-dma");

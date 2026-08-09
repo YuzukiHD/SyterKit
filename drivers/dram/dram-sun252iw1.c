@@ -10,6 +10,7 @@
 #include <log.h>
 #include <mmu.h>
 
+#include <dt2c/driver.h>
 #include <drivers/clk.h>
 #include <drivers/dram.h>
 #include <drivers/reg/reg-dram.h>
@@ -18,8 +19,6 @@
 #include <common.h>
 
 extern int init_DRAM(int type, void *buff);
-
-static uint32_t dram_size;
 
 void __usdelay(unsigned long us) {
 	udelay(us);
@@ -39,11 +38,11 @@ int set_ddr_voltage(unsigned int vol_val) {
 	return 0;
 }
 
-uint32_t sunxi_get_dram_size() {
-	return dram_size;
+uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
+	if (dram == NULL || dram->parameter_count == 0U)
+		return 0U;
+	dram->size = init_DRAM(0, dram->parameters);
+	return dram->size;
 }
 
-uint32_t sunxi_dram_init(void *para) {
-	dram_size = init_DRAM(0, para);
-	return dram_size;
-}
+DT2C_DRIVER_COMPAT("allwinner,sun252iw1-dram");

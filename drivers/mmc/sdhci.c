@@ -19,11 +19,7 @@
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
-
-/* Global data*/
-sunxi_sdhci_host_t g_mmc_host;
-sunxi_sdhci_timing_t g_mmc_timing;
-mmc_t g_mmc;
+#include <dt2c/driver.h>
 
 static void sunxi_sdhci_sync_all_cache(void) {
 	flush_dcache_all();
@@ -68,7 +64,7 @@ static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci) {
  * @return Returns 0 on success, -1 on failure.
  */
 static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint32_t timeout = time_us() + SMHC_TIMEOUT;
 
 	mmc_host->reg->clkcr |= SMHC_CLKCR_MASK_D0;
@@ -101,7 +97,7 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci) {
  * @return 0 on success, -1 on failure.
  */
 static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const uint32_t spd_md_id, const uint32_t freq_id) {
-	sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
+	sunxi_sdhci_timing_t *timing_data = &sdhci->timing_data;
 	uint32_t spd_md_sdly = 0, dly = 0;
 	int ret = 0;
 
@@ -114,7 +110,7 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	}
 
 	/* Calculate delay based on speed mode and frequency */
-	spd_md_sdly = sdhci->mmc->tune_sdly.tm4_smx_fx[spd_md_id * 2 + freq_id / 4];
+	spd_md_sdly = sdhci->mmc.tune_sdly.tm4_smx_fx[spd_md_id * 2 + freq_id / 4];
 	dly = ((spd_md_sdly >> ((freq_id % 4) * 8)) & 0xff);
 
 	if ((dly == 0xff) || (dly == 0)) {
@@ -176,8 +172,8 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, uint32_t freq_id) {
 	int ret = 0;
 
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-	sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
+	sunxi_sdhci_timing_t *timing_data = &sdhci->timing_data;
 
 	// Check for specific conditions based on the controller ID and timing mode
 	if ((sdhci->id == 2) && mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
@@ -219,9 +215,9 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
 static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, uint32_t freq_id) {
 	int ret = 0;
 	uint32_t reg_val = 0x0;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
-	sunxi_sdhci_timing_t *timing_data = sdhci->timing_data;
+	sunxi_sdhci_timing_t *timing_data = &sdhci->timing_data;
 
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
 		timing_data->odly = 0;
@@ -324,8 +320,8 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
  */
 int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 	uint32_t reg_val = 0x0;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-	mmc_t *mmc = sdhci->mmc;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
+	mmc_t *mmc = &sdhci->mmc;
 
 	uint32_t module_clk = 0x0;
 
@@ -442,8 +438,8 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
  * @return 0 on success, -1 on failure.
  */
 static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-	mmc_t *mmc = sdhci->mmc;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
+	mmc_t *mmc = &sdhci->mmc;
 
 	// Adjust clock frequency if it exceeds the maximum supported frequency for certain speed modes
 	if ((mmc->speed_mode == MMC_HSDDR52_DDR50 || mmc->speed_mode == MMC_HS400) && clk > mmc->f_max_ddr) {
@@ -492,7 +488,7 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk) {
  */
 static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status) {
 	uint32_t reg_val = 0x0;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
 	// Read current value of gctrl register
 	reg_val = mmc_host->reg->gctrl;
@@ -527,7 +523,7 @@ static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status) {
  */
 static void sunxi_sdhci_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status) {
 	uint32_t reg_dsbd_val = 0x0, reg_csdc_val = 0x0;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
 	// Check if the SDHC controller ID is 2
 	if (sdhci->id != 2) {
@@ -572,52 +568,52 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci) {
 	sunxi_sdhci_pinctrl_t sdhci_pins = sdhci->pinctrl;
 
 	// Initialize and configure GPIO pins for clock, command, and data lines
-	sunxi_gpio_init(sdhci_pins.gpio_clk.pin, sdhci_pins.gpio_clk.mux);
-	sunxi_gpio_set_pull(sdhci_pins.gpio_clk.pin, GPIO_PULL_UP);
+	sunxi_gpio_init(&sdhci_pins.gpio_clk);
+	sunxi_gpio_set_pull(&sdhci_pins.gpio_clk, GPIO_PULL_UP);
 
-	sunxi_gpio_init(sdhci_pins.gpio_cmd.pin, sdhci_pins.gpio_cmd.mux);
-	sunxi_gpio_set_pull(sdhci_pins.gpio_cmd.pin, GPIO_PULL_UP);
+	sunxi_gpio_init(&sdhci_pins.gpio_cmd);
+	sunxi_gpio_set_pull(&sdhci_pins.gpio_cmd, GPIO_PULL_UP);
 
-	sunxi_gpio_init(sdhci_pins.gpio_d0.pin, sdhci_pins.gpio_d0.mux);
-	sunxi_gpio_set_pull(sdhci_pins.gpio_d0.pin, GPIO_PULL_UP);
+	sunxi_gpio_init(&sdhci_pins.gpio_d0);
+	sunxi_gpio_set_pull(&sdhci_pins.gpio_d0, GPIO_PULL_UP);
 
 	// Initialize and configure GPIO pins for 4-bit MMC data bus if applicable
 	if (sdhci->width > SMHC_WIDTH_1BIT) {
-		sunxi_gpio_init(sdhci_pins.gpio_d1.pin, sdhci_pins.gpio_d1.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d1.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d1);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d1, GPIO_PULL_UP);
 
-		sunxi_gpio_init(sdhci_pins.gpio_d2.pin, sdhci_pins.gpio_d2.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d2.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d2);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d2, GPIO_PULL_UP);
 
-		sunxi_gpio_init(sdhci_pins.gpio_d3.pin, sdhci_pins.gpio_d3.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d3.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d3);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d3, GPIO_PULL_UP);
 	}
 
 	// Initialize and configure GPIO pins for 8-bit MMC data bus if applicable
 	if (sdhci->width > SMHC_WIDTH_4BIT) {
-		sunxi_gpio_init(sdhci_pins.gpio_d4.pin, sdhci_pins.gpio_d4.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d4.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d4);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d4, GPIO_PULL_UP);
 
-		sunxi_gpio_init(sdhci_pins.gpio_d5.pin, sdhci_pins.gpio_d5.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d5.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d5);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d5, GPIO_PULL_UP);
 
-		sunxi_gpio_init(sdhci_pins.gpio_d6.pin, sdhci_pins.gpio_d6.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d6.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d6);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d6, GPIO_PULL_UP);
 
-		sunxi_gpio_init(sdhci_pins.gpio_d7.pin, sdhci_pins.gpio_d7.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_d7.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_d7);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_d7, GPIO_PULL_UP);
 
 		// Additional GPIO pins for 8-bit MMC configuration
-		sunxi_gpio_init(sdhci_pins.gpio_ds.pin, sdhci_pins.gpio_ds.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_ds.pin, GPIO_PULL_DOWN);
+		sunxi_gpio_init(&sdhci_pins.gpio_ds);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_ds, GPIO_PULL_DOWN);
 
-		sunxi_gpio_init(sdhci_pins.gpio_rst.pin, sdhci_pins.gpio_rst.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_rst.pin, GPIO_PULL_UP);
+		sunxi_gpio_init(&sdhci_pins.gpio_rst);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_rst, GPIO_PULL_UP);
 	}
 
-	if (sdhci->pinctrl.gpio_cd.pin != 0) {
-		sunxi_gpio_init(sdhci_pins.gpio_cd.pin, sdhci_pins.gpio_cd.mux);
-		sunxi_gpio_set_pull(sdhci_pins.gpio_cd.pin, GPIO_PULL_UP);
+	if (sdhci->pinctrl.has_card_detect) {
+		sunxi_gpio_init(&sdhci_pins.gpio_cd);
+		sunxi_gpio_set_pull(&sdhci_pins.gpio_cd, GPIO_PULL_UP);
 	}
 }
 
@@ -631,7 +627,7 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci) {
  * @return 0 on success, -1 on failure.
  */
 static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint32_t timeout = time_us() + SMHC_TIMEOUT;
 	uint32_t *buff;
 
@@ -667,7 +663,7 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
  * @return 0 on success, or -1 if the DMA engine cannot be reset.
  */
 static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *data) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	sunxi_sdhci_desc_t *pdes = mmc_host->sdhci_desc;
 	uint32_t byte_cnt = data->blocksize * data->blocks;
 	uint8_t *buff;
@@ -681,6 +677,10 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		buff_frag_num++;
 	} else {
 		remain = SMHC_DES_BUFFER_MAX_LEN;
+	}
+	if (buff_frag_num > sdhci->dma_des_size / sizeof(*pdes)) {
+		printk_debug("SMHC: DMA descriptor region is too small\n");
+		return -1;
 	}
 
 	sunxi_sdhci_sync_all_cache();
@@ -714,7 +714,10 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 #ifndef SMHC_DMA_TRACE
 		printk_trace("SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
 					 "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
-					 i, remain, des_idx, (uint32_t) (&pdes[des_idx]), (uint32_t) ((uint32_t *) &pdes[des_idx])[0], (uint32_t) ((uint32_t *) &pdes[des_idx])[1],
+					 i, remain, des_idx,
+					 (uint32_t) (uintptr_t) &pdes[des_idx],
+					 (uint32_t) ((uint32_t *) &pdes[des_idx])[0],
+					 (uint32_t) ((uint32_t *) &pdes[des_idx])[1],
 					 (uint32_t) ((uint32_t *) &pdes[des_idx])[2], (uint32_t) ((uint32_t *) &pdes[des_idx])[3]);
 #endif// SMHC_DMA_TRACE
 	}
@@ -768,7 +771,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		mmc_host->reg->idie |= SMHC_IDMAC_RECEIVE_INTERRUPT;
 	}
 
-	mmc_host->reg->dlba = (uint32_t) pdes >> 2;
+	mmc_host->reg->dlba = (uint32_t) ((uintptr_t) pdes >> 2);
 
 	/* burst-16, rx/tx trigger level=15/240 */
 	mmc_host->reg->ftrglevel = ((3 << 28) | (15 << 16) | 240);
@@ -785,8 +788,8 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
  * @param sdhci Pointer to the SDHC controller structure.
  */
 void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
-	mmc_t *mmc = sdhci->mmc;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
+	mmc_t *mmc = &sdhci->mmc;
 	printk_trace("SMHC: ios setting bus:%u, speed %u\n", mmc->bus_width, mmc->clock);
 
 	// Configure clock and handle errors
@@ -825,7 +828,7 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
 int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci) {
 	uint32_t reg_val = 0x0;
 	uint32_t timeout = time_us() + SMHC_TIMEOUT;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
 	/* Reset controller */
 	mmc_host->reg->gctrl = 0x7;
@@ -877,7 +880,7 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci) {
  * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint32_t cmdval = SMHC_CMD_START;
 	uint32_t timeout = time_us() + SMHC_TIMEOUT;
 	uint32_t status;
@@ -928,7 +931,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 
 	if (data) {
 		/* Check data desc align */
-		if ((uint32_t) data->b.dest & 0x3) {
+		if ((uintptr_t) data->b.dest & 0x3) {
 			printk_debug("SMHC: data dest is not 4 byte align\n");
 			error_code = -1;
 			goto out;
@@ -1125,7 +1128,7 @@ out:
  * @return Returns 0 on success.
  */
 int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci) {
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
 	// Check if timing mode is mode 1
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
@@ -1157,16 +1160,13 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
 	}
 
 	/* init resource */
-	memset(&g_mmc_host, 0, sizeof(sunxi_sdhci_host_t));
-	sdhci->mmc_host = &g_mmc_host;
-	sunxi_sdhci_host_t *mmc_host = sdhci->mmc_host;
+	memset(&sdhci->mmc_host, 0, sizeof(sdhci->mmc_host));
+	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
-	memset(&g_mmc, 0, sizeof(mmc_t));
-	sdhci->mmc = &g_mmc;
-	mmc_t *mmc = sdhci->mmc;
+	memset(&sdhci->mmc, 0, sizeof(sdhci->mmc));
+	mmc_t *mmc = &sdhci->mmc;
 
-	memset(&g_mmc_timing, 0, sizeof(sunxi_sdhci_timing_t));
-	sdhci->timing_data = &g_mmc_timing;
+	memset(&sdhci->timing_data, 0, sizeof(sdhci->timing_data));
 
 	/* Set timing mode based on controller ID */
 	if (sdhci->id == MMC_CONTROLLER_0) {
@@ -1194,10 +1194,12 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
 
 	/* Set register addresses */
 	mmc_host->reg = (sdhci_reg_t *) sdhci->reg_base;
-	if (sdhci->dma_des_addr == 0)
+	if (sdhci->dma_des_addr == 0 ||
+	    sdhci->dma_des_size < sizeof(sunxi_sdhci_desc_t))
 		mmc_host->sdhci_desc = NULL;
 	else
-		mmc_host->sdhci_desc = (sunxi_sdhci_desc_t *) sdhci->dma_des_addr;
+		mmc_host->sdhci_desc =
+				(sunxi_sdhci_desc_t *) (uintptr_t) sdhci->dma_des_addr;
 
 	/* Configure pins and enable clocks */
 	sunxi_sdhci_pin_config(sdhci);
@@ -1215,7 +1217,7 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
  * @note This function is useful for debugging and analyzing the state of the SD card controller.
  */
 void sunxi_sdhci_dump_reg(sunxi_sdhci_t *sdhci) {
-	sdhci_reg_t *reg = sdhci->mmc_host->reg;
+	sdhci_reg_t *reg = sdhci->mmc_host.reg;
 	printk_trace("=========SDHCI%d REG========\n", sdhci->id);
 	printk_trace("gctrl     0x%x\n", reg->gctrl);
 	printk_trace("clkcr     0x%x\n", reg->clkcr);
@@ -1244,3 +1246,5 @@ void sunxi_sdhci_dump_reg(sunxi_sdhci_t *sdhci) {
 	printk_trace("ds_dl     0x%x\n", reg->ds_dl);
 	printk_trace("\n\n");
 }
+
+DT2C_DRIVER_COMPAT("allwinner,sunxi-mmc");

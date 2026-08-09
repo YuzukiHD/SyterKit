@@ -1,84 +1,106 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include <io.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 
+#include <driver.h>
+#include <drivers/remoteproc.h>
+#include <dt2c/driver.h>
+#include <io.h>
 #include <log.h>
 
-#include <drivers/clk.h>
+#include <drivers/reg/reg-ccu.h>
+#include <drivers/reg/reg-rproc.h>
 
-#include <drivers/remoteproc.h>
+#define SUN8IW21_RISCV_CLK_OFFSET 0x0d00U
+#define SUN8IW21_RISCV_GATING_RST_OFFSET 0x0d04U
+#define SUN8IW21_RISCV_CFG_BGR_OFFSET 0x0d0cU
+#define SUN8IW21_RISCV_START_OFFSET 0x0204U
 
-void sunxi_e907_clock_init(uint32_t addr) {
-	uint32_t reg_val;
+enum sun8iw21_e907_register {
+	SUN8IW21_E907_CCU,
+	SUN8IW21_E907_CFG,
+};
 
-	/* de-reset */
-	reg_val = read32(CCU_RISCV_CFG_BGR_REG);
-	reg_val |= CCU_RISCV_CFG_RST;
-	reg_val |= CCU_RISCV_CFG_GATING;
-	write32(CCU_RISCV_CFG_BGR_REG, reg_val);
+static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc) {
+	uint32_t value;
+	uintptr_t ccu = remoteproc->registers[SUN8IW21_E907_CCU].base;
+	uintptr_t cfg = remoteproc->registers[SUN8IW21_E907_CFG].base;
 
-	/* set start addr */
-	reg_val = addr;
-	write32(RISCV_STA_ADD_REG, reg_val);
+	value = read32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET);
+	value |= CCU_RISCV_CFG_RST | CCU_RISCV_CFG_GATING;
+	write32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET, value);
+	write32(cfg + SUN8IW21_RISCV_START_OFFSET,
+		(uint32_t) remoteproc->entry);
 
-	/* set e907 clock */
-	reg_val = read32(CCU_RISCV_CLK_REG);
-	reg_val &= ~(CCU_RISCV_CLK_MASK);
-	reg_val |= CCU_RISCV_CLK_PERI_600M;
-	write32(CCU_RISCV_CLK_REG, reg_val);
+	value = read32(ccu + SUN8IW21_RISCV_CLK_OFFSET);
+	value &= ~CCU_RISCV_CLK_MASK;
+	value |= CCU_RISCV_CLK_PERI_600M;
+	write32(ccu + SUN8IW21_RISCV_CLK_OFFSET, value);
 
-	/* turn on clock gating reset */
-	reg_val = read32(CCU_RISCV_GATING_RST_REG);
-	reg_val |= CCU_RISCV_CLK_GATING;
-	reg_val |= CCU_RISCV_SOFT_RSTN;
-	reg_val |= CCU_RISCV_SYS_APB_SOFT_RSTN;
-	reg_val |= CCU_RISCV_GATING_RST_FIELD;
-	write32(CCU_RISCV_GATING_RST_REG, reg_val);
+	value = read32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET);
+	value |= CCU_RISCV_CLK_GATING | CCU_RISCV_SOFT_RSTN |
+		 CCU_RISCV_SYS_APB_SOFT_RSTN | CCU_RISCV_GATING_RST_FIELD;
+	write32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET, value);
+	return DRIVER_OK;
 }
 
-void sunxi_e907_clock_reset(void) {
-	uint32_t reg_val;
+static int sun8iw21_e907_reset(sunxi_remoteproc_t *remoteproc) {
+	uint32_t value;
+	uintptr_t ccu = remoteproc->registers[SUN8IW21_E907_CCU].base;
 
-	/* turn off clk gating */
-	reg_val = 0;
-	reg_val |= CCU_RISCV_GATING_RST_FIELD;
-	write32(CCU_RISCV_GATING_RST_REG, reg_val);
-
-	/* assert */
-	reg_val = read32(CCU_RISCV_CFG_BGR_REG);
-	reg_val &= ~(CCU_RISCV_CFG_RST);
-	reg_val &= ~(CCU_RISCV_CFG_GATING);
-	write32(CCU_RISCV_CFG_BGR_REG, reg_val);
+	write32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET,
+		CCU_RISCV_GATING_RST_FIELD);
+	value = read32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET);
+	value &= ~(CCU_RISCV_CFG_RST | CCU_RISCV_CFG_GATING);
+	write32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET, value);
+	return DRIVER_OK;
 }
 
-void dump_e907_clock(void) {
-	uint32_t reg_val, pll_perf, factor_m, factor_n, pll_riscv;
-	uint32_t plln, pllm;
+static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc) {
+	uint32_t factor_m;
+	uint32_t factor_n;
+	uint32_t pll_peripheral;
+	uint32_t pll_riscv;
+	uint32_t pllm;
+	uint32_t plln;
+	uint32_t value;
 	uint8_t p0;
+	uintptr_t ccu = remoteproc->registers[SUN8IW21_E907_CCU].base;
 
-	/* PLL PERI */
-	reg_val = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
-
-	if (reg_val & (1 << 31)) {
-		plln = ((reg_val >> 8) & 0xff) + 1;
-		pllm = (reg_val & 0x01) + 1;
-		p0 = ((reg_val >> 16) & 0x03) + 1;
-		pll_perf = (24 * plln) / (pllm * p0) >> 1;
-	} else {
+	value = read32(ccu + CCU_PLL_PERI_CTRL_REG);
+	if ((value & (1U << 31)) == 0U) {
 		printk_info("CLK: PLL_peri disabled\n");
 		return;
 	}
+	plln = ((value >> 8) & 0xffU) + 1U;
+	pllm = (value & 0x01U) + 1U;
+	p0 = (uint8_t) (((value >> 16) & 0x03U) + 1U);
+	pll_peripheral = ((24U * plln) / (pllm * p0)) >> 1;
 
-	reg_val = read32(CCU_RISCV_CLK_REG);
-	factor_m = (reg_val & 0x1F) + 1;
-	factor_n = ((reg_val >> 8) & 0x3) + 1;
-	pll_riscv = pll_perf / factor_m;
-
+	value = read32(ccu + SUN8IW21_RISCV_CLK_OFFSET);
+	factor_m = (value & 0x1fU) + 1U;
+	factor_n = ((value >> 8) & 0x3U) + 1U;
+	pll_riscv = pll_peripheral / factor_m;
 	printk_info("CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
 	printk_info("CLK: RISC-V AXI FREQ=%uMHz\n", pll_riscv / factor_n);
 }
+
+static const sunxi_remoteproc_ops_t sun8iw21_e907_ops = {
+	.reset = sun8iw21_e907_reset,
+	.start = sun8iw21_e907_start,
+	.dump = sun8iw21_e907_dump,
+};
+
+int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
+			  sunxi_remoteproc_variant_t variant) {
+	if (remoteproc == NULL ||
+	    variant != SUNXI_REMOTEPROC_VARIANT_SUN8IW21_E907 ||
+	    remoteproc->register_count != 2U ||
+	    remoteproc->registers[SUN8IW21_E907_CCU].size < 0xd10U ||
+	    remoteproc->registers[SUN8IW21_E907_CFG].size < 0x208U)
+		return DRIVER_ERROR_INVALID;
+	remoteproc->ops = &sun8iw21_e907_ops;
+	return DRIVER_OK;
+}
+
+DT2C_DRIVER_COMPAT("allwinner,sun8iw21-e907");
