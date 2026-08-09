@@ -18,28 +18,28 @@
 
 /**
  * @brief Maximum limit for backtrace scanning.
- * 
- * This constant defines the maximum limit for scanning the backtrace. 
- * The backtrace function will scan instructions and stack frames 
+ *
+ * This constant defines the maximum limit for scanning the backtrace.
+ * The backtrace function will scan instructions and stack frames
  * up to this size. If the limit is exceeded, the backtrace operation will fail.
  */
 #define BT_SCAN_MAX_LIMIT 4096
 
 /**
  * @brief Maximum number of backtrace levels.
- * 
- * This constant defines the maximum depth of the backtrace. It limits 
+ *
+ * This constant defines the maximum depth of the backtrace. It limits
  * how many stack frames the backtrace function can unwind before stopping.
  */
 #define BT_LEVEL_LIMIT 64
 
 /**
  * @brief Converts a program counter (PC) value to an address.
- * 
- * This macro takes a program counter (PC) value and converts it to 
+ *
+ * This macro takes a program counter (PC) value and converts it to
  * a valid address by clearing the least significant bit. This operation
  * is commonly used to align PC addresses properly for instruction fetch.
- * 
+ *
  * @param pc The program counter value to convert.
  * @return The corresponding address, aligned to a 2-byte boundary.
  */
@@ -47,11 +47,11 @@
 
 /**
  * @brief Determines the length of an instruction in bytes based on its encoding.
- * 
+ *
  * This macro computes the length of an instruction in bytes, given a 32-bit
  * instruction encoding. The length is determined based on specific bit patterns
  * in the instruction word.
- * 
+ *
  * @param x The instruction encoding (32-bit).
  * @return The length of the instruction in bytes (either 2, 4, 6, or 8).
  */
@@ -61,11 +61,11 @@
 
 /**
  * @brief Extracts a specific bit field from a value.
- * 
- * This macro extracts a bit field from a value `x` based on the specified 
- * high and low bit positions. The bits are masked and shifted to the 
+ *
+ * This macro extracts a bit field from a value `x` based on the specified
+ * high and low bit positions. The bits are masked and shifted to the
  * right, leaving the desired bit field.
- * 
+ *
  * @param x The value from which to extract the bit field.
  * @param high The index of the highest bit (inclusive).
  * @param low The index of the lowest bit (inclusive).
@@ -75,7 +75,7 @@
 
 /**
  * @brief Pointer to the start of the image in memory.
- * 
+ *
  * This variable marks the start address of the memory region that
  * contains the program image. It is used to check if a program counter
  * (PC) value falls within the valid range of executable memory.
@@ -85,7 +85,7 @@ extern uint8_t __spl_end[];
 
 /**
  * @brief Pointer to the end of the stack service region.
- * 
+ *
  * This variable marks the end address of the memory region used for the
  * stack service. It is used to check if a program counter (PC) value falls
  * within the valid memory region, preventing access to out-of-bounds memory.
@@ -95,11 +95,11 @@ extern uint8_t __stack_srv_start[];
 
 /**
  * @brief Checks whether a given program counter (PC) address is within a valid range.
- * 
+ *
  * This function checks if the provided PC (program counter) value lies within
  * the memory region between `__spl_start` and `__stack_srv_end`. It ensures that
  * the PC value points to a valid memory address in the executable region of the program.
- * 
+ *
  * @param pc The program counter value to check.
  * @return 1 if the PC is within the valid address range, 0 otherwise.
  */
@@ -138,14 +138,14 @@ static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16) {
 
 /**
  * @brief Finds the offset of the Link Register (LR) from the return address in a backtrace.
- * 
- * This function attempts to determine the offset of the Link Register (LR) from the return 
- * address in a backtrace. It checks whether the LR corresponds to an IRQ handler exit address 
- * and adjusts accordingly. The function also checks the validity of the address and computes 
+ *
+ * This function attempts to determine the offset of the Link Register (LR) from the return
+ * address in a backtrace. It checks whether the LR corresponds to an IRQ handler exit address
+ * and adjusts accordingly. The function also checks the validity of the address and computes
  * the instruction length based on the encoded instruction in memory.
- * 
+ *
  * @param LR The address of the Link Register (LR) to be checked.
- * @return The offset from the LR to the return address if valid, 0 if invalid or the address is 
+ * @return The offset from the LR to the return address if valid, 0 if invalid or the address is
  *         within an IRQ handler exit region.
  */
 static int riscv_backtrace_find_lr_offset(char *LR, bool emit) {
@@ -180,12 +180,12 @@ static int riscv_backtrace_find_lr_offset(char *LR, bool emit) {
 
 /**
  * @brief Determines the frame size for a push to the link register (LR) in a RISC-V instruction.
- * 
+ *
  * This function analyzes a 32-bit RISC-V instruction to determine whether it corresponds to a
- * "push" operation to the link register (LR) or the stack pointer (SP), and computes the 
- * associated frame size or offset. The function specifically handles instructions that 
+ * "push" operation to the link register (LR) or the stack pointer (SP), and computes the
+ * associated frame size or offset. The function specifically handles instructions that
  * manipulate the stack pointer or the link register.
- * 
+ *
  * @param inst The 32-bit instruction to analyze.
  * @param offset A pointer to an integer where the computed offset (in terms of long size) will be stored.
  * @return 0 if the instruction is a valid push operation, otherwise -1.
@@ -241,15 +241,15 @@ int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset) {
 
 /**
  * @brief Determines the frame size for a push to the link register (LR) in a RISC-V compressed instruction.
- * 
+ *
  * This function analyzes a 16-bit RISC-V compressed instruction (C-extension) to determine if it corresponds
- * to a "push" operation to the link register (LR) or the stack pointer (SP), and computes the associated 
+ * to a "push" operation to the link register (LR) or the stack pointer (SP), and computes the associated
  * frame size or offset. The function specifically handles instructions that manipulate the stack pointer
  * or the link register in compressed RISC-V instructions.
  *
  * @param inst The 16-bit compressed instruction to analyze.
  * @param offset A pointer to an integer where the computed offset (in terms of long size) will be stored.
- * 
+ *
  * @return 0 if the instruction is a valid push operation, otherwise -1.
  */
 static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset) {
@@ -336,31 +336,31 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset) {
 }
 
 /**
- * @brief Checks if a RISC-V instruction corresponds to stack push instructions 
- *        like `addi sp, sp, imm` and `addiw sp, sp, imm`, and calculates the 
+ * @brief Checks if a RISC-V instruction corresponds to stack push instructions
+ *        like `addi sp, sp, imm` and `addiw sp, sp, imm`, and calculates the
  *        effective stack push size based on the immediate value.
  *
- * This function examines a 32-bit RISC-V instruction and checks if it corresponds 
- * to one of two stack adjustment operations: 
+ * This function examines a 32-bit RISC-V instruction and checks if it corresponds
+ * to one of two stack adjustment operations:
  * - `addi sp, sp, imm` (add immediate to the stack pointer)
  * - `addiw sp, sp, imm` (add immediate to the stack pointer, with word extension).
  *
- * If the instruction matches one of these operations, it calculates the immediate 
- * value and adjusts the stack pointer accordingly. The size of the stack push 
- * is calculated based on the immediate value, and the function returns this 
+ * If the instruction matches one of these operations, it calculates the immediate
+ * value and adjusts the stack pointer accordingly. The size of the stack push
+ * is calculated based on the immediate value, and the function returns this
  * value divided by the size of a `long` type.
  *
- * If the instruction does not correspond to one of the stack push operations, 
+ * If the instruction does not correspond to one of the stack push operations,
  * the function returns `-1`.
  *
  * @param inst The 32-bit RISC-V instruction to check.
- * 
+ *
  * @return The stack push size in `long` units
- *             if the instruction corresponds to a valid stack push operation, 
+ *             if the instruction corresponds to a valid stack push operation,
  *             otherwise returns `-1`.
  *
- * @note The instruction must modify the stack pointer (`sp`) to be considered valid. 
- *       The immediate value is expected to be a signed 12-bit value and may represent 
+ * @note The instruction must modify the stack pointer (`sp`) to be considered valid.
+ *       The immediate value is expected to be a signed 12-bit value and may represent
  *       a positive or negative offset to the stack pointer.
  */
 int riscv_ins32_backtrace_stask_push(uint32_t inst) {
@@ -399,24 +399,24 @@ int riscv_ins32_backtrace_stask_push(uint32_t inst) {
 
 /**
  * @brief Processes compressed RISC-V instructions related to stack pointer adjustments.
- * 
- * This function checks if a 16-bit compressed RISC-V instruction corresponds to one of the 
+ *
+ * This function checks if a 16-bit compressed RISC-V instruction corresponds to one of the
  * following stack pointer modification operations:
  * - `c.addi16sp` (compressed `addi16sp` instruction, used for modifying the stack pointer with a 9-bit signed immediate)
  * - `c.addi sp` (compressed `addi` instruction for modifying `sp` with a 6-bit immediate)
  * - `c.addiw sp` (compressed `addiw` instruction for modifying `sp` with a 6-bit immediate)
  *
- * If the instruction matches one of these formats, it extracts the immediate value and calculates the 
- * corresponding adjustment to the stack pointer, returning the size of the adjustment in terms of `long` units. 
- * The function returns `-1` if the instruction doesn't correspond to any recognized format or if the immediate 
+ * If the instruction matches one of these formats, it extracts the immediate value and calculates the
+ * corresponding adjustment to the stack pointer, returning the size of the adjustment in terms of `long` units.
+ * The function returns `-1` if the instruction doesn't correspond to any recognized format or if the immediate
  * value does not result in a valid stack adjustment.
  *
  * @param inst The 16-bit compressed RISC-V instruction to be analyzed.
- * 
+ *
  * @return The stack adjustment size in `long` units if the instruction is valid,
  *             otherwise returns `-1`.
  *
- * @note 
+ * @note
  * - The function assumes that the instruction is valid and checks for stack pointer adjustments only.
  * - For `c.addi16sp`, the immediate is a 9-bit signed value that modifies the stack pointer (`sp`).
  * - For `c.addi sp, sp, imm` and `c.addiw sp, imm`, the immediate is a 6-bit signed value used to modify `sp`.
@@ -474,20 +474,20 @@ static int riscv_ins16_backtrace_stask_push(uint32_t inst) {
 /**
  * @brief Perform a backtrace from the current stack pointer and program counter.
  *
- * This function walks the stack to retrieve the calling function's information 
- * by analyzing the return address (`LR`) and corresponding program counter (`PC`) values. 
- * It starts by looking for instructions that push the link register (`LR`) to the stack, 
- * then works backwards through the stack frames. The function handles both 16-bit and 
+ * This function walks the stack to retrieve the calling function's information
+ * by analyzing the return address (`LR`) and corresponding program counter (`PC`) values.
+ * It starts by looking for instructions that push the link register (`LR`) to the stack,
+ * then works backwards through the stack frames. The function handles both 16-bit and
  * 32-bit instructions in RISC-V architecture.
  *
- * The function attempts to find the appropriate return address and adjusts the 
- * stack pointer (`SP`) accordingly. It then calculates the program counter (`PC`) 
- * from the link register (`LR`) by finding the corresponding offset. The function 
- * is responsible for determining whether the address information is valid and updates 
+ * The function attempts to find the appropriate return address and adjusts the
+ * stack pointer (`SP`) accordingly. It then calculates the program counter (`PC`)
+ * from the link register (`LR`) by finding the corresponding offset. The function
+ * is responsible for determining whether the address information is valid and updates
  * the `SP` and `PC` pointers.
  *
- * The function returns `1` if a valid backtrace is successfully performed, 
- * or `0` if the link register's offset is zero. If an error is encountered 
+ * The function returns `1` if a valid backtrace is successfully performed,
+ * or `0` if the link register's offset is zero. If an error is encountered
  * at any point, the function prints an error message and returns `-1`.
  *
  * @param pSP Pointer to the stack pointer (`SP`) to be updated.
@@ -496,9 +496,9 @@ static int riscv_ins16_backtrace_stask_push(uint32_t inst) {
  * @return 1 if a valid backtrace is performed, 0 if the link-register offset
  *         is zero, or -1 if an address or instruction is invalid.
  *
- * @note The backtrace relies on the presence of valid instruction addresses and 
- *       will fail if the stack pointer or program counter point to invalid regions. 
- *       The function also uses `insn_length()` to determine instruction lengths 
+ * @note The backtrace relies on the presence of valid instruction addresses and
+ *       will fail if the stack pointer or program counter point to invalid regions.
+ *       The function also uses `insn_length()` to determine instruction lengths
  *       and adjusts the stack and program counter accordingly.
  */
 static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
@@ -601,7 +601,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 
 /**
  * @brief Performs a backtrace from the current stack frame.
- * 
+ *
  * This function is used to trace the call stack, starting from the provided program counter
  * and stack pointer. Before performing the backtrace, it checks if the program counter is
  * valid (i.e., points to executable code). If the program counter is invalid, the function
@@ -612,7 +612,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
  *                    result of the backtrace.
  * @param[in,out] pPC Pointer to the program counter. The program counter is updated with
  *                    the result of the backtrace.
- * 
+ *
  * @return 0 if the backtrace is successful and the program counter is updated correctly,
  *         or -1 if an invalid program counter is provided or the backtrace fails.
  */
@@ -626,10 +626,10 @@ static int backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 
 /**
  * @brief Handles the backtrace return pop for a 32-bit instruction.
- * 
- * This function checks if the provided 32-bit instruction matches the return 
+ *
+ * This function checks if the provided 32-bit instruction matches the return
  * address instruction and returns the corresponding result.
- * 
+ *
  * @param inst The 32-bit instruction to check.
  * @return 0 if the instruction matches the return instruction, -1 otherwise.
  */
@@ -646,10 +646,10 @@ static int riscv_ins32_backtrace_return_pop(uint32_t inst) {
 
 /**
  * @brief Handles the backtrace return pop for a 16-bit instruction.
- * 
- * This function checks if the provided 16-bit instruction matches the return 
+ *
+ * This function checks if the provided 16-bit instruction matches the return
  * address instruction and returns the corresponding result.
- * 
+ *
  * @param inst The 16-bit instruction to check.
  * @return 0 if the instruction matches the return instruction, -1 otherwise.
  */
@@ -666,11 +666,11 @@ static int riscv_ins16_backtrace_return_pop(uint16_t inst) {
 
 /**
  * @brief Handles the backtrace stack pop for a 32-bit instruction.
- * 
- * This function checks if the instruction is a stack pointer adjustment (addi or addiw) 
- * and computes the corresponding stack adjustment. It handles both immediate values 
+ *
+ * This function checks if the instruction is a stack pointer adjustment (addi or addiw)
+ * and computes the corresponding stack adjustment. It handles both immediate values
  * and calculates the stack width.
- * 
+ *
  * @param inst The 32-bit instruction to check.
  * @return The computed stack pop value, or -1 if no match is found.
  */
@@ -713,11 +713,11 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst) {
 
 /**
  * @brief Handles the backtrace stack pop for a 16-bit instruction.
- * 
- * This function checks if the provided 16-bit instruction is a stack pointer 
- * adjustment (either `c.addi16sp`, `c.addi sp`, or `c.addiw sp`) and computes 
+ *
+ * This function checks if the provided 16-bit instruction is a stack pointer
+ * adjustment (either `c.addi16sp`, `c.addi sp`, or `c.addiw sp`) and computes
  * the corresponding stack adjustment.
- * 
+ *
  * @param inst The 16-bit instruction to check.
  * @return The computed stack pop value, or -1 if no valid stack pop is found.
  */
@@ -780,15 +780,15 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst) {
 
 /**
  * @brief Reconstructs a backtrace using the link register (LR) and program counter (PC).
- * 
- * This function inspects the instructions at the current PC and LR, computes the stack 
- * frames, and updates the SP and PC accordingly. It tries to decode 16-bit and 32-bit 
+ *
+ * This function inspects the instructions at the current PC and LR, computes the stack
+ * frames, and updates the SP and PC accordingly. It tries to decode 16-bit and 32-bit
  * instructions and handles different instruction formats for backtrace purposes.
- * 
+ *
  * @param pSP Pointer to the stack pointer to be updated.
  * @param pPC Pointer to the program counter to be updated.
  * @param LR Link register (return address) to start the backtrace from.
- * 
+ *
  * @return 1 if successful, 0 if the link register offset is zero, -1 on failure.
  */
 static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
@@ -911,14 +911,14 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 
 /**
  * @brief Perform a backtrace from the given program counter (PC), stack pointer (SP), and link register (LR).
- * 
+ *
  * This function tries to traverse the stack to generate a backtrace, logging the current PC at each level.
  * If the stack backtrace fails, it attempts to trace using the LR as a fallback.
- * 
+ *
  * @param PC Pointer to the program counter.
  * @param SP Pointer to the stack pointer.
  * @param LR Pointer to the link register (return address).
- * 
+ *
  * @return The number of backtrace levels found, or 0 if the backtrace failed.
  */
 int backtrace(char *PC, long *SP, char *LR) {
@@ -975,10 +975,10 @@ int backtrace_from_context(const struct backtrace_context *context) {
 
 /**
  * @brief Dumps the current stack trace by fetching the program counter (PC), stack pointer (SP), and link register (LR).
- * 
+ *
  * This function retrieves the current values of the stack pointer, program counter, and link register,
  * then uses these to generate a backtrace. If either the stack pointer or program counter is invalid, it returns 0.
- * 
+ *
  * @return The backtrace level, or 0 if SP or PC is invalid.
  */
 static int __attribute__((noinline, used)) dump_stack_from_context(long *SP,

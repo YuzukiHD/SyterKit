@@ -22,9 +22,9 @@
 
 /**
  * @brief Set the SDHC controller's clock frequency.
- * 
+ *
  * This function sets the clock frequency for the specified SDHC controller.
- * 
+ *
  * @param sdhci Pointer to the SDHC controller structure.
  * @param clk_hz Desired clock frequency in Hertz.
  * @return Returns 0 on success, -1 on failure.
@@ -71,9 +71,9 @@ set_mclk:
 
 /**
  * @brief Get the current clock frequency of the SDHC controller.
- * 
+ *
  * This function retrieves the current clock frequency of the specified SDHC controller.
- * 
+ *
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Current clock frequency in Hertz.
  */

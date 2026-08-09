@@ -113,7 +113,7 @@ typedef enum {
 
 /**
  * @brief PWM operation modes.
- * 
+ *
  * This enum defines the modes of operation for the PWM signal.
  * - PWM_MODE_CYCLE: PWM signal operates in a continuous cycle.
  * - PWM_MODE_PLUSE: PWM signal generates a pulse waveform.
@@ -125,7 +125,7 @@ typedef enum {
 
 /**
  * @brief PWM signal polarity.
- * 
+ *
  * This enum defines the polarity of the PWM signal.
  * - PWM_POLARITY_INVERSED: Inverted polarity for the PWM signal.
  * - PWM_POLARITY_NORMAL: Normal polarity for the PWM signal.
@@ -137,7 +137,7 @@ typedef enum {
 
 /**
  * @brief PWM clock source.
- * 
+ *
  * This enum defines the available clock sources for the PWM module.
  * - PWM_CLK_SRC_OSC: Clock sourced from the oscillator.
  * - PWM_CLK_SRC_APB: Clock sourced from the APB bus.
@@ -149,7 +149,7 @@ typedef enum {
 
 /**
  * @brief PWM channel modes.
- * 
+ *
  * This enum defines the operating modes for PWM channels.
  * - PWM_CHANNEL_SINGLE: Single-channel mode where each PWM channel operates independently.
  * - PWM_CHANNEL_BIND: Multi-channel bind mode where multiple channels can be synchronized.
@@ -161,7 +161,7 @@ typedef enum {
 
 /**
  * @brief PWM channel configuration.
- * 
+ *
  * This structure defines the configuration of a PWM channel.
  * It includes the GPIO pin, the bind channel for multi-channel operation,
  * the dead time between signal transitions, and the channel mode.
@@ -175,7 +175,7 @@ typedef struct sunxi_pwm_channel {
 
 /**
  * @brief PWM clock source configuration.
- * 
+ *
  * This structure holds the configuration of the clock sources for the PWM module.
  * It contains fields for the oscillator and APB clock sources.
  */
@@ -186,7 +186,7 @@ typedef struct sunxi_pwm_clk_src {
 
 /**
  * @brief Main PWM configuration structure.
- * 
+ *
  * This structure holds the complete configuration for the PWM module, including
  * the base address, channel settings, clock source settings, and the module's operational status.
  */
@@ -203,7 +203,7 @@ typedef struct sunxi_pwm {
 
 /**
  * @brief PWM configuration parameters.
- * 
+ *
  * This structure defines the parameters for configuring the PWM signal's behavior,
  * including the duty cycle, period, polarity, operating mode, and pulse count.
  */
@@ -217,28 +217,28 @@ typedef struct sunxi_pwm_config {
 
 /**
  * @brief Initialize the PWM instance.
- * 
- * This function initializes the PWM instance by setting up the necessary clocks and 
+ *
+ * This function initializes the PWM instance by setting up the necessary clocks and
  * marking the PWM as initialized (status set to true).
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_init(sunxi_pwm_t *pwm);
 
 /**
  * @brief Deinitialize the PWM instance.
- * 
+ *
  * This function deinitializes the PWM instance by deactivating the clocks and
- * re-initializing the GPIOs for each channel. It also marks the PWM as uninitialized 
+ * re-initializing the GPIOs for each channel. It also marks the PWM as uninitialized
  * (status set to false).
- * 
+ *
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_deinit(sunxi_pwm_t *pwm);
 
 /**
  * @brief Set configuration for a PWM channel.
- * 
+ *
  * This function sets the configuration for the specified PWM channel. It checks if the PWM is initialized,
  * validates the channel index, and then applies the configuration either for a bound channel or a single channel
  * based on the current channel mode.
@@ -246,21 +246,21 @@ void sunxi_pwm_deinit(sunxi_pwm_t *pwm);
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to configure (0-based index).
  * @param config Pointer to the PWM configuration structure containing the settings.
- * 
+ *
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *config);
 
 /**
  * @brief Release the PWM channel.
- * 
- * This function releases the specified PWM channel. It checks if the PWM is initialized, 
- * validates the channel index, and then either releases a bound channel or a single channel 
+ *
+ * This function releases the specified PWM channel. It checks if the PWM is initialized,
+ * validates the channel index, and then either releases a bound channel or a single channel
  * based on the current channel mode.
  *
  * @param pwm Pointer to the PWM instance structure.
  * @param channel The PWM channel to release (0-based index).
- * 
+ *
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel);
