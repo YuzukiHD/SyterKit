@@ -20,7 +20,6 @@ static void timer_1500ms_run2_cb(void *arg, uint32_t event) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	sunxi_clk_init();
 

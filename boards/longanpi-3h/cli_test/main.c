@@ -29,7 +29,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	sunxi_clk_init();
 

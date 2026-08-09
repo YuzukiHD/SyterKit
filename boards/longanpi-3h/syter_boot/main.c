@@ -250,7 +250,6 @@ const msh_command_entry commands[] = {
  */
 int main(void) {
 	/* Initialize the debug serial interface. */
-	sunxi_serial_init(&uart_dbg);
 
 	/* Display the bootloader banner. */
 	show_banner();

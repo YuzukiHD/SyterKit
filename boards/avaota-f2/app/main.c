@@ -41,7 +41,6 @@ void sunxi_pmc_config(void) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

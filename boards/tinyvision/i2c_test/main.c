@@ -34,7 +34,6 @@ sunxi_i2c_t i2c_0 = {
 };
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	sunxi_clk_init();
 

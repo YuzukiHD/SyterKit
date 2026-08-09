@@ -44,6 +44,7 @@ sunxi_serial_t uart_dbg = {
 						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
 				},
 };
+SUNXI_SERIAL_DEVICE(uart_dbg);
 
 sunxi_dma_t sunxi_dma = {
 		.dma_reg_base = SUNXI_DMA_BASE,

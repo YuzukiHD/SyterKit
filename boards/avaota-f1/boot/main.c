@@ -338,10 +338,7 @@ const msh_command_entry commands[] = {
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
-	sunxi_clk_pre_init();
-
 	/* Initialize the debug serial interface. */
-	sunxi_serial_init(&uart_dbg);
 
 	/* Display the bootloader banner. */
 	show_banner();

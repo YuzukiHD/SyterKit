@@ -9,6 +9,7 @@
 
 #include <timer.h>
 
+#include <initcall.h>
 #include <log.h>
 
 #include <drivers/clk.h>
@@ -236,6 +237,12 @@ void sunxi_clk_pre_init(void) {
 	set_apb_spec();
 	set_pll_peri();
 }
+
+static int sunxi_clk_pre_initcall(void) {
+	sunxi_clk_pre_init();
+	return 0;
+}
+early_initcall(sunxi_clk_pre_initcall);
 
 void sunxi_clk_dump() {
 	uint32_t reg_val = 0;

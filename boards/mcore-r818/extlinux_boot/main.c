@@ -559,7 +559,6 @@ _error:
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	ar100s_gpu_fix();
 

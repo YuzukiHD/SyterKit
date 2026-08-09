@@ -10,7 +10,6 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	printk_info("Hello World!\n");
 

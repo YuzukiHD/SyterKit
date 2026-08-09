@@ -67,6 +67,7 @@ sunxi_serial_t uart_dbg = {
 						.parent_clk = SERIAL_DEFAULT_PARENT_CLK,
 				},
 };
+SUNXI_SERIAL_DEVICE(uart_dbg);
 
 sunxi_i2c_t i2c_pmu = {
 		.base = SUNXI_TWI0_BASE,

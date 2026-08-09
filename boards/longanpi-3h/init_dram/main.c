@@ -20,7 +20,6 @@ extern sunxi_i2c_t i2c_pmu;
 extern void set_cpu_poweroff(void);
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

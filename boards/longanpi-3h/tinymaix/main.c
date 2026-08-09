@@ -265,7 +265,6 @@ static void parse_output(tm_mat_t *outs) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

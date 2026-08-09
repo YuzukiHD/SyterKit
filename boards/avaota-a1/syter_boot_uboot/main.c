@@ -292,7 +292,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 

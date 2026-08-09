@@ -47,6 +47,7 @@ sunxi_serial_t uart_dbg = {
 						.parent_clk = 192000000,
 				},
 };
+SUNXI_SERIAL_DEVICE(uart_dbg);
 
 sunxi_serial_t uart_card = {
 		.base = SUNXI_UART0_BASE,

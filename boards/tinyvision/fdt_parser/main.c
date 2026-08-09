@@ -154,7 +154,6 @@ static int load_sdcard(image_info_t *image) {
 
 int main(void) {
 	/* Initialize UART debug interface */
-	sunxi_serial_init(&uart_dbg);
 
 	/* Print boot screen */
 	show_banner();

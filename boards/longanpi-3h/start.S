@@ -165,6 +165,8 @@ reset:
 
 	bl neon_enable
 
+	bl do_initcalls
+
 	bl main
 
 clear_bss:

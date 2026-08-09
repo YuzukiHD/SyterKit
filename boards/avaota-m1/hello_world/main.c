@@ -187,7 +187,6 @@ static void sunxi_board_power_init(void) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	sunxi_res_ctrl_init();
 

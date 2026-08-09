@@ -117,10 +117,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_clk_pre_init();
-
-	sunxi_serial_init(&uart_dbg);
-
 	show_banner();
 
 	printk_info("Hello World!\n");

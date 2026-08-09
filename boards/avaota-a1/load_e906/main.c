@@ -168,7 +168,6 @@ static int load_sdcard(image_info_t *image) {
 }
 
 int main(void) {
-	sunxi_serial_init(&uart_dbg);
 
 	show_banner();
 
