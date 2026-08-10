@@ -148,7 +148,7 @@ uintptr_t sunxi_dma_request_from_last(sunxi_dma_t *dma, uint32_t dmatype);
 /**
  * @brief Release a previously requested DMA channel.
  *
- * @param hdma The DMA channel number to release.
+ * @param dma_fd The DMA channel handle to release.
  * @return 0 if successful, or an error code if failed.
  */
 int sunxi_dma_release(uintptr_t dma_fd);

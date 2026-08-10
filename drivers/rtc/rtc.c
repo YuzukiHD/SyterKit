@@ -38,6 +38,7 @@ static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {
 /**
  * @brief Write data to an RTC register
  * @details Writes a 32-bit value to the RTC register at the specified index.
+ * @param rtc RTC instance containing the register data area
  * @param index The index of the RTC register to write data to
  * @param val The value to write to the RTC register
  */
@@ -50,6 +51,7 @@ void rtc_write_data(const sunxi_rtc_t *rtc, int index, uint32_t val) {
 /**
  * @brief Read data from an RTC register
  * @details Reads a 32-bit value from the RTC register at the specified index.
+ * @param rtc RTC instance containing the register data area
  * @param index The index of the RTC register to read data from
  * @return The value read from the RTC register
  */
@@ -64,6 +66,7 @@ uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index) {
  * @details Sets the FEL flag in the RTC register, which indicates that the system
  *          should enter Fastboot mode. The function verifies the write operation
  *          was successful by reading back the value.
+ * @param rtc RTC instance containing the register data area
  */
 void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
@@ -79,6 +82,7 @@ void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
  * @details Stores the initialization timestamp (in milliseconds) in the RTC register.
  *          This value can be used for timing operations or to determine the system
  *          uptime. The function verifies the write operation was successful.
+ * @param rtc RTC instance containing the register data area
  */
 void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
 	uint32_t init_time_ms = get_init_timestamp();
@@ -96,6 +100,7 @@ void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
  * 
  * This function is used to set the parameters for DRAM and ensures the success of parameter setting through a loop.
  * 
+ * @param rtc RTC instance containing the register data area.
  * @param dram_para_addr Address for DRAM parameters to be set.
  * 
  * @note This function continuously attempts to set DRAM parameters until it succeeds.
@@ -112,6 +117,7 @@ void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr) {
 /**
  * @brief Check if the FEL flag is set
  * @details Reads the FEL flag from the RTC register and returns whether it is set.
+ * @param rtc RTC instance containing the register data area
  * @return 1 if the FEL flag is set, 0 otherwise
  */
 uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
@@ -122,6 +128,7 @@ uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
  * @brief Clear the FEL (Fastboot External Loader) flag
  * @details Clears the FEL flag in the RTC register after it has been processed.
  *          The function verifies the write operation was successful by reading back the value.
+ * @param rtc RTC instance containing the register data area
  */
 void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
@@ -136,6 +143,7 @@ void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
  * @brief Set the boot mode flag
  * @details Sets the boot mode flag in the RTC register, which determines how the
  *          system will boot. The function verifies the write operation was successful.
+ * @param rtc RTC instance containing the register data area
  * @param flag The boot mode flag value to set
  * @return 0 if successful
  */
@@ -155,6 +163,7 @@ int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag) {
  * @details Reads the boot mode flag from the RTC register. This is used to determine
  *          how the system should boot. The operation is designed to be compatible
  *          with how the kernel reads this value.
+ * @param rtc RTC instance containing the register data area
  * @return The value of the boot mode flag
  */
 int rtc_get_bootmode_flag(const sunxi_rtc_t *rtc) {

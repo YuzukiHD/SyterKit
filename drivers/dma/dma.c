@@ -121,6 +121,7 @@ void sunxi_dma_exit(sunxi_dma_t *dma) {
 /**
  * @brief Request a DMA channel starting from the last available
  * @details Searches for an available DMA channel starting from the highest-numbered channel.
+ * @param dma DMA controller to allocate the channel from
  * @param dmatype Type of DMA channel to request (currently unused)
  * @return Handle to the requested DMA channel, or 0 if no channels are available
  */
@@ -142,6 +143,7 @@ uintptr_t sunxi_dma_request_from_last(sunxi_dma_t *dma, uint32_t dmatype) {
 /**
  * @brief Request a DMA channel
  * @details Searches for an available DMA channel starting from channel 0.
+ * @param dma DMA controller to allocate the channel from
  * @param dmatype Type of DMA channel to request (currently unused)
  * @return Handle to the requested DMA channel, or 0 if no channels are available
  */

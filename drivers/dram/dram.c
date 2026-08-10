@@ -24,6 +24,7 @@
  * @details This weak function returns the total size of the system DRAM in bytes.
  *          Platform-specific implementations should override this function to return
  *          the actual DRAM size detected for the specific SoC and board configuration.
+ * @param dram DRAM instance to query.
  * @return Total DRAM size in bytes. Default implementation returns 0.
  */
 uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram) {
@@ -36,8 +37,8 @@ uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram) {
  *          Platform-specific implementations should override this function to perform
  *          SoC-specific DRAM initialization including timing configuration, voltage setup,
  *          and memory training.
- * @param para Pointer to initialization parameters. The exact structure depends on the
- *             platform implementation.
+ * @param dram DRAM instance containing the initialization parameters. The exact
+ *             structure depends on the platform implementation.
  * @return 0 on success, non-zero error code on failure. Default implementation returns 0.
  */
 uint32_t __attribute__((weak)) sunxi_dram_init(sunxi_dram_t *dram) {
