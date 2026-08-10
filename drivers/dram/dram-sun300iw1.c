@@ -1684,9 +1684,8 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para) {
  * in the `dram_para_t` structure. It calls the `init_DRAM` function to perform 
  * the actual initialization and returns the result.
  * 
- * @param para A pointer to the `dram_para_t` structure that contains DRAM 
- *             initialization parameters. The function casts this void pointer 
- *             to a `dram_para_t` pointer.
+ * @param dram A pointer to the DRAM instance containing the `dram_para_t`
+ *             initialization parameters.
  * 
  * @return The result of `init_DRAM()`, which
  *                  represents the size of the initialized DRAM in MB. A return 

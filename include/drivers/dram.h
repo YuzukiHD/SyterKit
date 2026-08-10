@@ -141,6 +141,7 @@ typedef struct {
  * This function retrieves the total size of the DRAM available in the 
  * system. The size is returned in bytes.
  * 
+ * @param dram DRAM instance to query.
  * @return The size of the DRAM in bytes.
  */
 uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram);
