@@ -20,4 +20,5 @@
 /tools/mksunxi
 /tools/bin2array
 /tools/bin2asm
+/tools/mkbacktrace
 boards/*/load_c906/c906_firmware/build/
