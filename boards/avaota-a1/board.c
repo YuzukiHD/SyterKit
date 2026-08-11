@@ -22,20 +22,6 @@
 #include <drivers/sid.h>
 #include <drivers/spi.h>
 #include <dt-compatible/sid-dt.h>
-void neon_enable(void) {
-	/* set NSACR, both Secure and Non-secure access are allowed to NEON */
-	asm volatile("MRC p15, 0, r0, c1, c1, 2");
-	asm volatile("ORR r0, r0, #(0x3<<10) @ enable fpu/neon");
-	asm volatile("MCR p15, 0, r0, c1, c1, 2");
-	/* Set the CPACR for access to CP10 and CP11*/
-	asm volatile("LDR r0, =0xF00000");
-	asm volatile("MCR p15, 0, r0, c1, c0, 2");
-	/* Set the FPEXC EN bit to enable the FPU */
-	asm volatile("MOV r3, #0x40000000");
-	/*@VMSR FPEXC, r3*/
-	asm volatile("MCR p10, 7, r3, c8, c0, 0");
-}
-
 void gicr_set_waker(void) {
 	uint32_t gicr_waker = read32(GICR_WAKER(0));
 	if ((gicr_waker & 2) == 0) {

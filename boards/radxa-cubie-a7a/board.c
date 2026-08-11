@@ -24,16 +24,6 @@
 #include <drivers/spi.h>
 #include <drivers/serial.h>
 
-void neon_enable(void) {
-	/* Set the CPACR for access to CP10 and CP11*/
-	asm volatile("LDR r0, =0xF00000");
-	asm volatile("MCR p15, 0, r0, c1, c0, 2");
-	/* Set the FPEXC EN bit to enable the FPU */
-	asm volatile("MOV r3, #0x40000000");
-	/*@VMSR FPEXC, r3*/
-	asm volatile("MCR p10, 7, r3, c8, c0, 0");
-}
-
 typedef enum {
 	SUNXI_SOC_VER_INVALID = -1,
 	SUNXI_SOC_VER_A = 0,

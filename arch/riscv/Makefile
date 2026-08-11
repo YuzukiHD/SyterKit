@@ -14,8 +14,8 @@ endif
 
 ifeq ($(CONFIG_ARCH_RISCV64_CORE_C906),y)
 	KBUILD_CFLAGS += -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d \
-	$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG)) -mcmodel=medlow -mstrict-align
+	-mcmodel=medlow -mstrict-align $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 	KBUILD_AFLAGS += -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d \
-	$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG)) -mcmodel=medlow -mstrict-align
+	-mcmodel=medlow -mstrict-align $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 	KBUILD_LDFLAGS += -m elf64lriscv
 endif

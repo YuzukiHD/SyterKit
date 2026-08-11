@@ -24,6 +24,8 @@ SECTIONS
     {
         PROVIDE(__spl_start = .);
         KEEP(*(.boot0_head))
+        . = ALIGN(64);
+        KEEP(*(.text.entry))
         *(.text .text.*)
         PROVIDE(__ddr_bin_start = .);
         KEEP(*(.init_dram_bin))
@@ -80,7 +82,7 @@ SECTIONS
 
     .stack (NOLOAD):
     {
-        . = ALIGN(8);
+        . = ALIGN(16);
         /* UND stack section */
         __stack_und_start = .;
         . += MIN_STACK_SIZE;
@@ -105,4 +107,6 @@ SECTIONS
 
     . = ALIGN(4);
     _end = . ;
+    ASSERT(_start == __spl_start + 0x40,
+           "Boot0 entry must be 0x40 bytes from the image start")
 }
