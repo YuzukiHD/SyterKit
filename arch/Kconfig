@@ -48,6 +48,11 @@ config ARCH_RISCV64_CORE_C906
 
 endchoice
 
+config ARCH_EXTRA_CFLAG
+	string
+	default "-mcpu=e907f" if ARCH_RISCV32_CORE_E907
+	default "-mtune=c906" if ARCH_RISCV64_CORE_C906
+
 config ARM_HARDFP
 	bool "Use the hard-float ABI"
 	depends on CPU_CORTEX_A7
