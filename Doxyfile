@@ -864,6 +864,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = README.md \
+                         docs/README.md \
                          docs/driver-model.md \
                          docs/devicetree.md \
                          arch \
