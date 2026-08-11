@@ -325,21 +325,22 @@ static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn) {
 	return -1;
 }
 
-static void redirect_trap(void) {
-#ifdef CONFIG_RISCV_COMPILER_GCC_10
-	csr_write(sbadaddr, csr_read(mbadaddr));
+static void redirect_trap(struct pt_regs_t *regs) {
+#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+	show_regs(regs);
+	abort();
 #else
-	csr_write(stval, csr_read(mtval));
-#endif
-	csr_write(sepc, csr_read(mepc));
-	csr_write(scause, csr_read(mcause));
-	csr_write(mepc, csr_read(stvec));
-
-	unsigned long status = csr_read(mstatus);
+	unsigned long status = regs->status;
 	unsigned long mpp = EXTRACT_FIELD(status, 0x00001800);
+
+	csr_write(stval, regs->badvaddr);
+	csr_write(sepc, regs->epc);
+	csr_write(scause, regs->cause);
+	regs->epc = csr_read(stvec);
 	status = INSERT_FIELD(status, 0x00001800, 1);
 	status = INSERT_FIELD(status, 0x00000100, mpp & 1);
-	csr_write(mstatus, status);
+	regs->status = status;
+#endif
 }
 
 static void handle_misaligned(struct pt_regs_t *regs) {
@@ -347,18 +348,23 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 	unsigned long insn = 0;
 	union endian_buf_t buff;
 	uint8_t *addr;
+	unsigned int insn_len;
 	int done, n;
 
 	/* Try to fetch 16 / 32 bits instruction */
-	if (fetch_16bit_instruction(regs->epc, &insn)) {
-		if (fetch_32bit_instruction(regs->epc, &insn))
-			redirect_trap();
+	if (!fetch_16bit_instruction(regs->epc, &insn)) {
+		insn_len = 2;
+	} else if (!fetch_32bit_instruction(regs->epc, &insn)) {
+		insn_len = 4;
+	} else {
+		redirect_trap(regs);
+		return;
 	}
 
 	/* Matching instruction */
 	match = match_instruction(insn);
 	if (!match) {
-		redirect_trap();
+		redirect_trap(regs);
 		return;
 	}
 
@@ -374,9 +380,11 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 		}
 
 		/* Sign extend for signed integer loading */
-		if (match->sign_extend) {
-			if (buff.v >> (8 * match->width - 1))
-				buff.v |= -1 << (8 * match->width);
+		if (match->sign_extend && match->width < sizeof(buff.v)) {
+			unsigned int bits = 8 * match->width;
+
+			if (buff.v & (1UL << (bits - 1)))
+				buff.v |= ~0UL << bits;
 		}
 
 		/* Write to register */
@@ -398,10 +406,13 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 			}
 #endif
 #endif
-			if (!done)
-				redirect_trap();
+			if (!done) {
+				redirect_trap(regs);
+				return;
+			}
 		} else {
-			regs->x[n] = buff.v;
+			if (n != 0)
+				regs->x[n] = buff.v;
 		}
 	} else {
 		/* Store operation */
@@ -422,10 +433,12 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 			}
 #endif
 #endif
-			if (!done)
-				redirect_trap();
+			if (!done) {
+				redirect_trap(regs);
+				return;
+			}
 		} else {
-			buff.v = regs->x[n];
+			buff.v = n == 0 ? 0 : regs->x[n];
 		}
 
 		/* Writing to memory by bytes prevents misaligned memory access */
@@ -434,6 +447,8 @@ static void handle_misaligned(struct pt_regs_t *regs) {
 			mprv_write_u8(addr, buff.b[i]);
 		}
 	}
+
+	regs->epc += insn_len;
 }
 
 #if defined(CONFIG_ARCH_RISCV32_CORE_E907)
@@ -444,7 +459,11 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 	csr_write(mscratch, regs);
 	if (regs->cause & RISCV_CAUSE_INTERRUPT) {
 		unsigned long cause = regs->cause & ~RISCV_CAUSE_INTERRUPT;
-		unsigned long pending = csr_read(mip) & (1 << cause);
+#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+		do_irq(cause & 0xfff);
+#else
+		unsigned long pending = csr_read(mip) & (1UL << cause);
+
 		switch (cause) {
 			case 0: /* User software interrupt */
 			case 1: /* Supervisor software interrupt */
@@ -455,12 +474,8 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 			case 6: /* Hypervisor timer interrupt */
 			case 7: /* Machine timer interrupt */
 				csr_clear(mip, pending);
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
-				do_irq(cause);
-#else
 				if (core_interrupt_handler[cause].func)
 					core_interrupt_handler[cause].func(core_interrupt_handler[cause].data);
-#endif
 				break;
 			case 8:	 /* User external interrupt */
 			case 9:	 /* Supervisor external interrupt */
@@ -470,8 +485,9 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 				break;
 			default:
 				show_regs(regs);
-				break;
+				abort();
 		}
+#endif
 	} else {
 		switch (regs->cause) {
 			case 0x0: /* Misaligned fetch */
@@ -479,13 +495,13 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 			case 0x2: /* Illegal instruction */
 			case 0x3: /* Breakpoint */
 				show_regs(regs);
-				break;
+				abort();
 			case 0x4: /* Misaligned load */
 				handle_misaligned(regs);
 				break;
 			case 0x5: /* Load acces */
 				show_regs(regs);
-				break;
+				abort();
 			case 0x6: /* Misaligned store */
 				handle_misaligned(regs);
 				break;
@@ -495,13 +511,10 @@ void riscv64_handle_exception(struct pt_regs_t *regs) {
 			case 0xa: /* Hypervisor ecall */
 			case 0xb: /* Machine ecall */
 				show_regs(regs);
-				break;
+				abort();
 			default:
 				show_regs(regs);
-				break;
+				abort();
 		}
 	}
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
-	abort();
-#endif
 }
