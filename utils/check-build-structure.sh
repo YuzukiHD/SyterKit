@@ -44,13 +44,7 @@ doxygen_source_files() {
 			-o -path "${srctree}/include/lib/fatfs" \
 			-o -path "${srctree}/lib/fatfs" \
 			-o -path "${srctree}/boards/longanpi-3h/tinymaix" \) -prune \
-		-o \( -path "${srctree}/core/log/xformat.c" \
-			-o -path "${srctree}/include/xformat.h" \
-			-o -path "${srctree}/test/out" \
-			-o -path "${srctree}/utils/bl33/include/xformat.h" \
-			-o -path "${srctree}/utils/bl33/source/xformat.c" \
-			-o -path "${srctree}/utils/bl33_t527/include/xformat.h" \
-			-o -path "${srctree}/utils/bl33_t527/source/xformat.c" \) -prune \
+		-o -path "${srctree}/test/out" -prune \
 		-o -type f \( -name '*.c' -o -name '*.h' -o -name '*.S' \) -print0
 }
 

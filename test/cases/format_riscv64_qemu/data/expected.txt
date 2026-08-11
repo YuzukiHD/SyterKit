@@ -1,0 +1,13 @@
+CHECK sign-width PASS
+CHECK alternate-hex PASS
+CHECK string-precision PASS
+CHECK left-char-percent PASS
+CHECK precision-sign PASS
+CHECK octal PASS
+CHECK null-string PASS
+CHECK long-long PASS
+CHECK long-long-unsigned PASS
+CHECK long-long-signed PASS
+CHECK size-value PASS
+CHECK pointer PASS
+TEST PASS format_riscv64_qemu

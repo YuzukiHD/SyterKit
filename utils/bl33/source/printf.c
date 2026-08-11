@@ -9,7 +9,7 @@
 #include <types.h>
 
 #include <rtc.h>
-#include <xformat.h>
+#include <format.h>
 
 typedef struct uart_serial {
 	volatile uint32_t rbr; /* 0 */
@@ -63,7 +63,7 @@ int uart_printf(const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	int count = xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	int count = vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 	return count;
@@ -78,7 +78,7 @@ int printf(const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	count += xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	count += vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 	return count;

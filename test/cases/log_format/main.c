@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include <log.h>
-#include <xformat.h>
+#include <format.h>
 
 #include "syter_test.h"
 
@@ -52,7 +52,7 @@ void test_case_main(const char *case_dir) {
 	*separator++ = '\0';
 
 	reset_output();
-	xformat(uart_log_putchar, NULL, "%+05d/%#x/%s", -7, 42U, "ok");
+	format(uart_log_putchar, NULL, "%+05d/%#x/%s", -7, 42U, "ok");
 	TEST_STREQ(expected, output);
 
 	reset_output();
