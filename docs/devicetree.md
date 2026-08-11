@@ -1,125 +1,218 @@
 # Compile-time device tree
 
-SyterKit uses Linux-style DTS as the board hardware-description source. The
-host-side `dt2c` tool preprocesses and validates the selected
-`boards/<board>/board.dts`, resolves labels and phandles, checks enabled devices
-against bindings and selected drivers, and emits immutable C data. Firmware
-does not carry a DTB, run a general DTB parser, or allocate device-tree objects.
+SyterKit uses Linux-style DTS to describe the hardware needed by its own
+firmware. The host-side [dt2c](https://github.com/YuzukiTsuru/dt2c) tool parses,
+preprocesses, validates, and converts the selected board tree into immutable C
+data during the build.
 
-This board tree is independent from a Linux payload DTB. Board drivers query
-the compiled tree only through the namespaced `<dt2c/dt.h>` backend. The
-existing libfdt code remains reserved for inspecting and updating the external
-DTB passed to the kernel; it is not used to register SyterKit devices.
+This is not the Linux payload DTB:
 
-The build places board-qualified outputs below
-`.obj/boards/<board>/dt2c/`. This prevents one board's generated header from
-being reused when an `O=` directory builds several defconfigs. The directory
-also contains `devicetree.json`, which records normalized nodes, binding
-selection, and driver matching, and a Make depfile covering DTS includes,
-bindings, and driver sources.
+| Tree | Consumer | Interface | Lifetime |
+| --- | --- | --- | --- |
+| `boards/<board>/board.dts` | SyterKit drivers | dt2c and `<dt2c/dt.h>` | Compiled into firmware, then optimized where possible |
+| Linux `.dtb` payload | A loaded kernel and SyterKit image code | libfdt | External binary passed to the next boot stage |
 
-## Build dependency
+Both paths are current and supported. dt2c handles fixed SyterKit board data;
+libfdt handles a runtime flattened tree that must remain in DTB form.
 
-The `tools/dt2c` submodule pins the generator and matching `<dt2c/dt.h>`
-headers. Initialize it once after cloning:
+## Build flow
+
+After a defconfig selects a board and its drivers, Make performs this flow:
+
+```text
+boards/<board>/board.dts
+          + dts/include files
+          + dts/bindings
+          + compatible declarations from selected drivers/
+                              |
+                              v
+                            dt2c
+                              |
+          +-------------------+-------------------+
+          |                   |                   |
+ generated/fdt_generated.h  devicetree.json   devicetree.d
+          |
+          v
+  always-inline readers in dts/include/dt-compatible/
+          |
+          v
+  static driver configuration and device instances
+```
+
+Generated files are board-qualified below
+`.obj/boards/<board>/dt2c/`, including:
+
+- `include/generated/fdt_generated.h`, the compiled tree consumed by
+  `<dt2c/dt.h>`;
+- `devicetree.json`, a report of normalized nodes, binding selection, and driver
+  matching;
+- `devicetree.d`, dependencies on DTS includes, bindings, and selected driver
+  sources;
+- `selected-drivers`, the source manifest produced from the enabled `drivers/`
+  Kbuild graph.
+
+The board-qualified path prevents stale generated data from one defconfig being
+reused for another board in the same `O=` output tree.
+
+## Obtaining dt2c
+
+Initialize the pinned source and headers once:
 
 ```sh
 git submodule update --init tools/dt2c
 ```
 
-On Linux x86_64, the build first uses the checked-in musl static executable at
-`tools/bin/dt2c`. If that binary cannot run, Make builds the pinned source with
-Cargo into the selected `O=` object tree. An external compatible release can
-be selected explicitly:
+On Linux x86_64, Make prefers the checked-in musl-static binary at
+`tools/bin/dt2c`. If it cannot run, Make builds the submodule with Cargo into
+`.obj/tools/dt2c/`. Other compatible installations can be selected explicitly:
 
 ```sh
 make tinyvision_defconfig
 make DT2C=/opt/dt2c/dt2c \
-     DT2C_INCLUDE=/opt/dt2c/include -j$(nproc)
+	DT2C_INCLUDE=/opt/dt2c/include -j$(nproc)
 ```
 
-CI executes the prebuilt binary, verifies that it has no dynamic dependencies,
-and separately exercises the source-build fallback. Keeping the tool and
-headers at the same revision matters because the generated X-macro format is
-consumed by the dt2c runtime header.
+The binary and `<dt2c/dt.h>` headers must come from compatible revisions.
 
-## Runtime model
+## DTS structure
 
-Drivers include the native `<dt2c/dt.h>` interface in the translation unit that
-consumes their fixed properties. Node paths and property names therefore remain
-compile-time constants. GCC folds the dt2c lookups into the final configuration
-writes, and section garbage collection removes the generated tree storage and
-lookup helpers from the firmware image.
+A board tree uses normal DTS nodes, labels, phandles, aliases, `status`, and
+compatible strings. The exact required properties are defined in
+`dts/bindings/`.
 
-There is no generic OF layer, runtime node array, or target-side DTB parser for
-the board tree. Applications normally declare a driver instance and populate it
-through that driver's always-inline reader. System services such as the console
-and interrupt controller select their fixed instance from an initcall. The flat
-driver core remains available where automatic probing is useful. Resources for
-migrated driver instances come from the compiled board tree. SoC-global early
-init, reset/handoff, and silicon-workaround registers remain platform-defined.
-
-## UART example
-
-The debug UART is the first migrated device. A board describes it and its pin
-configuration in DTS:
+The console is a representative example:
 
 ```dts
-uart0_pins: uart0-pins {
-	allwinner,pins =
-		<SUNXI_GPIO_PORT_B 9 2>,
-		<SUNXI_GPIO_PORT_B 10 2>;
-};
+/ {
+	aliases {
+		serial0 = &uart0;
+	};
 
-uart0: serial@2500000 {
-	compatible = "allwinner,sunxi-uart";
-	reg = <0x02500000 0x400>;
-	current-speed = <115200>;
-	clock-frequency = <24000000>;
-	allwinner,uart-id = <0>;
-	allwinner,clock-gate = <0x0200190c 0>;
-	allwinner,reset = <0x0200190c 16>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart0_pins>;
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x800>;
+		status = "okay";
+
+		uart0_pins: uart0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 9 2>,
+				<SUNXI_GPIO_PORT_B 10 2>;
+		};
+	};
+
+	uart0: serial@2500000 {
+		compatible = "allwinner,sunxi-uart";
+		reg = <0x02500000 0x400>;
+		current-speed = <115200>;
+		clock-frequency = <24000000>;
+		allwinner,uart-id = <0>;
+		allwinner,clock-gate = <0x0200190c 0>;
+		allwinner,reset = <0x0200190c 16>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart0_pins>;
+		data-bits = <8>;
+		stop-bits = <1>;
+		parity = "none";
+		status = "okay";
+	};
+};
+```
+
+dt2c resolves `stdout-path = &uart0` into the selected node path. The serial
+reader validates that node, follows its pinctrl phandle, and fills `uart_dbg`.
+Only that node becomes the early console. Additional UARTs must be instantiated
+separately and cannot overwrite the console configuration.
+
+## Static readers and optimization
+
+Compatibility readers live under `dts/include/dt-compatible/`. They are
+`static inline __attribute__((always_inline))` functions that call the native
+dt2c API with visible node offsets and property-name constants.
+
+This shape is deliberate. Because the board tree and queried names are fixed,
+the compiler can fold property reads into direct configuration assignments.
+With function and data sections enabled, linker garbage collection can then
+discard unused compiled-tree data and lookup paths.
+
+Do not hide fixed lookups behind an out-of-line generic property layer. That
+would obscure constants from the optimizer and retain parser-like code and tree
+storage in SRAM-constrained images.
+
+## Driver compatibility declarations
+
+Every DTS-backed driver declares the compatible strings it owns in its source:
+
+```c
+DT2C_DRIVER_COMPAT("allwinner,sunxi-i2c");
+```
+
+Make recursively follows the selected `drivers/` Kbuild objects and generates
+the dt2c driver manifest. There is no hand-maintained `drivers.list` or explicit
+Make variable listing every driver source. Files outside `drivers/`, such as
+board-specific LCD or OLED applications, are not treated as device drivers and
+do not participate in this scan.
+
+Bindings marked with `dt2c,device: true` cause dt2c to reject an enabled node
+when none of the selected drivers owns a compatible string. This catches
+configuration errors before target code is linked.
+
+## One driver, multiple instances
+
+Compatible matching describes a driver type, not a singleton. A board may
+enable several I2C, SPI, MMC, PWM, or other controller nodes using the same
+compatible. Each selected node is read into its own static configuration and
+device state.
+
+Relationships should be represented in DTS rather than recovered through a
+runtime alias scan. For example, a PMIC is a child of the I2C controller that
+transports it:
+
+```dts
+i2c0: i2c@2502000 {
+	compatible = "allwinner,sunxi-i2c";
+	reg = <0x02502000 0x400>;
 	status = "okay";
+
+	pmic@36 {
+		compatible = "x-powers,axp1530";
+		reg = <0x36>;
+		status = "okay";
+	};
 };
 ```
 
-The console is selected with a direct node reference, following common Linux
-DTS practice:
+The PMIC reader follows its parent node directly. The application chooses the
+specific resulting instance it needs; the driver does not walk every alias at
+runtime or publish artificial alias symbols.
 
-```dts
-chosen {
-	stdout-path = &uart0;
-};
-```
+Aliases remain useful when they express a stable board-level identity, such as
+`mmc0`, but they are not a substitute for parent, child, and phandle
+relationships already present in the tree.
 
-`drivers/serial/serial.c` declares its compatible with
-`DT2C_DRIVER_COMPAT()`. dt2c rejects an enabled UART if no selected driver owns
-one of its compatible strings. The always-inline reader in
-`dts/include/dt-compatible/serial-dt.h` validates the selected node and its
-parent status, resolves the pinctrl phandle, and builds
-`sunxi_serial_t uart_dbg`. Because the tree is fixed, this reduces to constant
-assignments before the normal serial device probe. Only the selected console is
-registered, so a second enabled UART cannot overwrite `uart_dbg`. Secondary
-UARTs that applications configure directly can continue using static
-`sunxi_serial_t` objects during migration.
+## Adding or migrating a device
 
-## Adding a device
+1. Add or update the schema below `dts/bindings/`, including required resources
+   and phandle relationships.
+2. Add `DT2C_DRIVER_COMPAT("vendor,device")` at the end of the owning driver
+   source under `drivers/`.
+3. Add the board instances to `boards/<board>/board.dts` with Linux-style
+   resources, pinctrl, relationships, and `status`.
+4. Add an always-inline reader below `dts/include/dt-compatible/` that validates
+   the node before publishing configuration.
+5. Give every enabled instance separate static storage. One driver may bind all
+   compatible devices, but their platform and runtime state must not be shared.
+6. Add focused dt2c tests for valid properties, missing required properties,
+   disabled parents, phandle resolution, and multiple instances.
+7. Compare image size and symbols to confirm constant folding removed unused
+   tree data and helper paths.
 
-To migrate another device type:
+SoC-global startup registers, handoff code, and silicon workarounds that are not
+device instances may remain platform-defined. Device resources consumed by
+drivers should come from the compiled board tree.
 
-1. Add a binding below `dts/bindings/` and set `dt2c,device: true` when an
-   enabled node must have a selected driver.
-2. Add `DT2C_DRIVER_COMPAT("vendor,device")` to the driver source. Make follows
-   the enabled Kbuild `obj-y` graph recursively and writes those source paths to
-   dt2c's manifest in the object tree; there is no hand-maintained source list.
-3. Describe each board instance in `boards/<board>/board.dts` with a Linux-style
-   compatible, resources, phandles, and status.
-4. Put always-inline compatibility readers below `dts/include/dt-compatible/`,
-   read fixed properties through `<dt2c/dt.h>`, and populate an explicit driver
-   instance selected by alias, phandle, parent, or another fixed relationship.
-
-Keep node offsets and property names visible at the dt2c call site. Moving
-lookups behind an out-of-line generic property API prevents constant folding
-and needlessly retains the compiled tree in SRAM-constrained images.
+Continue with [Driver model and initcalls](driver-model.md) for registration,
+binding, and initialization order.

@@ -1,106 +1,169 @@
 # Driver model and initcalls
 
-SyterKit uses a small, static driver core inspired by the Linux device model.
-It intentionally has only two runtime objects: `struct device` describes one
-static instance, and `struct driver` provides matching, probe, and remove
-callbacks. There are no bus, class, module, reference-counting, or dynamic
-allocation layers.
+SyterKit uses a small static driver model inspired by Linux. It keeps the useful
+parts for early firmware, compatible matching, probing, and ordered boot-time
+initialization, without buses, classes, modules, reference counting, or dynamic
+device allocation.
 
-Both objects must remain alive while registered. Registration order does not
-matter: registering a device probes existing drivers, while registering a
-driver probes existing unbound devices. The default matcher compares
-`compatible` strings and falls back to descriptor names when no compatible
-string is available. A driver can provide a custom `match` callback when exact
-string matching is not sufficient. A descriptor remains registered if one of
-these probe attempts fails, so it can bind when another driver appears or after
-the device is probed again.
+The model has two runtime objects:
 
-## Declaring a driver
+- `struct device` represents one hardware or logical instance.
+- `struct driver` supplies matching, probe, and optional remove callbacks.
 
-The driver keeps its existing hardware API and adds a small probe adapter:
+Both descriptors and their referenced data must remain valid while registered.
+They are normally static objects retained for the lifetime of the firmware.
+
+## Registration and matching
+
+Registration order does not matter. Registering a driver probes every existing
+unbound device; registering a device probes the existing drivers in registration
+order. The first successful match owns that device.
+
+The default matching rules are:
+
+1. Use the driver's custom `match` callback when one is provided.
+2. Otherwise compare `compatible` strings when both objects provide one.
+3. Fall back to descriptor names only when compatible matching is unavailable.
+
+A failed probe does not remove either descriptor. The device remains registered
+and unbound, so another matching driver can be tried and `device_probe()` can be
+called again later. Probe failures clear `driver_data` before the next attempt.
+
+Descriptor names must be non-empty and unique within their registry. Registering
+the same descriptor twice, or reusing a registered name, returns
+`DRIVER_ERROR_EXISTS`.
+
+## One driver, multiple devices
+
+A driver descriptor is shared. Every controller or peripheral instance has its
+own device descriptor and platform data:
 
 ```c
+#include <stdint.h>
 #include <driver.h>
+
+struct example_config {
+	uintptr_t base;
+	unsigned int id;
+};
 
 static int example_probe(struct device *device)
 {
 	struct example_config *config = device_get_platform_data(device);
 
-	return example_hw_init(config);
+	if (config == NULL || config->base == 0)
+		return DRIVER_ERROR_INVALID;
+	example_hw_init(config);
+	device_set_driver_data(device, config);
+	return DRIVER_OK;
 }
 
 static struct driver example_driver = {
 	.name = "example",
-	.compatible = "vendor,example",
+	.compatible = "vendor,example-controller",
 	.probe = example_probe,
 };
-builtin_driver(example_driver);
-```
 
-Board code owns the configuration and device descriptor:
-
-```c
 static struct example_config example0_config = {
-	.base = EXAMPLE0_BASE,
+	.base = 0x02000000,
+	.id = 0,
+};
+
+static struct example_config example1_config = {
+	.base = 0x02001000,
+	.id = 1,
 };
 
 static struct device example0 = {
 	.name = "example0",
-	.compatible = "vendor,example",
+	.compatible = "vendor,example-controller",
 	.platform_data = &example0_config,
 };
+
+static struct device example1 = {
+	.name = "example1",
+	.compatible = "vendor,example-controller",
+	.platform_data = &example1_config,
+};
+
+builtin_driver(example_driver);
 builtin_device(example0);
+builtin_device(example1);
 ```
 
-Drivers may instead derive static platform data and device descriptors from the
-board DTS. Such drivers read the generated tree directly through dt2c so the
-compiler can fold fixed properties, then register with the same driver core.
-See [Compile-time device tree](devicetree.md) for that path.
+The driver must not keep all instance state in one global object. Put immutable
+board configuration in `platform_data`; put state created by the driver in
+`driver_data` through `device_set_driver_data()`. This keeps two devices bound to
+the same driver independent.
 
-`driver_data` is reserved for state produced by the driver. Use
-`device_set_driver_data()` and `device_get_driver_data()` rather than changing
-board-owned platform data. The core clears `driver_data` after failed probes and
-when a device is detached, so an unbound device never exposes stale state from a
-previous driver.
+Many SyterKit drivers derive the instance configuration from the board DTS
+instead of writing the objects by hand. The ownership rule remains the same:
+each enabled instance gets distinct storage, while all compatible instances use
+the same driver implementation.
+
+## Removing descriptors
+
+`device_unregister()` calls the bound driver's `remove` callback, detaches the
+device, and clears its internal links and driver data.
+
+`driver_unregister()` removes the driver, calls `remove` for every device bound
+to it, then immediately probes those devices against the remaining registered
+drivers. This makes replacement drivers possible without rebuilding the device
+list.
 
 ## Initcall levels
 
-Static registration is implemented with linker-collected initcalls. Startup
-runs the table after the stack, BSS, timer, and architecture-specific cache or
-floating-point setup are ready, and before application `main()`.
+Built-in descriptors are registered through linker-collected initcalls. Startup
+runs these callbacks after the stack, BSS, timer, and architecture-specific CPU
+setup are ready, but before the selected application enters `main()`.
 
-As in Linux, each declaration gets an automatically increasing `__COUNTER__`
-ID and is emitted into an initcall section. This allows the same callback to be
-registered more than once and lets new callbacks extend the table without a
-central list change. Plain `initcall()` is an alias for `device_initcall()`.
+| API | Section | Intended use |
+| --- | --- | --- |
+| `early_initcall()` | `.initcallearly.init` | Console and prerequisites for later diagnostics |
+| `core_initcall()` | `.initcall1.init` | Framework-wide core services |
+| `device_initcall()` | `.initcall6.init` | Normal devices and drivers |
+| `late_initcall()` | `.initcall7.init` | Work that depends on normal devices |
 
-| Level | Intended use |
-| --- | --- |
-| `early_initcall()` | Console and other services needed by later diagnostics |
-| `core_initcall()` | Framework-wide core services |
-| `device_initcall()` | Normal devices and drivers; the default built-in level |
-| `late_initcall()` | Optional work that depends on normal devices |
+Plain `initcall()` uses the device level. `builtin_driver()` and
+`builtin_device()` generate device-level registration callbacks;
+`early_builtin_driver()` and `early_builtin_device()` provide the corresponding
+early registration path.
 
-Each callback returns zero on success. A non-zero result is recorded as the
-overall result, but does not prevent later callbacks from running.
-`do_initcalls()` is idempotent and executes the linker table only once.
-Startup continues into `main()` even when a callback fails; calling
-`do_initcalls()` again returns the cached result without running the table
+Each macro uses `__COUNTER__` to create a unique symbol, so the same callback can
+be registered more than once. The counter does not assign priority. Callbacks in
+one level execute in link order, which follows the Kbuild object order.
+
+`do_initcalls()` executes all entries once and caches the result. A callback
+failure records the first non-zero return value but does not stop later
+callbacks. A second call returns the cached result without running the table
 again.
 
-Callbacks in the same level still run in link order, matching the Linux
-initcall model; the counter provides identity rather than priority. Dependencies
-within a level must therefore be reflected in Kbuild object order. The
-Sun300iw1 clock object precedes the serial object, so its pre-clock callback
-runs before the early serial driver and console-device callbacks.
+## Console example
 
-Use `early_builtin_driver()` and `early_builtin_device()` for descriptors that
-must bind at the early level. The Sunxi debug UART uses this path, so board
-applications no longer initialize `uart_dbg` individually. Direct `sunxi_*`
-initialization APIs remain available for secondary or application-controlled
-devices while other drivers migrate incrementally.
+The Sunxi UART shows the complete path:
 
-The linker scripts keep all four input sections explicitly. Adding a new level
-requires updating both architecture linker scripts, the Avaota A1 board linker
-scripts, and the initcall API together; arbitrary section names are not part of
-the interface.
+1. `stdout-path` in `/chosen` selects a single UART node.
+2. The always-inline DTS reader fills the static `uart_dbg` configuration.
+3. An early initcall registers the `stdout` device.
+4. The early built-in serial driver matches `allwinner,sunxi-uart` and probes it.
+5. Logging can then be used by later initcalls and application code.
+
+Secondary UARTs are separate devices or application-owned configurations. They
+do not overwrite the console instance.
+
+## Adding a built-in driver
+
+For a new driver:
+
+1. Keep its public hardware API in `include/drivers/` and its implementation in
+   `drivers/`.
+2. Give each device instance unique platform data and a unique device name.
+3. Make `probe` validate all required resources before touching hardware.
+4. Store per-instance runtime state in `driver_data`.
+5. Add `DT2C_DRIVER_COMPAT()` in the driver source when the device can be
+   instantiated from DTS.
+6. Use the normal device initcall level unless the hardware is genuinely needed
+   before core initialization.
+
+Continue with [Compile-time device tree](devicetree.md) for DTS bindings,
+instance selection, and constant folding.
