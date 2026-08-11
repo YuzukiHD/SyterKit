@@ -20,9 +20,6 @@ endchoice
 source "arch/arm/Kconfig"
 source "arch/riscv/Kconfig"
 
-config ARCH_MINSTACK
-	bool "Use the minimal startup stack"
-
 config ARCH_DCACHE
 	bool "Enable the data cache"
 
