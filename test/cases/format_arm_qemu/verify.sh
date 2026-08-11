@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+data_dir="$1"
+log="$2"
+clean_log="$(mktemp)"
+trap 'rm -f "$clean_log"' EXIT
+tr -d '\r' < "$log" > "$clean_log"
+while read -r expected; do grep -Fqx "$expected" "$clean_log"; done < "$data_dir/expected.txt"
+! grep -Fq 'CHECK FAIL' "$clean_log"

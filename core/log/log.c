@@ -8,7 +8,7 @@
 
 #include "log.h"
 #include "uart.h"
-#include "xformat.h"
+#include "format.h"
 
 void printk(int level, const char *fmt, ...) {
 	uint32_t now_timestamp = time_us() - get_init_timestamp();
@@ -66,7 +66,7 @@ void printk(int level, const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 }
@@ -76,7 +76,7 @@ void uart_printf(const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 }
@@ -86,7 +86,7 @@ int printf(const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 
@@ -104,7 +104,7 @@ int printf_dram(const char *fmt, ...) {
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
 

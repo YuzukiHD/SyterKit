@@ -921,18 +921,12 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = boards/longanpi-3h/tinymaix \
-                         core/log/xformat.c \
                          include/lib/fatfs \
                          include/lib/fdt \
-                         include/xformat.h \
                          lib/fatfs \
                          lib/fdt \
                          test/out \
-                         tools/dt2c \
-                         utils/bl33/source/xformat.c \
-                         utils/bl33/include/xformat.h \
-                         utils/bl33_t527/source/xformat.c \
-                         utils/bl33_t527/include/xformat.h
+                         tools/dt2c
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

@@ -28,7 +28,7 @@ TEST_BACKTRACE_CPPFLAGS := -DCONFIG_BACKTRACE=1 -DCONFIG_BACKTRACE_MIN=1
 TEST_BACKTRACE_SOURCE := $(srctree)/core/backtrace/backtrace-min.c
 endif
 TEST_CPPFLAGS := -I$(srctree)/arch/riscv/include -I$(TEST_ROOT)/include \
-	-I$(srctree)/include -DXCFG_FORMAT_FLOAT=0 \
+	-I$(srctree)/include \
 	-DCONFIG_ARCH_RISCV64=1 -DCONFIG_ARCH_RISCV64_CORE_C906=1 \
 	$(TEST_BACKTRACE_CPPFLAGS) $(TEST_EXTRA_CPPFLAGS)
 TEST_CFLAGS := -std=gnu11 $(TEST_OPT) -g -Wall -Wextra -Werror -ffreestanding \

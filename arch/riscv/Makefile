@@ -7,7 +7,7 @@ KBUILD_CFLAGS += -fno-omit-frame-pointer -fno-optimize-sibling-calls
 endif
 
 ifeq ($(CONFIG_ARCH_RISCV32_CORE_E907),y)
-KBUILD_CFLAGS += $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG)) -DXCFG_FORMAT_FLOAT=0
+KBUILD_CFLAGS += $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 KBUILD_AFLAGS += $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 KBUILD_LDFLAGS += -m elf32lriscv
 endif

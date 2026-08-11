@@ -9,12 +9,12 @@ src := $(CURDIR)
 name := syter_bl33
 sources := source/start.S source/memcpy.S source/memset.S \
 	source/smccc-call.S source/main.c source/printf.c source/string.c \
-	source/timer.c source/xformat.c
+	source/timer.c source/format.c
 objects := $(addprefix $(BUILD)/,$(addsuffix .o,$(basename $(sources))))
 deps := $(objects:.o=.d)
 
 CFLAGS := -nostdlib -nostdinc -ffreestanding -fno-builtin \
-	-Wall -O3 -g -ggdb -mabi=aapcs -march=armv7-a -I$(src)/include
+	-Wall -O3 -g -ggdb -mabi=aapcs -march=armv7-a -I$(src)/include -I$(src)/../../include
 LDFLAGS := -nostdlib -T$(src)/link.ld
 
 .PHONY: all clean
