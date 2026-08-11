@@ -9,7 +9,7 @@
 	str r1, [sp, #-12]
 	str r0, [sp, #-16]
 	mov r0, sp
-	cps #0x13
+	cps #ARMV7_SVC_MODE
 	ldr r1, [r0, #-4]
 	str r1, [sp, #-4]!
 	ldr r1, [r0, #-8]
@@ -19,10 +19,10 @@
 	stmdb sp, {r0 - r14}^
 	sub sp, sp, #(4 * 16)
 	ldr r4, [sp]
-	and r0, r4, #0x1f
-	cmp r0, #0x10
+	and r0, r4, #ARMV7_MODE_MASK
+	cmp r0, #ARMV7_USR_MODE
 	beq 10f
-	cmp r0, #0x13
+	cmp r0, #ARMV7_SVC_MODE
 	beq 11f
 	b .
 11:	add r1, sp, #(4 * 17)
@@ -38,10 +38,10 @@
 	ldr sp, [r12], #4
 	ldr r1, [r12], #4
 	msr spsr_cxsf, r1
-	and r0, r1, #0x1f
-	cmp r0, #0x10
+	and r0, r1, #ARMV7_MODE_MASK
+	cmp r0, #ARMV7_USR_MODE
 	beq 20f
-	cmp r0, #0x13
+	cmp r0, #ARMV7_SVC_MODE
 	beq 21f
 	b .
 20:	ldr lr, [r12, #(4 * 15)]
@@ -51,16 +51,28 @@
 	mov r0, r0
 .endm
 
-.arm
-.globl _start
-.text
-
+	.arm
+	.section .text.entry, "ax", %progbits
+	.globl _start
+	.type _start, %function
 _start:
 	b reset
-	
+
 	.align 5
 _vector:
 	b reset
+#ifdef CONFIG_ARCH_MINSTACK
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+	ldr pc, _unhandled_exception
+
+_unhandled_exception:
+	.word unhandled_exception
+#else
 	ldr pc, _undefined_instruction
 	ldr pc, _software_interrupt
 	ldr pc, _prefetch_abort
@@ -83,107 +95,103 @@ _irq:
 	.word irq
 _fiq:
 	.word fiq
+#endif
 
 reset:
-	/* Enter svc mode cleanly and mask interrupts */
+	/* Enter SVC mode and mask IRQ/FIQ before using banked stacks. */
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r0, r0, #ARMV7_SVC_MODE
 	orr r0, r0, #(ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)
-	bic r0, r0, #(1<<9)     @set little-endian
+	bic r0, r0, #(1 << 9)
 	msr cpsr_c, r0
 
-	/* Set vector base address register */
 	ldr r0, =_vector
 	mcr p15, 0, r0, c12, c0, 0
-	mrc p15, 0, r0, c1, c0, 0
-	bic r0, #(1 << 13)
-	mcr p15, 0, r0, c1, c0, 0
 
+	/* Disable MMU and caches while preserving the remaining SCTLR state. */
 	mrc p15, 0, r0, c1, c0, 0
-	bic r0, r0, #0x00002000     @ clear bits 13 (--V-)
-	bic r0, r0, #0x00000007     @ clear bits 2:0 (-CAM)
-	orr r0, r0, #0x00000800     @ set bit 11 (Z---) BTB
-	bic r0, r0, #0x00001000     @ clear bit 12 (I) I-cache
+	bic r0, r0, #0x00002000
+	bic r0, r0, #0x00000007
+	orr r0, r0, #0x00000800
+	bic r0, r0, #0x00001000
 	mcr p15, 0, r0, c1, c0, 0
+	isb
 
-	/* Set stack pointer */
-	/* Initialize UND stacks */
+	bl neon_enable
+
+#ifndef CONFIG_ARCH_MINSTACK
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_UND_MODE
 	msr cpsr_cxsf, r1
-	ldr sp, _stack_und_end
+	ldr sp, =__stack_und_end
 
-	/* Initialize ABT stacks */
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_ABT_MODE
 	msr cpsr_cxsf, r1
-	ldr sp, _stack_abt_end
+	ldr sp, =__stack_abt_end
 
-	/* Initialize IRQ stacks */
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_IRQ_MODE
 	msr cpsr_cxsf, r1
-	ldr sp, _stack_irq_end
+	ldr sp, =__stack_irq_end
 
-	/* Initialize FIQ stacks */
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_FIQ_MODE
 	msr cpsr_cxsf, r1
-	ldr sp, _stack_fiq_end
+	ldr sp, =__stack_fiq_end
+#endif
 
-	/* Initialize SVC stacks */
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_SVC_MODE
 	msr cpsr_cxsf, r1
-	ldr sp, _stack_srv_end
+	ldr sp, =__stack_srv_end
 
-	bl  clear_bss
+	bl clear_bss
 
-	/*
-	* disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
-	* except if in HYP mode already
-	*/
-	mrs     r0, cpsr
-	and     r1, r0, #ARMV7_MODE_MASK           @ mask mode bits
-	teq     r1, #0x1a               @ test for HYP mode
-	bicne   r0, r0, #ARMV7_MODE_MASK           @ clear all mode bits
-	orrne   r0, r0, #ARMV7_SVC_MODE           @ set SVC mode
-	orr     r0, r0, #0xc0           @ disable FIQ and IRQ
-	msr     cpsr,r0
-
-	/* set cntfrq to 24M */
 	ldr r0, =24000000
 	mcr p15, 0, r0, c14, c0, 0
-
 	bl set_timer_count
 
-	bl neon_enable
-
 	bl do_initcalls
-
 	bl main
 
+1:	wfi
+	b 1b
+
+	.globl neon_enable
+	.type neon_enable, %function
+neon_enable:
+	mrc p15, 0, r0, c1, c0, 2
+	orr r0, r0, #(0xf << 20)
+	mcr p15, 0, r0, c1, c0, 2
+	isb
+	mov r0, #0x40000000
+	vmsr fpexc, r0
+	bx lr
+
 clear_bss:
-	ldr     r0, =_sbss
-	ldr     r1, =_ebss
-	mov     r2, #0
-
-clbss_1:
-	stmia   r0!, {r2}
+	ldr r0, =_sbss
+	ldr r1, =_ebss
+	mov r2, #0
 	cmp r0, r1
-	blt clbss_1
+	bhs 2f
+1:	stmia r0!, {r2}
+	cmp r0, r1
+	blo 1b
+2:	bx lr
 
-	mov pc, lr
-
-	/*
-	* Exception handlers
-	*/
+#ifdef CONFIG_ARCH_MINSTACK
+	.align 5
+unhandled_exception:
+	wfi
+	b unhandled_exception
+#else
 	.align 5
 undefined_instruction:
 	sub lr, lr, #4
@@ -229,18 +237,4 @@ fiq:
 	save_regs
 	bl arm32_do_fiq
 	restore_regs
-
-	/*
-	* The location of section
-	*/
- 	.align 4
-_stack_und_end:
-	.long __stack_und_end
-_stack_abt_end:
-	.long __stack_abt_end
-_stack_irq_end:
-	.long __stack_irq_end
-_stack_fiq_end:
-	.long __stack_fiq_end
-_stack_srv_end:
-	.long __stack_srv_end
+#endif

@@ -26,13 +26,18 @@ SECTIONS
 		PROVIDE(__image_start = .);
 		PROVIDE(__spl_start = .);
 		KEEP(*(.boot0_head))
+		. = ALIGN(64);
+		KEEP(*(.text.entry))
 		*(.text .text.*)
 		PROVIDE(__ddr_bin_start = .);
 		KEEP(*(.init_dram_bin))
 		PROVIDE(__ddr_bin_end = .);
 		KEEP(*(.note.gnu.build-id))
 	} > ram :text
-	.rodata : ALIGN(16) { *(.rdata .rdata.* .rodata .rodata.*) } > ram :text
+	.rodata : ALIGN(16) {
+		*(.rdata .rdata.* .rodata .rodata.*)
+		KEEP(*(.vectors))
+	} > ram :text
 	.initcalls : ALIGN(8) {
 		__initcall_start = .;
 		__initcallearly_start = .;
@@ -59,9 +64,11 @@ SECTIONS
 		_ebss = .;
 	} > ram :data
 	.stack (NOLOAD) : {
-		. = ALIGN(8);
+		. = ALIGN(16);
 		__stack_srv_start = .; . += 0x1000; __stack_srv_end = .;
 	} > ram :data
 	. = ALIGN(4);
 	_end = .;
+	ASSERT(_start == __spl_start + 0x40,
+	       "Boot0 entry must be 0x40 bytes from the image start")
 }

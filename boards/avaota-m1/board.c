@@ -33,16 +33,6 @@ int sunxi_nsi_init(void) {
 	return 0;
 }
 
-void neon_enable(void) {
-	/* Set the CPACR for access to CP10 and CP11*/
-	asm volatile("LDR r0, =0xF00000");
-	asm volatile("MCR p15, 0, r0, c1, c0, 2");
-	/* Set the FPEXC EN bit to enable the FPU */
-	asm volatile("MOV r3, #0x40000000");
-	/*@VMSR FPEXC, r3*/
-	asm volatile("MCR p10, 7, r3, c8, c0, 0");
-}
-
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();

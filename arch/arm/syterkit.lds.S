@@ -26,6 +26,8 @@ SECTIONS
 	.text : {
 		PROVIDE(__spl_start = .);
 		KEEP(*(.boot0_head))
+		. = ALIGN(64);
+		KEEP(*(.text.entry))
 		*(.text .text.*)
 		PROVIDE(__ddr_bin_start = .);
 		KEEP(*(.init_dram_bin))
@@ -66,7 +68,7 @@ SECTIONS
 	} > ram :data
 
 	.stack (NOLOAD) : {
-		. = ALIGN(8);
+		. = ALIGN(16);
 		__stack_und_start = .; . += IRQ_STACK_SIZE; __stack_und_end = .;
 		__stack_abt_start = .; . += IRQ_STACK_SIZE; __stack_abt_end = .;
 		__stack_irq_start = .; . += IRQ_STACK_SIZE; __stack_irq_end = .;
@@ -76,4 +78,6 @@ SECTIONS
 
 	. = ALIGN(4);
 	_end = .;
+	ASSERT(_start == __spl_start + 0x40,
+	       "Boot0 entry must be 0x40 bytes from the image start")
 }

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-obj-y += compiler_rt.o exception.o timer.o
+obj-y += start.o compiler_rt.o exception.o timer.o
 obj-y += memcmp.o memcpy.o memset.o
 
 obj-$(CONFIG_BACKTRACE) += backtrace.o
