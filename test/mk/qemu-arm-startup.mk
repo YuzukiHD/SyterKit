@@ -94,7 +94,7 @@ run: $(QEMU_DEPS)
 	@echo "  QEMU    $(CASE_NAME)"
 	@set +e; timeout $(QEMU_TIMEOUT) $(QEMU_SYSTEM) \
 		$(QEMU_BOOT_ARGS) -cpu $(QEMU_CPU) -nographic \
-		-monitor none -serial none -no-reboot \
+		-monitor none -serial none -nic none -no-reboot \
 		-semihosting-config enable=on,target=native \
 		>$(TEST_LOG) 2>&1; status=$$?; \
 	set -e; if [ $$status -ne 124 ]; then \
