@@ -243,7 +243,7 @@ $(dt2c_driver_manifest): $(dt2c_driver_inputs) $(auto_conf) \
 $(dt2c_header): $(board_dts) $(dt2c_driver_manifest) $(dt2c_path) \
 		| dt2c-check
 	@mkdir -p $(dir $@)
-	@echo "  DT2C   boards/$(board)/board.dts"
+	@echo "  DT2C    boards/$(board)/board.dts"
 	@$(dt2c_path) generate \
 		--dts $(board_dts) \
 		--bindings $(dt2c_bindings) \
