@@ -74,20 +74,20 @@ static void enable_pll(uintptr_t reg_addr, uint32_t n_factor) {
  * function with predefined PLL multiplier factors. It also adjusts the CPU-to-AXI clock 
  * divider by modifying the corresponding register to control the clock speed and synchronization.
  *
- * @note The function performs PLL configuration for both the CPU (sunxi_ccu_cpu_pll_reg(ccu, 0x04U))
- *       and DSU (sunxi_ccu_cpu_pll_reg(ccu, 0x08U)) and sets the CPU-to-AXI clock divider factor.
+ * @note The function performs PLL configuration for both the CPU (ccu->base[1] + 0x04U)
+ *       and DSU (ccu->base[1] + 0x08U) and sets the CPU-to-AXI clock divider factor.
  */
 static void set_pll_cpux_axi(sunxi_ccu_t *ccu) {
 	uint32_t reg_val;
 
 	// Enable CPU and DSU PLLs with appropriate factors
-	enable_pll(sunxi_ccu_cpu_pll_reg(ccu, 0x04U), 0x2a);///< Set the CPU PLL multiplier factor (0x2a)
-	enable_pll(sunxi_ccu_cpu_pll_reg(ccu, 0x08U), 0x16); ///< Set the DSU PLL multiplier factor (0x16)
+	enable_pll(ccu->base[1] + 0x04U, 0x2a);///< Set the CPU PLL multiplier factor (0x2a)
+	enable_pll(ccu->base[1] + 0x08U, 0x16); ///< Set the DSU PLL multiplier factor (0x16)
 
 	/* Set the CPU-to-AXI divider factor (M) */
-	reg_val = readl(sunxi_ccu_cpu_pll_reg(ccu, 0x4cU));///< Read the current DSU clock register value
+	reg_val = readl(ccu->base[1] + 0x4cU);///< Read the current DSU clock register value
 	reg_val &= ~(0x3);				 ///< Clear the divider bits
-	writel(reg_val, sunxi_ccu_cpu_pll_reg(ccu, 0x4cU));///< Write the modified value back to the DSU clock register
+	writel(reg_val, ccu->base[1] + 0x4cU);///< Write the modified value back to the DSU clock register
 }
 
 /**

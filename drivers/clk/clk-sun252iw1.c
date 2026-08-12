@@ -256,12 +256,4 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
 }
 
-/* we got hosc freq in arch/timer.c */
-extern uint32_t current_hosc_freq;
-
-uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu) {
-	(void) ccu;
-	return 192; /* PERI_192M */
-}
-
 DT2C_DRIVER_COMPAT("allwinner,sun252iw1-ccu");

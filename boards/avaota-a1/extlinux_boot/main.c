@@ -19,6 +19,7 @@
 
 #include <drivers/mmc/sdcard.h>
 #include <drivers/clk/clk.h>
+#include <drivers/clk/sun55iw3/clk.h>
 #include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
 #include <drivers/i2c/i2c.h>
@@ -721,7 +722,7 @@ int main(void) {
 	pmu_axp2202_dump(&primary_pmu);
 	pmu_axp1530_dump(&secondary_pmu);
 
-	sunxi_clk_set_cpu_pll(&ccu, 1416);
+	sun55iw3_clk_set_cpu_pll(&ccu, 1416);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
 		printk_error("RISC-V E906: reset failed\n");

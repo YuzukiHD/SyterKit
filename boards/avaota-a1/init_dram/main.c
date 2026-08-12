@@ -15,6 +15,7 @@
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
 #include <drivers/clk/clk.h>
+#include <drivers/clk/sun55iw3/clk.h>
 #include <drivers/clk/sun55iw3/reg.h>
 #include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
@@ -86,7 +87,7 @@ int main(void) {
 	pmu_axp2202_dump(&primary_pmu);
 	pmu_axp1530_dump(&secondary_pmu);
 
-	sunxi_clk_set_cpu_pll(&ccu, 1800);
+	sun55iw3_clk_set_cpu_pll(&ccu, 1800);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
 		printk_error("RISC-V E906: reset failed\n");

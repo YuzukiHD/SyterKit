@@ -56,15 +56,15 @@ void sunxi_clk_init(sunxi_ccu_t *ccu) {
 	udelay(20);
 
 	/* Set CPU divider factor P */
-	clrbits_le32(sunxi_ccu_cpu_pll_reg(ccu, 0x20U), (0x3 << 16));
+	clrbits_le32(ccu->base[1] + 0x20U, (0x3 << 16));
 
 	/* Set CPU-AXI divider factor M */
-	clrsetbits_le32(sunxi_ccu_cpu_pll_reg(ccu, 0x20U),
+	clrsetbits_le32(ccu->base[1] + 0x20U,
 			(0x3 << 0), (0x1 << 0));
 	udelay(10);
 
 	/* Set CPU clock source */
-	clrsetbits_le32(sunxi_ccu_cpu_pll_reg(ccu, 0x18U),
+	clrsetbits_le32(ccu->base[1] + 0x18U,
 			(0x7 << 24), (0x3 << 24));
 	udelay(10);
 }

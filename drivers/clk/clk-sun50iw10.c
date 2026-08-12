@@ -146,19 +146,19 @@ static inline void set_pll_mbus(sunxi_ccu_t *ccu) {
 
 static inline void set_circuits_analog(sunxi_ccu_t *ccu) {
 	/* calibration circuits analog enable */
-	setbits_le32(sunxi_ccu_r_prcm_reg(ccu, 0x254U),
+	setbits_le32(ccu->base[1] + 0x254U,
 		     0x01 << VDD_ADDA_OFF_GATING);
 	udelay(1);
 
-	setbits_le32(sunxi_ccu_sysctrl_reg(ccu, 0x160U),
+	setbits_le32(ccu->base[2] + 0x160U,
 		     0x01 << CAL_ANA_EN);
 	udelay(1);
 
-	clrbits_le32(sunxi_ccu_sysctrl_reg(ccu, 0x160U),
+	clrbits_le32(ccu->base[2] + 0x160U,
 		     0x01 << CAL_EN);
 	udelay(1);
 
-	setbits_le32(sunxi_ccu_sysctrl_reg(ccu, 0x160U),
+	setbits_le32(ccu->base[2] + 0x160U,
 		     0x01 << CAL_EN);
 	udelay(1);
 }
@@ -167,7 +167,7 @@ static inline void set_iommu_auto_gating(sunxi_ccu_t *ccu) {
 	/*gating clock for iommu*/
 	writel(0x01, sunxi_ccu_reg(ccu, CCU_IOMMU_BGR_REG));
 	/*enable auto gating*/
-	writel(0x01, sunxi_ccu_iommu_reg(ccu, 0x40U));
+	writel(0x01, ccu->base[3] + 0x40U);
 }
 
 static inline void set_platform_config(sunxi_ccu_t *ccu) {
@@ -228,39 +228,6 @@ void sunxi_clk_init(sunxi_ccu_t *ccu) {
 	return;
 }
 
-uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu) {
-	uint32_t reg32;
-	uint8_t plln, pllm, p0;
-
-	/* PLL PERI */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
-	if (reg32 & (1 << 31)) {
-		plln = ((reg32 >> 8) & 0xff) + 1;
-		pllm = (reg32 & 0x01) + 1;
-		p0 = ((reg32 >> 16) & 0x03) + 1;
-
-		return ((((24 * plln) / (pllm * p0))) * 1000 * 1000);
-	}
-
-	return 0;
-}
-
-void sunxi_clk_reset(sunxi_ccu_t *ccu) {
-	uint32_t reg_val;
-
-	/*set ahb,apb to default, use OSC24M*/
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_PSI_AHB1_AHB2_CFG_REG));
-	reg_val &= (~(0x3 << 24));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_PSI_AHB1_AHB2_CFG_REG));
-
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_APB1_CFG_GREG));
-	reg_val &= (~(0x3 << 24));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_APB1_CFG_GREG));
-
-	/*set cpux pll to default,use OSC24M*/
-	writel(0x0301, sunxi_ccu_reg(ccu, CCU_CPUX_AXI_CFG_REG));
-	return;
-}
 
 void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	uint32_t reg32;

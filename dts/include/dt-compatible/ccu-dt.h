@@ -4,6 +4,7 @@
 #define __DT_COMPATIBLE_CCU_DT_H__
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <driver.h>
 #include <drivers/clk/clk.h>
@@ -134,7 +135,7 @@ sunxi_ccu_dt_main_minimum_size(int node) {
 
 static inline __attribute__((always_inline)) bool
 sunxi_ccu_dt_register(const dt2c_fdt32_t *cells, size_t index,
-		      size_t minimum_size, uintptr_t *base, size_t *size) {
+		      size_t minimum_size, uintptr_t *base) {
 	uint32_t raw_base = dt2c_fdt32_to_cpu(cells[index * 2U]);
 	uint32_t raw_size = dt2c_fdt32_to_cpu(cells[index * 2U + 1U]);
 
@@ -143,7 +144,6 @@ sunxi_ccu_dt_register(const dt2c_fdt32_t *cells, size_t index,
 	    raw_base + raw_size < raw_base)
 		return false;
 	*base = (uintptr_t) raw_base;
-	*size = (size_t) raw_size;
 	return true;
 }
 
@@ -160,58 +160,46 @@ sunxi_ccu_dt_registers(int node, enum sunxi_ccu_dt_layout layout,
 	    length != (int) (count * 2U * sizeof(*cells)) ||
 	    !sunxi_ccu_dt_register(cells, 0U,
 				   sunxi_ccu_dt_main_minimum_size(node),
-				   &config->base, &config->size))
+				   &config->base[0]))
 		return false;
 
 	if (layout == SUNXI_CCU_DT_LAYOUT_SINGLE)
 		return true;
 	if (layout == SUNXI_CCU_DT_LAYOUT_APP_AON)
 		return sunxi_ccu_dt_register(cells, 1U, 0x58cU,
-					     &config->aon_base,
-					     &config->aon_size);
+					     &config->base[1]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_R_PRCM_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x314U,
-					     &config->r_prcm_base,
-					     &config->r_prcm_size) &&
+					     &config->base[1]) &&
 		       sunxi_ccu_dt_register(cells, 2U, 0x44U,
-					     &config->iommu_base,
-					     &config->iommu_size);
+					     &config->base[2]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_R_PRCM_SYSCTRL_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x258U,
-					     &config->r_prcm_base,
-					     &config->r_prcm_size) &&
+					     &config->base[1]) &&
 		       sunxi_ccu_dt_register(cells, 2U, 0x164U,
-					     &config->sysctrl_base,
-					     &config->sysctrl_size) &&
+					     &config->base[2]) &&
 		       sunxi_ccu_dt_register(cells, 3U, 0x44U,
-					     &config->iommu_base,
-					     &config->iommu_size);
+					     &config->base[3]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_SYS_CFG_R_PRCM_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x70U,
-					     &config->cpu_sys_cfg_base,
-					     &config->cpu_sys_cfg_size) &&
+					     &config->base[1]) &&
 		       sunxi_ccu_dt_register(cells, 2U, 0x314U,
-					     &config->r_prcm_base,
-					     &config->r_prcm_size) &&
+					     &config->base[2]) &&
 		       sunxi_ccu_dt_register(cells, 3U, 0x44U,
-					     &config->iommu_base,
-					     &config->iommu_size);
+					     &config->base[3]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_PLL) {
 		size_t minimum = sunxi_ccu_dt_is_compatible(
 				node, SUNXI_CCU_SUN55IW6_COMPATIBLE) ?
 				0x50U : 0x24U;
 
 		return sunxi_ccu_dt_register(cells, 1U, minimum,
-					     &config->cpu_pll_base,
-					     &config->cpu_pll_size);
+					     &config->base[1]);
 	}
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_PLL_RTC)
 		return sunxi_ccu_dt_register(cells, 1U, 0x3020U,
-					     &config->cpu_pll_base,
-					     &config->cpu_pll_size) &&
+					     &config->base[1]) &&
 		       sunxi_ccu_dt_register(cells, 2U, 0x164U,
-					     &config->rtc_base,
-					     &config->rtc_size);
+					     &config->base[2]);
 	return false;
 }
 
@@ -227,7 +215,6 @@ sunxi_ccu_dt_read_config(sunxi_ccu_t *ccu, int node) {
 	    !sunxi_ccu_dt_registers(node, layout, &config))
 		return DRIVER_ERROR_INVALID;
 
-	config.dt_node = node;
 	*ccu = config;
 	return DRIVER_OK;
 }

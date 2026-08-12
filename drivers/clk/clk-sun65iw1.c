@@ -19,30 +19,8 @@ void sunxi_clk_init(sunxi_ccu_t *ccu) {
 	(void) ccu;
 }
 
-uint32_t sunxi_clk_get_hosc_type(sunxi_ccu_t *ccu) {
-	(void) ccu;
-	return 24;
-}
-
 void sunxi_clk_reset(sunxi_ccu_t *ccu) {
 	(void) ccu;
-}
-
-uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu) {
-	uint32_t reg32;
-	uint8_t plln, pllm, p0;
-
-	/* PLL PERI */
-	reg32 = read32(sunxi_ccu_reg(ccu, PLL_PERI0_CTRL_REG));
-	if (reg32 & (1 << 31)) {
-		plln = ((reg32 >> 8) & 0xff) + 1;
-		p0 = ((reg32 >> 20) & 0x03) + 1;
-		pllm = ((reg32 >> 1) & 0x01) + 1;
-
-		return ((((24 * plln) / (pllm * p0))) * 1000 * 1000);
-	}
-
-	return 0;
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sun65iw1-ccu");
