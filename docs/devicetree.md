@@ -56,15 +56,18 @@ reused for another board in the same `O=` output tree.
 
 ## Obtaining dt2c
 
-Initialize the pinned source and headers once:
+The Linux x86_64 distribution in `tools/bin/` contains the musl-static binary
+and its matching public headers. It works without Rust or an initialized
+submodule. Initialize the submodule only when building dt2c from source:
 
 ```sh
 git submodule update --init tools/dt2c
 ```
 
-On Linux x86_64, Make prefers the checked-in musl-static binary at
-`tools/bin/dt2c`. If it cannot run, Make builds the submodule with Cargo into
-`.obj/tools/dt2c/`. Other compatible installations can be selected explicitly:
+On Linux x86_64, Make prefers `tools/bin/dt2c` and its headers under
+`tools/bin/include`. If the binary cannot run, Make builds the submodule with
+Cargo into `.obj/tools/dt2c/`. Other compatible installations can be selected
+explicitly:
 
 ```sh
 make tinyvision_defconfig

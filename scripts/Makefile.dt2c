@@ -4,6 +4,7 @@ CARGO ?= cargo
 
 dt2c_source := $(srctree)/tools/dt2c
 dt2c_prebuilt := $(srctree)/tools/bin/dt2c
+dt2c_prebuilt_include := $(srctree)/tools/bin/include
 dt2c_build_dir := $(objtree)/.obj/tools/dt2c
 dt2c_bundled := $(dt2c_build_dir)/release/dt2c
 dt2c_prebuilt_usable := $(shell \
@@ -31,7 +32,9 @@ dt2c_path := $(if $(dt2c_command_path),$(abspath $(dt2c_command_path)))
 endif
 
 ifeq ($(origin DT2C_INCLUDE),undefined)
-ifneq ($(filter $(dt2c_bundled) $(dt2c_prebuilt),$(dt2c_path)),)
+ifeq ($(dt2c_path),$(dt2c_prebuilt))
+dt2c_include_path := $(dt2c_prebuilt_include)
+else ifeq ($(dt2c_path),$(dt2c_bundled))
 dt2c_include_path := $(dt2c_source)/include
 else
 dt2c_include_path := $(shell \
@@ -77,6 +80,10 @@ dt2c-check: $(dt2c_build_target)
 		exit 1; \
 	}
 	@test -f "$(DT2C_INCLUDE)/dt2c/dt.h" || { \
+		echo "dt2c headers were not found; set DT2C_INCLUDE=/path/to/include" >&2; \
+		exit 1; \
+	}
+	@test -f "$(DT2C_INCLUDE)/dt2c/dt_runtime.h" || { \
 		echo "dt2c headers were not found; set DT2C_INCLUDE=/path/to/include" >&2; \
 		exit 1; \
 	}

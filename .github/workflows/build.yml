@@ -57,6 +57,11 @@ jobs:
       - name: Verify dt2c distributions
         run: |
           tools/bin/dt2c generate --help
+          test -f tools/bin/include/dt2c/dt.h
+          test -f tools/bin/include/dt2c/dt_runtime.h
+          cmp tools/bin/include/dt2c/dt.h tools/dt2c/include/dt2c/dt.h
+          cmp tools/bin/include/dt2c/dt_runtime.h \
+            tools/dt2c/include/dt2c/dt_runtime.h
           file tools/bin/dt2c | grep -F 'static-pie linked'
           ! readelf -d tools/bin/dt2c | grep -q '(NEEDED)'
           rustup toolchain install stable --profile minimal
@@ -64,6 +69,8 @@ jobs:
           make O="${source_build}" \
             DT2C="${source_build}/.obj/tools/dt2c/release/dt2c" \
             CARGO="cargo +stable" dt2c-check
+          mv tools/dt2c "${RUNNER_TEMP}/dt2c-source"
+          make O="${RUNNER_TEMP}/dt2c-prebuilt-check" dt2c-check
 
       - name: Build all board configurations
         env:
