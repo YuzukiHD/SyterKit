@@ -10,8 +10,8 @@
 
 #include <lib/fatfs/diskio.h>
 
-#include <drivers/dma.h>
-#include <drivers/dram.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
 #include <drivers/mmc/sdcard.h>
 #include <string.h>
 

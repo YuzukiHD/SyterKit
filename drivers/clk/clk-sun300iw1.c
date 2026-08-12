@@ -12,8 +12,8 @@
 #include <initcall.h>
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun300iw1/reg.h>
 #include <dt-compatible/ccu-dt.h>
 #include <dt2c/driver.h>
 

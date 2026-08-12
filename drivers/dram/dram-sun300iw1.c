@@ -11,9 +11,10 @@
 #include <mmu.h>
 
 #include <dt2c/driver.h>
-#include <drivers/clk.h>
-#include <drivers/dram.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dram/dram.h>
+#include <drivers/clk/sun300iw1/reg.h>
+#include <drivers/dram/sun300iw1/reg.h>
 
 #include <common.h>
 

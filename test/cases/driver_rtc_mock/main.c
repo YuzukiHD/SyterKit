@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <drivers/rtc.h>
+#include <drivers/rtc/rtc.h>
 
 #include "syter_test.h"
 

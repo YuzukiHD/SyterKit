@@ -11,8 +11,8 @@
 
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun65iw1/reg.h>
 #include <dt2c/driver.h>
 
 void sunxi_clk_init(sunxi_ccu_t *ccu) {

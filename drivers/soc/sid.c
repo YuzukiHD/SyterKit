@@ -7,7 +7,7 @@
 #include <io.h>
 #include <log.h>
 
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <dt2c/driver.h>
 
 #include "sid-internal.h"

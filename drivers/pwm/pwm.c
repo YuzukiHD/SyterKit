@@ -23,8 +23,8 @@
 #include <common.h>
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/pwm.h>
+#include <drivers/clk/clk.h>
+#include <drivers/pwm/pwm.h>
 #include <dt2c/driver.h>
 
 #define PRESCALE_MAX 256

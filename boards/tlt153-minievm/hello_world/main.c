@@ -18,18 +18,19 @@
 
 #include <drivers/mmc/sdcard.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/mtd/spi-nand.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/dma-dt.h>
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/spi-nand-dt.h>
 #include <dt-compatible/spi-dt.h>
+#include <string.h>
 
 extern sunxi_serial_t uart_dbg;
 
@@ -59,16 +60,16 @@ int cmd_read(int argc, const char **argv) {
 	uint32_t test_time;
 
 	printk_debug("Clear Buffer data\n");
-	memset((void *) SDRAM_BASE, 0x00, 0x2000);
-	dump_hex(SDRAM_BASE, 0x100);
+	memset((void *) dram.memory_base, 0x00, 0x2000);
+	dump_hex(dram.memory_base, 0x100);
 
 	printk_debug("Read data to buffer data\n");
 
 	start = time_ms();
-	sdmmc_blk_read(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	sdmmc_blk_read(&mmc_card, (uint8_t *) (dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-	dump_hex(SDRAM_BASE, 0x100);
+	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
 
@@ -79,11 +80,11 @@ int cmd_write(int argc, const char **argv) {
 	uint32_t test_time;
 
 	printk_debug("Set Buffer data\n");
-	memset((void *) SDRAM_BASE, 0x00, 0x2000);
-	memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
+	memset((void *) dram.memory_base, 0x00, 0x2000);
+	memcpy((void *) dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
-	sdmmc_blk_write(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, 1024);
+	sdmmc_blk_write(&mmc_card, (uint8_t *) (dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
@@ -148,7 +149,7 @@ int main(void) {
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 	
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
@@ -173,9 +174,9 @@ int main(void) {
 			printk_error("SPI: SPI-NAND init failed\n");
 	}
 
-	spi_nand_read(&nand, (uint8_t *) SDRAM_BASE, 0x0, 0x100);
+	spi_nand_read(&nand, (uint8_t *) dram.memory_base, 0x0, 0x100);
 
-	dump_hex(SDRAM_BASE, 0x100);
+	dump_hex(dram.memory_base, 0x100);
 
 	syterkit_shell_attach(commands);
 

@@ -12,7 +12,7 @@
 
 #include <mmu.h>
 
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>

@@ -10,18 +10,18 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <dt-bindings/soc/sun65iw1.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
-#include <drivers/sid.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 
 int sunxi_nsi_init(void) {
 	writel(0x40005, 0x2402C00 + 0x6c);

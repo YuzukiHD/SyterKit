@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <lib/elf/elf_loader.h>
 
 #include "syter_test.h"

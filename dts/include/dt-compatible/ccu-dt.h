@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #include <driver.h>
-#include <drivers/clk.h>
+#include <drivers/clk/clk.h>
 #include <dt-compatible/dt-common.h>
 
 #define SUNXI_CCU_SUN20IW1_COMPATIBLE "allwinner,sun20iw1-ccu"

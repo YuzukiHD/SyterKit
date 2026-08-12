@@ -12,16 +12,16 @@
 
 #include <mmu.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <drivers/mmc/sdhci.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>

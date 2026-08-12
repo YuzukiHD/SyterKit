@@ -12,8 +12,8 @@
 #include <log.h>
 
 #include <dt2c/driver.h>
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
+#include <drivers/dram/dram.h>
+#include <drivers/rtc/rtc.h>
 #include <drivers/pmu/axp.h>
 
 static axp_pmu_t *dram_pmu;

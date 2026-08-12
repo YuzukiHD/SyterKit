@@ -9,8 +9,8 @@
 #include <log.h>
 #include <dt-compatible/ccu-dt.h>
 
-#include <drivers/dram.h>
-#include <drivers/sid.h>
+#include <drivers/dram/dram.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/sid-dt.h>
 

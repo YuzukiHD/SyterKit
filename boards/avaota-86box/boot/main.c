@@ -23,13 +23,13 @@
 
 #include <image/image_loader.h>
 
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/mmc-dt.h>
 
@@ -125,7 +125,7 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(card, (uint8_t *) (SDRAM_BASE), 0,
+	sdmmc_blk_read(card, (uint8_t *) (dram.memory_base), 0,
 		       CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
@@ -222,7 +222,7 @@ static int update_dtb_for_linux(uint32_t dram_size) {
 	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
-	int len = fdt_pack_reg(image.of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
+	int len = fdt_pack_reg(image.of_dest, tmp_buf, dram.memory_base, (dram_size * 1024 * 1024));
 
 	if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
 		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
@@ -378,7 +378,7 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);

@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <drivers/clk.h>
-#include <drivers/gpio.h>
-#include <drivers/spi.h>
+#include <drivers/clk/clk.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/spi/spi.h>
 
 #include <log.h>
 

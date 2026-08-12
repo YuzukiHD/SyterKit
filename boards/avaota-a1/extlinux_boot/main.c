@@ -18,16 +18,17 @@
 #include <string.h>
 
 #include <drivers/mmc/sdcard.h>
-#include <drivers/clk.h>
-#include <drivers/dram.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/i2c.h>
-#include <drivers/remoteproc.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <dt-compatible/rtc-dt.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 
 #include <drivers/pmu/axp.h>
+#include <dt-bindings/soc/sun55iw3.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
@@ -43,6 +44,8 @@
 #include <uart.h>
 
 #include "spi_lcd.c"
+
+static sunxi_dram_t dram;
 
 #define CONFIG_SPLASH_LOAD_ADDR (0x40080000)
 #define CONFIG_SPLASH_FILENAME "splash.bin"
@@ -503,7 +506,7 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
-	int len = fdt_pack_reg(image->of_dest, tmp_buf, SDRAM_BASE,
+	int len = fdt_pack_reg(image->of_dest, tmp_buf, dram->memory_base,
 			       (uint64_t) dram->size * 1024 * 1024);
 
 	if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
@@ -651,7 +654,6 @@ _error:
 
 int main(void) {
 	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
 	sdmmc_pdata_t emmc_card = {0};
@@ -737,7 +739,7 @@ int main(void) {
 
 	sunxi_clk_dump(&ccu);
 
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);

@@ -3,13 +3,12 @@
 #include <stdint.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <dt2c/driver.h>
 #include <io.h>
 #include <log.h>
 
-#include <drivers/reg/reg-ccu.h>
-#include <drivers/reg/reg-rproc.h>
+#include <drivers/clk/sun55iw3/reg.h>
 
 #define SUN55IW3_E906_PUBSRAM_CFG_OFFSET 0x0114U
 #define SUN55IW3_E906_CLK_OFFSET 0x0120U

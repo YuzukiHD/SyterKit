@@ -3,14 +3,18 @@
 #include <stdint.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <dt2c/driver.h>
 #include <interrupt.h>
 #include <io.h>
 #include <timer.h>
 
-#include <drivers/reg/reg-ccu.h>
-#include <drivers/reg/reg-rproc.h>
+#include <drivers/clk/sun300iw1/reg.h>
+
+#define A27L_WFI_MODE_REG 0x4U
+#define A27L_START_ADDR_REG 0x204U
+#define A27L_WAKEUP_CTRL_REG 0x64U
+#define A27L_WAKEUP_EN (1U << 8)
 
 enum sun300iw1_a27l2_register {
 	SUN300IW1_A27L2_PMU_AON,

@@ -32,8 +32,9 @@
 #include <log.h>
 
 #include <driver.h>
-#include <drivers/spi.h>
+#include <drivers/spi/spi.h>
 #include <dt2c/driver.h>
+#include <string.h>
 
 /**
  * @brief Perform a software reset on the SPI controller

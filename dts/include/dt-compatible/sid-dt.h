@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_SID_DT_H__
 
 #include <driver.h>
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/dt-common.h>
 
 static inline __attribute__((always_inline)) int

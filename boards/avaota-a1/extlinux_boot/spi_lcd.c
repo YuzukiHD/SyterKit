@@ -20,14 +20,14 @@
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
-#include <drivers/dram.h>
-#include <drivers/i2c.h>
-#include <drivers/rtc.h>
+#include <dt-bindings/soc/sun55iw3.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dram/dram.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/rtc/rtc.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/spi-dt.h>

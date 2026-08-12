@@ -17,7 +17,7 @@
 
 #include <log.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 
 /**
  * @brief Get the total DRAM size

@@ -7,7 +7,7 @@
 
 #include <timer.h>
 
-#include <drivers/serial.h>
+#include <drivers/serial/serial.h>
 
 #include <uart.h>
 

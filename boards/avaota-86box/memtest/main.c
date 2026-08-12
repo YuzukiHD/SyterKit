@@ -21,11 +21,11 @@
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
+#include <drivers/dram/dram.h>
+#include <drivers/rtc/rtc.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/dram-dt.h>
 
 #include "memtester.c"
@@ -59,7 +59,7 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
 	printk_debug("enable mmu ok\n");
@@ -72,7 +72,7 @@ int main(void) {
 
 	static int i = 0;
 	while (1) {
-		do_memtester((uint64_t) SDRAM_BASE, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
+		do_memtester((uint64_t) dram.memory_base, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
 		i++;
 	}
 

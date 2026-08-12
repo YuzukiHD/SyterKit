@@ -10,8 +10,8 @@
 
 #include <common.h>
 
-#include <drivers/i2c.h>
-#include <drivers/serial.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/i2c-dt.h>
 
 extern sunxi_serial_t uart_dbg;

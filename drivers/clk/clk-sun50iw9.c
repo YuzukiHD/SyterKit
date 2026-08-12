@@ -11,8 +11,8 @@
 
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun50iw9/reg.h>
 #include <dt2c/driver.h>
 
 static inline void set_pll_cpux_axi(sunxi_ccu_t *ccu) {

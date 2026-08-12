@@ -13,9 +13,9 @@
 #include <common.h>
 #include <jmp.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/mmc-dt.h>
 
@@ -28,6 +28,7 @@
 #include <lib/fatfs/ff.h>
 #include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
+#include <string.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -112,7 +113,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&card0, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 

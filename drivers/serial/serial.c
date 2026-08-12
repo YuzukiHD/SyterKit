@@ -21,10 +21,10 @@
 
 #include <driver.h>
 #include <log.h>
-#include <drivers/serial.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/serial-dt.h>
 
-#include <drivers/clk.h>
+#include <drivers/clk/clk.h>
 
 /**
  * @brief Initialize the UART clock

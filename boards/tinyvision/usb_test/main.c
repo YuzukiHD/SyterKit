@@ -5,7 +5,7 @@
 #include <dt-compatible/ccu-dt.h>
 #include <mmu.h>
 
-#include <drivers/clk.h>
+#include <drivers/clk/clk.h>
 #include <drivers/intc/gic.h>
 #include <drivers/usb/usb.h>
 #include <dt-compatible/usb-dt.h>

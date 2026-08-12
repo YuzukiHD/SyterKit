@@ -23,10 +23,8 @@
 #include <timer.h>
 #include <types.h>
 
-#include <drivers/reg/reg-ncat.h>
-
 #include <driver.h>
-#include <drivers/rtc.h>
+#include <drivers/rtc/rtc.h>
 #include <dt2c/driver.h>
 
 static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {

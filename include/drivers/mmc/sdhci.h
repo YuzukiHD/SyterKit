@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <drivers/reg/reg-smhc.h>
-#include <drivers/clk.h>
-#include <drivers/gpio.h>
+#include <drivers/mmc/reg.h>
+#include <drivers/clk/clk.h>
+#include <drivers/gpio/gpio.h>
 
 #include <log.h>
 

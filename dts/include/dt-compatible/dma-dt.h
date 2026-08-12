@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_DMA_DT_H__
 
 #include <driver.h>
-#include <drivers/dma.h>
+#include <drivers/dma/dma.h>
 #include <dt-compatible/dt-common.h>
 
 static inline __attribute__((always_inline)) int

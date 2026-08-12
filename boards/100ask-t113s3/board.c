@@ -10,13 +10,13 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <dt-bindings/soc/sun8iw20.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */

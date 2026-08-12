@@ -11,11 +11,12 @@
 #include <log.h>
 #include <timer.h>
 
-#include <drivers/clk.h>
-#include <drivers/gpio.h>
+#include <drivers/clk/clk.h>
+#include <drivers/gpio/gpio.h>
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
+#include <string.h>
 
 /**
  * @brief Extracts a specified bit field from a response buffer.

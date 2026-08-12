@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_SERIAL_DT_H__
 
 #include <driver.h>
-#include <drivers/serial.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/pinctrl-dt.h>
 
 static inline __attribute__((always_inline)) bool

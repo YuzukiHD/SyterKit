@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_RTC_DT_H__
 
 #include <driver.h>
-#include <drivers/rtc.h>
+#include <drivers/rtc/rtc.h>
 #include <dt-compatible/dt-common.h>
 
 static inline __attribute__((always_inline)) int

@@ -251,7 +251,8 @@ $(dt2c_header): $(board_dts) $(dt2c_driver_manifest) $(dt2c_path) \
 		--header $(dt2c_header) \
 		--depfile $(dt2c_depfile) \
 		--report $(dt2c_report) \
-		-I $(srctree)/dts/include
+		-I $(srctree)/dts/include \
+		-I $(srctree)/include
 endif
 
 build_dirs := core lib drivers arch/$(arch_dir) boards/$(board)

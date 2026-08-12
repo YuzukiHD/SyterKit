@@ -11,9 +11,8 @@
 #include <mmu.h>
 
 #include <dt2c/driver.h>
-#include <drivers/clk.h>
-#include <drivers/dram.h>
-#include <drivers/reg/reg-dram.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dram/dram.h>
 #include <drivers/pmu/axp.h>
 
 #include <common.h>

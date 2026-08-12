@@ -11,8 +11,8 @@
 #include <common.h>
 
 #include <drivers/pmu/axp.h>
-#include <drivers/dram.h>
-#include <drivers/i2c.h>
+#include <drivers/dram/dram.h>
+#include <drivers/i2c/i2c.h>
 #include <dt-compatible/dram-dt.h>
 
 extern sunxi_serial_t uart_dbg;

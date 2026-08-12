@@ -18,8 +18,9 @@
 #include <log.h>
 
 #include <driver.h>
-#include <drivers/dma.h>
+#include <drivers/dma/dma.h>
 #include <dt2c/driver.h>
+#include <string.h>
 
 /**
  * @brief Initialize DMA clock

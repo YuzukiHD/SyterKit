@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <drivers/dma.h>
-#include <drivers/dram.h>
-#include <drivers/spi.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/dma-dt.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/spi-dt.h>
@@ -206,7 +206,7 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	printk_debug("enable mmu ok\n");
 

@@ -53,6 +53,28 @@ syterkit_dt_alias_node(const char *alias, const char *compatible) {
 }
 
 static inline __attribute__((always_inline)) int
+syterkit_dt_read_reg_alias(const char *alias, uintptr_t *base, size_t *size) {
+	const dt2c_fdt32_t *reg;
+	uintptr_t value;
+	int node;
+
+	if (base == NULL || size == NULL)
+		return -DT2C_FDT_ERR_BADVALUE;
+	node = syterkit_dt_alias_node(alias, NULL);
+	if (node < 0)
+		return node;
+	reg = syterkit_dt_cells(node, "reg", 2);
+	if (reg == NULL)
+		return -DT2C_FDT_ERR_BADVALUE;
+	value = (uintptr_t) dt2c_fdt32_to_cpu(reg[0]);
+	*size = (size_t) dt2c_fdt32_to_cpu(reg[1]);
+	if (value == 0U || *size == 0U || value + *size < value)
+		return -DT2C_FDT_ERR_BADVALUE;
+	*base = value;
+	return 0;
+}
+
+static inline __attribute__((always_inline)) int
 syterkit_dt_phandle_node(int node, const char *name, const char *compatible) {
 	const dt2c_fdt32_t *phandle;
 	int referenced;

@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_GPIO_DT_H__
 
 #include <driver.h>
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 #include <dt-compatible/dt-common.h>
 
 #define SUNXI_GPIO_DT_CELLS 3U

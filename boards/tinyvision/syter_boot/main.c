@@ -23,11 +23,11 @@
 
 #include <image/image_loader.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/rtc-dt.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/mmc-dt.h>
 
@@ -142,7 +142,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&card0, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -588,7 +588,7 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
 	printk_debug("enable mmu ok\n");

@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_I2C_DT_H__
 
 #include <driver.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 #include <dt-compatible/pinctrl-dt.h>
 
 static inline __attribute__((always_inline)) int

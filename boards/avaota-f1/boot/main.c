@@ -22,14 +22,14 @@
 
 #include <image/image_loader.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 #include <dt-compatible/mmc-dt.h>
 
 #include "fdt_wrapper.h"
@@ -37,6 +37,8 @@
 #include <lib/fatfs/diskio.h>
 #include <lib/fdt/libfdt.h>
 #include "uart.h"
+
+static sunxi_dram_t dram;
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -214,7 +216,7 @@ static int update_dtb_for_linux(uint32_t dram_size) {
 	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
-	int len = fdt_pack_reg(image.of_dest, tmp_buf, SDRAM_BASE, (dram_size * 1024 * 1024));
+	int len = fdt_pack_reg(image.of_dest, tmp_buf, dram.memory_base, (dram_size * 1024 * 1024));
 
 	if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
 		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
@@ -336,7 +338,6 @@ const msh_command_entry commands[] = {
  */
 int main(void) {
 	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
 	sdmmc_pdata_t boot_card = {0};
 	sunxi_sdhci_t sdhci0;
 

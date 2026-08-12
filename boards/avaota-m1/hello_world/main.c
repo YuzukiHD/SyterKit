@@ -11,12 +11,12 @@
 #include <common.h>
 #include <stdlib.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/dram.h>
+#include <dt-bindings/soc/sun65iw1.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/sid-dt.h>
@@ -24,6 +24,9 @@
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
+#include <string.h>
+
+static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
@@ -38,9 +41,9 @@ int cmd_bt(int argc, const char **argv) {
 msh_declare_command(ddr_test);
 msh_define_help(ddr_test, "ddr w/r test", "Usage: ddr_test\n");
 int cmd_ddr_test(int argc, const char **argv) {
-	dump_hex(SDRAM_BASE, 0x100);
-	memset((void *) SDRAM_BASE, 0x5A, 0x2000);
-	dump_hex(SDRAM_BASE, 0x100);
+	dump_hex(dram.memory_base, 0x100);
+	memset((void *) dram.memory_base, 0x5A, 0x2000);
+	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
 
@@ -189,7 +192,6 @@ static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c,
 }
 
 int main(void) {
-	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
 	sunxi_i2c_t i2c;

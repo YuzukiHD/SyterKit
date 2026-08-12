@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <lib/elf/elf_loader.h>
 
 static int sunxi_remoteproc_validate(const sunxi_remoteproc_t *remoteproc) {
