@@ -13,6 +13,7 @@
 #include <drivers/dma.h>
 #include <drivers/dram.h>
 #include <drivers/mmc/sdcard.h>
+#include <string.h>
 
 static sdmmc_pdata_t *disk_devices[FF_VOLUMES];
 

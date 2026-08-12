@@ -31,6 +31,7 @@ limitations under the License.
 #include "arch_cskyv2.h"
 #elif TM_ARCH == TM_ARCH_X86_SSE2
 #include "arch_x86_sse2.h"
+#include <string.h>
 #else
 #error "UNSUPPORT ARCH!"
 #endif

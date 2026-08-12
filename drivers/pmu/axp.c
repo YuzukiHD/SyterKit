@@ -12,6 +12,7 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
+#include <string.h>
 
 /**
  * @brief Get control information from the table based on the given name.
