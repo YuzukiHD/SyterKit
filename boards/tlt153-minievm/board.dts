@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 
+#include <dt-bindings/dram/dram-param.h>
+
 #include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/soc/sun8iw22.h>
 
 / {
 	#address-cells = <1>;
@@ -25,8 +28,8 @@
 
 	ccu0: clock-controller@2002000 {
 		compatible = "allwinner,sun8iw22-ccu";
-		reg = <0x02002000 0x1000>,
-		      <0x08140000 0x1000>;
+		reg = <SUNXI_CCMU_BASE 0x1000>,
+		      <SUNXI_CPUX_PLL_CFG_BASE 0x1000>;
 		reg-names = "ccu", "cpu-pll";
 		status = "okay";
 	};
@@ -34,18 +37,44 @@
 	dram0: dram-controller {
 		compatible = "allwinner,sun8iw22-dram";
 		allwinner,dram-parameters =
-			<0x4b0 0x4 0x00000808 0x00000c0c>,
-			<0x000c0c0c 0x00006060 0x000060fa 0x02000001>,
-			<0x00000964 0x00000101 0x18 0>,
-			<0 0x400 0x813 0 0 0 0 0>,
-			<0 0 0 0 0 0 0x4000 0x2500>,
-			<0x5555 0x201f 0x7071 0x010700f5>;
+			<0x000004b0>,
+			<SUNXI_DRAM_DDR4>,
+			<0x00000808>,
+			<0x00000c0c>,
+			<0x000c0c0c>,
+			<0x00006060>,
+			<0x000060fa>,
+			<0x02000001>,
+			<0x00000964>,
+			<0x00000101>,
+			<0x00000018>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000400>,
+			<0x00000813>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00004000>,
+			<0x00002500>,
+			<0x00005555>,
+			<0x0000201f>,
+			<0x00007071>,
+			<0x010700f5>;
 		status = "okay";
 	};
 
 	pio: pinctrl@3604000 {
 		compatible = "allwinner,sunxi-pinctrl";
-		reg = <0x03604000 0x1000>;
+		reg = <SUNXI_GPIO_BASE 0x1000>;
 		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
 		allwinner,bank-count = <11>;
 		gpio-controller;
@@ -97,22 +126,22 @@
 
 		sid0: efuse@3006000 {
 			compatible = "allwinner,sunxi-sid";
-			reg = <0x03006000 0x400>;
+			reg = <SUNXI_SID_BASE 0x400>;
 			status = "okay";
 		};
 
 		mmc0: mmc@4020000 {
 			compatible = "allwinner,sunxi-mmc";
-			reg = <0x04020000 0x1000>;
+			reg = <SUNXI_SMHC0_BASE 0x1000>;
 			label = "sdhci0";
 			allwinner,mmc-id = <0>;
 			bus-width = <4>;
 			max-frequency = <50000000>;
 			memory-region = <&mmc0_dma>;
-			allwinner,clock-gate = <0x02002d0c 0>;
-			allwinner,reset = <0x02002d0c 16>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0xd0c) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0xd0c) 16>;
 			allwinner,module-clock =
-				<0x02002d00 8 0 1>;
+				<(SUNXI_CCM_BASE + 0xd00) 8 0 1>;
 			allwinner,clock-source-rates =
 				<24000000 400000000 300000000 400000000>;
 			allwinner,card-detect =
@@ -124,11 +153,11 @@
 
 		dma0: dma-controller@3001000 {
 			compatible = "allwinner,sunxi-dma";
-			reg = <0x03001000 0x1000>;
+			reg = <SUNXI_DMAC0_BASE 0x1000>;
 			#dma-cells = <1>;
-			allwinner,mbus-clock-gate = <0x020025e0 0>;
-			allwinner,clock-gate = <0x02002704 0>;
-			allwinner,reset = <0x02002704 16>;
+			allwinner,mbus-clock-gate = <(SUNXI_CCM_BASE + 0x5e0) 0>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0x704) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0x704) 16>;
 			status = "okay";
 		};
 
@@ -137,11 +166,11 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			allwinner,spi-id = <0>;
-			reg = <0x04025000 0x1000>;
+			reg = <SUNXI_SPI0_BASE 0x1000>;
 			clock-frequency = <100000000>;
-			allwinner,module-clock = <0x02002f00 2 8 300000000 0>;
-			allwinner,clock-gate = <0x02002f04 0>;
-			allwinner,reset = <0x02002f04 16>;
+			allwinner,module-clock = <(SUNXI_CCM_BASE + 0xf00) 2 8 300000000 0>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0xf04) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0xf04) 16>;
 			dmas = <&dma0 22>;
 			dma-names = "rx";
 			pinctrl-names = "default";
@@ -157,12 +186,12 @@
 
 		uart0: serial@2600000 {
 			compatible = "allwinner,sunxi-uart";
-			reg = <0x02600000 0x400>;
+			reg = <SUNXI_UART0_BASE 0x400>;
 			current-speed = <115200>;
 			clock-frequency = <24000000>;
 			allwinner,uart-id = <0>;
-			allwinner,clock-gate = <0x02002e00 0>;
-			allwinner,reset = <0x02002e00 16>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0xe00) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0xe00) 16>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart0_pins>;
 			status = "okay";
