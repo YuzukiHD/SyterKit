@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 
+#include <dt-bindings/dram/dram-param.h>
+
 #include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/soc/sun252iw1.h>
 
 / {
 	#address-cells = <1>;
@@ -24,7 +27,7 @@
 
 	ccu0: clock-controller@2001000 {
 		compatible = "allwinner,sun252iw1-ccu";
-		reg = <0x02001000 0x1000>;
+		reg = <SUNXI_CCU_BASE 0x1000>;
 		reg-names = "ccu";
 		status = "okay";
 	};
@@ -32,18 +35,36 @@
 	dram0: dram-controller {
 		compatible = "allwinner,sun252iw1-dram";
 		allwinner,dram-parameters =
-			<1056 3 0x7b6bfb 1>,
-			<0x000010d2 0 0x1c70 0x2>,
-			<0x18 0 0x004a2195 0x02423190>,
-			<0x0008b061 0xb4787896 0 0x48484848>,
-			<0x48 0x1621121e 0 0>,
-			<0 0x00460000 0x55 0x34010100>;
+			<0x00000420>,
+			<SUNXI_DRAM_DDR3>,
+			<0x007b6bfb>,
+			<0x00000001>,
+			<0x000010d2>,
+			<0x00000000>,
+			<0x00001c70>,
+			<0x00000002>,
+			<0x00000018>,
+			<0x00000000>,
+			<0x004a2195>,
+			<0x02423190>,
+			<0x0008b061>,
+			<0xb4787896>,
+			<0x00000000>,
+			<0x48484848>,
+			<0x00000048>,
+			<0x1621121e>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00460000>,
+			<0x00000055>,
+			<0x34010100>;
 		status = "okay";
 	};
 
 	pio: pinctrl@2000000 {
 		compatible = "allwinner,sunxi-pinctrl";
-		reg = <0x02000000 0x1000>;
+		reg = <SUNXI_GPIO_BASE 0x1000>;
 		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
 		allwinner,bank-count = <11>;
 		gpio-controller;
@@ -58,7 +79,7 @@
 
 	r_pio: pinctrl@2000540 {
 		compatible = "allwinner,sunxi-pinctrl";
-		reg = <0x02000540 0x1000>;
+		reg = <SUNXI_RGPIO_BASE 0x1000>;
 		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
 		allwinner,bank-count = <3>;
 		gpio-controller;
@@ -79,13 +100,13 @@
 
 		sid0: efuse@7091000 {
 			compatible = "allwinner,sunxi-sid";
-			reg = <0x07091000 0x400>;
+			reg = <SUNXI_SID_BASE 0x400>;
 			status = "okay";
 		};
 
 		clic0: interrupt-controller@30800000 {
 			compatible = "thead,c900-clic";
-			reg = <0x30800000 0x2000>;
+			reg = <SUNXI_RISCV_CLIC_BASE 0x2000>;
 			interrupt-controller;
 			#interrupt-cells = <1>;
 			riscv,num-sources = <208>;
@@ -96,12 +117,12 @@
 			compatible = "allwinner,sunxi-i2c";
 			#address-cells = <1>;
 			#size-cells = <0>;
-			reg = <0x02502000 0x400>;
+			reg = <SUNXI_TWI0_BASE 0x400>;
 			clock-frequency = <400000>;
 			allwinner,i2c-id = <0>;
 			allwinner,parent-clock-frequency = <24000000>;
-			allwinner,clock-gate = <0x0200191c 0>;
-			allwinner,reset = <0x0200191c 16>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x91c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x91c) 16>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
@@ -115,12 +136,12 @@
 
 		uart0: serial@2500000 {
 			compatible = "allwinner,sunxi-uart";
-			reg = <0x02500000 0x400>;
+			reg = <SUNXI_UART0_BASE 0x400>;
 			current-speed = <115200>;
 			clock-frequency = <24000000>;
 			allwinner,uart-id = <0>;
-			allwinner,clock-gate = <0x0200190c 0>;
-			allwinner,reset = <0x0200190c 16>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x90c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x90c) 16>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart0_pins>;
 			status = "okay";

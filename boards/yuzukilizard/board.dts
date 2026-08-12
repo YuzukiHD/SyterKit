@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 
+#include <dt-bindings/dram/dram-param.h>
+
 #include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/soc/sun8iw21.h>
 
 / {
 	#address-cells = <1>;
@@ -26,7 +29,7 @@
 
 	ccu0: clock-controller@2001000 {
 		compatible = "allwinner,sun8iw21-ccu";
-		reg = <0x02001000 0x1000>;
+		reg = <SUNXI_CCU_BASE 0x1000>;
 		reg-names = "ccu";
 		status = "okay";
 	};
@@ -40,25 +43,45 @@
 		compatible = "allwinner,sun8iw21-dram";
 		allwinner,dram-memory = <&dram_memory>;
 		reg =
-			<0x02001000 0x1000>,
-			<0x03102000 0x1000>,
-			<0x03103000 0x1000>,
-			<0x03000000 0x1000>,
-			<0x03006000 0x1000>,
-			<0x07000400 0x400>,
-			<0x07010000 0x400>;
+			<SUNXI_CCU_BASE 0x1000>,
+			<SUNXI_MCTL_COM_BASE 0x1000>,
+			<SUNXI_MCTL_PHY_BASE 0x1000>,
+			<SUNXI_SYSCRL_BASE 0x1000>,
+			<SUNXI_SID_BASE 0x1000>,
+			<SUNXI_CPUS_CFG_BASE 0x400>,
+			<SUNXI_RPRCM_BASE 0x400>;
 		allwinner,dram-parameters =
-			<528 2 0x007b7bf9 0 0x000000d2 0>,
-			<0x00000e73 0x00000002 0 0 0x00471992 0x0131a10c>,
-			<0x00057041 0xb4787896 0 0x48484848 0x00000048 0x1621121e>,
-			<0 0 0 0x00000022 0x00000077 0x34000100>;
+			<0x00000210>,
+			<SUNXI_DRAM_DDR2>,
+			<0x007b7bf9>,
+			<0x00000000>,
+			<0x000000d2>,
+			<0x00000000>,
+			<0x00000e73>,
+			<0x00000002>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00471992>,
+			<0x0131a10c>,
+			<0x00057041>,
+			<0xb4787896>,
+			<0x00000000>,
+			<0x48484848>,
+			<0x00000048>,
+			<0x1621121e>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000022>,
+			<0x00000077>,
+			<0x34000100>;
 		allwinner,rtc = <&rtc0>;
 		status = "okay";
 	};
 
 	pio: pinctrl@2000000 {
 		compatible = "allwinner,sunxi-pinctrl";
-		reg = <0x02000000 0x1000>;
+		reg = <SUNXI_PIO_BASE 0x1000>;
 		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
 		allwinner,bank-count = <11>;
 		gpio-controller;
@@ -110,39 +133,39 @@
 
 		sid0: efuse@3006000 {
 			compatible = "allwinner,sunxi-sid";
-			reg = <0x03006000 0x400>;
-			allwinner,efuse-hv-switch = <0x07090204>;
+			reg = <SUNXI_SID_BASE 0x400>;
+			allwinner,efuse-hv-switch = <(SUNXI_RTC_BASE + 0x204)>;
 			status = "okay";
 		};
 
 		rtc0: rtc@7090100 {
 			compatible = "allwinner,sunxi-rtc";
-			reg = <0x07090100 0x100>;
+			reg = <SUNXI_RTC_DATA_BASE 0x100>;
 			status = "okay";
 		};
 
 		dma0: dma-controller@3002000 {
 			compatible = "allwinner,sunxi-dma";
-			reg = <0x03002000 0x1000>;
+			reg = <SUNXI_DMA_BASE 0x1000>;
 			#dma-cells = <1>;
-			allwinner,mbus-clock-gate = <0x02001804 0>;
-			allwinner,clock-gate = <0x0200170c 0>;
-			allwinner,reset = <0x0200170c 16>;
+			allwinner,mbus-clock-gate = <(SUNXI_CCM_BASE + 0x804) 0>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0x70c) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0x70c) 16>;
 			status = "okay";
 		};
 
 		mmc0: mmc@4020000 {
 			compatible = "allwinner,sunxi-mmc";
-			reg = <0x04020000 0x1000>;
+			reg = <SUNXI_SMHC0_BASE 0x1000>;
 			label = "sdhci0";
 			allwinner,mmc-id = <0>;
 			bus-width = <4>;
 			max-frequency = <50000000>;
 			memory-region = <&mmc0_dma>;
-			allwinner,clock-gate = <0x0200184c 0>;
-			allwinner,reset = <0x0200184c 16>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0x84c) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0x84c) 16>;
 			allwinner,module-clock =
-				<0x02001830 8 0 1>;
+				<(SUNXI_CCM_BASE + 0x830) 8 0 1>;
 			allwinner,clock-source-rates =
 				<24000000 400000000 300000000 0>;
 			pinctrl-names = "default";
@@ -155,11 +178,11 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			allwinner,spi-id = <0>;
-			reg = <0x04025000 0x1000>;
+			reg = <SUNXI_SPI0_BASE 0x1000>;
 			clock-frequency = <75000000>;
-			allwinner,module-clock = <0x02001940 1 8 300000000 0>;
-			allwinner,clock-gate = <0x0200196c 0>;
-			allwinner,reset = <0x0200196c 16>;
+			allwinner,module-clock = <(SUNXI_CCM_BASE + 0x940) 1 8 300000000 0>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0x96c) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0x96c) 16>;
 			dmas = <&dma0 22>;
 			dma-names = "rx";
 			pinctrl-names = "default";
@@ -175,12 +198,12 @@
 
 		uart0: serial@2500000 {
 			compatible = "allwinner,sunxi-uart";
-			reg = <0x02500000 0x400>;
+			reg = <SUNXI_UART0_BASE 0x400>;
 			current-speed = <115200>;
 			clock-frequency = <24000000>;
 			allwinner,uart-id = <0>;
-			allwinner,clock-gate = <0x0200190c 0>;
-			allwinner,reset = <0x0200190c 16>;
+			allwinner,clock-gate = <(SUNXI_CCM_BASE + 0x90c) 0>;
+			allwinner,reset = <(SUNXI_CCM_BASE + 0x90c) 16>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart0_pins>;
 			status = "okay";
