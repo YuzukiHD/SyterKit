@@ -27,6 +27,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             bison \
+            binutils-aarch64-linux-gnu \
             build-essential \
             ca-certificates \
             curl \
@@ -35,6 +36,7 @@ jobs:
             gcc-arm-none-eabi \
             libncurses-dev \
             pkg-config \
+            qemu-system-arm \
             qemu-user \
             ripgrep
 

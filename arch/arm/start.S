@@ -154,8 +154,10 @@ reset:
 
 	bl clear_bss
 
+#ifdef CONFIG_CPU_CORTEX_A7
 	ldr r0, =24000000
 	mcr p15, 0, r0, c14, c0, 0
+#endif
 	bl set_timer_count
 
 	bl do_initcalls

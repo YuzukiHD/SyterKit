@@ -2,6 +2,7 @@
 /.config.old
 /.obj/
 /.kconfig/
+/out/
 /build/
 /test/out/
 /docs/api/
