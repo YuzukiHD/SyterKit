@@ -72,15 +72,16 @@ sudo apt-get install -y build-essential gcc-arm-none-eabi flex bison \
 RISC-V boards require a compatible RISC-V toolchain. CPU-specific flags are
 selected by Kconfig; the compiler must recognize the selected core.
 
-Initialize the pinned dt2c source and headers after cloning:
+The checked-in Linux x86_64 dt2c distribution includes a musl-static binary
+and matching headers, so a normal firmware build needs neither Rust nor the
+dt2c submodule. Initialize the submodule only to build or develop dt2c itself:
 
 ```sh
 git submodule update --init tools/dt2c
 ```
 
-Linux x86_64 builds use the checked-in musl-static `tools/bin/dt2c`, so Rust is
-not required for the normal build. Other hosts can build the submodule with
-Cargo, or select an external compatible binary and headers:
+Other hosts can build the submodule with Cargo, or select an external
+compatible binary and headers:
 
 ```sh
 make DT2C=/opt/dt2c/dt2c DT2C_INCLUDE=/opt/dt2c/include ...

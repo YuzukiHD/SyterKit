@@ -30,13 +30,15 @@ sudo apt-get install -y build-essential gcc-arm-none-eabi flex bison \
 Boards running C906 or E907 cores require a RISC-V compiler that supports the
 CPU flags selected by Kconfig.
 
-Initialize dt2c after cloning the repository:
+The checked-in Linux x86_64 dt2c distribution includes both the musl-static
+binary and matching headers. Initialize the submodule only when dt2c must be
+built from source:
 
 ```sh
 git submodule update --init tools/dt2c
 ```
 
-Linux x86_64 uses the checked-in musl-static `tools/bin/dt2c`. Rust is only
+Linux x86_64 uses `tools/bin/dt2c` without requiring the submodule. Rust is only
 needed when the prebuilt binary cannot run and the tool must be built from the
 pinned submodule. A compatible external installation can be selected with
 `DT2C` and `DT2C_INCLUDE`.
