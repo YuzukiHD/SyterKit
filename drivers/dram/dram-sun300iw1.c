@@ -11,7 +11,7 @@
 #include <mmu.h>
 
 #include <dt2c/driver.h>
-#include <drivers/clk/clk.h>
+#include <drivers/clk/sun300iw1/clk.h>
 #include <drivers/dram/dram.h>
 #include <drivers/clk/sun300iw1/reg.h>
 #include <drivers/dram/sun300iw1/reg.h>
@@ -619,12 +619,6 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
  *       should be executed with care, particularly when the system is in the early stages of booting.
  */
 static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para) {
-	sunxi_ccu_t ccu = {
-		.base = dram->registers.ccu.base,
-		.size = dram->registers.ccu.size,
-		.aon_base = dram->registers.aon_ccu.base,
-		.aon_size = dram->registers.aon_ccu.size,
-	};
 	uint32_t reg_val = 0;
 
 	/* Assert MBUS reset */
@@ -659,7 +653,7 @@ static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para) {
 	udelay(10);
 
 	/* Adjust HOSC frequency based on oscillator type */
-	if (sunxi_clk_get_hosc_type(&ccu) == HOSC_FREQ_40M) {
+	if (sun300iw1_clk_get_hosc_rate() == HOSC_FREQ_40M) {
 		para->dram_tpr10 |= (0x28 << 16);// Set for 40MHz HOSC
 	} else {
 		para->dram_tpr10 |= (0x18 << 16);// Set for other frequencies

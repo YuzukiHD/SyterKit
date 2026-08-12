@@ -116,22 +116,6 @@ void sunxi_clk_reset(sunxi_ccu_t *ccu) {
 	return;
 }
 
-uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu) {
-	uint32_t reg32;
-	uint8_t plln, pllm, p0;
-
-	/* PLL PERI */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI_CTRL_REG));
-	if (reg32 & (1 << 31)) {
-		plln = ((reg32 >> 8) & 0xff) + 1;
-		pllm = (reg32 & 0x01) + 1;
-		p0 = ((reg32 >> 16) & 0x03) + 1;
-
-		return ((((24 * plln) / (pllm * p0))) * 1000 * 1000);
-	}
-
-	return 0;
-}
 
 void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	uint32_t reg32;
@@ -214,57 +198,5 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	}
 }
 
-void sunxi_usb_clk_init(sunxi_ccu_t *ccu) {
-	uint32_t reg_val = 0;
-
-	/* USB0 Clock Reg */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB0_CLK_REG));
-	reg_val |= (1 << 31);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB0_CLK_REG)));
-
-	/* Delay for some time */
-	mdelay(1);
-
-	/* bit30: USB PHY0 reset */
-	/* Bit29: Gating Special Clk for USB PHY0 */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB0_CLK_REG));
-	reg_val |= (1 << 30);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB0_CLK_REG)));
-
-	/* Delay for some time */
-	mdelay(1);
-
-	/* USB BUS Gating Reset Reg: USB_OTG reset */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB_BGR_REG));
-	reg_val |= (1 << 24);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB_BGR_REG)));
-	mdelay(1);
-
-	/* USB BUS Gating Reset Reg */
-	/* bit8:USB_OTG Gating */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB_BGR_REG));
-	reg_val |= (1 << 8);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB_BGR_REG)));
-
-	/* Delay to wait for SIE stability */
-	mdelay(1);
-}
-
-void sunxi_usb_clk_deinit(sunxi_ccu_t *ccu) {
-	uint32_t reg_val = 0;
-
-	/* USB BUS Gating Reset Reg: USB_OTG reset */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB_BGR_REG));
-	reg_val &= ~(1 << 24);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB_BGR_REG)));
-	mdelay(1);
-
-	/* USB BUS Gating Reset Reg */
-	/* bit8:USB_OTG Gating */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_USB_BGR_REG));
-	reg_val &= ~(1 << 8);
-	writel(reg_val, (sunxi_ccu_reg(ccu, CCU_USB_BGR_REG)));
-	mdelay(1);
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun8iw21-ccu");

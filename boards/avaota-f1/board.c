@@ -54,7 +54,7 @@ int sunxi_hosc_detect(void) {
 		return HOSC_FREQ_24M;
 	}
 
-	detect_reg = sunxi_ccu_aon_reg(&ccu, HOSC_FREQ_DET);
+	detect_reg = ccu.base[1] + HOSC_FREQ_DET;
 	val = readl(detect_reg);
 
 	writel(val & (~HOSC_FREQ_DET_HOSC_CLEAR_MASK), detect_reg);

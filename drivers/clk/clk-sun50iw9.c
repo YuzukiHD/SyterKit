@@ -136,24 +136,24 @@ static inline void set_circuits_analog(sunxi_ccu_t *ccu) {
 	/* calibration circuits analog enable */
 	uint32_t reg_val;
 
-	reg_val = read32(sunxi_ccu_r_prcm_reg(ccu, 0x250U));
+	reg_val = read32(ccu->base[1] + 0x250U);
 	reg_val |= (0x01 << VDD_ADDA_OFF_GATING);
-	writel(reg_val, sunxi_ccu_r_prcm_reg(ccu, 0x250U));
+	writel(reg_val, ccu->base[1] + 0x250U);
 	sdelay(1);
 
-	reg_val = read32(sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	reg_val = read32(ccu->base[1] + 0x310U);
 	reg_val |= (0x01 << CAL_ANA_EN);
-	writel(reg_val, sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	writel(reg_val, ccu->base[1] + 0x310U);
 	sdelay(1);
 
-	reg_val = read32(sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	reg_val = read32(ccu->base[1] + 0x310U);
 	reg_val &= ~(0x01 << CAL_EN);
-	writel(reg_val, sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	writel(reg_val, ccu->base[1] + 0x310U);
 	sdelay(1);
 
-	reg_val = read32(sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	reg_val = read32(ccu->base[1] + 0x310U);
 	reg_val |= (0x01 << CAL_EN);
-	writel(reg_val, sunxi_ccu_r_prcm_reg(ccu, 0x310U));
+	writel(reg_val, ccu->base[1] + 0x310U);
 	sdelay(1);
 }
 
@@ -161,7 +161,7 @@ static inline void set_iommu_auto_gating(sunxi_ccu_t *ccu) {
 	/*gating clock for iommu*/
 	writel(0x01, sunxi_ccu_reg(ccu, CCU_IOMMU_BGR_REG));
 	/*enable auto gating*/
-	writel(0x01, sunxi_ccu_iommu_reg(ccu, 0x40U));
+	writel(0x01, ccu->base[2] + 0x40U);
 }
 
 static inline void set_platform_config(sunxi_ccu_t *ccu) {
@@ -226,39 +226,6 @@ void sunxi_clk_init(sunxi_ccu_t *ccu) {
 	set_modules_clock(ccu);
 }
 
-uint32_t sunxi_clk_get_peri1x_rate(sunxi_ccu_t *ccu) {
-	uint32_t reg32;
-	uint8_t plln, pllm, p0;
-
-	/* PLL PERI */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
-	if (reg32 & (1 << 31)) {
-		plln = ((reg32 >> 8) & 0xff) + 1;
-		pllm = (reg32 & 0x01) + 1;
-		p0 = ((reg32 >> 16) & 0x03) + 1;
-
-		return ((((24 * plln) / (pllm * p0))) * 1000 * 1000);
-	}
-
-	return 0;
-}
-
-void sunxi_clk_reset(sunxi_ccu_t *ccu) {
-	uint32_t reg_val;
-
-	/*set ahb,apb to default, use OSC24M*/
-	reg_val = read32(sunxi_ccu_reg(ccu, CCU_PSI_AHB1_AHB2_CFG_REG));
-	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_PSI_AHB1_AHB2_CFG_REG));
-
-	reg_val = read32(sunxi_ccu_reg(ccu, CCU_APB1_CFG_GREG));
-	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_APB1_CFG_GREG));
-
-	/*set cpux pll to default,use OSC24M*/
-	writel(0x0301, sunxi_ccu_reg(ccu, CCU_CPUX_AXI_CFG_REG));
-	return;
-}
 
 void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	uint32_t reg32;
