@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_PWM_DT_H__
 
 #include <driver.h>
-#include <drivers/pwm.h>
+#include <drivers/pwm/pwm.h>
 #include <dt-compatible/pinctrl-dt.h>
 
 #define SUNXI_PWM_COMPATIBLE "allwinner,sunxi-pwm"

@@ -12,13 +12,14 @@
 #include <log.h>
 
 #include <driver.h>
-#include <drivers/clk.h>
-#include <drivers/dma.h>
-#include <drivers/gpio.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dma/dma.h>
+#include <drivers/gpio/gpio.h>
 
 #include <drivers/mtd/spi-nand.h>
-#include <drivers/spi.h>
+#include <drivers/spi/spi.h>
 #include <dt2c/driver.h>
+#include <string.h>
 
 enum {
 	OPCODE_READ_ID = 0x9f,

@@ -9,7 +9,7 @@
 #include <dt-compatible/ccu-dt.h>
 
 #include <common.h>
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
 
 #include <config.h>

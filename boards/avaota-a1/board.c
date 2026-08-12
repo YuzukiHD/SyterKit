@@ -10,17 +10,17 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <dt-bindings/soc/sun55iw3.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
 #include <dt-compatible/gpio-dt.h>
-#include <drivers/i2c.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 void gicr_set_waker(void) {
 	uint32_t gicr_waker = read32(GICR_WAKER(0));

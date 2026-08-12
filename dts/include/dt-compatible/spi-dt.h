@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_SPI_DT_H__
 
 #include <driver.h>
-#include <drivers/spi.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/dma-dt.h>
 #include <dt-compatible/pinctrl-dt.h>
 

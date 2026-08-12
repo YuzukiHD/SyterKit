@@ -7,7 +7,7 @@
 
 #include <log.h>
 #include <dt-compatible/ccu-dt.h>
-#include <drivers/sid.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
 
 #include <common.h>

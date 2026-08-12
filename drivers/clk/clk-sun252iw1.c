@@ -11,8 +11,8 @@
 
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun252iw1/reg.h>
 #include <dt2c/driver.h>
 
 #define SUNXI_C907_CLK (1008)

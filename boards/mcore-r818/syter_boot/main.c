@@ -21,24 +21,27 @@
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
+#include <dt-bindings/soc/sun50iw10.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/remoteproc-dt.h>
 #include <dt-compatible/rtc-dt.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 
 #include "fdt_wrapper.h"
 #include <lib/fatfs/ff.h>
 #include <lib/fdt/libfdt.h>
 #include <drivers/mmc/sdhci.h>
 #include "uart.h"
+
+static sunxi_dram_t dram;
 
 #define CONFIG_BL31_FILENAME "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
@@ -150,7 +153,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&mmc_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&mmc_card, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -284,7 +287,6 @@ const msh_command_entry commands[] = {
 int main(void) {
 	sunxi_ccu_t ccu;
 	sunxi_remoteproc_t ar100;
-	sunxi_dram_t dram;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -334,7 +336,7 @@ int main(void) {
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);

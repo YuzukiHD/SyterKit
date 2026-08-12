@@ -20,11 +20,11 @@
 
 #include <image/image_loader.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/rtc-dt.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
-#include <drivers/dma.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
+#include <drivers/dma/dma.h>
 #include <drivers/mtd/spi-nand.h>
 #include <dt-compatible/dma-dt.h>
 #include <dt-compatible/dram-dt.h>
@@ -34,6 +34,7 @@
 #include <lib/fatfs/ff.h>
 #include <lib/fdt/libfdt.h>
 #include "uart.h"
+#include <string.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
@@ -243,7 +244,7 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
 	printk_debug("enable mmu ok\n");

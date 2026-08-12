@@ -10,18 +10,18 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <dt-bindings/soc/sun50iw9.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
-#include <drivers/sid.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 
 void set_cpu_down(unsigned int cpu) {
 	clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_DBG_REG1, 1 << cpu);

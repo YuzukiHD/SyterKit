@@ -10,19 +10,19 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <dt-bindings/soc/sun60iw2.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
 #include <dt-compatible/gpio-dt.h>
-#include <drivers/i2c.h>
-#include <drivers/sid.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
-#include <drivers/spi.h>
-#include <drivers/serial.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
 
 typedef enum {
 	SUNXI_SOC_VER_INVALID = -1,

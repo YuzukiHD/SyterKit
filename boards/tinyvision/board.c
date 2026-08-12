@@ -10,17 +10,17 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/reg/reg-ccu.h>
-#include <drivers/clk.h>
-#include <drivers/sid.h>
+#include <dt-bindings/soc/sun8iw21.h>
+#include <drivers/clk/sun8iw21/reg.h>
+#include <drivers/clk/clk.h>
+#include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
 
 #include <mmu.h>
 
-#include <drivers/spi.h>
-#include <drivers/serial.h>
-#include <drivers/rtc.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
+#include <drivers/rtc/rtc.h>
 
 void clean_syterkit_data(void) {
 	/* Disable MMU, data cache, instruction cache, interrupts */

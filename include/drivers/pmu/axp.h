@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <types.h>
 
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 
 #include "reg-axp.h"
 

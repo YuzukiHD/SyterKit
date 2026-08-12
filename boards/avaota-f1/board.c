@@ -10,18 +10,18 @@
 
 #include <common.h>
 
-#include <drivers/reg/reg-ccu.h>
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
+#include <drivers/clk/sun300iw1/reg.h>
+#include <dt-bindings/soc/sun300iw1.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 
-#include <drivers/dma.h>
-#include <drivers/dram.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 #include <dt-compatible/ccu-dt.h>
 #include <e907/sysmap.h>

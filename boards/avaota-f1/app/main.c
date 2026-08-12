@@ -10,16 +10,17 @@
 #include <log.h>
 #include <dt-compatible/ccu-dt.h>
 
-#include <drivers/clk.h>
-#include <drivers/dma.h>
-#include <drivers/dram.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/mmc/sdcard.h>
 #include <drivers/mmc/sdhci.h>
 #include <drivers/mtd/spi-nor.h>
-#include <drivers/spi.h>
+#include <dt-bindings/soc/sun300iw1.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/dma-dt.h>
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/spi-nor-dt.h>
@@ -30,6 +31,9 @@
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
+#include <string.h>
+
+static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
@@ -46,16 +50,16 @@ int cmd_read(int argc, const char **argv) {
 	uint32_t test_time;
 
 	printk_debug("Clear Buffer data\n");
-	memset((void *) SDRAM_BASE, 0xFF, 0x2000);
-	dump_hex(SDRAM_BASE, 0x100);
+	memset((void *) dram.memory_base, 0xFF, 0x2000);
+	dump_hex(dram.memory_base, 0x100);
 
 	printk_debug("Read data to buffer data\n");
 
 	start = time_ms();
-	sdmmc_blk_read(&sd_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&sd_card, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
-	dump_hex(SDRAM_BASE, 0x100);
+	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
 
@@ -66,11 +70,11 @@ int cmd_write(int argc, const char **argv) {
 	uint32_t test_time;
 
 	printk_debug("Set Buffer data\n");
-	memset((void *) SDRAM_BASE, 0x00, 0x2000);
-	memcpy((void *) SDRAM_BASE, argv[1], strlen(argv[1]));
+	memset((void *) dram.memory_base, 0x00, 0x2000);
+	memcpy((void *) dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
-	sdmmc_blk_write(&sd_card, (uint8_t *) (SDRAM_BASE), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_write(&sd_card, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
@@ -121,7 +125,6 @@ const msh_command_entry commands[] = {
 
 int main(void) {
 	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
 	sunxi_dma_t dma;
 	spi_nor_t nor;
 	sunxi_spi_t spi;

@@ -6,21 +6,22 @@
 #include <stdlib.h>
 #include <types.h>
 
+#include <dt-bindings/soc/sun252iw1.h>
 #include <log.h>
 #include <dt-compatible/ccu-dt.h>
 
-#include <drivers/clk.h>
-#include <drivers/dma.h>
-#include <drivers/dram.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
 #include <drivers/mmc/sdcard.h>
 #include <drivers/mmc/sdhci.h>
 #include <drivers/mtd/spi-nand.h>
 #include <drivers/mtd/spi-nor.h>
 #include <drivers/pmu/axp.h>
-#include <drivers/spi.h>
+#include <drivers/spi/spi.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/pmu-dt.h>
 

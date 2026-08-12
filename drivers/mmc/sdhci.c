@@ -14,12 +14,13 @@
 #include <mmu.h>
 #include <cache.h>
 
-#include <drivers/clk.h>
-#include <drivers/gpio.h>
+#include <drivers/clk/clk.h>
+#include <drivers/gpio/gpio.h>
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
 #include <dt2c/driver.h>
+#include <string.h>
 
 static void sunxi_sdhci_sync_all_cache(void) {
 	flush_dcache_all();

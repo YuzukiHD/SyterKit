@@ -7,8 +7,8 @@
 #include <log.h>
 
 #include <dt2c/driver.h>
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
+#include <drivers/dram/dram.h>
+#include <drivers/rtc/rtc.h>
 
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];

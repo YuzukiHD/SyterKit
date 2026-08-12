@@ -42,4 +42,5 @@ $(DT_HEADER): $(CURDIR)/Makefile $(TEST_ROOT)/mk/dt2c-host.mk \
 		--bindings $(srctree)/dts/bindings \
 		--drivers $(DT_DRIVER_MANIFEST) \
 		--header $(DT_HEADER) --depfile $(DT_DEPFILE) \
-		--report $(DT_REPORT) -I $(srctree)/dts/include
+		--report $(DT_REPORT) -I $(srctree)/dts/include \
+		-I $(srctree)/include

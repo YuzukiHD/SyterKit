@@ -7,7 +7,7 @@
 
 #include <common.h>
 
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 #include <dt-compatible/i2c-dt.h>
 
 #include "oledfont.h"

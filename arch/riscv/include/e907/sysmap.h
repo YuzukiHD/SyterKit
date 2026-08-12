@@ -3,13 +3,11 @@
 #ifndef __SYSMAP_H__
 #define __SYSMAP_H__
 
-#include <drivers/reg/reg-ncat.h>
+#define PLAT_SYSMAP_BASE_ADDR 0x3ffff000UL
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define PLAT_SYSMAP_BASE_ADDR (SUNXI_PLAT_TCIP_BASE_ADDR + 0xFFFF000)
 
 #define SYSMAP_REGION_NUM 8
 

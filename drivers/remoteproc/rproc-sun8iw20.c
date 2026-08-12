@@ -3,13 +3,14 @@
 #include <stdint.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <dt2c/driver.h>
 #include <io.h>
 #include <log.h>
 
-#include <drivers/reg/reg-ccu.h>
-#include <drivers/reg/reg-rproc.h>
+#include <drivers/clk/sun8iw20/reg.h>
+
+#include "hifi4-reg.h"
 
 enum sun8iw20_hifi4_register {
 	SUN8IW20_HIFI4_SYSCTRL,

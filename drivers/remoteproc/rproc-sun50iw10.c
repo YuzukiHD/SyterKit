@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
-#include <drivers/rtc.h>
+#include <drivers/remoteproc/remoteproc.h>
+#include <drivers/rtc/rtc.h>
 #include <dt2c/driver.h>
 #include <io.h>
 #include <log.h>

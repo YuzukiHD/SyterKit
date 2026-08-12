@@ -13,8 +13,7 @@
 #include <log.h>
 
 #include <dt2c/driver.h>
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
+#include <drivers/dram/dram.h>
+#include <drivers/rtc/rtc.h>
 
 DT2C_DRIVER_COMPAT("allwinner,sun55iw6-dram");

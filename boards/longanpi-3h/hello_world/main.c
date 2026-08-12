@@ -10,7 +10,7 @@
 
 #include <common.h>
 
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 
 extern sunxi_serial_t uart_dbg;
 

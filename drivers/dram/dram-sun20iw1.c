@@ -10,8 +10,9 @@
 #include <log.h>
 
 #include <dt2c/driver.h>
-#include <drivers/dram.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/dram/dram.h>
+#include <drivers/clk/sun20iw1/reg.h>
+#include <drivers/dram/sun20iw1/reg.h>
 
 #include <common.h>
 

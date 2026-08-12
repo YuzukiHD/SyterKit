@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_DRAM_DT_H__
 
 #include <driver.h>
-#include <drivers/dram.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dt-common.h>
 #include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/rtc-dt.h>

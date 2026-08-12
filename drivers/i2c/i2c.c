@@ -21,10 +21,9 @@
 #include <common.h>
 #include <log.h>
 
-#include <drivers/clk.h>
+#include <drivers/clk/clk.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 #include <driver.h>
 #include <dt2c/driver.h>
 

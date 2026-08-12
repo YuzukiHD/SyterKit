@@ -12,13 +12,14 @@
 #include <log.h>
 
 #include <driver.h>
-#include <drivers/clk.h>
-#include <drivers/dma.h>
-#include <drivers/gpio.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dma/dma.h>
+#include <drivers/gpio/gpio.h>
 
 #include <drivers/mtd/spi-nor.h>
-#include <drivers/spi.h>
+#include <drivers/spi/spi.h>
 #include <dt2c/driver.h>
+#include <string.h>
 
 static const spi_nor_info_t spi_nor_info_table[] = {
 		{"W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0},

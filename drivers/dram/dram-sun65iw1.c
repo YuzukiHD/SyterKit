@@ -13,10 +13,8 @@
 #include <log.h>
 
 #include <dt2c/driver.h>
-#include <drivers/reg/reg-ncat.h>
-
-#include <drivers/dram.h>
-#include <drivers/rtc.h>
+#include <drivers/dram/dram.h>
+#include <drivers/rtc/rtc.h>
 #include <drivers/pmu/axp.h>
 
 #include <drivers/pmu/reg/reg-axp2202.h>

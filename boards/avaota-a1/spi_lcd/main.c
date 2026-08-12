@@ -21,16 +21,16 @@
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 
-#include <drivers/reg/reg-ncat.h>
-#include <drivers/clk.h>
-#include <drivers/dram.h>
+#include <dt-bindings/soc/sun55iw3.h>
+#include <drivers/clk/clk.h>
+#include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
-#include <drivers/i2c.h>
-#include <drivers/remoteproc.h>
-#include <drivers/rtc.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/remoteproc/remoteproc.h>
+#include <drivers/rtc/rtc.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/sid.h>
-#include <drivers/spi.h>
+#include <drivers/soc/sid.h>
+#include <drivers/spi/spi.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
@@ -43,6 +43,8 @@
 #include <lib/fatfs/ff.h>
 #include <drivers/mmc/sdhci.h>
 #include <uart.h>
+
+static sunxi_dram_t dram;
 
 #define CONFIG_HEAP_BASE (0x40800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
@@ -206,7 +208,6 @@ void LCD_Fill_All(uint16_t color) {
 
 int main(void) {
 	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
 	axp_pmu_t primary_pmu;
 	axp_pmu_t secondary_pmu;
 	sunxi_dma_t dma;
@@ -280,7 +281,7 @@ int main(void) {
 
 	sunxi_clk_dump(&ccu);
 
-	arm32_mmu_enable(SDRAM_BASE, dram_size);
+	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);

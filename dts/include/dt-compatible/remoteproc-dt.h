@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_REMOTEPROC_DT_H__
 
 #include <driver.h>
-#include <drivers/remoteproc.h>
+#include <drivers/remoteproc/remoteproc.h>
 #include <dt-compatible/dt-common.h>
 
 #define SUNXI_REMOTEPROC_SUN20IW1_HIFI4_COMPATIBLE \

@@ -10,7 +10,7 @@
 
 #include <common.h>
 
-#include <drivers/serial.h>
+#include <drivers/serial/serial.h>
 
 #include "oled.h"
 

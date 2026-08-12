@@ -12,9 +12,10 @@
 
 #include <drivers/intc/clic.h>
 #include <drivers/intc/intc.h>
-#include <drivers/reg/reg-clic.h>
 #include <dt-compatible/clic-dt.h>
 #include <dt2c/driver.h>
+
+#include "clic-reg.h"
 
 static sunxi_clic_t sunxi_clic_controller;
 

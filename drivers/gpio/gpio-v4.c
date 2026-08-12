@@ -10,7 +10,7 @@
 #include <log.h>
 
 #include <driver.h>
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 #include <dt2c/driver.h>
 
 enum {

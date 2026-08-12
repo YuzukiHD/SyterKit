@@ -11,8 +11,8 @@
 
 #include <log.h>
 
-#include <drivers/clk.h>
-#include <drivers/reg/reg-ccu.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun60iw2/reg.h>
 #include <dt2c/driver.h>
 
 #define PLL_REG_CONF(x) \
