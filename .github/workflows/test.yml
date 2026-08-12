@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-name: Build
+name: Test
 
 on:
   push:
@@ -11,10 +11,10 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build all board configurations
+  test:
+    name: Run API and QEMU tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Check out source
@@ -22,18 +22,17 @@ jobs:
         with:
           submodules: true
 
-      - name: Install build dependencies
+      - name: Install test dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
-            bison \
+            binutils-aarch64-linux-gnu \
             build-essential \
             ca-certificates \
             curl \
-            flex \
             gcc-arm-none-eabi \
-            libncurses-dev \
-            pkg-config \
+            qemu-system-arm \
+            qemu-user \
             ripgrep
 
       - name: Install Xuantie RISC-V toolchain
@@ -54,19 +53,8 @@ jobs:
           echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
             >> "${GITHUB_ENV}"
 
-      - name: Verify dt2c distributions
-        run: |
-          tools/bin/dt2c generate --help
-          file tools/bin/dt2c | grep -F 'static-pie linked'
-          ! readelf -d tools/bin/dt2c | grep -q '(NEEDED)'
-          rustup toolchain install stable --profile minimal
-          source_build="${RUNNER_TEMP}/dt2c-source-build"
-          make O="${source_build}" \
-            DT2C="${source_build}/.obj/tools/dt2c/release/dt2c" \
-            CARGO="cargo +stable" dt2c-check
-
-      - name: Build all board configurations
+      - name: Run tests
         env:
           ARM_CROSS_COMPILE: arm-none-eabi-
-          O: ${{ runner.temp }}/syterkit-build
-        run: utils/build.test
+          O: ${{ runner.temp }}/syterkit-test
+        run: make test
