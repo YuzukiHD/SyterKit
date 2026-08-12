@@ -6,6 +6,7 @@
 #include <log.h>
 
 #include <image/image_loader.h>
+#include <string.h>
 
 #define ANDR_BOOT_MAGIC "ANDROID!"
 #define ANDR_BOOT_MAGIC_SIZE 8

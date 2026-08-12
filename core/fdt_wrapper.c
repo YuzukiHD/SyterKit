@@ -10,6 +10,7 @@
 
 #include "fdt_wrapper.h"
 #include <lib/fdt/libfdt.h>
+#include <string.h>
 
 
 /*

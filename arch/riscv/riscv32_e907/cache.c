@@ -16,6 +16,7 @@
 #include <log.h>
 
 #include <e907/sysmap.h>
+#include <string.h>
 
 /* #define DEBUG_SYSMAP */
 #define L1_CACHE_BYTES (32) /**< Size of L1 cache line in bytes. */

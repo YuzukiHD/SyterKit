@@ -10,6 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include "tinymaix.h"
+#include <string.h>
 
 //load model
 //mdl: model handle; bin: model bin buf; buf: main buf for middle output; cb: layer callback;

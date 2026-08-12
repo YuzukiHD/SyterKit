@@ -65,7 +65,7 @@ unsigned vformat(format_putc_t putc, void *arg,
 		int width = 0, precision = -1, length = 0;
 		char number[sizeof(unsigned long long) * 8 / 3 + 3];
 		const char *str;
-		unsigned long long value;
+		unsigned long long value = 0;
 		int digits, padding, precision_zeros, prefix, sign_prefix, base_prefix;
 
 		if (*fmt != '%') {
