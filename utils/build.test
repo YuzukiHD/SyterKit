@@ -226,8 +226,6 @@ actual_images="$(find "${objtree}/build" -mindepth 3 -maxdepth 3 \
 [[ "${actual_images}" -eq "${total_images}" ]] ||
 	die "found ${actual_images} main images, expected ${total_images}"
 
-compile_mmc_host sun20iw1 100ask-d1-h_defconfig \
-	"${riscv_cross_compile}" mmc-sun20iw1
 compile_mmc_host sun50iw9 longanpi-3h_defconfig \
 	"${arm_cross_compile}" mmc-sun50iw9
 compile_mmc_host sun8iw21 tinyvision_defconfig \

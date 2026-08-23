@@ -18,15 +18,7 @@ the SoC.
 
 | Board | SoC / platform | SyterKit CPU | Configuration |
 | --- | --- | --- | --- |
-| [Yuzuki Lizard](https://github.com/YuzukiHD/Yuzukilizard) | V851s (`sun8iw21`) | Cortex-A7 | `yuzukilizard_defconfig` |
 | [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 (`sun8iw21`) | Cortex-A7 | `tinyvision_defconfig` |
-| 100ASK T113-S3 | T113-S3 (`sun8iw20`) | Dual Cortex-A7 | `100ask-t113s3_defconfig` |
-| 100ASK T113-I | T113-I (`sun8iw20`) | Dual Cortex-A7 | `100ask-t113i_defconfig` |
-| 100ASK D1-H | D1-H (`sun20iw1`) | XuanTie C906 RV64 | `100ask-d1-h_defconfig` |
-| DongshanPI AICT | V853 (`sun8iw21`) | Cortex-A7 | `dongshanpi-aict_defconfig` |
-| Project Yosemite | V853 (`sun8iw21`) | Cortex-A7 | `project-yosemite_defconfig` |
-| Avaota 86Box | `sun8iw20` | Cortex-A7 | `avaota-86box_defconfig` |
-| MCore R818 | R818 (`sun50iw10`) | ARMv8 core | `mcore-r818_defconfig` |
 | [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 (`sun50iw9`) | Cortex-A53 | `longanpi-3h_defconfig` |
 | Avaota A1 | T527/A527 (`sun55iw3`) | Cortex-A55 | `avaota-a1_defconfig` |
 | Radxa Cubie A7A | A733 (`sun60iw2`) | ARMv8.2 core | `radxa-cubie-a7a_defconfig` |
@@ -35,11 +27,14 @@ the SoC.
 | Avaota M1 | `sun65iw1` | ARMv8 core | `avaota-m1_defconfig` |
 | TLT153 MiniEVM | `sun8iw22` | Cortex-A7 | `tlt153-minievm_defconfig` |
 | TLT536 EVM | T536 (`sun55iw6`) | Cortex-A55 | `tlt536-evm_defconfig` |
-| Yuzuki HomeKit | T113-M4020DC0 (`sun8iw20`) | Dual Cortex-A7 | `yuzukihomekit_defconfig` |
 
 Run `make list-defconfigs` for the authoritative list available in the current
 checkout. Board-specific applications and hardware notes are kept below
-[`boards/`](boards/).
+[`boards/`](boards/). Retired board sources and defconfigs are preserved under
+[`archive/`](archive/).
+
+The archived boards are not included in the active configuration or build
+matrix.
 
 ## Architecture
 
@@ -59,9 +54,7 @@ next boot stage remains a separate object and is handled with libfdt. See
 
 ### Host dependencies
 
-A Linux host needs GNU Make, a C compiler, Flex, Bison, pkg-config, ncurses
-development headers, and a suitable bare-metal cross compiler. For an Ubuntu
-ARM32 setup:
+A Linux host needs GNU Make, a C compiler, Flex, Bison, pkg-config, ncurses development headers, and a suitable bare-metal cross compiler. For an Ubuntu ARM32 setup:
 
 ```sh
 sudo apt-get update
