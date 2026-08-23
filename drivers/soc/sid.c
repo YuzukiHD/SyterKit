@@ -20,6 +20,7 @@
 #define SID_OPERATION_MASK 0x3U
 #define SID_KEY_MASK 0xffU
 #define SID_ACCESS_KEY 0xacU
+#define SID_OPERATION_RETRIES 1000000U
 
 static bool sunxi_sid_offset_valid(const sunxi_sid_t *sid, uint32_t offset) {
 	return sid != NULL && sid->base != 0U &&
@@ -51,6 +52,8 @@ uint32_t sunxi_sid_read_sram(const sunxi_sid_t *sid, uint32_t offset) {
 uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset) {
 	uintptr_t prctl;
 	uint32_t value;
+	bool timed_out = false;
+	uint32_t retries = SID_OPERATION_RETRIES;
 
 	if (!sunxi_sid_offset_valid(sid, offset))
 		return 0U;
@@ -64,23 +67,30 @@ uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset) {
 	value &= ~((SID_KEY_MASK << 8) | SID_OPERATION_MASK);
 	value |= (SID_ACCESS_KEY << 8) | 0x2U;
 	write32(prctl, value);
-	while (read32(prctl) & 0x2U)
-		;
+	while (read32(prctl) & 0x2U) {
+		if (retries-- == 0U) {
+			timed_out = true;
+			break;
+		}
+	}
 
 	value &= ~((SID_OFFSET_MASK << 16) | (SID_KEY_MASK << 8) |
 		   SID_OPERATION_MASK);
 	write32(prctl, value);
+	if (timed_out)
+		return 0U;
 	return read32(sid->base + SID_RDKEY_OFFSET);
 }
 
-void syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
-		       uint32_t value) {
+int syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
+		      uint32_t value) {
 	uintptr_t prctl;
 	uint32_t control;
+	uint32_t retries = SID_OPERATION_RETRIES;
 
 	if (!sunxi_sid_offset_valid(sid, offset) ||
 	    sid->efuse_hv_switch == 0U)
-		return;
+		return -1;
 
 	write32(sid->efuse_hv_switch, 0x1U);
 	write32(sid->base + SID_PRKEY_OFFSET, value);
@@ -93,13 +103,21 @@ void syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
 	control &= ~((SID_KEY_MASK << 8) | SID_OPERATION_MASK);
 	control |= (SID_ACCESS_KEY << 8) | 0x1U;
 	write32(prctl, control);
-	while (read32(prctl) & 0x1U)
-		;
+	while (read32(prctl) & 0x1U) {
+		if (retries-- == 0U) {
+			control &= ~((SID_OFFSET_MASK << 16) |
+				     (SID_KEY_MASK << 8) | SID_OPERATION_MASK);
+			write32(prctl, control);
+			write32(sid->efuse_hv_switch, 0x0U);
+			return -1;
+		}
+	}
 
 	control &= ~((SID_OFFSET_MASK << 16) | (SID_KEY_MASK << 8) |
 		     SID_OPERATION_MASK);
 	write32(prctl, control);
 	write32(sid->efuse_hv_switch, 0x0U);
+	return 0;
 }
 
 void syter_efuse_dump(const sunxi_sid_t *sid) {
