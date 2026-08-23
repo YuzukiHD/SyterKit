@@ -7,4 +7,5 @@ CHECK sw-ra-scan PASS
 CHECK sw-ra-offset PASS
 CHECK addi-sp PASS
 CHECK ret PASS
+CHECK unaligned-read PASS
 TEST PASS backtrace_e907_decoder_qemu

@@ -108,7 +108,8 @@ static inline int backtrace_check_address(const void *pc) {
 	uintptr_t start = (uintptr_t) __spl_start;
 	uintptr_t end = (uintptr_t) __spl_end;
 
-	return address >= start && address <= end - sizeof(uint32_t);
+	return !(address & 1U) && address >= start &&
+	       address <= end - sizeof(uint32_t);
 }
 
 /**
@@ -121,7 +122,27 @@ static inline int backtrace_check_stack_address(const void *address) {
 	uintptr_t start = (uintptr_t) __stack_srv_start;
 	uintptr_t end = (uintptr_t) __stack_srv_end;
 
-	return value >= start && value <= end - sizeof(uint32_t);
+	return !(value & (sizeof(long) - 1U)) && value >= start &&
+	       value <= end - sizeof(long);
+}
+
+/* RISC-V instructions may be 32-bit wide at any 2-byte-aligned address when
+ * the compressed extension is enabled.  Read the halves separately so this
+ * remains valid on cores that trap misaligned 32-bit loads. */
+static inline int backtrace_read_u32(const void *address, uint32_t *value) {
+	uintptr_t addr = (uintptr_t) address;
+	const volatile uint16_t *halves;
+	uint16_t lower;
+	uint16_t upper;
+
+	if (!backtrace_check_address(address))
+		return 0;
+
+	halves = (const volatile uint16_t *) addr;
+	lower = halves[0];
+	upper = halves[1];
+	*value = (uint32_t) lower | ((uint32_t) upper << 16);
+	return 1;
 }
 
 static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16) {
@@ -149,31 +170,31 @@ static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16) {
  *         within an IRQ handler exit region.
  */
 static int riscv_backtrace_find_lr_offset(char *LR, bool emit) {
-	char *LR_fixed;
+	uintptr_t lr = (uintptr_t) LR;
 	uint32_t ins32 = 0;
 	uint16_t ins16 = 0;
 	int offset;
 	uint64_t *irq_entry = NULL; /**< Pointer to the IRQ entry (interrupt handler entry address). */
 
-	LR_fixed = LR;
-
 	/* Check if the LR corresponds to the IRQ handler exit address. */
-	if (LR_fixed == PC2ADDR(irq_entry)) {
+	if (lr == (uintptr_t) PC2ADDR(irq_entry)) {
 		if (emit)
 			backtrace_print_frame((uintptr_t) irq_entry);
 		return 0;													   /**< Return 0, indicating no valid offset. */
 	}
 
-	if (backtrace_check_address(LR_fixed - 4))
-		ins32 = *(uint32_t *) (LR_fixed - 4);
-	if (backtrace_check_address(LR_fixed - 2))
-		ins16 = *(uint16_t *) (LR_fixed - 2);
+	if (lr < 4)
+		return 0;
+
+	backtrace_read_u32((const void *) (lr - 4), &ins32);
+	if (backtrace_check_address((const void *) (lr - 2)))
+		ins16 = *(const uint16_t *) (lr - 2);
 	offset = riscv_call_insn_size(ins32, ins16);
 	if (!offset)
 		return 0;
 
 	if (emit)
-		backtrace_print_frame((uintptr_t) (LR_fixed - offset));
+		backtrace_print_frame(lr - (uintptr_t) offset);
 
 	return offset; /**< Return the computed offset. */
 }

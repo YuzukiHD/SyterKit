@@ -99,7 +99,12 @@ uint64_t __ashldi3(uint64_t value, int shift) {
 }
 
 uint32_t __thead_uread4(const void *address) {
-	const uint8_t *bytes = address;
+	const volatile uint8_t *bytes = address;
+	uint32_t value;
 
-	return bytes[0] | (uint32_t) bytes[1] << 8 | (uint32_t) bytes[2] << 16 | (uint32_t) bytes[3] << 24;
+	value = bytes[0];
+	value |= (uint32_t) bytes[1] << 8;
+	value |= (uint32_t) bytes[2] << 16;
+	value |= (uint32_t) bytes[3] << 24;
+	return value;
 }

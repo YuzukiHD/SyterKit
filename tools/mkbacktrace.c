@@ -94,12 +94,16 @@ static int read_symbols(FILE *input, struct symbol **symbols, size_t *count,
 	*count = 0;
 	while (fgets(line, sizeof(line), input)) {
 		unsigned long long address;
-		unsigned long long size;
+		unsigned long long size = 0;
 		char type;
 		char name[SYMBOL_NAME_SIZE];
+		int fields;
 
-		if (sscanf(line, "%llx %llx %c %1023s", &address, &size,
-			   &type, name) != 4)
+		fields = sscanf(line, "%llx %llx %c %1023s", &address, &size,
+				&type, name);
+		if (fields != 4 &&
+		    (fields = sscanf(line, "%llx %c %1023s", &address, &type,
+				      name)) != 3)
 			continue;
 		if (!strchr("TtWw", type))
 			continue;
