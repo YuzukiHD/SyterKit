@@ -536,8 +536,9 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 	// Check if the LR address is valid.
 	if (backtrace_check_address(LR) == 0) {
-		printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", LR);
-		return -1; /**< Return -1 if the LR is invalid. */
+		/* A stack walk can end with a non-code word in the caller's frame. */
+		printk_trace("BT: end of trace at lr=0x%08x\n", LR);
+		return 1;
 	}
 
 	*pSP = SP + framesize;				 /**< Update the stack pointer (SP) based on the calculated frame size. */
@@ -751,8 +752,9 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR) {
 
 	// Check the validity of the LR address
 	if (backtrace_check_address(LR) == 0) {
-		printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", LR);
-		return -1; /**< Invalid LR address */
+		/* A stack walk can end with a non-code word in the caller's frame. */
+		printk_trace("BT: end of trace at lr=0x%08x\n", LR);
+		return 1;
 	}
 
 	*pSP = SP + framesize;				 /**< Update the stack pointer */

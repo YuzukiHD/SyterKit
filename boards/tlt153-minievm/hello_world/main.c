@@ -97,6 +97,67 @@ int cmd_bt(int argc, const char **argv) {
 	return 0;
 }
 
+static void __attribute__((noinline)) cmd_fault_undefined(void) {
+	__asm__ volatile (".hword 0xde00" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_swi(void) {
+	__asm__ volatile ("svc #0" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_prefetch(void) {
+	void (*entry)(void) = (void (*)(void)) (uintptr_t) 0xdead0001U;
+
+	entry();
+}
+
+static void __attribute__((noinline)) cmd_fault_data_read(void) {
+	volatile uint32_t *address = (volatile uint32_t *) (uintptr_t) 0xdead0000U;
+	uint32_t value = *address;
+
+	(void) value;
+}
+
+static void __attribute__((noinline)) cmd_fault_data_write(void) {
+	volatile uint32_t *address = (volatile uint32_t *) (uintptr_t) 0xdead0000U;
+
+	*address = 0xdeadbeefU;
+}
+
+msh_declare_command(fault);
+msh_define_help(fault, "trigger an ARM exception for testing",
+		"Usage: fault <undefined|swi|prefetch|data-read|data-write>\n");
+int cmd_fault(int argc, const char **argv) {
+	if (argc != 2) {
+		printk_error("Usage: fault <undefined|swi|prefetch|data-read|data-write>\n");
+		return -1;
+	}
+
+	if (strcmp(argv[1], "undefined") == 0)
+		cmd_fault_undefined();
+	else if (strcmp(argv[1], "swi") == 0)
+		cmd_fault_swi();
+	else if (strcmp(argv[1], "prefetch") == 0)
+		cmd_fault_prefetch();
+	else if (strcmp(argv[1], "data-read") == 0)
+		cmd_fault_data_read();
+	else if (strcmp(argv[1], "data-write") == 0)
+		cmd_fault_data_write();
+	else {
+		printk_error("fault: unknown type '%s'\n", argv[1]);
+		return -1;
+	}
+
+	return 0;
+}
+
+msh_declare_command(reset);
+msh_define_help(reset, "reset the board", "Usage: reset\n");
+int cmd_reset(int argc, const char **argv) {
+	sys_reset();
+	return 0;
+}
+
 msh_declare_command(dram);
 msh_define_help(dram, "dump trained dram param", "Usage: dump_dram_param\n");
 int cmd_dram(int argc, const char **argv) {
@@ -112,7 +173,9 @@ int cmd_dram(int argc, const char **argv) {
 const msh_command_entry commands[] = {
 		msh_define_command(bt),
 		msh_define_command(dram),
+		msh_define_command(fault),
 		msh_define_command(reload),
+		msh_define_command(reset),
 		msh_define_command(read),
 		msh_define_command(write),
 		msh_command_end,
