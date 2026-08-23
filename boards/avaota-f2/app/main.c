@@ -51,7 +51,7 @@ int main(void) {
 
 	show_banner();
 
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c2") != DRIVER_OK ||
 	    pmu_axp333_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
