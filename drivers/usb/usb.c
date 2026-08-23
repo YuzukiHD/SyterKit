@@ -8,6 +8,7 @@
 #include <driver.h>
 #include <interrupt.h>
 #include <log.h>
+#include <timer.h>
 
 #include <drivers/intc/intc.h>
 
@@ -15,6 +16,8 @@
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_device.h>
 #include <dt2c/driver.h>
+
+#define SUNXI_USB_DETECT_TIMEOUT_US 5000000ULL
 
 static void sunxi_usb_clock_deinit(const sunxi_usb_t *usb) {
 	clrbits_le32(usb->clock_gate_reg_base, BIT(usb->reset_offset));
@@ -136,13 +139,18 @@ void sunxi_usb_irq(void *data) {
 }
 
 void sunxi_usb_attach(sunxi_usb_t *usb) {
+	uint64_t deadline;
+
 	if (usb == NULL)
 		return;
 
 	interrupt_enable();
+	deadline = time_us() + SUNXI_USB_DETECT_TIMEOUT_US;
 
-	while (!usb->detected)
+	while (!usb->detected && time_us() < deadline)
 		;
+	if (!usb->detected)
+		printk_warning("USB: host detection timeout\n");
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-musb");
