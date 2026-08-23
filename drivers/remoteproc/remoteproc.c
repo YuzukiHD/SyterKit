@@ -10,9 +10,27 @@
 #include <lib/elf/elf_loader.h>
 
 static int sunxi_remoteproc_validate(const sunxi_remoteproc_t *remoteproc) {
-	return remoteproc != NULL && remoteproc->ops != NULL &&
-	       remoteproc->firmware_count != 0U ? DRIVER_OK :
-						 DRIVER_ERROR_INVALID;
+	size_t index;
+
+	if (remoteproc == NULL || remoteproc->ops == NULL ||
+	    remoteproc->firmware_count == 0U ||
+	    remoteproc->firmware_count > SUNXI_REMOTEPROC_MAX_FIRMWARES ||
+	    remoteproc->address_map_count > SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS ||
+	    remoteproc->register_count > SUNXI_REMOTEPROC_MAX_REGISTERS)
+		return DRIVER_ERROR_INVALID;
+
+	for (index = 0U; index < remoteproc->address_map_count; ++index) {
+		const sunxi_remoteproc_address_map_t *range =
+				&remoteproc->address_map[index];
+
+		if (range->device_start > range->device_end ||
+		    range->physical_start > (uintptr_t) -1 -
+				(range->device_end - range->device_start) ||
+		    (index != 0U && range->device_start <=
+					 remoteproc->address_map[index - 1U].device_end))
+			return DRIVER_ERROR_INVALID;
+	}
+	return DRIVER_OK;
 }
 
 static int sunxi_remoteproc_resolve_entry(sunxi_remoteproc_t *remoteproc) {
@@ -96,6 +114,8 @@ static int sunxi_remoteproc_copy_raw(sunxi_remoteproc_t *remoteproc,
 		length = size - range->device_start;
 		if (range->device_end - range->device_start < length - 1U)
 			length = range->device_end - range->device_start + 1U;
+		if (copied > (size_t) -1 - length)
+			return DRIVER_ERROR_INVALID;
 		memcpy((void *) range->physical_start,
 		       source + range->device_start, length);
 		copied += length;
