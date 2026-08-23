@@ -185,21 +185,24 @@ static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout) {
 	cmd.cmdarg = mmc->rca << 16;
 	cmd.flags = 0;
 
-	do {
+	while (timeout != 0U) {
 		err = sunxi_sdhci_xfer(sdhci, &cmd, NULL);
 		if (err) {
 			printk_warning("SMHC%u: Send status failed\n", sdhci->id);
 			return err;
 		} else if (cmd.response[0] & MMC_STATUS_RDY_FOR_DATA)
 			break;
+		--timeout;
+		if (timeout == 0U)
+			break;
 		mdelay(1);
 		if (cmd.response[0] & MMC_STATUS_MASK) {
 			printk_warning("SMHC%u: Status Error: 0x%08X\n", sdhci->id, cmd.response[0]);
 			return COMM_ERR;
 		}
-	} while (timeout--);
+	}
 
-	if (!timeout) {
+	if (timeout == 0U) {
 		printk_warning("SMHC%u: Timeout waiting card ready\n", sdhci->id);
 		return TIMEOUT;
 	}
@@ -251,6 +254,13 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 
 	int timeout = 1000;
 
+	/* Do not issue a command outside the card's advertised LBA range. */
+	if (blkcnt == 0 || start > mmc->lba || blkcnt > mmc->lba - start) {
+		printk_warning("SMHC: read range [%u, %u) exceeds card capacity %u\n",
+			start, start + blkcnt, mmc->lba);
+		return 0;
+	}
+
 	if (blkcnt > 1UL)
 		cmd.cmdidx = MMC_CMD_READ_MULTIPLE_BLOCK;
 	else
@@ -285,7 +295,8 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 		}
 
 		/* Waiting for the ready status */
-		sunxi_mmc_send_status(sdhci, timeout);
+			if (sunxi_mmc_send_status(sdhci, timeout))
+				return 0;
 	}
 
 	return blkcnt;
@@ -313,6 +324,13 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
 	mmc_data_t data = {0};
 
 	int timeout = 1000;
+
+	/* Do not issue a command outside the card's advertised LBA range. */
+	if (blkcnt == 0 || start > mmc->lba || blkcnt > mmc->lba - start) {
+		printk_warning("SMHC: write range [%u, %u) exceeds card capacity %u\n",
+			start, start + blkcnt, mmc->lba);
+		return 0;
+	}
 
 	if (blkcnt > 1UL)
 		cmd.cmdidx = MMC_CMD_WRITE_MULTIPLE_BLOCK;
@@ -348,7 +366,8 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
 		}
 
 		/* Waiting for the ready status */
-		sunxi_mmc_send_status(sdhci, timeout);
+			if (sunxi_mmc_send_status(sdhci, timeout))
+				return 0;
 	}
 
 	return blkcnt;
@@ -999,7 +1018,7 @@ static int sunxi_mmc_mmc_switch_ds(sunxi_sdhci_t *sdhci) {
 	}
 
 	// Check if card supports DS mode
-	if (!(mmc->card_caps && MMC_MODE_HS)) {
+	if (!(mmc->card_caps & MMC_MODE_HS)) {
 		printk_warning("SMHC: Card does not support DS mode\n");
 		return -1;
 	}
@@ -1036,7 +1055,7 @@ static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci) {
 	}
 
 	// Check if card supports HS mode
-	if (!(mmc->card_caps && MMC_MODE_HS_52MHz)) {
+	if (!(mmc->card_caps & MMC_MODE_HS_52MHz)) {
 		printk_warning("SMHC: Card does not support HS mode\n");
 		return -1;
 	}
@@ -1073,7 +1092,7 @@ static int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci) {
 	}
 
 	// Check if card supports HS200 mode
-	if (!(mmc->card_caps && MMC_MODE_HS200)) {
+	if (!(mmc->card_caps & MMC_MODE_HS200)) {
 		printk_warning("SMHC: Card does not support HS200 mode\n");
 		return -1;
 	}
@@ -1110,7 +1129,7 @@ static int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci) {
 	}
 
 	// Check if card supports HS400 mode
-	if (!(mmc->card_caps && MMC_MODE_HS400)) {
+	if (!(mmc->card_caps & MMC_MODE_HS400)) {
 		printk_warning("SMHC: Card does not support HS400 mode\n");
 		return -1;
 	}
@@ -1189,7 +1208,7 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
 			((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))) {
 			ret = -1;
 		}
-	} else if (bus_width == SMHC_WIDTH_1BIT) {
+	} else if (bus_width == SMHC_WIDTH_4BIT) {
 		if (!(mmc->card_caps & MMC_MODE_4BIT)) {
 			ret = -1;
 		}
@@ -1438,13 +1457,15 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
 
 	err = sunxi_sdhci_xfer(sdhci, &cmd, NULL);
 
-	/* Waiting for the ready status */
-	sunxi_mmc_send_status(sdhci, timeout);
-
 	if (err) {
 		printk_warning("SMHC: MMC get csd failed\n");
 		return err;
 	}
+
+	/* Waiting for the ready status */
+	err = sunxi_mmc_send_status(sdhci, timeout);
+	if (err)
+		return err;
 
 	mmc->csd[0] = cmd.response[0];
 	mmc->csd[1] = cmd.response[1];
@@ -1482,18 +1503,31 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
 	}
 
 	/* divide frequency by 10, since the mults are 10x bigger */
-	uint32_t freq = tran_speed_unit[(cmd.response[0] & 0x7)];
-	uint32_t mult = tran_speed_time[((cmd.response[0] >> 3) & 0xf)];
+	uint32_t unit = cmd.response[0] & 0x7U;
+	uint32_t multiplier = (cmd.response[0] >> 3) & 0xfU;
+	if (unit >= (sizeof(tran_speed_unit) / sizeof(tran_speed_unit[0])) ||
+	    multiplier >= (sizeof(tran_speed_time) / sizeof(tran_speed_time[0]))) {
+		printk_warning("SMHC: invalid TRAN_SPEED encoding 0x%08x\n", cmd.response[0]);
+		return UNUSABLE_ERR;
+	}
+	uint32_t freq = tran_speed_unit[unit];
+	uint32_t mult = tran_speed_time[multiplier];
 
 	printk_trace("SMHC: Card frep:%uHz, mult:%u\n", freq, mult);
 
 	mmc->tran_speed = freq * mult;
-	mmc->read_bl_len = 1 << ((cmd.response[1] >> 16) & 0xf);
+	uint32_t read_bl_exp = (cmd.response[1] >> 16) & 0xfU;
+	uint32_t write_bl_exp = (cmd.response[3] >> 22) & 0xfU;
+	if (read_bl_exp >= 32U || write_bl_exp >= 32U) {
+		printk_warning("SMHC: invalid block length encoding\n");
+		return UNUSABLE_ERR;
+	}
+	mmc->read_bl_len = 1U << read_bl_exp;
 
 	if (sunxi_mmc_device_is_sd(mmc))
 		mmc->write_bl_len = mmc->read_bl_len;
 	else
-		mmc->write_bl_len = 1 << ((cmd.response[3] >> 22) & 0xf);
+		mmc->write_bl_len = 1U << write_bl_exp;
 
 	if (mmc->high_capacity) {
 		csize = (mmc->csd[1] & 0x3f) << 16 | (mmc->csd[2] & 0xffff0000) >> 16;
@@ -1577,8 +1611,11 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
 			printk_debug("SMHC: Read ext csd fail\n");
 		}
 
-		if (!err & (ext_csd[EXT_CSD_REV] >= 2)) {
-			capacity = ext_csd[EXT_CSD_SEC_CNT] << 0 | ext_csd[EXT_CSD_SEC_CNT + 1] << 8 | ext_csd[EXT_CSD_SEC_CNT + 2] << 16 | ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
+		if (!err && (ext_csd[EXT_CSD_REV] >= 2)) {
+			capacity = (uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT] |
+				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 1] << 8) |
+				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 2] << 16) |
+				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 3] << 24);
 			capacity *= mmc->read_bl_len;
 			if ((capacity >> 20) > 2 * 1024)
 				mmc->capacity = capacity;
