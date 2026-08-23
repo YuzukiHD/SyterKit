@@ -30,7 +30,7 @@ int main(void) {
 		return -1;
 	}
 
-	syter_efuse_dump(&sid);
+	sunxi_efuse_dump(&sid);
 
 	return 0;
 }

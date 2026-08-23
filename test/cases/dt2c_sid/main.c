@@ -100,17 +100,17 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(0U, sunxi_sid_read_sram(NULL, 0U));
 
 	hv_switch_write_count = 0U;
-	syter_efuse_write(&sid0, 0x88U, 0xcafebabeU);
+	sunxi_efuse_write(&sid0, 0x88U, 0xcafebabeU);
 	TEST_EQ(2U, hv_switch_write_count);
 	TEST_EQ(1U, hv_switch_values[0]);
 	TEST_EQ(0U, hv_switch_values[1]);
 	TEST_EQ(0xcafebabeU, efuse_program_value);
-	syter_efuse_write(&sid1, 0x88U, 0xdeadbeefU);
+	sunxi_efuse_write(&sid1, 0x88U, 0xdeadbeefU);
 	TEST_EQ(2U, hv_switch_write_count);
 	TEST_EQ(0xcafebabeU, efuse_program_value);
 
 	efuse_read_count = 0U;
-	syter_efuse_dump(&sid0);
+	sunxi_efuse_dump(&sid0);
 	TEST_EQ(11U, sunxi_sid_section_count);
 	TEST_EQ(0x44U, sunxi_sid_sections[8].offset);
 	TEST_EQ(800U, sunxi_sid_sections[8].size_bits);

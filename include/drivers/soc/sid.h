@@ -37,7 +37,7 @@ uint32_t sunxi_sid_read_sram(const sunxi_sid_t *sid, uint32_t offset);
  * @param offset The offset in the eFuse memory from which to read the value.
  * @return The 32-bit value read from the specified eFuse offset.
  */
-uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset);
+uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset);
 
 /**
  * @brief Write a value to the eFuse memory.
@@ -48,7 +48,7 @@ uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset);
  * @param offset The offset in the eFuse memory to which the value will be written.
  * @param value The 32-bit value to be written to the eFuse memory.
  */
-int syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
+int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
 		      uint32_t value);
 
 /**
@@ -57,7 +57,7 @@ int syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
  * This function outputs the current contents of the eFuse memory for 
  * diagnostic purposes. The format of the output is implementation-dependent.
  */
-void syter_efuse_dump(const sunxi_sid_t *sid);
+void sunxi_efuse_dump(const sunxi_sid_t *sid);
 
 #ifdef __cplusplus
 }
