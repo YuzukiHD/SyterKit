@@ -13,7 +13,6 @@
 	compatible = "syterkit,avaota-a1";
 
 	aliases {
-		ccu0 = &ccu0;
 		dma0 = &dma0;
 		dram0 = &dram0;
 		e906 = &e906;
@@ -21,8 +20,6 @@
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
 		mmc2 = &mmc2;
-		pmu0 = &pmu0;
-		pmu1 = &pmu1;
 		rtc0 = &rtc0;
 		sid0 = &sid0;
 		spi0 = &spi0;
@@ -33,18 +30,8 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@2001000 {
-		compatible = "allwinner,sun55iw3-ccu";
-		reg = <SUNXI_CCMU_BASE 0x1000>,
-		      <SUNXI_CPU_SYS_CFG_BASE 0x1000>,
-		      <SUNXI_R_PRCM_BASE 0x1000>,
-		      <SUNXI_IOMMU_BASE 0x1000>;
-		reg-names = "ccu", "cpu-sys-cfg", "r-prcm", "iommu";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun55iw3-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000004b0>,
 			<SUNXI_DRAM_LPDDR4>,
@@ -309,17 +296,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@34 {
-				compatible = "x-powers,axp2202";
-				reg = <0x34>, <0x35>;
-				status = "okay";
-			};
-
-			pmu1: pmic@36 {
-				compatible = "x-powers,axp1530";
-				reg = <0x36>;
-				status = "okay";
-			};
 		};
 
 		uart0: serial@2500000 {

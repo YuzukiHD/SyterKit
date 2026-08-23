@@ -13,19 +13,18 @@
 
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun8iw21/reg.h>
-#include <dt2c/driver.h>
 
-void sunxi_clk_init(sunxi_ccu_t *ccu) {
+void sunxi_clk_init(void) {
 	uint32_t val;
 
 	/* cpu_clk = CPU_PLL/P, AXI_DIV = 2 */
-	write32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG), (0x3 << 8) | 0x01);
+	write32(CCU_BASE + CCU_CPU_CLK_REG, (0x3 << 8) | 0x01);
 	sdelay(1);
 
 	/* cpu_clk divider = 1 */
-	val = read32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG));
+	val = read32(CCU_BASE + CCU_CPU_CLK_REG);
 	val &= ~((1 << 16) | (1 << 17));
-	write32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG), val);
+	write32(CCU_BASE + CCU_CPU_CLK_REG, val);
 	sdelay(5);
 
 	/* CPU_PLL: enable LOCK, enable LDO, N = 50 * 24 = 1200MHz */
@@ -37,94 +36,94 @@ void sunxi_clk_init(sunxi_ccu_t *ccu) {
 	 * 1008000000Hz：val |= (1 << 30 | (1 << 29) | (42 << 8));
 	 * 1200000000Hz：val |= (1 << 30 | (1 << 29) | (50 << 8));
 	 */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	/* CPU_PLL: Output disable, PLL_N = 0, M = 0 */
 	val &= ~((1 << 27) | (0x3FF << 8) | 0x3);
 	val |= (1 << 30 | (1 << 29) | (37 << 8));
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 	sdelay(5);
 
 	/* wait for PLL lock */
-	while (!(read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG)) & (0x1 << 28)))
+	while (!(read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) & (0x1 << 28)))
 		;
 
 	sdelay(20);
 
 	/* PLL lock disable, output enable */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val &= ~(1 << 29);
 	val |= (1 << 27);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* cpu clock = CPU_PLL / P, APB DIV = 4, AXI_DIV = 2 */
-	val = read32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG));
+	val = read32(CCU_BASE + CCU_CPU_CLK_REG);
 	val &= ~((0x7 << 24) | (0x3 << 8) | 0x3);
 	val |= ((0x3 << 24) | (0x3 << 8) | 0x1);
-	write32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG), val);
+	write32(CCU_BASE + CCU_CPU_CLK_REG, val);
 	sdelay(1);
 
 	/* Periph0 has been enabled */
-	if (read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI_CTRL_REG)) & (1 << 31))
+	if (read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG) & (1 << 31))
 		printk_debug("periph0 has been enabled\n");
 
 	/* AHB_Clock = CLK_SRC/M/N, PERIPH_600M / N(1) / M(3) = 200MHz */
-	write32(sunxi_ccu_reg(ccu, CCU_AHB_CLK_REG), (0x3 << 24) | 0x2);
+	write32(CCU_BASE + CCU_AHB_CLK_REG, (0x3 << 24) | 0x2);
 	sdelay(1);
 
 	/* APB0_Clock = CLK_SRC/M/N, PERIPH_600M / N(2) / M(3) = 100MHz */
-	write32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG), (0x3 << 24) | (1 << 8) | 0x2);
+	write32(CCU_BASE + CCU_APB0_CLK_REG, (0x3 << 24) | (1 << 8) | 0x2);
 	sdelay(1);
 
 	/* DMA reset */
-	val = read32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG));
+	val = read32(CCU_BASE + CCU_DMA_BGR_REG);
 	val |= (1 << 16);
-	write32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG), val);
+	write32(CCU_BASE + CCU_DMA_BGR_REG, val);
 	sdelay(20);
 
 	/* enable DMA gate */
-	val = read32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG));
+	val = read32(CCU_BASE + CCU_DMA_BGR_REG);
 	val |= 0x01;
-	write32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG), val);
+	write32(CCU_BASE + CCU_DMA_BGR_REG, val);
 	sdelay(1);
 
 	/* MBUS reset */
-	val = read32(sunxi_ccu_reg(ccu, CCU_MBUS_CLK_REG));
+	val = read32(CCU_BASE + CCU_MBUS_CLK_REG);
 	val |= (1 << 30);
-	write32(sunxi_ccu_reg(ccu, CCU_MBUS_CLK_REG), val);
+	write32(CCU_BASE + CCU_MBUS_CLK_REG, val);
 	sdelay(1);
 
 	printk_debug("sunxi clock init end\n");
-	printk_debug("cpu clk reg (#0x%x): 0x%08x\n", CCU_CPU_CLK_REG, read32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG)));
+	printk_debug("cpu clk reg (#0x%x): 0x%08x\n", CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
 
 	return;
 }
 
-void sunxi_clk_reset(sunxi_ccu_t *ccu) {
+void sunxi_clk_reset(void) {
 	uint32_t reg_val;
 
 	/*set ahb,apb to default, use OSC24M*/
-	reg_val = read32(sunxi_ccu_reg(ccu, CCU_AHB_CLK_REG));
+	reg_val = read32(CCU_BASE + CCU_AHB_CLK_REG);
 	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	write32(sunxi_ccu_reg(ccu, CCU_AHB_CLK_REG), reg_val);
+	write32(CCU_BASE + CCU_AHB_CLK_REG, reg_val);
 
-	reg_val = read32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG));
+	reg_val = read32(CCU_BASE + CCU_APB0_CLK_REG);
 	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	write32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG), reg_val);
+	write32(CCU_BASE + CCU_APB0_CLK_REG, reg_val);
 
 	/*set cpux pll to default,use OSC24M*/
-	write32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG), 0x0301);
+	write32(CCU_BASE + CCU_CPU_CLK_REG, 0x0301);
 	return;
 }
 
 
-void sunxi_clk_dump(sunxi_ccu_t *ccu) {
+void sunxi_clk_dump(void) {
 	uint32_t reg32;
 	uint32_t cpu_clk_src, plln, pllm;
 	uint8_t p0, p1;
 	const char *clock_str;
 
 	/* PLL CPU */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_CPU_CLK_REG));
+	reg32 = read32(CCU_BASE + CCU_CPU_CLK_REG);
 	cpu_clk_src = (reg32 >> 24) & 0x7;
 	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg32);
 
@@ -168,10 +167,10 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 		p1 = 1;
 	}
 
-	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG)) >> 8) & 0xff) + 1) * 24 / p1));
+	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERI */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI_CTRL_REG));
+	reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
@@ -184,7 +183,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	}
 
 	/* PLL DDR */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_DDR_CTRL_REG));
+	reg32 = read32(CCU_BASE + CCU_PLL_DDR_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 
@@ -197,6 +196,3 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 		printk_debug("CLK: PLL_ddr disabled\n");
 	}
 }
-
-
-DT2C_DRIVER_COMPAT("allwinner,sun8iw21-ccu");

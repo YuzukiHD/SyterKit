@@ -13,133 +13,132 @@
 
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun20iw1/reg.h>
-#include <dt2c/driver.h>
 
-static void set_pll_cpux_axi(sunxi_ccu_t *ccu) {
+static void set_pll_cpux_axi(void) {
 	uint32_t val;
 
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
-	write32(sunxi_ccu_reg(ccu, 0x0d00U),
+	write32(CCU_BASE + 0x0d00U,
 		(0 << 24) | (3 << 8) | (1 << 0));
 	sdelay(1);
 
 	/* Disable pll gating */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val &= ~(1 << 27);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* Enable pll ldo */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val |= (1 << 30);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 	sdelay(5);
 
 	/* Set default clk to 1008mhz */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val &= ~((0x3 << 16) | (0xff << 8) | (0x3 << 0));
 	val |= (41 << 8);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* Lock enable */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val |= (1 << 29);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* Enable pll */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val |= (1 << 31);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* Wait pll stable */
-	while (!(read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG)) & (0x1 << 28)))
+	while (!(read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) & (0x1 << 28)))
 		;
 	sdelay(20);
 
 	/* Enable pll gating */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val |= (1 << 27);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 
 	/* Lock disable */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	val &= ~(1 << 29);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_CPU_CTRL_REG, val);
 	sdelay(1);
 
 	/* Set and change cpu clk src */
-	val = read32(sunxi_ccu_reg(ccu, 0x0d00U));
+	val = read32(CCU_BASE + 0x0d00U);
 	val &= ~(0x07 << 24 | 0x3 << 8 | 0xf << 0);
 	val |= (0x05 << 24 | 0x1 << 8);
-	write32(sunxi_ccu_reg(ccu, 0x0d00U), val);
+	write32(CCU_BASE + 0x0d00U, val);
 	sdelay(1);
 }
 
-static void set_pll_periph0(sunxi_ccu_t *ccu) {
+static void set_pll_periph0(void) {
 	uint32_t val;
 
 	/* Periph0 has been enabled */
-	if (read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG)) & (1 << 31))
+	if (read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG) & (1 << 31))
 		return;
 
 	/* Change psi src to osc24m */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG));
+	val = read32(CCU_BASE + CCU_PSI_CLK_REG);
 	val &= (~(0x3 << 24));
-	write32(val, sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG));
+	write32(val, CCU_BASE + CCU_PSI_CLK_REG);
 
 	/* Set default val */
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG), 0x63 << 8);
+	write32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG, 0x63 << 8);
 
 	/* Lock enable */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 	val |= (1 << 29);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG, val);
 
 	/* Enabe pll 600m(1x) 1200m(2x) */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 	val |= (1 << 31);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG, val);
 
 	/* Wait pll stable */
-	while (!(read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG)) & (0x1 << 28)))
+	while (!(read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG) & (0x1 << 28)))
 		;
 	sdelay(20);
 
 	/* Lock disable */
-	val = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
+	val = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 	val &= ~(1 << 29);
-	write32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG), val);
+	write32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG, val);
 }
 
-static void set_ahb(sunxi_ccu_t *ccu) {
-	write32(sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG), (2 << 0) | (0 << 8));
-	write32(sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG), read32(sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG)) | (0x03 << 24));
+static void set_ahb(void) {
+	write32(CCU_BASE + CCU_PSI_CLK_REG, (2 << 0) | (0 << 8));
+	write32(CCU_BASE + CCU_PSI_CLK_REG, read32(CCU_BASE + CCU_PSI_CLK_REG) | (0x03 << 24));
 	sdelay(1);
 }
 
-static void set_apb(sunxi_ccu_t *ccu) {
-	write32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG), (2 << 0) | (1 << 8));
-	write32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG), (0x03 << 24) | read32(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG)));
+static void set_apb(void) {
+	write32(CCU_BASE + CCU_APB0_CLK_REG, (2 << 0) | (1 << 8));
+	write32(CCU_BASE + CCU_APB0_CLK_REG, (0x03 << 24) | read32(CCU_BASE + CCU_APB0_CLK_REG));
 	sdelay(1);
 }
 
-static void set_dma(sunxi_ccu_t *ccu) {
+static void set_dma(void) {
 	/* Dma reset */
-	write32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG), read32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG)) | (1 << 16));
+	write32(CCU_BASE + CCU_DMA_BGR_REG, read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 16));
 	sdelay(20);
 	/* Enable gating clock for dma */
-	write32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG), read32(sunxi_ccu_reg(ccu, CCU_DMA_BGR_REG)) | (1 << 0));
+	write32(CCU_BASE + CCU_DMA_BGR_REG, read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 0));
 }
 
-static void set_mbus(sunxi_ccu_t *ccu) {
+static void set_mbus(void) {
 	uint32_t val;
 
 	/* Reset mbus domain */
-	val = read32(sunxi_ccu_reg(ccu, CCU_MBUS_CLK_REG));
+	val = read32(CCU_BASE + CCU_MBUS_CLK_REG);
 	val |= (0x1 << 30);
-	write32(sunxi_ccu_reg(ccu, CCU_MBUS_CLK_REG), val);
+	write32(CCU_BASE + CCU_MBUS_CLK_REG, val);
 	sdelay(1);
 	/* Enable mbus master clock gating */
-	write32(sunxi_ccu_reg(ccu, CCU_MBUS_MAT_CLK_GATING_REG), 0x00000d87);
+	write32(CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG, 0x00000d87);
 }
 
 static void set_module(virtual_addr_t addr) {
@@ -166,40 +165,40 @@ static void set_module(virtual_addr_t addr) {
 	}
 }
 
-void sunxi_clk_init(sunxi_ccu_t *ccu) {
-	set_pll_cpux_axi(ccu);
-	set_pll_periph0(ccu);
-	set_ahb(ccu);
-	set_apb(ccu);
-	set_dma(ccu);
-	set_mbus(ccu);
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_VIDEO0_CTRL_REG));
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_VIDEO1_CTRL_REG));
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_VE_CTRL));
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_AUDIO0_CTRL_REG));
-	set_module(sunxi_ccu_reg(ccu, CCU_PLL_AUDIO1_CTRL_REG));
+void sunxi_clk_init(void) {
+	set_pll_cpux_axi();
+	set_pll_periph0();
+	set_ahb();
+	set_apb();
+	set_dma();
+	set_mbus();
+	set_module(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
+	set_module(CCU_BASE + CCU_PLL_VIDEO0_CTRL_REG);
+	set_module(CCU_BASE + CCU_PLL_VIDEO1_CTRL_REG);
+	set_module(CCU_BASE + CCU_PLL_VE_CTRL);
+	set_module(CCU_BASE + CCU_PLL_AUDIO0_CTRL_REG);
+	set_module(CCU_BASE + CCU_PLL_AUDIO1_CTRL_REG);
 }
 
-void sunxi_clk_reset(sunxi_ccu_t *ccu) {
+void sunxi_clk_reset(void) {
 	uint32_t reg_val;
 
 	/*set ahb,apb to default, use OSC24M*/
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG));
+	reg_val = readl(CCU_BASE + CCU_PSI_CLK_REG);
 	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_PSI_CLK_REG));
+	writel(reg_val, CCU_BASE + CCU_PSI_CLK_REG);
 
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG));
+	reg_val = readl(CCU_BASE + CCU_APB0_CLK_REG);
 	reg_val &= (~((0x3 << 24) | (0x3 << 8) | (0x3)));
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_APB0_CLK_REG));
+	writel(reg_val, CCU_BASE + CCU_APB0_CLK_REG);
 
 	/*set cpux pll to default,use OSC24M*/
-	writel(0x0301, sunxi_ccu_reg(ccu, CCU_CPU_AXI_CFG_REG));
+	writel(0x0301, CCU_BASE + CCU_CPU_AXI_CFG_REG);
 	return;
 }
 
 
-void sunxi_clk_dump(sunxi_ccu_t *ccu) {
+void sunxi_clk_dump(void) {
 	uint32_t reg32;
 	uint32_t cpu_clk_src;
 	uint32_t plln, pllm;
@@ -208,7 +207,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	const char *clock_str;
 
 	/* PLL CPU */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_CPU_AXI_CFG_REG));
+	reg32 = read32(CCU_BASE + CCU_CPU_AXI_CFG_REG);
 	cpu_clk_src = (reg32 >> 24) & 0x7;
 
 	switch (cpu_clk_src) {
@@ -244,7 +243,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 			clock_str = "ERROR";
 	}
 
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_CPU_CTRL_REG));
+	reg32 = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);
 	p0 = (reg32 >> 16) & 0x03;
 	if (p0 == 0) {
 		p1 = 1;
@@ -259,7 +258,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	printk_debug("CLK: CPU PLL=%s FREQ=%luMHz\r\n", clock_str, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERIx */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_PERI0_CTRL_REG));
+	reg32 = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
@@ -272,7 +271,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	}
 
 	/* PLL DDR */
-	reg32 = read32(sunxi_ccu_reg(ccu, CCU_PLL_DDR_CTRL_REG));
+	reg32 = read32(CCU_BASE + CCU_PLL_DDR_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 
@@ -286,5 +285,3 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 		printk_debug("CLK: PLL_ddr disabled\r\n");
 	}
 }
-
-DT2C_DRIVER_COMPAT("allwinner,sun20iw1-ccu");

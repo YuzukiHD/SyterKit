@@ -160,7 +160,6 @@ reset:
 #endif
 	bl set_timer_count
 
-	bl do_initcalls
 	bl main
 
 1:	wfi

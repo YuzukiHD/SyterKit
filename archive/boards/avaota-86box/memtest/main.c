@@ -7,7 +7,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <timer.h>
 
 #include <common.h>
@@ -39,22 +39,17 @@ static sunxi_dram_t dram;
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
-	sunxi_ccu_t ccu;
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
 	show_banner();
 
 	/* Initialize the system clock. */
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -65,7 +60,7 @@ int main(void) {
 	printk_debug("enable mmu ok\n");
 
 	/* Dump information about the system clocks. */
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 #define DRAM_TEST_SIZE 32 * 1024 * 1024
 #define DRAM_SIZE_BYTE dram_size * 1024 * 1024

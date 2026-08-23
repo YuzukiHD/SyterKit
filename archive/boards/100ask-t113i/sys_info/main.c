@@ -7,7 +7,7 @@
 
 #include <common.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <drivers/dram/dram.h>
 #include <drivers/soc/sid.h>
@@ -20,21 +20,16 @@ extern sunxi_serial_t uart_dbg;
 static sunxi_dram_t dram;
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_sid_t sid;
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
 		printk_error("SID: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -44,7 +39,7 @@ int main(void) {
 
 	sunxi_efuse_dump(&sid);
 
-	sunxi_clk_reset(&ccu);
+	sunxi_clk_reset();
 
 	clean_syterkit_data();
 

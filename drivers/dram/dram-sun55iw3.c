@@ -31,4 +31,4 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
 	return dram->size;
 }
 
-DT2C_DRIVER_COMPAT("allwinner,sun55iw3-dram");
+DT2C_DRIVER_COMPAT("allwinner,sunxi-dram");

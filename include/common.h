@@ -24,7 +24,6 @@ extern "C" {
 #define FALSE 0
 #define TRUE 1
 
-typedef struct sunxi_ccu sunxi_ccu_t;
 typedef struct sunxi_rtc sunxi_rtc_t;
 
 /**
@@ -89,9 +88,8 @@ void sunxi_gpio_power_mode_init(void);
 
 /**
  * @brief Validate and configure the board's system LDO rails.
- * @param[in] ccu Clock controller resources parsed from the board devicetree.
  */
-void sys_ldo_check(const sunxi_ccu_t *ccu);
+void sys_ldo_check(void);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -7,7 +9,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <timer.h>
 
 #include <common.h>
@@ -29,7 +31,6 @@
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
-#include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/rtc-dt.h>
 #include <drivers/mmc/sdcard.h>
 #include <drivers/soc/sid.h>
@@ -258,16 +259,17 @@ const msh_command_entry commands[] = {
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
-	sunxi_ccu_t ccu;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 	sunxi_rtc_t rtc;
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+	    pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -281,19 +283,15 @@ int main(void) {
 	}
 
 	/* Initialize the system clock. */
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	/* Check rtc fel flag. if set flag, goto fel */
 	if (rtc_probe_fel_flag(&rtc)) {
 		printk_info("RTC: get fel flag, jump to fel mode.\n");
 		clean_syterkit_data();
 		rtc_clear_fel_flag(&rtc);
-		sunxi_clk_reset(&ccu);
+		sunxi_clk_reset();
 		mdelay(100);
 		goto _fel;
 	}
@@ -305,7 +303,7 @@ int main(void) {
 	set_pmu_fin_voltage(&pmu, "dcdc3", 1100);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}

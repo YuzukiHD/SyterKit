@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -7,7 +9,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <timer.h>
 
 #include <common.h>
@@ -548,12 +550,13 @@ const msh_command_entry commands[] = {
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_rtc_t rtc;
 
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci2, "mmc2") != DRIVER_OK) {
 		printk_error("SMHC: invalid devicetree configuration\n");
@@ -565,25 +568,21 @@ int main(void) {
 	}
 
 	/* Initialize the system clock. */
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	/* Check rtc fel flag. if set flag, goto fel */
 	if (rtc_probe_fel_flag(&rtc)) {
 		printk_info("RTC: get fel flag, jump to fel mode.\n");
 		clean_syterkit_data();
 		rtc_clear_fel_flag(&rtc);
-		sunxi_clk_reset(&ccu);
+		sunxi_clk_reset();
 		mdelay(100);
 		goto _fel;
 	}
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -600,10 +599,10 @@ int main(void) {
 	rtc_set_vccio_det_spare(&rtc);
 
 	/* Check if system voltage is within limits. */
-	sys_ldo_check(&ccu);
+	sys_ldo_check();
 
 	/* Dump information about the system clocks. */
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	/* Clear the image_info_t struct. */
 	memset(&image, 0, sizeof(image_info_t));

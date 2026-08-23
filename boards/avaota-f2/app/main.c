@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -8,9 +10,8 @@
 
 #include <dt-bindings/soc/sun252iw1.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
-
 #include <drivers/clk/clk.h>
+
 #include <drivers/dma/dma.h>
 #include <drivers/dram/dram.h>
 #include <dt-compatible/dram-dt.h>
@@ -23,7 +24,6 @@
 #include <drivers/pmu/axp.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/i2c-dt.h>
-#include <dt-compatible/pmu-dt.h>
 
 #include <common.h>
 
@@ -42,32 +42,30 @@ void sunxi_pmc_config(void) {
 }
 
 int main(void) {
-	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
+	sunxi_dram_t dram = {0};
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
+
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+	    pmu_axp333_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	sysmap_dump_region_info();
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	printk_info("Hello World!\n");
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	sunxi_pmc_config();
 
@@ -79,7 +77,7 @@ int main(void) {
 
 	pmu_axp333_dump(&pmu);
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}

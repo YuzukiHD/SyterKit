@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -18,7 +20,6 @@
 #include <drivers/pmu/axp.h>
 #include <drivers/soc/sid.h>
 #include <dt-compatible/i2c-dt.h>
-#include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/sid-dt.h>
 
 #include <cli/cli.h>
@@ -153,8 +154,8 @@ static voltage_config_t get_voltage_config(uint8_t efuse_value) {
  * 3. Configure each power rail voltage based on SOC version and EFUSE value
  */
 static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c,
-				   axp_pmu_t *primary,
-				   axp_pmu_t *secondary) {
+				   axp_pmu_t *axp2202,
+				   axp_pmu_t *axp1530) {
 	/* Read EFUSE value to determine voltage configuration */
 	uint32_t efuse_reg_value =
 		sunxi_sid_read_sram(sid, EFUSE_SRAM_OFFSET);
@@ -171,8 +172,8 @@ static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c,
 
 	/* Initialize I2C controller and PMU chips */
 	sunxi_i2c_init(i2c);
-	pmu_axp2202_init(primary);
-	pmu_axp1530_init(secondary);
+	pmu_axp2202_init(axp2202);
+	pmu_axp1530_init(axp1530);
 
 	/* For early SOC versions, system voltage should equal GPU voltage */
 	if ((readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK) < 2) {
@@ -180,20 +181,20 @@ static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c,
 	}
 
 	/* Configure PMU AXP2202 voltages */
-	pmu_axp2202_set_vol(primary, "dcdc1", VDD_DCDC1_VOLTAGE, 1);
-	pmu_axp2202_set_vol(primary, "dcdc2", volt_config.sys_voltage, 1);
-	pmu_axp2202_set_vol(primary, "dcdc4", VDD_3V3_VOLTAGE, 1);
-	pmu_axp2202_set_vol(primary, "bldo3", VDD_1V8_VOLTAGE, 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc1", VDD_DCDC1_VOLTAGE, 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc2", volt_config.sys_voltage, 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc4", VDD_3V3_VOLTAGE, 1);
+	pmu_axp2202_set_vol(axp2202, "bldo3", VDD_1V8_VOLTAGE, 1);
 
 	/* Configure PMU AXP1530 voltages */
-	pmu_axp1530_set_vol(secondary, "dcdc1", 1000, 1); /* Fixed 1.0V */
-	pmu_axp1530_set_vol(secondary, "dcdc2", 1000, 1); /* Fixed 1.0V */
-	pmu_axp1530_set_vol(secondary, "dcdc3", volt_config.gpu_voltage, 1);
+	pmu_axp1530_set_vol(axp1530, "dcdc1", 1000, 1); /* Fixed 1.0V */
+	pmu_axp1530_set_vol(axp1530, "dcdc2", 1000, 1); /* Fixed 1.0V */
+	pmu_axp1530_set_vol(axp1530, "dcdc3", volt_config.gpu_voltage, 1);
 }
 
 int main(void) {
-	axp_pmu_t primary_pmu;
-	axp_pmu_t secondary_pmu;
+	axp_pmu_t axp2202;
+	axp_pmu_t axp1530;
 	sunxi_i2c_t i2c;
 	sunxi_sid_t sid;
 
@@ -203,18 +204,22 @@ int main(void) {
 	}
 	sunxi_res_ctrl_init(&sid);
 
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
+
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
+	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_board_power_init(&sid, &i2c, &primary_pmu, &secondary_pmu);
+	sunxi_board_power_init(&sid, &i2c, &axp2202, &axp1530);
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", &primary_pmu,
-				     &secondary_pmu) != DRIVER_OK) {
+	dram.pmu = &axp2202;
+	dram.pmu_aux = &axp1530;
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}

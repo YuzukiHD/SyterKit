@@ -13,30 +13,19 @@
 	compatible = "syterkit,radxa-cubie-a7a";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		dram0 = &dram0;
 		gpio0 = &pio;
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
-		pmu0 = &pmu0;
 	};
 
 	chosen {
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@2002000 {
-		compatible = "allwinner,sun60iw2-ccu";
-		reg = <SUNXI_CCU_BASE 0x1000>,
-		      <SUNXI_CPU_PLL_CFG_BASE 0x4000>,
-		      <SUNXI_RTC_BASE 0x1000>;
-		reg-names = "ccu", "cpu-pll", "rtc";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun60iw2-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x00000960>,
 			<SUNXI_DRAM_LPDDR5>,
@@ -70,7 +59,6 @@
 			<0x00000000>,
 			<0x00010061>,
 			<0x00000000>;
-		allwinner,primary-pmu = <&pmu0>;
 		status = "okay";
 	};
 
@@ -171,11 +159,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@36 {
-				compatible = "x-powers,axp8191";
-				reg = <0x36>;
-				status = "okay";
-			};
 		};
 
 		uart0: serial@2500000 {

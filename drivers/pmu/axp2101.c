@@ -11,7 +11,7 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
-#include <dt2c/driver.h>
+#include "axp-config.h"
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -58,6 +58,11 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 	{ {500, 1400, 50}, } },
 };
 /* clang-format on */
+
+int pmu_axp2101_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c) {
+	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP2101,
+				AXP2101_RUNTIME_ADDR, 0U);
+}
 
 int pmu_axp2101_init(axp_pmu_t *pmu) {
 	uint8_t axp_val;
@@ -201,5 +206,3 @@ int pmu_axp2101_get_vol(axp_pmu_t *pmu, char *name) {
 void pmu_axp2101_dump(axp_pmu_t *pmu) {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(pmu, axp_ctrl_tbl[i].name)); }
 }
-
-DT2C_DRIVER_COMPAT("x-powers,axp2101");

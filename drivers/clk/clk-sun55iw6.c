@@ -13,7 +13,6 @@
 
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun55iw6/reg.h>
-#include <dt2c/driver.h>
 
 #define CPU_UPDATE_OFFSET (26)
 #define CPU_LOCK_OFFSET (28)
@@ -74,20 +73,20 @@ static void enable_pll(uintptr_t reg_addr, uint32_t n_factor) {
  * function with predefined PLL multiplier factors. It also adjusts the CPU-to-AXI clock 
  * divider by modifying the corresponding register to control the clock speed and synchronization.
  *
- * @note The function performs PLL configuration for both the CPU (ccu->base[1] + 0x04U)
- *       and DSU (ccu->base[1] + 0x08U) and sets the CPU-to-AXI clock divider factor.
+ * @note The function performs PLL configuration for both the CPU (SUNXI_CPU_PLL_CFG_BASE + 0x04U)
+ *       and DSU (SUNXI_CPU_PLL_CFG_BASE + 0x08U) and sets the CPU-to-AXI clock divider factor.
  */
-static void set_pll_cpux_axi(sunxi_ccu_t *ccu) {
+static void set_pll_cpux_axi(void) {
 	uint32_t reg_val;
 
 	// Enable CPU and DSU PLLs with appropriate factors
-	enable_pll(ccu->base[1] + 0x04U, 0x2a);///< Set the CPU PLL multiplier factor (0x2a)
-	enable_pll(ccu->base[1] + 0x08U, 0x16); ///< Set the DSU PLL multiplier factor (0x16)
+	enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x04U, 0x2a);///< Set the CPU PLL multiplier factor (0x2a)
+	enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x08U, 0x16); ///< Set the DSU PLL multiplier factor (0x16)
 
 	/* Set the CPU-to-AXI divider factor (M) */
-	reg_val = readl(ccu->base[1] + 0x4cU);///< Read the current DSU clock register value
+	reg_val = readl(SUNXI_CPU_PLL_CFG_BASE + 0x4cU);///< Read the current DSU clock register value
 	reg_val &= ~(0x3);				 ///< Clear the divider bits
-	writel(reg_val, ccu->base[1] + 0x4cU);///< Write the modified value back to the DSU clock register
+	writel(reg_val, SUNXI_CPU_PLL_CFG_BASE + 0x4cU);///< Write the modified value back to the DSU clock register
 }
 
 /**
@@ -101,20 +100,20 @@ static void set_pll_cpux_axi(sunxi_ccu_t *ccu) {
  * @note This function performs two key actions: setting the APB clock source and 
  *       resetting the APB clock divider factor.
  */
-static void set_apb(sunxi_ccu_t *ccu) {
+static void set_apb(void) {
 	uint32_t reg_value = 0;
 
 	// Set APB1 clock source to HOSC
-	reg_value = readl(sunxi_ccu_reg(ccu, APB1_CLK_REG));											///< Read the current APB1 config register value
+	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG);											///< Read the current APB1 config register value
 	reg_value &= ~APB1_CLK_REG_CLK_SRC_SEL_CLEAR_MASK;								///< Clear the clock source selection mask
 	reg_value |= (APB1_CLK_REG_CLK_SRC_SEL_HOSC << APB1_CLK_REG_CLK_SRC_SEL_OFFSET);///< Set HOSC as the clock source
-	writel(reg_value, sunxi_ccu_reg(ccu, APB1_CLK_REG));											///< Write the modified value back to the APB1 config register
+	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG);											///< Write the modified value back to the APB1 config register
 	udelay(10);																		///< Delay to ensure stable configuration
 
 	// Reset the APB clock divider factor to default
-	reg_value = readl(sunxi_ccu_reg(ccu, APB1_CLK_REG));		   ///< Read the APB1 config register again
+	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG);		   ///< Read the APB1 config register again
 	reg_value &= ~APB1_CLK_REG_FACTOR_M_CLEAR_MASK;///< Clear the APB divider mask
-	writel(reg_value, sunxi_ccu_reg(ccu, APB1_CLK_REG));		   ///< Write the modified value back to the APB1 config register
+	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG);		   ///< Write the modified value back to the APB1 config register
 	udelay(10);									   ///< Delay to ensure stable configuration
 }
 
@@ -129,21 +128,21 @@ static void set_apb(sunxi_ccu_t *ccu) {
  *       1. Disabling clock gating and updating the NSI divider.
  *       2. Setting the NSI clock source to DDR PLL and enabling the NSI clock.
  */
-static void set_pll_nsi(sunxi_ccu_t *ccu) {
+static void set_pll_nsi(void) {
 	uint32_t reg_val;
 	uint32_t time_cnt = 0;
 
 	/* Disable NSI clock gating */
-	reg_val = readl(sunxi_ccu_reg(ccu, NSI_CLK_REG));						///< Read the current NSI clock register value
+	reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);						///< Read the current NSI clock register value
 	reg_val &= ~(0x1U << NSI_CLK_REG_NSI_CLK_GATING_OFFSET);///< Disable clock gating
 	reg_val &= ~(NSI_CLK_REG_NSI_DIV1_CLEAR_MASK);			///< Clear the divider bits
 	reg_val |= (0x5U << NSI_CLK_REG_NSI_DIV1_OFFSET);		///< Set the divider factor to 5
 	reg_val |= 1 << NSI_CLK_REG_NSI_UPD_OFFSET;				///< Set the update bit
-	writel(reg_val, sunxi_ccu_reg(ccu, NSI_CLK_REG));						///< Write the new configuration
+	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG);						///< Write the new configuration
 
 	// Wait for the clock gating update to complete
 	do {
-		reg_val = readl(sunxi_ccu_reg(ccu, NSI_CLK_REG));
+		reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);
 		reg_val = reg_val & (0x1U << NSI_CLK_REG_NSI_UPD_OFFSET);
 		udelay(1);
 
@@ -154,7 +153,7 @@ static void set_pll_nsi(sunxi_ccu_t *ccu) {
 	} while (reg_val);
 
 	time_cnt = 0;
-	reg_val = readl(sunxi_ccu_reg(ccu, NSI_CLK_REG));
+	reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);
 
 	/* Set NSI clock source to DDR PLL */
 	reg_val &= ~(NSI_CLK_REG_NSI_CLK_SEL_CLEAR_MASK);							  ///< Clear the clock source selection bits
@@ -163,11 +162,11 @@ static void set_pll_nsi(sunxi_ccu_t *ccu) {
 	/* Enable NSI clock */
 	reg_val |= (0X01 << NSI_CLK_REG_NSI_CLK_GATING_OFFSET);///< Enable clock gating
 	reg_val |= (0x1U << NSI_CLK_REG_NSI_UPD_OFFSET);	   ///< Set the update bit
-	writel(reg_val, sunxi_ccu_reg(ccu, NSI_CLK_REG));					   ///< Write the configuration to the register
+	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG);					   ///< Write the configuration to the register
 
 	// Wait for the clock update to complete
 	do {
-		reg_val = readl(sunxi_ccu_reg(ccu, NSI_CLK_REG));
+		reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);
 		reg_val = reg_val & (0x1U << NSI_CLK_REG_NSI_UPD_OFFSET);
 		udelay(1);
 
@@ -189,21 +188,21 @@ static void set_pll_nsi(sunxi_ccu_t *ccu) {
  *       1. Disabling clock gating and updating the MBUS divider.
  *       2. Setting the MBUS clock source to DDR PLL and enabling the MBUS clock.
  */
-static void set_pll_mbus(sunxi_ccu_t *ccu) {
+static void set_pll_mbus(void) {
 	uint32_t reg_val = 0x0;
 	uint32_t time_cnt = 0;
 
 	/* Disable MBUS clock gating */
-	reg_val = readl(sunxi_ccu_reg(ccu, MBUS_CLK_REG));						  ///< Read the current MBUS configuration register value
+	reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);						  ///< Read the current MBUS configuration register value
 	reg_val &= ~(0x1U << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET);///< Disable clock gating
 	reg_val &= ~(MBUS_CLK_REG_MBUS_DIV1_CLEAR_MASK);		  ///< Clear the divider bits
 	reg_val |= (0x5U << MBUS_CLK_REG_MBUS_DIV1_OFFSET);		  ///< Set the divider factor to 5
 	reg_val |= 1 << MBUS_CLK_REG_MBUS_UPD_OFFSET;			  ///< Set the update bit
-	writel(reg_val, sunxi_ccu_reg(ccu, MBUS_CLK_REG));						  ///< Write the configuration to the MBUS register
+	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG);						  ///< Write the configuration to the MBUS register
 
 	// Wait for the clock gating update to complete
 	do {
-		reg_val = readl(sunxi_ccu_reg(ccu, MBUS_CLK_REG));
+		reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);
 		reg_val = reg_val & (0x1U << MBUS_CLK_REG_MBUS_UPD_OFFSET);
 		udelay(1);
 
@@ -215,7 +214,7 @@ static void set_pll_mbus(sunxi_ccu_t *ccu) {
 
 	time_cnt = 0;
 
-	reg_val = readl(sunxi_ccu_reg(ccu, MBUS_CLK_REG));
+	reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);
 
 	/* Set MBUS clock source to DDR PLL */
 	reg_val &= ~(MBUS_CLK_REG_MBUS_CLK_SEL_CLEAR_MASK);								  ///< Clear the clock source selection bits
@@ -224,11 +223,11 @@ static void set_pll_mbus(sunxi_ccu_t *ccu) {
 	/* Enable MBUS clock */
 	reg_val |= (0X01 << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET);///< Enable clock gating
 	reg_val |= (0x1U << MBUS_CLK_REG_MBUS_UPD_OFFSET);		 ///< Set the update bit
-	writel(reg_val, sunxi_ccu_reg(ccu, MBUS_CLK_REG));						 ///< Write the configuration to the MBUS register
+	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG);						 ///< Write the configuration to the MBUS register
 
 	// Wait for the clock update to complete
 	do {
-		reg_val = readl(sunxi_ccu_reg(ccu, MBUS_CLK_REG));
+		reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);
 		reg_val = reg_val & (0x1U << MBUS_CLK_REG_MBUS_UPD_OFFSET);
 		udelay(1);
 
@@ -258,32 +257,32 @@ static void set_pll_mbus(sunxi_ccu_t *ccu) {
  * @warning Ensure that all the clock configuration functions are correctly
  *          implemented and tested to avoid system instability.
  */
-void sunxi_clk_init(sunxi_ccu_t *ccu) {
+void sunxi_clk_init(void) {
 	printk_debug("Set pll start\n");
 
 	// Set the CPU and AXI clock via the set_pll_cpux_axi function
-	set_pll_cpux_axi(ccu);
+	set_pll_cpux_axi();
 
 	// Set the APB clock using the set_apb function
-	set_apb(ccu);
+	set_apb();
 
 	// Set the NSI clock (Non-Shared Interface) via the set_pll_nsi function
-	set_pll_nsi(ccu);
+	set_pll_nsi();
 
 	// Set the MBUS clock (Memory Bus) using the set_pll_mbus function
-	set_pll_mbus(ccu);
+	set_pll_mbus();
 
 	printk_debug("Set pll end\n");
 }
 
-void sunxi_clk_dump(sunxi_ccu_t *ccu) {
+void sunxi_clk_dump(void) {
 	uint32_t reg32;
 	uint32_t plln, pllm;
 	uint8_t p0;
 	uint8_t p1;
 
 	/* PLL PERIx */
-	reg32 = read32(sunxi_ccu_reg(ccu, PLL_PERI0_CTRL_REG));
+	reg32 = read32(SUNXI_CCMU_BASE + PLL_PERI0_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
@@ -296,7 +295,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	}
 
 	/* PLL PERIx */
-	reg32 = read32(sunxi_ccu_reg(ccu, PLL_PERI1_CTRL_REG));
+	reg32 = read32(SUNXI_CCMU_BASE + PLL_PERI1_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 		pllm = (reg32 & 0x01) + 1;
@@ -309,7 +308,7 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 	}
 
 	/* PLL DDR */
-	reg32 = read32(sunxi_ccu_reg(ccu, PLL_DDR_CTRL_REG));
+	reg32 = read32(SUNXI_CCMU_BASE + PLL_DDR_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		plln = ((reg32 >> 8) & 0xff) + 1;
 
@@ -323,5 +322,3 @@ void sunxi_clk_dump(sunxi_ccu_t *ccu) {
 		printk_debug("CLK: PLL_DDR1 disabled\r\n");
 	}
 }
-
-DT2C_DRIVER_COMPAT("allwinner,sun55iw6-ccu");

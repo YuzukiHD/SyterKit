@@ -9,10 +9,6 @@
 extern "C" {
 #endif
 
-typedef struct sunxi_ccu {
-	uintptr_t base[4];
-} sunxi_ccu_t;
-
 typedef struct {
 	uintptr_t gate_reg_base;
 	uint32_t gate_reg_offset;
@@ -21,19 +17,17 @@ typedef struct {
 	uint32_t parent_clk;
 } sunxi_clk_t;
 
-static inline __attribute__((always_inline)) uintptr_t
-sunxi_ccu_reg(const sunxi_ccu_t *ccu, uintptr_t offset) {
-	return ccu->base[0] + offset;
-}
+/** @brief Perform SoC-specific clock work required before normal init. */
+void sunxi_clk_preinit(void);
 
 /** @brief Initialize the system clock tree. */
-void sunxi_clk_init(sunxi_ccu_t *ccu);
+void sunxi_clk_init(void);
 
 /** @brief Reset the system clock tree to its boot configuration. */
-void sunxi_clk_reset(sunxi_ccu_t *ccu);
+void sunxi_clk_reset(void);
 
 /** @brief Dump the current system clock configuration. */
-void sunxi_clk_dump(sunxi_ccu_t *ccu);
+void sunxi_clk_dump(void);
 
 #ifdef __cplusplus
 }

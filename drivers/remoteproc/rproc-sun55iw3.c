@@ -62,22 +62,10 @@ static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc) {
 		     value, (value >> 24) & 0x7U, factor_m, factor_n);
 }
 
-static const sunxi_remoteproc_ops_t sun55iw3_e906_ops = {
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun55iw3_e906_reset,
 	.start = sun55iw3_e906_start,
 	.dump = sun55iw3_e906_dump,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL ||
-	    variant != SUNXI_REMOTEPROC_VARIANT_SUN55IW3_E906 ||
-	    remoteproc->register_count != 2U ||
-	    remoteproc->registers[SUN55IW3_E906_DSP_PRCM].size < 0x128U ||
-	    remoteproc->registers[SUN55IW3_E906_CFG].size < 0x208U)
-		return DRIVER_ERROR_INVALID;
-	remoteproc->ops = &sun55iw3_e906_ops;
-	return DRIVER_OK;
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun55iw3-e906");

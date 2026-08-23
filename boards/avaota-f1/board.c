@@ -23,7 +23,6 @@
 #include <drivers/soc/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
-#include <dt-compatible/ccu-dt.h>
 #include <e907/sysmap.h>
 
 void show_chip() {
@@ -45,16 +44,11 @@ void show_chip() {
 }
 
 int sunxi_hosc_detect(void) {
-	sunxi_ccu_t ccu;
 	uintptr_t detect_reg;
 	uint32_t val;
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		current_hosc_freq = HOSC_FREQ_24M;
-		return HOSC_FREQ_24M;
-	}
 
-	detect_reg = ccu.base[1] + HOSC_FREQ_DET;
+	detect_reg = SUNXI_CCU_AON_BASE + HOSC_FREQ_DET;
 	val = readl(detect_reg);
 
 	writel(val & (~HOSC_FREQ_DET_HOSC_CLEAR_MASK), detect_reg);

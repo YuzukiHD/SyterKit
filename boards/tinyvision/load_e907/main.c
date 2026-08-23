@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -7,7 +9,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <mmu.h>
 #include <common.h>
@@ -128,8 +130,10 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc) {
 }
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_remoteproc_t e907;
+
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK ||
@@ -138,20 +142,16 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
 		printk_error("SMHC: %s controller init failed\n", sdhci0.name);

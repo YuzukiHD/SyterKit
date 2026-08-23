@@ -13,7 +13,6 @@
 	compatible = "syterkit,project-yosemite";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		dma0 = &dma0;
 		dram0 = &dram0;
@@ -27,29 +26,13 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@2001000 {
-		compatible = "allwinner,sun8iw21-ccu";
-		reg = <SUNXI_CCU_BASE 0x1000>;
-		reg-names = "ccu";
-		status = "okay";
-	};
-
 	dram_memory: memory@40000000 {
 		device_type = "memory";
 		reg = <0x40000000 0x80000000>;
 	};
 
 	dram0: dram-controller {
-		compatible = "allwinner,sun8iw21-dram";
-		allwinner,dram-memory = <&dram_memory>;
-		reg =
-			<SUNXI_CCU_BASE 0x1000>,
-			<SUNXI_MCTL_COM_BASE 0x1000>,
-			<SUNXI_MCTL_PHY_BASE 0x1000>,
-			<SUNXI_SYSCRL_BASE 0x1000>,
-			<SUNXI_SID_BASE 0x1000>,
-			<SUNXI_CPUS_CFG_BASE 0x400>,
-			<SUNXI_RPRCM_BASE 0x400>;
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000003a8>,
 			<SUNXI_DRAM_DDR3>,
@@ -74,8 +57,9 @@
 			<0x00000000>,
 			<0x00420000>,
 			<0x00000048>,
-			<0x34010100>;
-		allwinner,rtc = <&rtc0>;
+			<0x34010100>,
+			<0x00000000>, <0x00000000>, <0x00000000>, <0x00000000>,
+			<0x00000000>, <0x00000000>, <0x00000000>, <0x00000000>;
 		status = "okay";
 	};
 

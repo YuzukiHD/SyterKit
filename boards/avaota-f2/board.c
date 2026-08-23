@@ -24,6 +24,7 @@
 #include <drivers/soc/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
+
 void show_chip() {
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];

@@ -2,14 +2,16 @@
 
 #include <drivers/clk/clk.h>
 
-void __attribute__((weak)) sunxi_clk_init(sunxi_ccu_t *ccu) {
-	(void) ccu;
+#include <stddef.h>
+
+void __attribute__((weak)) sunxi_clk_preinit(void) {
 }
 
-void __attribute__((weak)) sunxi_clk_reset(sunxi_ccu_t *ccu) {
-	(void) ccu;
+void __attribute__((weak)) sunxi_clk_init(void) {
 }
 
-void __attribute__((weak)) sunxi_clk_dump(sunxi_ccu_t *ccu) {
-	(void) ccu;
+void __attribute__((weak)) sunxi_clk_reset(void) {
+}
+
+void __attribute__((weak)) sunxi_clk_dump(void) {
 }

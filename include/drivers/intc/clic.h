@@ -59,6 +59,9 @@ int sunxi_clic_exit(sunxi_clic_t *clic);
  */
 int arch_interrupt_init(void);
 
+/** @brief Load the CLIC configuration from DTS and enable interrupts. */
+int sunxi_clic_startup(void);
+
 /**
  * @brief Exits the interrupt mechanism
  * 

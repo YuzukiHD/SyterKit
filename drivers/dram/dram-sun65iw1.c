@@ -20,18 +20,18 @@
 #include <drivers/pmu/reg/reg-axp2202.h>
 
 
-static axp_pmu_t *dram_primary_pmu;
-static axp_pmu_t *dram_secondary_pmu;
+static axp_pmu_t *dram_pmu_axp2202;
+static axp_pmu_t *dram_pmu_axp1530;
 
 extern int init_DRAM(int type, void *buff);
 
 int set_ddr_voltage(uint32_t vol_val) {
 	printk_debug("Setting DDR voltage to %u mV for axp323 dcdc3\n", vol_val);
-	return pmu_axp1530_set_vol(dram_secondary_pmu, "dcdc3", vol_val, 1);
+	return pmu_axp1530_set_vol(dram_pmu_axp1530, "dcdc3", vol_val, 1);
 }
 
 void get_vdd_sys_pmu_id(void) {
-	axp_pmu_t *pmu = dram_primary_pmu;
+	axp_pmu_t *pmu = dram_pmu_axp2202;
 	uint8_t axp_val;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202))
@@ -49,7 +49,7 @@ void get_vdd_sys_pmu_id(void) {
 }
 
 int set_vdd_sys_reg(int set_vol, int onoff) {
-	axp_pmu_t *pmu = dram_primary_pmu;
+	axp_pmu_t *pmu = dram_pmu_axp2202;
 	uint8_t reg_value;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202))
@@ -90,7 +90,7 @@ int set_vdd_sys_reg(int set_vol, int onoff) {
 }
 
 uint8_t get_vdd_sys_reg(void) {
-	axp_pmu_t *pmu = dram_primary_pmu;
+	axp_pmu_t *pmu = dram_pmu_axp2202;
 	uint8_t reg_val = 0;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202) ||
@@ -110,11 +110,11 @@ void __usdelay(unsigned long us) {
 uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
 	if (dram == NULL || dram->parameter_count == 0U)
 		return 0U;
-	dram_primary_pmu = dram->primary_pmu;
-	dram_secondary_pmu = dram->secondary_pmu;
+	dram_pmu_axp2202 = dram->pmu;
+	dram_pmu_axp1530 = dram->pmu_aux;
 	get_vdd_sys_pmu_id();
 	dram->size = init_DRAM(0, dram->parameters);
 	return dram->size;
 }
 
-DT2C_DRIVER_COMPAT("allwinner,sun65iw1-dram");
+DT2C_DRIVER_COMPAT("allwinner,sunxi-dram");

@@ -84,22 +84,10 @@ static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc) {
 	printk_info("CLK: RISC-V AXI FREQ=%uMHz\n", pll_riscv / factor_n);
 }
 
-static const sunxi_remoteproc_ops_t sun8iw21_e907_ops = {
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun8iw21_e907_reset,
 	.start = sun8iw21_e907_start,
 	.dump = sun8iw21_e907_dump,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL ||
-	    variant != SUNXI_REMOTEPROC_VARIANT_SUN8IW21_E907 ||
-	    remoteproc->register_count != 2U ||
-	    remoteproc->registers[SUN8IW21_E907_CCU].size < 0xd10U ||
-	    remoteproc->registers[SUN8IW21_E907_CFG].size < 0x208U)
-		return DRIVER_ERROR_INVALID;
-	remoteproc->ops = &sun8iw21_e907_ops;
-	return DRIVER_OK;
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun8iw21-e907");

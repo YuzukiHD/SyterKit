@@ -2,10 +2,9 @@
 
 #include <common.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <mmu.h>
 
-#include <drivers/clk/clk.h>
 #include <drivers/intc/gic.h>
 #include <drivers/usb/usb.h>
 #include <dt-compatible/usb-dt.h>
@@ -15,7 +14,6 @@ void arm32_do_irq(struct arm_regs_t *regs) {
 }
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_usb_t usb;
 
 	show_banner();
@@ -24,12 +22,8 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	if (sunxi_usb_init(&usb)) {
 		printk_error("USB: init failed\n");

@@ -14,7 +14,6 @@
 	compatible = "syterkit,avaota-f1";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		a27l2 = &a27l2;
 		dma0 = &dma0;
@@ -32,30 +31,13 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@42001000 {
-		compatible = "allwinner,sun300iw1-ccu";
-		reg = <SUNXI_CCU_APP_BASE 0x1000>,
-		      <SUNXI_CCU_AON_BASE 0x1000>;
-		reg-names = "app-ccu", "aon-ccu";
-		status = "okay";
-	};
-
 	dram_memory: memory@80000000 {
 		device_type = "memory";
 		reg = <0x80000000 0x80000000>;
 	};
 
 	dram0: dram-controller {
-		compatible = "allwinner,sun300iw1-dram";
-		allwinner,dram-memory = <&dram_memory>;
-		reg =
-			<SUNXI_CCU_APP_BASE 0x1000>,
-			<SUNXI_CCU_AON_BASE 0x1000>,
-			<SUNXI_MCTL_COM_BASE 0x1000>,
-			<SUNXI_MCTL_PHY_BASE 0x1000>,
-			<SUNXI_SYSCTRL_BASE 0x1000>,
-			<SUNXI_PRCM_BASE 0x400>,
-			<SUNXI_PMU_RTC_BASE 0x400>;
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x00000210>,
 			<SUNXI_DRAM_DDR2>,
@@ -80,7 +62,15 @@
 			<0x00000000>,
 			<0x00000000>,
 			<0x00000000>,
-			<0x34000100>;
+			<0x34000100>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>;
 		status = "okay";
 	};
 

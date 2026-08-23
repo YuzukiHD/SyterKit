@@ -30,12 +30,15 @@ _start:
 	csrw mtvt, a0
 
 	jal set_timer_count
+
 	jal cache_init
+
 	jal icache_enable
+
 	jal dcache_enable
+
 	fence.i
 
-	jal do_initcalls
 	jal main
 
 1:	wfi

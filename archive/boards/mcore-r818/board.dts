@@ -15,12 +15,10 @@
 	aliases {
 		ar100 = &ar100;
 		sid0 = &sid0;
-		ccu0 = &ccu0;
 		dram0 = &dram0;
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
 		mmc2 = &mmc2;
-		pmu0 = &pmu0;
 		rtc0 = &rtc0;
 	};
 
@@ -28,18 +26,8 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@3001000 {
-		compatible = "allwinner,sun50iw10-ccu";
-		reg = <SUNXI_CCM_BASE 0x1000>,
-		      <SUNXI_RPRCM_BASE 0x1000>,
-		      <SUNXI_SYSCRL_BASE 0x1000>,
-		      <SUNXI_IOMMU_BASE 0x1000>;
-		reg-names = "ccu", "r-prcm", "sysctrl", "iommu";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun50iw10-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x00000318>,
 			<SUNXI_DRAM_LPDDR4>,
@@ -73,7 +61,6 @@
 			<0x13151513>,
 			<0x00007521>,
 			<0x2023211f>;
-		allwinner,primary-pmu = <&pmu0>;
 		status = "okay";
 	};
 
@@ -241,11 +228,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@34 {
-				compatible = "x-powers,axp2202";
-				reg = <0x34>, <0x35>;
-				status = "okay";
-			};
 		};
 
 		uart0: serial@5000000 {

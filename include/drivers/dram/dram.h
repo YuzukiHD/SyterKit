@@ -53,8 +53,9 @@ typedef struct {
 	sunxi_dram_registers_t registers;
 	uintptr_t init_code_base; /**< Reserved SRAM for external init code. */
 	size_t init_code_size; /**< Capacity of the external init code region. */
-	axp_pmu_t *primary_pmu;
-	axp_pmu_t *secondary_pmu;
+	/* Optional board-supplied PMU handles; DT never resolves these. */
+	axp_pmu_t *pmu;
+	axp_pmu_t *pmu_aux;
 	sunxi_rtc_t rtc;
 } sunxi_dram_t;
 

@@ -7,7 +7,7 @@ SoCs. It supports ARM and RISC-V targets, board bring-up, peripheral drivers,
 image loading, and booting operating systems from SD/eMMC and SPI flash.
 
 This page covers the build workflow and the Allwinner boot image format. For
-subsystem details, see [Driver model and initcalls](driver-model.md) and
+subsystem details, see [Driver architecture](driver-model.md) and
 [Compile-time device tree](devicetree.md). Generated declarations are available
 in the [API documentation](https://syterkit.yuzukihd.top/api/html/).
 
@@ -268,9 +268,9 @@ The J-type immediate is assembled from the byte offset as follows:
 ## Runtime initialization
 
 After the architecture startup code establishes the stack, clears BSS, and
-performs required CPU setup, SyterKit runs linker-collected initcalls. Early
-console services run first, followed by core services, normal devices, and late
-initialization. The selected application `main()` starts after this sequence.
+performs required CPU setup, control enters the selected application `main()`.
+The application explicitly reads its console, clocks, buses, memory, and other
+devices in the order required by that boot flow.
 
 Board hardware used by drivers comes from `boards/<board>/board.dts`. dt2c
 validates that tree and emits immutable C data during the host build. This is
@@ -279,6 +279,6 @@ description and libfdt for a DTB that will be handed to a loaded kernel.
 
 Continue with:
 
-- [Driver model and initcalls](driver-model.md)
+- [Driver architecture](driver-model.md)
 - [Compile-time device tree](devicetree.md)
 - [SyterKit source repository](https://github.com/YuzukiHD/SyterKit)

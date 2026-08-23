@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <common.h>
 
@@ -15,18 +17,16 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-	sunxi_ccu_t ccu;
+
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 
 	show_banner();
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	printk_info("Hello World!\n");
 

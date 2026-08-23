@@ -2,3 +2,7 @@
 
 config DRIVER_REMOTEPROC
 	bool "Remote processor support"
+
+config DRIVER_REMOTEPROC_SUN8IW20_C906
+	bool "Use C906 remote processor on Sun8iW20"
+	depends on DRIVER_REMOTEPROC && SOC_SUN8IW20

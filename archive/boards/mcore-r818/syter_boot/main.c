@@ -7,7 +7,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <timer.h>
 
 #include <common.h>
@@ -28,7 +28,6 @@
 #include <dt-bindings/soc/sun50iw10.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
-#include <dt-compatible/pmu-dt.h>
 #include <dt-compatible/remoteproc-dt.h>
 #include <dt-compatible/rtc-dt.h>
 #include <drivers/mmc/sdcard.h>
@@ -285,7 +284,6 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_remoteproc_t ar100;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
@@ -297,7 +295,7 @@ int main(void) {
 	    sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) !=
 			    DRIVER_OK ||
 	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+	    pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -311,14 +309,10 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	sunxi_i2c_init(&i2c);
 
@@ -330,7 +324,8 @@ int main(void) {
 	pmu_axp2202_dump(&pmu);
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", &pmu, NULL) != DRIVER_OK) {
+	dram.pmu = &pmu;
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}

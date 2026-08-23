@@ -38,18 +38,6 @@ SECTIONS
 		*(.rdata .rdata.* .rodata .rodata.*)
 		KEEP(*(.vectors))
 	} > ram :text
-	.initcalls : ALIGN(8) {
-		__initcall_start = .;
-		__initcallearly_start = .;
-		KEEP(*(.initcallearly.init))
-		__initcall1_start = .;
-		KEEP(*(.initcall1.init))
-		__initcall6_start = .;
-		KEEP(*(.initcall6.init))
-		__initcall7_start = .;
-		KEEP(*(.initcall7.init))
-		__initcall_end = .;
-	} > ram :text
 	.data : ALIGN(16) { *(.data .data.* .sdata .sdata.*) } > ram :data
 
 	PROVIDE(__spl_end = .);

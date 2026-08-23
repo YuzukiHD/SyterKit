@@ -1,20 +1,20 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <mmu.h>
 
 #include <common.h>
 
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
-#include <dt-compatible/pmu-dt.h>
-#include <drivers/clk/clk.h>
 #include <drivers/clk/sun55iw3/clk.h>
 #include <drivers/clk/sun55iw3/reg.h>
 #include <drivers/dram/dram.h>
@@ -33,14 +33,16 @@ static sunxi_dram_t dram;
 
 
 int main(void) {
-	sunxi_ccu_t ccu;
-	axp_pmu_t primary_pmu;
-	axp_pmu_t secondary_pmu;
+	axp_pmu_t axp2202;
+	axp_pmu_t axp1530;
 	sunxi_i2c_t i2c;
 	sunxi_remoteproc_t e906;
 
 	arm32_dcache_enable();
 	arm32_icache_enable();
+
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
@@ -48,53 +50,51 @@ int main(void) {
 		return -1;
 	}
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&primary_pmu, "pmu0", &i2c) != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&secondary_pmu, "pmu1", &i2c) != DRIVER_OK) {
+	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	set_rpio_power_mode();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	sunxi_i2c_init(&i2c);
 
-	pmu_axp2202_init(&primary_pmu);
+	pmu_axp2202_init(&axp2202);
 
-	pmu_axp1530_init(&secondary_pmu);
+	pmu_axp1530_init(&axp1530);
 
-	pmu_axp2202_set_vol(&primary_pmu, "dcdc1", 1100, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc1", 1100, 1);
 
-	pmu_axp1530_set_dual_phase(&secondary_pmu);
-	pmu_axp1530_set_vol(&secondary_pmu, "dcdc1", 1100, 1);
-	pmu_axp1530_set_vol(&secondary_pmu, "dcdc2", 1100, 1);
+	pmu_axp1530_set_dual_phase(&axp1530);
+	pmu_axp1530_set_vol(&axp1530, "dcdc1", 1100, 1);
+	pmu_axp1530_set_vol(&axp1530, "dcdc2", 1100, 1);
 
-	pmu_axp2202_set_vol(&primary_pmu, "dcdc2", 920, 1);
-	pmu_axp2202_set_vol(&primary_pmu, "dcdc3", 1160, 1);
-	pmu_axp2202_set_vol(&primary_pmu, "dcdc4", 3300, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc2", 920, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc3", 1160, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc4", 3300, 1);
 
-	pmu_axp2202_set_vol(&primary_pmu, "bldo3", 1800, 1);
-	pmu_axp2202_set_vol(&primary_pmu, "bldo1", 1800, 1);
+	pmu_axp2202_set_vol(&axp2202, "bldo3", 1800, 1);
+	pmu_axp2202_set_vol(&axp2202, "bldo1", 1800, 1);
 
-	pmu_axp2202_dump(&primary_pmu);
-	pmu_axp1530_dump(&secondary_pmu);
+	pmu_axp2202_dump(&axp2202);
+	pmu_axp1530_dump(&axp1530);
 
-	sun55iw3_clk_set_cpu_pll(&ccu, 1800);
+	sun55iw3_clk_set_cpu_pll(1800);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
 		printk_error("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	dram.pmu = &axp2202;
+	dram.pmu_aux = &axp1530;
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -104,7 +104,7 @@ int main(void) {
 
 	/* PLL DDR0 */
 	uint32_t reg32 =
-			read32(sunxi_ccu_reg(&ccu, CCU_PLL_DDR0_CTRL_REG));
+			read32(SUNXI_CCMU_BASE + CCU_PLL_DDR0_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		uint32_t plln = ((reg32 >> 8) & 0xff) + 1;
 
@@ -116,7 +116,7 @@ int main(void) {
 
 	printk(LOG_LEVEL_MUTE, "\n");
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 #define DRAM_TEST_SIZE 32 * 1024 * 1024
 #define DRAM_SIZE_BYTE dram_size * 1024 * 1024

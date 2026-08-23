@@ -2,15 +2,15 @@
 
 #include <dt2c/dt.h>
 #include <dt-compatible/i2c-dt.h>
-#include <dt-compatible/pmu-dt.h>
+#include <drivers/pmu/axp.h>
 
 #include "syter_test.h"
 
 void test_case_main(const char *case_dir) {
 	sunxi_i2c_t i2c0 = {0};
 	sunxi_i2c_t i2c1 = {0};
-	axp_pmu_t pmu0 = {0};
-	axp_pmu_t pmu1 = {0};
+	axp_pmu_t axp2202 = {0};
+	axp_pmu_t axp1530 = {0};
 
 	(void) case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_i2c_dt_read_alias(&i2c0, "i2c0"));
@@ -37,26 +37,16 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(0x02000000U, i2c1.gpio.gpio_scl.base);
 	TEST_EQ(1, i2c1.gpio.gpio_scl.bank);
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_pmu_dt_read_alias(&pmu0, "pmu0", &i2c1));
-	TEST_EQ(DRIVER_OK,
-		 sunxi_pmu_dt_read_alias(&pmu0, "pmu0", &i2c0));
-	TEST_ASSERT(pmu0.i2c == &i2c0);
-	TEST_EQ(AXP_PMU_AXP2202, pmu0.type);
-	TEST_EQ(0x34U, pmu0.address);
-	TEST_EQ(0x35U, pmu0.fallback_address);
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_pmu_dt_read_alias(&pmu0, "pmu-invalid-address", &i2c0));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_pmu_dt_read_alias(&pmu0, "pmu-invalid-fallback", &i2c0));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_pmu_dt_read_alias(&pmu0, NULL, &i2c0));
+	TEST_EQ(DRIVER_OK, pmu_axp2202_config(&axp2202, &i2c0));
+	TEST_ASSERT(axp2202.i2c == &i2c0);
+	TEST_EQ(AXP_PMU_AXP2202, axp2202.type);
+	TEST_EQ(0x34U, axp2202.address);
+	TEST_EQ(0x35U, axp2202.fallback_address);
 	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_i2c_dt_read_alias(&i2c0, NULL));
 
-	TEST_EQ(DRIVER_OK,
-		 sunxi_pmu_dt_read_alias(&pmu1, "pmu1", &i2c1));
-	TEST_ASSERT(pmu1.i2c == &i2c1);
-	TEST_EQ(AXP_PMU_AXP1530, pmu1.type);
-	TEST_EQ(0x36U, pmu1.address);
-	TEST_EQ(0U, pmu1.fallback_address);
+	TEST_EQ(DRIVER_OK, pmu_axp1530_config(&axp1530, &i2c1));
+	TEST_ASSERT(axp1530.i2c == &i2c1);
+	TEST_EQ(AXP_PMU_AXP1530, axp1530.type);
+	TEST_EQ(0x36U, axp1530.address);
+	TEST_EQ(0U, axp1530.fallback_address);
 }

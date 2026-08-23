@@ -162,40 +162,19 @@ static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc) {
 	printk_info("CLK: PERI1X = %uMHz\n", pll_peripheral);
 }
 
-static const sunxi_remoteproc_ops_t sun8iw20_hifi4_ops = {
-	.reset = sun8iw20_hifi4_reset,
-	.prepare = sun8iw20_hifi4_prepare,
-	.start = sun8iw20_hifi4_start,
-};
-
-static const sunxi_remoteproc_ops_t sun8iw20_c906_ops = {
+#if defined(CONFIG_DRIVER_REMOTEPROC_SUN8IW20_C906)
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun8iw20_c906_reset,
 	.start = sun8iw20_c906_start,
 	.dump = sun8iw20_c906_dump,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL)
-		return DRIVER_ERROR_INVALID;
-	if (variant == SUNXI_REMOTEPROC_VARIANT_SUN8IW20_HIFI4) {
-		if (remoteproc->register_count != 3U ||
-		    remoteproc->registers[SUN8IW20_HIFI4_SYSCTRL].size < 0xcU ||
-		    remoteproc->registers[SUN8IW20_HIFI4_DSP_CFG].size < 0x8U ||
-		    remoteproc->registers[SUN8IW20_HIFI4_CCU].size < 0xc80U)
-			return DRIVER_ERROR_INVALID;
-		remoteproc->ops = &sun8iw20_hifi4_ops;
-	} else if (variant == SUNXI_REMOTEPROC_VARIANT_SUN8IW20_C906) {
-		if (remoteproc->register_count != 2U ||
-		    remoteproc->registers[SUN8IW20_C906_CCU].size < 0xf24U ||
-		    remoteproc->registers[SUN8IW20_C906_CFG].size < 0xcU)
-			return DRIVER_ERROR_INVALID;
-		remoteproc->ops = &sun8iw20_c906_ops;
-	} else {
-		return DRIVER_ERROR_INVALID;
-	}
-	return DRIVER_OK;
-}
+#else
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
+	.reset = sun8iw20_hifi4_reset,
+	.prepare = sun8iw20_hifi4_prepare,
+	.start = sun8iw20_hifi4_start,
+};
+#endif
 
 DT2C_DRIVER_COMPAT("allwinner,sun8iw20-hifi4");
 DT2C_DRIVER_COMPAT("allwinner,sun8iw20-c906");

@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <common.h>
 
@@ -17,7 +17,6 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_i2c_t i2c;
 
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK) {
@@ -25,12 +24,8 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	sunxi_i2c_init(&i2c);
 

@@ -2,15 +2,12 @@
 
 #include <stdint.h>
 
-#include <initcall.h>
 #include <linkage.h>
 
 void semihost_write0(const char *text);
 
 volatile uint32_t startup_bss_probe;
 volatile uint32_t startup_timer_seen;
-volatile uint32_t startup_initcall_count;
-volatile uint32_t startup_initcall_order;
 volatile uint32_t startup_cpsr;
 volatile uint32_t startup_svc_sp;
 volatile uint32_t startup_und_sp;
@@ -30,13 +27,6 @@ extern char __stack_irq_end[];
 extern char __stack_fiq_end[];
 extern char __stack_srv_end[];
 
-static int startup_test_initcall(void) {
-	startup_initcall_count++;
-	startup_initcall_order = startup_timer_seen;
-	return 0;
-}
-early_initcall(startup_test_initcall);
-
 static unsigned int failures;
 
 static void check(int condition, const char *name) {
@@ -54,11 +44,7 @@ static uintptr_t address(const char *symbol) {
 
 int main(void) {
 	check(startup_bss_probe == 0U, "bss-clear");
-	check(startup_timer_seen == 0x54494d45U, "timer-before-initcall");
-	check(startup_initcall_count == 1U, "initcall-before-main");
-	check(startup_initcall_order == 0x54494d45U, "startup-order");
-	check(do_initcalls() == 0 && startup_initcall_count == 1U,
-	      "initcall-once");
+	check(startup_timer_seen == 0x54494d45U, "timer-before-startup");
 
 	check((startup_cpsr & ARMV7_MODE_MASK) == ARMV7_SVC_MODE,
 	      "svc-mode");

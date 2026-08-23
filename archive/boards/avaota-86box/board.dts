@@ -13,7 +13,6 @@
 	compatible = "syterkit,avaota-86box";
 
 	aliases {
-		ccu0 = &ccu0;
 		dma0 = &dma0;
 		dram0 = &dram0;
 		intc0 = &intc0;
@@ -28,29 +27,13 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@2001000 {
-		compatible = "allwinner,sun8iw20-ccu";
-		reg = <SUNXI_CCMU_BASE 0x1000>;
-		reg-names = "ccu";
-		status = "okay";
-	};
-
 	dram_memory: memory@40000000 {
 		device_type = "memory";
 		reg = <0x40000000 0x80000000>;
 	};
 
 	dram0: dram-controller {
-		compatible = "allwinner,sun8iw20-dram";
-		allwinner,dram-memory = <&dram_memory>;
-		reg =
-			<SUNXI_CCMU_BASE 0x1000>,
-			<SUNXI_MCTL_COM_BASE 0x1000>,
-			<SUNXI_MCTL_PHY_BASE 0x1000>,
-			<SUNXI_SYSCRL_BASE 0x1000>,
-			<SUNXI_SID_BASE 0x1000>,
-			<SUNXI_CPUS_CFG_BASE 0x400>,
-			<SUNXI_RPRCM_BASE 0x400>;
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000002d0>,
 			<SUNXI_DRAM_DDR3>,
@@ -75,7 +58,9 @@
 			<0x00000000>,
 			<0x00a70000>,
 			<0x00100003>,
-			<0x3405c100>;
+			<0x3405c100>,
+			<0x00000000>, <0x00000000>, <0x00000000>, <0x00000000>,
+			<0x00000000>, <0x00000000>, <0x00000000>, <0x00000000>;
 		status = "okay";
 	};
 

@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include <driver.h>
-#include <initcall.h>
 #include <interrupt.h>
 #include <io.h>
 #include <log.h>
@@ -284,7 +283,7 @@ void irq_install_handler(int irq, interrupt_handler_t handler, void *data) {
 		arm32_interrupt_enable();
 }
 
-static int sunxi_gic_initcall(void) {
+int sunxi_gic_startup(void) {
 	int result;
 
 	result = sunxi_gic_dt_read_alias(&sunxi_gic_controller, "intc0");
@@ -292,6 +291,4 @@ static int sunxi_gic_initcall(void) {
 		return result;
 	return arch_interrupt_init();
 }
-
-early_initcall(sunxi_gic_initcall);
 DT2C_DRIVER_COMPAT("arm,gic-400");

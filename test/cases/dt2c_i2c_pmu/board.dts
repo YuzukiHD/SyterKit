@@ -9,10 +9,6 @@
 	aliases {
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
-		pmu0 = &pmu0;
-		pmu1 = &pmu1;
-		pmu-invalid-address = &pmu_invalid_address;
-		pmu-invalid-fallback = &pmu_invalid_fallback;
 	};
 
 	pio: pinctrl@2000000 {
@@ -64,23 +60,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@34 {
-				compatible = "x-powers,axp2202";
-				reg = <0x34>, <0x35>;
-				status = "okay";
-			};
-
-			pmu_invalid_address: pmic@134 {
-				compatible = "x-powers,axp2202";
-				reg = <0x134>;
-				status = "okay";
-			};
-
-			pmu_invalid_fallback: pmic@37 {
-				compatible = "x-powers,axp2202";
-				reg = <0x37>, <0x138>;
-				status = "okay";
-			};
 		};
 
 		i2c1: i2c@5000 {
@@ -97,11 +76,6 @@
 			pinctrl-0 = <&i2c1_pins>;
 			status = "okay";
 
-			pmu1: pmic@36 {
-				compatible = "x-powers,axp1530";
-				reg = <0x36>;
-				status = "okay";
-			};
 		};
 	};
 };

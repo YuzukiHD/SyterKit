@@ -7,8 +7,7 @@
 #include <drivers/dma/dma.h>
 #include <dt-compatible/dt-common.h>
 
-static inline __attribute__((always_inline)) int
-sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
+static inline __attribute__((always_inline)) int sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
 	const dt2c_fdt32_t *bus_gate;
 	const dt2c_fdt32_t *clock_gate;
 	const dt2c_fdt32_t *reg;
@@ -16,8 +15,8 @@ sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
 	uintptr_t base;
 
 	if (dma == NULL || node < 0 || !syterkit_dt_node_available(node) ||
-	    dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node,
-					   SUNXI_DMA_COMPATIBLE) != 0)
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node,
+									   SUNXI_DMA_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);
@@ -25,16 +24,16 @@ sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
 	clock_gate = syterkit_dt_cells(node, "allwinner,clock-gate", 2);
 	reset = syterkit_dt_cells(node, "allwinner,reset", 2);
 	if (reg == NULL || bus_gate == NULL || clock_gate == NULL ||
-	    reset == NULL)
+		reset == NULL)
 		return DRIVER_ERROR_INVALID;
 
 	base = (uintptr_t) dt2c_fdt32_to_cpu(reg[0]);
 	if (base == 0U || dt2c_fdt32_to_cpu(bus_gate[0]) == 0U ||
-	    dt2c_fdt32_to_cpu(clock_gate[0]) == 0U ||
-	    dt2c_fdt32_to_cpu(reset[0]) == 0U ||
-	    dt2c_fdt32_to_cpu(bus_gate[1]) >= 32U ||
-	    dt2c_fdt32_to_cpu(clock_gate[1]) >= 32U ||
-	    dt2c_fdt32_to_cpu(reset[1]) >= 32U)
+		dt2c_fdt32_to_cpu(clock_gate[0]) == 0U ||
+		dt2c_fdt32_to_cpu(reset[0]) == 0U ||
+		dt2c_fdt32_to_cpu(bus_gate[1]) >= 32U ||
+		dt2c_fdt32_to_cpu(clock_gate[1]) >= 32U ||
+		dt2c_fdt32_to_cpu(reset[1]) >= 32U)
 		return DRIVER_ERROR_INVALID;
 
 	dma->dt_node = node;
@@ -56,18 +55,17 @@ sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
 	dma->initialized = false;
 	SYTERKIT_DT_TRACE_NODE("dma", node);
 	SYTERKIT_DT_TRACE("dma config base=%p mbus=%p:%u gate=%p:%u reset=%p:%u\n",
-			 (void *) dma->dma_reg_base,
-			 (void *) dma->bus_clk.gate_reg_base,
-			 dma->bus_clk.gate_reg_offset,
-			 (void *) dma->dma_clk.gate_reg_base,
-			 dma->dma_clk.gate_reg_offset,
-			 (void *) dma->dma_clk.rst_reg_base,
-			 dma->dma_clk.rst_reg_offset);
+					  (void *) dma->dma_reg_base,
+					  (void *) dma->bus_clk.gate_reg_base,
+					  dma->bus_clk.gate_reg_offset,
+					  (void *) dma->dma_clk.gate_reg_base,
+					  dma->dma_clk.gate_reg_offset,
+					  (void *) dma->dma_clk.rst_reg_base,
+					  dma->dma_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 
-static inline __attribute__((always_inline)) int
-sunxi_dma_dt_read_alias(sunxi_dma_t *dma, const char *alias) {
+static inline __attribute__((always_inline)) int sunxi_dma_dt_read_alias(sunxi_dma_t *dma, const char *alias) {
 	int node;
 
 	if (alias == NULL)

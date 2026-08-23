@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <common.h>
 #include <jmp.h>
@@ -178,7 +178,6 @@ static void LCD_Init(void) {
 }
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_dma_t dma;
 	int spi_node;
 
@@ -194,14 +193,10 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -246,7 +241,7 @@ int main(void) {
 
 	clean_syterkit_data();
 
-	sunxi_clk_reset(&ccu);
+	sunxi_clk_reset();
 
 	jmp_to_fel();
 

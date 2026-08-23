@@ -1,169 +1,117 @@
-# Driver model and initcalls
+# Driver Architecture
 
-SyterKit uses a small static driver model inspired by Linux. It keeps the useful
-parts for early firmware, compatible matching, probing, and ordered boot-time
-initialization, without buses, classes, modules, reference counting, or dynamic
-device allocation.
+SyterKit keeps a short, visible boot sequence and small hardware
+interfaces. It does not use a runtime driver/device registry. Every
+application owns its device instances, chooses the SoC driver
+that it was built for, and calls the driver directly.
 
-The model has two runtime objects:
+## Three layers
 
-- `struct device` represents one hardware or logical instance.
-- `struct driver` supplies matching, probe, and optional remove callbacks.
+The code is split into three simple layers:
 
-Both descriptors and their referenced data must remain valid while registered.
-They are normally static objects retained for the lifetime of the firmware.
+1. `dts/include/dt-compatible/` contains always-inline readers for data that
+   belongs in the board description. Chip-specific register bases are not read
+   from DTS; the selected SoC driver owns those constants.
+2. `drivers/` contains the common protocol code and the selected SoC
+   implementation. Hardware differences live in that SoC implementation and
+   are exposed through a small `ops` table when a subsystem has more than one
+   operation.
+3. `boards/<board>/<app>/main.c` is the composition layer. It decides the order
+   and error policy for that application; `main()` sequences its own HAL
+   calls.
 
-## Registration and matching
+This keeps the call graph obvious and allows two applications on one board to
+initialize different peripherals without hidden global state.
 
-Registration order does not matter. Registering a driver probes every existing
-unbound device; registering a device probes the existing drivers in registration
-order. The first successful match owns that device.
+## Explicit initialization
 
-The default matching rules are:
-
-1. Use the driver's custom `match` callback when one is provided.
-2. Otherwise compare `compatible` strings when both objects provide one.
-3. Fall back to descriptor names only when compatible matching is unavailable.
-
-A failed probe does not remove either descriptor. The device remains registered
-and unbound, so another matching driver can be tried and `device_probe()` can be
-called again later. Probe failures clear `driver_data` before the next attempt.
-
-Descriptor names must be non-empty and unique within their registry. Registering
-the same descriptor twice, or reusing a registered name, returns
-`DRIVER_ERROR_EXISTS`.
-
-## One driver, multiple devices
-
-A driver descriptor is shared. Every controller or peripheral instance has its
-own device descriptor and platform data:
+A normal application follows this shape:
 
 ```c
-#include <stdint.h>
-#include <driver.h>
-
-struct example_config {
-	uintptr_t base;
-	unsigned int id;
-};
-
-static int example_probe(struct device *device)
+int main(void)
 {
-	struct example_config *config = device_get_platform_data(device);
+	static sunxi_serial_t uart;
+	static sunxi_i2c_t i2c;
+	static axp_pmu_t pmu;
+	static sunxi_dram_t dram;
 
-	if (config == NULL || config->base == 0)
+	if (sunxi_serial_dt_read_stdout(&uart) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
-	example_hw_init(config);
-	device_set_driver_data(device, config);
-	return DRIVER_OK;
+	sunxi_serial_init(&uart);
+
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
+	    pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK)
+		return DRIVER_ERROR_INVALID;
+
+	sunxi_clk_init();
+	sunxi_i2c_init(&i2c);
+	if (pmu_axp2202_init(&pmu) != DRIVER_OK)
+		return DRIVER_ERROR_INVALID;
+
+	/* Read DRAM parameters, then invoke the selected SoC DRAM implementation. */
+	return sunxi_dram_dt_read_alias(&dram, "dram0") == DRIVER_OK &&
+	       sunxi_dram_init(&dram) != 0U ? 0 : DRIVER_ERROR_INVALID;
 }
-
-static struct driver example_driver = {
-	.name = "example",
-	.compatible = "vendor,example-controller",
-	.probe = example_probe,
-};
-
-static struct example_config example0_config = {
-	.base = 0x02000000,
-	.id = 0,
-};
-
-static struct example_config example1_config = {
-	.base = 0x02001000,
-	.id = 1,
-};
-
-static struct device example0 = {
-	.name = "example0",
-	.compatible = "vendor,example-controller",
-	.platform_data = &example0_config,
-};
-
-static struct device example1 = {
-	.name = "example1",
-	.compatible = "vendor,example-controller",
-	.platform_data = &example1_config,
-};
-
-builtin_driver(example_driver);
-builtin_device(example0);
-builtin_device(example1);
 ```
 
-The driver must not keep all instance state in one global object. Put immutable
-board configuration in `platform_data`; put state created by the driver in
-`driver_data` through `device_set_driver_data()`. This keeps two devices bound to
-the same driver independent.
+The actual order is application-specific. For example, a remoteproc loader can
+read its DT resources, call `sunxi_remoteproc_prepare()`, load firmware, and
+then call `sunxi_remoteproc_start()`. There is no implicit startup pass before
+`main()` and no retry through unrelated driver implementations.
 
-Many SyterKit drivers derive the instance configuration from the board DTS
-instead of writing the objects by hand. The ownership rule remains the same:
-each enabled instance gets distinct storage, while all compatible instances use
-the same driver implementation.
+## SoC operations
 
-## Removing descriptors
+Subsystems with materially different chips use an operations table selected by
+the build:
 
-`device_unregister()` calls the bound driver's `remove` callback, detaches the
-device, and clears its internal links and driver data.
+```c
+typedef struct {
+	int (*reset)(sunxi_remoteproc_t *remoteproc);
+	int (*prepare)(sunxi_remoteproc_t *remoteproc);
+	int (*start)(sunxi_remoteproc_t *remoteproc);
+} sunxi_remoteproc_ops_t;
 
-`driver_unregister()` removes the driver, calls `remove` for every device bound
-to it, then immediately probes those devices against the remaining registered
-drivers. This makes replacement drivers possible without rebuilding the device
-list.
+/* Defined by the selected rproc-sun*.c file. */
+extern const sunxi_remoteproc_ops_t sunxi_remoteproc_ops;
+```
 
-## Initcall levels
+The DT reader only fills generic firmware and register data, then attaches the
+single `sunxi_remoteproc_ops` exported by the selected SoC source. DRAM follows
+the same boundary: every SoC source owns the parameter layout, while the reader
+only copies the fixed 32-word `allwinner,dram-parameters` array.
 
-Built-in descriptors are registered through linker-collected initcalls. Startup
-runs these callbacks after the stack, BSS, timer, and architecture-specific CPU
-setup are ready, but before the selected application enters `main()`.
+PMUs are selected by their real chip API (`pmu_axp2202_config()`,
+`pmu_axp1530_config()`, and so on). PMU selection is not represented as a
+positional role in Kconfig or DTS. The only board data passed to PMU
+configuration is the already selected I2C controller; fixed PMU addresses
+belong to the PMU implementation.
 
-| API | Section | Intended use |
-| --- | --- | --- |
-| `early_initcall()` | `.initcallearly.init` | Console and prerequisites for later diagnostics |
-| `core_initcall()` | `.initcall1.init` | Framework-wide core services |
-| `device_initcall()` | `.initcall6.init` | Normal devices and drivers |
-| `late_initcall()` | `.initcall7.init` | Work that depends on normal devices |
+## Multi-phase initialization
 
-Plain `initcall()` uses the device level. `builtin_driver()` and
-`builtin_device()` generate device-level registration callbacks;
-`early_builtin_driver()` and `early_builtin_device()` provide the corresponding
-early registration path.
+A thin stage wrapper around explicit calls keeps long initializations legible:
+`board_early_init()`, `board_init()`, `board_late_init()`, and
+`board_final_init()` delegate to chip-specific functions and HAL operations.
+An application that needs several phases can use the same local style:
 
-Each macro uses `__COUNTER__` to create a unique symbol, so the same callback can
-be registered more than once. The counter does not assign priority. Callbacks in
-one level execute in link order, which follows the Kbuild object order.
+```c
+static int board_early_init(void) { /* clocks, pinctrl, console */ }
+static int board_init(void)       { /* I2C, PMU, DRAM */ }
+static int board_late_init(void)  { /* storage and remote processors */ }
+```
 
-`do_initcalls()` executes all entries once and caches the result. A callback
-failure records the first non-zero return value but does not stop later
-callbacks. A second call returns the cached result without running the table
-again.
+These are ordinary functions called by that application's `main()`, not linker
+callbacks. A small static `ops` table is appropriate when there are multiple
+implementations of one protocol. Linker lists are useful only for
+registries that genuinely need enumeration; they should not be used to select
+between incompatible SoC drivers.
 
-## Console example
+## Adding a driver
 
-The Sunxi UART shows the complete path:
+Keep the public data types and operations in `include/drivers/`, put common
+protocol code in a shared source file, and put SoC register work in a named
+`drivers/<subsystem>/<subsystem>-sun*.c` file. Add a focused DT reader only for
+board resources that are truly data. Add a host test for valid and invalid DT
+properties, and test the selected ops with a mock where hardware access is not
+available.
 
-1. `stdout-path` in `/chosen` selects a single UART node.
-2. The always-inline DTS reader fills the static `uart_dbg` configuration.
-3. An early initcall registers the `stdout` device.
-4. The early built-in serial driver matches `allwinner,sunxi-uart` and probes it.
-5. Logging can then be used by later initcalls and application code.
-
-Secondary UARTs are separate devices or application-owned configurations. They
-do not overwrite the console instance.
-
-## Adding a built-in driver
-
-For a new driver:
-
-1. Keep its public hardware API in `include/drivers/` and its implementation in
-   `drivers/`.
-2. Give each device instance unique platform data and a unique device name.
-3. Make `probe` validate all required resources before touching hardware.
-4. Store per-instance runtime state in `driver_data`.
-5. Add `DT2C_DRIVER_COMPAT()` in the driver source when the device can be
-   instantiated from DTS.
-6. Use the normal device initcall level unless the hardware is genuinely needed
-   before core initialization.
-
-Continue with [Compile-time device tree](devicetree.md) for DTS bindings,
-instance selection, and constant folding.
+Continue with [Compile-time device tree](devicetree.md).
