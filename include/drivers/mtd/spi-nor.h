@@ -20,7 +20,7 @@
 extern "C" {
 #endif// __cplusplus
 
-#define SFDP_MAX_NPH (6)
+#define SFDP_MAX_NPH (8)
 
 /**
  * @struct sfdp_header_t
@@ -33,7 +33,7 @@ typedef struct sfdp_header {
 	uint8_t sign[4]; /**< Signature for the SFDP header, typically "SFDP". */
 	uint8_t minor;	 /**< Minor version number of the SFDP specification. */
 	uint8_t major;	 /**< Major version number of the SFDP specification. */
-	uint8_t nph;	 /**< Number of Parameter Headers present in the SFDP data. */
+	uint8_t nph;	 /**< Zero-based number of parameter headers, as stored on the wire. */
 	uint8_t unused;	 /**< Reserved or unused byte(s) for future extensions or alignment. */
 } sfdp_header_t;
 
@@ -49,7 +49,7 @@ typedef struct sfdp_parameter_header {
 	uint8_t idlsb;	/**< Least significant byte of the parameter ID. */
 	uint8_t minor;	/**< Minor version number of the parameter. */
 	uint8_t major;	/**< Major version number of the parameter. */
-	uint8_t length; /**< Length of the parameter table in bytes. */
+	uint8_t length; /**< Length of the parameter table in DWORDs. */
 	uint8_t ptp[3]; /**< 3-byte pointer to the parameter table. */
 	uint8_t idmsb;	/**< Most significant byte of the parameter ID. */
 } sfdp_parameter_header_t;
@@ -62,6 +62,7 @@ typedef struct sfdp_parameter_header {
  * It contains the table version and a list of basic parameters.
  */
 typedef struct sfdp_basic_table {
+	uint8_t length;		   /**< Number of valid DWORDs in the table. */
 	uint8_t minor;		   /**< Minor version of the basic parameter table. */
 	uint8_t major;		   /**< Major version of the basic parameter table. */
 	uint8_t table[16 * 4]; /**< Basic parameter table (16 entries, each 4 bytes). */
@@ -77,6 +78,7 @@ typedef struct sfdp_basic_table {
 typedef struct sfdp {
 	sfdp_header_t header;									/**< SFDP header containing signature and version info. */
 	sfdp_parameter_header_t parameter_header[SFDP_MAX_NPH]; /**< Array of parameter headers. */
+	uint8_t parameter_header_count;							/**< Number of parameter headers read from the device. */
 	sfdp_basic_table_t basic_table;							/**< Basic parameter table containing the flash parameters. */
 } sfdp_t;
 
