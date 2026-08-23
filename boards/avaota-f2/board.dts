@@ -26,7 +26,7 @@
 	dram0: dram-controller {
 		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
-			<0x00000420>,
+			<1056>,
 			<SUNXI_DRAM_DDR3>,
 			<0x007b6bfb>,
 			<0x00000001>,
@@ -71,8 +71,8 @@
 
 		uart0_pins: uart0-pins {
 			allwinner,pins =
-				<SUNXI_GPIO_PORT_H 13 6>,
-				<SUNXI_GPIO_PORT_H 14 6>;
+				<SUNXI_GPIO_PORT_H 9 5>,
+				<SUNXI_GPIO_PORT_H 10 5>;
 		};
 	};
 
@@ -125,7 +125,6 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
-
 		};
 
 		uart0: serial@2500000 {
