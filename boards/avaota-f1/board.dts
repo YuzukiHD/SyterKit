@@ -148,13 +148,13 @@
 		#size-cells = <1>;
 		ranges;
 
-		mmc0_dma: dma-descriptors@80080000 {
-			reg = <0x80080000 0x100000>;
+		mmc0_dma: dma-descriptors@81080000 {
+			reg = <0x81080000 0x100000>;
 			no-map;
 		};
 
-		mmc1_dma: dma-descriptors@80180000 {
-			reg = <0x80180000 0x100000>;
+		mmc1_dma: dma-descriptors@81180000 {
+			reg = <0x81180000 0x100000>;
 			no-map;
 		};
 
