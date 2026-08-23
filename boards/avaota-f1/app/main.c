@@ -159,7 +159,10 @@ int main(void) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
-	sunxi_dram_init(&dram);
+	if (sunxi_dram_init(&dram) == 0U) {
+		printk_error("DRAM: initialization failed\n");
+		return -1;
+	}
 
 	sunxi_spi_init(&spi);
 

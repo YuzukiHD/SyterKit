@@ -358,6 +358,10 @@ int main(void) {
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
+	if (dram_size == 0U) {
+		printk_error("DRAM: initialization failed\n");
+		return -1;
+	}
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
