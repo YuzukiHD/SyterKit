@@ -33,7 +33,7 @@ kconfig_env := KCONFIG_CONFIG=$(KCONFIG_CONFIG) \
 	BOARD_KCONFIG_LIST=$(BOARD_KCONFIG_LIST)
 
 no_dot_config_targets := config menuconfig olddefconfig syncconfig defconfig \
-	savedefconfig %_defconfig clean mrproper help list-defconfigs check tools \
+	savedefconfig %_defconfig release clean mrproper help list-defconfigs check tools \
 	utilities list-utilities test docs
 
 ifeq ($(strip $(MAKECMDGOALS)),)
@@ -128,7 +128,7 @@ export srctree objtree CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC DT2C DT2C_INCLUDE
 export KBUILD_CPPFLAGS KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_LDFLAGS
 
 .PHONY: all artifacts image images prepare tools utilities firmware check config \
-	menuconfig olddefconfig syncconfig defconfig savedefconfig list-defconfigs \
+	menuconfig olddefconfig syncconfig defconfig savedefconfig release list-defconfigs \
 	list-apps list-firmware list-utilities test docs help clean mrproper \
 	board-kconfig dt2c-check FORCE
 
@@ -170,6 +170,24 @@ menuconfig: $(mconf) | board-kconfig
 olddefconfig: $(conf) | board-kconfig
 	@$(kconfig_env) $(conf) --olddefconfig $(srctree)/Kconfig
 	@$(MAKE) O=$(O) syncconfig
+
+release: $(conf) | board-kconfig
+	@test -f $(KCONFIG_CONFIG) || { echo "No configuration found. Run 'make <board>_defconfig' first." >&2; exit 1; }
+	@set -e; \
+	tmp="$(KCONFIG_CONFIG).release.$$$$"; \
+	config_prefix=CONFIG; \
+	trap '$(RM) "$$tmp"' EXIT; \
+	cp "$(KCONFIG_CONFIG)" "$$tmp"; \
+	sed -i -E "/^(# )?$${config_prefix}_BUILD_(RELEASE|DEBUG|TRACE)(=.*| is not set)?$$/d" "$$tmp"; \
+	sed -i -E "/^(# )?$${config_prefix}_DRIVER_(CLK|DMA|DRAM|GPIO|I2C|INTC|MMC|MTD|PMU|PWM|REMOTEPROC|RTC|SERIAL|SOC|SPI|USB)_LOG_(GLOBAL|MUTE|ERROR|WARNING|INFO|DEBUG|TRACE|BACKTRACE)(=.*| is not set)?$$/d" "$$tmp"; \
+	{ \
+		echo "$${config_prefix}_BUILD_RELEASE=y"; \
+		for driver in CLK DMA DRAM GPIO I2C INTC MMC MTD PMU PWM REMOTEPROC RTC SERIAL SOC SPI USB; do \
+			echo "$${config_prefix}_DRIVER_$${driver}_LOG_GLOBAL=y"; \
+		done; \
+	} >> "$$tmp"; \
+	$(kconfig_env) $(conf) --defconfig="$$tmp" $(srctree)/Kconfig; \
+	$(MAKE) O=$(O) syncconfig
 
 syncconfig: $(conf) | board-kconfig
 	@mkdir -p $(dir $(auto_conf)) $(dir $(auto_header))
@@ -360,11 +378,21 @@ $$(app_$(1)_fel_elf): $$(app_$(1)_fel_symbols_o) $(common_builtins) $$(app_$(1)_
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_fel.elf"
 	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
+	@$$(NM) -n -S --defined-only $$@ > $$(app_$(1)_fel_nm)
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $$(app_$(1)_fel_nm) $$(app_$(1)_fel_symbols_s)
+	@$$(CC) $$(KBUILD_CPPFLAGS) $$(KBUILD_AFLAGS) -c $$(app_$(1)_fel_symbols_s) -o $$(app_$(1)_fel_symbols_o)
+	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) \
+		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_fel.elf
 
 $$(app_$(1)_bin_elf): $$(app_$(1)_bin_symbols_o) $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_bin.elf"
+	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+		-Wl,-Map,$$(@:.elf=.map) -o $$@
+	@$$(NM) -n -S --defined-only $$@ > $$(app_$(1)_bin_nm)
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $$(app_$(1)_bin_nm) $$(app_$(1)_bin_symbols_s)
+	@$$(CC) $$(KBUILD_CPPFLAGS) $$(KBUILD_AFLAGS) -c $$(app_$(1)_bin_symbols_s) -o $$(app_$(1)_bin_symbols_o)
 	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_bin.elf
@@ -456,6 +484,7 @@ help:
 	@echo 'Configuration:'
 	@echo '  <board>_defconfig       Select a board and its drivers'
 	@echo '  menuconfig              Configure with the source-built Kconfig UI'
+	@echo '  release                 Switch build and driver logs to Release'
 	@echo '  savedefconfig           Save a minimal configuration'
 	@echo '  list-defconfigs         List available board configurations'
 	@echo 'Build:'
