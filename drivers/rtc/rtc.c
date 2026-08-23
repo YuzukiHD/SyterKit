@@ -27,6 +27,8 @@
 #include <drivers/rtc/rtc.h>
 #include <dt2c/driver.h>
 
+#define RTC_WRITE_RETRIES 5U
+
 static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {
 	return rtc != NULL && rtc->data_base != 0U && index >= 0 &&
 	       (uint32_t) index <= (UINT32_MAX / sizeof(uint32_t)) &&
@@ -59,6 +61,20 @@ uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index) {
 	return readl(rtc->data_base + (uintptr_t) index * sizeof(uint32_t));
 }
 
+static bool rtc_write_verified(const sunxi_rtc_t *rtc, int index, uint32_t val) {
+	unsigned int attempt;
+
+	if (!rtc_data_index_valid(rtc, index))
+		return false;
+	for (attempt = 0; attempt < RTC_WRITE_RETRIES; attempt++) {
+		rtc_write_data(rtc, index, val);
+		data_sync_barrier();
+		if (rtc_read_data(rtc, index) == val)
+			return true;
+	}
+	return false;
+}
+
 /**
  * @brief Set the FEL (Fastboot External Loader) flag
  * @details Sets the FEL flag in the RTC register, which indicates that the system
@@ -69,10 +85,7 @@ uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index) {
 void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
 		return;
-	do {
-		rtc_write_data(rtc, RTC_FEL_INDEX, EFEX_FLAG);
-		data_sync_barrier();
-	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != EFEX_FLAG);
+	rtc_write_verified(rtc, RTC_FEL_INDEX, EFEX_FLAG);
 }
 
 /**
@@ -87,10 +100,7 @@ void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
 
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
 		return;
-	do {
-		rtc_write_data(rtc, RTC_FEL_INDEX, init_time_ms);
-		data_sync_barrier();
-	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != init_time_ms);
+	rtc_write_verified(rtc, RTC_FEL_INDEX, init_time_ms);
 }
 
 /**
@@ -106,10 +116,7 @@ void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
 void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr) {
 	if (!rtc_data_index_valid(rtc, RTC_DRAM_PARA_ADDR))
 		return;
-	do {
-		rtc_write_data(rtc, RTC_DRAM_PARA_ADDR, dram_para_addr);
-		data_sync_barrier();
-	} while (rtc_read_data(rtc, RTC_DRAM_PARA_ADDR) != dram_para_addr);
+	rtc_write_verified(rtc, RTC_DRAM_PARA_ADDR, dram_para_addr);
 }
 
 /**
@@ -131,10 +138,7 @@ uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
 void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
 		return;
-	do {
-		rtc_write_data(rtc, RTC_FEL_INDEX, 0U);
-		data_sync_barrier();
-	} while (rtc_read_data(rtc, RTC_FEL_INDEX) != 0U);
+	rtc_write_verified(rtc, RTC_FEL_INDEX, 0U);
 }
 
 /**
@@ -148,12 +152,7 @@ void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
 int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag) {
 	if (!rtc_data_index_valid(rtc, RTC_BOOT_INDEX))
 		return -1;
-	do {
-		rtc_write_data(rtc, RTC_BOOT_INDEX, flag);
-		data_sync_barrier();
-	} while (rtc_read_data(rtc, RTC_BOOT_INDEX) != flag);
-
-	return 0;
+	return rtc_write_verified(rtc, RTC_BOOT_INDEX, flag) ? 0 : -1;
 }
 
 /**
