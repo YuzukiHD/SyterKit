@@ -106,6 +106,8 @@ int sunxi_clic_init(sunxi_clic_t *clic) {
 			clic->base + CLIC_INT_X_IE_REG_OFF(irq), false);
 		sunxi_clic_set_vec_mode(
 			clic->base + CLIC_INT_X_ATTR_REG_OFF(irq), false);
+
+		/* clic pending is w1c regs */
 		sunxi_clic_set_pending(
 			clic->base + CLIC_INT_X_IP_REG_OFF(irq), true);
 	}
