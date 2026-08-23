@@ -68,6 +68,17 @@ sunxi_i2c_dt_read_config(sunxi_i2c_t *i2c, int node) {
 	config.status = false;
 
 	*i2c = config;
+	SYTERKIT_DT_TRACE_NODE("i2c", node);
+	SYTERKIT_DT_TRACE("i2c config base=%p id=%u speed=%u scl=%u/%u sda=%u/%u\n",
+			 (void *) i2c->base, i2c->id, i2c->speed,
+			 i2c->gpio.gpio_scl.pin, i2c->gpio.gpio_scl.mux,
+			 i2c->gpio.gpio_sda.pin, i2c->gpio.gpio_sda.mux);
+	SYTERKIT_DT_TRACE("i2c clock parent=%u gate=%p:%u reset=%p:%u\n",
+			 i2c->i2c_clk.parent_clk,
+			 (void *) i2c->i2c_clk.gate_reg_base,
+			 i2c->i2c_clk.gate_reg_offset,
+			 (void *) i2c->i2c_clk.rst_reg_base,
+			 i2c->i2c_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 

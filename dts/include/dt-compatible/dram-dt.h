@@ -415,6 +415,26 @@ sunxi_dram_dt_read_config(sunxi_dram_t *dram, int node,
 	dram->primary_pmu = resolved_primary;
 	dram->secondary_pmu = resolved_secondary;
 	dram->rtc = resolved_rtc;
+	SYTERKIT_DT_TRACE_NODE("dram", node);
+	SYTERKIT_DT_TRACE("dram config parameters=%lu memory=%p/0x%lx init_code=%p/0x%lx primary_pmu=%p secondary_pmu=%p rtc=%p/0x%x\n",
+			 (unsigned long) dram->parameter_count,
+			 (void *) dram->memory_base,
+			 (unsigned long) dram->memory_size,
+			 (void *) dram->init_code_base,
+			 (unsigned long) dram->init_code_size,
+			 (void *) dram->primary_pmu,
+			 (void *) dram->secondary_pmu,
+			 (void *) dram->rtc.data_base, dram->rtc.data_size);
+	SYTERKIT_DT_TRACE("dram registers ccu=%p aon_ccu=%p mctl_com=%p mctl_phy=%p sysctrl=%p sid=%p r_cpucfg=%p r_prcm=%p pmu_rtc=%p\n",
+			 (void *) dram->registers.ccu.base,
+			 (void *) dram->registers.aon_ccu.base,
+			 (void *) dram->registers.mctl_com.base,
+			 (void *) dram->registers.mctl_phy.base,
+			 (void *) dram->registers.sysctrl.base,
+			 (void *) dram->registers.sid.base,
+			 (void *) dram->registers.r_cpucfg.base,
+			 (void *) dram->registers.r_prcm.base,
+			 (void *) dram->registers.pmu_rtc.base);
 	return DRIVER_OK;
 }
 

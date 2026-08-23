@@ -138,6 +138,18 @@ sunxi_serial_dt_read_config(sunxi_serial_t *uart, int node) {
 		return DRIVER_ERROR_INVALID;
 
 	*uart = config;
+	SYTERKIT_DT_TRACE_NODE("serial", node);
+	SYTERKIT_DT_TRACE("serial config base=%p id=%u baud=%u data=%u stop=%u parity=%u tx=%u/%u rx=%u/%u\n",
+			 (void *) uart->base, uart->id, uart->baud_rate,
+			 uart->dlen + 5U, uart->stop + 1U, uart->parity,
+			 uart->gpio_pin.gpio_tx.pin, uart->gpio_pin.gpio_tx.mux,
+			 uart->gpio_pin.gpio_rx.pin, uart->gpio_pin.gpio_rx.mux);
+	SYTERKIT_DT_TRACE("serial clock parent=%u gate=%p:%u reset=%p:%u\n",
+			 uart->uart_clk.parent_clk,
+			 (void *) uart->uart_clk.gate_reg_base,
+			 uart->uart_clk.gate_reg_offset,
+			 (void *) uart->uart_clk.rst_reg_base,
+			 uart->uart_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 

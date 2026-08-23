@@ -76,6 +76,10 @@ sunxi_pmu_dt_read_config(axp_pmu_t *pmu, int node, sunxi_i2c_t *i2c) {
 	config.address = (uint8_t) address;
 	config.fallback_address = (uint8_t) fallback_address;
 	*pmu = config;
+	SYTERKIT_DT_TRACE_NODE("pmu", node);
+	SYTERKIT_DT_TRACE("pmu config type=%u address=0x%02x fallback=0x%02x i2c=%p\n",
+			 (unsigned int) pmu->type, pmu->address,
+			 pmu->fallback_address, (void *) pmu->i2c);
 	return DRIVER_OK;
 }
 

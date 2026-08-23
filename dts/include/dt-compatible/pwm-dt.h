@@ -123,6 +123,24 @@ sunxi_pwm_dt_read_config(sunxi_pwm_t *pwm, int node) {
 	config.clk_src.clk_src_hosc = dt2c_fdt32_to_cpu(hosc_clock[0]);
 	config.clk_src.clk_src_apb = dt2c_fdt32_to_cpu(apb_clock[0]);
 	*pwm = config;
+	SYTERKIT_DT_TRACE_NODE("pwm", node);
+	SYTERKIT_DT_TRACE("pwm config base=%p id=%u channels=0x%04x hosc=%u apb=%u gate=%p:%u reset=%p:%u\n",
+			 (void *) pwm->base, pwm->id, pwm->channel_mask,
+			 pwm->clk_src.clk_src_hosc, pwm->clk_src.clk_src_apb,
+			 (void *) pwm->pwm_clk.gate_reg_base,
+			 pwm->pwm_clk.gate_reg_offset,
+			 (void *) pwm->pwm_clk.rst_reg_base,
+			 pwm->pwm_clk.rst_reg_offset);
+	for (uint32_t channel = 0U; channel < SUNXI_PWM_CHANNEL_MAX; ++channel) {
+		if ((pwm->channel_mask & BIT(channel)) == 0U)
+			continue;
+		SYTERKIT_DT_TRACE("pwm channel=%u mode=%u bind=%u dead_time=%u pin=%u/%u\n",
+				 channel, pwm->channel[channel].channel_mode,
+				 pwm->channel[channel].bind_channel,
+				 pwm->channel[channel].dead_time,
+				 pwm->channel[channel].pin.pin,
+				 pwm->channel[channel].pin.mux);
+	}
 	return DRIVER_OK;
 }
 

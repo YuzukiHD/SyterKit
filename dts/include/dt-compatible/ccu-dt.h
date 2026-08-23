@@ -37,41 +37,41 @@ enum sunxi_ccu_dt_layout {
 static inline __attribute__((always_inline)) bool
 sunxi_ccu_dt_is_compatible(int node, const char *compatible) {
 	return dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node, compatible) == 0;
+				   DT2C_FDT_COMPILED_TREE, node, compatible) == 0;
 }
 
 static inline __attribute__((always_inline)) enum sunxi_ccu_dt_layout
 sunxi_ccu_dt_layout(int node) {
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN300IW1_COMPATIBLE))
+				node, SUNXI_CCU_SUN300IW1_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_APP_AON;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN50IW9_COMPATIBLE))
+				node, SUNXI_CCU_SUN50IW9_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_R_PRCM_IOMMU;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN50IW10_COMPATIBLE))
+				node, SUNXI_CCU_SUN50IW10_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_R_PRCM_SYSCTRL_IOMMU;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN55IW3_COMPATIBLE))
+				node, SUNXI_CCU_SUN55IW3_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_CPU_SYS_CFG_R_PRCM_IOMMU;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN55IW6_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW22_COMPATIBLE))
+				node, SUNXI_CCU_SUN55IW6_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN8IW22_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_CPU_PLL;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN60IW2_COMPATIBLE))
+				node, SUNXI_CCU_SUN60IW2_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_CPU_PLL_RTC;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN20IW1_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN252IW1_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN65IW1_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW20_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW21_COMPATIBLE))
+				node, SUNXI_CCU_SUN20IW1_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN252IW1_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN65IW1_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN8IW20_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN8IW21_COMPATIBLE))
 		return SUNXI_CCU_DT_LAYOUT_SINGLE;
 	return SUNXI_CCU_DT_LAYOUT_INVALID;
 }
@@ -98,50 +98,50 @@ sunxi_ccu_dt_register_count(enum sunxi_ccu_dt_layout layout) {
 static inline __attribute__((always_inline)) size_t
 sunxi_ccu_dt_main_minimum_size(int node) {
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN20IW1_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN252IW1_COMPATIBLE))
+				node, SUNXI_CCU_SUN20IW1_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN252IW1_COMPATIBLE))
 		return 0xd04U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN300IW1_COMPATIBLE))
+				node, SUNXI_CCU_SUN300IW1_COMPATIBLE))
 		return 0x100U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN50IW9_COMPATIBLE))
+				node, SUNXI_CCU_SUN50IW9_COMPATIBLE))
 		return 0x9f0U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN50IW10_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN55IW3_COMPATIBLE))
+				node, SUNXI_CCU_SUN50IW10_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN55IW3_COMPATIBLE))
 		return 0x7c0U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN55IW6_COMPATIBLE))
+				node, SUNXI_CCU_SUN55IW6_COMPATIBLE))
 		return 0x58cU;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN60IW2_COMPATIBLE))
+				node, SUNXI_CCU_SUN60IW2_COMPATIBLE))
 		return 0x584U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN65IW1_COMPATIBLE))
+				node, SUNXI_CCU_SUN65IW1_COMPATIBLE))
 		return 0xa4U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW20_COMPATIBLE) ||
-	    sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW21_COMPATIBLE))
+				node, SUNXI_CCU_SUN8IW20_COMPATIBLE) ||
+		sunxi_ccu_dt_is_compatible(
+				node, SUNXI_CCU_SUN8IW21_COMPATIBLE))
 		return 0xa90U;
 	if (sunxi_ccu_dt_is_compatible(
-			node, SUNXI_CCU_SUN8IW22_COMPATIBLE))
+				node, SUNXI_CCU_SUN8IW22_COMPATIBLE))
 		return 0x344U;
 	return 0U;
 }
 
 static inline __attribute__((always_inline)) bool
 sunxi_ccu_dt_register(const dt2c_fdt32_t *cells, size_t index,
-		      size_t minimum_size, uintptr_t *base) {
+					  size_t minimum_size, uintptr_t *base) {
 	uint32_t raw_base = dt2c_fdt32_to_cpu(cells[index * 2U]);
 	uint32_t raw_size = dt2c_fdt32_to_cpu(cells[index * 2U + 1U]);
 
 	if (raw_base == 0U || (raw_base & 3U) != 0U ||
-	    raw_size < minimum_size || (raw_size & 3U) != 0U ||
-	    raw_base + raw_size < raw_base)
+		raw_size < minimum_size || (raw_size & 3U) != 0U ||
+		raw_base + raw_size < raw_base)
 		return false;
 	*base = (uintptr_t) raw_base;
 	return true;
@@ -149,7 +149,7 @@ sunxi_ccu_dt_register(const dt2c_fdt32_t *cells, size_t index,
 
 static inline __attribute__((always_inline)) bool
 sunxi_ccu_dt_registers(int node, enum sunxi_ccu_dt_layout layout,
-		       sunxi_ccu_t *config) {
+					   sunxi_ccu_t *config) {
 	const dt2c_fdt32_t *cells;
 	size_t count = sunxi_ccu_dt_register_count(layout);
 	int length;
@@ -157,49 +157,50 @@ sunxi_ccu_dt_registers(int node, enum sunxi_ccu_dt_layout layout,
 	cells = (const dt2c_fdt32_t *) dt2c_fdt_getprop(
 			DT2C_FDT_COMPILED_TREE, node, "reg", &length);
 	if (cells == NULL || count == 0U ||
-	    length != (int) (count * 2U * sizeof(*cells)) ||
-	    !sunxi_ccu_dt_register(cells, 0U,
-				   sunxi_ccu_dt_main_minimum_size(node),
-				   &config->base[0]))
+		length != (int) (count * 2U * sizeof(*cells)) ||
+		!sunxi_ccu_dt_register(cells, 0U,
+							   sunxi_ccu_dt_main_minimum_size(node),
+							   &config->base[0]))
 		return false;
 
 	if (layout == SUNXI_CCU_DT_LAYOUT_SINGLE)
 		return true;
 	if (layout == SUNXI_CCU_DT_LAYOUT_APP_AON)
 		return sunxi_ccu_dt_register(cells, 1U, 0x58cU,
-					     &config->base[1]);
+									 &config->base[1]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_R_PRCM_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x314U,
-					     &config->base[1]) &&
-		       sunxi_ccu_dt_register(cells, 2U, 0x44U,
-					     &config->base[2]);
+									 &config->base[1]) &&
+			   sunxi_ccu_dt_register(cells, 2U, 0x44U,
+									 &config->base[2]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_R_PRCM_SYSCTRL_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x258U,
-					     &config->base[1]) &&
-		       sunxi_ccu_dt_register(cells, 2U, 0x164U,
-					     &config->base[2]) &&
-		       sunxi_ccu_dt_register(cells, 3U, 0x44U,
-					     &config->base[3]);
+									 &config->base[1]) &&
+			   sunxi_ccu_dt_register(cells, 2U, 0x164U,
+									 &config->base[2]) &&
+			   sunxi_ccu_dt_register(cells, 3U, 0x44U,
+									 &config->base[3]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_SYS_CFG_R_PRCM_IOMMU)
 		return sunxi_ccu_dt_register(cells, 1U, 0x70U,
-					     &config->base[1]) &&
-		       sunxi_ccu_dt_register(cells, 2U, 0x314U,
-					     &config->base[2]) &&
-		       sunxi_ccu_dt_register(cells, 3U, 0x44U,
-					     &config->base[3]);
+									 &config->base[1]) &&
+			   sunxi_ccu_dt_register(cells, 2U, 0x314U,
+									 &config->base[2]) &&
+			   sunxi_ccu_dt_register(cells, 3U, 0x44U,
+									 &config->base[3]);
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_PLL) {
 		size_t minimum = sunxi_ccu_dt_is_compatible(
-				node, SUNXI_CCU_SUN55IW6_COMPATIBLE) ?
-				0x50U : 0x24U;
+								 node, SUNXI_CCU_SUN55IW6_COMPATIBLE)
+								 ? 0x50U
+								 : 0x24U;
 
 		return sunxi_ccu_dt_register(cells, 1U, minimum,
-					     &config->base[1]);
+									 &config->base[1]);
 	}
 	if (layout == SUNXI_CCU_DT_LAYOUT_CPU_PLL_RTC)
 		return sunxi_ccu_dt_register(cells, 1U, 0x3020U,
-					     &config->base[1]) &&
-		       sunxi_ccu_dt_register(cells, 2U, 0x164U,
-					     &config->base[2]);
+									 &config->base[1]) &&
+			   sunxi_ccu_dt_register(cells, 2U, 0x164U,
+									 &config->base[2]);
 	return false;
 }
 
@@ -212,10 +213,14 @@ sunxi_ccu_dt_read_config(sunxi_ccu_t *ccu, int node) {
 		return DRIVER_ERROR_INVALID;
 	layout = sunxi_ccu_dt_layout(node);
 	if (layout == SUNXI_CCU_DT_LAYOUT_INVALID ||
-	    !sunxi_ccu_dt_registers(node, layout, &config))
+		!sunxi_ccu_dt_registers(node, layout, &config))
 		return DRIVER_ERROR_INVALID;
 
 	*ccu = config;
+	SYTERKIT_DT_TRACE_NODE("ccu", node);
+	SYTERKIT_DT_TRACE("ccu config base=[%p, %p, %p, %p]\n",
+					  (void *) ccu->base[0], (void *) ccu->base[1],
+					  (void *) ccu->base[2], (void *) ccu->base[3]);
 	return DRIVER_OK;
 }
 

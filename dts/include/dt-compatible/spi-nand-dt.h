@@ -40,6 +40,10 @@ spi_nand_dt_read_config(spi_nand_t *nand, int node, sunxi_spi_t *spi) {
 	config.max_frequency = max_frequency;
 	config.spi = spi;
 	*nand = config;
+	SYTERKIT_DT_TRACE_NODE("spi-nand", node);
+	SYTERKIT_DT_TRACE("spi-nand config spi=%p chip_select=%u max_frequency=%u\n",
+			 (void *) nand->spi, nand->chip_select,
+			 nand->max_frequency);
 	return DRIVER_OK;
 }
 

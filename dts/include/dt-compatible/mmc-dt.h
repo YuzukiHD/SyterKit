@@ -230,6 +230,25 @@ sunxi_sdhci_dt_read_config(sunxi_sdhci_t *sdhci, int node) {
 		config.sdhci_clk.source_rates[source] =
 				dt2c_fdt32_to_cpu(clock_source_rates[source]);
 	*sdhci = config;
+	SYTERKIT_DT_TRACE_NODE("mmc", node);
+	SYTERKIT_DT_TRACE("mmc config name=%s base=%p id=%u width=%u max_clk=%u type=%u dma=%p/0x%x\n",
+			 sdhci->name, (void *) sdhci->reg_base, sdhci->id,
+			 sdhci->width, sdhci->max_clk, sdhci->sdhci_mmc_type,
+			 (void *) (uintptr_t) sdhci->dma_des_addr,
+			 sdhci->dma_des_size);
+	SYTERKIT_DT_TRACE("mmc clock gate=%p:%u reset=%p:%u module=%p source=%u rates=[%u,%u,%u,%u] n=%u m=%u\n",
+			 (void *) sdhci->clk_ctrl.gate_reg_base,
+			 sdhci->clk_ctrl.gate_reg_offset,
+			 (void *) sdhci->clk_ctrl.rst_reg_base,
+			 sdhci->clk_ctrl.rst_reg_offset,
+			 (void *) sdhci->sdhci_clk.reg_base,
+			 sdhci->sdhci_clk.default_clk_sel,
+			 sdhci->sdhci_clk.source_rates[0],
+			 sdhci->sdhci_clk.source_rates[1],
+			 sdhci->sdhci_clk.source_rates[2],
+			 sdhci->sdhci_clk.source_rates[3],
+			 sdhci->sdhci_clk.reg_factor_n_offset,
+			 sdhci->sdhci_clk.reg_factor_m_offset);
 	return DRIVER_OK;
 }
 

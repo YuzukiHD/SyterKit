@@ -49,6 +49,10 @@ sunxi_sid_dt_read_config(sunxi_sid_t *sid, int node) {
 	}
 
 	*sid = config;
+	SYTERKIT_DT_TRACE_NODE("sid", node);
+	SYTERKIT_DT_TRACE("sid config base=%p size=0x%x hv_switch=%p\n",
+			 (void *) sid->base, sid->size,
+			 (void *) sid->efuse_hv_switch);
 	return DRIVER_OK;
 }
 

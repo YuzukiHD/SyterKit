@@ -50,6 +50,9 @@ sunxi_gpio_dt_read_config(sunxi_gpio_t *gpio, int node) {
 	config.bank_base = (uint8_t) first_bank;
 	config.bank_count = (uint8_t) number_of_banks;
 	*gpio = config;
+	SYTERKIT_DT_TRACE_NODE("gpio", node);
+	SYTERKIT_DT_TRACE("gpio config base=%p first_bank=%u bank_count=%u\n",
+			 (void *) gpio->base, gpio->bank_base, gpio->bank_count);
 	return DRIVER_OK;
 }
 
