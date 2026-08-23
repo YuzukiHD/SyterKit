@@ -49,7 +49,7 @@ uint32_t sunxi_sid_read_sram(const sunxi_sid_t *sid, uint32_t offset) {
 	return read32(address);
 }
 
-uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset) {
+uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset) {
 	uintptr_t prctl;
 	uint32_t value;
 	bool timed_out = false;
@@ -82,7 +82,7 @@ uint32_t syter_efuse_read(const sunxi_sid_t *sid, uint32_t offset) {
 	return read32(sid->base + SID_RDKEY_OFFSET);
 }
 
-int syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
+int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
 		      uint32_t value) {
 	uintptr_t prctl;
 	uint32_t control;
@@ -120,7 +120,7 @@ int syter_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
 	return 0;
 }
 
-void syter_efuse_dump(const sunxi_sid_t *sid) {
+void sunxi_efuse_dump(const sunxi_sid_t *sid) {
 	if (sid == NULL)
 		return;
 
@@ -133,7 +133,7 @@ void syter_efuse_dump(const sunxi_sid_t *sid) {
 		for (size_t index = 0; index < count; index++) {
 			if (index % 8U == 0U)
 				printk(LOG_LEVEL_MUTE, "\n%-4s", "");
-			printk(LOG_LEVEL_MUTE, "%08x ", syter_efuse_read(
+			printk(LOG_LEVEL_MUTE, "%08x ", sunxi_efuse_read(
 					sid, entry->offset +
 					     index * sizeof(uint32_t)));
 		}

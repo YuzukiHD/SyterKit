@@ -42,7 +42,7 @@ int main(void) {
 
 	printk_info("Hello World!\n");
 
-	syter_efuse_dump(&sid);
+	sunxi_efuse_dump(&sid);
 
 	sunxi_clk_reset(&ccu);
 
