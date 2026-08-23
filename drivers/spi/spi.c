@@ -369,25 +369,13 @@ static void sunxi_spi_reset_fifo(sunxi_spi_t *spi) {
  */
 static uint32_t sunxi_spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
-	while (len >= SPI_FIFO_CTL_SHIFT) {
-		uint32_t value;
-
-		// Wait until the RX FIFO has enough data to transfer
-		while (sunxi_spi_query_rxfifo(spi) < SPI_FIFO_CTL_SHIFT) {}
-		value = spi_reg->rxdata;///< Read data from RX FIFO
-		buf[0] = value;
-		buf[1] = value >> 8;
-		buf[2] = value >> 16;
-		buf[3] = value >> 24;
-		buf += SPI_FIFO_CTL_SHIFT;
-		len -= SPI_FIFO_CTL_SHIFT;
-	}
-
-	while (len-- > 0) {
+	/* The controller's FIFO data port is byte-oriented on this SoC. */
+	while (len > 0) {
 		// Wait for at least 1 byte in the RX FIFO
 		while (sunxi_spi_query_rxfifo(spi) < 1)
 			;
 		*buf++ = read8((virtual_addr_t) &spi_reg->rxdata);///< Read 1 byte from RX FIFO
+		len--;
 	}
 	return 0;
 }
@@ -409,23 +397,14 @@ static uint32_t sunxi_spi_read_rx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t 
 static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) {
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *) spi->base;
 
-	while (len >= SPI_FIFO_CTL_SHIFT) {
-		// Wait until there is space in the TX FIFO
-		while (sunxi_spi_query_txfifo(spi) > MAX_FIFU - SPI_FIFO_CTL_SHIFT) {
-			udelay(10);///< Small delay to allow TX FIFO to have space
-		}
-		spi_reg->txdata = (uint32_t) buf[0] | ((uint32_t) buf[1] << 8) |
-					  ((uint32_t) buf[2] << 16) | ((uint32_t) buf[3] << 24);
-		buf += SPI_FIFO_CTL_SHIFT;
-		len -= SPI_FIFO_CTL_SHIFT;
-	}
-
-	while (len-- > 0) {
+	/* Keep writes byte-sized; wider writes are not supported by this FIFO port. */
+	while (len > 0) {
 		// Wait for space in the TX FIFO before writing more data
 		while (sunxi_spi_query_txfifo(spi) >= MAX_FIFU) {
 			udelay(10);///< Small delay to allow TX FIFO to have space
 		}
 		write8((virtual_addr_t) &spi_reg->txdata, *buf++);///< Write 1 byte to TX FIFO
+		len--;
 	}
 }
 

@@ -50,12 +50,23 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 	printk_trace("  Signature: %c%c%c%c\n", sfdp->header.sign[0], sfdp->header.sign[1], sfdp->header.sign[2], sfdp->header.sign[3]);
 	printk_trace("  Minor version: %u\n", sfdp->header.minor);
 	printk_trace("  Major version: %u\n", sfdp->header.major);
-	printk_trace("  Number of Parameter Headers: %u\n", sfdp->header.nph);
+	printk_trace("  Number of Parameter Headers: %u (wire NPH=%u)\n",
+		     sfdp->parameter_header_count, sfdp->header.nph);
 	printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
 	printk_trace("SFDP Parameter Headers:\n");
-	for (int i = 0; i < sfdp->header.nph; i++) {
+	for (int i = 0; i < sfdp->parameter_header_count; i++) {
+		const sfdp_parameter_header_t *header = &sfdp->parameter_header[i];
+		bool unused = header->idlsb == 0xff && header->minor == 0xff &&
+			      header->major == 0xff && header->length == 0xff &&
+			      header->ptp[0] == 0xff && header->ptp[1] == 0xff &&
+			      header->ptp[2] == 0xff && header->idmsb == 0xff;
+
 		printk_trace("  Parameter Header #%d:\n", i + 1);
+		if (unused) {
+			printk_trace("    unused\n");
+			continue;
+		}
 		printk_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
 		printk_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
 		printk_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
@@ -67,8 +78,8 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 	printk_trace("SFDP Basic Table:\n");
 	printk_trace("  Minor version: %u\n", sfdp->basic_table.minor);
 	printk_trace("  Major version: %u\n", sfdp->basic_table.major);
-	printk_trace("  Table (16 x 4 bytes):\n");
-	for (int i = 0; i < 16; i++) {
+	printk_trace("  Table (%u x 4 bytes):\n", sfdp->basic_table.length);
+	for (int i = 0; i < sfdp->basic_table.length; i++) {
 		printk_trace("    ");
 		for (int j = 0; j < 4; j++) { printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]); }
 		printk(LOG_LEVEL_MUTE, "\n");
@@ -104,8 +115,13 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 	if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') || (sfdp->header.sign[2] != 'D') || (sfdp->header.sign[3] != 'P'))
 		return 0;
 
-	sfdp->header.nph = sfdp->header.nph > SFDP_MAX_NPH ? sfdp->header.nph + 1 : SFDP_MAX_NPH;
-	for (i = 0; i < sfdp->header.nph; i++) {
+	/* NPH is zero-based on the wire: NPH=0 means one parameter header. */
+	uint32_t header_count = (uint32_t) sfdp->header.nph + 1U;
+	if (header_count > SFDP_MAX_NPH)
+		header_count = SFDP_MAX_NPH;
+	sfdp->parameter_header_count = (uint8_t) header_count;
+
+	for (i = 0; i < header_count; i++) {
 		addr = i * sizeof(sfdp_parameter_header_t) + sizeof(sfdp_header_t);
 		tx[0] = NOR_OPCODE_SFDP;
 		tx[1] = (addr >> 16) & 0xff;
@@ -115,15 +131,24 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 		if (!sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->parameter_header[i], sizeof(sfdp_parameter_header_t)))
 			return 0;
 	}
-	for (i = 0; i < sfdp->header.nph; i++) {
-		if ((sfdp->parameter_header[i].idlsb == 0x00) && (sfdp->parameter_header[i].idmsb == 0xff)) {
+	for (i = 0; i < header_count; i++) {
+		uint32_t table_bytes;
+
+		if ((sfdp->parameter_header[i].idlsb == 0x00) &&
+		    (sfdp->parameter_header[i].idmsb == 0xff) &&
+		    sfdp->parameter_header[i].length != 0U &&
+		    sfdp->parameter_header[i].length <= sizeof(sfdp->basic_table.table) / 4U) {
 			addr = (sfdp->parameter_header[i].ptp[0] << 0) | (sfdp->parameter_header[i].ptp[1] << 8) | (sfdp->parameter_header[i].ptp[2] << 16);
+			table_bytes = (uint32_t) sfdp->parameter_header[i].length * 4U;
+			if (addr > 0x00ffffffU - table_bytes)
+				continue;
 			tx[0] = NOR_OPCODE_SFDP;
 			tx[1] = (addr >> 16) & 0xff;
 			tx[2] = (addr >> 8) & 0xff;
 			tx[3] = (addr >> 0) & 0xff;
 			tx[4] = 0x0;
-			if (sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->basic_table.table[0], sfdp->parameter_header[i].length * 4)) {
+			if (sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, &sfdp->basic_table.table[0], table_bytes)) {
+				sfdp->basic_table.length = sfdp->parameter_header[i].length;
 				sfdp->basic_table.major = sfdp->parameter_header[i].major;
 				sfdp->basic_table.minor = sfdp->parameter_header[i].minor;
 				return 1;
@@ -279,7 +304,7 @@ static inline int spi_nor_get_info(spi_nor_t *nor) {
 	info->id = id;
 
 	if (spi_nor_read_sfdp(spi, &sfdp)) {
-		info->name = "SPDF";
+		info->name = "SFDP";
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
 		spi_nor_dump_sfdp(&sfdp);
 #endif
