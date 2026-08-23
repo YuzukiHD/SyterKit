@@ -35,12 +35,16 @@
  * @param[in] uart Pointer to the UART structure containing clock configuration
  */
 void sunxi_serial_clock_init(sunxi_serial_t *uart) {
+	if (uart == NULL)
+		return;
+
 	sunxi_clk_t uart_clk = uart->uart_clk;
-	/* Set CLK RST */
-	setbits_le32(uart_clk.rst_reg_base, BIT(uart_clk.rst_reg_offset));
-	/* Open Gate */
+	/* Match SPL hal_clk_disable/enable: close the gate, assert reset,
+	 * then release reset before reopening the gate. */
 	clrbits_le32(uart_clk.gate_reg_base, BIT(uart_clk.gate_reg_offset));
+	clrbits_le32(uart_clk.rst_reg_base, BIT(uart_clk.rst_reg_offset));
 	udelay(10);
+	setbits_le32(uart_clk.rst_reg_base, BIT(uart_clk.rst_reg_offset));
 	setbits_le32(uart_clk.gate_reg_base, BIT(uart_clk.gate_reg_offset));
 }
 
@@ -55,6 +59,8 @@ void sunxi_serial_clock_init(sunxi_serial_t *uart) {
  *                 including base address, clock settings, baud rate, and GPIO pins
  */
 void sunxi_serial_init(sunxi_serial_t *uart) {
+	if (uart == NULL)
+		return;
 	sunxi_serial_clock_init(uart);
 
 	/* Typecast to sunxi_serial_reg_t structure pointer */
@@ -78,15 +84,18 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
 	/* Clear bit 7 of line control register LCR */
 	serial_reg->lcr &= ~0x80;
 
-	/* Set parity, stop bits, and data length in line control register LCR */
-	/* Set parity bits based on uart->parity value */
-	serial_reg->lcr |= (uart->parity & 0x03) << 3;
-
-	/* Set stop bits based on uart->stop value */
-	serial_reg->lcr |= (uart->stop & 0x01) << 2;
-
-	/* Set data length based on uart->dlen value */
-	serial_reg->lcr |= uart->dlen & 0x03;
+	/* Rewrite the frame format instead of inheriting stale bootloader bits.
+	 * The public parity enum describes none/odd/even, while the NS16550
+	 * register uses PEN (enable) and EPS (even select) separately. */
+	uint32_t lcr = uart->dlen & 0x03U;
+	if (uart->stop & 0x01U)
+		lcr |= BIT(2);
+	if (uart->parity != UART_PARITY_NO) {
+		lcr |= BIT(3);
+		if (uart->parity == UART_PARITY_EVEN)
+			lcr |= BIT(4);
+	}
+	serial_reg->lcr = lcr;
 
 	/* Configure FIFO Control Register (FCR) */
 	/* Bit 0: FIFO Enable (1 - Enable FIFO) */
@@ -157,7 +166,7 @@ int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
 static int sunxi_serial_probe(struct device *device) {
 	sunxi_serial_t *uart = device_get_platform_data(device);
 
-	if (uart == NULL || uart->base == 0U || uart->baud_rate == 0U)
+	if (uart == NULL)
 		return DRIVER_ERROR_INVALID;
 	sunxi_serial_init(uart);
 	device_set_driver_data(device, uart);
