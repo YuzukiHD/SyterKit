@@ -27,7 +27,7 @@
 #include <drivers/pwm/pwm.h>
 #include <dt2c/driver.h>
 
-#define PRESCALE_MAX 256
+#define PRESCALE_MAX ((1U << PWM_PRESCAL_WIDTH) - 1U)
 
 /**
  * @brief Pre-scaler values for clock division.
@@ -73,6 +73,46 @@ static const uint32_t pre_scal[][2] = {
 			++(n);                         \
 	} while (0)
 
+static int sunxi_pwm_validate_channel(const sunxi_pwm_t *pwm, int channel)
+{
+	if (pwm == NULL)
+		return -1;
+
+	if (channel < 0 || channel >= (int)SUNXI_PWM_CHANNEL_MAX ||
+	    !(pwm->channel_mask & BIT(channel)))
+		return -1;
+
+	if (pwm->channel[channel].channel_mode != PWM_CHANNEL_SINGLE &&
+	    pwm->channel[channel].channel_mode != PWM_CHANNEL_BIND)
+		return -1;
+
+	return 0;
+}
+
+static int sunxi_pwm_validate_config(const sunxi_pwm_config_t *config)
+{
+	if (config == NULL)
+		return -1;
+
+	if (config->period_ns == 0U || config->duty_ns > config->period_ns)
+		return -1;
+
+	if ((int)config->polarity < PWM_POLARITY_INVERSED ||
+	    (int)config->polarity > PWM_POLARITY_NORMAL)
+		return -1;
+
+	if ((int)config->pwm_mode < PWM_MODE_CYCLE ||
+	    (int)config->pwm_mode > PWM_MODE_PLUSE)
+		return -1;
+
+	if (config->pwm_mode == PWM_MODE_PLUSE &&
+	    (config->pluse_count == 0U ||
+	     config->pluse_count >= (1U << PWM_PULSE_NUM_WIDTH)))
+		return -1;
+
+	return 0;
+}
+
 /**
  * @brief Set the value of a specific field in a PWM register.
  *
@@ -86,7 +126,16 @@ static const uint32_t pre_scal[][2] = {
  * @param data        The data to be written to the register field.
  */
 static inline void sunxi_pwm_reg_set(uint32_t reg, uint32_t reg_shift, uint32_t reg_width, uint32_t data) {
-	writel((((readl(reg)) & (~(((reg_width ? ((-1U) >> (32 - reg_width)) : 0) << (reg_shift))))) | (data << (reg_shift))), reg);
+	if (reg_shift >= 32U || reg_width == 0U || reg_width > 32U ||
+	    reg_shift > 32U - reg_width)
+		return;
+
+	uint32_t field_mask = reg_width >= 32U ? 0xffffffffU :
+		(reg_width ? ((1U << reg_width) - 1U) : 0U);
+
+	data &= field_mask;
+	writel((readl(reg) & ~(field_mask << reg_shift)) |
+		(data << reg_shift), reg);
 }
 
 /**
@@ -104,8 +153,15 @@ static inline void sunxi_pwm_reg_set(uint32_t reg, uint32_t reg_shift, uint32_t 
  *       also be initialized first before initializing the specified channel's GPIO.
  */
 static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel) {
+	if (sunxi_pwm_validate_channel(pwm, channel))
+		return;
+
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
 		uint32_t bind_channel = pwm->channel[channel].bind_channel;
+		if (bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
+		    bind_channel == (uint32_t)channel ||
+		    !(pwm->channel_mask & BIT(bind_channel)))
+			return;
 
 		sunxi_gpio_init(&pwm->channel[bind_channel].pin);
 	}
@@ -123,14 +179,15 @@ static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel) {
  */
 static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
 	/* if using clk */
-	if (pwm->pwm_clk.gate_reg_base) {
-		/* Set CLK RST */
-		setbits_le32(pwm->pwm_clk.rst_reg_base, BIT(pwm->pwm_clk.rst_reg_offset));
-		/* Open Gate */
-		clrbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
-		udelay(10);
-		setbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
-	}
+	if (pwm == NULL)
+		return;
+	/* Match SPL hal_clk_disable/enable: close gate, assert reset,
+	 * then release reset before reopening the gate. */
+	clrbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
+	clrbits_le32(pwm->pwm_clk.rst_reg_base, BIT(pwm->pwm_clk.rst_reg_offset));
+	udelay(10);
+	setbits_le32(pwm->pwm_clk.rst_reg_base, BIT(pwm->pwm_clk.rst_reg_offset));
+	setbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
 }
 
 /**
@@ -146,12 +203,12 @@ static inline void sunxi_pwm_clk_init(sunxi_pwm_t *pwm) {
  */
 static inline void sunxi_pwm_clk_deinit(sunxi_pwm_t *pwm) {
 	/* if using clk */
-	if (pwm->pwm_clk.gate_reg_base) {
-		/* Close Gate */
-		clrbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
-		/* Assert CLK RST */
-		clrbits_le32(pwm->pwm_clk.rst_reg_base, BIT(pwm->pwm_clk.rst_reg_offset));
-	}
+	if (pwm == NULL)
+		return;
+	/* Close Gate */
+	clrbits_le32(pwm->pwm_clk.gate_reg_base, BIT(pwm->pwm_clk.gate_reg_offset));
+	/* Assert CLK RST */
+	clrbits_le32(pwm->pwm_clk.rst_reg_base, BIT(pwm->pwm_clk.rst_reg_offset));
 }
 
 /**
@@ -164,6 +221,8 @@ static inline void sunxi_pwm_clk_deinit(sunxi_pwm_t *pwm) {
  * @param channel The PWM channel number (0-15) to enable.
  */
 static inline void sunxi_pwm_enable_controller(sunxi_pwm_t *pwm, int channel) {
+	if (sunxi_pwm_validate_channel(pwm, channel))
+		return;
 	setbits_le32(pwm->base + PWM_PER, BIT(channel));
 }
 
@@ -177,6 +236,8 @@ static inline void sunxi_pwm_enable_controller(sunxi_pwm_t *pwm, int channel) {
  * @param channel The PWM channel number (0-15) to disable.
  */
 static inline void sunxi_pwm_disable_controller(sunxi_pwm_t *pwm, int channel) {
+	if (sunxi_pwm_validate_channel(pwm, channel))
+		return;
 	clrbits_le32(pwm->base + PWM_PER, BIT(channel));
 }
 
@@ -192,6 +253,12 @@ static inline void sunxi_pwm_disable_controller(sunxi_pwm_t *pwm, int channel) {
  * @param polarity The desired polarity: 1 for active high, 0 for active low.
  */
 static inline void sunxi_pwm_set_porality(sunxi_pwm_t *pwm, int channel, sunxi_pwm_polarity_t polarity) {
+	if (sunxi_pwm_validate_channel(pwm, channel))
+		return;
+	if ((int)polarity < PWM_POLARITY_INVERSED ||
+	    (int)polarity > PWM_POLARITY_NORMAL)
+		return;
+
 	uint32_t reg_addr = pwm->base + PWM_PCR;
 	reg_addr += PWM_REG_CHN_OFFSET * channel;
 	if (polarity) {
@@ -292,16 +359,16 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 	uint64_t clock_source_clk = 0;
 	uint64_t entire_cycles = 256, active_cycles = 192;
 	uint32_t pre_scal_id = 0, div_m = 0, prescale = 0;
+	bool found = false;
+
+	if (sunxi_pwm_validate_channel(pwm, channel) ||
+	    sunxi_pwm_validate_config(config))
+		return -1;
 
 	printk_debug("PWM: period_ns = %ld\n", config->period_ns);
 	printk_debug("PWM: duty_ns = %ld\n", config->duty_ns);
 	printk_debug("PWM: polarity = %d\n", config->polarity);
 	printk_debug("PWM: channel = %d\n", channel);
-
-	if ((config->period_ns < config->duty_ns) || (!config->period_ns)) {
-		printk_warning("PWM: paremeter error: period_ns can't greater than duty_ns and period_ns can't be 0");
-		return -1;
-	}
 
 	sunxi_pwm_set_porality(pwm, channel, config->polarity);
 
@@ -328,21 +395,30 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 		/* select clk source to OSC */
 		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 	}
+	if (clock_source_clk == 0U) {
+		return -1;
+	}
 
 	clock_source_clk *= config->period_ns;
 	sunxi_pwm_do_div(clock_source_clk, TIME_1_SECOND);
 
 	entire_cycles = clock_source_clk;
 	for (pre_scal_id = 0; pre_scal_id < 9; pre_scal_id++) {
-		if (entire_cycles <= 65536)
+		if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH)) {
+			found = true;
 			break;
+		}
 		for (prescale = 0; prescale < PRESCALE_MAX + 1; prescale++) {
 			entire_cycles = (clock_source_clk / pre_scal[pre_scal_id][1]) / (prescale + 1);
-			if (entire_cycles <= 65536) {
+			if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH)) {
 				div_m = pre_scal[pre_scal_id][0];
+				found = true;
 				break;
 			}
 		}
+	}
+	if (!found) {
+		return -1;
 	}
 
 	clock_source_clk = entire_cycles * config->duty_ns;
@@ -350,6 +426,10 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 	active_cycles = clock_source_clk;
 	if (entire_cycles == 0)
 		entire_cycles++;
+	if (entire_cycles > (1U << PWM_PERIOD_CYCLES_WIDTH) ||
+	    active_cycles > ((1U << PWM_ACT_CYCLES_WIDTH) - 1U)) {
+		return -1;
+	}
 
 	/* config clk div_m */
 	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_DIV_M_SHIFT, PWM_DIV_M_WIDTH, div_m);
@@ -392,22 +472,28 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	uint32_t pre_scal_id = 0, div_m = 0, prescale = 0, dead_time = 0;
 	uint32_t reg_val = 0x0, reg_dead_time = 0x0;
 	int channels[PWM_BIND_NUM] = {0};
+	bool found = false;
+
+	if (sunxi_pwm_validate_channel(pwm, channel) ||
+	    sunxi_pwm_validate_config(config))
+		return -1;
 
 	channels[0] = channel;
-	channels[1] = pwm->channel[channel].bind_channel;
-	dead_time = pwm->channel[channel].dead_time;
-	if (channels[1] < 0 ||
-	    channels[1] >= (int) SUNXI_PWM_CHANNEL_MAX ||
-	    !(pwm->channel_mask & BIT(channels[1])))
+	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
+	    pwm->channel[channel].bind_channel == (uint32_t)channel ||
+	    !(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
 		return -1;
+	}
+	channels[1] = (int)pwm->channel[channel].bind_channel;
+	dead_time = pwm->channel[channel].dead_time;
 
 	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x1);
 
 	reg_val = readl(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]));
-	if (config->duty_ns < dead_time || reg_val == 0) {
-		printk_warning("PWM: duty time or dead zone error\n");
+	if (config->duty_ns < dead_time)
 		return -1;
-	}
+	if (reg_val == 0U)
+		return -1;
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		if (config->period_ns > 0 && config->period_ns <= 10) {
@@ -432,6 +518,9 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 		}
 	}
+	if (clock_source_clk == 0U) {
+		return -1;
+	}
 
 	clk = clock_source_clk * config->period_ns;
 	sunxi_pwm_do_div(clk, TIME_1_SECOND);
@@ -442,17 +531,25 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	reg_dead_time = pwm_clk_freq;
 
 	for (pre_scal_id = 0; pre_scal_id < 9; pre_scal_id++) {
-		if (entire_cycles <= 65536 && reg_dead_time <= 255)
+		if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) &&
+		    reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
+			found = true;
 			break;
+		}
 		for (prescale = 0; prescale < PRESCALE_MAX + 1; prescale++) {
 			entire_cycles = (clk / pre_scal[pre_scal_id][1]) / (prescale + 1);
 			reg_dead_time = pwm_clk_freq;
 			sunxi_pwm_do_div(reg_dead_time, pre_scal[pre_scal_id][1] * (prescale + 1));
-			if (entire_cycles <= 65536 && reg_dead_time <= 255) {
+			if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) &&
+			    reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
 				div_m = pre_scal[pre_scal_id][0];
+				found = true;
 				break;
 			}
 		}
+	}
+	if (!found) {
+		return -1;
 	}
 
 	clk = entire_cycles * config->duty_ns;
@@ -461,6 +558,10 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 
 	if (entire_cycles == 0)
 		entire_cycles++;
+	if (entire_cycles > (1U << PWM_PERIOD_CYCLES_WIDTH) ||
+	    active_cycles > ((1U << PWM_ACT_CYCLES_WIDTH) - 1U)) {
+		return -1;
+	}
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		/* config clk div_m */
@@ -516,6 +617,9 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
  * @return 0 on success.
  */
 static int sunxi_pwm_release_single(sunxi_pwm_t *pwm, int channel) {
+	if (sunxi_pwm_validate_channel(pwm, channel))
+		return -1;
+
 	/* disable controller */
 	sunxi_pwm_disable_controller(pwm, channel);
 
@@ -542,12 +646,17 @@ static int sunxi_pwm_release_single(sunxi_pwm_t *pwm, int channel) {
  */
 static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel) {
 	int channels[PWM_BIND_NUM] = {0};
-	channels[0] = channel;
-	channels[1] = pwm->channel[channel].bind_channel;
-	if (channels[1] < 0 ||
-	    channels[1] >= (int) SUNXI_PWM_CHANNEL_MAX ||
-	    !(pwm->channel_mask & BIT(channels[1])))
+
+	if (sunxi_pwm_validate_channel(pwm, channel))
 		return -1;
+
+	channels[0] = channel;
+	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
+	    pwm->channel[channel].bind_channel == (uint32_t)channel ||
+	    !(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
+		return -1;
+	}
+	channels[1] = (int)pwm->channel[channel].bind_channel;
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		/* Close gate */
@@ -571,6 +680,10 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel) {
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_init(sunxi_pwm_t *pwm) {
+	if (pwm == NULL) {
+		printk_error("PWM: cannot initialize NULL controller\n");
+		return;
+	}
 	sunxi_pwm_clk_init(pwm);
 	pwm->status = true;
 }
@@ -585,6 +698,10 @@ void sunxi_pwm_init(sunxi_pwm_t *pwm) {
  * @param pwm Pointer to the PWM instance structure.
  */
 void sunxi_pwm_deinit(sunxi_pwm_t *pwm) {
+	if (pwm == NULL) {
+		printk_error("PWM: cannot deinitialize NULL controller\n");
+		return;
+	}
 	sunxi_pwm_clk_deinit(pwm);
 	pwm->status = false;
 }
@@ -603,22 +720,33 @@ void sunxi_pwm_deinit(sunxi_pwm_t *pwm) {
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *config) {
-	if (!pwm->status) {
-		printk_warning("PWM: pwm not init\n");
+	int ret;
+
+	if (pwm == NULL) {
+		printk_error("PWM: controller is NULL\n");
 		return -1;
 	}
-
-	if (channel < 0 || channel >= (int) SUNXI_PWM_CHANNEL_MAX ||
-	    !(pwm->channel_mask & BIT(channel))) {
-		printk_warning("PWM: channel %d is out of scoop\n", channel);
+	if (!pwm->status) {
+		printk_error("PWM: controller is not initialized\n");
+		return -1;
+	}
+	if (sunxi_pwm_validate_config(config)) {
+		printk_error("PWM: invalid configuration\n");
+		return -1;
+	}
+	if (sunxi_pwm_validate_channel(pwm, channel)) {
+		printk_error("PWM: invalid channel %d\n", channel);
 		return -1;
 	}
 
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
-		return sunxi_pwm_set_config_bind(pwm, channel, config);
+		ret = sunxi_pwm_set_config_bind(pwm, channel, config);
 	} else {
-		return sunxi_pwm_set_config_single(pwm, channel, config);
+		ret = sunxi_pwm_set_config_single(pwm, channel, config);
 	}
+	if (ret)
+		printk_error("PWM: failed to configure channel %d\n", channel);
+	return ret;
 }
 
 /**
@@ -634,22 +762,29 @@ int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *conf
  * @return 0 on success, -1 if an error occurs (e.g., PWM not initialized, invalid channel index).
  */
 int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel) {
-	if (!pwm->status) {
-		printk_warning("PWM: pwm not init\n");
+	int ret;
+
+	if (pwm == NULL) {
+		printk_error("PWM: controller is NULL\n");
 		return -1;
 	}
-
-	if (channel < 0 || channel >= (int) SUNXI_PWM_CHANNEL_MAX ||
-	    !(pwm->channel_mask & BIT(channel))) {
-		printk_warning("PWM: channel %d is out of scoop\n", channel);
+	if (!pwm->status) {
+		printk_error("PWM: controller is not initialized\n");
+		return -1;
+	}
+	if (sunxi_pwm_validate_channel(pwm, channel)) {
+		printk_error("PWM: invalid channel %d\n", channel);
 		return -1;
 	}
 
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
-		return sunxi_pwm_release_bind(pwm, channel);
+		ret = sunxi_pwm_release_bind(pwm, channel);
 	} else {
-		return sunxi_pwm_release_single(pwm, channel);
+		ret = sunxi_pwm_release_single(pwm, channel);
 	}
+	if (ret)
+		printk_error("PWM: failed to release channel %d\n", channel);
+	return ret;
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-pwm");
