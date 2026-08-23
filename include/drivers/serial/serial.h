@@ -107,6 +107,9 @@ extern sunxi_serial_t uart_dbg;
  */
 void sunxi_serial_init(sunxi_serial_t *uart);
 
+/** @brief Read and initialize the DTS-selected stdout UART. */
+int sunxi_serial_init_stdout(void);
+
 /**
  * @brief Send a character via the Sunxi serial interface.
  *

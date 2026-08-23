@@ -42,7 +42,7 @@ void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc) {
 	rtc_write_data(rtc, 0x3d, val);
 }
 
-void sys_ldo_check(const sunxi_ccu_t *ccu) {
+void sys_ldo_check(void) {
 	sunxi_sid_t sid;
 	uint32_t reg_val = 0;
 	uint32_t roughtrim_val = 0, finetrim_val = 0;
@@ -53,19 +53,19 @@ void sys_ldo_check(const sunxi_ccu_t *ccu) {
 	}
 
 	/* reset */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
+	reg_val = readl(SUNXI_CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
 	reg_val &= ~(1 << 16);
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
+	writel(reg_val, SUNXI_CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
 
 	sdelay(2);
 
 	reg_val |= (1 << 16);
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
+	writel(reg_val, SUNXI_CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
 
 	/* enable AUDIO gating */
-	reg_val = readl(sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
+	reg_val = readl(SUNXI_CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
 	reg_val |= (1 << 0);
-	writel(reg_val, sunxi_ccu_reg(ccu, CCU_AUDIO_CODEC_BGR_REG));
+	writel(reg_val, SUNXI_CCU_BASE + CCU_AUDIO_CODEC_BGR_REG);
 
 	/* enable pcrm CTRL */
 	reg_val = readl(ANA_PWR_RST_REG);

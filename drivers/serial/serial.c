@@ -125,8 +125,7 @@ void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
 	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
 
-	while ((serial_reg->lsr & (1 << 6)) == 0)
-		;
+	while ((serial_reg->lsr & (1 << 6)) == 0);
 	serial_reg->thr = c;
 }
 
@@ -143,8 +142,7 @@ char __attribute__((weak)) sunxi_serial_getc(void *arg) {
 	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
 
-	while ((serial_reg->lsr & 1) == 0)
-		;
+	while ((serial_reg->lsr & 1) == 0);
 	return serial_reg->rbr;
 }
 
@@ -164,44 +162,17 @@ int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
 	return serial_reg->lsr & 1;
 }
 
-static int sunxi_serial_probe(struct device *device) {
-	sunxi_serial_t *uart = device_get_platform_data(device);
+int sunxi_serial_init_stdout(void) {
+	int result = sunxi_serial_dt_read_stdout(&uart_dbg);
 
-	if (uart == NULL)
-		return DRIVER_ERROR_INVALID;
+	if (result != DRIVER_OK)
+		return result;
 
-	sunxi_serial_init(uart);
+	sunxi_serial_init(&uart_dbg);
 
-	if (uart == &uart_dbg)
-		/* Flush early logs at the first point where the console can transmit. */
-		uart_log_console_ready();
-
-	device_set_driver_data(device, uart);
-
+	/* Flush early logs at the first point where the UART is usable. */
+	uart_log_console_ready();
 	return DRIVER_OK;
 }
 
-static struct device sunxi_serial_console_device = {
-		.name = "stdout",
-		.compatible = SUNXI_SERIAL_COMPATIBLE,
-		.platform_data = &uart_dbg,
-};
-
-static int sunxi_serial_register_console(void) {
-	int result;
-
-	result = sunxi_serial_dt_read_stdout(&uart_dbg);
-	if (result != DRIVER_OK)
-		return result;
-	return device_register(&sunxi_serial_console_device);
-}
-
-static struct driver sunxi_serial_driver = {
-		.name = "sunxi-serial",
-		.compatible = SUNXI_SERIAL_COMPATIBLE,
-		.probe = sunxi_serial_probe,
-};
-
 DT2C_DRIVER_COMPAT("allwinner,sunxi-uart");
-early_initcall(sunxi_serial_register_console);
-early_builtin_driver(sunxi_serial_driver);

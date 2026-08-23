@@ -13,7 +13,6 @@
 	compatible = "syterkit,tlt153-minievm";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		dma0 = &dma0;
 		dram0 = &dram0;
@@ -26,16 +25,8 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@2002000 {
-		compatible = "allwinner,sun8iw22-ccu";
-		reg = <SUNXI_CCMU_BASE 0x1000>,
-		      <SUNXI_CPUX_PLL_CFG_BASE 0x1000>;
-		reg-names = "ccu", "cpu-pll";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun8iw22-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000004b0>,
 			<SUNXI_DRAM_DDR4>,

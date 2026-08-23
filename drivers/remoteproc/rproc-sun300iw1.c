@@ -68,22 +68,8 @@ static int sun300iw1_a27l2_start(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static const sunxi_remoteproc_ops_t sun300iw1_a27l2_ops = {
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.start = sun300iw1_a27l2_start,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL ||
-	    variant != SUNXI_REMOTEPROC_VARIANT_SUN300IW1_A27L2 ||
-	    remoteproc->register_count != 4U ||
-	    remoteproc->registers[SUN300IW1_A27L2_PMU_AON].size < 0x68U ||
-	    remoteproc->registers[SUN300IW1_A27L2_CCU_AON].size < 0x58cU ||
-	    remoteproc->registers[SUN300IW1_A27L2_CCU_APP].size < 0x98U ||
-	    remoteproc->registers[SUN300IW1_A27L2_CFG].size < 0x208U)
-		return DRIVER_ERROR_INVALID;
-	remoteproc->ops = &sun300iw1_a27l2_ops;
-	return DRIVER_OK;
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun300iw1-a27l2");

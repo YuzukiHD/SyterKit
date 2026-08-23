@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+#include <drivers/serial/serial.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <config.h>
 #include <log.h>
@@ -384,10 +386,11 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	/* Initialize UART debug interface */
 
 	/* Print boot screen */
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
 		printk_error("SMHC: invalid devicetree configuration\n");
@@ -395,22 +398,18 @@ int main(void) {
 	}
 
 	/* Initialize clock */
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	/* Initialize DRAM */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
 
 	/* Print clock information */
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	/* Clear image structure */
 	memset(&image, 0, sizeof(image_info_t));

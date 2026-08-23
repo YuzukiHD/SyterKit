@@ -6,8 +6,8 @@ SyterKit is a bare-metal firmware framework for Allwinner SoCs. It provides
 board bring-up, peripheral drivers, image loading, bootloader applications, and
 small standalone firmware utilities for ARM and RISC-V platforms.
 
-SyterKit 0.5 uses GNU Make, Kconfig, Kbuild-style object lists, linker-collected
-initcalls, and Linux-style board device trees compiled to static C data by
+SyterKit 0.5 uses GNU Make, Kconfig, Kbuild-style object lists, application-owned
+initialization, and Linux-style board device trees compiled to static C data by
 [dt2c](https://github.com/YuzukiTsuru/dt2c).
 
 ## Supported boards
@@ -42,13 +42,13 @@ matrix.
 
 SyterKit is intentionally small and static. The selected board contributes its
 applications and DTS, Kconfig selects the architecture and drivers, dt2c turns
-the board DTS into compile-time data, and the linker collects built-in drivers,
-devices, and initcalls into the final firmware image.
+the board DTS into compile-time data, and the linker combines the selected
+objects into the final firmware image.
 
 The board device tree configures SyterKit itself. A Linux DTB loaded for the
 next boot stage remains a separate object and is handled with libfdt. See
 [Compile-time device tree](docs/devicetree.md) and
-[Driver model and initcalls](docs/driver-model.md) for the full model.
+[Driver architecture](docs/driver-model.md) for the full model.
 
 ## Building SyterKit
 
@@ -172,7 +172,7 @@ Detailed boot-header and media-layout documentation is available in the
 ## Documentation
 
 - [Getting started and Allwinner boot flow](docs/README.md)
-- [Driver model and initcalls](docs/driver-model.md)
+- [Driver architecture](docs/driver-model.md)
 - [Compile-time device tree](docs/devicetree.md)
 - [Generated API documentation](https://syterkit.yuzukihd.top/api/html/)
 

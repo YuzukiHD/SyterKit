@@ -16,4 +16,4 @@
 #include <drivers/dram/dram.h>
 #include <drivers/rtc/rtc.h>
 
-DT2C_DRIVER_COMPAT("allwinner,sun55iw6-dram");
+DT2C_DRIVER_COMPAT("allwinner,sunxi-dram");

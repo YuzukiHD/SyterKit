@@ -145,6 +145,13 @@ Do not hide fixed lookups behind an out-of-line generic property layer. That
 would obscure constants from the optimizer and retain parser-like code and tree
 storage in SRAM-constrained images.
 
+SoC-specific readers follow the same rule at a larger scope. The CCU, DRAM, and
+remoteproc readers use the selected SoC driver's layout and operations. They do
+not walk a list of unrelated SoC compatible strings at runtime. DRAM nodes use
+`compatible = "allwinner,sunxi-dram"` and provide only the fixed 32-word
+`allwinner,dram-parameters` array. The selected DRAM driver owns the meaning of
+those words.
+
 ## Driver compatibility declarations
 
 Every DTS-backed driver declares the compatible strings it owns in its source:
@@ -159,6 +166,10 @@ Make variable listing every driver source. Files outside `drivers/`, such as
 board-specific LCD or OLED applications, are not treated as device drivers and
 do not participate in this scan.
 
+These declarations are build-time ownership metadata only. They never cause a
+runtime compatible scan or select a different SoC implementation. PMU sources
+do not declare a DTS compatible because PMU selection is an application call.
+
 Bindings marked with `dt2c,device: true` cause dt2c to reject an enabled node
 when none of the selected drivers owns a compatible string. This catches
 configuration errors before target code is linked.
@@ -170,27 +181,15 @@ enable several I2C, SPI, MMC, PWM, or other controller nodes using the same
 compatible. Each selected node is read into its own static configuration and
 device state.
 
-Relationships should be represented in DTS rather than recovered through a
-runtime alias scan. For example, a PMIC is a child of the I2C controller that
-transports it:
+Relationships should be represented in DTS when they are data needed by a
+generic reader. PMUs are an intentional exception: PMU model, address, and
+initialization sequence differ by chip and are selected by the application.
+The DTS contains the I2C controller only. The application reads that controller
+and calls the real PMU interface, for example `pmu_axp2202_config(&pmu, &i2c)`.
+The PMU implementation owns its fixed runtime address and any fallback address.
 
-```dts
-i2c0: i2c@2502000 {
-	compatible = "allwinner,sunxi-i2c";
-	reg = <0x02502000 0x400>;
-	status = "okay";
-
-	pmic@36 {
-		compatible = "x-powers,axp1530";
-		reg = <0x36>;
-		status = "okay";
-	};
-};
-```
-
-The PMIC reader follows its parent node directly. The application chooses the
-specific resulting instance it needs; the driver does not walk every alias at
-runtime or publish artificial alias symbols.
+The application chooses the specific chip interface it needs; no PMU alias
+scan or positional PMU identity is published.
 
 Aliases remain useful when they express a stable board-level identity, such as
 `mmc0`, but they are not a substitute for parent, child, and phandle
@@ -217,5 +216,5 @@ SoC-global startup registers, handoff code, and silicon workarounds that are not
 device instances may remain platform-defined. Device resources consumed by
 drivers should come from the compiled board tree.
 
-Continue with [Driver model and initcalls](driver-model.md) for registration,
-binding, and initialization order.
+Continue with [Driver architecture](driver-model.md) for explicit operations
+and application-controlled initialization order.

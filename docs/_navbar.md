@@ -1,6 +1,6 @@
 * [Home](/)
 * [Getting started](/#getting-started)
-* [Driver model](/driver-model.md)
+* [Driver architecture](/driver-model.md)
 * [Device tree](/devicetree.md)
 * [GitHub](https://github.com/YuzukiHD/SyterKit)
 * [Gitee](https://gitee.com/YuzukiHD-Mirror/SyterKit)

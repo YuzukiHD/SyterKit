@@ -60,6 +60,9 @@ int sunxi_gic_exit(sunxi_gic_t *gic);
  */
 int arch_interrupt_init(void);
 
+/** @brief Load the GIC configuration from DTS and enable interrupts. */
+int sunxi_gic_startup(void);
+
 /**
  * @brief Exits the interrupt mechanism
  * 

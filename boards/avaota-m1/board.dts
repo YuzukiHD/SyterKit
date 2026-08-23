@@ -13,28 +13,18 @@
 	compatible = "syterkit,avaota-m1";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		dram0 = &dram0;
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
-		pmu0 = &pmu0;
-		pmu1 = &pmu1;
 	};
 
 	chosen {
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@3008000 {
-		compatible = "allwinner,sun65iw1-ccu";
-		reg = <SUNXI_CCU_BASE 0x1000>;
-		reg-names = "ccu";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun65iw1-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000003f0>,
 			<SUNXI_DRAM_LPDDR4>,
@@ -68,8 +58,6 @@
 			<0x18161718>,
 			<0x00000051>,
 			<0x010701f5>;
-		allwinner,primary-pmu = <&pmu0>;
-		allwinner,secondary-pmu = <&pmu1>;
 		status = "okay";
 	};
 
@@ -171,17 +159,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@34 {
-				compatible = "x-powers,axp2202";
-				reg = <0x34>, <0x35>;
-				status = "okay";
-			};
-
-			pmu1: pmic@36 {
-				compatible = "x-powers,axp1530";
-				reg = <0x36>;
-				status = "okay";
-			};
 		};
 
 		uart0: serial@2b00000 {

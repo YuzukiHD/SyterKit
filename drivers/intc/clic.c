@@ -6,7 +6,6 @@
 
 #include <csr.h>
 #include <driver.h>
-#include <initcall.h>
 #include <io.h>
 #include <log.h>
 
@@ -203,7 +202,7 @@ int arch_interrupt_exit(void) {
 	return sunxi_clic_exit(&sunxi_clic_controller);
 }
 
-static int sunxi_clic_initcall(void) {
+int sunxi_clic_startup(void) {
 	int result;
 
 	result = sunxi_clic_dt_read_alias(&sunxi_clic_controller, "intc0");
@@ -211,6 +210,4 @@ static int sunxi_clic_initcall(void) {
 		return result;
 	return arch_interrupt_init();
 }
-
-early_initcall(sunxi_clic_initcall);
 DT2C_DRIVER_COMPAT("thead,c900-clic");

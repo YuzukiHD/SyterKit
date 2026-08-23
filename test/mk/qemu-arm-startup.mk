@@ -33,7 +33,6 @@ TEST_LDFLAGS := -nostdlib -nostartfiles -Wl,--gc-sections \
 TEST_SOURCES := $(TEST_ROOT)/support/qemu/arm-startup/start.S \
 	$(srctree)/arch/arm/start.S \
 	$(TEST_ROOT)/support/qemu/arm-startup/runtime.c \
-	$(srctree)/core/initcall.c
 
 ifeq ($(TEST_AARCH64_TRANSITION),1)
 TEST_LOAD_ADDRESS := 0x41000000

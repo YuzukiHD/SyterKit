@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <common.h>
 
@@ -20,26 +20,21 @@ extern sunxi_serial_t uart_dbg;
 static sunxi_dram_t dram;
 
 int main(void) {
-	sunxi_ccu_t ccu;
 
 	show_banner();
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	int i = 0;
 

@@ -95,23 +95,10 @@ static int sun20iw1_hifi4_reset(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static const sunxi_remoteproc_ops_t sun20iw1_hifi4_ops = {
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun20iw1_hifi4_reset,
 	.prepare = sun20iw1_hifi4_prepare,
 	.start = sun20iw1_hifi4_start,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL ||
-	    variant != SUNXI_REMOTEPROC_VARIANT_SUN20IW1_HIFI4 ||
-	    remoteproc->register_count != 3U ||
-	    remoteproc->registers[SUN20IW1_HIFI4_SYSCTRL].size < 0xcU ||
-	    remoteproc->registers[SUN20IW1_HIFI4_DSP_CFG].size < 0x8U ||
-	    remoteproc->registers[SUN20IW1_HIFI4_CCU].size < 0xc80U)
-		return DRIVER_ERROR_INVALID;
-	remoteproc->ops = &sun20iw1_hifi4_ops;
-	return DRIVER_OK;
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun20iw1-hifi4");

@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <drivers/soc/sid.h>
 #include <dt-compatible/sid-dt.h>
 
@@ -15,16 +15,14 @@
 extern sunxi_serial_t uart_dbg;
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	sunxi_sid_t sid;
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK ||
-	    sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	uint32_t id[4];
 

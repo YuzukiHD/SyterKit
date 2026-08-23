@@ -18,17 +18,6 @@ extern "C" {
 #define SUNXI_REMOTEPROC_MAX_REGISTERS 4U
 
 typedef enum {
-	SUNXI_REMOTEPROC_VARIANT_INVALID = 0,
-	SUNXI_REMOTEPROC_VARIANT_SUN20IW1_HIFI4,
-	SUNXI_REMOTEPROC_VARIANT_SUN300IW1_A27L2,
-	SUNXI_REMOTEPROC_VARIANT_SUN50IW10_AR100,
-	SUNXI_REMOTEPROC_VARIANT_SUN55IW3_E906,
-	SUNXI_REMOTEPROC_VARIANT_SUN8IW20_HIFI4,
-	SUNXI_REMOTEPROC_VARIANT_SUN8IW20_C906,
-	SUNXI_REMOTEPROC_VARIANT_SUN8IW21_E907,
-} sunxi_remoteproc_variant_t;
-
-typedef enum {
 	SUNXI_REMOTEPROC_FIRMWARE_ELF32 = 0,
 	SUNXI_REMOTEPROC_FIRMWARE_ELF64,
 	SUNXI_REMOTEPROC_FIRMWARE_RAW,
@@ -88,8 +77,7 @@ int sunxi_remoteproc_start(sunxi_remoteproc_t *remoteproc);
 void sunxi_remoteproc_dump(const sunxi_remoteproc_t *remoteproc);
 
 /* Implemented by the selected SoC remoteproc driver. */
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant);
+extern const sunxi_remoteproc_ops_t sunxi_remoteproc_ops;
 
 #ifdef __cplusplus
 }

@@ -7,7 +7,7 @@
 
 #include <config.h>
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <timer.h>
 
 #include <common.h>
@@ -349,7 +349,6 @@ const msh_command_entry commands[] = {
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
 int main(void) {
-	sunxi_ccu_t ccu;
 	sdmmc_pdata_t card = {0};
 	sdmmc_pdata_t *boot_card = &card;
 	sunxi_sdhci_t sdhci0;
@@ -365,15 +364,11 @@ int main(void) {
 	show_banner();
 
 	/* Initialize the system clock. */
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -384,7 +379,7 @@ int main(void) {
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
 	/* Dump information about the system clocks. */
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	/* Clear the image_info_t struct. */
 	memset(&image, 0, sizeof(image_info_t));

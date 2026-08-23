@@ -11,7 +11,7 @@
 #include <log.h>
 
 #include <drivers/pmu/axp.h>
-#include <dt2c/driver.h>
+#include "axp-config.h"
 
 /* clang-format off */
 static axp_contrl_info axp_ctrl_tbl[] = {
@@ -31,6 +31,11 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 	{ {500, 3500, 100}, } },
 };
 /* clang-format on */
+
+int pmu_axp333_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c) {
+	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP333,
+				AXP333_RUNTIME_ADDR, 0U);
+}
 
 int pmu_axp333_init(axp_pmu_t *pmu) {
 	uint8_t axp_val;
@@ -79,5 +84,3 @@ void pmu_axp333_dump(axp_pmu_t *pmu) {
 		printk_debug("PMU: AXP333 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp333_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }
-
-DT2C_DRIVER_COMPAT("x-powers,axp333");

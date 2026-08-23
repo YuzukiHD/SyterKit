@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 #include <dt-compatible/dt-common.h>
 #include <mmu.h>
 
@@ -24,7 +24,6 @@
 #include <drivers/serial/serial.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
-#include <dt-compatible/pmu-dt.h>
 #include <string.h>
 
 extern sunxi_serial_t uart_dbg;
@@ -90,22 +89,27 @@ const msh_command_entry commands[] = {
 };
 
 int main(void) {
-	sunxi_ccu_t ccu;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
+
 	show_banner();
+
 	if (syterkit_dt_read_reg_alias("memory0", &dram.memory_base,
 				       &dram.memory_size) != 0) {
 		printk_error("DRAM: invalid devicetree memory window\n");
 		return -1;
 	}
+
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
 		printk_error("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
+
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+	    pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -122,14 +126,10 @@ int main(void) {
 
 	arm32_icache_enable();
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	printk_info("Hello World!\n");
 

@@ -6,7 +6,7 @@
 #include <types.h>
 
 #include <log.h>
-#include <dt-compatible/ccu-dt.h>
+#include <drivers/clk/clk.h>
 
 #include <common.h>
 
@@ -23,7 +23,6 @@
 #include <drivers/serial/serial.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/mmc-dt.h>
-#include <dt-compatible/pmu-dt.h>
 
 extern sunxi_serial_t uart_dbg;
 
@@ -42,16 +41,18 @@ void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
 }
 
 int main(void) {
-	sunxi_ccu_t ccu;
-	sunxi_dram_t dram;
+	sunxi_dram_t dram = {0};
 	axp_pmu_t pmu;
 	sdmmc_pdata_t mmc_card = {0};
 	sunxi_i2c_t i2c;
 	sunxi_sdhci_t sdhci0;
 
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
+
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    sunxi_pmu_dt_read_alias(&pmu, "pmu0", &i2c) != DRIVER_OK) {
+	    pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -60,14 +61,10 @@ int main(void) {
 		return -1;
 	}
 
-	if (sunxi_ccu_dt_read(&ccu) != DRIVER_OK) {
-		printk_error("CCU: invalid devicetree configuration\n");
-		return -1;
-	}
 
-	sunxi_clk_init(&ccu);
+	sunxi_clk_init();
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	set_cpu_poweroff();
 
@@ -84,13 +81,13 @@ int main(void) {
 
 	pmu_axp1530_dump(&pmu);
 
-	if (sunxi_dram_dt_read_alias(&dram, "dram0", NULL, NULL) != DRIVER_OK) {
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
 
-	sunxi_clk_dump(&ccu);
+	sunxi_clk_dump();
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci0) != 0) {

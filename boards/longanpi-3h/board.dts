@@ -13,13 +13,11 @@
 	compatible = "syterkit,longanpi-3h";
 
 	aliases {
-		ccu0 = &ccu0;
 		sid0 = &sid0;
 		dma0 = &dma0;
 		dram0 = &dram0;
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
-		pmu0 = &pmu0;
 		rtc0 = &rtc0;
 		spi0 = &spi0;
 	};
@@ -28,17 +26,8 @@
 		stdout-path = &uart0;
 	};
 
-	ccu0: clock-controller@3001000 {
-		compatible = "allwinner,sun50iw9-ccu";
-		reg = <SUNXI_CCM_BASE 0x1000>,
-		      <SUNXI_RPRCM_BASE 0x1000>,
-		      <SUNXI_IOMMU_BASE 0x1000>;
-		reg-names = "ccu", "r-prcm", "iommu";
-		status = "okay";
-	};
-
 	dram0: dram-controller {
-		compatible = "allwinner,sun50iw9-dram";
+		compatible = "allwinner,sunxi-dram";
 		allwinner,dram-parameters =
 			<0x000002d0>,
 			<SUNXI_DRAM_LPDDR4>,
@@ -72,8 +61,6 @@
 			<0x0e0e0f0f>,
 			<0x00001024>,
 			<0x00000000>;
-		allwinner,rtc = <&rtc0>;
-		memory-region = <&dram_init_code>;
 		status = "okay";
 	};
 
@@ -220,11 +207,6 @@
 			pinctrl-0 = <&i2c0_pins>;
 			status = "okay";
 
-			pmu0: pmic@36 {
-				compatible = "x-powers,axp1530";
-				reg = <0x36>;
-				status = "okay";
-			};
 		};
 
 		uart0: serial@5000000 {

@@ -7,54 +7,6 @@
 #include <drivers/remoteproc/remoteproc.h>
 #include <dt-compatible/dt-common.h>
 
-#define SUNXI_REMOTEPROC_SUN20IW1_HIFI4_COMPATIBLE \
-	"allwinner,sun20iw1-hifi4"
-#define SUNXI_REMOTEPROC_SUN300IW1_A27L2_COMPATIBLE \
-	"allwinner,sun300iw1-a27l2"
-#define SUNXI_REMOTEPROC_SUN50IW10_AR100_COMPATIBLE \
-	"allwinner,sun50iw10-ar100"
-#define SUNXI_REMOTEPROC_SUN55IW3_E906_COMPATIBLE \
-	"allwinner,sun55iw3-e906"
-#define SUNXI_REMOTEPROC_SUN8IW20_HIFI4_COMPATIBLE \
-	"allwinner,sun8iw20-hifi4"
-#define SUNXI_REMOTEPROC_SUN8IW20_C906_COMPATIBLE \
-	"allwinner,sun8iw20-c906"
-#define SUNXI_REMOTEPROC_SUN8IW21_E907_COMPATIBLE \
-	"allwinner,sun8iw21-e907"
-
-static inline __attribute__((always_inline)) sunxi_remoteproc_variant_t
-sunxi_remoteproc_dt_variant(int node) {
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN20IW1_HIFI4_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN20IW1_HIFI4;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN300IW1_A27L2_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN300IW1_A27L2;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN50IW10_AR100_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN50IW10_AR100;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN55IW3_E906_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN55IW3_E906;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN8IW20_HIFI4_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN8IW20_HIFI4;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN8IW20_C906_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN8IW20_C906;
-	if (dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, node,
-			SUNXI_REMOTEPROC_SUN8IW21_E907_COMPATIBLE) == 0)
-		return SUNXI_REMOTEPROC_VARIANT_SUN8IW21_E907;
-	return SUNXI_REMOTEPROC_VARIANT_INVALID;
-}
-
 static inline __attribute__((always_inline)) bool
 sunxi_remoteproc_dt_string(int node, const char *property,
 				   const char **value) {
@@ -277,10 +229,7 @@ sunxi_remoteproc_dt_rtc(int node, sunxi_remoteproc_t *remoteproc,
 	rtc_node = dt2c_fdt_node_offset_by_phandle(
 			DT2C_FDT_COMPILED_TREE, dt2c_fdt32_to_cpu(phandle[0]));
 	if (rtc_node < 0 || rtc->dt_node != rtc_node ||
-	    !syterkit_dt_node_available(rtc_node) ||
-	    dt2c_fdt_node_check_compatible(
-			DT2C_FDT_COMPILED_TREE, rtc_node,
-			SUNXI_RTC_COMPATIBLE) != 0)
+	    !syterkit_dt_node_available(rtc_node))
 		return false;
 	remoteproc->rtc = rtc;
 	return true;
@@ -290,11 +239,7 @@ static inline __attribute__((always_inline)) int
 sunxi_remoteproc_dt_read_config(sunxi_remoteproc_t *remoteproc, int node,
 					sunxi_rtc_t *rtc) {
 	sunxi_remoteproc_t config = {0};
-	sunxi_remoteproc_variant_t variant;
-
-	variant = sunxi_remoteproc_dt_variant(node);
 	if (remoteproc == NULL || node < 0 ||
-	    variant == SUNXI_REMOTEPROC_VARIANT_INVALID ||
 	    !syterkit_dt_node_available(node) ||
 	    !sunxi_remoteproc_dt_registers(node, &config) ||
 	    !sunxi_remoteproc_dt_primary_firmware(node, &config) ||
@@ -306,8 +251,8 @@ sunxi_remoteproc_dt_read_config(sunxi_remoteproc_t *remoteproc, int node,
 		return DRIVER_ERROR_INVALID;
 
 	config.dt_node = node;
-	if (sunxi_remoteproc_bind(&config, variant) != DRIVER_OK ||
-	    config.ops == NULL)
+	config.ops = &sunxi_remoteproc_ops;
+	if (config.ops == NULL)
 		return DRIVER_ERROR_INVALID;
 	*remoteproc = config;
 	SYTERKIT_DT_TRACE_NODE("remoteproc", node);

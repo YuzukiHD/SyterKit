@@ -1,46 +1,11 @@
 $schema: http://devicetree.org/meta-schemas/core.yaml#
-title: Allwinner DRAM controller parameters used by SyterKit
+title: Allwinner DRAM parameters used by SyterKit
 
 properties:
   compatible:
-    type: string
-    enum:
-      - allwinner,sun20iw1-dram
-      - allwinner,sun252iw1-dram
-      - allwinner,sun300iw1-dram
-      - allwinner,sun50iw9-dram
-      - allwinner,sun50iw10-dram
-      - allwinner,sun55iw3-dram
-      - allwinner,sun55iw6-dram
-      - allwinner,sun60iw2-dram
-      - allwinner,sun65iw1-dram
-      - allwinner,sun8iw20-dram
-      - allwinner,sun8iw21-dram
-      - allwinner,sun8iw22-dram
-  reg:
-    type: reg
-    description: |
-      sun20iw1, sun8iw20 and sun8iw21 use this order: CCU, MCTL COM,
-      MCTL PHY, system control, SID, R-CPUCFG and R-PRCM. sun300iw1
-      uses this order: application CCU, always-on CCU, MCTL COM,
-      MCTL PHY, system control, PRCM and PMU RTC.
-  memory-region:
-    type: phandle
-    description: Reserved SRAM used to copy and execute external DRAM init code.
-  allwinner,dram-memory:
-    type: phandle
-    description: |
-      CPU-visible DRAM address window used by controller training. The target
-      must be an available memory node with device_type "memory" and one reg
-      address/size pair.
+    const: allwinner,sunxi-dram
   allwinner,dram-parameters:
     type: uint32-array
-  allwinner,primary-pmu:
-    type: phandle
-  allwinner,secondary-pmu:
-    type: phandle
-  allwinner,rtc:
-    type: phandle
   status:
     type: string
     enum: [okay, disabled]
@@ -48,34 +13,5 @@ properties:
 required:
   - compatible
   - allwinner,dram-parameters
-
-allOf:
-  - if:
-      properties:
-        compatible:
-          enum:
-            - allwinner,sun20iw1-dram
-            - allwinner,sun300iw1-dram
-            - allwinner,sun8iw20-dram
-            - allwinner,sun8iw21-dram
-    then:
-      required:
-        - reg
-        - allwinner,dram-memory
-  - if:
-      properties:
-        compatible:
-          const: allwinner,sun8iw21-dram
-    then:
-      required:
-        - allwinner,rtc
-  - if:
-      properties:
-        compatible:
-          const: allwinner,sun50iw9-dram
-    then:
-      required:
-        - allwinner,rtc
-        - memory-region
 
 dt2c,device: true

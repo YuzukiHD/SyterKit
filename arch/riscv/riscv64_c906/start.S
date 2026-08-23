@@ -38,7 +38,7 @@ _start:
 	csrs mstatus, t0
 
 	jal set_timer_count
-	jal do_initcalls
+
 	jal main
 
 1:	wfi

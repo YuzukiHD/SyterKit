@@ -101,37 +101,33 @@ int axp_get_vol(axp_pmu_t *pmu, char *name,
  *
  * This macro generates a set of function prototypes for controlling and
  * interacting with a specified AXP Power Management Unit (PMU) chip.
- * 
+ *
  * The generated functions are:
- * - `pmu_<name>_init`: Initializes the PMU for the specified device.
- * - `pmu_<name>_get_vol`: Retrieves the voltage of a specified power rail.
- * - `pmu_<name>_set_vol`: Sets the voltage of a specified power rail.
- * - `pmu_<name>_dump`: Dumps the internal registers and status of the PMU.
+ * - `pmu_<chip>_config`: Binds the PMU instance to its I2C controller.
+ * - `pmu_<chip>_init`: Initializes the PMU for the specified device.
+ * - `pmu_<chip>_get_vol`: Retrieves the voltage of a specified power rail.
+ * - `pmu_<chip>_set_vol`: Sets the voltage of a specified power rail.
+ * - `pmu_<chip>_dump`: Dumps the internal registers and status of the PMU.
  *
  * Example usage:
  * ```c
  * DEFINE_AXP_PMU(axp2202);
  * ```
- * This will generate the following function prototypes:
- * - `int pmu_axp2202_init(sunxi_i2c_t *i2c_dev);`
- * - `int pmu_axp2202_get_vol(sunxi_i2c_t *i2c_dev, char *name);`
- * - `int pmu_axp2202_set_vol(sunxi_i2c_t *i2c_dev, char *name, int set_vol, int onoff);`
- * - `void pmu_axp2202_dump(sunxi_i2c_t *i2c_dev);`
- * 
- * @param name The name of the PMU chip (e.g., axp2202, axp221, etc.).
+ * @param chip PMU chip name used in the generated function names.
  */
-#define DEFINE_AXP_PMU(name)                                                            \
-	int pmu_##name##_init(axp_pmu_t *pmu);                                        \
-	int pmu_##name##_get_vol(axp_pmu_t *pmu, char *name);                         \
-	int pmu_##name##_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff); \
-	void pmu_##name##_dump(axp_pmu_t *pmu);
+#define DEFINE_AXP_PMU(chip)                                                   \
+	int pmu_##chip##_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c);              \
+	int pmu_##chip##_init(axp_pmu_t *pmu);                                  \
+	int pmu_##chip##_get_vol(axp_pmu_t *pmu, char *name);                   \
+	int pmu_##chip##_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff); \
+	void pmu_##chip##_dump(axp_pmu_t *pmu);
 
 /* AXP PMU defines */
 DEFINE_AXP_PMU(axp1530);
-DEFINE_AXP_PMU(axp2202);
 DEFINE_AXP_PMU(axp2101);
-DEFINE_AXP_PMU(axp8191);
+DEFINE_AXP_PMU(axp2202);
 DEFINE_AXP_PMU(axp333);
+DEFINE_AXP_PMU(axp8191);
 
 /* Extra */
 /**

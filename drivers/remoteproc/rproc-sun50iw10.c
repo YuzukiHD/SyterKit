@@ -93,20 +93,8 @@ static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc,
 		asm volatile("wfi");
 }
 
-static const sunxi_remoteproc_ops_t sun50iw10_ar100_ops = {
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.load_buffer = sun50iw10_ar100_load_buffer,
 };
-
-int sunxi_remoteproc_bind(sunxi_remoteproc_t *remoteproc,
-			  sunxi_remoteproc_variant_t variant) {
-	if (remoteproc == NULL ||
-	    variant != SUNXI_REMOTEPROC_VARIANT_SUN50IW10_AR100 ||
-	    remoteproc->register_count != 2U ||
-	    remoteproc->registers[SUN50IW10_AR100_SYSCTRL].size < 0x28U ||
-	    remoteproc->registers[SUN50IW10_AR100_RCPU_CFG].size < 0x4U)
-		return DRIVER_ERROR_INVALID;
-	remoteproc->ops = &sun50iw10_ar100_ops;
-	return DRIVER_OK;
-}
 
 DT2C_DRIVER_COMPAT("allwinner,sun50iw10-ar100");
