@@ -310,6 +310,21 @@ sunxi_remoteproc_dt_read_config(sunxi_remoteproc_t *remoteproc, int node,
 	    config.ops == NULL)
 		return DRIVER_ERROR_INVALID;
 	*remoteproc = config;
+	SYTERKIT_DT_TRACE_NODE("remoteproc", node);
+	SYTERKIT_DT_TRACE("remoteproc config format=%u entry=%p entry_from_elf=%u firmware=%lu maps=%lu registers=%lu rtc=%p\n",
+			 remoteproc->format, (void *) remoteproc->entry,
+			 remoteproc->entry_from_elf,
+			 (unsigned long) remoteproc->firmware_count,
+			 (unsigned long) remoteproc->address_map_count,
+			 (unsigned long) remoteproc->register_count,
+			 (void *) remoteproc->rtc);
+	for (size_t index = 0U; index < remoteproc->firmware_count; ++index) {
+		SYTERKIT_DT_TRACE("remoteproc firmware[%lu] name=%s address=%p size=0x%lx\n",
+				 (unsigned long) index,
+				 remoteproc->firmware[index].name,
+				 (void *) remoteproc->firmware[index].load_address,
+				 (unsigned long) remoteproc->firmware[index].region_size);
+	}
 	return DRIVER_OK;
 }
 

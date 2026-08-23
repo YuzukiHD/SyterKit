@@ -38,6 +38,12 @@ sunxi_gic_dt_read_config(sunxi_gic_t *gic, int node) {
 		return DRIVER_ERROR_INVALID;
 
 	*gic = config;
+	SYTERKIT_DT_TRACE_NODE("gic", node);
+	SYTERKIT_DT_TRACE("gic config distributor=%p/0x%lx cpu=%p/0x%lx irq_count=%u\n",
+			 (void *) gic->distributor_base,
+			 (unsigned long) gic->distributor_size,
+			 (void *) gic->cpu_interface_base,
+			 (unsigned long) gic->cpu_interface_size, gic->irq_count);
 	return DRIVER_OK;
 }
 

@@ -40,6 +40,9 @@ spi_nor_dt_read_config(spi_nor_t *nor, int node, sunxi_spi_t *spi) {
 	config.max_frequency = max_frequency;
 	config.spi = spi;
 	*nor = config;
+	SYTERKIT_DT_TRACE_NODE("spi-nor", node);
+	SYTERKIT_DT_TRACE("spi-nor config spi=%p chip_select=%u max_frequency=%u\n",
+			 (void *) nor->spi, nor->chip_select, nor->max_frequency);
 	return DRIVER_OK;
 }
 

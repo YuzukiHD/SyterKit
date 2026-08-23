@@ -140,6 +140,24 @@ sunxi_spi_dt_read_config(sunxi_spi_t *spi, int node,
 	spi->spi_clk.spi_clock_freq = 0U;
 	spi->spi_clk.cdr_mode = (spi_clk_cdr_mode_t) cdr_mode;
 	spi->dma_handler = 0U;
+	SYTERKIT_DT_TRACE_NODE("spi", node);
+	SYTERKIT_DT_TRACE("spi config base=%p id=%u rate=%u dma=%p drq=%u cs=%u/%u sck=%u/%u mosi=%u/%u miso=%u/%u\n",
+			 (void *) spi->base, spi->id, spi->clk_rate,
+			 (void *) spi->dma_handle, spi->dma_rx_drq,
+			 spi->gpio.gpio_cs.pin, spi->gpio.gpio_cs.mux,
+			 spi->gpio.gpio_sck.pin, spi->gpio.gpio_sck.mux,
+			 spi->gpio.gpio_mosi.pin, spi->gpio.gpio_mosi.mux,
+			 spi->gpio.gpio_miso.pin, spi->gpio.gpio_miso.mux);
+	SYTERKIT_DT_TRACE("spi clock parent=%u gate=%p:%u reset=%p:%u module=%p source=%u n=%u cdr=%u\n",
+			 spi->parent_clk_reg.parent_clk,
+			 (void *) spi->parent_clk_reg.gate_reg_base,
+			 spi->parent_clk_reg.gate_reg_offset,
+			 (void *) spi->parent_clk_reg.rst_reg_base,
+			 spi->parent_clk_reg.rst_reg_offset,
+			 (void *) spi->spi_clk.spi_clock_cfg_base,
+			 spi->spi_clk.spi_clock_source,
+			 spi->spi_clk.spi_clock_factor_n_offset,
+			 spi->spi_clk.cdr_mode);
 	return DRIVER_OK;
 }
 

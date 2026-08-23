@@ -54,6 +54,15 @@ sunxi_dma_dt_read_config(sunxi_dma_t *dma, int node) {
 	dma->dma_clk.parent_clk = 0U;
 	dma->interrupt_count = 0;
 	dma->initialized = false;
+	SYTERKIT_DT_TRACE_NODE("dma", node);
+	SYTERKIT_DT_TRACE("dma config base=%p mbus=%p:%u gate=%p:%u reset=%p:%u\n",
+			 (void *) dma->dma_reg_base,
+			 (void *) dma->bus_clk.gate_reg_base,
+			 dma->bus_clk.gate_reg_offset,
+			 (void *) dma->dma_clk.gate_reg_base,
+			 dma->dma_clk.gate_reg_offset,
+			 (void *) dma->dma_clk.rst_reg_base,
+			 dma->dma_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 

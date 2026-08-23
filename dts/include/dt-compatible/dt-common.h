@@ -9,6 +9,82 @@
 
 #include <dt2c/dt.h>
 
+#ifdef TRACE_MODE
+#include <log.h>
+#endif
+
+#if defined(TRACE_MODE) && LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
+static inline __attribute__((always_inline)) bool
+syterkit_dt_trace_is_string(const void *data, int length) {
+	const uint8_t *bytes = (const uint8_t *) data;
+	int index;
+
+	if (bytes == NULL || length < 2 || bytes[length - 1] != '\0')
+		return false;
+	for (index = 0; index < length - 1; ++index) {
+		if (bytes[index] < ' ' || bytes[index] > '~')
+			return false;
+	}
+	return true;
+}
+
+static inline __attribute__((always_inline)) void
+syterkit_dt_trace_bytes(const char *prefix, const void *data, size_t size) {
+	const uint8_t *bytes = (const uint8_t *) data;
+	size_t index;
+
+	uart_printf("%s", prefix);
+	for (index = 0; index < size; ++index) {
+		if (index != 0U && index % 16U == 0U)
+			uart_printf("\n                 ");
+		uart_printf(" %02x", bytes[index]);
+	}
+	uart_printf("\n");
+}
+
+static inline __attribute__((always_inline)) void
+syterkit_dt_trace_node(const char *driver, int node) {
+	const struct dt2c_fdt_property *property;
+	const char *name;
+	const char *property_name;
+	const void *value;
+	int length;
+	int property_offset;
+
+	name = dt2c_fdt_get_name(DT2C_FDT_COMPILED_TREE, node, NULL);
+	printk_trace("DT: %s node=%d name=%s\n", driver, node,
+		     name != NULL ? name : "<unknown>");
+	dt2c_fdt_for_each_property_offset(property_offset,
+					 DT2C_FDT_COMPILED_TREE, node) {
+		property = dt2c_fdt_get_property_by_offset(
+				DT2C_FDT_COMPILED_TREE, property_offset, &length);
+		if (property == NULL || length < 0)
+			continue;
+		property_name = dt2c_fdt_string(
+				DT2C_FDT_COMPILED_TREE,
+				(int) dt2c_fdt32_to_cpu(property->nameoff));
+		value = property->data;
+		if (property_name == NULL)
+			property_name = "<unknown>";
+		if (syterkit_dt_trace_is_string(value, length)) {
+			printk_trace("DT:   %s.%s = \"%s\"\n", driver,
+				     property_name, (const char *) value);
+			continue;
+		}
+		printk_trace("DT:   %s.%s (%d bytes) =", driver,
+			     property_name, length);
+		syterkit_dt_trace_bytes("", value, (size_t) length);
+	}
+}
+
+#define SYTERKIT_DT_TRACE_NODE(driver, node) \
+	syterkit_dt_trace_node((driver), (node))
+#define SYTERKIT_DT_TRACE(fmt, ...) printk_trace("DT: " fmt, ##__VA_ARGS__)
+#else
+#define SYTERKIT_DT_TRACE_NODE(driver, node) ((void) 0)
+#define SYTERKIT_DT_TRACE(fmt, ...) ((void) 0)
+#endif
+
 static inline __attribute__((always_inline)) bool
 syterkit_dt_string_equal(const char *value, int length,
 			 const char *expected, size_t expected_length) {

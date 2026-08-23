@@ -70,6 +70,13 @@ sunxi_usb_dt_read_config(sunxi_usb_t *usb, int node) {
 		return DRIVER_ERROR_INVALID;
 
 	*usb = config;
+	SYTERKIT_DT_TRACE_NODE("usb", node);
+	SYTERKIT_DT_TRACE("usb config base=%p id=%u irq=%u phy=%p:%u/%u bus=%p:%u/%u\n",
+			 (void *) usb->base, usb->id, usb->irq,
+			 (void *) usb->phy_clock_reg_base,
+			 usb->phy_clock_gate_offset, usb->phy_reset_offset,
+			 (void *) usb->clock_gate_reg_base,
+			 usb->clock_gate_offset, usb->reset_offset);
 	return DRIVER_OK;
 }
 

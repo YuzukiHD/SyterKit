@@ -38,6 +38,10 @@ sunxi_clic_dt_read_config(sunxi_clic_t *clic, int node) {
 	clic->size = size;
 	clic->irq_count = sources;
 	clic->initialized = false;
+	SYTERKIT_DT_TRACE_NODE("clic", node);
+	SYTERKIT_DT_TRACE("clic config base=%p size=0x%lx irq_count=%u\n",
+			 (void *) clic->base, (unsigned long) clic->size,
+			 clic->irq_count);
 	return DRIVER_OK;
 }
 

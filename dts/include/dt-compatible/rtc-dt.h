@@ -30,6 +30,9 @@ sunxi_rtc_dt_read_config(sunxi_rtc_t *rtc, int node) {
 		return DRIVER_ERROR_INVALID;
 
 	*rtc = config;
+	SYTERKIT_DT_TRACE_NODE("rtc", node);
+	SYTERKIT_DT_TRACE("rtc config base=%p size=0x%x\n",
+			 (void *) rtc->data_base, rtc->data_size);
 	return DRIVER_OK;
 }
 
