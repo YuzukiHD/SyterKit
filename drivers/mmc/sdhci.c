@@ -38,15 +38,18 @@ static void sunxi_sdhci_sync_all_cache(void) {
  * @return Returns 0 on success.
  */
 static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci) {
-	/* Assert AHB Gate and RST clock */
-	clrbits_le32(sdhci->clk_ctrl.rst_reg_base, BIT(sdhci->clk_ctrl.rst_reg_offset));
+	if (sdhci == NULL)
+		return -1;
+
+	/* Match SPL hal_clk_disable/enable: close the gate and assert reset,
+	 * then release reset before reopening the gate. */
 	clrbits_le32(sdhci->clk_ctrl.gate_reg_base, BIT(sdhci->clk_ctrl.gate_reg_offset));
+	clrbits_le32(sdhci->clk_ctrl.rst_reg_base, BIT(sdhci->clk_ctrl.rst_reg_offset));
 
 	udelay(10);
 
-	/* Configure AHB Gate and RST clock */
-	setbits_le32(sdhci->clk_ctrl.gate_reg_base, BIT(sdhci->clk_ctrl.gate_reg_offset));
 	setbits_le32(sdhci->clk_ctrl.rst_reg_base, BIT(sdhci->clk_ctrl.rst_reg_offset));
+	setbits_le32(sdhci->clk_ctrl.gate_reg_base, BIT(sdhci->clk_ctrl.gate_reg_offset));
 
 	/* Enable module clock */
 	setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
@@ -66,7 +69,7 @@ static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci) {
  */
 static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci) {
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
-	uint32_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + SMHC_TIMEOUT;
 
 	mmc_host->reg->clkcr |= SMHC_CLKCR_MASK_D0;
 	mmc_host->reg->cmd = SMHC_CMD_START | SMHC_CMD_UPCLK_ONLY | SMHC_CMD_WAIT_PRE_OVER;
@@ -354,7 +357,10 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 	}
 
 	/* Now set mclk */
-	sunxi_sdhci_set_mclk(sdhci, module_clk);
+	if (sunxi_sdhci_set_mclk(sdhci, module_clk)) {
+		printk_warning("SMHC: failed to set module clock to %luHz\n", module_clk);
+		return -1;
+	}
 
 	/* Now set clock by mclk we get */
 	if ((mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) || (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3)) {
@@ -423,7 +429,10 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk) {
 			break;
 	}
 
-	sunxi_sdhci_config_delay(sdhci, mmc->speed_mode, freq_id);
+	if (sunxi_sdhci_config_delay(sdhci, mmc->speed_mode, freq_id) != 0) {
+		printk_debug("SMHC: failed to configure sampling delay\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -629,8 +638,16 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci) {
  */
 static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data) {
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
-	uint32_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + SMHC_TIMEOUT;
+	uint32_t byte_cnt;
 	uint32_t *buff;
+
+	if (data->blocks == 0U || data->blocksize == 0U ||
+	    data->blocksize > 0xffffffffU / data->blocks)
+		return -1;
+	byte_cnt = data->blocksize * data->blocks;
+	if ((byte_cnt & 0x3U) != 0U)
+		return -1;
 
 	// Determine the buffer based on the direction of data transfer
 	if (data->flags & MMC_DATA_READ) {
@@ -648,6 +665,17 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		}
 	} else {
 		buff = (uint32_t *) data->b.src;// Source buffer for write operation
+		for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
+			while (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL && (time_us() < timeout)) {}
+			if (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL) {
+				if (time_us() >= timeout) {
+					printk_debug("SMHC: write by CPU failed, timeout, index %u\n", i);
+				}
+				return -1;
+			}
+			mmc_host->reg->fifo = buff[i];
+			timeout = time_us() + SMHC_TIMEOUT;
+		}
 	}
 
 	return 0;// Return success indication
@@ -669,7 +697,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	uint32_t byte_cnt = data->blocksize * data->blocks;
 	uint8_t *buff;
 	uint32_t des_idx = 0, buff_frag_num = 0, remain = 0;
-	uint32_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + SMHC_TIMEOUT;
 
 	buff = data->flags & MMC_DATA_READ ? (uint8_t *) data->b.dest : (uint8_t *) data->b.src;
 	buff_frag_num = byte_cnt >> SMHC_DES_NUM_SHIFT;
@@ -828,7 +856,7 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci) {
  */
 int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci) {
 	uint32_t reg_val = 0x0;
-	uint32_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + SMHC_TIMEOUT;
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 
 	/* Reset controller */
@@ -881,9 +909,11 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci) {
  * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
+	if (sdhci == NULL || cmd == NULL)
+		return -1;
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint32_t cmdval = SMHC_CMD_START;
-	uint32_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + SMHC_TIMEOUT;
 	uint32_t status;
 	int ret = 0, error_code = 0;
 	uint8_t use_dma_status = false;
@@ -931,9 +961,31 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 		cmdval |= SMHC_CMD_CHECK_RESPONSE_CRC;
 
 	if (data) {
+		/* A data command must describe exactly one transfer direction.  The
+		 * old test treated "no flag" as write and accepted both flags, which
+		 * could program CMD.WRITE one way while selecting the buffer the other
+		 * way. */
+		if ((data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == 0U ||
+		    (data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) ==
+			    (MMC_DATA_READ | MMC_DATA_WRITE)) {
+			printk_debug("SMHC: invalid data direction flags 0x%x\n",
+				     data->flags);
+			error_code = -1;
+			goto out;
+		}
+		if (data->blocks == 0U || data->blocksize == 0U ||
+		    data->blocksize > 0xffffffffU / data->blocks ||
+		    ((data->flags & MMC_DATA_READ) && data->b.dest == NULL) ||
+		    ((data->flags & MMC_DATA_WRITE) && data->b.src == NULL)) {
+			printk_debug("SMHC: invalid data length\n");
+			error_code = -1;
+			goto out;
+		}
 		/* Check data desc align */
-		if ((uintptr_t) data->b.dest & 0x3) {
-			printk_debug("SMHC: data dest is not 4 byte align\n");
+		const void *buffer = (data->flags & MMC_DATA_READ) ?
+				data->b.dest : data->b.src;
+		if ((uintptr_t) buffer & 0x3U) {
+			printk_debug("SMHC: data buffer is not 4 byte align\n");
 			error_code = -1;
 			goto out;
 		}
@@ -1052,7 +1104,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data) {
 		}
 	}
 
-	if (cmd->resp_type & MMC_RSP_BUSY) {
+	/* Data writes can leave the card busy even when the command response is R1. */
+	if ((cmd->resp_type & MMC_RSP_BUSY) ||
+		(data && (data->flags & MMC_DATA_WRITE))) {
 		timeout = time_us() + SMHC_WAITBUSY_TIMEOUT;
 		do {
 			status = mmc_host->reg->status;
@@ -1154,6 +1208,9 @@ int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci) {
  * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
+	if (sdhci == NULL)
+		return -1;
+
 	/* Check if controller ID is correct */
 	if (sdhci->id > MMC_CONTROLLER_2) {
 		printk_debug("SMHC: Unsupported MAX Controller reached\n");
@@ -1204,7 +1261,8 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci) {
 
 	/* Configure pins and enable clocks */
 	sunxi_sdhci_pin_config(sdhci);
-	sunxi_sdhci_clk_enable(sdhci);
+	if (sunxi_sdhci_clk_enable(sdhci))
+		return -1;
 
 	return 0;
 }
