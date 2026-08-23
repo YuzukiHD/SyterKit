@@ -27,8 +27,7 @@ extern int init_DRAM(int type, void *buff);
 
 int set_ddr_voltage(uint32_t vol_val) {
 	printk_debug("Setting DDR voltage to %u mV for axp323 dcdc3\n", vol_val);
-	pmu_axp1530_set_vol(dram_secondary_pmu, "dcdc3", vol_val, 1);
-	return 0;
+	return pmu_axp1530_set_vol(dram_secondary_pmu, "dcdc3", vol_val, 1);
 }
 
 void get_vdd_sys_pmu_id(void) {
@@ -65,8 +64,9 @@ int set_vdd_sys_reg(int set_vol, int onoff) {
 	reg_value &= ~0x7f;
 	set_vol &= 0x7f;
 	reg_value |= set_vol;
-	sunxi_i2c_write(pmu->i2c, pmu->address,
-			AXP2202_DC2OUT_VOL, reg_value);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_DC2OUT_VOL, reg_value))
+		return -1;
 
 	/* set on/onff */
 	if (sunxi_i2c_read(pmu->i2c, pmu->address,
@@ -78,8 +78,9 @@ int set_vdd_sys_reg(int set_vol, int onoff) {
 	} else {
 		reg_value |= (1 << 1);
 	}
-	sunxi_i2c_write(pmu->i2c, pmu->address,
-			AXP2202_OUTPUT_CTL0, reg_value);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_OUTPUT_CTL0, reg_value))
+		return -1;
 
 	printk_debug("Setting VDD_SYS to %d mV, state: %s\n",
 		     pmu_axp2202_get_vol(pmu, "dcdc2"),
