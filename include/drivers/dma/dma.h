@@ -57,6 +57,9 @@ typedef struct {
 typedef struct {
 	void *m_data;
 	void (*m_func)(void);
+	/* The current public API has no callback argument, but still needs to
+	 * distinguish a registered interrupt from an empty handler slot. */
+	bool registered;
 } sunxi_dma_irq_handler_t;
 
 typedef struct {

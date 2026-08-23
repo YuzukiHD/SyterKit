@@ -29,12 +29,23 @@
  * @param dma Pointer to DMA configuration structure containing clock register information
  */
 void sunxi_dma_clk_init(sunxi_dma_t *dma) {
-	/* DMA : mbus clock gating */
-	setbits_le32(dma->bus_clk.gate_reg_base, BIT(dma->bus_clk.gate_reg_offset));
-	/* DMA reset */
-	setbits_le32(dma->dma_clk.rst_reg_base, BIT(dma->dma_clk.rst_reg_offset));
-	/* DMA gating */
-	setbits_le32(dma->dma_clk.gate_reg_base, BIT(dma->dma_clk.gate_reg_offset));
+	if (dma == NULL)
+		return;
+
+	/* Match SPL's clock disable/enable sequence.  Keep the MBUS gate on
+	 * because it may be shared: close gate, assert reset, then release reset
+	 * before reopening the module gate. */
+	clrbits_le32(dma->dma_clk.gate_reg_base,
+		     BIT(dma->dma_clk.gate_reg_offset));
+	clrbits_le32(dma->dma_clk.rst_reg_base,
+		     BIT(dma->dma_clk.rst_reg_offset));
+	udelay(10);
+	setbits_le32(dma->bus_clk.gate_reg_base,
+		     BIT(dma->bus_clk.gate_reg_offset));
+	setbits_le32(dma->dma_clk.rst_reg_base,
+		     BIT(dma->dma_clk.rst_reg_offset));
+	setbits_le32(dma->dma_clk.gate_reg_base,
+		     BIT(dma->dma_clk.gate_reg_offset));
 }
 
 /**
@@ -105,8 +116,14 @@ void sunxi_dma_exit(sunxi_dma_t *dma) {
 		}
 	}
 
-	/* Close DMA clock when exiting */
-	dma_reg->auto_gate &= ~(1 << dma->dma_clk.gate_reg_offset | 1 << dma->dma_clk.rst_reg_offset);
+	/* Close the clocks through their clock-control registers.  auto_gate is a
+	 * DMA policy register, not the gate/reset register described by DTS. */
+	clrbits_le32(dma->dma_clk.gate_reg_base,
+		     BIT(dma->dma_clk.gate_reg_offset));
+	clrbits_le32(dma->dma_clk.rst_reg_base,
+		     BIT(dma->dma_clk.rst_reg_offset));
+	clrbits_le32(dma->bus_clk.gate_reg_base,
+		     BIT(dma->bus_clk.gate_reg_offset));
 
 	// Disable all interrupts
 	dma_reg->irq_en0 = 0;
@@ -177,6 +194,12 @@ int sunxi_dma_release(uintptr_t dma_fd) {
 		return -1;
 	}
 
+	/* A released channel must not remain active after its ownership is
+	 * returned.  This matters for SPI/MMC error paths where the transfer may
+	 * still be in flight when cleanup starts. */
+	if (dma_source->channel != NULL)
+		dma_source->channel->enable = 0;
+
 	// Disable and free interrupts
 	sunxi_dma_disable_int(dma_fd);
 	sunxi_dma_free_int(dma_fd);
@@ -236,7 +259,8 @@ int sunxi_dma_start(uintptr_t dma_fd, uintptr_t saddr, uintptr_t daddr, uint32_t
 	sunxi_dma_channel_reg_t *channel;
 	sunxi_dma_desc_t *desc;
 
-	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL)
+	if (dma_source == NULL || !dma_source->used || dma_source->owner == NULL ||
+	    bytes == 0U)
 		return -1;
 	channel = dma_source->channel;
 	desc = dma_source->desc;
@@ -319,11 +343,14 @@ int sunxi_dma_install_int(uintptr_t dma_fd, void *p) {
 		dma_reg->irq_pending1 = (7 << (channel_count - 8) * 4);
 
 	// Set up interrupt function if not already set
-	if (!dma_source->dma_func.m_func) {
-		dma_source->dma_func.m_func = 0;
+	if (!dma_source->dma_func.registered) {
+		/* There is no controller-wide ISR dispatch API in SyterKit yet.  Keep
+		 * the registration state correct so release/exit can cleanly unwind. */
 		dma_source->dma_func.m_data = p;
+		dma_source->dma_func.registered = true;
 	} else {
 		printk_error("DMA: %p int is used already, you have to free it first\n", (void *) dma_fd);
+		return -1;
 	}
 
 	return 0;
@@ -428,14 +455,14 @@ int sunxi_dma_free_int(uintptr_t dma_fd) {
 	channel_count = dma_source->channel_count;
 	// Clear pending interrupts
 	if (channel_count < 8)
-		dma_reg->irq_pending0 = (7 << channel_count);
+		dma_reg->irq_pending0 = (7 << (channel_count * 4));
 	else
-		dma_reg->irq_pending1 = (7 << (channel_count - 8));
+		dma_reg->irq_pending1 = (7 << ((channel_count - 8) * 4));
 
 	// Free the interrupt handler if set
-	if (dma_source->dma_func.m_func) {
-		dma_source->dma_func.m_func = NULL;
+	if (dma_source->dma_func.registered) {
 		dma_source->dma_func.m_data = NULL;
+		dma_source->dma_func.registered = false;
 	} else {
 		printk_debug("DMA: %p int is free, you do not need to free it again\n", (void *) dma_fd);
 		return -1;
