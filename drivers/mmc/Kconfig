@@ -1,6 +1,43 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+menu "MMC driver"
+
 config DRIVER_MMC
 	bool "MMC controller support"
 
+choice
+	prompt "MMC driver log level"
+	default DRIVER_MMC_LOG_TRACE if BUILD_TRACE
+	default DRIVER_MMC_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_MMC_LOG_GLOBAL
+	depends on DRIVER_MMC
+
+config DRIVER_MMC_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_MMC_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_MMC_LOG_ERROR
+	bool "Error"
+
+config DRIVER_MMC_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_MMC_LOG_INFO
+	bool "Info"
+
+config DRIVER_MMC_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_MMC_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_MMC_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
 source "drivers/mmc/host/Kconfig"
+
+endmenu

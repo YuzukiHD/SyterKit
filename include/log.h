@@ -38,6 +38,12 @@ extern "C" {
 
 #endif// LOG_LEVEL_DEFAULT
 
+/* Driver subdirectories may override the global threshold per build unit. */
+#ifdef DRIVER_LOG_LEVEL
+#undef LOG_LEVEL_DEFAULT
+#define LOG_LEVEL_DEFAULT DRIVER_LOG_LEVEL
+#endif
+
 #define no_printk(level, fmt, ...)                 \
 	do {                                         \
 		if (0)                                 \

@@ -1,4 +1,41 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+menu "PMU driver"
+
 config DRIVER_PMIC_AXP
 	bool "AXP PMIC support"
+
+choice
+	prompt "PMU driver log level"
+	default DRIVER_PMU_LOG_TRACE if BUILD_TRACE
+	default DRIVER_PMU_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_PMU_LOG_GLOBAL
+	depends on DRIVER_PMIC_AXP
+
+config DRIVER_PMU_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_PMU_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_PMU_LOG_ERROR
+	bool "Error"
+
+config DRIVER_PMU_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_PMU_LOG_INFO
+	bool "Info"
+
+config DRIVER_PMU_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_PMU_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_PMU_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+endmenu

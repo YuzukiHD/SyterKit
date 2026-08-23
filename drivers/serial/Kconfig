@@ -1,4 +1,41 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+menu "Serial driver"
+
 config DRIVER_SERIAL
 	bool "Serial driver support"
+
+choice
+	prompt "Serial driver log level"
+	default DRIVER_SERIAL_LOG_TRACE if BUILD_TRACE
+	default DRIVER_SERIAL_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_SERIAL_LOG_GLOBAL
+	depends on DRIVER_SERIAL
+
+config DRIVER_SERIAL_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_SERIAL_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_SERIAL_LOG_ERROR
+	bool "Error"
+
+config DRIVER_SERIAL_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_SERIAL_LOG_INFO
+	bool "Info"
+
+config DRIVER_SERIAL_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_SERIAL_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_SERIAL_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+endmenu
