@@ -53,9 +53,13 @@ int pmu_axp333_init(axp_pmu_t *pmu) {
 		printk_info("PMU: Found AXP333 PMU\n");
 
 		reg_value = 0;
-		sunxi_i2c_read(pmu->i2c, pmu->address, AXP333_CHIP_ID_REG, &reg_value);
+		if (sunxi_i2c_read(pmu->i2c, pmu->address,
+				   AXP333_CHIP_ID_REG, &reg_value))
+			return -1;
 		reg_value |= 0x10;
-		sunxi_i2c_write(pmu->i2c, pmu->address, AXP333_CHIP_ID_REG, reg_value);
+		if (sunxi_i2c_write(pmu->i2c, pmu->address,
+				    AXP333_CHIP_ID_REG, reg_value))
+			return -1;
 
 		return AXP333_CHIP_ID;
 	}

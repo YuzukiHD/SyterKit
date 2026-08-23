@@ -97,33 +97,57 @@ int pmu_axp2202_init(axp_pmu_t *pmu) {
 
 	/* limit run current to 2A */
 	axp_val = 0x26;
-	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_VBUS_CUR_SET, axp_val);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_VBUS_CUR_SET, axp_val))
+		return -1;
 
 	/* set adc channel0 enable */
-	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_ADC_CH0, &axp_val);
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP2202_ADC_CH0, &axp_val))
+		return -1;
 	axp_val |= 0x33;
-	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_ADC_CH0, axp_val);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_ADC_CH0, axp_val))
+		return -1;
 
 	/*pmu set vsys min*/
-	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_VSYS_MIN, &axp_val);
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP2202_VSYS_MIN, &axp_val))
+		return -1;
 	axp_val = 0x06;
-	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_VSYS_MIN, axp_val);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_VSYS_MIN, axp_val))
+		return -1;
 
 	/*pmu dcdc1 uvp disable */
-	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_DCDC_PWEOFF_EN, &axp_val);
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP2202_DCDC_PWEOFF_EN, &axp_val))
+		return -1;
 	axp_val &= ~(1 << 0);
-	sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_DCDC_PWEOFF_EN, axp_val);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP2202_DCDC_PWEOFF_EN, axp_val))
+		return -1;
 
-	sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_VER_EXT, &axp_val);
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP2202_CHIP_VER_EXT, &axp_val))
+		return -1;
 
 	if (axp_val) {
-		sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_MODULE_EN, &axp_val);
+		if (sunxi_i2c_read(pmu->i2c, pmu->address,
+				   AXP2202_MODULE_EN, &axp_val))
+			return -1;
 		axp_val |= 0x10;
-		sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_MODULE_EN, axp_val);
+		if (sunxi_i2c_write(pmu->i2c, pmu->address,
+				    AXP2202_MODULE_EN, axp_val))
+			return -1;
 	} else {
-		sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_MODULE_EN, &axp_val);
+		if (sunxi_i2c_read(pmu->i2c, pmu->address,
+				   AXP2202_MODULE_EN, &axp_val))
+			return -1;
 		axp_val &= 0xEF;
-		sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_MODULE_EN, axp_val);
+		if (sunxi_i2c_write(pmu->i2c, pmu->address,
+				    AXP2202_MODULE_EN, axp_val))
+			return -1;
 	}
 
 	return 0;

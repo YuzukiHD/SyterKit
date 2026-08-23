@@ -105,26 +105,26 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 	{ "dldo5", 500, 3400, AXP8191_DLDO5OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 4, 0,
 	{ {500, 3400, 100}, } },
 
-	{ "dldo5", 500, 3400, AXP8191_DLDO5OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 5, 0,
+	{ "dldo6", 500, 3400, AXP8191_DLDO6OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 5, 0,
 	{ {500, 3400, 100}, } },
 
 	{ "eldo1", 500, 1500, AXP8191_ELDO1OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL3, 6, 0,
 	{ {500, 1500, 25}, } },
 
-	{ "eldo2", 500, 1500, AXP8191_ELDO2OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 7, 0,
-	{ {500, 1500, 100}, } },
+	{ "eldo2", 500, 1500, AXP8191_ELDO2OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL3, 7, 0,
+	{ {500, 1500, 25}, } },
 
-	{ "eldo3", 500, 1500, AXP8191_ELDO3OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 0, 0,
-	{ {500, 1500, 100}, } },
+	{ "eldo3", 500, 1500, AXP8191_ELDO3OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL3, 0, 0,
+	{ {500, 1500, 25}, } },
 
-	{ "eldo4", 500, 1500, AXP8191_ELDO4OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL3, 1, 0,
-	{ {500, 1500, 100}, } },
+	{ "eldo4", 500, 1500, AXP8191_ELDO4OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL3, 1, 0,
+	{ {500, 1500, 25}, } },
 
-	{ "eldo5", 500, 1500, AXP8191_ELDO5OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL4, 2, 0,
-	{ {500, 1500, 100}, } },
+	{ "eldo5", 500, 1500, AXP8191_ELDO5OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL4, 2, 0,
+	{ {500, 1500, 25}, } },
 
-	{ "eldo5", 500, 1500, AXP8191_ELDO5OUT_VOL, 0x1f, AXP8191_LDO_POWER_ON_OFF_CTL4, 3, 0,
-	{ {500, 1500, 100}, } },
+	{ "eldo6", 500, 1500, AXP8191_ELDO6OUT_VOL, 0x3f, AXP8191_LDO_POWER_ON_OFF_CTL4, 3, 0,
+	{ {500, 1500, 25}, } },
 };
 /* clang-format on */
 
@@ -151,17 +151,23 @@ int pmu_axp8191_init(axp_pmu_t *pmu) {
 		return -1;
 	}
 
-	sunxi_i2c_read(pmu->i2c, pmu->address,
-		       AXP8191_DCDC_POWER_ON_OFF_CTL1, &axp_val);
+	if (sunxi_i2c_read(pmu->i2c, pmu->address,
+			   AXP8191_DCDC_POWER_ON_OFF_CTL1, &axp_val))
+		return -1;
 	axp_val |= 0x08;
-	sunxi_i2c_write(pmu->i2c, pmu->address,
-			AXP8191_DCDC_POWER_ON_OFF_CTL1, axp_val);
+	if (sunxi_i2c_write(pmu->i2c, pmu->address,
+			    AXP8191_DCDC_POWER_ON_OFF_CTL1, axp_val))
+		return -1;
 
 	/* enable dcdc2~dcdc9 dvm */
 	for (int i = 0; i <= (AXP8191_DC9OUT_VOL - AXP8191_DC2OUT_VOL); i++) {
-		sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, &axp_val);
+		if (sunxi_i2c_read(pmu->i2c, pmu->address,
+				   AXP8191_DC2OUT_VOL + i, &axp_val))
+			return -1;
 		axp_val |= 0x80;
-		sunxi_i2c_write(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, axp_val);
+		if (sunxi_i2c_write(pmu->i2c, pmu->address,
+				    AXP8191_DC2OUT_VOL + i, axp_val))
+			return -1;
 	}
 
 	return AXP8191_CHIP_ID;
