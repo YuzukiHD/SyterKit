@@ -115,11 +115,87 @@ int cmd_bt(int argc, const char **argv) {
 	return 0;
 }
 
+static void __attribute__((noinline)) cmd_fault_illegal(void) {
+	__asm__ volatile (".word 0xffffffff" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_load(void) {
+	const uintptr_t address = (uintptr_t) 0xdead0000U;
+	uint32_t value;
+
+	__asm__ volatile ("lw %0, 0(%1)" : "=r" (value) : "r" (address) : "memory");
+	(void) value;
+}
+
+static void __attribute__((noinline)) cmd_fault_load_misaligned(void) {
+	volatile uint8_t storage[8] = {0x11, 0x22, 0x33, 0x44};
+	const uintptr_t address = (uintptr_t) &storage[1];
+	uint32_t value;
+
+	__asm__ volatile ("lw %0, 0(%1)" : "=r" (value) : "r" (address) : "memory");
+	(void) value;
+}
+
+static void __attribute__((noinline)) cmd_fault_store(void) {
+	const uintptr_t address = (uintptr_t) 0xdead0000U;
+	const uint32_t value = 0xdeadbeefU;
+
+	__asm__ volatile ("sw %0, 0(%1)" : : "r" (value), "r" (address) : "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_store_misaligned(void) {
+	volatile uint8_t storage[8] = {0};
+	const uintptr_t address = (uintptr_t) &storage[1];
+	const uint32_t value = 0xdeadbeefU;
+
+	__asm__ volatile ("sw %0, 0(%1)" : : "r" (value), "r" (address) : "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_ecall(void) {
+	__asm__ volatile ("ecall" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_breakpoint(void) {
+	__asm__ volatile ("ebreak" ::: "memory");
+}
+
+msh_declare_command(fault);
+msh_define_help(fault, "trigger an exception for backtrace testing",
+		"Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+int cmd_fault(int argc, const char **argv) {
+	if (argc != 2) {
+		printk_error("Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+		return -1;
+	}
+
+	if (strcmp(argv[1], "illegal") == 0)
+		cmd_fault_illegal();
+	else if (strcmp(argv[1], "load") == 0)
+		cmd_fault_load();
+	else if (strcmp(argv[1], "load-misaligned") == 0)
+		cmd_fault_load_misaligned();
+	else if (strcmp(argv[1], "store") == 0)
+		cmd_fault_store();
+	else if (strcmp(argv[1], "store-misaligned") == 0)
+		cmd_fault_store_misaligned();
+	else if (strcmp(argv[1], "ecall") == 0)
+		cmd_fault_ecall();
+	else if (strcmp(argv[1], "breakpoint") == 0)
+		cmd_fault_breakpoint();
+	else {
+		printk_error("fault: unknown type '%s'\n", argv[1]);
+		return -1;
+	}
+
+	return 0;
+}
+
 const msh_command_entry commands[] = {
 		msh_define_command(load),
 		msh_define_command(read),
 		msh_define_command(write),
 		msh_define_command(bt),
+		msh_define_command(fault),
 		msh_define_command(reset),
 		msh_command_end,
 };

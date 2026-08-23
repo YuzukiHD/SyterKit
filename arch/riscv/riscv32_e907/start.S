@@ -31,13 +31,17 @@ _start:
 
 	jal set_timer_count
 
+#ifdef CONFIG_ARCH_DCACHE
 	jal cache_init
 
 	jal icache_enable
 
 	jal dcache_enable
+#endif
 
 	fence.i
+
+	sync.is
 
 	jal main
 

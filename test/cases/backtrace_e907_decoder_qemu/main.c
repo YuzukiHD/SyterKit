@@ -6,8 +6,17 @@ int backtrace_test_riscv_call_size(uint32_t ins32, uint16_t ins16);
 int backtrace_test_riscv_push_lr(uint32_t inst, int *offset);
 int backtrace_test_riscv_stack_push(uint32_t inst);
 int backtrace_test_riscv_return(uint32_t inst);
+uint32_t __thead_uread4(const void *address);
 void qemu_puts(const char *text);
 void qemu_exit(int success);
+
+static const struct {
+	uint8_t padding;
+	uint8_t value[4];
+} __attribute__((packed)) unaligned_word = {
+	.padding = 0,
+	.value = {0x11, 0x22, 0x33, 0x44},
+};
 
 static int check(const char *name, int actual, int expected) {
 	if (actual != expected) {
@@ -36,6 +45,8 @@ void test_boot(void) {
 	passed &= check("sw-ra-offset", offset, 3);
 	passed &= check("addi-sp", backtrace_test_riscv_stack_push(0xfe010113U), 8);
 	passed &= check("ret", backtrace_test_riscv_return(0x00008067U), 0);
+	passed &= check("unaligned-read", __thead_uread4(unaligned_word.value),
+			0x44332211);
 	if (passed) {
 		qemu_puts("TEST PASS backtrace_e907_decoder_qemu\n");
 		qemu_exit(1);
