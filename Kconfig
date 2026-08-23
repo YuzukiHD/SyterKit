@@ -4,6 +4,7 @@ mainmenu "SyterKit Configuration"
 
 source "arch/Kconfig"
 source "drivers/Kconfig"
+source "core/Kconfig"
 source "lib/Kconfig"
 source "boards/Kconfig"
 
@@ -21,6 +22,7 @@ config BUILD_DEBUG
 
 config BUILD_TRACE
 	bool "Trace"
+	select UART_EARLY_LOG
 
 endchoice
 

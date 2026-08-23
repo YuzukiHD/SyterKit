@@ -46,6 +46,15 @@ char get_uart_input(void);
 void uart_log_putchar(void *arg, char c);
 
 /**
+ * @brief Mark the debug console ready and flush messages emitted during boot.
+ *
+ * The console driver calls this after the UART clock, registers, and pins have
+ * been initialized. Messages emitted before that point are kept in a small
+ * in-memory buffer by uart_log_putchar().
+ */
+void uart_log_console_ready(void);
+
+/**
  * @brief Tests whether a character is waiting in the UART input buffer.
  *
  * @return 1 if a character is waiting, 0 otherwise.

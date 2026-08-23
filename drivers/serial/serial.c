@@ -21,6 +21,7 @@
 
 #include <driver.h>
 #include <log.h>
+#include <uart.h>
 #include <drivers/serial/serial.h>
 #include <dt-compatible/serial-dt.h>
 
@@ -168,8 +169,15 @@ static int sunxi_serial_probe(struct device *device) {
 
 	if (uart == NULL)
 		return DRIVER_ERROR_INVALID;
+
 	sunxi_serial_init(uart);
+
+	if (uart == &uart_dbg)
+		/* Flush early logs at the first point where the console can transmit. */
+		uart_log_console_ready();
+
 	device_set_driver_data(device, uart);
+
 	return DRIVER_OK;
 }
 

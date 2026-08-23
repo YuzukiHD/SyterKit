@@ -13,23 +13,57 @@
 
 sunxi_serial_t uart_dbg;
 
-void uart_log_putchar(void *arg, char c) {
-	(void) arg;
-	if (c == '\n') {
-		/* If the character is a newline, transmit a carriage return before newline */
+#ifdef CONFIG_UART_EARLY_LOG
+#define UART_EARLY_LOG_BUFFER_SIZE CONFIG_UART_EARLY_LOG_BUFFER_SIZE
+
+static char uart_early_log_buffer[UART_EARLY_LOG_BUFFER_SIZE];
+static size_t uart_early_log_length;
+#endif
+static bool uart_log_console_is_ready;
+
+static void uart_log_putchar_hw(char c) {
+	if (c == '\n')
 		sunxi_serial_putc(&uart_dbg, '\r');
-	}
-	/* Transmit the character */
 	sunxi_serial_putc(&uart_dbg, c);
 }
 
-int uart_putchar(int c) {
-	if (c == '\n') {
-		/* If the character is a newline, transmit a carriage return before newline */
-		sunxi_serial_putc(&uart_dbg, '\r');
+#ifdef CONFIG_UART_EARLY_LOG
+static void uart_log_flush_early(void) {
+	size_t i;
+
+	for (i = 0; i < uart_early_log_length; i++)
+		uart_log_putchar_hw(uart_early_log_buffer[i]);
+	uart_early_log_length = 0;
+}
+#endif
+
+void uart_log_putchar(void *arg, char c) {
+	(void) arg;
+#ifdef CONFIG_UART_EARLY_LOG
+	if (!uart_log_console_is_ready) {
+		if (uart_early_log_length < UART_EARLY_LOG_BUFFER_SIZE)
+			uart_early_log_buffer[uart_early_log_length++] = c;
+		return;
 	}
-	/* Transmit the character */
-	sunxi_serial_putc(&uart_dbg, c);
+#else
+	if (!uart_log_console_is_ready)
+		return;
+#endif
+	uart_log_putchar_hw(c);
+}
+
+void uart_log_console_ready(void) {
+	if (uart_log_console_is_ready)
+		return;
+	uart_log_console_is_ready = true;
+#ifdef CONFIG_UART_EARLY_LOG
+	/* Emit all pre-console output immediately after UART initialization. */
+	uart_log_flush_early();
+#endif
+}
+
+int uart_putchar(int c) {
+	uart_log_putchar(NULL, (char) c);
 	/* Return success */
 	return 0;
 }
