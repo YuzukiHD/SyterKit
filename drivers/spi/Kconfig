@@ -1,4 +1,41 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+menu "SPI driver"
+
 config DRIVER_SPI
 	bool "SPI controller support"
+
+choice
+	prompt "SPI driver log level"
+	default DRIVER_SPI_LOG_TRACE if BUILD_TRACE
+	default DRIVER_SPI_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_SPI_LOG_GLOBAL
+	depends on DRIVER_SPI
+
+config DRIVER_SPI_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_SPI_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_SPI_LOG_ERROR
+	bool "Error"
+
+config DRIVER_SPI_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_SPI_LOG_INFO
+	bool "Info"
+
+config DRIVER_SPI_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_SPI_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_SPI_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+endmenu

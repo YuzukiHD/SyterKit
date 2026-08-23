@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+include $(srctree)/drivers/log-level.mk
+ccflags-y += $(call driver-log-flags,DRIVER_DRAM)
+
 obj-y += dram.o
 obj-$(CONFIG_SOC_SUN20IW1) += dram-sun20iw1.o
 obj-$(CONFIG_SOC_SUN252IW1) += dram-sun252iw1.o
