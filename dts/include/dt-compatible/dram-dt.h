@@ -13,10 +13,12 @@
 
 static inline __attribute__((always_inline)) int
 sunxi_dram_dt_read_config(sunxi_dram_t *dram, int node) {
+	const dt2c_fdt32_t *dram_base;
 	const dt2c_fdt32_t *parameters;
 	sunxi_dram_t config;
 	size_t count;
 	size_t index;
+	int dram_base_length;
 	int length;
 
 	if (dram == NULL || node < 0 || !syterkit_dt_node_available(node) ||
@@ -34,8 +36,19 @@ sunxi_dram_dt_read_config(sunxi_dram_t *dram, int node) {
 
 	count = SUNXI_DRAM_DT_PARAMETER_COUNT;
 
-	/* Keep platform-populated resources; DT contributes parameters only. */
+	/* Keep platform-populated resources; DT overrides resources it describes. */
 	config = *dram;
+	dram_base = (const dt2c_fdt32_t *) dt2c_fdt_getprop(
+			DT2C_FDT_COMPILED_TREE, node, "allwinner,dram-base",
+			&dram_base_length);
+	if (dram_base != NULL) {
+		if (dram_base_length != (int) sizeof(*dram_base) ||
+		    dt2c_fdt32_to_cpu(dram_base[0]) == 0U)
+			return DRIVER_ERROR_INVALID;
+		config.memory_base =
+			(uintptr_t) dt2c_fdt32_to_cpu(dram_base[0]);
+	}
+
 	for (index = 0U; index < count; ++index)
 		config.parameters[index] = dt2c_fdt32_to_cpu(parameters[index]);
 
@@ -48,6 +61,8 @@ sunxi_dram_dt_read_config(sunxi_dram_t *dram, int node) {
 	*dram = config;
 
 	SYTERKIT_DT_TRACE_NODE("dram", node);
+	SYTERKIT_DT_TRACE("dram base=0x%08x\n",
+			  (uint32_t) dram->memory_base);
 	SYTERKIT_DT_TRACE("dram parameters=%lu\n",
 					  (unsigned long) dram->parameter_count);
 	return DRIVER_OK;
