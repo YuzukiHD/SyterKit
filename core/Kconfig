@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Core services"
+
+config UART_EARLY_LOG
+	bool "Buffer UART logs before console initialization"
+	depends on DRIVER_SERIAL
+	help
+	  Keep log output generated before the UART console probe in memory and
+	  flush it after the console hardware has been initialized.
+
+config UART_EARLY_LOG_BUFFER_SIZE
+	int "Early UART log buffer size"
+	depends on UART_EARLY_LOG
+	default 16384
+	range 256 1048576
+	help
+	  Number of bytes reserved for log output emitted before the UART
+	  console is ready.
+
+endmenu
