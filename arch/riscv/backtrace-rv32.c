@@ -43,7 +43,7 @@
  * @param pc The program counter value to convert.
  * @return The corresponding address, aligned to a 2-byte boundary.
  */
-#define PC2ADDR(pc) ((char *) (((uint32_t) (pc)) & 0xfffffffe))
+#define PC2ADDR(pc) ((char *)(((uint32_t)(pc)) & 0xfffffffe))
 
 /**
  * @brief Determines the length of an instruction in bytes based on its encoding.
@@ -55,9 +55,7 @@
  * @param x The instruction encoding (32-bit).
  * @return The length of the instruction in bytes (either 2, 4, 6, or 8).
  */
-#define insn_length(x) (((x) &0x03) < 0x03 ? 2 : ((x) &0x1f) < 0x1f ? 4 \
-										 : ((x) &0x3f) < 0x3f		? 6 \
-																	: 8)
+#define insn_length(x) (((x) & 0x03) < 0x03 ? 2 : ((x) & 0x1f) < 0x1f ? 4 : ((x) & 0x3f) < 0x3f ? 6 : 8)
 
 /**
  * @brief Extracts a specific bit field from a value.
@@ -103,13 +101,13 @@ extern uint8_t __stack_srv_start[];
  * @param pc The program counter value to check.
  * @return 1 if the PC is within the valid address range, 0 otherwise.
  */
-static inline int backtrace_check_address(const void *pc) {
-	uintptr_t address = (uintptr_t) pc;
-	uintptr_t start = (uintptr_t) __spl_start;
-	uintptr_t end = (uintptr_t) __spl_end;
+static inline int backtrace_check_address(const void *pc)
+{
+	uintptr_t address = (uintptr_t)pc;
+	uintptr_t start = (uintptr_t)__spl_start;
+	uintptr_t end = (uintptr_t)__spl_end;
 
-	return !(address & 1U) && address >= start &&
-	       address <= end - sizeof(uint32_t);
+	return !(address & 1U) && address >= start && address <= end - sizeof(uint32_t);
 }
 
 /**
@@ -117,20 +115,21 @@ static inline int backtrace_check_address(const void *pc) {
  * @param[in] address Address of the stack word.
  * @return One when the complete word lies in the stack, otherwise zero.
  */
-static inline int backtrace_check_stack_address(const void *address) {
-	uintptr_t value = (uintptr_t) address;
-	uintptr_t start = (uintptr_t) __stack_srv_start;
-	uintptr_t end = (uintptr_t) __stack_srv_end;
+static inline int backtrace_check_stack_address(const void *address)
+{
+	uintptr_t value = (uintptr_t)address;
+	uintptr_t start = (uintptr_t)__stack_srv_start;
+	uintptr_t end = (uintptr_t)__stack_srv_end;
 
-	return !(value & (sizeof(long) - 1U)) && value >= start &&
-	       value <= end - sizeof(long);
+	return !(value & (sizeof(long) - 1U)) && value >= start && value <= end - sizeof(long);
 }
 
 /* RISC-V instructions may be 32-bit wide at any 2-byte-aligned address when
  * the compressed extension is enabled.  Read the halves separately so this
  * remains valid on cores that trap misaligned 32-bit loads. */
-static inline int backtrace_read_u32(const void *address, uint32_t *value) {
-	uintptr_t addr = (uintptr_t) address;
+static inline int backtrace_read_u32(const void *address, uint32_t *value)
+{
+	uintptr_t addr = (uintptr_t)address;
 	const volatile uint16_t *halves;
 	uint16_t lower;
 	uint16_t upper;
@@ -138,20 +137,19 @@ static inline int backtrace_read_u32(const void *address, uint32_t *value) {
 	if (!backtrace_check_address(address))
 		return 0;
 
-	halves = (const volatile uint16_t *) addr;
+	halves = (const volatile uint16_t *)addr;
 	lower = halves[0];
 	upper = halves[1];
-	*value = (uint32_t) lower | ((uint32_t) upper << 16);
+	*value = (uint32_t)lower | ((uint32_t)upper << 16);
 	return 1;
 }
 
-static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16) {
-	if ((ins32 & 0x00000fffU) == 0x000000efU ||
-	    (ins32 & 0x00007fffU) == 0x000000e7U)
+static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16)
+{
+	if ((ins32 & 0x00000fffU) == 0x000000efU || (ins32 & 0x00007fffU) == 0x000000e7U)
 		return 4;
 
-	if ((ins16 & 0xe003U) == 0x2001U ||
-	    ((ins16 & 0xf07fU) == 0x9002U && (ins16 & 0x0f80U)))
+	if ((ins16 & 0xe003U) == 0x2001U || ((ins16 & 0xf07fU) == 0x9002U && (ins16 & 0x0f80U)))
 		return 2;
 
 	return 0;
@@ -169,32 +167,33 @@ static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16) {
  * @return The offset from the LR to the return address if valid, 0 if invalid or the address is
  *         within an IRQ handler exit region.
  */
-static int riscv_backtrace_find_lr_offset(char *LR, bool emit) {
-	uintptr_t lr = (uintptr_t) LR;
+static int riscv_backtrace_find_lr_offset(char *LR, bool emit)
+{
+	uintptr_t lr = (uintptr_t)LR;
 	uint32_t ins32 = 0;
 	uint16_t ins16 = 0;
 	int offset;
 	uint64_t *irq_entry = NULL; /**< Pointer to the IRQ entry (interrupt handler entry address). */
 
 	/* Check if the LR corresponds to the IRQ handler exit address. */
-	if (lr == (uintptr_t) PC2ADDR(irq_entry)) {
+	if (lr == (uintptr_t)PC2ADDR(irq_entry)) {
 		if (emit)
-			backtrace_print_frame((uintptr_t) irq_entry);
-		return 0;													   /**< Return 0, indicating no valid offset. */
+			backtrace_print_frame((uintptr_t)irq_entry);
+		return 0; /**< Return 0, indicating no valid offset. */
 	}
 
 	if (lr < 4)
 		return 0;
 
-	backtrace_read_u32((const void *) (lr - 4), &ins32);
-	if (backtrace_check_address((const void *) (lr - 2)))
-		ins16 = *(const uint16_t *) (lr - 2);
+	backtrace_read_u32((const void *)(lr - 4), &ins32);
+	if (backtrace_check_address((const void *)(lr - 2)))
+		ins16 = *(const uint16_t *)(lr - 2);
 	offset = riscv_call_insn_size(ins32, ins16);
 	if (!offset)
 		return 0;
 
 	if (emit)
-		backtrace_print_frame(lr - (uintptr_t) offset);
+		backtrace_print_frame(lr - (uintptr_t)offset);
 
 	return offset; /**< Return the computed offset. */
 }
@@ -211,7 +210,8 @@ static int riscv_backtrace_find_lr_offset(char *LR, bool emit) {
  * @param offset A pointer to an integer where the computed offset (in terms of long size) will be stored.
  * @return 0 if the instruction is a valid push operation, otherwise -1.
  */
-int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset) {
+int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset)
+{
 	int ret = -1;
 
 	printk_trace("BT: inst:0x%x\n", inst);
@@ -273,7 +273,8 @@ int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset) {
  *
  * @return 0 if the instruction is a valid push operation, otherwise -1.
  */
-static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset) {
+static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
+{
 	int ret = -1;
 
 	printk_trace("BT: inst:0x%x: \n", inst);
@@ -384,7 +385,8 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset) {
  *       The immediate value is expected to be a signed 12-bit value and may represent
  *       a positive or negative offset to the stack pointer.
  */
-int riscv_ins32_backtrace_stask_push(uint32_t inst) {
+int riscv_ins32_backtrace_stask_push(uint32_t inst)
+{
 	int ret = -1;
 
 	if ((inst & 0x000FFFFF) == 0x10113) {
@@ -443,7 +445,8 @@ int riscv_ins32_backtrace_stask_push(uint32_t inst) {
  * - For `c.addi sp, sp, imm` and `c.addiw sp, imm`, the immediate is a 6-bit signed value used to modify `sp`.
  * - The function divides the immediate value by `sizeof(long)` to return the number of `long` units adjusted.
  */
-static int riscv_ins16_backtrace_stask_push(uint32_t inst) {
+static int riscv_ins16_backtrace_stask_push(uint32_t inst)
+{
 	int ret = -1;
 
 	if ((inst & 0xEF83) == 0x6101) {
@@ -522,7 +525,8 @@ static int riscv_ins16_backtrace_stask_push(uint32_t inst) {
  *       The function also uses `insn_length()` to determine instruction lengths
  *       and adjusts the stack and program counter accordingly.
  */
-static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
+static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
+{
 	char *parse_addr = NULL;
 	long *SP = *pSP;
 	char *PC = *pPC;
@@ -537,12 +541,12 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 		if (backtrace_check_address(parse_addr) == 0) {
 			return 1;
 		}
-		ins16_h = *(uint16_t *) parse_addr;
+		ins16_h = *(uint16_t *)parse_addr;
 
 		if (backtrace_check_address(parse_addr - 2) == 0) {
 			return 1;
 		}
-		ins16_l = *(uint16_t *) (parse_addr - 2);
+		ins16_l = *(uint16_t *)(parse_addr - 2);
 
 		if (insn_length(ins16_l) == 4) {
 			printk_trace("BT: insn len == 4, parse_addr = %p:\n", parse_addr);
@@ -574,13 +578,13 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr + i);
 			return -1;
 		}
-		ins16_l = *(uint16_t *) (parse_addr + i);
+		ins16_l = *(uint16_t *)(parse_addr + i);
 
 		if (backtrace_check_address(parse_addr + i + 2) == 0) {
 			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr + i + 2);
 			return -1;
 		}
-		ins16_h = *(uint16_t *) (parse_addr + i + 2);
+		ins16_h = *(uint16_t *)(parse_addr + i + 2);
 
 		if (insn_length(ins16_l) == 4 || ins16_l == 0) {
 			ins32 = (ins16_h << 16) | ins16_l;
@@ -606,7 +610,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
 		return -1;
 	}
 
-	LR = (char *) *(SP + offset);
+	LR = (char *)*(SP + offset);
 	if (backtrace_check_address(LR) == 0) {
 		printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", LR);
 		return -1;
@@ -637,7 +641,8 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
  * @return 0 if the backtrace is successful and the program counter is updated correctly,
  *         or -1 if an invalid program counter is provided or the backtrace fails.
  */
-static int backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
+static int backtrace_from_stack(long **pSP, char **pPC, char **pLR)
+{
 	if (backtrace_check_address(*pPC) == 0) {
 		return -1;
 	}
@@ -654,15 +659,16 @@ static int backtrace_from_stack(long **pSP, char **pPC, char **pLR) {
  * @param inst The 32-bit instruction to check.
  * @return 0 if the instruction matches the return instruction, -1 otherwise.
  */
-static int riscv_ins32_backtrace_return_pop(uint32_t inst) {
+static int riscv_ins32_backtrace_return_pop(uint32_t inst)
+{
 	int ret = -1; /**< Default return value is -1, indicating no match. */
 
 	if ((inst) == 0x00008067) { /**< Check if instruction matches return instruction. */
-		ret = 0;				/**< Set return value to 0 if it matches. */
+		ret = 0; /**< Set return value to 0 if it matches. */
 	}
 
 	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
-	return ret;											  /**< Return the result. */
+	return ret; /**< Return the result. */
 }
 
 /**
@@ -674,15 +680,16 @@ static int riscv_ins32_backtrace_return_pop(uint32_t inst) {
  * @param inst The 16-bit instruction to check.
  * @return 0 if the instruction matches the return instruction, -1 otherwise.
  */
-static int riscv_ins16_backtrace_return_pop(uint16_t inst) {
+static int riscv_ins16_backtrace_return_pop(uint16_t inst)
+{
 	int ret = -1; /**< Default return value is -1, indicating no match. */
 
 	if ((inst) == 0x8082) { /**< Check if instruction matches return instruction. */
-		ret = 0;			/**< Set return value to 0 if it matches. */
+		ret = 0; /**< Set return value to 0 if it matches. */
 	}
 
 	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
-	return ret;											  /**< Return the result. */
+	return ret; /**< Return the result. */
 }
 
 /**
@@ -695,15 +702,16 @@ static int riscv_ins16_backtrace_return_pop(uint16_t inst) {
  * @param inst The 32-bit instruction to check.
  * @return The computed stack pop value, or -1 if no match is found.
  */
-static int riscv_ins32_backtrace_stack_pop(unsigned int inst) {
-	int ret = -1;					/**< Default return value is -1, indicating no match. */
+static int riscv_ins32_backtrace_stack_pop(unsigned int inst)
+{
+	int ret = -1; /**< Default return value is -1, indicating no match. */
 	int stack_width = sizeof(long); /**< Define stack width based on long data type size. */
 
 	/*  Check for "addi sp, sp, #imm" instruction. */
 	if ((inst & 0x000FFFFF) == 0x10113) {
 		int immed = BITS(inst, 31, 20); /**< Extract immediate value from instruction. */
-		immed >>= 20;					/**< Shift to get the immediate. */
-		immed &= 0xFFF;					/**< Mask to get 12-bit immediate. */
+		immed >>= 20; /**< Shift to get the immediate. */
+		immed &= 0xFFF; /**< Mask to get 12-bit immediate. */
 		if ((immed >> 11) != 0) {
 			ret = -1; /**< Invalid immediate, return -1. */
 		} else {
@@ -716,8 +724,8 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst) {
 	else if ((inst & 0x000FFFFF) == 0x1011B) {
 		/*  Check for "addiw sp, sp, #imm" instruction. */
 		int immed = BITS(inst, 31, 20); /**< Extract immediate value from instruction. */
-		immed >>= 20;					/**< Shift to get the immediate. */
-		immed &= 0xFFF;					/**< Mask to get 12-bit immediate. */
+		immed >>= 20; /**< Shift to get the immediate. */
+		immed &= 0xFFF; /**< Mask to get 12-bit immediate. */
 		if ((immed >> 11) != 0) {
 			ret = -1; /**< Invalid immediate, return -1. */
 		} else {
@@ -729,7 +737,7 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst) {
 #endif
 
 	printk_trace("BT: inst:0x%x, ret:%d\n", inst, ret); /**< Log instruction and return value. */
-	return ret;											/**< Return the result. */
+	return ret; /**< Return the result. */
 }
 
 /**
@@ -742,61 +750,62 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst) {
  * @param inst The 16-bit instruction to check.
  * @return The computed stack pop value, or -1 if no valid stack pop is found.
  */
-static int riscv_ins16_backtrace_stack_pop(uint16_t inst) {
-	int ret = -1;					/**< Default return value is -1, indicating no match. */
+static int riscv_ins16_backtrace_stack_pop(uint16_t inst)
+{
+	int ret = -1; /**< Default return value is -1, indicating no match. */
 	int stack_width = sizeof(long); /**< Define stack width based on long data type size. */
 
 	/*  Check for "c.addi16sp #imm" instruction. */
 	if ((inst & 0xEF83) == 0x6101) {
-		int immed_4 = (inst >> 6) & 0x01;																  /**< Extract bit 6 for immediate part. */
-		int immed_5 = (inst >> 2) & 0x01;																  /**< Extract bit 2 for immediate part. */
-		int immed_6 = (inst >> 5) & 0x01;																  /**< Extract bit 5 for immediate part. */
-		int immed_7_8 = (inst >> 3) & 0x3;																  /**< Extract bits 3-4 for immediate part. */
-		int immed_9 = (inst >> 12) & 0x1;																  /**< Extract bit 12 for immediate part. */
+		int immed_4 = (inst >> 6) & 0x01; /**< Extract bit 6 for immediate part. */
+		int immed_5 = (inst >> 2) & 0x01; /**< Extract bit 2 for immediate part. */
+		int immed_6 = (inst >> 5) & 0x01; /**< Extract bit 5 for immediate part. */
+		int immed_7_8 = (inst >> 3) & 0x3; /**< Extract bits 3-4 for immediate part. */
+		int immed_9 = (inst >> 12) & 0x1; /**< Extract bit 12 for immediate part. */
 		int immed = (immed_4 << 4) | (immed_5 << 5) | (immed_6 << 6) | (immed_7_8 << 7) | (immed_9 << 9); /**< Combine extracted bits into a full immediate value. */
 
-		if ((immed >> 9) != 0) {	   /**< If the immediate value is too large, adjust it. */
+		if ((immed >> 9) != 0) { /**< If the immediate value is too large, adjust it. */
 			immed = 0x3FF - immed + 1; /**< Adjust the immediate for negative values. */
 		}
 
 		printk_trace("BT: \tc.addi16sp #immed=%d \n", immed); /**< Log the immediate value. */
-		ret = immed / stack_width;							  /**< Calculate the stack pop based on the immediate value. */
+		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 	/*  Check for "c.addi sp, sp, #imm" instruction. */
 	else if ((inst & 0xEF03) == 0x101) {
-		int immed_5 = (inst >> 12) & 0x01;		  /**< Extract bit 12 for immediate part. */
-		int immed_0_4 = (inst >> 2) & 0x1F;		  /**< Extract bits 2-6 for immediate part. */
+		int immed_5 = (inst >> 12) & 0x01; /**< Extract bit 12 for immediate part. */
+		int immed_0_4 = (inst >> 2) & 0x1F; /**< Extract bits 2-6 for immediate part. */
 		int immed = (immed_0_4) | (immed_5 << 5); /**< Combine bits to form immediate value. */
 
 		if ((immed >> 5) != 0) { /**< Check if immediate value is too large. */
-			ret = -1;			 /**< Return error if the immediate is invalid. */
+			ret = -1; /**< Return error if the immediate is invalid. */
 		} else {
 			immed = 0x3F - immed + 1; /**< Adjust the immediate value for negative values. */
 		}
 
 		printk_trace("BT: \tc.addi sp, sp, #immed=%d \n", immed); /**< Log the immediate value. */
-		ret = immed / stack_width;								  /**< Calculate the stack pop based on the immediate value. */
+		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 #if !defined(CONFIG_ARCH_RISCV32) /* RISCV32 does not support "c.addiw sp, #imm" instruction */
 	/*  Check for "c.addiw sp, #imm" instruction. */
 	else if ((inst & 0xEF03) == 0x2101) {
-		int immed_5 = (inst >> 12) & 0x01;		  /**< Extract bit 12 for immediate part. */
-		int immed_0_4 = (inst >> 2) & 0x1F;		  /**< Extract bits 2-6 for immediate part. */
+		int immed_5 = (inst >> 12) & 0x01; /**< Extract bit 12 for immediate part. */
+		int immed_0_4 = (inst >> 2) & 0x1F; /**< Extract bits 2-6 for immediate part. */
 		int immed = (immed_0_4) | (immed_5 << 5); /**< Combine bits to form immediate value. */
 
 		if ((immed >> 5) != 0) { /**< Check if immediate value is too large. */
-			ret = -1;			 /**< Return error if the immediate is invalid. */
+			ret = -1; /**< Return error if the immediate is invalid. */
 		} else {
 			immed = 0x3F - immed + 1; /**< Adjust the immediate value for negative values. */
 		}
 
 		printk_trace("BT: \tc.addiw sp, #immed=%d \n", immed); /**< Log the immediate value. */
-		ret = immed / stack_width;							   /**< Calculate the stack pop based on the immediate value. */
+		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 #endif
 
 	printk_trace("BT: inst:0x%x\n", inst); /**< Log the instruction. */
-	return ret;							   /**< Return the result. */
+	return ret; /**< Return the result. */
 }
 
 /**
@@ -812,13 +821,14 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst) {
  *
  * @return 1 if successful, 0 if the link register offset is zero, -1 on failure.
  */
-static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
-	long *SP = *pSP;									/**< Local stack pointer. */
-	char *PC = *pPC;									/**< Local program counter. */
-	char *parse_addr = NULL;							/**< Temporary address for instruction parsing. */
+static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
+{
+	long *SP = *pSP; /**< Local stack pointer. */
+	char *PC = *pPC; /**< Local program counter. */
+	char *parse_addr = NULL; /**< Temporary address for instruction parsing. */
 	int i, temp, framesize = 0, offset = 0, result = 0; /**< Loop counters, temporary values, and result variables. */
-	uint32_t ins32 = 0;									/**< 32-bit instruction. */
-	uint16_t ins16 = 0, ins16_h = 0, ins16_l = 0;		/**< 16-bit instruction (low and high). */
+	uint32_t ins32 = 0; /**< 32-bit instruction. */
+	uint16_t ins16 = 0, ins16_h = 0, ins16_l = 0; /**< 16-bit instruction (low and high). */
 
 	/* Check if the current program counter is valid. */
 	if (backtrace_check_address(PC) == 0) {
@@ -828,9 +838,9 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 			return -1;
 		}
 		offset = riscv_backtrace_find_lr_offset(LR, true); /**< Find the LR offset. */
-		PC = LR - offset;							 /**< Update PC based on LR offset. */
-		*pPC = PC;									 /**< Set the new program counter. */
-		return offset == 0 ? 1 : 0;					 /**< Return success if offset is 0, otherwise return 0. */
+		PC = LR - offset; /**< Update PC based on LR offset. */
+		*pPC = PC; /**< Set the new program counter. */
+		return offset == 0 ? 1 : 0; /**< Return success if offset is 0, otherwise return 0. */
 	}
 
 	/* Scan the instructions at the current PC for backtrace. */
@@ -849,19 +859,19 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 			return -1;
 		}
 
-		ins16_l = *(uint16_t *) parse_addr;		  /**< Fetch the low 16-bit instruction. */
-		ins16_h = *(uint16_t *) (parse_addr + 2); /**< Fetch the high 16-bit instruction. */
+		ins16_l = *(uint16_t *)parse_addr; /**< Fetch the low 16-bit instruction. */
+		ins16_h = *(uint16_t *)(parse_addr + 2); /**< Fetch the high 16-bit instruction. */
 
 		/* Check if the instruction length is 4 bytes or invalid, then combine into 32-bit. */
 		if (insn_length(ins16_l) == 4 || ins16_l == 0) {
-			ins32 = (ins16_h << 16) | ins16_l;				  /**< Combine high and low 16-bits into a 32-bit instruction. */
+			ins32 = (ins16_h << 16) | ins16_l; /**< Combine high and low 16-bits into a 32-bit instruction. */
 			result = riscv_ins32_backtrace_return_pop(ins32); /**< Check if it's a return pop for 32-bit instruction. */
-			i += 2;											  /**< Adjust the loop index for 32-bit instruction. */
-			parse_addr -= 4;								  /**< Move back by 4 bytes for 32-bit instruction. */
+			i += 2; /**< Adjust the loop index for 32-bit instruction. */
+			parse_addr -= 4; /**< Move back by 4 bytes for 32-bit instruction. */
 		} else {
-			ins16 = ins16_l;								  /**< Use the 16-bit instruction if it's valid. */
+			ins16 = ins16_l; /**< Use the 16-bit instruction if it's valid. */
 			result = riscv_ins16_backtrace_return_pop(ins16); /**< Check if it's a return pop for 16-bit instruction. */
-			parse_addr -= 2;								  /**< Move back by 2 bytes for 16-bit instruction. */
+			parse_addr -= 2; /**< Move back by 2 bytes for 16-bit instruction. */
 		}
 
 		/* If the result is valid, exit the loop. */
@@ -894,23 +904,23 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 			return -1;
 		}
 
-		ins16_l = *(uint16_t *) (parse_addr - i - 2); /**< Fetch the low 16-bit instruction. */
-		ins16_h = *(uint16_t *) (parse_addr - i);	  /**< Fetch the high 16-bit instruction. */
+		ins16_l = *(uint16_t *)(parse_addr - i - 2); /**< Fetch the low 16-bit instruction. */
+		ins16_h = *(uint16_t *)(parse_addr - i); /**< Fetch the high 16-bit instruction. */
 
 		/* If the instruction is 4 bytes, process as 32-bit instruction. */
 		if (insn_length(ins16_l) == 4) {
-			ins32 = (ins16_h << 16) | ins16_l;			   /**< Combine into a 32-bit instruction. */
+			ins32 = (ins16_h << 16) | ins16_l; /**< Combine into a 32-bit instruction. */
 			temp = riscv_ins32_backtrace_stack_pop(ins32); /**< Process stack pop for 32-bit instruction. */
-			i += 2;										   /**< Adjust the loop counter for 32-bit instruction. */
+			i += 2; /**< Adjust the loop counter for 32-bit instruction. */
 		} else {
-			ins16 = ins16_h;							   /**< Use the high 16-bit instruction for 16-bit processing. */
+			ins16 = ins16_h; /**< Use the high 16-bit instruction for 16-bit processing. */
 			temp = riscv_ins16_backtrace_stack_pop(ins16); /**< Process stack pop for 16-bit instruction. */
 		}
 
 		/* If stack pop is valid, add the frame size. */
 		if (temp >= 0) {
 			printk_trace("BT: framesize add %d\n", temp); /**< Log the frame size addition. */
-			framesize += temp;							  /**< Add to the total frame size. */
+			framesize += temp; /**< Add to the total frame size. */
 		}
 	}
 
@@ -921,9 +931,9 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
 		printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", LR); /**< Log invalid LR. */
 		return -1;
 	}
-	*pSP = SP + framesize;						 /**< Update stack pointer with the computed frame size. */
+	*pSP = SP + framesize; /**< Update stack pointer with the computed frame size. */
 	offset = riscv_backtrace_find_lr_offset(LR, true); /**< Find the LR offset again. */
-	*pPC = LR - offset;							 /**< Update program counter based on the LR and offset. */
+	*pPC = LR - offset; /**< Update program counter based on the LR and offset. */
 
 	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p\n", *pSP, offset, *pPC); /**< Log the updated SP and PC. */
 
@@ -942,37 +952,38 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR) {
  *
  * @return The number of backtrace levels found, or 0 if the backtrace failed.
  */
-int backtrace(char *PC, long *SP, char *LR) {
-	int level = 0;///< Backtrace level counter
-	int ret;	  ///< Return value for backtrace_from_stack
+int backtrace(char *PC, long *SP, char *LR)
+{
+	int level = 0; ///< Backtrace level counter
+	int ret; ///< Return value for backtrace_from_stack
 
-	char *_PC = PC;///< Program counter (PC)
-	long *_SP = SP;///< Stack pointer (SP)
-	char *_LR = LR;///< Link register (LR)
+	char *_PC = PC; ///< Program counter (PC)
+	long *_SP = SP; ///< Stack pointer (SP)
+	char *_LR = LR; ///< Link register (LR)
 
 	if (!backtrace_check_address(PC) || !backtrace_check_stack_address(SP))
 		return 0;
 
 	backtrace_print_begin();
-	backtrace_print_frame((uintptr_t) PC);
+	backtrace_print_frame((uintptr_t)PC);
 
 	// Traverse the stack and perform backtrace
 	for (level = 1; level < BT_LEVEL_LIMIT; level++) {
-		ret = backtrace_from_stack(&SP, &PC, &LR);///< Get the next backtrace level
+		ret = backtrace_from_stack(&SP, &PC, &LR); ///< Get the next backtrace level
 		if (ret != 0) {
-			break;///< Stop if backtrace fails
+			break; ///< Stop if backtrace fails
 		}
 	}
 
 	/* If stack backtrace fails, try to trace using the link register (LR) */
 	if (level == 1) {
-		ret = riscv_backtrace_from_lr(&_SP, &_PC, _LR);///< Try backtrace from LR
+		ret = riscv_backtrace_from_lr(&_SP, &_PC, _LR); ///< Try backtrace from LR
 		if (ret == 0) {
 			SP = _SP;
 			PC = _PC;
 			LR = _LR;
 			for (; level < BT_LEVEL_LIMIT; level++) {
-				ret = backtrace_from_stack(&SP, &PC, &LR);///< Continue stack backtrace if LR tracing succeeds
+				ret = backtrace_from_stack(&SP, &PC, &LR); ///< Continue stack backtrace if LR tracing succeeds
 				if (ret != 0) {
 					break;
 				}
@@ -983,15 +994,15 @@ int backtrace(char *PC, long *SP, char *LR) {
 	backtrace_print_end();
 
 	// Return the backtrace level, ensuring it's at least 0
-	return level > 0 ? level : 0;///< Return the number of backtrace levels found
+	return level > 0 ? level : 0; ///< Return the number of backtrace levels found
 }
 
-int backtrace_from_context(const struct backtrace_context *context) {
+int backtrace_from_context(const struct backtrace_context *context)
+{
 	if (!context)
 		return 0;
 
-	return backtrace((char *) context->pc, (long *) context->sp,
-			 (char *) context->lr);
+	return backtrace((char *)context->pc, (long *)context->sp, (char *)context->lr);
 }
 
 /**
@@ -1002,8 +1013,8 @@ int backtrace_from_context(const struct backtrace_context *context) {
  *
  * @return The backtrace level, or 0 if SP or PC is invalid.
  */
-static int __attribute__((noinline, used)) dump_stack_from_context(long *SP,
-							  char *LR) {
+static int __attribute__((noinline, used)) dump_stack_from_context(long *SP, char *LR)
+{
 	int offset;
 
 	if (!SP || !LR)
@@ -1015,26 +1026,31 @@ static int __attribute__((noinline, used)) dump_stack_from_context(long *SP,
 	return backtrace(LR - offset, SP, LR);
 }
 
-int __attribute__((naked)) dump_stack(void) {
+int __attribute__((naked)) dump_stack(void)
+{
 	asm volatile("mv a0, sp\n"
 		     "mv a1, ra\n"
 		     "tail dump_stack_from_context\n");
 }
 
 #ifdef SYTERKIT_BACKTRACE_TEST
-int backtrace_test_riscv_call_size(uint32_t ins32, uint16_t ins16) {
+int backtrace_test_riscv_call_size(uint32_t ins32, uint16_t ins16)
+{
 	return riscv_call_insn_size(ins32, ins16);
 }
 
-int backtrace_test_riscv_push_lr(uint32_t inst, int *offset) {
+int backtrace_test_riscv_push_lr(uint32_t inst, int *offset)
+{
 	return riscv_ins32_get_push_lr_framesize(inst, offset);
 }
 
-int backtrace_test_riscv_stack_push(uint32_t inst) {
+int backtrace_test_riscv_stack_push(uint32_t inst)
+{
 	return riscv_ins32_backtrace_stask_push(inst);
 }
 
-int backtrace_test_riscv_return(uint32_t inst) {
+int backtrace_test_riscv_return(uint32_t inst)
+{
 	return riscv_ins32_backtrace_return_pop(inst);
 }
 #endif

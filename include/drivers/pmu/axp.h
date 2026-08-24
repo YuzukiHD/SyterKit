@@ -16,31 +16,31 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Structure describing a voltage step of the power domain.
  */
 typedef struct _axp_step_info {
-	uint32_t step_min_vol;// Minimum voltage level for the step.
-	uint32_t step_max_vol;// Maximum voltage level for the step.
-	uint32_t step_val;	  // Voltage increment value for the step.
-	uint32_t regation;	  // Regulator register address.
+	uint32_t step_min_vol; // Minimum voltage level for the step.
+	uint32_t step_max_vol; // Maximum voltage level for the step.
+	uint32_t step_val; // Voltage increment value for the step.
+	uint32_t regation; // Regulator register address.
 } axp_step_info_t;
 
 /**
  * @brief Structure describing the control information of a power domain.
  */
 typedef struct _axp_contrl_info {
-	char name[8];					// Name of the power domain.
-	uint32_t min_vol;				// Minimum voltage level for the domain.
-	uint32_t max_vol;				// Maximum voltage level for the domain.
-	uint32_t cfg_reg_addr;			// Configuration register address.
-	uint32_t cfg_reg_mask;			// Configuration register mask.
-	uint32_t ctrl_reg_addr;			// Control register address.
-	uint32_t ctrl_bit_ofs;			// Bit offset in the control register.
-	uint32_t reg_addr_offset;		// Offset of the register address.
-	axp_step_info_t axp_step_tbl[4];// Voltage step table for the domain.
+	char name[8]; // Name of the power domain.
+	uint32_t min_vol; // Minimum voltage level for the domain.
+	uint32_t max_vol; // Maximum voltage level for the domain.
+	uint32_t cfg_reg_addr; // Configuration register address.
+	uint32_t cfg_reg_mask; // Configuration register mask.
+	uint32_t ctrl_reg_addr; // Control register address.
+	uint32_t ctrl_bit_ofs; // Bit offset in the control register.
+	uint32_t reg_addr_offset; // Offset of the register address.
+	axp_step_info_t axp_step_tbl[4]; // Voltage step table for the domain.
 } axp_contrl_info;
 
 typedef enum {
@@ -58,10 +58,9 @@ typedef struct axp_pmu {
 	axp_pmu_type_t type;
 } axp_pmu_t;
 
-static inline bool axp_pmu_matches(const axp_pmu_t *pmu,
-				   axp_pmu_type_t type) {
-	return pmu != NULL && pmu->i2c != NULL && pmu->address != 0U &&
-	       pmu->type == type;
+static inline bool axp_pmu_matches(const axp_pmu_t *pmu, axp_pmu_type_t type)
+{
+	return pmu != NULL && pmu->i2c != NULL && pmu->address != 0U && pmu->type == type;
 }
 
 /* Common function */
@@ -78,8 +77,7 @@ static inline bool axp_pmu_matches(const axp_pmu_t *pmu,
  * @param axp_addr AXP device address.
  * @return Integer indicating the success status of the operation.
  */
-int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff,
-		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
+int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
 
 /**
  * @brief Get the voltage value for a specific power domain controlled by AXP.
@@ -91,8 +89,7 @@ int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff,
  * @param axp_addr AXP device address.
  * @return The voltage value of the specified power domain.
  */
-int axp_get_vol(axp_pmu_t *pmu, char *name,
-		axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
+int axp_get_vol(axp_pmu_t *pmu, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
 
 /* define AXP pmu */
 
@@ -115,10 +112,10 @@ int axp_get_vol(axp_pmu_t *pmu, char *name,
  * ```
  * @param chip PMU chip name used in the generated function names.
  */
-#define DEFINE_AXP_PMU(chip)                                                   \
-	int pmu_##chip##_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c);              \
-	int pmu_##chip##_init(axp_pmu_t *pmu);                                  \
-	int pmu_##chip##_get_vol(axp_pmu_t *pmu, char *name);                   \
+#define DEFINE_AXP_PMU(chip)                                                          \
+	int pmu_##chip##_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c);                    \
+	int pmu_##chip##_init(axp_pmu_t *pmu);                                        \
+	int pmu_##chip##_get_vol(axp_pmu_t *pmu, char *name);                         \
 	int pmu_##chip##_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff); \
 	void pmu_##chip##_dump(axp_pmu_t *pmu);
 
@@ -140,6 +137,6 @@ int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __G_AXP_H__
+#endif // __G_AXP_H__

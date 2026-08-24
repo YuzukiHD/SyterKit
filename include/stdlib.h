@@ -8,7 +8,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Convert a string to an unsigned long integer, with optional base detection.
@@ -169,12 +169,14 @@ long long simple_atoll(const char *nptr);
 int simple_abs(int n);
 
 #if defined(CONFIG_ARCH_ARM32)
-#define MAKE_THUMB_ADDR(pc) \
-	do { (pc) = (void *) ((uint32_t) (pc) | 0x1); } while (0)
+#define MAKE_THUMB_ADDR(pc)                            \
+	do {                                           \
+		(pc) = (void *)((uint32_t)(pc) | 0x1); \
+	} while (0)
 #endif
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __STDLIB_H__
+#endif // __STDLIB_H__

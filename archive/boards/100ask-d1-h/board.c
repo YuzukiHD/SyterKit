@@ -18,10 +18,12 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

@@ -18,7 +18,8 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -30,7 +31,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

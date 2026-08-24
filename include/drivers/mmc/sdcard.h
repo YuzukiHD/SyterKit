@@ -15,7 +15,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 typedef struct sdmmc_pdata {
 	sunxi_sdhci_t *hci;
@@ -71,6 +71,6 @@ uint32_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// _SYS_SDCARD_H_
+#endif // _SYS_SDCARD_H_

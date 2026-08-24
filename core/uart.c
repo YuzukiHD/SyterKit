@@ -21,14 +21,16 @@ static size_t uart_early_log_length;
 #endif
 static bool uart_log_console_is_ready;
 
-static void uart_log_putchar_hw(char c) {
+static void uart_log_putchar_hw(char c)
+{
 	if (c == '\n')
 		sunxi_serial_putc(&uart_dbg, '\r');
 	sunxi_serial_putc(&uart_dbg, c);
 }
 
 #ifdef CONFIG_UART_EARLY_LOG
-static void uart_log_flush_early(void) {
+static void uart_log_flush_early(void)
+{
 	size_t i;
 
 	for (i = 0; i < uart_early_log_length; i++)
@@ -37,8 +39,9 @@ static void uart_log_flush_early(void) {
 }
 #endif
 
-void uart_log_putchar(void *arg, char c) {
-	(void) arg;
+void uart_log_putchar(void *arg, char c)
+{
+	(void)arg;
 #ifdef CONFIG_UART_EARLY_LOG
 	if (!uart_log_console_is_ready) {
 		if (uart_early_log_length < UART_EARLY_LOG_BUFFER_SIZE)
@@ -52,7 +55,8 @@ void uart_log_putchar(void *arg, char c) {
 	uart_log_putchar_hw(c);
 }
 
-void uart_log_console_ready(void) {
+void uart_log_console_ready(void)
+{
 	if (uart_log_console_is_ready)
 		return;
 	uart_log_console_is_ready = true;
@@ -62,13 +66,15 @@ void uart_log_console_ready(void) {
 #endif
 }
 
-int uart_putchar(int c) {
-	uart_log_putchar(NULL, (char) c);
+int uart_putchar(int c)
+{
+	uart_log_putchar(NULL, (char)c);
 	/* Return success */
 	return 0;
 }
 
-int uart_puts(const char *s) {
+int uart_puts(const char *s)
+{
 	const char *c = s;
 	/* Iterate through the characters in the string */
 	while (*c != '\0') {
@@ -80,7 +86,8 @@ int uart_puts(const char *s) {
 	return 1;
 }
 
-int uart_getchar(void) {
+int uart_getchar(void)
+{
 	/* Get input character from the UART */
 	int c = get_uart_input();
 	if (c == '\r') {
@@ -92,7 +99,8 @@ int uart_getchar(void) {
 	}
 }
 
-char get_uart_input(void) {
+char get_uart_input(void)
+{
 	char c = 0;
 	/* Get the current time in milliseconds */
 	uint32_t start_time = time_ms();
@@ -115,10 +123,12 @@ char get_uart_input(void) {
 	return c;
 }
 
-int tstc(void) {
+int tstc(void)
+{
 	return sunxi_serial_tstc(&uart_dbg);
 }
 
-int puts(const char *s) {
+int puts(const char *s)
+{
 	return uart_puts(s);
 }

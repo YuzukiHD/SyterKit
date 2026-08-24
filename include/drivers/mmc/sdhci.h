@@ -20,7 +20,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #define SMHC_DES_NUM_SHIFT 12 /* smhc2!! */
 #define SMHC_DES_BUFFER_MAX_LEN (1 << SMHC_DES_NUM_SHIFT)
@@ -45,14 +45,14 @@ typedef enum {
 } sunxi_sdhci_type_t;
 
 typedef struct sunxi_sdhci_desc {
-	uint32_t : 1, dic : 1,	 /* disable interrupt on completion */
-			last_desc : 1,	 /* 1-this data buffer is the last buffer */
-			first_desc : 1,	 /* 1-data buffer is the first buffer, 0-data buffer contained in the next descriptor is 1st buffer */
-			des_chain : 1,	 /* 1-the 2nd address in the descriptor is the next descriptor address */
-			end_of_ring : 1, /* 1-last descriptor flag when using dual data buffer in descriptor */
-			: 24,			 /* Reserved */
-			err_flag : 1,	 /* transfer error flag */
-			own : 1;		 /* des owner:1-idma owns it, 0-host owns it */
+	uint32_t : 1, dic : 1, /* disable interrupt on completion */
+		last_desc : 1, /* 1-this data buffer is the last buffer */
+		first_desc : 1, /* 1-data buffer is the first buffer, 0-data buffer contained in the next descriptor is 1st buffer */
+		des_chain : 1, /* 1-the 2nd address in the descriptor is the next descriptor address */
+		end_of_ring : 1, /* 1-last descriptor flag when using dual data buffer in descriptor */
+		: 24, /* Reserved */
+		err_flag : 1, /* transfer error flag */
+		own : 1; /* des owner:1-idma owns it, 0-host owns it */
 
 	uint32_t data_buf_sz : 16, data_buf_dummy : 16;
 	uint32_t buf_addr;
@@ -105,9 +105,8 @@ typedef struct sunxi_sdhci_clk {
 	uint8_t default_clk_sel;
 } sunxi_sdhci_clk_t;
 
-static inline uint32_t
-sunxi_sdhci_clk_source_rate(const sunxi_sdhci_clk_t *clock,
-			    uint32_t source) {
+static inline uint32_t sunxi_sdhci_clk_source_rate(const sunxi_sdhci_clk_t *clock, uint32_t source)
+{
 	if (clock == NULL || source >= SUNXI_SDHCI_CLOCK_SOURCE_COUNT)
 		return 0U;
 	return clock->source_rates[source];
@@ -229,6 +228,6 @@ extern uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// _SYS_SDHCI_H_
+#endif // _SYS_SDHCI_H_

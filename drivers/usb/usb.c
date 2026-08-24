@@ -19,16 +19,17 @@
 
 #define SUNXI_USB_DETECT_TIMEOUT_US 5000000ULL
 
-static void sunxi_usb_clock_deinit(const sunxi_usb_t *usb) {
+static void sunxi_usb_clock_deinit(const sunxi_usb_t *usb)
+{
 	clrbits_le32(usb->clock_gate_reg_base, BIT(usb->reset_offset));
 	mdelay(1);
 	clrbits_le32(usb->clock_gate_reg_base, BIT(usb->clock_gate_offset));
 	mdelay(1);
 }
 
-static void sunxi_usb_clock_init(const sunxi_usb_t *usb) {
-	setbits_le32(usb->phy_clock_reg_base,
-		     BIT(usb->phy_clock_gate_offset));
+static void sunxi_usb_clock_init(const sunxi_usb_t *usb)
+{
+	setbits_le32(usb->phy_clock_reg_base, BIT(usb->phy_clock_gate_offset));
 	mdelay(1);
 	setbits_le32(usb->phy_clock_reg_base, BIT(usb->phy_reset_offset));
 	mdelay(1);
@@ -38,12 +39,11 @@ static void sunxi_usb_clock_init(const sunxi_usb_t *usb) {
 	mdelay(1);
 }
 
-int sunxi_usb_init(sunxi_usb_t *usb) {
+int sunxi_usb_init(sunxi_usb_t *usb)
+{
 	uint32_t reg_val = 0;
 
-	if (usb == NULL || usb->base == 0U || usb->irq == 0U ||
-	    usb->phy_clock_reg_base == 0U || usb->clock_gate_reg_base == 0U ||
-	    usb->id >= SUNXI_USB_MAX_CONTROLLERS)
+	if (usb == NULL || usb->base == 0U || usb->irq == 0U || usb->phy_clock_reg_base == 0U || usb->clock_gate_reg_base == 0U || usb->id >= SUNXI_USB_MAX_CONTROLLERS)
 		return -1;
 
 	usb->detected = false;
@@ -78,14 +78,10 @@ int sunxi_usb_init(sunxi_usb_t *usb) {
 	usb_device_config_detect_mode(usb->base);
 
 	usb_controller_int_disable_all(usb->base);
-	usb_controller_int_clear_misc_pending(usb->base,
-						USBC_INTUSB_RESET |
-						USBC_INTUSB_DISCONNECT);
+	usb_controller_int_clear_misc_pending(usb->base, USBC_INTUSB_RESET | USBC_INTUSB_DISCONNECT);
 
 	/* A host-issued bus reset is the only positive detection event. */
-	usb_controller_int_enable_usb_misc_uint(usb->base,
-						USBC_INTUSB_RESET |
-						USBC_INTUSB_DISCONNECT);
+	usb_controller_int_enable_usb_misc_uint(usb->base, USBC_INTUSB_RESET | USBC_INTUSB_DISCONNECT);
 
 	/* set bit 1  ->  0 */
 	reg_val = readl(usb->base + USBC_REG_o_PHYCTL);
@@ -112,7 +108,8 @@ int sunxi_usb_init(sunxi_usb_t *usb) {
 	return 0;
 }
 
-void sunxi_usb_irq(void *data) {
+void sunxi_usb_irq(void *data)
+{
 	sunxi_usb_t *usb = data;
 	uint8_t misc_irq;
 	uint8_t detect_irq;
@@ -121,8 +118,7 @@ void sunxi_usb_irq(void *data) {
 		return;
 
 	misc_irq = usb_controller_int_misc_pending(usb->base);
-	detect_irq = misc_irq &
-		     (USBC_INTUSB_RESET | USBC_INTUSB_DISCONNECT);
+	detect_irq = misc_irq & (USBC_INTUSB_RESET | USBC_INTUSB_DISCONNECT);
 	if (detect_irq == 0U)
 		return;
 
@@ -138,7 +134,8 @@ void sunxi_usb_irq(void *data) {
 	}
 }
 
-void sunxi_usb_attach(sunxi_usb_t *usb) {
+void sunxi_usb_attach(sunxi_usb_t *usb)
+{
 	uint64_t deadline;
 
 	if (usb == NULL)

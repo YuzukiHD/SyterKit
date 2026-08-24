@@ -19,9 +19,9 @@
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
 #endif
 
-#define no_printk(level, fmt, ...) \
-	do { \
-		if (0) \
+#define no_printk(level, fmt, ...)                         \
+	do {                                               \
+		if (0)                                     \
 			printk(level, fmt, ##__VA_ARGS__); \
 	} while (0)
 

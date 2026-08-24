@@ -34,5 +34,4 @@
 #define TERMESC_BACK_CYAN "\033[46m"
 #define TERMESC_BACK_WHITE "\033[47m"
 
-
 #endif /*__CLI_TERMESC_H__*/

@@ -19,19 +19,19 @@ extern sunxi_serial_t uart_dbg;
 msh_declare_command(helloworld);
 
 msh_define_help(helloworld, "display helloworld", "Usage: helloworld\n");
-int cmd_helloworld(int argc, const char **argv) {
+int cmd_helloworld(int argc, const char **argv)
+{
 	printk(LOG_LEVEL_MUTE, "Hello World!\n");
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(helloworld),
-		msh_command_end,
+	msh_define_command(helloworld),
+	msh_command_end,
 };
 
-int main(void) {
-
-
+int main(void)
+{
 	sunxi_clk_init();
 
 	printk_info("Hello World!\n");

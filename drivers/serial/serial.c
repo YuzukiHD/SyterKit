@@ -35,7 +35,8 @@
  *
  * @param[in] uart Pointer to the UART structure containing clock configuration
  */
-void sunxi_serial_clock_init(sunxi_serial_t *uart) {
+void sunxi_serial_clock_init(sunxi_serial_t *uart)
+{
 	if (uart == NULL)
 		return;
 
@@ -59,13 +60,14 @@ void sunxi_serial_clock_init(sunxi_serial_t *uart) {
  * @param[in] uart Pointer to the UART structure containing complete configuration
  *                 including base address, clock settings, baud rate, and GPIO pins
  */
-void sunxi_serial_init(sunxi_serial_t *uart) {
+void sunxi_serial_init(sunxi_serial_t *uart)
+{
 	if (uart == NULL)
 		return;
 	sunxi_serial_clock_init(uart);
 
 	/* Typecast to sunxi_serial_reg_t structure pointer */
-	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
 
 	/* Set control register MCR to 0x3 */
 	serial_reg->mcr = 0x3;
@@ -121,11 +123,13 @@ void sunxi_serial_init(sunxi_serial_t *uart) {
  * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
  * @param[in] c The character to be transmitted
  */
-void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
-	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
+void __attribute__((weak)) sunxi_serial_putc(void *arg, char c)
+{
+	sunxi_serial_t *uart = (sunxi_serial_t *)arg;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
 
-	while ((serial_reg->lsr & (1 << 6)) == 0);
+	while ((serial_reg->lsr & (1 << 6)) == 0)
+		;
 	serial_reg->thr = c;
 }
 
@@ -138,11 +142,13 @@ void __attribute__((weak)) sunxi_serial_putc(void *arg, char c) {
  * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
  * @return The received character
  */
-char __attribute__((weak)) sunxi_serial_getc(void *arg) {
-	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
+char __attribute__((weak)) sunxi_serial_getc(void *arg)
+{
+	sunxi_serial_t *uart = (sunxi_serial_t *)arg;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
 
-	while ((serial_reg->lsr & 1) == 0);
+	while ((serial_reg->lsr & 1) == 0)
+		;
 	return serial_reg->rbr;
 }
 
@@ -155,14 +161,16 @@ char __attribute__((weak)) sunxi_serial_getc(void *arg) {
  * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
  * @return Non-zero value if data is available, zero otherwise
  */
-int __attribute__((weak)) sunxi_serial_tstc(void *arg) {
-	sunxi_serial_t *uart = (sunxi_serial_t *) arg;
-	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *) uart->base;
+int __attribute__((weak)) sunxi_serial_tstc(void *arg)
+{
+	sunxi_serial_t *uart = (sunxi_serial_t *)arg;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
 
 	return serial_reg->lsr & 1;
 }
 
-int sunxi_serial_init_stdout(void) {
+int sunxi_serial_init_stdout(void)
+{
 	int result = sunxi_serial_dt_read_stdout(&uart_dbg);
 
 	if (result != DRIVER_OK)

@@ -8,19 +8,21 @@
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_device.h>
 
-void usb_device_config_detect_mode(uintptr_t base) {
+void usb_device_config_detect_mode(uintptr_t base)
+{
 	uint8_t power;
 
 	if (base == 0U)
 		return;
 
 	power = readb(USBC_REG_PCTL(base));
-	power &= (uint8_t) ~BIT(USBC_BP_POWER_D_ISO_UPDATE_EN);
+	power &= (uint8_t)~BIT(USBC_BP_POWER_D_ISO_UPDATE_EN);
 	power |= BIT(USBC_BP_POWER_D_HIGH_SPEED_EN);
 	writeb(power, USBC_REG_PCTL(base));
 }
 
-void usb_device_connect_switch(uintptr_t base, uint32_t is_on) {
+void usb_device_connect_switch(uintptr_t base, uint32_t is_on)
+{
 	uint8_t power;
 
 	if (base == 0U)
@@ -30,6 +32,6 @@ void usb_device_connect_switch(uintptr_t base, uint32_t is_on) {
 	if (is_on == USBC_DEVICE_SWITCH_ON)
 		power |= BIT(USBC_BP_POWER_D_SOFT_CONNECT);
 	else
-		power &= (uint8_t) ~BIT(USBC_BP_POWER_D_SOFT_CONNECT);
+		power &= (uint8_t)~BIT(USBC_BP_POWER_D_SOFT_CONNECT);
 	writeb(power, USBC_REG_PCTL(base));
 }

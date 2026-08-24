@@ -27,7 +27,8 @@
  * @param dram DRAM instance to query.
  * @return Total DRAM size in bytes. Default implementation returns 0.
  */
-uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram) {
+uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram)
+{
 	return dram != NULL ? dram->size : 0U;
 }
 
@@ -41,6 +42,7 @@ uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram) {
  *             structure depends on the platform implementation.
  * @return 0 on success, non-zero error code on failure. Default implementation returns 0.
  */
-uint32_t __attribute__((weak)) sunxi_dram_init(sunxi_dram_t *dram) {
+uint32_t __attribute__((weak)) sunxi_dram_init(sunxi_dram_t *dram)
+{
 	return dram != NULL ? dram->size : 0U;
 }

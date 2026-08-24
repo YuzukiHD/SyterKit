@@ -15,4 +15,4 @@
  */
 int syterkit_shell_attach(const msh_command_entry *cmdlist);
 
-#endif//__CLI_SHELL_H__
+#endif //__CLI_SHELL_H__

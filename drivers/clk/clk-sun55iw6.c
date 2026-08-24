@@ -37,7 +37,8 @@
  *       before completing the operation. Additionally, delays and register bit manipulations
  *       ensure the PLL is stable and functioning.
  */
-static void enable_pll(uintptr_t reg_addr, uint32_t n_factor) {
+static void enable_pll(uintptr_t reg_addr, uint32_t n_factor)
+{
 	uint32_t reg_val = 0;
 	reg_val = readl(reg_addr);
 	/* set n=0x28,m0=m1=1,p=1 */
@@ -76,17 +77,18 @@ static void enable_pll(uintptr_t reg_addr, uint32_t n_factor) {
  * @note The function performs PLL configuration for both the CPU (SUNXI_CPU_PLL_CFG_BASE + 0x04U)
  *       and DSU (SUNXI_CPU_PLL_CFG_BASE + 0x08U) and sets the CPU-to-AXI clock divider factor.
  */
-static void set_pll_cpux_axi(void) {
+static void set_pll_cpux_axi(void)
+{
 	uint32_t reg_val;
 
 	// Enable CPU and DSU PLLs with appropriate factors
-	enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x04U, 0x2a);///< Set the CPU PLL multiplier factor (0x2a)
+	enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x04U, 0x2a); ///< Set the CPU PLL multiplier factor (0x2a)
 	enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x08U, 0x16); ///< Set the DSU PLL multiplier factor (0x16)
 
 	/* Set the CPU-to-AXI divider factor (M) */
-	reg_val = readl(SUNXI_CPU_PLL_CFG_BASE + 0x4cU);///< Read the current DSU clock register value
-	reg_val &= ~(0x3);				 ///< Clear the divider bits
-	writel(reg_val, SUNXI_CPU_PLL_CFG_BASE + 0x4cU);///< Write the modified value back to the DSU clock register
+	reg_val = readl(SUNXI_CPU_PLL_CFG_BASE + 0x4cU); ///< Read the current DSU clock register value
+	reg_val &= ~(0x3); ///< Clear the divider bits
+	writel(reg_val, SUNXI_CPU_PLL_CFG_BASE + 0x4cU); ///< Write the modified value back to the DSU clock register
 }
 
 /**
@@ -100,21 +102,22 @@ static void set_pll_cpux_axi(void) {
  * @note This function performs two key actions: setting the APB clock source and 
  *       resetting the APB clock divider factor.
  */
-static void set_apb(void) {
+static void set_apb(void)
+{
 	uint32_t reg_value = 0;
 
 	// Set APB1 clock source to HOSC
-	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG);											///< Read the current APB1 config register value
-	reg_value &= ~APB1_CLK_REG_CLK_SRC_SEL_CLEAR_MASK;								///< Clear the clock source selection mask
-	reg_value |= (APB1_CLK_REG_CLK_SRC_SEL_HOSC << APB1_CLK_REG_CLK_SRC_SEL_OFFSET);///< Set HOSC as the clock source
-	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG);											///< Write the modified value back to the APB1 config register
-	udelay(10);																		///< Delay to ensure stable configuration
+	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Read the current APB1 config register value
+	reg_value &= ~APB1_CLK_REG_CLK_SRC_SEL_CLEAR_MASK; ///< Clear the clock source selection mask
+	reg_value |= (APB1_CLK_REG_CLK_SRC_SEL_HOSC << APB1_CLK_REG_CLK_SRC_SEL_OFFSET); ///< Set HOSC as the clock source
+	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
+	udelay(10); ///< Delay to ensure stable configuration
 
 	// Reset the APB clock divider factor to default
-	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG);		   ///< Read the APB1 config register again
-	reg_value &= ~APB1_CLK_REG_FACTOR_M_CLEAR_MASK;///< Clear the APB divider mask
-	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG);		   ///< Write the modified value back to the APB1 config register
-	udelay(10);									   ///< Delay to ensure stable configuration
+	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Read the APB1 config register again
+	reg_value &= ~APB1_CLK_REG_FACTOR_M_CLEAR_MASK; ///< Clear the APB divider mask
+	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
+	udelay(10); ///< Delay to ensure stable configuration
 }
 
 /**
@@ -128,17 +131,18 @@ static void set_apb(void) {
  *       1. Disabling clock gating and updating the NSI divider.
  *       2. Setting the NSI clock source to DDR PLL and enabling the NSI clock.
  */
-static void set_pll_nsi(void) {
+static void set_pll_nsi(void)
+{
 	uint32_t reg_val;
 	uint32_t time_cnt = 0;
 
 	/* Disable NSI clock gating */
-	reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);						///< Read the current NSI clock register value
-	reg_val &= ~(0x1U << NSI_CLK_REG_NSI_CLK_GATING_OFFSET);///< Disable clock gating
-	reg_val &= ~(NSI_CLK_REG_NSI_DIV1_CLEAR_MASK);			///< Clear the divider bits
-	reg_val |= (0x5U << NSI_CLK_REG_NSI_DIV1_OFFSET);		///< Set the divider factor to 5
-	reg_val |= 1 << NSI_CLK_REG_NSI_UPD_OFFSET;				///< Set the update bit
-	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG);						///< Write the new configuration
+	reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG); ///< Read the current NSI clock register value
+	reg_val &= ~(0x1U << NSI_CLK_REG_NSI_CLK_GATING_OFFSET); ///< Disable clock gating
+	reg_val &= ~(NSI_CLK_REG_NSI_DIV1_CLEAR_MASK); ///< Clear the divider bits
+	reg_val |= (0x5U << NSI_CLK_REG_NSI_DIV1_OFFSET); ///< Set the divider factor to 5
+	reg_val |= 1 << NSI_CLK_REG_NSI_UPD_OFFSET; ///< Set the update bit
+	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG); ///< Write the new configuration
 
 	// Wait for the clock gating update to complete
 	do {
@@ -147,7 +151,7 @@ static void set_pll_nsi(void) {
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("nsi clk gating update failed!\n");///< Debug message on failure
+			printk_debug("nsi clk gating update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -156,13 +160,13 @@ static void set_pll_nsi(void) {
 	reg_val = readl(SUNXI_CCMU_BASE + NSI_CLK_REG);
 
 	/* Set NSI clock source to DDR PLL */
-	reg_val &= ~(NSI_CLK_REG_NSI_CLK_SEL_CLEAR_MASK);							  ///< Clear the clock source selection bits
-	reg_val |= (NSI_CLK_REG_NSI_CLK_SEL_DDRPLL << NSI_CLK_REG_NSI_CLK_SEL_OFFSET);///< Set DDR PLL as the clock source
+	reg_val &= ~(NSI_CLK_REG_NSI_CLK_SEL_CLEAR_MASK); ///< Clear the clock source selection bits
+	reg_val |= (NSI_CLK_REG_NSI_CLK_SEL_DDRPLL << NSI_CLK_REG_NSI_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
 
 	/* Enable NSI clock */
-	reg_val |= (0X01 << NSI_CLK_REG_NSI_CLK_GATING_OFFSET);///< Enable clock gating
-	reg_val |= (0x1U << NSI_CLK_REG_NSI_UPD_OFFSET);	   ///< Set the update bit
-	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG);					   ///< Write the configuration to the register
+	reg_val |= (0X01 << NSI_CLK_REG_NSI_CLK_GATING_OFFSET); ///< Enable clock gating
+	reg_val |= (0x1U << NSI_CLK_REG_NSI_UPD_OFFSET); ///< Set the update bit
+	writel(reg_val, SUNXI_CCMU_BASE + NSI_CLK_REG); ///< Write the configuration to the register
 
 	// Wait for the clock update to complete
 	do {
@@ -171,7 +175,7 @@ static void set_pll_nsi(void) {
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("nsi clk update failed!\n");///< Debug message on failure
+			printk_debug("nsi clk update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -188,17 +192,18 @@ static void set_pll_nsi(void) {
  *       1. Disabling clock gating and updating the MBUS divider.
  *       2. Setting the MBUS clock source to DDR PLL and enabling the MBUS clock.
  */
-static void set_pll_mbus(void) {
+static void set_pll_mbus(void)
+{
 	uint32_t reg_val = 0x0;
 	uint32_t time_cnt = 0;
 
 	/* Disable MBUS clock gating */
-	reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);						  ///< Read the current MBUS configuration register value
-	reg_val &= ~(0x1U << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET);///< Disable clock gating
-	reg_val &= ~(MBUS_CLK_REG_MBUS_DIV1_CLEAR_MASK);		  ///< Clear the divider bits
-	reg_val |= (0x5U << MBUS_CLK_REG_MBUS_DIV1_OFFSET);		  ///< Set the divider factor to 5
-	reg_val |= 1 << MBUS_CLK_REG_MBUS_UPD_OFFSET;			  ///< Set the update bit
-	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG);						  ///< Write the configuration to the MBUS register
+	reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG); ///< Read the current MBUS configuration register value
+	reg_val &= ~(0x1U << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET); ///< Disable clock gating
+	reg_val &= ~(MBUS_CLK_REG_MBUS_DIV1_CLEAR_MASK); ///< Clear the divider bits
+	reg_val |= (0x5U << MBUS_CLK_REG_MBUS_DIV1_OFFSET); ///< Set the divider factor to 5
+	reg_val |= 1 << MBUS_CLK_REG_MBUS_UPD_OFFSET; ///< Set the update bit
+	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG); ///< Write the configuration to the MBUS register
 
 	// Wait for the clock gating update to complete
 	do {
@@ -207,7 +212,7 @@ static void set_pll_mbus(void) {
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("mbus clk gating update failed!\n");///< Debug message on failure
+			printk_debug("mbus clk gating update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -217,13 +222,13 @@ static void set_pll_mbus(void) {
 	reg_val = readl(SUNXI_CCMU_BASE + MBUS_CLK_REG);
 
 	/* Set MBUS clock source to DDR PLL */
-	reg_val &= ~(MBUS_CLK_REG_MBUS_CLK_SEL_CLEAR_MASK);								  ///< Clear the clock source selection bits
-	reg_val |= (MBUS_CLK_REG_MBUS_CLK_SEL_DDRPLL << MBUS_CLK_REG_MBUS_CLK_SEL_OFFSET);///< Set DDR PLL as the clock source
+	reg_val &= ~(MBUS_CLK_REG_MBUS_CLK_SEL_CLEAR_MASK); ///< Clear the clock source selection bits
+	reg_val |= (MBUS_CLK_REG_MBUS_CLK_SEL_DDRPLL << MBUS_CLK_REG_MBUS_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
 
 	/* Enable MBUS clock */
-	reg_val |= (0X01 << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET);///< Enable clock gating
-	reg_val |= (0x1U << MBUS_CLK_REG_MBUS_UPD_OFFSET);		 ///< Set the update bit
-	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG);						 ///< Write the configuration to the MBUS register
+	reg_val |= (0X01 << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET); ///< Enable clock gating
+	reg_val |= (0x1U << MBUS_CLK_REG_MBUS_UPD_OFFSET); ///< Set the update bit
+	writel(reg_val, SUNXI_CCMU_BASE + MBUS_CLK_REG); ///< Write the configuration to the MBUS register
 
 	// Wait for the clock update to complete
 	do {
@@ -232,7 +237,7 @@ static void set_pll_mbus(void) {
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("mbus clk update failed!\n");///< Debug message on failure
+			printk_debug("mbus clk update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -257,7 +262,8 @@ static void set_pll_mbus(void) {
  * @warning Ensure that all the clock configuration functions are correctly
  *          implemented and tested to avoid system instability.
  */
-void sunxi_clk_init(void) {
+void sunxi_clk_init(void)
+{
 	printk_debug("Set pll start\n");
 
 	// Set the CPU and AXI clock via the set_pll_cpux_axi function
@@ -275,7 +281,8 @@ void sunxi_clk_init(void) {
 	printk_debug("Set pll end\n");
 }
 
-void sunxi_clk_dump(void) {
+void sunxi_clk_dump(void)
+{
 	uint32_t reg32;
 	uint32_t plln, pllm;
 	uint8_t p0;

@@ -8,12 +8,14 @@
 static uintptr_t mmio_addresses[2];
 static uint32_t mmio_values[2];
 
-void printk(int level, const char *format, ...) {
-	(void) level;
-	(void) format;
+void printk(int level, const char *format, ...)
+{
+	(void)level;
+	(void)format;
 }
 
-uint32_t test_mmio_read32(uintptr_t address) {
+uint32_t test_mmio_read32(uintptr_t address)
+{
 	for (size_t index = 0U; index < 2U; ++index) {
 		if (mmio_addresses[index] == address)
 			return mmio_values[index];
@@ -21,10 +23,10 @@ uint32_t test_mmio_read32(uintptr_t address) {
 	return 0U;
 }
 
-void test_mmio_write32(uintptr_t address, uint32_t value) {
+void test_mmio_write32(uintptr_t address, uint32_t value)
+{
 	for (size_t index = 0U; index < 2U; ++index) {
-		if (mmio_addresses[index] == 0U ||
-		    mmio_addresses[index] == address) {
+		if (mmio_addresses[index] == 0U || mmio_addresses[index] == address) {
 			mmio_addresses[index] = address;
 			mmio_values[index] = value;
 			return;
@@ -32,11 +34,12 @@ void test_mmio_write32(uintptr_t address, uint32_t value) {
 	}
 }
 
-void test_case_main(const char *case_dir) {
-	sunxi_sdhci_t mmc0 = {0};
-	sunxi_sdhci_t mmc2 = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_sdhci_t mmc0 = { 0 };
+	sunxi_sdhci_t mmc2 = { 0 };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_sdhci_dt_read_alias(&mmc0, "mmc0"));
 	TEST_STREQ("SD Card", mmc0.name);
 	TEST_EQ(0x04020000U, mmc0.reg_base);
@@ -116,12 +119,7 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(-1, sunxi_sdhci_set_mclk(&mmc0, 50000000U));
 	test_mmio_write32(mmc0.sdhci_clk.reg_base, 3U << 24);
 	TEST_EQ(0U, sunxi_sdhci_get_mclk(&mmc0));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-			 sunxi_sdhci_dt_read_alias(&mmc2, "missing"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-			 sunxi_sdhci_dt_read_alias(&mmc2,
-						   "mmc-invalid-clock"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-			 sunxi_sdhci_dt_read_alias(&mmc2,
-						   "mmc-missing-clock"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_sdhci_dt_read_alias(&mmc2, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_sdhci_dt_read_alias(&mmc2, "mmc-invalid-clock"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_sdhci_dt_read_alias(&mmc2, "mmc-missing-clock"));
 }

@@ -62,4 +62,4 @@
 #define AXP2101_EFREQ_CTRL (0xF1)
 #define AXP2101_SELLP_CFG (0x26)
 
-#endif// __REG_AXP2101_H__
+#endif // __REG_AXP2101_H__

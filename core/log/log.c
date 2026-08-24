@@ -10,56 +10,57 @@
 #include "uart.h"
 #include "format.h"
 
-void printk(int level, const char *fmt, ...) {
+void printk(int level, const char *fmt, ...)
+{
 	uint32_t now_timestamp = time_us() - get_init_timestamp();
 	uint32_t seconds = now_timestamp / (1000 * 1000);
 	uint32_t milliseconds = now_timestamp % (1000 * 1000);
 
 #ifdef DISBALE_COLOR_PRINTK
 	switch (level) {
-		case LOG_LEVEL_TRACE:
-			uart_printf("[%5lu.%06lu][T] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_DEBUG:
-			uart_printf("[%5lu.%06lu][D] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_INFO:
-			uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_WARNING:
-			uart_printf("[%5lu.%06lu][W] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_ERROR:
-			uart_printf("[%5lu.%06lu][E] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_BACKTRACE:
-			uart_printf("[%5lu.%06lu][B] ", seconds, milliseconds);
-		case LOG_LEVEL_MUTE:
-		default:
-			break;
+	case LOG_LEVEL_TRACE:
+		uart_printf("[%5lu.%06lu][T] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_DEBUG:
+		uart_printf("[%5lu.%06lu][D] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_INFO:
+		uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_WARNING:
+		uart_printf("[%5lu.%06lu][W] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_ERROR:
+		uart_printf("[%5lu.%06lu][E] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_BACKTRACE:
+		uart_printf("[%5lu.%06lu][B] ", seconds, milliseconds);
+	case LOG_LEVEL_MUTE:
+	default:
+		break;
 	}
 #else
 	switch (level) {
-		case LOG_LEVEL_TRACE:
-			uart_printf("[%5lu.%06lu][\033[30mT\033[37m] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_DEBUG:
-			uart_printf("[%5lu.%06lu][\033[32mD\033[37m] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_INFO:
-			uart_printf("[%5lu.%06lu][\033[36mI\033[37m] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_WARNING:
-			uart_printf("[%5lu.%06lu][\033[33mW\033[37m] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_ERROR:
-			uart_printf("[%5lu.%06lu][\033[31mE\033[37m] ", seconds, milliseconds);
-			break;
-		case LOG_LEVEL_BACKTRACE:
-			uart_printf("[%5lu.%06lu][\033[38;5;214mB\033[37m] ", seconds, milliseconds);
-		case LOG_LEVEL_MUTE:
-		default:
-			break;
+	case LOG_LEVEL_TRACE:
+		uart_printf("[%5lu.%06lu][\033[30mT\033[37m] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_DEBUG:
+		uart_printf("[%5lu.%06lu][\033[32mD\033[37m] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_INFO:
+		uart_printf("[%5lu.%06lu][\033[36mI\033[37m] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_WARNING:
+		uart_printf("[%5lu.%06lu][\033[33mW\033[37m] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_ERROR:
+		uart_printf("[%5lu.%06lu][\033[31mE\033[37m] ", seconds, milliseconds);
+		break;
+	case LOG_LEVEL_BACKTRACE:
+		uart_printf("[%5lu.%06lu][\033[38;5;214mB\033[37m] ", seconds, milliseconds);
+	case LOG_LEVEL_MUTE:
+	default:
+		break;
 	}
 #endif
 	va_list args;
@@ -71,7 +72,8 @@ void printk(int level, const char *fmt, ...) {
 	va_end(args_copy);
 }
 
-void uart_printf(const char *fmt, ...) {
+void uart_printf(const char *fmt, ...)
+{
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
@@ -81,7 +83,8 @@ void uart_printf(const char *fmt, ...) {
 	va_end(args_copy);
 }
 
-int printf(const char *fmt, ...) {
+int printf(const char *fmt, ...)
+{
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
@@ -93,7 +96,8 @@ int printf(const char *fmt, ...) {
 	return 0;
 }
 
-int printf_dram(const char *fmt, ...) {
+int printf_dram(const char *fmt, ...)
+{
 	uint32_t now_timestamp = time_us() - get_init_timestamp();
 	uint32_t seconds = now_timestamp / (1000 * 1000);
 	uint32_t milliseconds = now_timestamp % (1000 * 1000);
@@ -111,8 +115,9 @@ int printf_dram(const char *fmt, ...) {
 	return 0;
 }
 
-void dump_hex(uintptr_t start_addr, uint32_t count) {
-	const uint8_t *ptr = (const uint8_t *) start_addr;
+void dump_hex(uintptr_t start_addr, uint32_t count)
+{
+	const uint8_t *ptr = (const uint8_t *)start_addr;
 	const uint8_t *end = ptr + count;
 
 	while (ptr < end) {
@@ -126,7 +131,7 @@ void dump_hex(uintptr_t start_addr, uint32_t count) {
 				printk(LOG_LEVEL_MUTE, "%02X ", *ptr);
 				ptr++;
 			} else {
-				printk(LOG_LEVEL_MUTE, "   ");// Pad with spaces for incomplete bytes
+				printk(LOG_LEVEL_MUTE, "   "); // Pad with spaces for incomplete bytes
 			}
 		}
 
@@ -136,9 +141,9 @@ void dump_hex(uintptr_t start_addr, uint32_t count) {
 			if (line + i < end) {
 				char c = line[i];
 				if (c >= 32 && c <= 126) {
-					printk(LOG_LEVEL_MUTE, "%c", c);// Printable character
+					printk(LOG_LEVEL_MUTE, "%c", c); // Printable character
 				} else {
-					printk(LOG_LEVEL_MUTE, ".");// Replace non-printable character with dot
+					printk(LOG_LEVEL_MUTE, "."); // Replace non-printable character with dot
 				}
 			} else {
 				break;

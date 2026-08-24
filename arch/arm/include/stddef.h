@@ -8,18 +8,18 @@ extern "C" {
 #if defined(__cplusplus)
 #define NULL (0)
 #else
-#define NULL ((void *) 0)
+#define NULL ((void *)0)
 #endif
 
 #if (defined(__GNUC__) && (__GNUC__ >= 4))
 #define offsetof(type, member) __builtin_offsetof(type, member)
 #else
-#define offsetof(type, field) ((size_t) (&((type *) 0)->field))
+#define offsetof(type, field) ((size_t)(&((type *)0)->field))
 #endif
-#define container_of(ptr, type, member)                      \
-	({                                                       \
-		const typeof(((type *) 0)->member) *__mptr = (ptr);  \
-		(type *) ((char *) __mptr - offsetof(type, member)); \
+#define container_of(ptr, type, member)                            \
+	({                                                         \
+		const typeof(((type *)0)->member) *__mptr = (ptr); \
+		(type *)((char *)__mptr - offsetof(type, member)); \
 	})
 
 #if (defined(__GNUC__) && (__GNUC__ >= 3))
@@ -35,10 +35,10 @@ extern "C" {
 
 #define clamp(v, a, b) min(max(a, v), b)
 
-#define ifloor(x) ((x) > 0 ? (int) (x) : (int) ((x) -0.9999999999))
-#define iround(x) ((x) > 0 ? (int) ((x) + 0.5) : (int) ((x) -0.5))
-#define iceil(x) ((x) > 0 ? (int) ((x) + 0.9999999999) : (int) (x))
-#define idiv255(x) ((((int) (x) + 1) * 257) >> 16)
+#define ifloor(x) ((x) > 0 ? (int)(x) : (int)((x) - 0.9999999999))
+#define iround(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
+#define iceil(x) ((x) > 0 ? (int)((x) + 0.9999999999) : (int)(x))
+#define idiv255(x) ((((int)(x) + 1) * 257) >> 16)
 
 #ifdef __cplusplus
 }

@@ -16,7 +16,8 @@
 
 #define SUNXI_C907_CLK (1008)
 
-static inline void sunxi_set_cpux_pll(void) {
+static inline void sunxi_set_cpux_pll(void)
+{
 	uint32_t reg_val = 0;
 	/* disable pll gating */
 	clrbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
@@ -56,7 +57,8 @@ static inline void sunxi_set_cpux_pll(void) {
 	udelay(1);
 }
 
-static inline void sunxi_set_pll_periph0(void) {
+static inline void sunxi_set_pll_periph0(void)
+{
 	if (readl(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG) & BIT(PLL_PERI_CTRL_REG_PLL_EN_OFFSET)) {
 		/* fel has enabled pll_periph0 */
 		printk_info("pll periph0 has been enabled, skip enable\n");
@@ -84,14 +86,13 @@ static inline void sunxi_set_pll_periph0(void) {
 	setbits_le32(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG, BIT(PLL_PERI_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
 }
 
-static inline void sunxi_set_e907_sel(void) {
+static inline void sunxi_set_e907_sel(void)
+{
 	uint32_t reg_val;
 
 	/* set and change cpu clk src to e907 */
 	reg_val = readl(SUNXI_CCU_BASE + E907_CLK_REG);
-	reg_val &= ~(E907_CLK_REG_E907_CLK_SEL_CLEAR_MASK |
-				 E907_CLK_REG_E907_AXI_DIV_CFG_CLEAR_MASK |
-				 E907_CLK_REG_E907_DIV_CFG_CLEAR_MASK);
+	reg_val &= ~(E907_CLK_REG_E907_CLK_SEL_CLEAR_MASK | E907_CLK_REG_E907_AXI_DIV_CFG_CLEAR_MASK | E907_CLK_REG_E907_DIV_CFG_CLEAR_MASK);
 	/* set default to 600MHz, can be set to 800MHz */
 	reg_val |= E907_CLK_REG_E907_CLK_SEL_PERI_600M << E907_CLK_REG_E907_CLK_SEL_OFFSET;
 	/* div set to 1 */
@@ -101,7 +102,8 @@ static inline void sunxi_set_e907_sel(void) {
 	udelay(1);
 }
 
-static inline void sunxi_set_c907_sel(void) {
+static inline void sunxi_set_c907_sel(void)
+{
 	uint32_t reg_val;
 
 	/* set cpu clk src to PLL_CPUX */
@@ -113,61 +115,54 @@ static inline void sunxi_set_c907_sel(void) {
 	udelay(1);
 }
 
-static inline void sunxi_set_ahb_sel(void) {
+static inline void sunxi_set_ahb_sel(void)
+{
 	/* PLL = 600M, (M - 1) = 2, N = 1, PLL_AHB = PLL / (M + 1) / N */
 	/* Set AHB Clock to 200MHz */
-	writel((2 << AHB_CLK_REG_FACTOR_M_OFFSET) | (AHB_CLK_REG_FACTOR_N_1 << AHB_CLK_REG_FACTOR_N_OFFSET),
-		   SUNXI_CCU_BASE + AHB_CLK_REG);
-	writel((AHB_CLK_REG_CLK_SRC_SEL_PERI_600M_BUS << AHB_CLK_REG_CLK_SRC_SEL_OFFSET) |
-				   readl(SUNXI_CCU_BASE + AHB_CLK_REG),
-		   SUNXI_CCU_BASE + AHB_CLK_REG);
+	writel((2 << AHB_CLK_REG_FACTOR_M_OFFSET) | (AHB_CLK_REG_FACTOR_N_1 << AHB_CLK_REG_FACTOR_N_OFFSET), SUNXI_CCU_BASE + AHB_CLK_REG);
+	writel((AHB_CLK_REG_CLK_SRC_SEL_PERI_600M_BUS << AHB_CLK_REG_CLK_SRC_SEL_OFFSET) | readl(SUNXI_CCU_BASE + AHB_CLK_REG), SUNXI_CCU_BASE + AHB_CLK_REG);
 
 	udelay(1);
 }
 
-static inline void sunxi_set_apb_sel(void) {
+static inline void sunxi_set_apb_sel(void)
+{
 	/* PLL = 600M, (M - 1) = 2, N = 1, PLL_AHB = PLL / (M + 1) / N */
 	/* Set APB0 Clock to 100MHz, APB1 Keep use default 24MHz OSC  */
-	writel((2 << APB0_CLK_REG_FACTOR_M_OFFSET) | (APB0_CLK_REG_FACTOR_N_2 << APB0_CLK_REG_FACTOR_N_OFFSET),
-		   SUNXI_CCU_BASE + APB0_CLK_REG);
-	writel((APB0_CLK_REG_CLK_SRC_SEL_PERI_600M_BUS << APB0_CLK_REG_CLK_SRC_SEL_OFFSET) |
-				   readl(SUNXI_CCU_BASE + APB0_CLK_REG),
-		   SUNXI_CCU_BASE + APB0_CLK_REG);
+	writel((2 << APB0_CLK_REG_FACTOR_M_OFFSET) | (APB0_CLK_REG_FACTOR_N_2 << APB0_CLK_REG_FACTOR_N_OFFSET), SUNXI_CCU_BASE + APB0_CLK_REG);
+	writel((APB0_CLK_REG_CLK_SRC_SEL_PERI_600M_BUS << APB0_CLK_REG_CLK_SRC_SEL_OFFSET) | readl(SUNXI_CCU_BASE + APB0_CLK_REG), SUNXI_CCU_BASE + APB0_CLK_REG);
 
 	udelay(1);
 }
 
-static inline void sunxi_set_dma_clk(void) {
+static inline void sunxi_set_dma_clk(void)
+{
 	/* DMA deassert */
-	writel(readl(SUNXI_CCU_BASE + DMA_BGR_REG) |
-				   (DMA_BGR_REG_SGDMA_RST_DE_ASSERT << DMA_BGR_REG_SGDMA_RST_OFFSET),
-		   SUNXI_CCU_BASE + DMA_BGR_REG);
+	writel(readl(SUNXI_CCU_BASE + DMA_BGR_REG) | (DMA_BGR_REG_SGDMA_RST_DE_ASSERT << DMA_BGR_REG_SGDMA_RST_OFFSET), SUNXI_CCU_BASE + DMA_BGR_REG);
 	/* DMA Open GATE */
-	writel(readl(SUNXI_CCU_BASE + DMA_BGR_REG) |
-				   (DMA_BGR_REG_SGDMA_GATING_PASS << DMA_BGR_REG_SGDMA_GATING_OFFSET),
-		   SUNXI_CCU_BASE + DMA_BGR_REG);
+	writel(readl(SUNXI_CCU_BASE + DMA_BGR_REG) | (DMA_BGR_REG_SGDMA_GATING_PASS << DMA_BGR_REG_SGDMA_GATING_OFFSET), SUNXI_CCU_BASE + DMA_BGR_REG);
 	udelay(1);
 }
 
-static inline void sunxi_reset_mbus_domain(void) {
+static inline void sunxi_reset_mbus_domain(void)
+{
 	setbits_le32(SUNXI_CCU_BASE + MBUS_CLK_REG, MBUS_CLK_REG_MBUS_RST_DE_ASSERT << MBUS_CLK_REG_MBUS_RST_OFFSET);
 	udelay(1);
 }
-
 
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_EN_OFFSET (31)
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_LDO_EN_OFFSET (30)
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_LOCK_ENABLE_OFFSET (29)
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_LOCK_OFFSET (29)
 
-static inline void sunxi_set_module_pll(uint32_t reg_offset) {
+static inline void sunxi_set_module_pll(uint32_t reg_offset)
+{
 	uint32_t reg_val = readl(SUNXI_CCU_BASE + reg_offset);
 
 	/* We only enable module which not enabled */
 	if (!(reg_val & BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_EN_OFFSET))) {
 		/* enable pll */
-		setbits_le32(SUNXI_CCU_BASE + reg_offset, BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_EN_OFFSET) |
-														BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_LDO_EN_OFFSET));
+		setbits_le32(SUNXI_CCU_BASE + reg_offset, BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_EN_OFFSET) | BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_LDO_EN_OFFSET));
 
 		/* lock enable */
 		setbits_le32(SUNXI_CCU_BASE + reg_offset, BIT(SUNXI_MODULE_PLL_CTRL_REG_PLL_LOCK_ENABLE_OFFSET));
@@ -182,7 +177,8 @@ static inline void sunxi_set_module_pll(uint32_t reg_offset) {
 	}
 }
 
-void sunxi_clk_init(void) {
+void sunxi_clk_init(void)
+{
 	sunxi_set_cpux_pll();
 	sunxi_set_pll_periph0();
 	sunxi_set_e907_sel();
@@ -196,7 +192,8 @@ void sunxi_clk_init(void) {
 	sunxi_set_module_pll(PLL_AUDIO_CTRL_REG);
 }
 
-void sunxi_clk_dump(void) {
+void sunxi_clk_dump(void)
+{
 	uint32_t reg_val;
 	uint32_t cpu_clk_src, clk_freq, plln, pllm;
 	uint8_t p0, p1;
@@ -208,32 +205,32 @@ void sunxi_clk_dump(void) {
 	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
 
 	switch (cpu_clk_src) {
-		case CPU_CLK_REG_CPU_CLK_SEL_HOSC:
-			clock_str = "OSC24M";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_HOSC:
+		clock_str = "OSC24M";
+		break;
 
-		case CPU_CLK_REG_CPU_CLK_SEL_CLK32K:
-			clock_str = "CLK32";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_CLK32K:
+		clock_str = "CLK32";
+		break;
 
-		case CPU_CLK_REG_CPU_CLK_SEL_CLK16M_RC:
-			clock_str = "CLK16M_RC";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_CLK16M_RC:
+		clock_str = "CLK16M_RC";
+		break;
 
-		case CPU_CLK_REG_CPU_CLK_SEL_CPUPLL_P:
-			clock_str = "PLL_CPU";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_CPUPLL_P:
+		clock_str = "PLL_CPU";
+		break;
 
-		case CPU_CLK_REG_CPU_CLK_SEL_PERI_600M_BUS:
-			clock_str = "PLL_PERI_600M";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_PERI_600M_BUS:
+		clock_str = "PLL_PERI_600M";
+		break;
 
-		case CPU_CLK_REG_CPU_CLK_SEL_PERI_800M:
-			clock_str = "PLL_PERI_800M";
-			break;
+	case CPU_CLK_REG_CPU_CLK_SEL_PERI_800M:
+		clock_str = "PLL_PERI_800M";
+		break;
 
-		default:
-			clock_str = "ERROR";
+	default:
+		clock_str = "ERROR";
 	}
 
 	p0 = (reg_val & CPU_CLK_REG_PLL_CPU_OUT_EXT_DIVP_CLEAR_MASK) >> CPU_CLK_REG_PLL_CPU_OUT_EXT_DIVP_OFFSET;

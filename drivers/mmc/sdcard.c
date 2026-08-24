@@ -29,7 +29,8 @@
  *
  * @return      Returns 0 on success, or -1 if the initialization fails
  */
-int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci) {
+int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci)
+{
 	data->hci = hci;
 	data->online = false;
 
@@ -57,7 +58,8 @@ int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci) {
  *
  * @return          Returns 0 on success, or an error code if the operation fails
  */
-uint32_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt) {
+uint32_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt)
+{
 	return sunxi_mmc_blk_read(data->hci, buf, blkno, blkcnt);
 }
 
@@ -75,6 +77,7 @@ uint32_t sdmmc_blk_read(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint3
  *
  * @return The number of blocks successfully written, or 0 if writing failed.
  */
-uint32_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt) {
+uint32_t sdmmc_blk_write(sdmmc_pdata_t *data, uint8_t *buf, uint32_t blkno, uint32_t blkcnt)
+{
 	return sunxi_mmc_blk_write(data->hci, buf, blkno, blkcnt);
 }

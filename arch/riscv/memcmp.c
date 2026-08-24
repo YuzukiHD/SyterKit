@@ -7,7 +7,8 @@
 #include <stdint.h>
 #include <types.h>
 
-int memcmp(const void *s1, const void *s2, unsigned int n) {
+int memcmp(const void *s1, const void *s2, unsigned int n)
+{
 	const unsigned char *su1, *su2;
 	int res = 0;
 

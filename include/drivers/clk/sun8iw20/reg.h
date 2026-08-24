@@ -78,7 +78,7 @@
 #define CCU_USB_BGR_REG (0xA8C)
 
 /* MMC clock bit field */
-#define CCU_MMC_CTRL_M(x) ((x) -1)
+#define CCU_MMC_CTRL_M(x) ((x) - 1)
 #define CCU_MMC_CTRL_N(x) ((x) << 8)
 #define CCU_MMC_CTRL_OSCM24 (0x0 << 24)
 #define CCU_MMC_CTRL_PLL6X1 (0x1 << 24)
@@ -87,8 +87,8 @@
 #define CCU_MMC_CTRL_PLL_PERIPH2X CCU_MMC_CTRL_PLL6X2
 #define CCU_MMC_CTRL_ENABLE (0x1 << 31)
 /* if doesn't have these delays */
-#define CCU_MMC_CTRL_OCLK_DLY(a) ((void) (a), 0)
-#define CCU_MMC_CTRL_SCLK_DLY(a) ((void) (a), 0)
+#define CCU_MMC_CTRL_OCLK_DLY(a) ((void)(a), 0)
+#define CCU_MMC_CTRL_SCLK_DLY(a) ((void)(a), 0)
 
 #define CCU_MMC_BGR_SMHC0_GATE (1 << 0)
 #define CCU_MMC_BGR_SMHC1_GATE (1 << 1)
@@ -109,7 +109,7 @@
 #define CCU_DSP_CLK_SRC_PERI2X (0x3 << 24)
 #define CCU_DSP_CLK_SRC_AUDIO1_DIV2 (0x4 << 24)
 /* x must be 1 - 32 */
-#define CCU_DSP_CLK_FACTOR_M(x) (((x) -1) << 0)
+#define CCU_DSP_CLK_FACTOR_M(x) (((x) - 1) << 0)
 
 #define CCU_DSP_BGR_REG (0xc7c)
 #define CCU_BIT_DSP0_CFG_GATING (1)

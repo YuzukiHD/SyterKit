@@ -43,4 +43,4 @@ int bImage_loader(uint8_t *addr, uint32_t *entry);
  */
 int uImage_loader(uint8_t *addr, uint32_t *entry);
 
-#endif// __IMAGE_LOADER_H__
+#endif // __IMAGE_LOADER_H__

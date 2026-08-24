@@ -14,10 +14,11 @@
 const msh_command_entry *msh_user_commands;
 
 const msh_command_entry empty_commands[] = {
-		msh_command_end,
+	msh_command_end,
 };
 
-int syterkit_shell_attach(const msh_command_entry *cmdlist) {
+int syterkit_shell_attach(const msh_command_entry *cmdlist)
+{
 	char linebuf[MSH_CMDLINE_CHAR_MAX];
 
 	/* Loop for reading line (forever). */
@@ -69,10 +70,10 @@ int syterkit_shell_attach(const msh_command_entry *cmdlist) {
 			}
 			uart_puts("\n");
 #endif
-			ret_command = msh_do_command(msh_user_commands, argc, (const char **) argv);
+			ret_command = msh_do_command(msh_user_commands, argc, (const char **)argv);
 
 			if (ret_command < 0) {
-				ret_command = msh_do_command(msh_builtin_commands, argc, (const char **) argv);
+				ret_command = msh_do_command(msh_builtin_commands, argc, (const char **)argv);
 			}
 
 			if (ret_command < 0) {

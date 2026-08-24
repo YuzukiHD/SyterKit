@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	if (argc != 4) {
 		printf("Usage: %s input_file output_file function_name\n", argv[0]);
 		return 1;
@@ -39,7 +40,9 @@ int main(int argc, char *argv[]) {
 		unsigned int word;
 		if (fread(&word, 4, 1, inputFile) == 1) {
 			fprintf(outputFile, "\tasm volatile(\".word 0b");
-			for (int j = 31; j >= 0; j--) { fprintf(outputFile, "%d", (word >> j) & 1); }
+			for (int j = 31; j >= 0; j--) {
+				fprintf(outputFile, "%d", (word >> j) & 1);
+			}
 			fprintf(outputFile, "\");\n");
 		}
 	}

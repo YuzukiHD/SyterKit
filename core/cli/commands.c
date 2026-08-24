@@ -9,7 +9,8 @@
 #include <cli/cli_history.h>
 #include <cli/cli_termesc.h>
 
-static int cmd_echo(int argc, const char **argv) {
+static int cmd_echo(int argc, const char **argv)
+{
 	int i;
 	if (argc < 1) {
 		return 0;
@@ -22,12 +23,14 @@ static int cmd_echo(int argc, const char **argv) {
 	return 0;
 }
 
-static int cmd_ls(int argc, const char **argv) {
+static int cmd_ls(int argc, const char **argv)
+{
 	uart_puts("SyterKit not Support ls command. No file system mounted\n");
 	return 0;
 }
 
-static int cmd_hexdump(int argc, const char **argv) {
+static int cmd_hexdump(int argc, const char **argv)
+{
 	if (argc != 3) {
 		printk(LOG_LEVEL_MUTE, "Usage: hexdump [address] [length]\n");
 		return 1;
@@ -41,13 +44,14 @@ static int cmd_hexdump(int argc, const char **argv) {
 	return 0;
 }
 
-static int cmd_read32(int argc, const char **argv) {
+static int cmd_read32(int argc, const char **argv)
+{
 	if (argc != 2) {
 		printk(LOG_LEVEL_MUTE, "Usage: read32 [address]\n");
 		return 1;
 	}
 
-	uint32_t ptr = (uint32_t) simple_strtoul(argv[1], NULL, 16);
+	uint32_t ptr = (uint32_t)simple_strtoul(argv[1], NULL, 16);
 	uint32_t value = read32(ptr);
 
 	printk(LOG_LEVEL_MUTE, "Value at address 0x%08x: 0x%08X\n", ptr, value);
@@ -55,19 +59,21 @@ static int cmd_read32(int argc, const char **argv) {
 	return 0;
 }
 
-static int cmd_write32(int argc, const char **argv) {
+static int cmd_write32(int argc, const char **argv)
+{
 	if (argc < 3) {
 		printk(LOG_LEVEL_MUTE, "Usage: write32 [address] [data]\n");
 		return -1;
 	}
-	uint32_t addr = (uint32_t) simple_strtoul(argv[1], NULL, 16);
-	uint32_t data = (uint32_t) simple_strtoul(argv[2], NULL, 16);
+	uint32_t addr = (uint32_t)simple_strtoul(argv[1], NULL, 16);
+	uint32_t data = (uint32_t)simple_strtoul(argv[2], NULL, 16);
 	write32(addr, data);
 	printk(LOG_LEVEL_MUTE, "Wrote 0x%08x to address 0x%08x\n", data, addr);
 	return 0;
 }
 
-static int cmd_history(int argc, const char **argv) {
+static int cmd_history(int argc, const char **argv)
+{
 	for (int i = get_history_count(); i >= 0; i--) {
 		uart_puts(history_get(i));
 		uart_putchar('\n');
@@ -75,7 +81,8 @@ static int cmd_history(int argc, const char **argv) {
 	return 0;
 }
 
-static int cmd_help(int argc, const char **argv) {
+static int cmd_help(int argc, const char **argv)
+{
 	if (argc == 1) {
 		msh_print_cmdlist(msh_builtin_commands);
 		msh_print_cmdlist(msh_user_commands);
@@ -100,17 +107,17 @@ static int cmd_help(int argc, const char **argv) {
 
 /** @brief Built-in command table. */
 const msh_command_entry msh_builtin_commands[] = {
-		{"help", cmd_help, "display help for available commands",
-		 "Usage: help [command]\n"
-		 "    Displays help for 'command', or all commands and their\n"
-		 "    short descriptions.\n"},
-		{"echo", cmd_echo, "echo all arguments separated by a whitespace it can show args", "Usage: echo [string ...]\n"},
-		{"history", cmd_history, "show all history command", "Usage: history\n"},
-		{"hexdump", cmd_hexdump, "dumps memory region in hex", "Usage: hexdump [address] [length]\n"},
-		{"read32", cmd_read32, "read 32-bits value from device reg", "Usage: read32 [address]\n"},
-		{"write32", cmd_write32, "write 32-bits value to device reg", "Usage: write32 [address] [data]\n"},
-		{"ls", cmd_ls, "linux nerd compatible", "Usage: ls\n"},
-		msh_command_end,
+	{ "help", cmd_help, "display help for available commands",
+	  "Usage: help [command]\n"
+	  "    Displays help for 'command', or all commands and their\n"
+	  "    short descriptions.\n" },
+	{ "echo", cmd_echo, "echo all arguments separated by a whitespace it can show args", "Usage: echo [string ...]\n" },
+	{ "history", cmd_history, "show all history command", "Usage: history\n" },
+	{ "hexdump", cmd_hexdump, "dumps memory region in hex", "Usage: hexdump [address] [length]\n" },
+	{ "read32", cmd_read32, "read 32-bits value from device reg", "Usage: read32 [address]\n" },
+	{ "write32", cmd_write32, "write 32-bits value to device reg", "Usage: write32 [address] [data]\n" },
+	{ "ls", cmd_ls, "linux nerd compatible", "Usage: ls\n" },
+	msh_command_end,
 };
 
 /**
@@ -120,7 +127,8 @@ const msh_command_entry msh_builtin_commands[] = {
  * @param name Command name to find.
  * @return The matching command entry, or `NULL` if none is found.
  */
-static const msh_command_entry *find_command_entry(const msh_command_entry *cmdlist, const char *name) {
+static const msh_command_entry *find_command_entry(const msh_command_entry *cmdlist, const char *name)
+{
 	int i = 0;
 	while (cmdlist[i].name != NULL) {
 		if (strcmp(cmdlist[i].name, name) == 0) {
@@ -140,7 +148,8 @@ static const msh_command_entry *find_command_entry(const msh_command_entry *cmdl
  * @param argv Array of command arguments.
  * @return The command result, or -1 if the command is invalid or not found.
  */
-int msh_do_command(const msh_command_entry *cmdlist, int argc, const char **argv) {
+int msh_do_command(const msh_command_entry *cmdlist, int argc, const char **argv)
+{
 	const msh_command_entry *cmd_entry;
 
 	if (argc < 1) {
@@ -161,7 +170,8 @@ int msh_do_command(const msh_command_entry *cmdlist, int argc, const char **argv
  *
  * @param cmdlist Command table to print.
  */
-void msh_print_cmdlist(const msh_command_entry *cmdlist) {
+void msh_print_cmdlist(const msh_command_entry *cmdlist)
+{
 	int i, j;
 	const int indent = 10;
 
@@ -169,7 +179,9 @@ void msh_print_cmdlist(const msh_command_entry *cmdlist) {
 	while (cmdlist[i].name != NULL) {
 		uart_puts("    ");
 		uart_puts(cmdlist[i].name);
-		for (j = indent - strlen(cmdlist[i].name); j > 0; j--) { uart_putchar(' '); }
+		for (j = indent - strlen(cmdlist[i].name); j > 0; j--) {
+			uart_putchar(' ');
+		}
 		uart_puts("- ");
 		if (cmdlist[i].description != NULL) {
 			uart_puts(cmdlist[i].description);
@@ -189,7 +201,8 @@ void msh_print_cmdlist(const msh_command_entry *cmdlist) {
  * @param cmdname Command name to find.
  * @return The usage text, or `NULL` if the command is not found.
  */
-const char *msh_get_command_usage(const msh_command_entry *cmdlist, const char *cmdname) {
+const char *msh_get_command_usage(const msh_command_entry *cmdlist, const char *cmdname)
+{
 	const msh_command_entry *cmd_entry;
 
 	cmd_entry = find_command_entry(cmdlist, cmdname);

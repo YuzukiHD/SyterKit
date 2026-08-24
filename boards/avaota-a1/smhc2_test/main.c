@@ -38,26 +38,23 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-
 static sdmmc_pdata_t test_card;
 static sunxi_sdhci_t test_mmc;
 
 msh_declare_command(speedtest);
 msh_define_help(speedtest, "Do speed test", "Usage: speedtest\n");
-int cmd_speedtest(int argc, const char **argv) {
+int cmd_speedtest(int argc, const char **argv)
+{
 	uint32_t start;
 	uint32_t test_time;
 
 	start = time_ms();
-	sdmmc_blk_write(&test_card, (uint8_t *) (dram.memory_base), 0,
-			CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_write(&test_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_info("SDMMC: Write speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
-	sdmmc_blk_read(&test_card, (uint8_t *) (dram.memory_base), 0,
-		       CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&test_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_info("SDMMC: Read speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -66,18 +63,20 @@ int cmd_speedtest(int argc, const char **argv) {
 
 msh_declare_command(swi);
 msh_define_help(swi, "Software interrupt test", "Usage: swi\n");
-int cmd_swi(int argc, const char **argv) {
+int cmd_swi(int argc, const char **argv)
+{
 	asm volatile("svc #0");
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(speedtest),
-		msh_define_command(swi),
-		msh_command_end,
+	msh_define_command(speedtest),
+	msh_define_command(swi),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
 	sunxi_i2c_t i2c;
@@ -94,14 +93,11 @@ int main(void) {
 		printk_error("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&test_mmc, "mmc2") != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 

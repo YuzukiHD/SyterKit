@@ -25,7 +25,8 @@
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -43,7 +44,8 @@ void show_chip() {
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_CPUX_WDG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

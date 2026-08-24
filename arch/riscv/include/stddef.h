@@ -27,7 +27,7 @@ extern "C" {
 #if defined(__cplusplus)
 #define NULL (0)
 #else
-#define NULL ((void *) 0)
+#define NULL ((void *)0)
 #endif
 
 /**
@@ -44,7 +44,7 @@ extern "C" {
 #if (defined(__GNUC__) && (__GNUC__ >= 4))
 #define offsetof(type, field) __builtin_offsetof(type, field)
 #else
-#define offsetof(type, field) ((size_t) (&((type *) 0)->field))
+#define offsetof(type, field) ((size_t)(&((type *)0)->field))
 #endif
 
 /**
@@ -60,10 +60,10 @@ extern "C" {
  * @param member Name of the member in the structure.
  * @return Pointer to the container structure.
  */
-#define container_of(ptr, type, member)                      \
-	({                                                       \
-		const typeof(((type *) 0)->member) *__mptr = (ptr);  \
-		(type *) ((char *) __mptr - offsetof(type, member)); \
+#define container_of(ptr, type, member)                            \
+	({                                                         \
+		const typeof(((type *)0)->member) *__mptr = (ptr); \
+		(type *)((char *)__mptr - offsetof(type, member)); \
 	})
 
 /**
@@ -132,7 +132,7 @@ extern "C" {
  * @param x The floating-point value.
  * @return The integer floor of `x`.
  */
-#define ifloor(x) ((x) > 0 ? (int) (x) : (int) ((x) -0.9999999999))
+#define ifloor(x) ((x) > 0 ? (int)(x) : (int)((x) - 0.9999999999))
 
 /**
  * @def iround(x)
@@ -144,7 +144,7 @@ extern "C" {
  * @param x The floating-point value.
  * @return The nearest integer to `x`.
  */
-#define iround(x) ((x) > 0 ? (int) ((x) + 0.5) : (int) ((x) -0.5))
+#define iround(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
 
 /**
  * @def iceil(x)
@@ -155,7 +155,7 @@ extern "C" {
  * @param x The floating-point value.
  * @return The smallest integer greater than or equal to `x`.
  */
-#define iceil(x) ((x) > 0 ? (int) ((x) + 0.9999999999) : (int) (x))
+#define iceil(x) ((x) > 0 ? (int)((x) + 0.9999999999) : (int)(x))
 
 /**
  * @def idiv255(x)
@@ -167,7 +167,7 @@ extern "C" {
  * @param x The integer value.
  * @return The result of dividing `x` by 255.
  */
-#define idiv255(x) ((((int) (x) + 1) * 257) >> 16)
+#define idiv255(x) ((((int)(x) + 1) * 257) >> 16)
 
 #ifdef __cplusplus
 }

@@ -15,7 +15,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Structure for IRQ handler
@@ -69,6 +69,6 @@ int irq_disable(int irq_no);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// _SYS_INTC_H_
+#endif // _SYS_INTC_H_

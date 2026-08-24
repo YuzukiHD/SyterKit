@@ -23,7 +23,8 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
-int sunxi_nsi_init(void) {
+int sunxi_nsi_init(void)
+{
 	writel(0x40005, 0x2402C00 + 0x6c);
 	writel(0xFF, 0x2402600 + 0x14);
 	writel(0xFF, 0x2402800 + 0x14);
@@ -33,7 +34,8 @@ int sunxi_nsi_init(void) {
 	return 0;
 }
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -45,7 +47,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -66,12 +69,12 @@ void show_chip() {
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
 	switch (chip_markid_sid) {
-		case 0x5100:
-			printk_info("Chip type = A537MX-0XX");
-			break;
-		default:
-			printk_info("Chip type = UNKNOW");
-			break;
+	case 0x5100:
+		printk_info("Chip type = A537MX-0XX");
+		break;
+	default:
+		printk_info("Chip type = UNKNOW");
+		break;
 	}
 
 	setbits_le32(SUNXI_SYSCTRL_BASE + 0x24, BIT(15));
@@ -79,7 +82,8 @@ void show_chip() {
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDT_CPUX_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

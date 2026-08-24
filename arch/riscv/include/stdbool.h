@@ -27,7 +27,7 @@ extern "C" {
  */
 enum {
 	false = 0, /**< Boolean false value. */
-	true = 1   /**< Boolean true value. */
+	true = 1 /**< Boolean true value. */
 };
 
 /**
@@ -43,4 +43,4 @@ typedef int8_t bool;
 }
 #endif
 
-#endif// __STDBOOL_H__
+#endif // __STDBOOL_H__

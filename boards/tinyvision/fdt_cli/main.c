@@ -36,18 +36,18 @@
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_DTB_LOADADDR (0x41008000)
 
-#define MAX_LEVEL 32	/* how deeply nested we will go */
+#define MAX_LEVEL 32 /* how deeply nested we will go */
 #define SCRATCHPAD 1024 /* bytes of scratchpad memory */
 #define CMD_FDT_MAX_DUMP 64
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 extern sunxi_serial_t uart_dbg;
 
 static sunxi_dram_t dram;
 
-static sunxi_sdhci_t sdhci0 = {0};
-static sdmmc_pdata_t card0 = {0};
+static sunxi_sdhci_t sdhci0 = { 0 };
+static sdmmc_pdata_t card0 = { 0 };
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -62,7 +62,8 @@ image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -82,7 +83,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -99,13 +100,14 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -113,7 +115,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -127,7 +129,7 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
+	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -145,28 +147,28 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-
 msh_declare_command(fdt);
 msh_define_help(fdt, "flattened device tree utility commands",
-				"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
-				"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
-				"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
-				"fdt mknode <path> <node>            - Create a new node after <path>\n"
-				"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
-				"fdt header                          - Display header info\n"
-				"fdt rsvmem print                    - Show current mem reserves\n"
-				"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
-				"fdt rsvmem delete <index>           - Delete a mem reserves\n"
-				"NOTE: Dereference aliases by omitting the leading '/', "
-				"e.g. fdt print ethernet0.\n\n");
-int cmd_fdt(int argc, const char **argv) {
+		"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
+		"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
+		"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
+		"fdt mknode <path> <node>            - Create a new node after <path>\n"
+		"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
+		"fdt header                          - Display header info\n"
+		"fdt rsvmem print                    - Show current mem reserves\n"
+		"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
+		"fdt rsvmem delete <index>           - Delete a mem reserves\n"
+		"NOTE: Dereference aliases by omitting the leading '/', "
+		"e.g. fdt print ethernet0.\n\n");
+int cmd_fdt(int argc, const char **argv)
+{
 	if (argc < 2) {
 		uart_puts(cmd_fdt_usage);
 		return 0;
 	}
 	if (strncmp(argv[1], "mk", 2) == 0) {
-		const char *pathp;	/* path */
-		const char *nodep;	/* new node to add */
+		const char *pathp; /* path */
+		const char *nodep; /* new node to add */
 		int nodeoffset; /* node offset from libfdt */
 		int err;
 
@@ -193,9 +195,9 @@ int cmd_fdt(int argc, const char **argv) {
 			return 1;
 		}
 	} else if (strncmp(argv[1], "set", 3) == 0) {
-		const char *pathp;					   /* path */
-		const char *prop;						   /* property */
-		int nodeoffset;							   /* node offset from libfdt */
+		const char *pathp; /* path */
+		const char *prop; /* property */
+		int nodeoffset; /* node offset from libfdt */
 		static char data[SCRATCHPAD] __aligned(4); /* property storage */
 		const void *ptmp;
 		int len; /* new length of the property */
@@ -242,8 +244,8 @@ int cmd_fdt(int argc, const char **argv) {
 		}
 	} else if ((argv[1][0] == 'p') || (argv[1][0] == 'l')) {
 		int depth = MAX_LEVEL; /* how deep to print */
-		const char *pathp;	/* path */
-		const char *prop;	/* property */
+		const char *pathp; /* path */
+		const char *prop; /* property */
 		static const char root[2] = "/";
 
 		/*
@@ -324,14 +326,14 @@ int cmd_fdt(int argc, const char **argv) {
 			int j, err;
 			printk(LOG_LEVEL_MUTE, "index\t\t   start\t\t    size\n");
 			printk(LOG_LEVEL_MUTE, "-------------------------------"
-								   "-----------------\n");
+					       "-----------------\n");
 			for (j = 0; j < total; j++) {
 				err = fdt_get_mem_rsv(image.dest, j, &addr, &size);
 				if (err < 0) {
 					printk(LOG_LEVEL_MUTE, "libfdt fdt_get_mem_rsv():  %s\n", fdt_strerror(err));
 					return 0;
 				}
-				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32) (addr >> 32), (u32) (addr & 0xffffffff), (u32) (size >> 32), (u32) (size & 0xffffffff));
+				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32)(addr >> 32), (u32)(addr & 0xffffffff), (u32)(size >> 32), (u32)(size & 0xffffffff));
 			}
 		} else if (argv[2][0] == 'a') {
 			uint64_t addr, size;
@@ -365,7 +367,8 @@ int cmd_fdt(int argc, const char **argv) {
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+int cmd_reload(int argc, const char **argv)
+{
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
@@ -380,12 +383,13 @@ int cmd_reload(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(fdt),
-		msh_define_command(reload),
-		msh_command_end,
+	msh_define_command(fdt),
+	msh_define_command(reload),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	/* Initialize UART debug interface */
 
 	/* Print boot screen */
@@ -415,7 +419,7 @@ int main(void) {
 	memset(&image, 0, sizeof(image_info_t));
 
 	/* Set the target address of image to DTB load address */
-	image.dest = (uint8_t *) CONFIG_DTB_LOADADDR;
+	image.dest = (uint8_t *)CONFIG_DTB_LOADADDR;
 
 	/* Copy the DTB filename to the image structure */
 	strcpy(image.filename, CONFIG_DTB_FILENAME);
@@ -442,7 +446,7 @@ int main(void) {
 	}
 
 	/* Force image.dest to be a pointer to fdt_header structure */
-	struct fdt_header *dtb_header = (struct fdt_header *) image.dest;
+	struct fdt_header *dtb_header = (struct fdt_header *)image.dest;
 
 	int err = 0;
 

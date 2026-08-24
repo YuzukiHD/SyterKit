@@ -26,8 +26,7 @@ void test_fail(const char *expression, const char *file, int line);
  * @param file Source file containing the assertion.
  * @param line Source line containing the assertion.
  */
-void test_fail_value(const char *expression, unsigned long long expected,
-		     unsigned long long actual, const char *file, int line);
+void test_fail_value(const char *expression, unsigned long long expected, unsigned long long actual, const char *file, int line);
 
 /**
  * @brief Compare two strings and record a failure if they differ.
@@ -38,8 +37,7 @@ void test_fail_value(const char *expression, unsigned long long expected,
  * @param file Source file containing the assertion.
  * @param line Source line containing the assertion.
  */
-void test_expect_string(const char *expression, const char *expected,
-			const char *actual, const char *file, int line);
+void test_expect_string(const char *expression, const char *expected, const char *actual, const char *file, int line);
 
 /**
  * @brief Load a data file relative to a test case directory.
@@ -50,8 +48,7 @@ void test_expect_string(const char *expression, const char *expected,
  * @param capacity Destination capacity in bytes.
  * @return Number of bytes read, or -1 on failure.
  */
-int test_load_data(const char *case_dir, const char *relative_path,
-		   char *buffer, size_t capacity);
+int test_load_data(const char *case_dir, const char *relative_path, char *buffer, size_t capacity);
 
 /**
  * @brief Return the number of failed assertions.
@@ -67,22 +64,20 @@ int test_failure_count(void);
  */
 void test_case_main(const char *case_dir);
 
-#define TEST_ASSERT(expression) \
-	do { \
-		if (!(expression)) \
+#define TEST_ASSERT(expression)                                     \
+	do {                                                        \
+		if (!(expression))                                  \
 			test_fail(#expression, __FILE__, __LINE__); \
 	} while (0)
 
-#define TEST_EQ(expected, actual) \
-	do { \
-		unsigned long long test_expected_ = (unsigned long long) (expected); \
-		unsigned long long test_actual_ = (unsigned long long) (actual); \
-		if (test_expected_ != test_actual_) \
-			test_fail_value(#actual, test_expected_, test_actual_, \
-					__FILE__, __LINE__); \
+#define TEST_EQ(expected, actual)                                                                   \
+	do {                                                                                        \
+		unsigned long long test_expected_ = (unsigned long long)(expected);                 \
+		unsigned long long test_actual_ = (unsigned long long)(actual);                     \
+		if (test_expected_ != test_actual_)                                                 \
+			test_fail_value(#actual, test_expected_, test_actual_, __FILE__, __LINE__); \
 	} while (0)
 
-#define TEST_STREQ(expected, actual) \
-	test_expect_string(#actual, (expected), (actual), __FILE__, __LINE__)
+#define TEST_STREQ(expected, actual) test_expect_string(#actual, (expected), (actual), __FILE__, __LINE__)
 
 #endif

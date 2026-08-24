@@ -8,5 +8,6 @@
 #include <string.h>
 #include <types.h>
 
-void sys_uart_init() { /* Configed by SyterKit */
+void sys_uart_init()
+{ /* Configed by SyterKit */
 }

@@ -13,7 +13,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 enum {
 	GPIO_INPUT = 0,
@@ -62,7 +62,7 @@ typedef uint32_t gpio_t;
 
 #define PIO_NUM_IO_BITS 5
 
-#define GPIO_PIN(x, y) (((uint32_t) (x << PIO_NUM_IO_BITS)) | y)
+#define GPIO_PIN(x, y) (((uint32_t)(x << PIO_NUM_IO_BITS)) | y)
 
 typedef struct sunxi_gpio {
 	int dt_node;

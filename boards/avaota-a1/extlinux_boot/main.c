@@ -67,15 +67,12 @@ static sunxi_dram_t dram;
 
 #define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_HEAP_BASE (0x50800000)
 #define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 extern sunxi_serial_t uart_dbg;
-
-
-
 
 extern void set_rpio_power_mode(void);
 extern int sunxi_nsi_init(void);
@@ -83,16 +80,16 @@ extern void gicr_set_waker(void);
 
 typedef struct atf_head {
 	uint32_t jump_instruction; /* jumping to real code */
-	uint8_t magic[8];		   /* magic */
-	uint32_t scp_base;		   /* scp openrisc core bin */
-	uint32_t next_boot_base;   /* next boot base for uboot */
-	uint32_t nos_base;		   /* ARM SVC RUNOS base */
-	uint32_t secureos_base;	   /* optee base */
-	uint8_t version[8];		   /* atf version */
-	uint8_t platform[8];	   /* platform information */
-	uint32_t reserved[1];	   /* stamp space, 16bytes align */
-	uint32_t dram_para[32];	   /* the dram param */
-	uint64_t dtb_base;		   /* the address of dtb */
+	uint8_t magic[8]; /* magic */
+	uint32_t scp_base; /* scp openrisc core bin */
+	uint32_t next_boot_base; /* next boot base for uboot */
+	uint32_t nos_base; /* ARM SVC RUNOS base */
+	uint32_t secureos_base; /* optee base */
+	uint8_t version[8]; /* atf version */
+	uint8_t platform[8]; /* platform information */
+	uint32_t reserved[1]; /* stamp space, 16bytes align */
+	uint32_t dram_para[32]; /* the dram param */
+	uint64_t dtb_base; /* the address of dtb */
 } atf_head_t;
 
 typedef struct ext_linux_data {
@@ -124,23 +121,23 @@ typedef struct {
 	char extlinux_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-#define IH_COMP_NONE 0		/*  No	 Compression Used	*/
-#define IH_COMP_GZIP 1		/* gzip	 Compression Used	*/
-#define IH_COMP_BZIP2 2		/* bzip2 Compression Used	*/
+#define IH_COMP_NONE 0 /*  No	 Compression Used	*/
+#define IH_COMP_GZIP 1 /* gzip	 Compression Used	*/
+#define IH_COMP_BZIP2 2 /* bzip2 Compression Used	*/
 #define IH_MAGIC 0x56190527 /* mkimage magic for uinitrd */
-#define IH_NMLEN 32			/* Image Name Length	*/
+#define IH_NMLEN 32 /* Image Name Length	*/
 typedef struct image_header {
-	uint32_t ih_magic;		   /* Image Header Magic Number	*/
-	uint32_t ih_hcrc;		   /* Image Header CRC Checksum	*/
-	uint32_t ih_time;		   /* Image Creation Timestamp	*/
-	uint32_t ih_size;		   /* Image Data Size		*/
-	uint32_t ih_load;		   /* Data	 Load  Address		*/
-	uint32_t ih_ep;			   /* Entry Point Address		*/
-	uint32_t ih_dcrc;		   /* Image Data CRC Checksum	*/
-	uint8_t ih_os;			   /* Operating System		*/
-	uint8_t ih_arch;		   /* CPU architecture		*/
-	uint8_t ih_type;		   /* Image Type			*/
-	uint8_t ih_comp;		   /* Compression Type		*/
+	uint32_t ih_magic; /* Image Header Magic Number	*/
+	uint32_t ih_hcrc; /* Image Header CRC Checksum	*/
+	uint32_t ih_time; /* Image Creation Timestamp	*/
+	uint32_t ih_size; /* Image Data Size		*/
+	uint32_t ih_load; /* Data	 Load  Address		*/
+	uint32_t ih_ep; /* Entry Point Address		*/
+	uint32_t ih_dcrc; /* Image Data CRC Checksum	*/
+	uint8_t ih_os; /* Operating System		*/
+	uint8_t ih_arch; /* CPU architecture		*/
+	uint8_t ih_type; /* Image Type			*/
+	uint8_t ih_comp; /* Compression Type		*/
 	uint8_t ih_name[IH_NMLEN]; /* Image Name		*/
 } image_header_t;
 
@@ -148,7 +145,8 @@ image_info_t image;
 
 #define CHUNK_SIZE 0x160000
 
-static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size) {
+static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size)
+{
 	FIL file;
 	BYTE *buffer = dest;
 	UINT byte_to_read = CHUNK_SIZE;
@@ -188,17 +186,19 @@ static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int fatfs_loadimage(char *filename, void *dest) {
+static int fatfs_loadimage(char *filename, void *dest)
+{
 	return fatfs_loadimage_size(filename, dest, NULL);
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -212,22 +212,22 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t) image->scp_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t)image->scp_dest);
 	ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t) image->extlinux_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t)image->extlinux_dest);
 	ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t) image->splash_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t)image->splash_dest);
 	ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
 	if (ret)
 		printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
@@ -247,7 +247,8 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr) {
+void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr)
+{
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
 	rtc_set_start_time_ms(rtc);
 
@@ -266,12 +267,15 @@ _loop:
 	goto _loop;
 }
 
-static char *skip_spaces(char *str) {
-	while (*str == ' ') str++;
+static char *skip_spaces(char *str)
+{
+	while (*str == ' ')
+		str++;
 	return str;
 }
 
-static char *find_substring(char *source, const char *target) {
+static char *find_substring(char *source, const char *target)
+{
 	char *pos = strstr(source, target);
 	if (pos) {
 		return pos + strlen(target);
@@ -279,7 +283,8 @@ static char *find_substring(char *source, const char *target) {
 	return NULL;
 }
 
-static char *copy_until_newline_or_end(char *source) {
+static char *copy_until_newline_or_end(char *source)
+{
 	if (!source)
 		return NULL;
 
@@ -301,7 +306,8 @@ static char *copy_until_newline_or_end(char *source) {
 	return dest;
 }
 
-static void parse_extlinux_data(char *config, ext_linux_data_t *data) {
+static void parse_extlinux_data(char *config, ext_linux_data_t *data)
+{
 	char *start;
 
 	start = find_substring(config, "label ");
@@ -323,27 +329,29 @@ static void parse_extlinux_data(char *config, ext_linux_data_t *data) {
 	data->append = copy_until_newline_or_end(start);
 }
 
-static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size) {
+static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size)
+{
 	int address_cells = fdt_address_cells(fdt, 0);
 	int size_cells = fdt_size_cells(fdt, 0);
 	char *p = buf;
 
 	if (address_cells == 2)
-		*(fdt64_t *) p = cpu_to_fdt64(address);
+		*(fdt64_t *)p = cpu_to_fdt64(address);
 	else
-		*(fdt32_t *) p = cpu_to_fdt32(address);
+		*(fdt32_t *)p = cpu_to_fdt32(address);
 	p += 4 * address_cells;
 
 	if (size_cells == 2)
-		*(fdt64_t *) p = cpu_to_fdt64(size);
+		*(fdt64_t *)p = cpu_to_fdt64(size);
 	else
-		*(fdt32_t *) p = cpu_to_fdt32(size);
+		*(fdt32_t *)p = cpu_to_fdt32(size);
 	p += 4 * size_cells;
 
-	return p - (char *) buf;
+	return p - (char *)buf;
 }
 
-static int update_pmu_ext_info_dtb(image_info_t *image) {
+static int update_pmu_ext_info_dtb(image_info_t *image)
+{
 	int nodeoffset, err;
 	uint32_t phandle = 0;
 
@@ -378,11 +386,13 @@ static int update_pmu_ext_info_dtb(image_info_t *image) {
 	return 0;
 }
 
-static inline char to_hex_char(uint8_t value) {
+static inline char to_hex_char(uint8_t value)
+{
 	return (value < 10) ? ('0' + value) : ('A' + value - 10);
 }
 
-static void chip_sid_to_mac(uint32_t chip_sid[4], uint8_t mac_address[6]) {
+static void chip_sid_to_mac(uint32_t chip_sid[4], uint8_t mac_address[6])
+{
 	mac_address[3] = chip_sid[0] & 0xFF;
 	mac_address[2] = (chip_sid[1] >> 8) & 0xFF;
 	mac_address[1] = chip_sid[1] & 0xFF;
@@ -391,7 +401,8 @@ static void chip_sid_to_mac(uint32_t chip_sid[4], uint8_t mac_address[6]) {
 	mac_address[5] = 0xFF;
 }
 
-static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str[18]) {
+static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str[18])
+{
 	uint8_t mac_address[6];
 	chip_sid_to_mac(chip_sid, mac_address);
 	mac_address_str[0] = to_hex_char(mac_address[0] >> 4);
@@ -415,11 +426,11 @@ static char *get_mac_address_from_sid(uint32_t chip_sid[4], char mac_address_str
 	return mac_address_str;
 }
 
-static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
-			 const sunxi_sid_t *sid) {
+static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const sunxi_sid_t *sid)
+{
 	FATFS fs;
 	FRESULT fret;
-	ext_linux_data_t data = {0};
+	ext_linux_data_t data = { 0 };
 	int ret, err = -1;
 	uint32_t start;
 
@@ -441,12 +452,12 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t) image->kernel_dest);
+	printk_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t)image->kernel_dest);
 	ret = fatfs_loadimage(data.kernel, image->kernel_dest);
 	if (ret)
 		goto _error;
 
-	printk_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t) image->of_dest);
+	printk_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(data.fdt, image->of_dest);
 	if (ret)
 		goto _error;
@@ -454,7 +465,7 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 	/* Check and load ramdisk */
 	uint32_t ramdisk_size = 0;
 	if (data.initrd != NULL) {
-		printk_info("FATFS: read %s addr=%x\n", data.initrd, (uint32_t) image->ramdisk_dest);
+		printk_info("FATFS: read %s addr=%x\n", data.initrd, (uint32_t)image->ramdisk_dest);
 		ret = fatfs_loadimage_size(data.initrd, image->ramdisk_dest, &ramdisk_size);
 		if (ret) {
 			printk_warning("Initrd not find, ramdisk not load.\n");
@@ -475,7 +486,7 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 	printk_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	/* Force image.of_dest to be a pointer to fdt_header structure */
-	struct fdt_header *dtb_header = (struct fdt_header *) image->of_dest;
+	struct fdt_header *dtb_header = (struct fdt_header *)image->of_dest;
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
@@ -504,11 +515,10 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 		goto _error;
 	}
 
-	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
+	uint8_t *tmp_buf = (uint8_t *)malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
-	int len = fdt_pack_reg(image->of_dest, tmp_buf, dram->memory_base,
-			       (uint64_t) dram->size * 1024 * 1024);
+	int len = fdt_pack_reg(image->of_dest, tmp_buf, dram->memory_base, (uint64_t)dram->size * 1024 * 1024);
 
 	if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
 		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
@@ -518,13 +528,13 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 	/* Get the offset of "/chosen" node */
 	int chosen_node = fdt_find_or_add_subnode(image->of_dest, 0, "chosen");
 
-	uint32_t ramdisk_start = (uint32_t) (uintptr_t) image->ramdisk_dest;
-	uint32_t ramdisk_end = (uint32_t) ramdisk_start + (uint32_t) ramdisk_size;
+	uint32_t ramdisk_start = (uint32_t)(uintptr_t)image->ramdisk_dest;
+	uint32_t ramdisk_end = (uint32_t)ramdisk_start + (uint32_t)ramdisk_size;
 	if (ramdisk_size > 0) {
 		uint64_t addr, size;
 
 		/* Check if using uinitrd */
-		image_header_t *ramdisk_header = (image_header_t *) image->ramdisk_dest;
+		image_header_t *ramdisk_header = (image_header_t *)image->ramdisk_dest;
 
 		if (ramdisk_header->ih_magic == IH_MAGIC) {
 			ramdisk_start += 0x40;
@@ -551,13 +561,13 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 			goto _error;
 		}
 
-		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t) ramdisk_start);
+		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t)ramdisk_start);
 		if (ret < 0) {
 			printk_debug("WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
 			goto _error;
 		}
 
-		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t) ramdisk_end);
+		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t)ramdisk_end);
 		if (ret < 0) {
 			printk_debug("WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
 			goto _error;
@@ -565,9 +575,9 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 	}
 	len = 0;
 	/* Get bootargs string */
-	char *bootargs = (char *) malloc(4096);
+	char *bootargs = (char *)malloc(4096);
 	memset(bootargs, 0, 4096);
-	char *bootargs_str = (void *) fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
+	char *bootargs_str = (void *)fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
 	if (bootargs_str == NULL) {
 		printk_warning("FDT: bootargs is null, using extlinux.conf append.\n");
 	} else {
@@ -580,10 +590,8 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram,
 
 	int dram_node = fdt_find_or_add_subnode(image->of_dest, 0, "dram");
 	/* Kernel only need 0: DRAM_CLK, 24: DRAM_DIV */
-	fdt_setprop_u32(image->of_dest, dram_node, "dram_para00",
-			dram->parameters[0]);
-	fdt_setprop_u32(image->of_dest, dram_node, "dram_para24",
-			dram->parameters[24]);
+	fdt_setprop_u32(image->of_dest, dram_node, "dram_para00", dram->parameters[0]);
+	fdt_setprop_u32(image->of_dest, dram_node, "dram_para24", dram->parameters[24]);
 
 	/* Append bootargs mac address */
 	uint32_t chip_sid[4];
@@ -628,7 +636,7 @@ _add_dts_size:
 
 	/* Check and load dtbo */
 	if (data.dtbo != NULL) {
-		printk_info("FATFS: read %s addr=%x\n", data.dtbo, (uint32_t) image->of_overlay_dest);
+		printk_info("FATFS: read %s addr=%x\n", data.dtbo, (uint32_t)image->of_overlay_dest);
 		ret = fatfs_loadimage(data.dtbo, image->of_overlay_dest);
 		if (ret) {
 			printk_warning("dtb overlay not find, overlay not applied.\n");
@@ -653,11 +661,12 @@ _error:
 	return err;
 }
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
-	sdmmc_pdata_t emmc_card = {0};
-	sdmmc_pdata_t sd_card = {0};
+	sdmmc_pdata_t emmc_card = { 0 };
+	sdmmc_pdata_t sd_card = { 0 };
 	sdmmc_pdata_t *boot_card;
 	sunxi_dma_t dma;
 	sunxi_i2c_t i2c;
@@ -678,18 +687,12 @@ int main(void) {
 		printk_error("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
-	    sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK ||
-	    sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK || sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -753,14 +756,14 @@ int main(void) {
 	/* Clear the image_info_t struct. */
 	memset(&image, 0, sizeof(image_info_t));
 
-	image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
-	image.scp_dest = (uint8_t *) CONFIG_SCP_LOAD_ADDR;
-	image.extlinux_dest = (char *) CONFIG_EXTLINUX_LOAD_ADDR;
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.ramdisk_dest = (uint8_t *) CONFIG_INITRD_LOAD_ADDR;
-	image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-	image.splash_dest = (uint8_t *) CONFIG_SPLASH_LOAD_ADDR;
-	image.of_overlay_dest = (uint8_t *) CONFIG_DTBO_LOAD_ADDR;
+	image.bl31_dest = (uint8_t *)CONFIG_BL31_LOAD_ADDR;
+	image.scp_dest = (uint8_t *)CONFIG_SCP_LOAD_ADDR;
+	image.extlinux_dest = (char *)CONFIG_EXTLINUX_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.ramdisk_dest = (uint8_t *)CONFIG_INITRD_LOAD_ADDR;
+	image.kernel_dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
+	image.splash_dest = (uint8_t *)CONFIG_SPLASH_LOAD_ADDR;
+	image.of_overlay_dest = (uint8_t *)CONFIG_DTBO_LOAD_ADDR;
 
 	strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
 	strcpy(image.scp_filename, CONFIG_SCP_FILENAME);
@@ -835,10 +838,10 @@ int main(void) {
 
 	printk_info("EXTLINUX: load extlinux done, now booting...\n");
 
-	atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
+	atf_head_t *atf_head = (atf_head_t *)image.bl31_dest;
 
-	atf_head->dtb_base = (uint32_t) image.of_dest;
-	atf_head->nos_base = (uint32_t) image.kernel_dest;
+	atf_head->dtb_base = (uint32_t)image.of_dest;
+	atf_head->nos_base = (uint32_t)image.kernel_dest;
 
 	/* Fill platform magic */
 	memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);

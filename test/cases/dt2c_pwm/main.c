@@ -5,11 +5,12 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	sunxi_pwm_t pwm0 = {0};
-	sunxi_pwm_t pwm1 = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_pwm_t pwm0 = { 0 };
+	sunxi_pwm_t pwm1 = { 0 };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_pwm_dt_read_alias(&pwm0, "pwm0"));
 	TEST_EQ(0xf000U, pwm0.base);
 	TEST_EQ(0U, pwm0.id);
@@ -39,6 +40,5 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(GPIO_PERIPH_MUX5, pwm1.channel[4].pin.mux);
 	TEST_EQ(GPIO_PIN(GPIO_PORTF, 7), pwm1.channel[7].pin.pin);
 	TEST_ASSERT(pwm0.dt_node != pwm1.dt_node);
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_pwm_dt_read_alias(&pwm1, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_pwm_dt_read_alias(&pwm1, "missing"));
 }

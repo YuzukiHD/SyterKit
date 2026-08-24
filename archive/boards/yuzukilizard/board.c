@@ -22,7 +22,8 @@
 #include <drivers/serial/serial.h>
 #include <drivers/rtc/rtc.h>
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -34,7 +35,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc) {
+void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc)
+{
 	uint32_t val = rtc_read_data(rtc, 0x3d);
 	val &= ~(0xff << 4);
 	val |= (VCCIO_THRESHOLD_VOLTAGE_2_9 | FORCE_DETECTER_OUTPUT);
@@ -42,7 +44,8 @@ void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc) {
 	rtc_write_data(rtc, 0x3d, val);
 }
 
-void sys_ldo_check(void) {
+void sys_ldo_check(void)
+{
 	sunxi_sid_t sid;
 	uint32_t reg_val = 0;
 	uint32_t roughtrim_val = 0, finetrim_val = 0;
@@ -96,7 +99,8 @@ void sys_ldo_check(void) {
 	writel(reg_val, AUDIO_POWER_REG);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

@@ -22,7 +22,6 @@
 
 #define CCU_PLL_HSIC_CTRL_REG (0x70)
 
-
 /* cfg list */
 #define CCU_CPUX_AXI_CFG_REG (0x500)
 #define CCU_PSI_AHB1_AHB2_CFG_REG (0x510)
@@ -120,7 +119,7 @@
 #define USBPHY1_SCLK_GATING_BIT 9
 
 /* MMC clock bit field */
-#define CCU_MMC_CTRL_M(x) ((x) -1)
+#define CCU_MMC_CTRL_M(x) ((x) - 1)
 #define CCU_MMC_CTRL_N(x) ((x) << 8)
 #define CCU_MMC_CTRL_OSCM24 (0x0 << 24)
 #define CCU_MMC_CTRL_PLL6X1 (0x1 << 24)
@@ -130,8 +129,8 @@
 #define CCU_MMC_CTRL_ENABLE (0x1 << 31)
 
 /* if doesn't have these delays */
-#define CCU_MMC_CTRL_OCLK_DLY(a) ((void) (a), 0)
-#define CCU_MMC_CTRL_SCLK_DLY(a) ((void) (a), 0)
+#define CCU_MMC_CTRL_OCLK_DLY(a) ((void)(a), 0)
+#define CCU_MMC_CTRL_SCLK_DLY(a) ((void)(a), 0)
 
 #define CCU_MMC_BGR_SMHC0_GATE (1 << 0)
 #define CCU_MMC_BGR_SMHC1_GATE (1 << 1)

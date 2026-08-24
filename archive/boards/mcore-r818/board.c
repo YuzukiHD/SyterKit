@@ -23,7 +23,8 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -35,7 +36,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -55,16 +57,17 @@ void show_chip() {
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
-		case 0x1000:
-			printk_info("Chip type = R818\n");
-			break;
-		default:
-			printk_info("Chip type = UNKNOW\n");
-			break;
+	case 0x1000:
+		printk_info("Chip type = R818\n");
+		break;
+	default:
+		printk_info("Chip type = UNKNOW\n");
+		break;
 	}
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

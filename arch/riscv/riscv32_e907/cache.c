@@ -32,74 +32,88 @@ enum sysmap_ret_code {
 
 static uint32_t region_index = 0;
 
-static inline uint32_t sysmap_region_get_upper_limit(uint32_t region_index) {
+static inline uint32_t sysmap_region_get_upper_limit(uint32_t region_index)
+{
 	uint32_t reg_addr = PLAT_SYSMAP_BASE_ADDR + region_index * 8;
 
 	return readl(reg_addr);
 }
 
-static inline uint32_t sysmap_region_get_mem_attr(uint32_t region_index) {
+static inline uint32_t sysmap_region_get_mem_attr(uint32_t region_index)
+{
 	uint32_t reg_addr = PLAT_SYSMAP_BASE_ADDR + region_index * 8 + 4;
 
 	return readl(reg_addr);
 }
 
-static void sysmap_region_set_upper_limit(uint32_t region_index, uint32_t upper_limit_addr) {
+static void sysmap_region_set_upper_limit(uint32_t region_index, uint32_t upper_limit_addr)
+{
 	uint32_t reg_addr = PLAT_SYSMAP_BASE_ADDR + region_index * 8;
 
 	writel(upper_limit_addr, reg_addr);
 }
 
-static void sysmap_region_set_mem_attr(uint32_t region_index, uint32_t mem_attr) {
+static void sysmap_region_set_mem_attr(uint32_t region_index, uint32_t mem_attr)
+{
 	uint32_t reg_addr = PLAT_SYSMAP_BASE_ADDR + region_index * 8 + 4;
 
 	writel(mem_attr, reg_addr);
 }
 
-static inline uint32_t get_mem_region_upper_limit(uint32_t region_index) {
+static inline uint32_t get_mem_region_upper_limit(uint32_t region_index)
+{
 	return sysmap_region_get_upper_limit(region_index) << SYSMAP_ADDR_SHIFT;
 }
 
-static inline uint32_t get_mem_region_start_addr(uint32_t region_index) {
+static inline uint32_t get_mem_region_start_addr(uint32_t region_index)
+{
 	if (region_index == 0)
 		return 0;
 	else
 		return get_mem_region_upper_limit(region_index - 1);
 }
 
-static inline uint32_t get_mem_region_end_addr(uint32_t region_index) {
+static inline uint32_t get_mem_region_end_addr(uint32_t region_index)
+{
 	return get_mem_region_upper_limit(region_index) - 1;
 }
 
-static inline uint32_t get_mem_region_len(uint32_t region_index) {
+static inline uint32_t get_mem_region_len(uint32_t region_index)
+{
 	if (region_index == 0)
 		return get_mem_region_upper_limit(region_index);
 	else
 		return get_mem_region_upper_limit(region_index) - get_mem_region_upper_limit(region_index - 1);
 }
 
-static inline uint32_t get_mem_region_attr(uint32_t region_index) {
+static inline uint32_t get_mem_region_attr(uint32_t region_index)
+{
 	return sysmap_region_get_mem_attr(region_index) & SYSMAP_MEM_ATTR_MASK;
 }
 
-static inline void set_mem_region_upper_limit(uint32_t region_index, uint32_t upper_limit_addr) {
+static inline void set_mem_region_upper_limit(uint32_t region_index, uint32_t upper_limit_addr)
+{
 	sysmap_region_set_upper_limit(region_index, upper_limit_addr >> SYSMAP_ADDR_SHIFT);
 }
 
-static inline void set_mem_region_attr(uint32_t region_index, uint32_t mem_attr) {
+static inline void set_mem_region_attr(uint32_t region_index, uint32_t mem_attr)
+{
 	sysmap_region_set_mem_attr(region_index, mem_attr & SYSMAP_MEM_ATTR_MASK);
 }
 
-static inline void sysmap_setup_mem_region(uint32_t region_index, uint32_t upper_limit_addr, uint32_t mem_attr) {
+static inline void sysmap_setup_mem_region(uint32_t region_index, uint32_t upper_limit_addr, uint32_t mem_attr)
+{
 	set_mem_region_attr(region_index, mem_attr);
 	set_mem_region_upper_limit(region_index, upper_limit_addr);
 }
 
-static inline void setup_mem_region(uint32_t region_index, uint32_t start_addr, uint32_t len, uint32_t mem_attr) {
+static inline void setup_mem_region(uint32_t region_index, uint32_t start_addr, uint32_t len, uint32_t mem_attr)
+{
 	sysmap_setup_mem_region(region_index, start_addr + len, mem_attr);
 }
 
-int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr) {
+int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr)
+{
 	uint32_t current_region_start_addr;
 
 	if (!IS_MEM_ADDR_ALIGNED(start_addr))
@@ -134,12 +148,13 @@ int sysmap_add_mem_region(uint32_t start_addr, uint32_t len, uint32_t mem_attr) 
 	return SYSMAP_RET_OK;
 }
 
-void sysmap_dump_region_info(void) {
+void sysmap_dump_region_info(void)
+{
 #ifdef DEBUG_SYSMAP
 	uint32_t i, mem_attr;
-	char mem_attr_so_str[4] = {0};	 // Buffer for "SO" or "WO"
-	char mem_attr_cache_str[6] = {0};// Buffer for "_C_" or "_NC_"
-	char mem_attr_buff_str[3] = {0}; // Buffer for "B" or "NB"
+	char mem_attr_so_str[4] = { 0 }; // Buffer for "SO" or "WO"
+	char mem_attr_cache_str[6] = { 0 }; // Buffer for "_C_" or "_NC_"
+	char mem_attr_buff_str[3] = { 0 }; // Buffer for "B" or "NB"
 	uint32_t len;
 
 	printk_debug("E907 SYSMAP INFO:\n");
@@ -165,7 +180,7 @@ void sysmap_dump_region_info(void) {
 		}
 
 		printk_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i, get_mem_region_start_addr(i), get_mem_region_end_addr(i),
-					 get_mem_region_len(i), mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
+			     get_mem_region_len(i), mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
 	}
 #endif
 	return;
@@ -178,7 +193,8 @@ void sysmap_dump_region_info(void) {
  * before any subsequent instructions are executed, particularly useful 
  * for ensuring memory consistency.
  */
-void data_sync_barrier(void) {
+void data_sync_barrier(void)
+{
 	asm volatile("fence.i");
 }
 
@@ -188,9 +204,10 @@ void data_sync_barrier(void) {
  * This function configures the cache settings by writing specific 
  * values to the control and status registers.
  */
-void cache_init(void) {														   // Configure cache options
-	csr_write(mhcr, MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE);		   // Set cache hit control register
-	csr_write(mhint, MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16);// Set hint for cache operations
+void cache_init(void)
+{ // Configure cache options
+	csr_write(mhcr, MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE); // Set cache hit control register
+	csr_write(mhint, MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16); // Set hint for cache operations
 }
 
 /**
@@ -199,8 +216,9 @@ void cache_init(void) {														   // Configure cache options
  * This function enables the data cache by writing to the machine 
  * cache control register.
  */
-void dcache_enable(void) {
-	csr_set(mhcr, MHCR_DE);// Set the data cache enable bit
+void dcache_enable(void)
+{
+	csr_set(mhcr, MHCR_DE); // Set the data cache enable bit
 }
 
 /**
@@ -209,8 +227,9 @@ void dcache_enable(void) {
  * This function enables the instruction cache by setting the 
  * appropriate control bits in the machine cache control register.
  */
-void icache_enable(void) {
-	csr_set(mhcr, MHCR_IE);// Set the instruction cache enable bit
+void icache_enable(void)
+{
+	csr_set(mhcr, MHCR_IE); // Set the instruction cache enable bit
 }
 
 /**
@@ -219,7 +238,8 @@ void icache_enable(void) {
  * This function initializes the cache and enables both data and
  * instruction caches for the SV39 memory management unit.
  */
-void mmu_enable(void) {
+void mmu_enable(void)
+{
 	return;
 }
 
@@ -232,9 +252,11 @@ void mmu_enable(void) {
  * @param start The starting address of the range to flush.
  * @param end The ending address of the range to flush.
  */
-void flush_dcache_range(uint64_t start, uint64_t end) {
+void flush_dcache_range(uint64_t start, uint64_t end)
+{
 	register uint32_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-	for (; i < end; i += L1_CACHE_BYTES) asm volatile("dcache.cpa a0");
+	for (; i < end; i += L1_CACHE_BYTES)
+		asm volatile("dcache.cpa a0");
 	asm volatile("sync.i");
 }
 
@@ -248,9 +270,11 @@ void flush_dcache_range(uint64_t start, uint64_t end) {
  * @param start The starting address of the range to invalidate.
  * @param end The ending address of the range to invalidate.
  */
-void invalidate_dcache_range(uint64_t start, uint64_t end) {
+void invalidate_dcache_range(uint64_t start, uint64_t end)
+{
 	register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-	for (; i < end; i += L1_CACHE_BYTES) asm volatile("dcache.ipa a0");
+	for (; i < end; i += L1_CACHE_BYTES)
+		asm volatile("dcache.ipa a0");
 	asm volatile("sync.i");
 }
 
@@ -261,7 +285,8 @@ void invalidate_dcache_range(uint64_t start, uint64_t end) {
  * cache lines are written back to the main memory. It ensures that the data in the cache
  * is coherent with the memory.
  */
-void flush_dcache_all() {
+void flush_dcache_all()
+{
 	asm volatile("dcache.call");
 }
 
@@ -272,6 +297,7 @@ void flush_dcache_all() {
  * data remains in the cache. This operation discards the cache contents and ensures that
  * the next access will fetch fresh data from memory.
  */
-void invalidate_dcache_all() {
+void invalidate_dcache_all()
+{
 	asm volatile("dcache.ciall");
 }

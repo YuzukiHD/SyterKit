@@ -28,7 +28,7 @@ typedef struct linux_bimage_header {
 
 	uint32_t tags_addr; /* physical addr for kernel tags */
 	uint32_t page_size; /* flash page size we assume */
-	uint32_t unused;	/* reserved for future expansion: MUST be 0 */
+	uint32_t unused; /* reserved for future expansion: MUST be 0 */
 
 	/* operating system version and security patch level; for
 	 * version "A.B.C" and patch level "Y-M-D":
@@ -46,15 +46,16 @@ typedef struct linux_bimage_header {
 	/* Supplemental command line data; kept here to maintain
 	 * binary compatibility with older versions of mkbootimg */
 	char extra_cmdline[BOOT_EXTRA_ARGS_SIZE];
-	uint32_t recovery_dtbo_size;   /* size of recovery dtbo image */
+	uint32_t recovery_dtbo_size; /* size of recovery dtbo image */
 	uint64_t recovery_dtbo_offset; /*physical load addr */
-	uint32_t header_size;		   /*size of boot image header in bytes */
+	uint32_t header_size; /*size of boot image header in bytes */
 	uint32_t dtb_size;
 	uint64_t dtb_addr;
 } __attribute__((packed)) linux_bimage_header_t;
 
-int bImage_loader(uint8_t *addr, uint32_t *entry) {
-	linux_bimage_header_t *image_header = (linux_bimage_header_t *) addr;
+int bImage_loader(uint8_t *addr, uint32_t *entry)
+{
+	linux_bimage_header_t *image_header = (linux_bimage_header_t *)addr;
 
 	if (!memcmp(image_header->magic, ANDR_BOOT_MAGIC, 8)) {
 		printk_debug("[IMG] kernel magic is ok\n");

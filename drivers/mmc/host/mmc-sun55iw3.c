@@ -24,7 +24,8 @@
  * @param clk_hz Desired clock frequency in Hertz.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
+int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
+{
 	uint32_t reg_val = 0x0;
 	uint32_t parent_rate;
 	uint32_t source;
@@ -49,38 +50,38 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 
 	// Set the clock divider values based on the requested frequency
 	switch (clk_hz) {
-		case 0 ... 400000:
-			clk.factor_n = 1;
-			clk.factor_m = 0xe;
-			break;
-		case 400001 ... 26000000:
-			clk.factor_n = (sdhci->id == 2) ? 2 : 1;
-			clk.factor_m = (sdhci->id == 2) ? 3 : 2;
-			break;
-		case 26000001 ... 52000000:
-			clk.factor_n = (sdhci->id == 2) ? 1 : 0;
-			clk.factor_m = 2;
-			break;
-		case 52000001 ... 100000000:
-			source = 1U;
-			clk.factor_n = 0;
-			clk.factor_m = 3;
-			break;
-		case 100000001 ... 150000000:
-			source = 1U;
-			clk.factor_n = 0;
-			clk.factor_m = 2;
-			break;
-		case 150000001 ... 200000000:
-			source = 1U;
-			clk.factor_n = 0;
-			clk.factor_m = 1;
-			break;
-		default:
-			clk.factor_n = (sdhci->id == 2) ? 1 : 0;
-			clk.factor_m = 2;
-			printk_debug("SMHC: requested frequency does not match: freq=%d, default to 52000000\n", clk_hz);
-			break;
+	case 0 ... 400000:
+		clk.factor_n = 1;
+		clk.factor_m = 0xe;
+		break;
+	case 400001 ... 26000000:
+		clk.factor_n = (sdhci->id == 2) ? 2 : 1;
+		clk.factor_m = (sdhci->id == 2) ? 3 : 2;
+		break;
+	case 26000001 ... 52000000:
+		clk.factor_n = (sdhci->id == 2) ? 1 : 0;
+		clk.factor_m = 2;
+		break;
+	case 52000001 ... 100000000:
+		source = 1U;
+		clk.factor_n = 0;
+		clk.factor_m = 3;
+		break;
+	case 100000001 ... 150000000:
+		source = 1U;
+		clk.factor_n = 0;
+		clk.factor_m = 2;
+		break;
+	case 150000001 ... 200000000:
+		source = 1U;
+		clk.factor_n = 0;
+		clk.factor_m = 1;
+		break;
+	default:
+		clk.factor_n = (sdhci->id == 2) ? 1 : 0;
+		clk.factor_m = 2;
+		printk_debug("SMHC: requested frequency does not match: freq=%d, default to 52000000\n", clk_hz);
+		break;
 	}
 	parent_rate = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (parent_rate == 0U) {
@@ -89,9 +90,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 	}
 
 	// Configure the clock register value
-	reg_val = (source << 24) |
-		  (clk.factor_n << clk.reg_factor_n_offset) |
-		  (clk.factor_m << clk.reg_factor_m_offset);
+	reg_val = (source << 24) | (clk.factor_n << clk.reg_factor_n_offset) | (clk.factor_m << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
 	return 0;
@@ -105,7 +104,8 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Current clock frequency in Hertz.
  */
-uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
+uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
+{
 	uint32_t clk_hz;
 	uint32_t reg_val = 0x0;
 	uint32_t source;

@@ -15,9 +15,9 @@
 
 extern sunxi_serial_t uart_dbg;
 
-int main(void) {
+int main(void)
+{
 	sunxi_sid_t sid;
-
 
 	sunxi_clk_init();
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {

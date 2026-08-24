@@ -19,7 +19,8 @@ static int histlast;
  *
  * @return The number of stored entries.
  */
-int get_history_count() {
+int get_history_count()
+{
 	return histfull ? MSH_CMD_HISTORY_MAX : histlast;
 }
 
@@ -30,19 +31,20 @@ int get_history_count() {
  *
  * @param line Command line to append.
  */
-void history_append(const char *line) {
-	int len = strlen(line);						  // Get the length of the input line.
-	if (len >= MSH_CMDLINE_CHAR_MAX || len <= 0) {// If the line is too long or zero-length, ignore it.
+void history_append(const char *line)
+{
+	int len = strlen(line); // Get the length of the input line.
+	if (len >= MSH_CMDLINE_CHAR_MAX || len <= 0) { // If the line is too long or zero-length, ignore it.
 		return;
 	}
 
-	strcpy(history[histlast], line);// Copy the input line to the history at the current index.
+	strcpy(history[histlast], line); // Copy the input line to the history at the current index.
 
-	if (histlast >= MSH_CMD_HISTORY_MAX - 1) {// If the history buffer is full.
-		histfull = true;					  // Set the history buffer as full.
-		histlast = 0;						  // Reset the index to the beginning of the history buffer.
+	if (histlast >= MSH_CMD_HISTORY_MAX - 1) { // If the history buffer is full.
+		histfull = true; // Set the history buffer as full.
+		histlast = 0; // Reset the index to the beginning of the history buffer.
 	} else {
-		histlast++;// Increment the index for the next history entry.
+		histlast++; // Increment the index for the next history entry.
 	}
 }
 
@@ -52,18 +54,19 @@ void history_append(const char *line) {
  * @param histnum Zero-based age of the entry, where zero selects the newest.
  * @return The selected entry, or `NULL` if the index is out of range.
  */
-const char *history_get(int histnum) {
-	if (!histfull) {			  // If the history buffer is not full.
-		if (histnum >= histlast) {// If the requested index is beyond the last entry.
-			return NULL;		  // Return NULL as the entry doesn't exist.
+const char *history_get(int histnum)
+{
+	if (!histfull) { // If the history buffer is not full.
+		if (histnum >= histlast) { // If the requested index is beyond the last entry.
+			return NULL; // Return NULL as the entry doesn't exist.
 		}
-	} else if (histnum > MSH_CMD_HISTORY_MAX - 1 || histnum < 0) {// If the requested index is out of range.
-		return NULL;											  // Return NULL as the entry doesn't exist.
+	} else if (histnum > MSH_CMD_HISTORY_MAX - 1 || histnum < 0) { // If the requested index is out of range.
+		return NULL; // Return NULL as the entry doesn't exist.
 	}
 
-	if (histlast > histnum) {										   // If the requested index is within the currently stored entries.
-		return (history[histlast - histnum - 1]);					   // Return the corresponding history entry.
-	} else {														   // If the requested index refers to a wrapped-around entry.
-		return history[MSH_CMD_HISTORY_MAX - (histnum - histlast) - 1];// Return the wrapped-around history entry.
+	if (histlast > histnum) { // If the requested index is within the currently stored entries.
+		return (history[histlast - histnum - 1]); // Return the corresponding history entry.
+	} else { // If the requested index refers to a wrapped-around entry.
+		return history[MSH_CMD_HISTORY_MAX - (histnum - histlast) - 1]; // Return the wrapped-around history entry.
 	}
 }

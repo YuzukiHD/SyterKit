@@ -11,11 +11,13 @@
 #include <drivers/usb/usb.h>
 #include <dt-compatible/usb-dt.h>
 
-void arm32_do_irq(struct arm_regs_t *regs) {
+void arm32_do_irq(struct arm_regs_t *regs)
+{
 	do_irq(regs);
 }
 
-int main(void) {
+int main(void)
+{
 	sunxi_usb_t usb;
 
 	if (sunxi_serial_init_stdout() != 0)
@@ -26,7 +28,6 @@ int main(void) {
 		printk_error("USB: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 

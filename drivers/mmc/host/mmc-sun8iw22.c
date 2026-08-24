@@ -24,7 +24,8 @@
  * @param clk_hz Desired clock frequency in Hertz.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
+int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
+{
 	uint32_t reg_val = 0x0;
 	uint32_t src, sclk_hz, div, n, m;
 
@@ -62,9 +63,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
 
 freq_out:
 	// Configure the clock register value
-	reg_val = (src << 24) |
-		  (clk.factor_n << clk.reg_factor_n_offset) |
-		  (clk.factor_m << clk.reg_factor_m_offset);
+	reg_val = (src << 24) | (clk.factor_n << clk.reg_factor_n_offset) | (clk.factor_m << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
 	return 0;
@@ -78,7 +77,8 @@ freq_out:
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Current clock frequency in Hertz.
  */
-uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
+uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
+{
 	uint32_t clk_hz = 0;
 	uint32_t reg_val = 0x0;
 	uint32_t source;

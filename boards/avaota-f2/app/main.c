@@ -33,16 +33,17 @@
 
 #include <e907/sysmap.h>
 
-
-void sunxi_pmc_config(void) {
+void sunxi_pmc_config(void)
+{
 	if (!(readl(SUNXI_RTC_PMC_BYPASS_STATUS) & BIT(0))) {
 		/* if PMC bypass, restore all IO to GPIO */
 		writel(BIT(0) | BIT(1) | BIT(2) | BIT(5), SUNXI_RTC_IOMODE_CTL);
 	}
 }
 
-int main(void) {
-	sunxi_dram_t dram = {0};
+int main(void)
+{
+	sunxi_dram_t dram = { 0 };
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -51,8 +52,7 @@ int main(void) {
 
 	show_banner();
 
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c2") != DRIVER_OK ||
-	    pmu_axp333_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c2") != DRIVER_OK || pmu_axp333_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}

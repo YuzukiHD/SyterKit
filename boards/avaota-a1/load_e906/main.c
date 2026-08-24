@@ -45,7 +45,7 @@
 
 static sunxi_dram_t dram;
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DEFAULT_BOOTDELAY 3
 
@@ -54,28 +54,27 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-
 extern void set_rpio_power_mode(void);
 extern int sunxi_nsi_init(void);
 
 typedef struct atf_head {
 	uint32_t jump_instruction; /* jumping to real code */
-	uint8_t magic[8];		   /* magic */
-	uint32_t scp_base;		   /* scp openrisc core bin */
-	uint32_t next_boot_base;   /* next boot base for uboot */
-	uint32_t nos_base;		   /* ARM SVC RUNOS base */
-	uint32_t secureos_base;	   /* optee base */
-	uint8_t version[8];		   /* atf version */
-	uint8_t platform[8];	   /* platform information */
-	uint32_t reserved[1];	   /* stamp space, 16bytes align */
-	uint32_t dram_para[32];	   /* the dram param */
-	uint64_t dtb_base;		   /* the address of dtb */
+	uint8_t magic[8]; /* magic */
+	uint32_t scp_base; /* scp openrisc core bin */
+	uint32_t next_boot_base; /* next boot base for uboot */
+	uint32_t nos_base; /* ARM SVC RUNOS base */
+	uint32_t secureos_base; /* optee base */
+	uint8_t version[8]; /* atf version */
+	uint8_t platform[8]; /* platform information */
+	uint32_t reserved[1]; /* stamp space, 16bytes align */
+	uint32_t dram_para[32]; /* the dram param */
+	uint64_t dtb_base; /* the address of dtb */
 } atf_head_t;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(const char *filename, BYTE *dest) {
+static int fatfs_loadimage(const char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -95,7 +94,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -112,14 +111,14 @@ static int fatfs_loadimage(const char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(sunxi_remoteproc_t *remoteproc,
-		       sdmmc_pdata_t *card) {
+static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -128,8 +127,7 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc,
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(card, (uint8_t *) (dram.memory_base), 0,
-		       CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -144,13 +142,10 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc,
 	}
 
 	for (index = 0U; index < remoteproc->firmware_count; ++index) {
-		const sunxi_remoteproc_firmware_t *firmware =
-				&remoteproc->firmware[index];
+		const sunxi_remoteproc_firmware_t *firmware = &remoteproc->firmware[index];
 
-		printk_info("FATFS: read %s addr=%x\n", firmware->name,
-			    (uint32_t) firmware->load_address);
-		ret = fatfs_loadimage(firmware->name,
-				      (BYTE *) firmware->load_address);
+		printk_info("FATFS: read %s addr=%x\n", firmware->name, (uint32_t)firmware->load_address);
+		ret = fatfs_loadimage(firmware->name, (BYTE *)firmware->load_address);
 		if (ret)
 			return ret;
 	}
@@ -168,10 +163,11 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc,
 	return 0;
 }
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
-	sdmmc_pdata_t card = {0};
+	sdmmc_pdata_t card = { 0 };
 	sunxi_i2c_t i2c;
 	sunxi_remoteproc_t e906;
 	sunxi_sdhci_t sdmmc;
@@ -180,15 +176,11 @@ int main(void) {
 		return -1;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK ||
-	    sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -263,12 +255,11 @@ int main(void) {
 		goto _shell;
 	}
 
-	if (sunxi_remoteproc_prepare(&e906) != DRIVER_OK ||
-	    sunxi_remoteproc_load(&e906) != DRIVER_OK) {
+	if (sunxi_remoteproc_prepare(&e906) != DRIVER_OK || sunxi_remoteproc_load(&e906) != DRIVER_OK) {
 		printk_error("RISC-V E906: prepare or load failed\n");
 		goto _shell;
 	}
-	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t) e906.entry);
+	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t)e906.entry);
 
 	if (sunxi_remoteproc_start(&e906) != DRIVER_OK) {
 		printk_error("RISC-V E906: start failed\n");

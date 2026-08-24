@@ -29,15 +29,13 @@ static inline uint32_t arm32_read_p15_c1(void)
 {
 	uint32_t value;
 
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-				     : "=r"(value) : : "memory");
+	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0" : "=r"(value) : : "memory");
 	return value;
 }
 
 static inline void arm32_write_p15_c1(uint32_t value)
 {
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
-				     : : "r"(value) : "memory");
+	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0" : : "r"(value) : "memory");
 	/* A read-back prevents a following C access from passing the write. */
 	(void)arm32_read_p15_c1();
 }

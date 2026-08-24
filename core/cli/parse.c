@@ -21,7 +21,8 @@ typedef struct parse_state_struct {
  * If error is returned, state of parse_state_t may not be consistent
  * and should never re-used. (whole input line should be discarded.)
  */
-static int read_token(parse_state_t *pstate) {
+static int read_token(parse_state_t *pstate)
+{
 	int readcount = 0; /* FIXME counting is not correct */
 	bool is_squoted = false;
 	bool is_dquoted = false;
@@ -64,7 +65,7 @@ static int read_token(parse_state_t *pstate) {
 				/* read a char ahead */
 				pstate->readpos++;
 				ch = *pstate->readpos;
-				if (!isprint((unsigned) ch)) {
+				if (!isprint((unsigned)ch)) {
 					/* You can only escape normal chars */
 					return -1;
 				} else {
@@ -75,13 +76,13 @@ static int read_token(parse_state_t *pstate) {
 
 			/* A blank not in quote or not escaped, or a
              * command line separator (';') makes this argument done. */
-			else if (isspace((unsigned) ch) || ch == MSH_CMD_SEP_CHAR) {
+			else if (isspace((unsigned)ch) || ch == MSH_CMD_SEP_CHAR) {
 				readcount--;
 				break; /* end of current argument */
 			}
 
 			/* Normal chars */
-			else if (isprint((unsigned) ch)) {
+			else if (isprint((unsigned)ch)) {
 				*pstate->writepos++ = ch;
 			}
 
@@ -109,7 +110,8 @@ static int read_token(parse_state_t *pstate) {
 	}
 }
 
-const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char **argv) {
+const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char **argv)
+{
 	/*
      * Prepare and initialize a parse_state_t.
      */
@@ -121,11 +123,12 @@ const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char 
 	argv[0] = argvbuf;
 
 	while (*state.readpos != '\0') {
-
 		/*
          * Skip preceeding spaces or ';'
          */
-		while (isspace((unsigned) *state.readpos)) { state.readpos++; }
+		while (isspace((unsigned)*state.readpos)) {
+			state.readpos++;
+		}
 
 		int ret = read_token(&state);
 
@@ -140,13 +143,13 @@ const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char 
          */
 			if (ret == 0) {
 				switch (*(state.readpos)) {
-					case '\0':
-						return cmdline;
-					case MSH_CMD_SEP_CHAR:
-						return (state.readpos + 1);
-					default:
-						uart_puts("Fatal error in parse() \n");
-						return NULL;
+				case '\0':
+					return cmdline;
+				case MSH_CMD_SEP_CHAR:
+					return (state.readpos + 1);
+				default:
+					uart_puts("Fatal error in parse() \n");
+					return NULL;
 				}
 			}
 
@@ -175,7 +178,7 @@ const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char 
 				/*
              * read_token() stoped by a argument separator.
              */
-				else if (isspace((unsigned) stopchar)) {
+				else if (isspace((unsigned)stopchar)) {
 					argv[*pargc] = state.writepos;
 					continue;
 				}

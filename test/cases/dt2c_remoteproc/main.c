@@ -6,18 +6,17 @@
 
 #include "syter_test.h"
 
-const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {0};
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = { 0 };
 
-void test_case_main(const char *case_dir) {
-	sunxi_remoteproc_t primary = {0};
-	sunxi_remoteproc_t rejected = {.entry = 0xdeadbeefU};
-	sunxi_remoteproc_t secondary = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_remoteproc_t primary = { 0 };
+	sunxi_remoteproc_t rejected = { .entry = 0xdeadbeefU };
+	sunxi_remoteproc_t secondary = { 0 };
 
-	(void) case_dir;
-	TEST_EQ(DRIVER_OK,
-		 sunxi_remoteproc_dt_read_alias(&primary, "hifi4-primary", NULL));
-	TEST_EQ(DRIVER_OK,
-		 sunxi_remoteproc_dt_read_alias(&secondary, "hifi4-secondary", NULL));
+	(void)case_dir;
+	TEST_EQ(DRIVER_OK, sunxi_remoteproc_dt_read_alias(&primary, "hifi4-primary", NULL));
+	TEST_EQ(DRIVER_OK, sunxi_remoteproc_dt_read_alias(&secondary, "hifi4-secondary", NULL));
 	TEST_ASSERT(primary.dt_node != secondary.dt_node);
 	TEST_ASSERT(primary.ops == secondary.ops);
 	TEST_EQ(3U, primary.register_count);
@@ -42,17 +41,10 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(0x100000U, secondary.entry);
 	TEST_EQ(0U, secondary.address_map_count);
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_remoteproc_dt_read_alias(&rejected,
-					"remoteproc-disabled", NULL));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_remoteproc_dt_read_alias(&rejected,
-					"remoteproc-invalid-map", NULL));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_remoteproc_dt_read_alias(&rejected, "missing", NULL));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_remoteproc_dt_read_alias(&rejected, NULL, NULL));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_remoteproc_dt_read_alias(NULL, "hifi4-primary", NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_remoteproc_dt_read_alias(&rejected, "remoteproc-disabled", NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_remoteproc_dt_read_alias(&rejected, "remoteproc-invalid-map", NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_remoteproc_dt_read_alias(&rejected, "missing", NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_remoteproc_dt_read_alias(&rejected, NULL, NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_remoteproc_dt_read_alias(NULL, "hifi4-primary", NULL));
 	TEST_EQ(0xdeadbeefU, rejected.entry);
 }

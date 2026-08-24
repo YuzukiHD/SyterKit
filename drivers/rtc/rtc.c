@@ -29,10 +29,10 @@
 
 #define RTC_WRITE_RETRIES 5U
 
-static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {
-	return rtc != NULL && rtc->data_base != 0U && index >= 0 &&
-	       (uint32_t) index <= (UINT32_MAX / sizeof(uint32_t)) &&
-	       ((uint32_t) index + 1U) * sizeof(uint32_t) <= rtc->data_size;
+static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index)
+{
+	return rtc != NULL && rtc->data_base != 0U && index >= 0 && (uint32_t)index <= (UINT32_MAX / sizeof(uint32_t)) &&
+	       ((uint32_t)index + 1U) * sizeof(uint32_t) <= rtc->data_size;
 }
 
 /**
@@ -42,10 +42,11 @@ static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index) {
  * @param index The index of the RTC register to write data to
  * @param val The value to write to the RTC register
  */
-void rtc_write_data(const sunxi_rtc_t *rtc, int index, uint32_t val) {
+void rtc_write_data(const sunxi_rtc_t *rtc, int index, uint32_t val)
+{
 	if (!rtc_data_index_valid(rtc, index))
 		return;
-	writel(val, rtc->data_base + (uintptr_t) index * sizeof(uint32_t));
+	writel(val, rtc->data_base + (uintptr_t)index * sizeof(uint32_t));
 }
 
 /**
@@ -55,13 +56,15 @@ void rtc_write_data(const sunxi_rtc_t *rtc, int index, uint32_t val) {
  * @param index The index of the RTC register to read data from
  * @return The value read from the RTC register
  */
-uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index) {
+uint32_t rtc_read_data(const sunxi_rtc_t *rtc, int index)
+{
 	if (!rtc_data_index_valid(rtc, index))
 		return 0U;
-	return readl(rtc->data_base + (uintptr_t) index * sizeof(uint32_t));
+	return readl(rtc->data_base + (uintptr_t)index * sizeof(uint32_t));
 }
 
-static bool rtc_write_verified(const sunxi_rtc_t *rtc, int index, uint32_t val) {
+static bool rtc_write_verified(const sunxi_rtc_t *rtc, int index, uint32_t val)
+{
 	unsigned int attempt;
 
 	if (!rtc_data_index_valid(rtc, index))
@@ -82,7 +85,8 @@ static bool rtc_write_verified(const sunxi_rtc_t *rtc, int index, uint32_t val) 
  *          was successful by reading back the value.
  * @param rtc RTC instance containing the register data area
  */
-void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
+void rtc_set_fel_flag(const sunxi_rtc_t *rtc)
+{
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
 		return;
 	rtc_write_verified(rtc, RTC_FEL_INDEX, EFEX_FLAG);
@@ -95,7 +99,8 @@ void rtc_set_fel_flag(const sunxi_rtc_t *rtc) {
  *          uptime. The function verifies the write operation was successful.
  * @param rtc RTC instance containing the register data area
  */
-void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
+void rtc_set_start_time_ms(const sunxi_rtc_t *rtc)
+{
 	uint32_t init_time_ms = get_init_timestamp();
 
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
@@ -113,7 +118,8 @@ void rtc_set_start_time_ms(const sunxi_rtc_t *rtc) {
  * 
  * @note This function continuously attempts to set DRAM parameters until it succeeds.
  */
-void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr) {
+void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr)
+{
 	if (!rtc_data_index_valid(rtc, RTC_DRAM_PARA_ADDR))
 		return;
 	rtc_write_verified(rtc, RTC_DRAM_PARA_ADDR, dram_para_addr);
@@ -125,7 +131,8 @@ void rtc_set_dram_para(const sunxi_rtc_t *rtc, uint32_t dram_para_addr) {
  * @param rtc RTC instance containing the register data area
  * @return 1 if the FEL flag is set, 0 otherwise
  */
-uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
+uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc)
+{
 	return rtc_read_data(rtc, RTC_FEL_INDEX) == EFEX_FLAG ? 1U : 0U;
 }
 
@@ -135,7 +142,8 @@ uint32_t rtc_probe_fel_flag(const sunxi_rtc_t *rtc) {
  *          The function verifies the write operation was successful by reading back the value.
  * @param rtc RTC instance containing the register data area
  */
-void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
+void rtc_clear_fel_flag(const sunxi_rtc_t *rtc)
+{
 	if (!rtc_data_index_valid(rtc, RTC_FEL_INDEX))
 		return;
 	rtc_write_verified(rtc, RTC_FEL_INDEX, 0U);
@@ -149,7 +157,8 @@ void rtc_clear_fel_flag(const sunxi_rtc_t *rtc) {
  * @param flag The boot mode flag value to set
  * @return 0 if successful
  */
-int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag) {
+int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag)
+{
 	if (!rtc_data_index_valid(rtc, RTC_BOOT_INDEX))
 		return -1;
 	return rtc_write_verified(rtc, RTC_BOOT_INDEX, flag) ? 0 : -1;
@@ -163,7 +172,8 @@ int rtc_set_bootmode_flag(const sunxi_rtc_t *rtc, uint8_t flag) {
  * @param rtc RTC instance containing the register data area
  * @return The value of the boot mode flag
  */
-int rtc_get_bootmode_flag(const sunxi_rtc_t *rtc) {
+int rtc_get_bootmode_flag(const sunxi_rtc_t *rtc)
+{
 	uint32_t boot_flag;
 
 	/* operation should be same with kernel write rtc */

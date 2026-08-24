@@ -178,4 +178,4 @@
 #define AXP8191_DCDC_DEBUG3 (0x18C)
 #define AXP8191_DCDC_DEBUG4 (0x18D)
 
-#endif// __REG_AXP8191_H__
+#endif // __REG_AXP8191_H__

@@ -5,13 +5,13 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	 sunxi_dram_t dram = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_dram_t dram = { 0 };
 
-	(void) case_dir;
+	(void)case_dir;
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		sunxi_dram_dt_read_alias(&dram, "dram24"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram24"));
 
 	TEST_EQ(DRIVER_OK, sunxi_dram_dt_read_alias(&dram, "dram32"));
 	TEST_EQ(32U, dram.parameter_count);
@@ -19,21 +19,15 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(0x21fU, dram.parameters[31]);
 
 	/* Every accepted node uses the same fixed 32-word container. */
-	TEST_EQ(DRIVER_OK,
-		 sunxi_dram_dt_read_alias(&dram, "dram32-default"));
+	TEST_EQ(DRIVER_OK, sunxi_dram_dt_read_alias(&dram, "dram32-default"));
 	TEST_EQ(32U, dram.parameter_count);
 	TEST_EQ(0x300U, dram.parameters[0]);
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_dram_dt_read_alias(&dram, "dram-bad-size"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_dram_dt_read_alias(&dram, "dram-bad-count"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_dram_dt_read_alias(&dram, "dram-disabled"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_dram_dt_read_alias(&dram, "dram-wrong-compatible"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_dram_dt_read_alias(&dram, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram-bad-size"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram-bad-count"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram-disabled"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram-wrong-compatible"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "missing"));
 
 	dram.size = 512U;
 	TEST_EQ(512U, sunxi_get_dram_size(&dram));

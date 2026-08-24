@@ -30,20 +30,19 @@
  * @param size The size (in bits) of the field to be extracted.
  * @return The extracted bit field.
  */
-#define UNSTUFF_BITS(resp, start, size)                              \
-	({                                                               \
+#define UNSTUFF_BITS(resp, start, size)                                      \
+	({                                                                   \
 		const int __size = size;                                     \
 		const uint32_t __mask = (__size < 32 ? 1 << __size : 0) - 1; \
 		const int __off = 3 - ((start) / 32);                        \
-		const int __shft = (start) &31;                              \
+		const int __shft = (start) & 31;                             \
 		uint32_t __res;                                              \
-                                                                     \
+                                                                             \
 		__res = resp[__off] >> __shft;                               \
 		if (__size + __shft > 32)                                    \
-			__res |= resp[__off - 1] << ((32 - __shft) % 32);        \
-		__res &__mask;                                               \
+			__res |= resp[__off - 1] << ((32 - __shft) % 32);    \
+		__res & __mask;                                              \
 	})
-
 
 /**
  * @brief Checks if the MMC host operates in SPI mode.
@@ -53,7 +52,8 @@
  * @param mmc Pointer to the MMC structure.
  * @return 1 if the host operates in SPI mode, 0 otherwise.
  */
-static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) {
+static inline int sunxi_mmc_host_is_spi(mmc_t *mmc)
+{
 	return mmc->host_caps & MMC_MODE_SPI;
 }
 
@@ -65,7 +65,8 @@ static inline int sunxi_mmc_host_is_spi(mmc_t *mmc) {
  * @param mmc Pointer to the MMC structure.
  * @return 1 if the device is an SD card, 0 otherwise.
  */
-static inline int sunxi_mmc_device_is_sd(mmc_t *mmc) {
+static inline int sunxi_mmc_device_is_sd(mmc_t *mmc)
+{
 	return mmc->version & SD_VERSION_SD;
 }
 
@@ -78,7 +79,8 @@ static inline int sunxi_mmc_device_is_sd(mmc_t *mmc) {
  * @param card Pointer to the MMC card structure.
  * @return The Manufacturer ID.
  */
-static inline uint32_t extract_mid(mmc_t *card) {
+static inline uint32_t extract_mid(mmc_t *card)
+{
 	if ((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4))
 		return UNSTUFF_BITS(card->cid, 104, 24);
 	else
@@ -93,7 +95,8 @@ static inline uint32_t extract_mid(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The OEM/Application ID.
  */
-static inline uint32_t extract_oid(mmc_t *card) {
+static inline uint32_t extract_oid(mmc_t *card)
+{
 	return (card->cid[0] >> 8) & 0xffff;
 }
 
@@ -105,7 +108,8 @@ static inline uint32_t extract_oid(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The Product Revision.
  */
-static inline uint32_t extract_prv(mmc_t *card) {
+static inline uint32_t extract_prv(mmc_t *card)
+{
 	return (card->cid[2] >> 24);
 }
 
@@ -117,7 +121,8 @@ static inline uint32_t extract_prv(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The Product Serial Number.
  */
-static inline uint32_t extract_psn(mmc_t *card) {
+static inline uint32_t extract_psn(mmc_t *card)
+{
 	if (card->version & SD_VERSION_SD) {
 		return UNSTUFF_BITS(card->csd, 24, 32);
 	} else {
@@ -136,7 +141,8 @@ static inline uint32_t extract_psn(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The manufacturing month.
  */
-static inline uint32_t extract_month(mmc_t *card) {
+static inline uint32_t extract_month(mmc_t *card)
+{
 	if (card->version & SD_VERSION_SD)
 		return UNSTUFF_BITS(card->cid, 8, 4);
 	else
@@ -151,7 +157,8 @@ static inline uint32_t extract_month(mmc_t *card) {
  * @param card Pointer to the MMC card structure.
  * @return The manufacturing year.
  */
-static inline uint32_t extract_year(mmc_t *card) {
+static inline uint32_t extract_year(mmc_t *card)
+{
 	uint32_t year;
 
 	if (card->version & SD_VERSION_SD)
@@ -175,7 +182,8 @@ static inline uint32_t extract_year(mmc_t *card) {
  * @param timeout Timeout value in milliseconds.
  * @return 0 on success, error code otherwise.
  */
-static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout) {
+static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
 
@@ -219,7 +227,8 @@ static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout) {
  * @param len Block length to be set.
  * @return 0 on success, error code otherwise.
  */
-static inline int sunxi_mmc_set_block_len(sunxi_sdhci_t *sdhci, uint32_t len) {
+static inline int sunxi_mmc_set_block_len(sunxi_sdhci_t *sdhci, uint32_t len)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	mmc_cmd_t cmd;
 	/* Don't set block length in DDR mode */
@@ -246,18 +255,18 @@ static inline int sunxi_mmc_set_block_len(sunxi_sdhci_t *sdhci, uint32_t len) {
  * @param blkcnt Number of blocks to read.
  * @return Number of blocks read on success, 0 otherwise.
  */
-static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt)
+{
 	mmc_t *mmc = &sdhci->mmc;
 
-	mmc_cmd_t cmd = {0};
-	mmc_data_t data = {0};
+	mmc_cmd_t cmd = { 0 };
+	mmc_data_t data = { 0 };
 
 	int timeout = 1000;
 
 	/* Do not issue a command outside the card's advertised LBA range. */
 	if (blkcnt == 0 || start > mmc->lba || blkcnt > mmc->lba - start) {
-		printk_warning("SMHC: read range [%u, %u) exceeds card capacity %u\n",
-			start, start + blkcnt, mmc->lba);
+		printk_warning("SMHC: read range [%u, %u) exceeds card capacity %u\n", start, start + blkcnt, mmc->lba);
 		return 0;
 	}
 
@@ -295,8 +304,8 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 		}
 
 		/* Waiting for the ready status */
-			if (sunxi_mmc_send_status(sdhci, timeout))
-				return 0;
+		if (sunxi_mmc_send_status(sdhci, timeout))
+			return 0;
 	}
 
 	return blkcnt;
@@ -317,18 +326,18 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
  *
  * @return The number of blocks successfully written, or 0 if writing failed.
  */
-static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
+static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t start, uint32_t blkcnt)
+{
 	mmc_t *mmc = &sdhci->mmc;
 
-	mmc_cmd_t cmd = {0};
-	mmc_data_t data = {0};
+	mmc_cmd_t cmd = { 0 };
+	mmc_data_t data = { 0 };
 
 	int timeout = 1000;
 
 	/* Do not issue a command outside the card's advertised LBA range. */
 	if (blkcnt == 0 || start > mmc->lba || blkcnt > mmc->lba - start) {
-		printk_warning("SMHC: write range [%u, %u) exceeds card capacity %u\n",
-			start, start + blkcnt, mmc->lba);
+		printk_warning("SMHC: write range [%u, %u) exceeds card capacity %u\n", start, start + blkcnt, mmc->lba);
 		return 0;
 	}
 
@@ -366,8 +375,8 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
 		}
 
 		/* Waiting for the ready status */
-			if (sunxi_mmc_send_status(sdhci, timeout))
-				return 0;
+		if (sunxi_mmc_send_status(sdhci, timeout))
+			return 0;
 	}
 
 	return blkcnt;
@@ -381,7 +390,8 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
  * @param sdhci Pointer to the SDHCI controller structure.
  * @return 0 on success, error code otherwise.
  */
-static int sunxi_mmc_go_idle(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_go_idle(sunxi_sdhci_t *sdhci)
+{
 	mmc_cmd_t cmd;
 
 	int err = 0;
@@ -411,12 +421,13 @@ static int sunxi_mmc_go_idle(sunxi_sdhci_t *sdhci) {
  * @param sdhci Pointer to the SDHCI controller structure.
  * @return 0 on success, error code otherwise.
  */
-static int sunxi_mmc_sd_send_op_cond(sunxi_sdhci_t *sdhci) {
-	int timeout = 1000;// Timeout value for waiting on card initialization
-	int err;		   // Error code variable
+static int sunxi_mmc_sd_send_op_cond(sunxi_sdhci_t *sdhci)
+{
+	int timeout = 1000; // Timeout value for waiting on card initialization
+	int err; // Error code variable
 
-	mmc_t *mmc = &sdhci->mmc;// MMC structure pointer
-	mmc_cmd_t cmd;			// MMC command structure
+	mmc_t *mmc = &sdhci->mmc; // MMC structure pointer
+	mmc_cmd_t cmd; // MMC command structure
 
 	do {
 		// Send application-specific command
@@ -451,9 +462,9 @@ static int sunxi_mmc_sd_send_op_cond(sunxi_sdhci_t *sdhci) {
 			return err;
 		}
 
-		mdelay(1);// Delay for stability
+		mdelay(1); // Delay for stability
 
-	} while ((!(cmd.response[0] & OCR_BUSY)) && timeout--);// Wait for card initialization and decrement timeout
+	} while ((!(cmd.response[0] & OCR_BUSY)) && timeout--); // Wait for card initialization and decrement timeout
 
 	if (timeout <= 0) {
 		printk_warning("SMHC: wait card init failed\n");
@@ -485,7 +496,7 @@ static int sunxi_mmc_sd_send_op_cond(sunxi_sdhci_t *sdhci) {
 	mmc->high_capacity = ((mmc->ocr & OCR_HCS) == OCR_HCS);
 	mmc->rca = 0;
 
-	return 0;// Return success
+	return 0; // Return success
 }
 
 /**
@@ -504,11 +515,12 @@ static int sunxi_mmc_sd_send_op_cond(sunxi_sdhci_t *sdhci) {
  *                      - Positive value: indicates an internal error within the function.
  *                      - UNUSABLE_ERR: indicates failure to initialize the card within the timeout.
  */
-static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci) {
-	int timeout = 1000;		///< Timeout value for waiting for card initialization.
-	int err;				///< Error code for indicating success or failure.
-	mmc_t *mmc = &sdhci->mmc;///< Pointer to the MMC structure.
-	mmc_cmd_t cmd;			///< Command structure for the SEND_OP_COND command.
+static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci)
+{
+	int timeout = 1000; ///< Timeout value for waiting for card initialization.
+	int err; ///< Error code for indicating success or failure.
+	mmc_t *mmc = &sdhci->mmc; ///< Pointer to the MMC structure.
+	mmc_cmd_t cmd; ///< Command structure for the SEND_OP_COND command.
 
 	// Reset the MMC/SD card
 	sunxi_mmc_go_idle(sdhci);
@@ -526,7 +538,7 @@ static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci) {
 		return err;
 	}
 
-	mdelay(1);// Delay for stability
+	mdelay(1); // Delay for stability
 
 	// Loop until the card is initialized or timeout occurs
 	do {
@@ -546,13 +558,13 @@ static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci) {
 			return err;
 		}
 
-		mdelay(1);// Delay for stability
+		mdelay(1); // Delay for stability
 
-	} while (!(cmd.response[0] & OCR_BUSY) && timeout--);// Wait for card initialization and decrement timeout
+	} while (!(cmd.response[0] & OCR_BUSY) && timeout--); // Wait for card initialization and decrement timeout
 
 	if (timeout <= 0) {
 		printk_warning("SMHC: wait for mmc init failed\n");
-		return UNUSABLE_ERR;// Indicate failure to initialize the card within the timeout
+		return UNUSABLE_ERR; // Indicate failure to initialize the card within the timeout
 	}
 
 	// Read OCR for SPI
@@ -573,7 +585,7 @@ static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci) {
 	mmc->high_capacity = ((mmc->ocr & OCR_HCS) == OCR_HCS);
 	mmc->rca = 1;
 
-	return 0;// Return success
+	return 0; // Return success
 }
 
 /**
@@ -592,10 +604,11 @@ static int sunxi_mmc_mmc_send_op_cond(sunxi_sdhci_t *sdhci) {
  *                      - Negative value: indicates a communication error with the MMC/SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_send_ext_csd(sunxi_sdhci_t *sdhci, char *ext_csd) {
-	mmc_cmd_t cmd;			///< Command structure for the SEND_EXT_CSD command.
-	mmc_data_t data;		///< Data structure for storing the Extended CSD data.
-	int err;				///< Error code for indicating success or failure.
+static int sunxi_mmc_send_ext_csd(sunxi_sdhci_t *sdhci, char *ext_csd)
+{
+	mmc_cmd_t cmd; ///< Command structure for the SEND_EXT_CSD command.
+	mmc_data_t data; ///< Data structure for storing the Extended CSD data.
+	int err; ///< Error code for indicating success or failure.
 
 	// Send command to retrieve the Extended CSD
 	cmd.cmdidx = MMC_CMD_SEND_EXT_CSD;
@@ -615,7 +628,7 @@ static int sunxi_mmc_send_ext_csd(sunxi_sdhci_t *sdhci, char *ext_csd) {
 	if (err)
 		printk_warning("SMHC: send ext csd failed\n");
 
-	return err;// Return the error code (0 if successful)
+	return err; // Return the error code (0 if successful)
 }
 
 /**
@@ -635,10 +648,11 @@ static int sunxi_mmc_send_ext_csd(sunxi_sdhci_t *sdhci, char *ext_csd) {
  *                      - Negative value: indicates a communication error with the MMC/SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, uint8_t value) {
-	mmc_cmd_t cmd;			///< Command structure for the SWITCH command.
-	int timeout = 1000;		///< Timeout value for waiting for the card to become ready.
-	int ret;				///< Error code for indicating success or failure.
+static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, uint8_t value)
+{
+	mmc_cmd_t cmd; ///< Command structure for the SWITCH command.
+	int timeout = 1000; ///< Timeout value for waiting for the card to become ready.
+	int ret; ///< Error code for indicating success or failure.
 
 	// Prepare the SWITCH command
 	cmd.cmdidx = MMC_CMD_SWITCH;
@@ -664,7 +678,7 @@ static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, ui
 	// Wait for the card to become ready
 	sunxi_mmc_send_status(sdhci, timeout);
 
-	return ret;// Return the error code (0 if successful)
+	return ret; // Return the error code (0 if successful)
 }
 
 /**
@@ -681,14 +695,15 @@ static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, ui
  *                      - Negative value: indicates a communication error with the MMC/SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
-	mmc_t *mmc = &sdhci->mmc;///< Pointer to the MMC structure.
-	char ext_csd[512];		///< Buffer to hold the extended CSD data.
-	char cardtype;			///< Type of the MMC/SD card.
-	int err;				///< Error code for indicating success or failure.
-	int retry = 5;			///< Number of retries for certain operations.
+static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci)
+{
+	mmc_t *mmc = &sdhci->mmc; ///< Pointer to the MMC structure.
+	char ext_csd[512]; ///< Buffer to hold the extended CSD data.
+	char cardtype; ///< Type of the MMC/SD card.
+	int err; ///< Error code for indicating success or failure.
+	int retry = 5; ///< Number of retries for certain operations.
 
-	mmc->card_caps = 0;///< Initialize card capabilities.
+	mmc->card_caps = 0; ///< Initialize card capabilities.
 
 	// Skip frequency change if MMC/SD card is in SPI mode
 	if (sunxi_mmc_host_is_spi(mmc))
@@ -708,7 +723,7 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
 		return err;
 	}
 
-	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0xff;///< Extract card type from the extended CSD data
+	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0xff; ///< Extract card type from the extended CSD data
 
 	// Retry switching to high-speed mode for certain types of cards
 	do {
@@ -750,7 +765,7 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
 		mmc->speed_mode = MMC_DS26_SDR12;
 	}
 
-	return 0;// Return success
+	return 0; // Return success
 }
 
 /**
@@ -771,21 +786,22 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci) {
  *                      - Negative value: indicates a communication error with the SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_sd_switch(sunxi_sdhci_t *sdhci, int mode, int group, uint8_t value, uint8_t *resp) {
-	mmc_cmd_t cmd;	///< MMC command structure for sending commands to the SD card.
-	mmc_data_t data;///< MMC data structure for specifying data transfer parameters.
+static int sunxi_mmc_sd_switch(sunxi_sdhci_t *sdhci, int mode, int group, uint8_t value, uint8_t *resp)
+{
+	mmc_cmd_t cmd; ///< MMC command structure for sending commands to the SD card.
+	mmc_data_t data; ///< MMC data structure for specifying data transfer parameters.
 
 	/* Switch the frequency */
-	cmd.cmdidx = SD_CMD_SWITCH_FUNC;				///< Command index for SWITCH_FUNC command.
-	cmd.resp_type = MMC_RSP_R1;						///< Response type for the command.
-	cmd.cmdarg = ((uint32_t) mode << 31) | 0xffffff;///< Command argument specifying the mode and reserved bits.
-	cmd.cmdarg &= ~(0xf << (group * 4));			///< Clear the bits corresponding to the specified group.
-	cmd.cmdarg |= value << (group * 4);				///< Set the bits corresponding to the specified value within the group.
-	cmd.flags = 0;									///< Flags for command execution.
+	cmd.cmdidx = SD_CMD_SWITCH_FUNC; ///< Command index for SWITCH_FUNC command.
+	cmd.resp_type = MMC_RSP_R1; ///< Response type for the command.
+	cmd.cmdarg = ((uint32_t)mode << 31) | 0xffffff; ///< Command argument specifying the mode and reserved bits.
+	cmd.cmdarg &= ~(0xf << (group * 4)); ///< Clear the bits corresponding to the specified group.
+	cmd.cmdarg |= value << (group * 4); ///< Set the bits corresponding to the specified value within the group.
+	cmd.flags = 0; ///< Flags for command execution.
 
-	data.b.dest = (char *) resp;///< Destination buffer for storing the response from the SD card.
-	data.blocksize = 64;		///< Block size for data transfer.
-	data.blocks = 1;			///< Number of blocks to transfer.
+	data.b.dest = (char *)resp; ///< Destination buffer for storing the response from the SD card.
+	data.blocksize = 64; ///< Block size for data transfer.
+	data.blocks = 1; ///< Number of blocks to transfer.
 	data.flags = MMC_DATA_READ; ///< Flags indicating the direction of data transfer.
 
 	// Execute the command and data transfer
@@ -807,7 +823,8 @@ static int sunxi_mmc_sd_switch(sunxi_sdhci_t *sdhci, int mode, int group, uint8_
  *                      - Negative value: indicates a communication error with the SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_sd_change_freq(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_sd_change_freq(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 
 	mmc_cmd_t cmd;
@@ -843,7 +860,7 @@ static int sunxi_mmc_sd_change_freq(sunxi_sdhci_t *sdhci) {
 	timeout = 3;
 
 retry_scr:
-	data.b.dest = (char *) &scr;
+	data.b.dest = (char *)&scr;
 	data.blocksize = 8;
 	data.blocks = 1;
 	data.flags = MMC_DATA_READ;
@@ -861,18 +878,18 @@ retry_scr:
 	mmc->scr[1] = be32_to_cpu(scr[1]);
 
 	switch ((mmc->scr[0] >> 24) & 0xf) {
-		case 0:
-			mmc->version = SD_VERSION_1_0;
-			break;
-		case 1:
-			mmc->version = SD_VERSION_1_10;
-			break;
-		case 2:
-			mmc->version = SD_VERSION_2;
-			break;
-		default:
-			mmc->version = SD_VERSION_1_0;
-			break;
+	case 0:
+		mmc->version = SD_VERSION_1_0;
+		break;
+	case 1:
+		mmc->version = SD_VERSION_1_10;
+		break;
+	case 2:
+		mmc->version = SD_VERSION_2;
+		break;
+	default:
+		mmc->version = SD_VERSION_1_0;
+		break;
 	}
 
 	if (mmc->scr[0] & SD_DATA_4BIT)
@@ -884,7 +901,7 @@ retry_scr:
 
 	timeout = 4;
 	while (timeout--) {
-		err = sunxi_mmc_sd_switch(sdhci, SD_SWITCH_CHECK, 0, 1, (uint8_t *) &switch_status);
+		err = sunxi_mmc_sd_switch(sdhci, SD_SWITCH_CHECK, 0, 1, (uint8_t *)&switch_status);
 
 		if (err) {
 			printk_warning("SMHC: Check high speed status faild\n");
@@ -900,7 +917,7 @@ retry_scr:
 	if (!(be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
 		return 0;
 
-	err = sunxi_mmc_sd_switch(sdhci, SD_SWITCH_SWITCH, 0, 1, (uint8_t *) &switch_status);
+	err = sunxi_mmc_sd_switch(sdhci, SD_SWITCH_SWITCH, 0, 1, (uint8_t *)&switch_status);
 
 	if (err) {
 		printk_warning("SMHC: switch to high speed failed\n");
@@ -924,32 +941,18 @@ retry_scr:
 /* frequency bases */
 /* divided by 10 to be nice to platforms without floating point */
 static const int tran_speed_unit[] = {
-		10000,
-		100000,
-		1000000,
-		10000000,
+	10000,
+	100000,
+	1000000,
+	10000000,
 };
 
 /* Multiplier values for TRAN_SPEED.  Multiplied by 10 to be nice
  * to platforms without floating point.
  */
 static const int tran_speed_time[] = {
-		0, /* reserved */
-		10,
-		12,
-		13,
-		15,
-		20,
-		25,
-		30,
-		35,
-		40,
-		45,
-		50,
-		55,
-		60,
-		70,
-		80,
+	0, /* reserved */
+	10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80,
 };
 
 /**
@@ -960,7 +963,8 @@ static const int tran_speed_time[] = {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @param clock The desired clock frequency to be set.
  */
-static void sunxi_mmc_set_clock(sunxi_sdhci_t *sdhci, uint32_t clock) {
+static void sunxi_mmc_set_clock(sunxi_sdhci_t *sdhci, uint32_t clock)
+{
 	mmc_t *mmc = &sdhci->mmc;
 
 	// Print debug information about clock frequencies
@@ -990,7 +994,8 @@ static void sunxi_mmc_set_clock(sunxi_sdhci_t *sdhci, uint32_t clock) {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @param width The bus width to be set (in bits).
  */
-static void sunxi_mmc_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width) {
+static void sunxi_mmc_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width)
+{
 	mmc_t *mmc = &sdhci->mmc;
 
 	// Set the bus width
@@ -1008,7 +1013,8 @@ static void sunxi_mmc_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width) {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @return Returns 0 on success, or a negative error code on failure.
  */
-static int sunxi_mmc_mmc_switch_ds(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_mmc_switch_ds(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err;
 
@@ -1045,7 +1051,8 @@ static int sunxi_mmc_mmc_switch_ds(sunxi_sdhci_t *sdhci) {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @return Returns 0 on success, or a negative error code on failure.
  */
-static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err;
 
@@ -1082,7 +1089,8 @@ static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci) {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @return Returns 0 on success, or a negative error code on failure.
  */
-static int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err;
 
@@ -1119,7 +1127,8 @@ static int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci) {
  * @param sdhci A pointer to the Sunxi SDHCI controller structure.
  * @return Returns 0 on success, or a negative error code on failure.
  */
-static int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err;
 
@@ -1157,7 +1166,8 @@ static int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci) {
  * @param spd_mode Speed mode to be switched to.
  * @return Returns 0 upon success, -1 if an error occurs.
  */
-static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode) {
+static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int ret = 0;
 
@@ -1166,22 +1176,22 @@ static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mo
 	}
 
 	switch (spd_mode) {
-		case MMC_DS26_SDR12:
-			ret = sunxi_mmc_mmc_switch_ds(sdhci);
-			break;
-		case MMC_HSSDR52_SDR25:
-			ret = sunxi_mmc_mmc_switch_hs(sdhci);
-			break;
-		case MMC_HS200_SDR104:
-			ret = sunxi_mmc_mmc_switch_hs200(sdhci);
-			break;
-		case MMC_HS400:
-			ret = sunxi_mmc_mmc_switch_hs400(sdhci);
-			break;
-		default:
-			ret = -1;
-			printk_debug("SMHC: error speed mode %d\n", spd_mode);
-			break;
+	case MMC_DS26_SDR12:
+		ret = sunxi_mmc_mmc_switch_ds(sdhci);
+		break;
+	case MMC_HSSDR52_SDR25:
+		ret = sunxi_mmc_mmc_switch_hs(sdhci);
+		break;
+	case MMC_HS200_SDR104:
+		ret = sunxi_mmc_mmc_switch_hs200(sdhci);
+		break;
+	case MMC_HS400:
+		ret = sunxi_mmc_mmc_switch_hs400(sdhci);
+		break;
+	default:
+		ret = -1;
+		printk_debug("SMHC: error speed mode %d\n", spd_mode);
+		break;
 	}
 	return ret;
 }
@@ -1196,7 +1206,8 @@ static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mo
  * @param bus_width The bus width to be checked.
  * @return Returns 0 if the bus width is supported, -1 if not.
  */
-static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr, uint32_t bus_width) {
+static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr, uint32_t bus_width)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int ret = 0;
 
@@ -1204,8 +1215,8 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
 		/* don't consider SD3.0. tSD/fSD is SD2.0, 1-bit can be support */
 
 		if ((emmc_hs_ddr && (!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSSDR52_SDR25)) ||
-			((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50)) || ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104)) ||
-			((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))) {
+		    ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50)) || ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104)) ||
+		    ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))) {
 			ret = -1;
 		}
 	} else if (bus_width == SMHC_WIDTH_4BIT) {
@@ -1235,7 +1246,8 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
  * @param width The bus width to be set.
  * @return Returns 0 upon success, -1 if an error occurs.
  */
-static int sunxi_mmc_mmc_switch_bus_width(sunxi_sdhci_t *sdhci, uint32_t spd_mode, uint32_t width) {
+static int sunxi_mmc_mmc_switch_bus_width(sunxi_sdhci_t *sdhci, uint32_t spd_mode, uint32_t width)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
 	uint32_t emmc_hs_ddr = 0;
@@ -1296,7 +1308,8 @@ static int sunxi_mmc_mmc_switch_bus_width(sunxi_sdhci_t *sdhci, uint32_t spd_mod
  * @param width The bus width to be set.
  * @return Returns 0 upon success, an error code if an error occurs.
  */
-static inline int sunxi_mmc_mmc_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode, uint32_t width) {
+static inline int sunxi_mmc_mmc_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode, uint32_t width)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
 	int spd_mode_backup = 0;
@@ -1340,7 +1353,8 @@ static inline int sunxi_mmc_mmc_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t s
  * @param sdhci Pointer to the SD/MMC host controller structure.
  * @return Returns 0 upon success, an error code if an error occurs.
  */
-static int sunxi_mmc_sd_send_if_cond(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_sd_send_if_cond(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	mmc_cmd_t cmd;
 	int err = 0;
@@ -1375,7 +1389,8 @@ static int sunxi_mmc_sd_send_if_cond(sunxi_sdhci_t *sdhci) {
  *
  * @param sdhci Pointer to the SD/MMC host controller structure.
  */
-static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci) {
+static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	if (mmc->high_capacity)
 		printk_debug("  High capacity card\n");
@@ -1401,7 +1416,8 @@ static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci) {
  * @param sdhci Pointer to the SD/MMC host controller structure.
  * @return 0 on success, or an error code if an error occurred during probing.
  */
-static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
+static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
+{
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
 	int timeout = 1000;
@@ -1475,38 +1491,37 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
 	if (mmc->version == MMC_VERSION_UNKNOWN) {
 		uint32_t version = (cmd.response[0] >> 26) & 0xf;
 		switch (version) {
-			case 0:
-				mmc->version = MMC_VERSION_1_2;
-				strver = "1.2";
-				break;
-			case 1:
-				mmc->version = MMC_VERSION_1_4;
-				strver = "1.4";
-				break;
-			case 2:
-				mmc->version = MMC_VERSION_2_2;
-				strver = "2.2";
-				break;
-			case 3:
-				mmc->version = MMC_VERSION_3;
-				strver = "3.0";
-				break;
-			case 4:
-				mmc->version = MMC_VERSION_4;
-				strver = "4.0";
-				break;
-			default:
-				mmc->version = MMC_VERSION_1_2;
-				strver = "1.2";
-				break;
+		case 0:
+			mmc->version = MMC_VERSION_1_2;
+			strver = "1.2";
+			break;
+		case 1:
+			mmc->version = MMC_VERSION_1_4;
+			strver = "1.4";
+			break;
+		case 2:
+			mmc->version = MMC_VERSION_2_2;
+			strver = "2.2";
+			break;
+		case 3:
+			mmc->version = MMC_VERSION_3;
+			strver = "3.0";
+			break;
+		case 4:
+			mmc->version = MMC_VERSION_4;
+			strver = "4.0";
+			break;
+		default:
+			mmc->version = MMC_VERSION_1_2;
+			strver = "1.2";
+			break;
 		}
 	}
 
 	/* divide frequency by 10, since the mults are 10x bigger */
 	uint32_t unit = cmd.response[0] & 0x7U;
 	uint32_t multiplier = (cmd.response[0] >> 3) & 0xfU;
-	if (unit >= (sizeof(tran_speed_unit) / sizeof(tran_speed_unit[0])) ||
-	    multiplier >= (sizeof(tran_speed_time) / sizeof(tran_speed_time[0]))) {
+	if (unit >= (sizeof(tran_speed_unit) / sizeof(tran_speed_unit[0])) || multiplier >= (sizeof(tran_speed_time) / sizeof(tran_speed_time[0]))) {
 		printk_warning("SMHC: invalid TRAN_SPEED encoding 0x%08x\n", cmd.response[0]);
 		return UNUSABLE_ERR;
 	}
@@ -1574,48 +1589,46 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
 		if (!err) {
 			/* update mmc version */
 			switch (ext_csd[EXT_CSD_REV]) {
-				case 0:
-					mmc->version = MMC_VERSION_4;
-					strver = "4.0";
-					break;
-				case 1:
-					mmc->version = MMC_VERSION_4_1;
-					strver = "4.1";
-					break;
-				case 2:
-					mmc->version = MMC_VERSION_4_2;
-					strver = "4.2";
-					break;
-				case 3:
-					mmc->version = MMC_VERSION_4_3;
-					strver = "4.3";
-					break;
-				case 5:
-					mmc->version = MMC_VERSION_4_41;
-					strver = "4.41";
-					break;
-				case 6:
-					mmc->version = MMC_VERSION_4_5;
-					strver = "4.5";
-					break;
-				case 7:
-					mmc->version = MMC_VERSION_5_0;
-					strver = "5.0";
-					break;
-				case 8:
-					mmc->version = MMC_VERSION_5_1;
-					strver = "5.1";
-					break;
+			case 0:
+				mmc->version = MMC_VERSION_4;
+				strver = "4.0";
+				break;
+			case 1:
+				mmc->version = MMC_VERSION_4_1;
+				strver = "4.1";
+				break;
+			case 2:
+				mmc->version = MMC_VERSION_4_2;
+				strver = "4.2";
+				break;
+			case 3:
+				mmc->version = MMC_VERSION_4_3;
+				strver = "4.3";
+				break;
+			case 5:
+				mmc->version = MMC_VERSION_4_41;
+				strver = "4.41";
+				break;
+			case 6:
+				mmc->version = MMC_VERSION_4_5;
+				strver = "4.5";
+				break;
+			case 7:
+				mmc->version = MMC_VERSION_5_0;
+				strver = "5.0";
+				break;
+			case 8:
+				mmc->version = MMC_VERSION_5_1;
+				strver = "5.1";
+				break;
 			}
 		} else {
 			printk_debug("SMHC: Read ext csd fail\n");
 		}
 
 		if (!err && (ext_csd[EXT_CSD_REV] >= 2)) {
-			capacity = (uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT] |
-				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 1] << 8) |
-				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 2] << 16) |
-				((uint64_t)(uint8_t) ext_csd[EXT_CSD_SEC_CNT + 3] << 24);
+			capacity = (uint64_t)(uint8_t)ext_csd[EXT_CSD_SEC_CNT] | ((uint64_t)(uint8_t)ext_csd[EXT_CSD_SEC_CNT + 1] << 8) |
+				   ((uint64_t)(uint8_t)ext_csd[EXT_CSD_SEC_CNT + 2] << 16) | ((uint64_t)(uint8_t)ext_csd[EXT_CSD_SEC_CNT + 3] << 24);
 			capacity *= mmc->read_bl_len;
 			if ((capacity >> 20) > 2 * 1024)
 				mmc->capacity = capacity;
@@ -1791,8 +1804,9 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci) {
  * @param sdhci_hdl Pointer to the SD/MMC host controller structure.
  * @return 0 on success, or an error code if an error occurred during initialization.
  */
-int sunxi_mmc_init(void *sdhci_hdl) {
-	sunxi_sdhci_t *sdhci = (sunxi_sdhci_t *) sdhci_hdl;
+int sunxi_mmc_init(void *sdhci_hdl)
+{
+	sunxi_sdhci_t *sdhci = (sunxi_sdhci_t *)sdhci_hdl;
 
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
@@ -1820,8 +1834,7 @@ int sunxi_mmc_init(void *sdhci_hdl) {
 	if (sdhci->sdhci_mmc_type == MMC_TYPE_SD) {
 		/* if is SDHCI0 in PF port try SD Card CD pin */
 		if (sdhci->pinctrl.has_card_detect) {
-			if (sunxi_gpio_read(&sdhci->pinctrl.gpio_cd) !=
-			    sdhci->pinctrl.cd_level) {
+			if (sunxi_gpio_read(&sdhci->pinctrl.gpio_cd) != sdhci->pinctrl.cd_level) {
 				printk_warning("SMHC: SD Card Get CD error %d\n", sunxi_gpio_read(&sdhci->pinctrl.gpio_cd));
 				err = -1;
 				return err;
@@ -1869,8 +1882,9 @@ int sunxi_mmc_init(void *sdhci_hdl) {
  *
  * @return          Returns 0 on success, or an error code if the operation fails
  */
-uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
-	return sunxi_mmc_read_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
+uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt)
+{
+	return sunxi_mmc_read_blocks((sunxi_sdhci_t *)sdhci, dst, start, blkcnt);
 }
 
 /**
@@ -1888,6 +1902,7 @@ uint32_t sunxi_mmc_blk_read(void *sdhci, void *dst, uint32_t start, uint32_t blk
  *
  * @return The number of blocks successfully written, or 0 if writing failed.
  */
-uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt) {
-	return sunxi_mmc_write_blocks((sunxi_sdhci_t *) sdhci, dst, start, blkcnt);
+uint32_t sunxi_mmc_blk_write(void *sdhci, void *dst, uint32_t start, uint32_t blkcnt)
+{
+	return sunxi_mmc_write_blocks((sunxi_sdhci_t *)sdhci, dst, start, blkcnt);
 }

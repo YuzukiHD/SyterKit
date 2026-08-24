@@ -8,8 +8,8 @@
 #include <string.h>
 #include <types.h>
 
-
-void sys_uart_putc(char c) {
+void sys_uart_putc(char c)
+{
 	virtual_addr_t addr = UART0_BASE_ADDR;
 
 	while ((read32(addr + 0x7c) & (0x1 << 1)) == 0)
@@ -17,7 +17,8 @@ void sys_uart_putc(char c) {
 	write32(addr + 0x00, c);
 }
 
-static int v_printf_str_to_num(const char *fmt, int *num) {
+static int v_printf_str_to_num(const char *fmt, int *num)
+{
 	const char *p;
 	int res, d, isd;
 
@@ -31,15 +32,17 @@ static int v_printf_str_to_num(const char *fmt, int *num) {
 		res += d;
 	}
 	*num = res;
-	return ((int) (p - fmt));
+	return ((int)(p - fmt));
 }
 
-static void v_printf_num_to_str(uint32_t a, int ish, int pl, int pc) {
+static void v_printf_num_to_str(uint32_t a, int ish, int pl, int pc)
+{
 	char buf[32];
 	uint32_t base;
 	int idx, i, t;
 
-	for (i = 0; i < sizeof(buf); i++) buf[i] = pc;
+	for (i = 0; i < sizeof(buf); i++)
+		buf[i] = pc;
 	base = 10;
 	if (ish)
 		base = 16;
@@ -63,10 +66,12 @@ static void v_printf_num_to_str(uint32_t a, int ish, int pl, int pc) {
 	}
 	buf[idx] = '\0';
 
-	for (i = idx - 1; i >= 0; i--) sys_uart_putc(buf[i]);
+	for (i = idx - 1; i >= 0; i--)
+		sys_uart_putc(buf[i]);
 }
 
-static int v_printf(const char *fmt, va_list va) {
+static int v_printf(const char *fmt, va_list va)
+{
 	const char *p, *q;
 	int f, c, vai, pl, pc, i;
 	unsigned char t;
@@ -88,15 +93,17 @@ static int v_printf(const char *fmt, va_list va) {
 			vai = va_arg(va, int);
 			v_printf_num_to_str(vai, f == 'x', pl, pc);
 		} else {
-			for (i = 0; i < (p - q); i++) sys_uart_putc(q[i]);
-			t = (unsigned char) (f != 0 ? f : c);
+			for (i = 0; i < (p - q); i++)
+				sys_uart_putc(q[i]);
+			t = (unsigned char)(f != 0 ? f : c);
 			sys_uart_putc(t);
 		}
 	}
 	return 0;
 }
 
-int sys_uart_printf(const char *fmt, ...) {
+int sys_uart_printf(const char *fmt, ...)
+{
 	va_list va;
 
 	va_start(va, fmt);

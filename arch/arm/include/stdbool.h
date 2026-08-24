@@ -18,4 +18,4 @@ typedef int8_t bool;
 }
 #endif
 
-#endif// __STDBOOL_H__
+#endif // __STDBOOL_H__

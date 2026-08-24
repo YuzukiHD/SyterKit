@@ -23,7 +23,8 @@ struct symbol {
  * @param[in] path Path associated with the operation.
  * @return Process failure status.
  */
-static int report_file_error(const char *path) {
+static int report_file_error(const char *path)
+{
 	fprintf(stderr, "mkbacktrace: %s: %s\n", path, strerror(errno));
 	return EXIT_FAILURE;
 }
@@ -33,7 +34,8 @@ static int report_file_error(const char *path) {
  * @param[in] symbols Symbol array to release.
  * @param[in] count Number of entries in the array.
  */
-static void free_symbols(struct symbol *symbols, size_t count) {
+static void free_symbols(struct symbol *symbols, size_t count)
+{
 	size_t index;
 
 	for (index = 0; index < count; index++)
@@ -51,9 +53,8 @@ static void free_symbols(struct symbol *symbols, size_t count) {
  * @param[in] name Function name.
  * @return Zero on success, otherwise -1.
  */
-static int append_symbol(struct symbol **symbols, size_t *count,
-			 size_t *capacity, uint64_t address, uint64_t size,
-			 const char *name) {
+static int append_symbol(struct symbol **symbols, size_t *count, size_t *capacity, uint64_t address, uint64_t size, const char *name)
+{
 	struct symbol *resized;
 	char *copy;
 
@@ -85,8 +86,8 @@ static int append_symbol(struct symbol **symbols, size_t *count,
  * @param[in] address_bits Target pointer width in bits.
  * @return Zero on success, otherwise -1.
  */
-static int read_symbols(FILE *input, struct symbol **symbols, size_t *count,
-			unsigned int address_bits) {
+static int read_symbols(FILE *input, struct symbol **symbols, size_t *count, unsigned int address_bits)
+{
 	char line[2U * SYMBOL_NAME_SIZE];
 	size_t capacity = 0;
 
@@ -99,22 +100,16 @@ static int read_symbols(FILE *input, struct symbol **symbols, size_t *count,
 		char name[SYMBOL_NAME_SIZE];
 		int fields;
 
-		fields = sscanf(line, "%llx %llx %c %1023s", &address, &size,
-				&type, name);
-		if (fields != 4 &&
-		    (fields = sscanf(line, "%llx %c %1023s", &address, &type,
-				      name)) != 3)
+		fields = sscanf(line, "%llx %llx %c %1023s", &address, &size, &type, name);
+		if (fields != 4 && (fields = sscanf(line, "%llx %c %1023s", &address, &type, name)) != 3)
 			continue;
 		if (!strchr("TtWw", type))
 			continue;
-		if (address_bits == 32U &&
-		    (address > UINT32_MAX || size > UINT32_MAX)) {
-			fprintf(stderr,
-				"mkbacktrace: symbol does not fit a 32-bit table\n");
+		if (address_bits == 32U && (address > UINT32_MAX || size > UINT32_MAX)) {
+			fprintf(stderr, "mkbacktrace: symbol does not fit a 32-bit table\n");
 			return -1;
 		}
-		if (append_symbol(symbols, count, &capacity, (uint64_t) address,
-				  (uint64_t) size, name))
+		if (append_symbol(symbols, count, &capacity, (uint64_t)address, (uint64_t)size, name))
 			return -1;
 	}
 
@@ -126,10 +121,11 @@ static int read_symbols(FILE *input, struct symbol **symbols, size_t *count,
  * @param[in] output Destination stream.
  * @param[in] value String to quote.
  */
-static void write_quoted(FILE *output, const char *value) {
+static void write_quoted(FILE *output, const char *value)
+{
 	fputc('"', output);
 	while (*value) {
-		unsigned char byte = (unsigned char) *value++;
+		unsigned char byte = (unsigned char)*value++;
 
 		if (byte == '\\' || byte == '"')
 			fputc('\\', output);
@@ -149,39 +145,41 @@ static void write_quoted(FILE *output, const char *value) {
  * @param[in] address_bits Target pointer width in bits.
  * @return Zero on success, otherwise -1.
  */
-static int write_assembly(FILE *output, const struct symbol *symbols,
-			  size_t count, unsigned int address_bits) {
+static int write_assembly(FILE *output, const struct symbol *symbols, size_t count, unsigned int address_bits)
+{
 	const char *directive = address_bits == 64U ? ".quad" : ".long";
 	unsigned int alignment = address_bits / 8U;
 	unsigned int width = address_bits / 4U;
 	size_t index;
 
 	fputs("/* SPDX-License-Identifier: GPL-2.0+ */\n"
-	      ".section .rodata.backtrace_symbols,\"a\",%progbits\n", output);
+	      ".section .rodata.backtrace_symbols,\"a\",%progbits\n",
+	      output);
 	fprintf(output, ".balign %u\n", alignment);
 	fputs(".global __backtrace_symbols\n"
 	      ".type __backtrace_symbols, %object\n"
-	      "__backtrace_symbols:\n", output);
+	      "__backtrace_symbols:\n",
+	      output);
 	for (index = 0; index < count; index++) {
-		fprintf(output, "\t%s 0x%0*llx\n\t%s 0x%0*llx\n"
+		fprintf(output,
+			"\t%s 0x%0*llx\n\t%s 0x%0*llx\n"
 			"\t%s .Lbacktrace_name_%zu - "
 			"__backtrace_symbol_names\n",
-			directive, width,
-			(unsigned long long) symbols[index].address,
-			directive, width,
-			(unsigned long long) symbols[index].size,
-			directive, index);
+			directive, width, (unsigned long long)symbols[index].address, directive, width, (unsigned long long)symbols[index].size, directive, index);
 	}
 	fputs(".size __backtrace_symbols, . - __backtrace_symbols\n"
 	      ".global __backtrace_symbol_count\n"
 	      ".type __backtrace_symbol_count, %object\n"
-	      "__backtrace_symbol_count:\n", output);
-	fprintf(output, "\t%s %zu\n"
+	      "__backtrace_symbol_count:\n",
+	      output);
+	fprintf(output,
+		"\t%s %zu\n"
 		".size __backtrace_symbol_count, %u\n"
 		".section .rodata.backtrace_names,\"a\",%%progbits\n"
 		".global __backtrace_symbol_names\n"
 		".type __backtrace_symbol_names, %%object\n"
-		"__backtrace_symbol_names:\n", directive, count, alignment);
+		"__backtrace_symbol_names:\n",
+		directive, count, alignment);
 	for (index = 0; index < count; index++) {
 		fprintf(output, ".Lbacktrace_name_%zu:\n\t.asciz ", index);
 		write_quoted(output, symbols[index].name);
@@ -189,7 +187,8 @@ static int write_assembly(FILE *output, const struct symbol *symbols,
 	}
 	fputs(".size __backtrace_symbol_names, . - "
 	      "__backtrace_symbol_names\n"
-	      ".section .note.GNU-stack,\"\",%progbits\n", output);
+	      ".section .note.GNU-stack,\"\",%progbits\n",
+	      output);
 
 	return ferror(output) ? -1 : 0;
 }
@@ -200,7 +199,8 @@ static int write_assembly(FILE *output, const struct symbol *symbols,
  * @param[in] argv Target width followed by input and output paths.
  * @return Process success or failure status.
  */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	struct symbol *symbols;
 	size_t count;
 	unsigned int address_bits;
@@ -211,12 +211,10 @@ int main(int argc, char **argv) {
 	int status = EXIT_FAILURE;
 
 	if (argc != 4 || (strcmp(argv[1], "32") && strcmp(argv[1], "64"))) {
-		fprintf(stderr,
-			"Usage: %s <32|64> <nm-input> <assembly-output>\n",
-			argv[0]);
+		fprintf(stderr, "Usage: %s <32|64> <nm-input> <assembly-output>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
-	address_bits = (unsigned int) strtoul(argv[1], NULL, 10);
+	address_bits = (unsigned int)strtoul(argv[1], NULL, 10);
 	input_path = argv[2];
 	output_path = argv[3];
 

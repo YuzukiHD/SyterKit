@@ -18,7 +18,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #ifndef SUNXI_DMA_MAX
 #define SUNXI_DMA_MAX 4
@@ -253,11 +253,10 @@ int sunxi_dma_free_int(uintptr_t dma_fd);
  * @param dst_addr Pointer to the destination address.
  * @return 0 if successful, or an error code if failed.
  */
-int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr,
-		   uint32_t len);
+int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uint32_t len);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif /* __DRIVERS_DMA_H__ */

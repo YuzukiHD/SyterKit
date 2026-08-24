@@ -11,33 +11,37 @@
 static char output[1024];
 static size_t output_length;
 
-static void reset_output(void) {
+static void reset_output(void)
+{
 	output_length = 0;
 	output[0] = '\0';
 }
 
-void uart_log_putchar(void *arg, char value) {
-	(void) arg;
+void uart_log_putchar(void *arg, char value)
+{
+	(void)arg;
 	if (output_length + 1U < sizeof(output))
 		output[output_length++] = value;
 	output[output_length] = '\0';
 }
 
-uint32_t time_us(void) {
+uint32_t time_us(void)
+{
 	return 2234567U;
 }
 
-uint32_t get_init_timestamp(void) {
+uint32_t get_init_timestamp(void)
+{
 	return 1000000U;
 }
 
-void test_case_main(const char *case_dir) {
+void test_case_main(const char *case_dir)
+{
 	char expected[TEST_DATA_MAX];
 	char *separator;
 	int length;
 
-	length = test_load_data(case_dir, "data/output.txt", expected,
-				sizeof(expected));
+	length = test_load_data(case_dir, "data/output.txt", expected, sizeof(expected));
 	TEST_ASSERT(length > 0);
 	if (length <= 0)
 		return;

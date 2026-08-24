@@ -38,7 +38,8 @@ static sunxi_dram_t dram;
  * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
-int main(void) {
+int main(void)
+{
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
@@ -67,7 +68,7 @@ int main(void) {
 
 	static int i = 0;
 	while (1) {
-		do_memtester((uint64_t) dram.memory_base, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
+		do_memtester((uint64_t)dram.memory_base, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
 		i++;
 	}
 

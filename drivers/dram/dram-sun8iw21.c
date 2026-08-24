@@ -16,29 +16,32 @@
 
 #include <common.h>
 
-#define DIV_ROUND_UP(a, b) (((a) + (b) -1) / (b))
+#define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
 
-static int ns_to_t(dram_para_t *para, int nanoseconds) {
+static int ns_to_t(dram_para_t *para, int nanoseconds)
+{
 	const uint32_t ctrl_freq = para->dram_clk / 2;
 
 	return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
 }
 
-static void dram_enable_all_master(const sunxi_dram_t *dram) {
+static void dram_enable_all_master(const sunxi_dram_t *dram)
+{
 	writel(~0, (dram->registers.mctl_com.base + MCTL_COM_MAER0));
 	writel(0xff, (dram->registers.mctl_com.base + MCTL_COM_MAER1));
 	writel(0xffff, (dram->registers.mctl_com.base + MCTL_COM_MAER2));
 	sdelay(10);
 }
 
-static void dram_disable_all_master(const sunxi_dram_t *dram) {
+static void dram_disable_all_master(const sunxi_dram_t *dram)
+{
 	writel(1, (dram->registers.mctl_com.base + MCTL_COM_MAER0));
 	writel(0, (dram->registers.mctl_com.base + MCTL_COM_MAER1));
 	writel(0, (dram->registers.mctl_com.base + MCTL_COM_MAER2));
 	sdelay(10);
 }
 
-static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)// s1
+static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para) // s1
 {
 	uint32_t delay, i = 0;
 
@@ -46,12 +49,14 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)/
 	delay = (para->dram_tpr11 & 0xf) << 9;
 	delay |= (para->dram_tpr12 & 0xf) << 1;
 
-	for (i = 0; i < 9; i++) setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX0IOCR(i)), delay);
+	for (i = 0; i < 9; i++)
+		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX0IOCR(i)), delay);
 
 	// DATn1IOCR, n =  0...7
 	delay = (para->dram_tpr11 & 0xf0) << 5;
 	delay |= (para->dram_tpr12 & 0xf0) >> 3;
-	for (i = 0; i < 9; i++) setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX1IOCR(i)), delay);
+	for (i = 0; i < 9; i++)
+		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX1IOCR(i)), delay);
 
 	// PGCR0: assert AC loopback FIFO reset
 	clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR0), 0x04000000);
@@ -60,13 +65,13 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)/
 	delay = (para->dram_tpr11 & 0xf0000) >> 7;
 	delay |= (para->dram_tpr12 & 0xf0000) >> 15;
 	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX0IOCR(9)), delay); // DQS0 P
-	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX0IOCR(10)), delay);// DQS0 N
+	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX0IOCR(10)), delay); // DQS0 N
 
 	// DQS1 read and write delay
 	delay = (para->dram_tpr11 & 0xf00000) >> 11;
 	delay |= (para->dram_tpr12 & 0xf00000) >> 19;
 	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX1IOCR(9)), delay); // DQS1 P
-	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX1IOCR(10)), delay);// DQS1 N
+	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DATX1IOCR(10)), delay); // DQS1 N
 
 	// DQS0 enable bit delay
 	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DXnSDLR6(0)), (para->dram_tpr11 & 0xf0000) << 9);
@@ -82,7 +87,8 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)/
 	delay = (para->dram_tpr10 & 0xf0) << 4;
 
 	// Set RAS CAS and CA delay
-	for (i = 6; i < 27; ++i) setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ACIOCR1(i)), delay);
+	for (i = 6; i < 27; ++i)
+		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ACIOCR1(i)), delay);
 
 	// Set CK CS delay
 	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ACIOCR1(2)), (para->dram_tpr10 & 0x0f) << 8);
@@ -95,7 +101,8 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)/
  * timing settings for the specific type of sdram used. Read together with
  * an sdram datasheet for context on the various variables.
  */
-static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para) {
+static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	/* DRAM_TPR0 */
 	uint8_t tccd = 2;
 	uint8_t tfaw;
@@ -142,246 +149,246 @@ static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para) 
 	uint32_t tdinit3;
 
 	switch (para->dram_type) {
-		case SUNXI_DRAM_TYPE_DDR2:
-			/* DRAM_TPR0 */
-			tfaw = ns_to_t(para, 50);
-			trrd = ns_to_t(para, 10);
-			trcd = ns_to_t(para, 20);
-			trc = ns_to_t(para, 65);
+	case SUNXI_DRAM_TYPE_DDR2:
+		/* DRAM_TPR0 */
+		tfaw = ns_to_t(para, 50);
+		trrd = ns_to_t(para, 10);
+		trcd = ns_to_t(para, 20);
+		trc = ns_to_t(para, 65);
 
-			/* DRAM_TPR1 */
-			txp = 2;
-			twtr = ns_to_t(para, 8);
-			twr = ns_to_t(para, 15);
-			trp = ns_to_t(para, 15);
-			tras = ns_to_t(para, 45);
+		/* DRAM_TPR1 */
+		txp = 2;
+		twtr = ns_to_t(para, 8);
+		twr = ns_to_t(para, 15);
+		trp = ns_to_t(para, 15);
+		tras = ns_to_t(para, 45);
 
-			/* DRAM_TRP2 */
-			trfc = ns_to_t(para, 328);
-			trefi = ns_to_t(para, 7800) / 32;
+		/* DRAM_TRP2 */
+		trfc = ns_to_t(para, 328);
+		trefi = ns_to_t(para, 7800) / 32;
 
-			trasmax = para->dram_clk / 30;
-			if (para->dram_clk < 409) {
-				t_rdata_en = 1;
-				tcl = 3;
-				mr0 = 0x06a3;
-			} else {
-				t_rdata_en = 2;
-				tcl = 4;
-				mr0 = 0x0e73;
-			}
-			tmrd = 2;
-			twtp = twr + 5;
-			tcksrx = 5;
-			tckesr = 4;
-			trd2wr = 4;
-			tcke = 3;
-			tmod = 12;
-			wr_latency = 1;
-			tmrw = 0;
-			twr2rd = twtr + 5;
-			tcwl = 0;
-
-			mr1 = para->dram_mr1;
-			mr2 = 0;
-			mr3 = 0;
-
-			tdinit0 = 200 * para->dram_clk + 1;
-			tdinit1 = 100 * para->dram_clk / 1000 + 1;
-			tdinit2 = 200 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-
-			break;
-		case SUNXI_DRAM_TYPE_DDR3:
-			trfc = ns_to_t(para, 350);
-			trefi = ns_to_t(para, 7800) / 32 + 1;// XXX
-
-			twtr = ns_to_t(para, 8) + 2;// + 2 ? XXX
-										/* Only used by trd2wr calculation, which gets discard below */
-										//	    twr		= max(ns_to_t(para, 15), 2);
-			trrd = max(ns_to_t(para, 10), 2);
-			txp = max(ns_to_t(para, 10), 2);
-
-			if (para->dram_clk <= 800) {
-				tfaw = ns_to_t(para, 50);
-				trcd = ns_to_t(para, 15);
-				trp = ns_to_t(para, 15);
-				trc = ns_to_t(para, 53);
-				tras = ns_to_t(para, 38);
-
-				mr0 = 0x1c70;
-				mr2 = 0x18;
-				tcl = 6;
-				wr_latency = 2;
-				tcwl = 4;
-				t_rdata_en = 4;
-			} else {
-				tfaw = ns_to_t(para, 35);
-				trcd = ns_to_t(para, 14);
-				trp = ns_to_t(para, 14);
-				trc = ns_to_t(para, 48);
-				tras = ns_to_t(para, 34);
-
-				mr0 = 0x1e14;
-				mr2 = 0x20;
-				tcl = 7;
-				wr_latency = 3;
-				tcwl = 5;
-				t_rdata_en = 5;
-			}
-
-			trasmax = para->dram_clk / 30;
-			twtp = tcwl + 2 + twtr;// WL+BL/2+tWTR
-								   /* Gets overwritten below */
-								   //	    trd2wr		= tcwl + 2 + twr;		// WL+BL/2+tWR
-			twr2rd = tcwl + twtr;  // WL+tWTR
-
-			tdinit0 = 500 * para->dram_clk + 1;		  // 500 us
-			tdinit1 = 360 * para->dram_clk / 1000 + 1;// 360 ns
-			tdinit2 = 200 * para->dram_clk + 1;		  // 200 us
-			tdinit3 = 1 * para->dram_clk + 1;		  //   1 us
-
-			mr1 = para->dram_mr1;
-			mr3 = 0;
-			tcke = 3;
-			tcksrx = 5;
-			tckesr = 4;
-			if (((para->dram_tpr13 & 0xc) == 0x04) || para->dram_clk < 912)
-				trd2wr = 5;
-			else
-				trd2wr = 6;
-
-			tmod = 12;
-			tmrd = 4;
-			tmrw = 0;
-
-			break;
-		case SUNXI_DRAM_TYPE_LPDDR2:
-			tfaw = max(ns_to_t(para, 50), 4);
-			trrd = max(ns_to_t(para, 10), 1);
-			trcd = max(ns_to_t(para, 24), 2);
-			trc = ns_to_t(para, 70);
-			txp = ns_to_t(para, 8);
-			if (txp < 2) {
-				txp++;
-				twtr = 2;
-			} else {
-				twtr = txp;
-			}
-			twr = max(ns_to_t(para, 15), 2);
-			trp = ns_to_t(para, 17);
-			tras = ns_to_t(para, 42);
-			trefi = ns_to_t(para, 3900) / 32;
-			trfc = ns_to_t(para, 210);
-
-			trasmax = para->dram_clk / 60;
-			mr3 = para->dram_mr3;
-			twtp = twr + 5;
-			mr2 = 6;
-			mr1 = 5;
-			tcksrx = 5;
-			tckesr = 5;
-			trd2wr = 10;
-			tcke = 2;
-			tmod = 5;
-			tmrd = 5;
-			tmrw = 3;
-			tcl = 4;
-			wr_latency = 1;
+		trasmax = para->dram_clk / 30;
+		if (para->dram_clk < 409) {
 			t_rdata_en = 1;
+			tcl = 3;
+			mr0 = 0x06a3;
+		} else {
+			t_rdata_en = 2;
+			tcl = 4;
+			mr0 = 0x0e73;
+		}
+		tmrd = 2;
+		twtp = twr + 5;
+		tcksrx = 5;
+		tckesr = 4;
+		trd2wr = 4;
+		tcke = 3;
+		tmod = 12;
+		wr_latency = 1;
+		tmrw = 0;
+		twr2rd = twtr + 5;
+		tcwl = 0;
 
-			tdinit0 = 200 * para->dram_clk + 1;
-			tdinit1 = 100 * para->dram_clk / 1000 + 1;
-			tdinit2 = 11 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-			twr2rd = twtr + 5;
-			tcwl = 2;
-			mr1 = 195;
-			mr0 = 0;
+		mr1 = para->dram_mr1;
+		mr2 = 0;
+		mr3 = 0;
 
-			break;
-		case SUNXI_DRAM_TYPE_LPDDR3:
-			tfaw = max(ns_to_t(para, 50), 4);
-			trrd = max(ns_to_t(para, 10), 1);
-			trcd = max(ns_to_t(para, 24), 2);
-			trc = ns_to_t(para, 70);
-			twtr = max(ns_to_t(para, 8), 2);
-			twr = max(ns_to_t(para, 15), 2);
-			trp = ns_to_t(para, 17);
-			tras = ns_to_t(para, 42);
-			trefi = ns_to_t(para, 3900) / 32;
-			trfc = ns_to_t(para, 210);
-			txp = twtr;
+		tdinit0 = 200 * para->dram_clk + 1;
+		tdinit1 = 100 * para->dram_clk / 1000 + 1;
+		tdinit2 = 200 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
 
-			trasmax = para->dram_clk / 60;
-			if (para->dram_clk < 800) {
-				tcwl = 4;
-				wr_latency = 3;
-				t_rdata_en = 6;
-				mr2 = 12;
-			} else {
-				tcwl = 3;
-				tcke = 6;
-				wr_latency = 2;
-				t_rdata_en = 5;
-				mr2 = 10;
-			}
-			twtp = tcwl + 5;
+		break;
+	case SUNXI_DRAM_TYPE_DDR3:
+		trfc = ns_to_t(para, 350);
+		trefi = ns_to_t(para, 7800) / 32 + 1; // XXX
+
+		twtr = ns_to_t(para, 8) + 2; // + 2 ? XXX
+		/* Only used by trd2wr calculation, which gets discard below */
+		//	    twr		= max(ns_to_t(para, 15), 2);
+		trrd = max(ns_to_t(para, 10), 2);
+		txp = max(ns_to_t(para, 10), 2);
+
+		if (para->dram_clk <= 800) {
+			tfaw = ns_to_t(para, 50);
+			trcd = ns_to_t(para, 15);
+			trp = ns_to_t(para, 15);
+			trc = ns_to_t(para, 53);
+			tras = ns_to_t(para, 38);
+
+			mr0 = 0x1c70;
+			mr2 = 0x18;
+			tcl = 6;
+			wr_latency = 2;
+			tcwl = 4;
+			t_rdata_en = 4;
+		} else {
+			tfaw = ns_to_t(para, 35);
+			trcd = ns_to_t(para, 14);
+			trp = ns_to_t(para, 14);
+			trc = ns_to_t(para, 48);
+			tras = ns_to_t(para, 34);
+
+			mr0 = 0x1e14;
+			mr2 = 0x20;
 			tcl = 7;
-			mr3 = para->dram_mr3;
-			tcksrx = 5;
-			tckesr = 5;
-			trd2wr = 13;
-			tcke = 3;
-			tmod = 12;
-			tdinit0 = 400 * para->dram_clk + 1;
-			tdinit1 = 500 * para->dram_clk / 1000 + 1;
-			tdinit2 = 11 * para->dram_clk + 1;
-			tdinit3 = 1 * para->dram_clk + 1;
-			tmrd = 5;
-			tmrw = 5;
-			twr2rd = tcwl + twtr + 5;
-			mr1 = 195;
-			mr0 = 0;
+			wr_latency = 3;
+			tcwl = 5;
+			t_rdata_en = 5;
+		}
 
-			break;
-		default:
-			trfc = 128;
-			trp = 6;
-			trefi = 98;
-			txp = 10;
-			twr = 8;
-			twtr = 3;
-			tras = 14;
-			tfaw = 16;
-			trc = 20;
-			trcd = 6;
-			trrd = 3;
+		trasmax = para->dram_clk / 30;
+		twtp = tcwl + 2 + twtr; // WL+BL/2+tWTR
+		/* Gets overwritten below */
+		//	    trd2wr		= tcwl + 2 + twr;		// WL+BL/2+tWR
+		twr2rd = tcwl + twtr; // WL+tWTR
 
-			twr2rd = 8;	   // 48(sp)
-			tcksrx = 4;	   // t1
-			tckesr = 3;	   // t4
-			trd2wr = 4;	   // t6
-			trasmax = 27;  // t3
-			twtp = 12;	   // s6
-			tcke = 2;	   // s8
-			tmod = 6;	   // t0
-			tmrd = 2;	   // t5
-			tmrw = 0;	   // a1
-			tcwl = 3;	   // a5
-			tcl = 3;	   // a0
-			wr_latency = 1;// a7
-			t_rdata_en = 1;// a4
-			mr3 = 0;	   // s0
-			mr2 = 0;	   // t2
-			mr1 = 0;	   // s1
-			mr0 = 0;	   // a3
-			tdinit3 = 0;   // 40(sp)
-			tdinit2 = 0;   // 32(sp)
-			tdinit1 = 0;   // 24(sp)
-			tdinit0 = 0;   // 16(sp)
+		tdinit0 = 500 * para->dram_clk + 1; // 500 us
+		tdinit1 = 360 * para->dram_clk / 1000 + 1; // 360 ns
+		tdinit2 = 200 * para->dram_clk + 1; // 200 us
+		tdinit3 = 1 * para->dram_clk + 1; //   1 us
 
-			break;
+		mr1 = para->dram_mr1;
+		mr3 = 0;
+		tcke = 3;
+		tcksrx = 5;
+		tckesr = 4;
+		if (((para->dram_tpr13 & 0xc) == 0x04) || para->dram_clk < 912)
+			trd2wr = 5;
+		else
+			trd2wr = 6;
+
+		tmod = 12;
+		tmrd = 4;
+		tmrw = 0;
+
+		break;
+	case SUNXI_DRAM_TYPE_LPDDR2:
+		tfaw = max(ns_to_t(para, 50), 4);
+		trrd = max(ns_to_t(para, 10), 1);
+		trcd = max(ns_to_t(para, 24), 2);
+		trc = ns_to_t(para, 70);
+		txp = ns_to_t(para, 8);
+		if (txp < 2) {
+			txp++;
+			twtr = 2;
+		} else {
+			twtr = txp;
+		}
+		twr = max(ns_to_t(para, 15), 2);
+		trp = ns_to_t(para, 17);
+		tras = ns_to_t(para, 42);
+		trefi = ns_to_t(para, 3900) / 32;
+		trfc = ns_to_t(para, 210);
+
+		trasmax = para->dram_clk / 60;
+		mr3 = para->dram_mr3;
+		twtp = twr + 5;
+		mr2 = 6;
+		mr1 = 5;
+		tcksrx = 5;
+		tckesr = 5;
+		trd2wr = 10;
+		tcke = 2;
+		tmod = 5;
+		tmrd = 5;
+		tmrw = 3;
+		tcl = 4;
+		wr_latency = 1;
+		t_rdata_en = 1;
+
+		tdinit0 = 200 * para->dram_clk + 1;
+		tdinit1 = 100 * para->dram_clk / 1000 + 1;
+		tdinit2 = 11 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
+		twr2rd = twtr + 5;
+		tcwl = 2;
+		mr1 = 195;
+		mr0 = 0;
+
+		break;
+	case SUNXI_DRAM_TYPE_LPDDR3:
+		tfaw = max(ns_to_t(para, 50), 4);
+		trrd = max(ns_to_t(para, 10), 1);
+		trcd = max(ns_to_t(para, 24), 2);
+		trc = ns_to_t(para, 70);
+		twtr = max(ns_to_t(para, 8), 2);
+		twr = max(ns_to_t(para, 15), 2);
+		trp = ns_to_t(para, 17);
+		tras = ns_to_t(para, 42);
+		trefi = ns_to_t(para, 3900) / 32;
+		trfc = ns_to_t(para, 210);
+		txp = twtr;
+
+		trasmax = para->dram_clk / 60;
+		if (para->dram_clk < 800) {
+			tcwl = 4;
+			wr_latency = 3;
+			t_rdata_en = 6;
+			mr2 = 12;
+		} else {
+			tcwl = 3;
+			tcke = 6;
+			wr_latency = 2;
+			t_rdata_en = 5;
+			mr2 = 10;
+		}
+		twtp = tcwl + 5;
+		tcl = 7;
+		mr3 = para->dram_mr3;
+		tcksrx = 5;
+		tckesr = 5;
+		trd2wr = 13;
+		tcke = 3;
+		tmod = 12;
+		tdinit0 = 400 * para->dram_clk + 1;
+		tdinit1 = 500 * para->dram_clk / 1000 + 1;
+		tdinit2 = 11 * para->dram_clk + 1;
+		tdinit3 = 1 * para->dram_clk + 1;
+		tmrd = 5;
+		tmrw = 5;
+		twr2rd = tcwl + twtr + 5;
+		mr1 = 195;
+		mr0 = 0;
+
+		break;
+	default:
+		trfc = 128;
+		trp = 6;
+		trefi = 98;
+		txp = 10;
+		twr = 8;
+		twtr = 3;
+		tras = 14;
+		tfaw = 16;
+		trc = 20;
+		trcd = 6;
+		trrd = 3;
+
+		twr2rd = 8; // 48(sp)
+		tcksrx = 4; // t1
+		tckesr = 3; // t4
+		trd2wr = 4; // t6
+		trasmax = 27; // t3
+		twtp = 12; // s6
+		tcke = 2; // s8
+		tmod = 6; // t0
+		tmrd = 2; // t5
+		tmrw = 0; // a1
+		tcwl = 3; // a5
+		tcl = 3; // a0
+		wr_latency = 1; // a7
+		t_rdata_en = 1; // a4
+		mr3 = 0; // s0
+		mr2 = 0; // t2
+		mr1 = 0; // s1
+		mr0 = 0; // a3
+		tdinit3 = 0; // 40(sp)
+		tdinit2 = 0; // 32(sp)
+		tdinit1 = 0; // 24(sp)
+		tdinit0 = 0; // 16(sp)
+
+		break;
 	}
 
 	/* Set mode registers */
@@ -416,7 +423,8 @@ static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para) 
 // Purpose of this routine seems to be to initialize the PLL driving
 // the MBUS and sdram.
 //
-static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t *para) {
+static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t *para)
+{
 	uint32_t val, clk, n;
 
 	if (para->dram_tpr13 & (1 << 6))
@@ -428,14 +436,16 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 	n = (clk * 2) / 24;
 
 	val = readl((dram->registers.ccu.base + CCU_PLL_DDR_CTRL_REG));
-	val &= 0xfff800fc;	// clear dividers
-	val |= (n - 1) << 8;// set PLL division
-	val |= 0xc0000000;	// enable PLL and LDO
+	val &= 0xfff800fc; // clear dividers
+	val |= (n - 1) << 8; // set PLL division
+	val |= 0xc0000000; // enable PLL and LDO
 	val &= 0xdfffffff;
 	writel(val | 0x20000000, (dram->registers.ccu.base + CCU_PLL_DDR_CTRL_REG));
 
 	// wait for PLL to lock
-	while ((readl((dram->registers.ccu.base + CCU_PLL_DDR_CTRL_REG)) & 0x10000000) == 0) { ; }
+	while ((readl((dram->registers.ccu.base + CCU_PLL_DDR_CTRL_REG)) & 0x10000000) == 0) {
+		;
+	}
 
 	sdelay(20);
 
@@ -446,8 +456,8 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 
 	// turn clock gate on
 	val = readl((dram->registers.ccu.base + CCU_DRAM_CLK_REG));
-	val &= 0xfcfffce0;// select DDR clk source, n=1, m=1
-	val |= 0x80000000;// turn clock on
+	val &= 0xfcfffce0; // select DDR clk source, n=1, m=1
+	val |= 0x80000000; // turn clock on
 	writel(val, (dram->registers.ccu.base + CCU_DRAM_CLK_REG));
 
 	return n * 24;
@@ -456,7 +466,8 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 //
-static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para) {
+static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	// assert MBUS reset
 	clrbits_le32((dram->registers.ccu.base + CCU_MBUS_CLK_REG), (1 << 30));
 
@@ -495,7 +506,8 @@ static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para) {
 // from the dram_para1 and dram_para2 fields to the PHY configuration registers
 // (MCTL_COM_WORK_MODE0, MCTL_COM_WORK_MODE1).
 //
-static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para) {
+static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	uint32_t val, width;
 	unsigned long ptr;
 	int i;
@@ -505,11 +517,11 @@ static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para) {
 
 	// set SDRAM type and word width
 	val = readl((dram->registers.mctl_com.base + MCTL_COM_WORK_MODE0)) & ~0x00fff000;
-	val |= (para->dram_type & 0x7) << 16;  // DRAM type
-	val |= (~para->dram_para2 & 0x1) << 12;// DQ width
-	val |= (1 << 22);					   // ??
+	val |= (para->dram_type & 0x7) << 16; // DRAM type
+	val |= (~para->dram_para2 & 0x1) << 12; // DQ width
+	val |= (1 << 22); // ??
 	if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR2 || para->dram_type == SUNXI_DRAM_TYPE_LPDDR3) {
-		val |= (1 << 19);// type 6 and 7 must use 1T
+		val |= (1 << 19); // type 6 and 7 must use 1T
 	} else {
 		if (para->dram_tpr13 & (1 << 5))
 			val |= (1 << 19);
@@ -526,27 +538,27 @@ static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para) {
 	for (i = 0; i < width; i += 16) {
 		val = readl(ptr) & 0xfffff000;
 
-		val |= (para->dram_para2 >> 12) & 0x3;					 // rank
-		val |= ((para->dram_para1 >> (i + 12)) << 2) & 0x4;		 // bank - 2
-		val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) & 0xff;// row - 1
+		val |= (para->dram_para2 >> 12) & 0x3; // rank
+		val |= ((para->dram_para1 >> (i + 12)) << 2) & 0x4; // bank - 2
+		val |= (((para->dram_para1 >> (i + 4)) - 1) << 4) & 0xff; // row - 1
 
 		// convert from page size to column addr width - 3
 		switch ((para->dram_para1 >> i) & 0xf) {
-			case 8:
-				val |= 0xa00;
-				break;
-			case 4:
-				val |= 0x900;
-				break;
-			case 2:
-				val |= 0x800;
-				break;
-			case 1:
-				val |= 0x700;
-				break;
-			default:
-				val |= 0x600;
-				break;
+		case 8:
+			val |= 0xa00;
+			break;
+		case 4:
+			val |= 0x900;
+			break;
+		case 2:
+			val |= 0x800;
+			break;
+		case 1:
+			val |= 0x700;
+			break;
+		default:
+			val |= 0x600;
+			break;
 		}
 		writel(val, ptr);
 		ptr += 4;
@@ -568,12 +580,12 @@ static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para) {
 }
 
 static const uint8_t ac_remapping_tables[][22] = {
-		/* No Remap */
-		[0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		/* V853 DDR3 */
-		[1] = {0x5, 0x13, 0x4, 0xF, 0xC, 0x3, 0xD, 0xE, 0x1, 0xA, 0x16, 0x14, 0x11, 0x10, 0x6, 0x8, 0x7, 0x9, 0x15, 0x2, 0xB, 0x12},
-		/* V853s SIP Winbond 128M DDR3 */
-		[2] = {0x13, 0x4, 0x12, 0x2, 0x6, 0x3, 0x5, 0x7, 0xC, 0x8, 0xD, 0xA, 0x9, 0x0, 0x0, 0x0, 0x16, 0x1, 0xB, 0x11, 0x15, 0x14},
+	/* No Remap */
+	[0] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* V853 DDR3 */
+	[1] = { 0x5, 0x13, 0x4, 0xF, 0xC, 0x3, 0xD, 0xE, 0x1, 0xA, 0x16, 0x14, 0x11, 0x10, 0x6, 0x8, 0x7, 0x9, 0x15, 0x2, 0xB, 0x12 },
+	/* V853s SIP Winbond 128M DDR3 */
+	[2] = { 0x13, 0x4, 0x12, 0x2, 0x6, 0x3, 0x5, 0x7, 0xC, 0x8, 0xD, 0xA, 0x9, 0x0, 0x0, 0x0, 0x16, 0x1, 0xB, 0x11, 0x15, 0x14 },
 };
 
 /*
@@ -581,7 +593,8 @@ static const uint8_t ac_remapping_tables[][22] = {
  * It is unclear which lines are being remapped. It seems to pick
  * table cfg7 for the Nezha board.
  */
-static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para) {
+static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	const uint8_t *cfg;
 	uint32_t fuse, val;
 
@@ -620,7 +633,8 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para) {
 // Init the controller channel. The key part is placing commands in the main
 // Issue commands through PIR and check completion through PGSR0.
 //
-static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, dram_para_t *para) {
+static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, dram_para_t *para)
+{
 	uint32_t val, dqs_gating_mode;
 
 	dqs_gating_mode = (para->dram_tpr13 & 0xc) >> 2;
@@ -692,22 +706,23 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 	if (dqs_gating_mode == 1) {
 		// writel(0x52, (dram->registers.mctl_phy.base+MCTL_PHY_PIR)); // prep PHY reset + PLL init
 		// + z-cal
-		writel(0x53, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));// Go
+		writel(0x53, (dram->registers.mctl_phy.base + MCTL_PHY_PIR)); // Go
 
-		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {}// wait for IDONE
+		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {
+		} // wait for IDONE
 		sdelay(10);
 
 		// 0x520 = prep DQS gating + DRAM init + d-cal
 		if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
 			writel(0x5a0,
-				   (dram->registers.mctl_phy.base + MCTL_PHY_PIR));// + DRAM reset
+			       (dram->registers.mctl_phy.base + MCTL_PHY_PIR)); // + DRAM reset
 		else
 			writel(0x520, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));
 	} else {
 		if ((readl((dram->registers.r_cpucfg.base + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
-				writel(0x1f2, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));// + DRAM reset
+				writel(0x1f2, (dram->registers.mctl_phy.base + MCTL_PHY_PIR)); // + DRAM reset
 			else
 				writel(0x172, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));
 		} else {
@@ -716,10 +731,11 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 		}
 	}
 
-	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PIR), 0x1);// GO
+	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PIR), 0x1); // GO
 
 	sdelay(10);
-	while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {}// wait for IDONE
+	while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {
+	} // wait for IDONE
 
 	if (readl((dram->registers.r_cpucfg.base + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
 		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR3), 0x06000000, 0x04000000);
@@ -727,14 +743,16 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 
 		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), 0x1);
 
-		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x7) != 0x3) {}
+		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x7) != 0x3) {
+		}
 
 		clrbits_le32((dram->registers.r_prcm.base + VDD_SYS_PWROFF_GATING_REG), 0x1);
 		sdelay(10);
 
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), 0x1);
 
-		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x7) != 0x1) {}
+		while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x7) != 0x1) {
+		}
 
 		sdelay(15);
 
@@ -744,7 +762,8 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 			sdelay(1);
 			writel(0x401, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));
 
-			while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {}
+			while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & 0x1) == 0) {
+			}
 		}
 	}
 
@@ -755,7 +774,8 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 	}
 
 	// STATR = Zynq STAT? Wait for status 'normal'?
-	while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x1) == 0) {}
+	while ((readl((dram->registers.mctl_phy.base + MCTL_PHY_STATR)) & 0x1) == 0) {
+	}
 
 	setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_RFSHCTL0), (1 << 31));
 	sdelay(10);
@@ -772,13 +792,14 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 	return 1;
 }
 
-static uint32_t calculate_rank_size(uint32_t regval) {
+static uint32_t calculate_rank_size(uint32_t regval)
+{
 	uint32_t bits;
 
-	bits = (regval >> 8) & 0xf;	 /* page size - 3 */
+	bits = (regval >> 8) & 0xf; /* page size - 3 */
 	bits += (regval >> 4) & 0xf; /* row width - 1 */
 	bits += (regval >> 2) & 0x3; /* bank count - 2 */
-	bits -= 14;					 /* 1MB = 20 bits, minus above 6 = 14 */
+	bits -= 14; /* 1MB = 20 bits, minus above 6 = 14 */
 
 	return 1U << bits;
 }
@@ -788,7 +809,8 @@ static uint32_t calculate_rank_size(uint32_t regval) {
  * the number of address bits in each rank available. It then calculates
  * total memory size in MB.
  */
-static uint32_t dramc_get_dram_size(const sunxi_dram_t *dram) {
+static uint32_t dramc_get_dram_size(const sunxi_dram_t *dram)
+{
 	uint32_t val;
 	uint32_t size;
 
@@ -799,7 +821,7 @@ static uint32_t dramc_get_dram_size(const sunxi_dram_t *dram) {
 		return size;
 
 	val = readl((dram->registers.mctl_com.base + MCTL_COM_WORK_MODE1)); /* MCTL_WORK_MODE1 */
-	if ((val & 0x3) == 0)								/* two identical ranks? */
+	if ((val & 0x3) == 0) /* two identical ranks? */
 		return size * 2;
 
 	/* add sizes of both ranks */
@@ -813,7 +835,8 @@ static uint32_t dramc_get_dram_size(const sunxi_dram_t *dram) {
  * If there was an error, figure out whether it was half DQ, single rank,
  * or both. Set bit 12 and 0 in dram_para2 with the results.
  */
-static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para) {
+static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	uint32_t dx0 = 0, dx1 = 0;
 
 	if ((readl(dram->registers.mctl_phy.base + MCTL_PHY_PGSR0) & BIT(22)) == 0) {
@@ -823,8 +846,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para) {
 		return 1;
 	}
 
-	dx0 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(0)) &
-	       (BIT(24) | BIT(25))) >> 24;
+	dx0 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(0)) & (BIT(24) | BIT(25))) >> 24;
 	if (dx0 == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
 		printk_debug("dual rank and half DQ\n");
@@ -833,9 +855,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para) {
 	}
 
 	if (dx0 == 2) {
-		dx1 = (readl(dram->registers.mctl_phy.base +
-			     MCTL_PHY_DXnGSR0(1)) &
-		       (BIT(24) | BIT(25))) >> 24;
+		dx1 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(1)) & (BIT(24) | BIT(25))) >> 24;
 		if (dx1 == 2) {
 			para->dram_para2 = para->dram_para2 & ~0xf00f;
 			printk_debug("single rank and full DQ\n");
@@ -856,29 +876,29 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para) {
 	return 0;
 }
 
-static int dramc_simple_wr_test(const sunxi_dram_t *dram, uint32_t mem_mb,
-				int len) {
-	uint32_t offs = (mem_mb / 2) << 18;// half of memory size
+static int dramc_simple_wr_test(const sunxi_dram_t *dram, uint32_t mem_mb, int len)
+{
+	uint32_t offs = (mem_mb / 2) << 18; // half of memory size
 	uint32_t patt1 = 0x01234567;
 	uint32_t patt2 = 0xfedcba98;
 	uint32_t *addr, v1, v2, i;
 
-	addr = (uint32_t *) dram->memory_base;
+	addr = (uint32_t *)dram->memory_base;
 	for (i = 0; i != len; i++, addr++) {
-		writel(patt1 + i, (unsigned long) addr);
-		writel(patt2 + i, (unsigned long) (addr + offs));
+		writel(patt1 + i, (unsigned long)addr);
+		writel(patt2 + i, (unsigned long)(addr + offs));
 	}
 
-	addr = (uint32_t *) dram->memory_base;
+	addr = (uint32_t *)dram->memory_base;
 	for (i = 0; i != len; i++) {
-		v1 = readl((unsigned long) (addr + i));
+		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			printk_error("DRAM: simple test FAIL\n");
 			printk_error("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
-		v1 = readl((unsigned long) (addr + offs + i));
+		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
 			printk_error("DRAM: simple test FAIL\n");
@@ -893,7 +913,8 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, uint32_t mem_mb,
 
 // Set the Vref mode for the controller
 //
-static void mctl_vrefzq_init(const sunxi_dram_t *dram, dram_para_t *para) {
+static void mctl_vrefzq_init(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	if (para->dram_tpr13 & (1 << 17))
 		return;
 
@@ -909,7 +930,8 @@ static void mctl_vrefzq_init(const sunxi_dram_t *dram, dram_para_t *para) {
 // establish the actual ram size. The third time is final one, with the final
 // settings.
 //
-static int mctl_core_init(const sunxi_dram_t *dram, dram_para_t *para) {
+static int mctl_core_init(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	mctl_sys_init(dram, para);
 
 	mctl_vrefzq_init(dram, para);
@@ -934,12 +956,13 @@ static int mctl_core_init(const sunxi_dram_t *dram, dram_para_t *para) {
  * BA0-1 and row addresses. Finally, the column address is allocated 13 lines
  * and these are tested. The results are placed in dram_para1 and dram_para2.
  */
-static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para) {
+static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	uint32_t i = 0, j = 0, current_rank = 0;
 	uint32_t rank_count = 1, addr_line = 0;
 	uint32_t reg_val = 0, ret = 0, cnt = 0;
 	unsigned long mc_work_mode;
-	uint32_t base = (uint32_t) dram->memory_base;
+	uint32_t base = (uint32_t)dram->memory_base;
 	uint32_t rank1_addr = base;
 
 	// init core
@@ -964,7 +987,9 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para) {
 		}
 
 		/* write test pattern */
-		for (i = 0; i < 64; i++) { writel((i % 2) ? (base + 4 * i) : (~(base + 4 * i)), base + 4 * i); }
+		for (i = 0; i < 64; i++) {
+			writel((i % 2) ? (base + 4 * i) : (~(base + 4 * i)), base + 4 * i);
+		}
 		/* set row mode */
 		clrsetbits_le32(mc_work_mode, 0xf0c, 0x6f0);
 		sdelay(2);
@@ -1037,7 +1062,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para) {
 
 		/* Scan per address line, until address wraps (i.e. see shadow) */
 		for (i = 9; i <= 13; i++) {
-			ret = base + (0x1U << i);// column base + (9~13)
+			ret = base + (0x1U << i); // column base + (9~13)
 			cnt = 0;
 			for (j = 0; j < 64; j++) {
 				reg_val = (j % 2) ? (base + 4 * j) : (~(base + 4 * j));
@@ -1092,7 +1117,8 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para) {
  * full or half DQ width. It then resets the parameters to the original values.
  * dram_para2 is updated with the rank and width findings.
  */
-static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para) {
+static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	uint32_t s1 = para->dram_tpr13;
 	uint32_t s2 = para->dram_para1;
 
@@ -1122,7 +1148,8 @@ static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para
  * the size of each rank. It then updates dram_tpr13 to reflect that the sizes
  * are now known: a re-init will not repeat the autoscan.
  */
-static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para) {
+static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para)
+{
 	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(dram, para) == 0)) {
 		printk_error("ERROR: auto scan dram rank & width failed\n");
 		return 0;
@@ -1139,7 +1166,8 @@ static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para) {
 	return 1;
 }
 
-static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para) {
+static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
+{
 	uint32_t rc, mem_size_mb;
 
 	printk_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
@@ -1242,20 +1270,18 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para) {
 
 	dram_enable_all_master(dram);
 	if (para->dram_tpr13 & (1 << 28)) {
-		if ((readl(dram->rtc.data_base + 0xf8U) & (1 << 16)) ||
-		    dramc_simple_wr_test(dram, mem_size_mb, 4096))
+		if ((readl(dram->rtc.data_base + 0xf8U) & (1 << 16)) || dramc_simple_wr_test(dram, mem_size_mb, 4096))
 			return 0;
 	}
 
 	return mem_size_mb;
 }
 
-uint32_t sunxi_dram_init(sunxi_dram_t *dram) {
-	if (dram == NULL ||
-	    dram->memory_size < sizeof(uint32_t) ||
-	    dram->parameter_count < sizeof(dram_para_t) / sizeof(uint32_t))
+uint32_t sunxi_dram_init(sunxi_dram_t *dram)
+{
+	if (dram == NULL || dram->memory_size < sizeof(uint32_t) || dram->parameter_count < sizeof(dram_para_t) / sizeof(uint32_t))
 		return 0U;
-	dram->size = init_DRAM(dram, 0, (dram_para_t *) dram->parameters);
+	dram->size = init_DRAM(dram, 0, (dram_para_t *)dram->parameters);
 	return dram->size;
 };
 

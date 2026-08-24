@@ -5,7 +5,8 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
+void test_case_main(const char *case_dir)
+{
 	char data[TEST_DATA_MAX];
 	char *entries[MSH_CMD_HISTORY_MAX + 4];
 	char *cursor;

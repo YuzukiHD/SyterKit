@@ -6,12 +6,14 @@
 
 #include "syter_test.h"
 
-int uart_puts(const char *text) {
-	(void) text;
+int uart_puts(const char *text)
+{
+	(void)text;
 	return 0;
 }
 
-static char *next_field(char **cursor) {
+static char *next_field(char **cursor)
+{
 	char *field = *cursor;
 	char *separator = field;
 
@@ -26,7 +28,8 @@ static char *next_field(char **cursor) {
 	return field;
 }
 
-static int decimal(const char *text) {
+static int decimal(const char *text)
+{
 	int value = 0;
 
 	while (*text >= '0' && *text <= '9')
@@ -34,7 +37,8 @@ static int decimal(const char *text) {
 	return value;
 }
 
-void test_case_main(const char *case_dir) {
+void test_case_main(const char *case_dir)
+{
 	char data[TEST_DATA_MAX];
 	char argument_buffer[512];
 	char *arguments[16];

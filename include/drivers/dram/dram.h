@@ -15,7 +15,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 enum sunxi_dram_type {
 	SUNXI_DRAM_TYPE_DDR2 = 2,
@@ -98,8 +98,8 @@ typedef struct {
 typedef struct {
 	// normal configuration
 	uint32_t dram_clk;
-	uint32_t dram_type;// dram_type			DDR2: 2				DDR3: 3		LPDDR2: 6	LPDDR3: 7	DDR3L: 31
-	uint32_t dram_zq;  // do not need
+	uint32_t dram_type; // dram_type			DDR2: 2				DDR3: 3		LPDDR2: 6	LPDDR3: 7	DDR3L: 31
+	uint32_t dram_zq; // do not need
 	uint32_t dram_odt_en;
 
 	// control configuration
@@ -111,13 +111,13 @@ typedef struct {
 	uint32_t dram_mr1;
 	uint32_t dram_mr2;
 	uint32_t dram_mr3;
-	uint32_t dram_tpr0;// DRAMTMG0
-	uint32_t dram_tpr1;// DRAMTMG1
-	uint32_t dram_tpr2;// DRAMTMG2
-	uint32_t dram_tpr3;// DRAMTMG3
-	uint32_t dram_tpr4;// DRAMTMG4
-	uint32_t dram_tpr5;// DRAMTMG5
-	uint32_t dram_tpr6;// DRAMTMG8
+	uint32_t dram_tpr0; // DRAMTMG0
+	uint32_t dram_tpr1; // DRAMTMG1
+	uint32_t dram_tpr2; // DRAMTMG2
+	uint32_t dram_tpr3; // DRAMTMG3
+	uint32_t dram_tpr4; // DRAMTMG4
+	uint32_t dram_tpr5; // DRAMTMG5
+	uint32_t dram_tpr6; // DRAMTMG8
 	// reserved for future use
 	uint32_t dram_tpr7;
 	uint32_t dram_tpr8;
@@ -157,6 +157,6 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __DRIVERS_DRAM_H__
+#endif // __DRIVERS_DRAM_H__

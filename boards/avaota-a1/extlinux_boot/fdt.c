@@ -3,25 +3,26 @@
 #ifdef SYTERKIT_CLI_CMD_FDT
 msh_declare_command(fdt);
 msh_define_help(fdt, "flattened device tree utility commands",
-				"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
-				"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
-				"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
-				"fdt mknode <path> <node>            - Create a new node after <path>\n"
-				"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
-				"fdt header                          - Display header info\n"
-				"fdt rsvmem print                    - Show current mem reserves\n"
-				"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
-				"fdt rsvmem delete <index>           - Delete a mem reserves\n"
-				"NOTE: Dereference aliases by omitting the leading '/', "
-				"e.g. fdt print ethernet0.\n\n");
-int cmd_fdt(int argc, const char **argv) {
+		"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
+		"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
+		"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
+		"fdt mknode <path> <node>            - Create a new node after <path>\n"
+		"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
+		"fdt header                          - Display header info\n"
+		"fdt rsvmem print                    - Show current mem reserves\n"
+		"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
+		"fdt rsvmem delete <index>           - Delete a mem reserves\n"
+		"NOTE: Dereference aliases by omitting the leading '/', "
+		"e.g. fdt print ethernet0.\n\n");
+int cmd_fdt(int argc, const char **argv)
+{
 	if (argc < 2) {
 		uart_puts(cmd_fdt_usage);
 		return 0;
 	}
 	if (strncmp(argv[1], "mk", 2) == 0) {
-		char *pathp;	/* path */
-		char *nodep;	/* new node to add */
+		char *pathp; /* path */
+		char *nodep; /* new node to add */
 		int nodeoffset; /* node offset from libfdt */
 		int err;
 
@@ -48,9 +49,9 @@ int cmd_fdt(int argc, const char **argv) {
 			return 1;
 		}
 	} else if (strncmp(argv[1], "set", 3) == 0) {
-		char *pathp;							   /* path */
-		char *prop;								   /* property */
-		int nodeoffset;							   /* node offset from libfdt */
+		char *pathp; /* path */
+		char *prop; /* property */
+		int nodeoffset; /* node offset from libfdt */
 		static char data[SCRATCHPAD] __aligned(4); /* property storage */
 		const void *ptmp;
 		int len; /* new length of the property */
@@ -97,9 +98,9 @@ int cmd_fdt(int argc, const char **argv) {
 		}
 	} else if ((argv[1][0] == 'p') || (argv[1][0] == 'l')) {
 		int depth = MAX_LEVEL; /* how deep to print */
-		char *pathp;		   /* path */
-		char *prop;			   /* property */
-		int ret;			   /* return value */
+		char *pathp; /* path */
+		char *prop; /* property */
+		int ret; /* return value */
 		static char root[2] = "/";
 
 		/*
@@ -180,14 +181,14 @@ int cmd_fdt(int argc, const char **argv) {
 			int j, err;
 			printk(LOG_LEVEL_MUTE, "index\t\t   start\t\t    size\n");
 			printk(LOG_LEVEL_MUTE, "-------------------------------"
-								   "-----------------\n");
+					       "-----------------\n");
 			for (j = 0; j < total; j++) {
 				err = fdt_get_mem_rsv(image.of_dest, j, &addr, &size);
 				if (err < 0) {
 					printk(LOG_LEVEL_MUTE, "libfdt fdt_get_mem_rsv():  %s\n", fdt_strerror(err));
 					return 0;
 				}
-				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32) (addr >> 32), (u32) (addr & 0xffffffff), (u32) (size >> 32), (u32) (size & 0xffffffff));
+				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32)(addr >> 32), (u32)(addr & 0xffffffff), (u32)(size >> 32), (u32)(size & 0xffffffff));
 			}
 		} else if (argv[2][0] == 'a') {
 			uint64_t addr, size;
@@ -218,4 +219,4 @@ int cmd_fdt(int argc, const char **argv) {
 	}
 	return 0;
 }
-#endif// SYTERKIT_CLI_CMD_FDT
+#endif // SYTERKIT_CLI_CMD_FDT
