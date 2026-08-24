@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file backtrace-rv32.c
+ * @brief Instruction-scanning call-trace unwinder for RV32 targets.
+ *
+ * The scanner handles standard and compressed RISC-V prologue/epilogue
+ * encodings, validates every code and stack read, and emits frames through
+ * the common backtrace output hooks.
+ */
+
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
 #endif
@@ -124,9 +133,17 @@ static inline int backtrace_check_stack_address(const void *address)
 	return !(value & (sizeof(long) - 1U)) && value >= start && value <= end - sizeof(long);
 }
 
-/* RISC-V instructions may be 32-bit wide at any 2-byte-aligned address when
- * the compressed extension is enabled.  Read the halves separately so this
- * remains valid on cores that trap misaligned 32-bit loads. */
+/**
+ * @brief Read one instruction word without issuing a misaligned 32-bit load.
+ *
+ * RISC-V instructions may be 32-bit wide at any 2-byte-aligned address when
+ * the compressed extension is enabled. Reading two halfwords keeps the
+ * unwinder valid on cores that trap misaligned 32-bit accesses.
+ *
+ * @param[in] address Candidate instruction address.
+ * @param[out] value Destination for the assembled little-endian word.
+ * @return One when the address is inside the executable image, otherwise zero.
+ */
 static inline int backtrace_read_u32(const void *address, uint32_t *value)
 {
 	uintptr_t addr = (uintptr_t)address;
@@ -144,6 +161,17 @@ static inline int backtrace_read_u32(const void *address, uint32_t *value)
 	return 1;
 }
 
+/**
+ * @brief Determine whether an instruction writes a return address.
+ *
+ * Both the 32-bit @c jal/@c jalr encodings and compressed call forms are
+ * recognized. The result is the encoded instruction length, not a stack
+ * offset, so callers can subtract it from the link register.
+ *
+ * @param[in] ins32 Candidate 32-bit instruction word.
+ * @param[in] ins16 Candidate compressed instruction halfword.
+ * @return Four or two bytes for a call instruction, otherwise zero.
+ */
 static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16)
 {
 	if ((ins32 & 0x00000fffU) == 0x000000efU || (ins32 & 0x00007fffU) == 0x000000e7U)
@@ -163,7 +191,8 @@ static int riscv_call_insn_size(uint32_t ins32, uint16_t ins16)
  * and adjusts accordingly. The function also checks the validity of the address and computes
  * the instruction length based on the encoded instruction in memory.
  *
- * @param LR The address of the Link Register (LR) to be checked.
+ * @param[in] LR The address of the Link Register (LR) to be checked.
+ * @param[in] emit Non-zero to print the resolved call frame.
  * @return The offset from the LR to the return address if valid, 0 if invalid or the address is
  *         within an IRQ handler exit region.
  */
@@ -514,8 +543,10 @@ static int riscv_ins16_backtrace_stask_push(uint32_t inst)
  * or `0` if the link register's offset is zero. If an error is encountered
  * at any point, the function prints an error message and returns `-1`.
  *
- * @param pSP Pointer to the stack pointer (`SP`) to be updated.
- * @param pPC Pointer to the program counter (`PC`) to be updated.
+ * @param[in,out] pSP Pointer to the stack pointer (`SP`) to be updated.
+ * @param[in,out] pPC Pointer to the program counter (`PC`) to be updated.
+ * @param[in,out] pLR Pointer to the link register (`LR`) used to recover the
+ *                    saved return address.
  *
  * @return 1 if a valid backtrace is performed, 0 if the link-register offset
  *         is zero, or -1 if an address or instruction is invalid.
@@ -637,6 +668,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
  *                    result of the backtrace.
  * @param[in,out] pPC Pointer to the program counter. The program counter is updated with
  *                    the result of the backtrace.
+ * @param[in,out] pLR Pointer to the link register used to recover the caller.
  *
  * @return 0 if the backtrace is successful and the program counter is updated correctly,
  *         or -1 if an invalid program counter is provided or the backtrace fails.
@@ -997,6 +1029,11 @@ int backtrace(char *PC, long *SP, char *LR)
 	return level > 0 ? level : 0; ///< Return the number of backtrace levels found
 }
 
+/**
+ * @brief Start an RV32 instruction-scanning unwind from saved registers.
+ * @param[in] context Saved program counter, stack pointer, and link register.
+ * @return Number of frames printed, or zero when the context is invalid.
+ */
 int backtrace_from_context(const struct backtrace_context *context)
 {
 	if (!context)
@@ -1011,6 +1048,8 @@ int backtrace_from_context(const struct backtrace_context *context)
  * This function retrieves the current values of the stack pointer, program counter, and link register,
  * then uses these to generate a backtrace. If either the stack pointer or program counter is invalid, it returns 0.
  *
+ * @param[in] SP Current stack pointer captured by the assembly entry point.
+ * @param[in] LR Current link register captured by the assembly entry point.
  * @return The backtrace level, or 0 if SP or PC is invalid.
  */
 static int __attribute__((noinline, used)) dump_stack_from_context(long *SP, char *LR)
@@ -1026,6 +1065,10 @@ static int __attribute__((noinline, used)) dump_stack_from_context(long *SP, cha
 	return backtrace(LR - offset, SP, LR);
 }
 
+/**
+ * @brief Capture RV32 stack and return-address registers for unwinding.
+ * @return Number of frames printed by the instruction-scanning unwinder.
+ */
 int __attribute__((naked)) dump_stack(void)
 {
 	asm volatile("mv a0, sp\n"
@@ -1034,21 +1077,43 @@ int __attribute__((naked)) dump_stack(void)
 }
 
 #ifdef SYTERKIT_BACKTRACE_TEST
+/**
+ * @brief Test wrapper for RISC-V call-instruction recognition.
+ * @param[in] ins32 Candidate 32-bit instruction.
+ * @param[in] ins16 Candidate compressed instruction.
+ * @return Recognized instruction length in bytes, or zero.
+ */
 int backtrace_test_riscv_call_size(uint32_t ins32, uint16_t ins16)
 {
 	return riscv_call_insn_size(ins32, ins16);
 }
 
+/**
+ * @brief Test wrapper for RV32 link-register push decoding.
+ * @param[in] inst Candidate prologue instruction.
+ * @param[out] offset Saved-link offset in stack words.
+ * @return Zero for a stack-pointer adjustment, -1 otherwise.
+ */
 int backtrace_test_riscv_push_lr(uint32_t inst, int *offset)
 {
 	return riscv_ins32_get_push_lr_framesize(inst, offset);
 }
 
+/**
+ * @brief Test wrapper for RV32 stack-pointer push decoding.
+ * @param[in] inst Candidate stack adjustment instruction.
+ * @return Stack adjustment in machine words, or -1 when unmatched.
+ */
 int backtrace_test_riscv_stack_push(uint32_t inst)
 {
 	return riscv_ins32_backtrace_stask_push(inst);
 }
 
+/**
+ * @brief Test wrapper for RV32 return-instruction decoding.
+ * @param[in] inst Candidate return instruction.
+ * @return Zero when recognized, otherwise -1.
+ */
 int backtrace_test_riscv_return(uint32_t inst)
 {
 	return riscv_ins32_backtrace_return_pop(inst);

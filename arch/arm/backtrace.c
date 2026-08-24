@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file backtrace.c
+ * @brief Instruction-scanning stack unwinder for 32-bit ARM targets.
+ *
+ * The unwinder recognizes ARM and Thumb prologue and epilogue instructions,
+ * validates every code and stack access against linker-provided bounds, and
+ * reports frames through the common backtrace output interface.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -179,6 +188,15 @@ static uint32_t backtrace_ror32(uint32_t value, uint32_t shift)
 	return shift ? (value >> shift) | (value << (32U - shift)) : value;
 }
 
+/**
+ * @brief Expand the modified-immediate field used by Thumb-2 data processing.
+ *
+ * ARM's 12-bit encoding either replicates an 8-bit value or rotates a
+ * constructed value. This helper implements both forms.
+ *
+ * @param[in] inst Thumb-2 instruction containing the encoded immediate.
+ * @return The 32-bit immediate value after ARM expansion.
+ */
 static uint32_t thumb_expand_imm12(uint32_t inst)
 {
 	uint32_t imm8 = inst & 0xffU;
@@ -210,9 +228,12 @@ static uint32_t thumb_expand_imm12(uint32_t inst)
  * The function will also handle both 16-bit and 32-bit instructions based on the processor mode
  * and update the state of the processor.
  *
- * @param LR A pointer to the Link Register value (the return address).
- * @param state A pointer to a boolean representing the processor state. It can be either
- *              ARM_STATE or THUMB_STATE.
+ * @param[in] LR A pointer to the Link Register value (the return address).
+ * @param[in,out] state Current ARM/Thumb state; updated for interworking branches.
+ * @param[in] emit Non-zero to print the resolved return frame.
+ *
+ * The state pointer must be writable because branch-and-exchange instructions
+ * change the instruction set used for the caller.
  *
  * @return The offset to be applied to the LR, typically 2 or 4 bytes, depending on the
  *         type of instruction found.
@@ -1279,6 +1300,16 @@ int backtrace(char *PC, long *SP, char *LR)
 	return level > 0 ? level : 0;
 }
 
+/**
+ * @brief Start an ARM unwind from a saved register context.
+ *
+ * A null context is rejected before its register values are converted to the
+ * pointer types used by the instruction scanner.
+ *
+ * @param[in] context Saved program counter, stack pointer, and link register.
+ * @return Number of frames printed, or zero when @p context is `NULL` or
+ *         points outside the image or stack bounds.
+ */
 int backtrace_from_context(const struct backtrace_context *context)
 {
 	if (!context)
@@ -1298,6 +1329,9 @@ int backtrace_from_context(const struct backtrace_context *context)
  * the program counter (PC) accordingly. If the program counter or stack pointer is invalid,
  * the function will return early with a status of 0.
  *
+ * @param[in] SP Current stack pointer captured by the assembly entry point.
+ * @param[in] LR Current link register captured by the assembly entry point.
+ * @param[in] cpsr Current program status register, including the Thumb-state bit.
  * @return The result of the backtrace function, representing the number of successfully
  *         traced backtrace levels, or 0 if the stack pointer (SP) or program counter (PC) is invalid.
  */
@@ -1319,6 +1353,15 @@ static int __attribute__((noinline, used)) dump_stack_from_context(long *SP, cha
 	return backtrace(PC, SP, LR);
 }
 
+/**
+ * @brief Capture ARM registers and dispatch to the stack unwinder.
+ *
+ * The naked entry point supplies @c sp, @c lr, and @c cpsr to the C helper;
+ * the helper uses the CPSR Thumb bit to select the instruction decoder.
+ *
+ * @return Number of frames printed, or zero when the captured context is
+ *         invalid.
+ */
 int __attribute__((naked)) dump_stack(void)
 {
 	asm volatile("mov r0, sp\n"
@@ -1328,26 +1371,53 @@ int __attribute__((naked)) dump_stack(void)
 }
 
 #ifdef SYTERKIT_BACKTRACE_TEST
+/**
+ * @brief Test wrapper for Thumb-2 immediate expansion.
+ * @param[in] inst Instruction containing the modified-immediate field.
+ * @return Expanded 32-bit immediate.
+ */
 uint32_t backtrace_test_thumb_expand_imm(uint32_t inst)
 {
 	return thumb_expand_imm12(inst);
 }
 
+/**
+ * @brief Test wrapper for ARM stack-prologue decoding.
+ * @param[in] inst ARM instruction to decode.
+ * @return Frame size in words, or -1 when it is not a prologue.
+ */
 int backtrace_test_arm_stack_push(uint32_t inst)
 {
 	return arm_backtrace_stack_push(inst);
 }
 
+/**
+ * @brief Test wrapper for Thumb stack-prologue decoding.
+ * @param[in] inst Thumb instruction to decode.
+ * @param[in] thumb32bit Non-zero when @p inst is Thumb-2.
+ * @return Frame size in words, or -1 when it is not a prologue.
+ */
 int backtrace_test_thumb_stack_push(uint32_t inst, int thumb32bit)
 {
 	return thumb_backtrace_stack_push(inst, thumb32bit);
 }
 
+/**
+ * @brief Test wrapper for ARM return-epilogue decoding.
+ * @param[in] inst ARM instruction to decode.
+ * @return Popped frame size, zero for `bx lr`, or -1 when unmatched.
+ */
 int backtrace_test_arm_return(uint32_t inst)
 {
 	return arm_backtrace_return_pop(inst);
 }
 
+/**
+ * @brief Test wrapper for Thumb return-epilogue decoding.
+ * @param[in] inst Thumb instruction to decode.
+ * @param[in] thumb32bit Non-zero when @p inst is Thumb-2.
+ * @return Popped frame size, zero for a recognized return, or -1 unmatched.
+ */
 int backtrace_test_thumb_return(uint32_t inst, int thumb32bit)
 {
 	return thumb_backtrace_return_pop(inst, thumb32bit);

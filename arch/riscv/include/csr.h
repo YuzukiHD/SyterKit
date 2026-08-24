@@ -1,3 +1,7 @@
+/**
+ * @file csr.h
+ * @brief RISC-V machine CSR numbers, bit fields, and access macros.
+ */
 #ifndef __RISCV_H__
 #define __RISCV_H__
 

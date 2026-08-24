@@ -1,3 +1,11 @@
+/**
+ * @file shell.c
+ * @brief Interactive command-shell dispatch loop.
+ *
+ * The shell owns the user command table, parses semicolon-separated commands,
+ * and falls back to the built-in table when a user command does not match.
+ */
+
 #include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -17,6 +25,16 @@ const msh_command_entry empty_commands[] = {
 	msh_command_end,
 };
 
+/**
+ * @brief Attach a command table and run the interactive shell.
+ * @param[in] cmdlist Optional application command table terminated by the
+ *                    `msh_command_end` sentinel; NULL selects an empty table.
+ * @return Zero if the loop ever terminates.  The normal shell loop does not
+ *         return during firmware operation.
+ *
+ * Each input line is parsed into commands and executed until the line is
+ * exhausted.  Syntax errors discard only the current line.
+ */
 int syterkit_shell_attach(const msh_command_entry *cmdlist)
 {
 	char linebuf[MSH_CMDLINE_CHAR_MAX];

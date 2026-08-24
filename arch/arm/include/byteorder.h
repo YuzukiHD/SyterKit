@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file byteorder.h
+ * @brief ARM byte-swap primitives and CPU/endian conversion macros.
+ */
+
 #ifndef __BYTEORDER_H__
 #define __BYTEORDER_H__
 

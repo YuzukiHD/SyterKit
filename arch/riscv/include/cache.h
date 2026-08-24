@@ -40,25 +40,26 @@ void dcache_enable(void);
 void icache_enable(void);
 
 /**
- * @brief Flush a range of the data cache.
+ * @brief Flush a data-cache address range.
  *
- * This function flushes the data cache for a specified range,
- * ensuring that any dirty cache lines are written back to memory.
+ * The range uses an inclusive start and exclusive end. Implementations round
+ * the start down to a cache-line boundary and write back all covered lines.
+ * The operation is followed by an instruction/data synchronization barrier.
  *
- * @param start The starting address of the range to flush.
- * @param end The ending address of the range to flush.
+ * @param[in] start First byte of the range to flush.
+ * @param[in] end One-past-last byte of the range to flush.
  */
 void flush_dcache_range(uint64_t start, uint64_t end);
 
 /**
- * @brief Invalidate a range of the data cache.
+ * @brief Invalidate a data-cache address range.
  *
- * This function invalidates the data cache for a specified range,
- * ensuring that no stale data remains in the cache for the given
- * addresses.
+ * The range uses an inclusive start and exclusive end. Implementations round
+ * the start down to a cache-line boundary and discard every covered line
+ * before synchronizing subsequent memory accesses.
  *
- * @param start The starting address of the range to invalidate.
- * @param end The ending address of the range to invalidate.
+ * @param[in] start First byte of the range to invalidate.
+ * @param[in] end One-past-last byte of the range to invalidate.
  */
 void invalidate_dcache_range(uint64_t start, uint64_t end);
 

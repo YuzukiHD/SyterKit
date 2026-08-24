@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file jmp.h
+ * @brief RISC-V non-returning hand-off helpers for firmware stages.
+ */
+
 #ifndef __RISCV_JMP_H__
 #define __RISCV_JMP_H__
 

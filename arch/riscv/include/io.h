@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file io.h
+ * @brief RISC-V volatile memory-mapped I/O accessors and register helpers.
+ */
+
 #ifndef __IO_H__
 #define __IO_H__
 

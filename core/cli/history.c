@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file history.c
+ * @brief Fixed-size circular history buffer for shell command lines.
+ *
+ * Entries are retained without dynamic allocation. Once the buffer wraps,
+ * index zero refers to the newest retained line and older lines are evicted.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -17,7 +25,8 @@ static int histlast;
 /**
  * @brief Get the number of command-history entries.
  *
- * @return The number of stored entries.
+ * @return The number of stored entries. The value is bounded by
+ *         ::MSH_CMD_HISTORY_MAX and does not include an empty slot.
  */
 int get_history_count()
 {
@@ -29,7 +38,11 @@ int get_history_count()
  *
  * Empty lines and lines that exceed the history entry size are ignored.
  *
- * @param line Command line to append.
+ * @param[in] line Null-terminated command line to append. It must remain
+ *                 valid for the duration of the call.
+ *
+ * Lines of length zero or at least ::MSH_CMDLINE_CHAR_MAX are ignored, so the
+ * stored copy always has room for its terminating NUL byte.
  */
 void history_append(const char *line)
 {
@@ -51,8 +64,11 @@ void history_append(const char *line)
 /**
  * @brief Retrieve a command-history entry.
  *
- * @param histnum Zero-based age of the entry, where zero selects the newest.
- * @return The selected entry, or `NULL` if the index is out of range.
+ * @param[in] histnum Zero-based age of the entry, where zero selects the
+ *                    newest retained line.
+ * @return Pointer to the internal NUL-terminated entry, or `NULL` if the
+ *         requested age is outside the retained history. The pointer remains
+ *         valid until the next append that overwrites that slot.
  */
 const char *history_get(int histnum)
 {

@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file barrier.h
+ * @brief ARM memory-ordering and synchronization barrier macros.
+ *
+ * The instruction selected for each barrier follows the configured ARM
+ * architecture level. The SMP aliases use DMB semantics while the full
+ * aliases use DSB semantics to preserve the ordering expected by drivers.
+ */
+
 #ifndef __ARM32_BARRIER_H__
 #define __ARM32_BARRIER_H__
 

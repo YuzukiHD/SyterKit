@@ -107,7 +107,19 @@ extern sunxi_serial_t uart_dbg;
  */
 void sunxi_serial_init(sunxi_serial_t *uart);
 
-/** @brief Read and initialize the DTS-selected stdout UART. */
+/**
+ * @brief Read and initialize the UART selected by the device tree stdout node.
+ *
+ * The generated device-tree data supplies the UART register base, controller
+ * identifier, clock settings, pin mux, and serial format.  This helper stores
+ * those values in the global debug-console descriptor and then enables the
+ * controller for early boot logging.  Applications that provide their own
+ * console configuration should call @ref sunxi_serial_init directly instead.
+ *
+ * @return 0 when a stdout node is present and the UART was initialized;
+ *         a negative driver error when the node is missing or its resources
+ *         cannot be enabled.
+ */
 int sunxi_serial_init_stdout(void);
 
 /**

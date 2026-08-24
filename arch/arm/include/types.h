@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 
+/**
+ * @file types.h
+ * @brief ARM kernel-style scalar, address, and DMA type aliases.
+ *
+ * The aliases mirror the widths used by the boot firmware and remain usable
+ * before the hosted C library is available.
+ */
+
 #ifndef __ASM_ARM_TYPES_H
 #define __ASM_ARM_TYPES_H
 

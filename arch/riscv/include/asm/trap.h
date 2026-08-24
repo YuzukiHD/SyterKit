@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file trap.h
+ * @brief RISC-V assembly register-save and restore macros.
+ *
+ * SAVE_ALL builds the trap frame consumed by the C exception handler;
+ * RESTORE_ALL restores machine state and returns with @c mret. The macros
+ * use REGSZ so the same layout works for RV32 and RV64 builds.
+ */
+
 #ifndef __RISCV_ASM_TRAP_H__
 #define __RISCV_ASM_TRAP_H__
 

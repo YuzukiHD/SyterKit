@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file linkage.h
+ * @brief ARM assembler linkage and exception-mode helpers.
+ *
+ * The ENTRY/END macros emit the symbol metadata expected by the linker;
+ * ARMV7_* constants name CPSR mode and interrupt-mask bits for startup code.
+ */
+
 #ifndef __ARM32_LINKAGE_H__
 #define __ARM32_LINKAGE_H__
 

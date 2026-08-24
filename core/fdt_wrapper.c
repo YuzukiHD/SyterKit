@@ -1,4 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+
+/**
+ * @file fdt_wrapper.c
+ * @brief Human-readable device-tree inspection and mutation helpers.
+ *
+ * These wrappers keep command-facing formatting and error reporting beside
+ * the libfdt calls.  They operate on caller-owned flattened device-tree
+ * blobs and never allocate storage for property values.
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -25,6 +34,14 @@
  * count: The number of strings in the array
  * data: A bytestream to be placed in the property
  * len: The length of the resulting bytestream
+ */
+/**
+ * @brief Parse shell property arguments into flattened-device-tree bytes.
+ * @param[in] newval String fragments containing cells, bytes, or strings.
+ * @param[in] count Number of fragments in @p newval.
+ * @param[out] data Destination byte buffer supplied by the caller.
+ * @param[out] len Number of bytes written to @p data.
+ * @return Zero on success, or one when a value has invalid syntax.
  */
 int fdt_parse_prop(char const **newval, int count, char *data, int *len)
 {
@@ -115,6 +132,12 @@ int fdt_parse_prop(char const **newval, int count, char *data, int *len)
 	return 0;
 }
 
+/**
+ * @brief Test whether a property payload consists of printable strings.
+ * @param[in] data Property payload to inspect.
+ * @param[in] len Payload length in bytes.
+ * @return One for a valid NUL-terminated printable string list, otherwise zero.
+ */
 static int is_printable_string(const void *data, int len)
 {
 	const char *s = data;
@@ -152,6 +175,11 @@ static int is_printable_string(const void *data, int len)
 	return 1;
 }
 
+/**
+ * @brief Render a property payload using string, cell, or byte notation.
+ * @param[in] data Property payload to print.
+ * @param[in] len Payload length in bytes.
+ */
 static void print_data(const void *data, int len)
 {
 	int j;
@@ -202,6 +230,15 @@ static void print_data(const void *data, int len)
 	}
 }
 
+/**
+ * @brief Print a device-tree node, property, and selected descendants.
+ * @param[in] working_fdt Flattened device-tree blob.
+ * @param[in] pathp Absolute node path to inspect.
+ * @param[in] prop Optional property name; NULL prints the node contents.
+ * @param[in] depth Maximum descendant depth to display.
+ * @return Zero for a successful property/node lookup, one for libfdt or tag
+ *         errors.  Output is written through the firmware logger.
+ */
 int fdt_print(unsigned char *working_fdt, const char *pathp, const char *prop, int depth)
 {
 	static char tabs[MAX_LEVEL + 1] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
@@ -308,6 +345,12 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, const char *prop, i
 	return 0;
 }
 
+/**
+ * @brief Grow a flattened device tree in place.
+ * @param[in,out] fdt Device-tree blob with enough backing storage.
+ * @param[in] add_len Additional bytes to reserve.
+ * @return Zero on success, or a negative libfdt error code.
+ */
 int fdt_increase_size(void *fdt, int add_len)
 {
 	int newlen;
@@ -316,6 +359,13 @@ int fdt_increase_size(void *fdt, int add_len)
 	return fdt_open_into(fdt, fdt, newlen);
 }
 
+/**
+ * @brief Find a child node or create it when absent.
+ * @param[in,out] fdt Device-tree blob to search and modify.
+ * @param[in] parent_offset Structure-block offset of the parent node.
+ * @param[in] name Child node name.
+ * @return Child node offset, or a negative libfdt error code.
+ */
 int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name)
 {
 	int offset;
@@ -331,6 +381,13 @@ int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name)
 	return offset;
 }
 
+/**
+ * @brief Apply an overlay and report common symbol-node failures.
+ * @param[in,out] fdt Base device-tree blob.
+ * @param[in] fdto Overlay blob to apply.
+ * @return Zero on success, or the negative libfdt error returned by the apply
+ *         operation.
+ */
 int fdt_overlay_apply_verbose(void *fdt, void *fdto)
 {
 	int err;

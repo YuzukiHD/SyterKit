@@ -16,18 +16,35 @@ struct format_state {
 	unsigned count;
 };
 
+/**
+ * @brief Emit one character and increment the formatted-character count.
+ * @param[in,out] s Formatter state and output callback.
+ * @param[in] c Character to send.
+ */
 static void emit(struct format_state *s, char c)
 {
 	s->putc(s->arg, c);
 	s->count++;
 }
 
+/**
+ * @brief Emit a character repeatedly through the current callback.
+ * @param[in,out] s Formatter state.
+ * @param[in] c Character to repeat.
+ * @param[in] count Number of copies; non-positive values emit nothing.
+ */
 static void emit_repeat(struct format_state *s, char c, int count)
 {
 	while (count-- > 0)
 		emit(s, c);
 }
 
+/**
+ * @brief Measure a string while applying printf precision semantics.
+ * @param[in] str String to measure; NULL is represented as `(null)`.
+ * @param[in] precision Maximum characters, or a negative value for unlimited.
+ * @return Number of characters that would be emitted.
+ */
 static int string_length(const char *str, int precision)
 {
 	int length = 0;
@@ -39,6 +56,14 @@ static int string_length(const char *str, int precision)
 	return length;
 }
 
+/**
+ * @brief Convert an unsigned value to reverse-order radix digits.
+ * @param[in] value Value to convert.
+ * @param[in] base Radix, normally 8, 10, or 16.
+ * @param[out] buffer Destination digit buffer.
+ * @param[in] upper Non-zero selects uppercase hexadecimal digits.
+ * @return Number of digits written to @p buffer.
+ */
 static int number_digits(unsigned long long value, unsigned base, char *buffer, bool upper)
 {
 	static const char lower[] = "0123456789abcdef";

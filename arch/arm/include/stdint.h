@@ -1,3 +1,7 @@
+/**
+ * @file stdint.h
+ * @brief Fixed-width integer and pointer-sized aliases for ARM targets.
+ */
 #ifndef __STDINT_H__
 #define __STDINT_H__
 
