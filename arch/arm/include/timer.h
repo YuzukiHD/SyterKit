@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file timer.h
+ * @brief ARM architectural timer and busy-wait delay API.
+ */
+
 #ifndef __SYS_TIMER_H__
 #define __SYS_TIMER_H__
 
@@ -13,73 +18,48 @@
 #include "log.h"
 
 /**
- * @brief Get the architecture-specific counter value.
+ * @brief Read the ARM architectural counter.
  *
- * This function retrieves the current value of the architecture-specific
- * timer counter. The returned value is a 64-bit integer representing the
- * timer's current count.
+ * The value is a monotonic 24-MHz tick count while the architectural timer is
+ * enabled. Callers normally use ::time_us or ::time_ms for converted units.
  *
- * @return Current counter value as a 64-bit integer.
+ * @return Current counter value in hardware ticks.
  */
 uint64_t get_arch_counter(void);
 
 /**
- * @brief Get the current time in milliseconds.
- *
- * This function calculates the current time based on the architecture
- * counter and returns it in milliseconds.
- *
- * @return Current time in milliseconds.
+ * @brief Return elapsed time in milliseconds.
+ * @return Counter time converted using the ARM 24-MHz timer frequency.
  */
 uint32_t time_ms(void);
 
 /**
- * @brief Get the current time in microseconds.
- *
- * This function calculates the current time based on the architecture
- * counter and returns it in microseconds.
- *
- * @return Current time in microseconds.
+ * @brief Return elapsed time in microseconds.
+ * @return Counter time converted using the ARM 24-MHz timer frequency.
  */
 uint64_t time_us(void);
 
 /**
- * @brief Delay execution for a specified number of microseconds.
- *
- * This function creates a delay for the specified number of microseconds
- * using a busy-wait loop.
- *
- * @param us Number of microseconds to delay.
+ * @brief Busy-wait for a number of microseconds.
+ * @param[in] us Delay duration in microseconds.
  */
 void udelay(uint32_t us);
 
 /**
- * @brief Delay execution for a specified number of milliseconds.
- *
- * This function converts milliseconds to microseconds and calls the
- * udelay function to implement the delay.
- *
- * @param ms Number of milliseconds to delay.
+ * @brief Busy-wait for a number of milliseconds.
+ * @param[in] ms Delay duration in milliseconds.
  */
 void mdelay(uint32_t ms);
 
 /**
- * @brief Delay execution for a specified number of loops (treated as microseconds).
- *
- * This function creates a delay based on the number of microsecond loops
- * specified, by calling the udelay function directly.
- *
- * @param loops Number of microsecond loops to delay.
+ * @brief Busy-wait for an implementation-specific loop count.
+ * @param[in] loops Number of decrement-and-branch iterations.
  */
 void sdelay(uint32_t loops);
 
 /**
- * @brief Get the initialization timestamp.
- *
- * This function retrieves the initialization timestamp set during
- * the system timer setup.
- *
- * @return The initialization timestamp in microseconds.
+ * @brief Return the timestamp captured during timer initialization.
+ * @return Initialization time in microseconds, used as the log epoch.
  */
 uint32_t get_init_timestamp();
 

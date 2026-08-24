@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file parse.c
+ * @brief Command-line tokenization for the SyterKit shell.
+ *
+ * Parsing writes NUL-terminated arguments into a caller-provided scratch
+ * buffer.  Quotes preserve whitespace, backslash quotes the next printable
+ * character, and semicolons return a pointer to the next command.
+ */
+
 #include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -8,6 +17,7 @@
 
 #include <cli/cli_config.h>
 
+/** @brief Mutable cursors used while tokenizing one command line. */
 typedef struct parse_state_struct {
 	const char *readpos;
 	char *writepos;
@@ -20,6 +30,12 @@ typedef struct parse_state_struct {
  *
  * If error is returned, state of parse_state_t may not be consistent
  * and should never re-used. (whole input line should be discarded.)
+ */
+/**
+ * @brief Copy one shell token from the input cursor to the output buffer.
+ * @param[in,out] pstate Parser cursors; both are advanced on success.
+ * @return Number of source characters consumed, zero at a command boundary,
+ *         or -1 for an unterminated quote or invalid control character.
  */
 static int read_token(parse_state_t *pstate)
 {
@@ -110,6 +126,15 @@ static int read_token(parse_state_t *pstate)
 	}
 }
 
+/**
+ * @brief Parse one command from a shell input line.
+ * @param[in] cmdline Input line, including any remaining semicolon commands.
+ * @param[out] argvbuf Scratch storage receiving copied argument strings.
+ * @param[out] pargc Number of arguments written to @p argv.
+ * @param[out] argv Argument-pointer array supplied by the caller.
+ * @return Pointer to the next command after a semicolon, the original pointer
+ *         when the line is complete, or NULL on syntax or buffer errors.
+ */
 const char *msh_parse_line(const char *cmdline, char *argvbuf, int *pargc, char **argv)
 {
 	/*

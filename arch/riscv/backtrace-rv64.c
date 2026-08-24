@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file backtrace-rv64.c
+ * @brief Frame-pointer call-trace unwinder for RV64 targets.
+ *
+ * The implementation validates both image and stack bounds before following
+ * the frame chain and falls back to a saved link register when no frame is
+ * available.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -64,6 +73,11 @@ static int backtrace_frame_valid(uintptr_t sp, uintptr_t fp)
 	return fp >= sp + sizeof(struct stackframe) && fp <= end;
 }
 
+/**
+ * @brief Walk a frame-pointer context and print its RISC-V call trace.
+ * @param[in] context Saved PC, stack, frame, and link registers.
+ * @return Number of frames printed, or zero when the context is invalid.
+ */
 int backtrace_from_context(const struct backtrace_context *context)
 {
 	uintptr_t fp;
@@ -101,6 +115,13 @@ int backtrace_from_context(const struct backtrace_context *context)
 	return (int)level;
 }
 
+/**
+ * @brief Adapt raw register values to a context and print a call trace.
+ * @param[in] pc Starting program counter.
+ * @param[in] sp Starting stack pointer.
+ * @param[in] lr Link register used when no frame chain is available.
+ * @return Number of frames printed, or zero for invalid addresses.
+ */
 int backtrace(char *pc, long *sp, char *lr)
 {
 	const struct backtrace_context context = {
@@ -132,6 +153,10 @@ static int __attribute__((noinline, used)) dump_stack_from_context(uintptr_t sp,
 	return backtrace_from_context(&context);
 }
 
+/**
+ * @brief Capture the current RISC-V registers and print a call trace.
+ * @return Number of frames printed by the frame-pointer unwinder.
+ */
 int __attribute__((naked)) dump_stack(void)
 {
 	asm volatile("mv a0, sp\n"

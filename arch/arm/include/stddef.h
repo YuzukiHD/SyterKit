@@ -1,3 +1,7 @@
+/**
+ * @file stddef.h
+ * @brief Null, layout, branch-prediction, and scalar helper macros.
+ */
 #ifndef __STDDEF_H__
 #define __STDDEF_H__
 

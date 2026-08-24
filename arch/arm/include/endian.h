@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file endian.h
+ * @brief Compile-time byte-order constants for ARM firmware.
+ *
+ * SyterKit builds little-endian by default. Defining @c __BIG_ENDIAN before
+ * including this header selects the alternate byte order and updates
+ * ::BYTE_ORDER accordingly.
+ */
+
 #ifndef __ENDIAN_H__
 #define __ENDIAN_H__
 

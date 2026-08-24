@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file types.h
+ * @brief RISC-V freestanding scalar, address, and DMA type aliases.
+ *
+ * Width-sensitive aliases are selected by the compiler target and are shared
+ * by the C implementation, linker interfaces, and assembly support code.
+ */
+
 #ifndef __RISCV_TYPES_H__
 #define __RISCV_TYPES_H__
 

@@ -563,6 +563,9 @@ int sunxi_i2c_read(sunxi_i2c_t *i2c_dev, uint8_t addr, uint32_t reg, uint8_t *da
  *
  * @warning Ensure that this function is called when the I2C device 
  *          is in a known state to avoid unintended behavior.
+ *
+ * @return I2C_OK when the controller is reset and the bus is idle;
+ *         -I2C_NOK_TOUT when the controller or line-release sequence times out.
  */
 static int sunxi_i2c_bus_reset(sunxi_i2c_t *i2c_dev)
 {
@@ -624,6 +627,10 @@ static int sunxi_i2c_bus_reset(sunxi_i2c_t *i2c_dev)
  *
  * @warning Ensure that the parent clock frequency is set correctly 
  *          before calling this function to avoid incorrect clock settings.
+ *
+ * @return I2C_OK when a valid divider is programmed; -I2C_NOK when the
+ *         requested speed or source clock cannot be represented by the
+ *         controller's divider fields.
  */
 static int sunxi_i2c_set_clock(sunxi_i2c_t *i2c_dev)
 {

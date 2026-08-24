@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file lineedit.c
+ * @brief UART line editor with history and terminal escape-key handling.
+ *
+ * The editor keeps a fixed-size command buffer, redraws only the affected
+ * terminal span, and translates common ANSI cursor sequences into shell key
+ * bindings.  No dynamic allocation is used.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -11,6 +20,7 @@
 #include <cli/cli_history.h>
 #include <cli/cli_termesc.h>
 
+/** @brief Mutable command line, cursor, and cut/paste state. */
 typedef struct cmdline_struct {
 	char buf[MSH_CMDLINE_CHAR_MAX];
 	int pos; /* cursor position (start at 1 orignin, 0 means empty line) */
@@ -22,6 +32,10 @@ typedef struct cmdline_struct {
 static cmdline_t CmdLine;
 static int bCmdLineInitialized;
 
+/**
+ * @brief Clear text and reset the cursor to an empty command line.
+ * @param[in,out] pcmdline Editor state to clear.
+ */
 static void cmdline_clear(cmdline_t *pcmdline)
 {
 	memset(pcmdline->buf, '\0', MSH_CMDLINE_CHAR_MAX);
@@ -29,6 +43,10 @@ static void cmdline_clear(cmdline_t *pcmdline)
 	pcmdline->linelen = 0;
 }
 
+/**
+ * @brief Clear a command line and its cut/paste clipboard.
+ * @param[in,out] pcmdline Editor state to initialize.
+ */
 static void cmdline_init(cmdline_t *pcmdline)
 {
 	cmdline_clear(pcmdline);
@@ -37,11 +55,19 @@ static void cmdline_init(cmdline_t *pcmdline)
 
 static char *prompt_string = MSH_CMD_PROMPT;
 
+/**
+ * @brief Select the prompt displayed before each command line.
+ * @param[in] str NUL-terminated prompt string retained by the editor.
+ */
 void msh_set_prompt(char *str)
 {
 	prompt_string = str;
 }
 
+/**
+ * @brief Erase the complete visible line and reset its buffer.
+ * @param[in,out] pcmdline Editor state and terminal row to clear.
+ */
 static void cmdline_kill(cmdline_t *pcmdline)
 {
 	int i;
@@ -57,6 +83,11 @@ static void cmdline_kill(cmdline_t *pcmdline)
 	cmdline_clear(pcmdline);
 }
 
+/**
+ * @brief Replace the editable line with a new string and redraw it.
+ * @param[in,out] pcmdline Editor state to update.
+ * @param[in] str Replacement text; it must fit the fixed command buffer.
+ */
 static void cmdline_set(cmdline_t *pcmdline, const char *str)
 {
 	int len;
@@ -69,6 +100,12 @@ static void cmdline_set(cmdline_t *pcmdline, const char *str)
 	pcmdline->linelen = len;
 }
 
+/**
+ * @brief Insert one character at the current cursor position.
+ * @param[in,out] pcmdline Editor state to update and redraw.
+ * @param[in] c Character to insert.
+ * @return One when inserted, zero when the fixed buffer is full.
+ */
 static int cmdline_insert_char(cmdline_t *pcmdline, unsigned char c)
 {
 	/* Check if the line buffer can hold another one char */
@@ -99,6 +136,11 @@ static int cmdline_insert_char(cmdline_t *pcmdline, unsigned char c)
 	return 1;
 }
 
+/**
+ * @brief Delete the character immediately before the cursor.
+ * @param[in,out] pcmdline Editor state and terminal line to update.
+ * @return One when a character was removed, zero at the line start.
+ */
 static int cmdline_backspace(cmdline_t *pcmdline)
 {
 	if (pcmdline->pos <= 0) {
@@ -130,6 +172,11 @@ static int cmdline_backspace(cmdline_t *pcmdline)
 	return 1;
 }
 
+/**
+ * @brief Delete the character under the cursor.
+ * @param[in,out] pcmdline Editor state and terminal line to update.
+ * @return One when a character was removed, zero at the line end.
+ */
 static int cmdline_delete(cmdline_t *pcmdline)
 {
 	if (pcmdline->linelen <= pcmdline->pos) {
@@ -155,6 +202,11 @@ static int cmdline_delete(cmdline_t *pcmdline)
 	return 1;
 }
 
+/**
+ * @brief Move the cursor left when it is not already at column zero.
+ * @param[in,out] pcmdline Editor state and terminal cursor to update.
+ * @return One when moved, zero when already at the line start.
+ */
 static int cmdline_cursor_left(cmdline_t *pcmdline)
 {
 	if (pcmdline->pos > 0) {
@@ -167,6 +219,11 @@ static int cmdline_cursor_left(cmdline_t *pcmdline)
 	}
 }
 
+/**
+ * @brief Move the cursor right when it is not already at line end.
+ * @param[in,out] pcmdline Editor state and terminal cursor to update.
+ * @return One when moved, zero when already at the line end.
+ */
 static int cmdline_cursor_right(cmdline_t *pcmdline)
 {
 	if (pcmdline->pos < pcmdline->linelen) {
@@ -178,6 +235,10 @@ static int cmdline_cursor_right(cmdline_t *pcmdline)
 	}
 }
 
+/**
+ * @brief Move the cursor to the beginning of the editable line.
+ * @param[in,out] pcmdline Editor state and terminal cursor to update.
+ */
 static void cmdline_cursor_linehead(cmdline_t *pcmdline)
 {
 	while (pcmdline->pos > 0) {
@@ -186,6 +247,10 @@ static void cmdline_cursor_linehead(cmdline_t *pcmdline)
 	}
 }
 
+/**
+ * @brief Move the cursor to the end of the editable line.
+ * @param[in,out] pcmdline Editor state and terminal cursor to update.
+ */
 static void cmdline_cursor_linetail(cmdline_t *pcmdline)
 {
 	while (pcmdline->pos < pcmdline->linelen) {
@@ -193,6 +258,10 @@ static void cmdline_cursor_linetail(cmdline_t *pcmdline)
 	}
 }
 
+/**
+ * @brief Insert the clipboard contents at the current cursor position.
+ * @param[in,out] pcmdline Editor state and terminal row to update.
+ */
 static void cmdline_yank(cmdline_t *pcmdline)
 {
 	if (strlen(pcmdline->clipboard) == 0) {
@@ -206,6 +275,10 @@ static void cmdline_yank(cmdline_t *pcmdline)
 	}
 }
 
+/**
+ * @brief Cut text from the cursor through line end into the clipboard.
+ * @param[in,out] pcmdline Editor state, clipboard, and terminal row to update.
+ */
 static void cmdline_killtail(cmdline_t *pcmdline)
 {
 	int i;
@@ -230,6 +303,10 @@ static void cmdline_killtail(cmdline_t *pcmdline)
 	pcmdline->linelen = pcmdline->pos;
 }
 
+/**
+ * @brief Cut the previous whitespace-delimited word into the clipboard.
+ * @param[in,out] pcmdline Editor state, clipboard, and terminal row to update.
+ */
 static void cmdline_killword(cmdline_t *pcmdline)
 {
 	int i, j;
@@ -268,6 +345,12 @@ char curline[MSH_CMDLINE_CHAR_MAX];
 
 const char *histline;
 
+/**
+ * @brief Apply one input byte or escape sequence to the editor.
+ * @param[in,out] pcmdline Editor state to update.
+ * @param[in] c Input byte received from the UART.
+ * @return One while editing should continue, zero after Enter or discard.
+ */
 static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
 {
 	unsigned char input = c;
@@ -407,6 +490,11 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
 	return 1 /*true*/;
 }
 
+/**
+ * @brief Read, edit, and return one command line from the UART.
+ * @param[out] linebuf Destination buffer receiving the NUL-terminated line.
+ * @return Number of characters in the returned line, excluding its terminator.
+ */
 int msh_get_cmdline(char *linebuf)
 {
 	if (!bCmdLineInitialized) {

@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file log.c
+ * @brief Timestamped logging and hexadecimal memory-dump helpers.
+ *
+ * Formatting is delegated to the callback-based formatter while this module
+ * supplies severity prefixes, elapsed timestamps, and the UART sink.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,6 +18,15 @@
 #include "uart.h"
 #include "format.h"
 
+/**
+ * @brief Write a severity-prefixed, timestamped log message.
+ * @param[in] level Log severity from the `LOG_LEVEL_*` constants.
+ * @param[in] fmt printf-style format string.
+ * @param[in] ... Values consumed by @p fmt.
+ *
+ * The timestamp is measured from the architecture timer initialization point.
+ * Color escape sequences are emitted unless disabled by the build option.
+ */
 void printk(int level, const char *fmt, ...)
 {
 	uint32_t now_timestamp = time_us() - get_init_timestamp();
@@ -72,6 +89,11 @@ void printk(int level, const char *fmt, ...)
 	va_end(args_copy);
 }
 
+/**
+ * @brief Format a message directly to the UART without a severity prefix.
+ * @param[in] fmt printf-style format string.
+ * @param[in] ... Values consumed by @p fmt.
+ */
 void uart_printf(const char *fmt, ...)
 {
 	va_list args;
@@ -83,6 +105,12 @@ void uart_printf(const char *fmt, ...)
 	va_end(args_copy);
 }
 
+/**
+ * @brief Provide the freestanding `printf` entry point over the UART.
+ * @param[in] fmt printf-style format string.
+ * @param[in] ... Values consumed by @p fmt.
+ * @return Zero after the formatter has consumed the argument list.
+ */
 int printf(const char *fmt, ...)
 {
 	va_list args;
@@ -96,6 +124,12 @@ int printf(const char *fmt, ...)
 	return 0;
 }
 
+/**
+ * @brief Print a timestamped informational message during DRAM bring-up.
+ * @param[in] fmt printf-style format string.
+ * @param[in] ... Values consumed by @p fmt.
+ * @return Zero after the message has been formatted.
+ */
 int printf_dram(const char *fmt, ...)
 {
 	uint32_t now_timestamp = time_us() - get_init_timestamp();
@@ -115,6 +149,14 @@ int printf_dram(const char *fmt, ...)
 	return 0;
 }
 
+/**
+ * @brief Dump a memory range as hexadecimal bytes and printable ASCII.
+ * @param[in] start_addr First byte to inspect.
+ * @param[in] count Number of bytes to display.
+ *
+ * Output is grouped in 16-byte rows.  The function performs raw reads and
+ * therefore requires the caller to provide a valid, readable address range.
+ */
 void dump_hex(uintptr_t start_addr, uint32_t count)
 {
 	const uint8_t *ptr = (const uint8_t *)start_addr;

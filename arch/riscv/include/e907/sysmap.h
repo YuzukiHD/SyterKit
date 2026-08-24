@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sysmap.h
+ * @brief E907 system-memory-map register layout and attribute flags.
+ *
+ * Region limits are encoded in implementation-defined granules; the cache
+ * implementation converts byte addresses before programming these entries.
+ */
+
 #ifndef __SYSMAP_H__
 #define __SYSMAP_H__
 

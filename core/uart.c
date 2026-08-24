@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file uart.c
+ * @brief UART console adapters used by logging and the command shell.
+ *
+ * Early output is either buffered until the device-tree-selected UART is
+ * ready or discarded, depending on the build configuration.  Once the
+ * console is marked ready, all helpers delegate to the serial driver.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -21,6 +30,13 @@ static size_t uart_early_log_length;
 #endif
 static bool uart_log_console_is_ready;
 
+/**
+ * @brief Send one character directly to the initialized UART hardware.
+ * @param[in] c Character to transmit.
+ *
+ * The UART driver expects an explicit carriage return before a newline, so
+ * this low-level adapter expands line feeds for terminal compatibility.
+ */
 static void uart_log_putchar_hw(char c)
 {
 	if (c == '\n')
@@ -29,6 +45,12 @@ static void uart_log_putchar_hw(char c)
 }
 
 #ifdef CONFIG_UART_EARLY_LOG
+/**
+ * @brief Flush characters captured before the UART console was ready.
+ *
+ * The early-log buffer is emitted in insertion order and then reset so a
+ * second console transition cannot replay old messages.
+ */
 static void uart_log_flush_early(void)
 {
 	size_t i;
@@ -39,6 +61,14 @@ static void uart_log_flush_early(void)
 }
 #endif
 
+/**
+ * @brief Emit one character through the early-safe logging callback.
+ * @param[in] arg Unused callback context; accepted for formatter compatibility.
+ * @param[in] c Character to emit.
+ *
+ * Before console initialization this function buffers output when early
+ * logging is enabled.  After initialization it writes directly to hardware.
+ */
 void uart_log_putchar(void *arg, char c)
 {
 	(void)arg;
@@ -55,6 +85,12 @@ void uart_log_putchar(void *arg, char c)
 	uart_log_putchar_hw(c);
 }
 
+/**
+ * @brief Mark the UART console ready and replay buffered early output.
+ *
+ * Calling this function more than once is harmless.  The first call changes
+ * the console state and, when configured, flushes all buffered characters.
+ */
 void uart_log_console_ready(void)
 {
 	if (uart_log_console_is_ready)
@@ -66,6 +102,11 @@ void uart_log_console_ready(void)
 #endif
 }
 
+/**
+ * @brief Write one character to the logging UART.
+ * @param[in] c Character value to transmit.
+ * @return Always zero, matching the firmware's historical console API.
+ */
 int uart_putchar(int c)
 {
 	uart_log_putchar(NULL, (char)c);
@@ -73,6 +114,11 @@ int uart_putchar(int c)
 	return 0;
 }
 
+/**
+ * @brief Write a NUL-terminated string to the logging UART.
+ * @param[in] s String to transmit; it must not be NULL.
+ * @return One after all characters have been submitted.
+ */
 int uart_puts(const char *s)
 {
 	const char *c = s;
@@ -86,6 +132,10 @@ int uart_puts(const char *s)
 	return 1;
 }
 
+/**
+ * @brief Read one character and normalize carriage return to newline.
+ * @return Received character, or zero when the input polling timeout expires.
+ */
 int uart_getchar(void)
 {
 	/* Get input character from the UART */
@@ -99,6 +149,10 @@ int uart_getchar(void)
 	}
 }
 
+/**
+ * @brief Poll the UART receiver for a bounded period.
+ * @return Received character, or zero when no character arrives within 10 ms.
+ */
 char get_uart_input(void)
 {
 	char c = 0;
@@ -123,11 +177,20 @@ char get_uart_input(void)
 	return c;
 }
 
+/**
+ * @brief Test whether the debug UART has a character available.
+ * @return Non-zero when a character can be read, otherwise zero.
+ */
 int tstc(void)
 {
 	return sunxi_serial_tstc(&uart_dbg);
 }
 
+/**
+ * @brief Provide the freestanding `puts` symbol using the UART console.
+ * @param[in] s String to transmit; it must be NUL-terminated.
+ * @return The result returned by @ref uart_puts.
+ */
 int puts(const char *s)
 {
 	return uart_puts(s);

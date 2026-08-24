@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file mmu.c
+ * @brief ARMv7 short-descriptor identity mapping and MMU control.
+ *
+ * SyterKit uses one level-1 section table.  Device memory remains
+ * non-cacheable while SRAM and detected DRAM are mapped as normal memory.
+ */
+
 #include <stdint.h>
 
 #include "barrier.h"
@@ -29,6 +37,7 @@
 #define TTBR0_S (1U << 1)
 #define TTBR0_RGN_WT (2U << 3)
 
+/** @brief Invalidate unified, data, and instruction TLB entries. */
 static void invalidate_tlb(void)
 {
 	uint32_t zero = 0;
@@ -41,6 +50,7 @@ static void invalidate_tlb(void)
 	isb();
 }
 
+/** @brief Invalidate instruction cache and branch-predictor state. */
 static void invalidate_icache(void)
 {
 	uint32_t zero = 0;
@@ -52,6 +62,12 @@ static void invalidate_icache(void)
 	isb();
 }
 
+/**
+ * @brief Build one ARM short-descriptor section entry.
+ * @param[in] section Physical 1-MiB section number.
+ * @param[in] cacheable Non-zero to mark the section as normal cacheable RAM.
+ * @return Encoded level-1 section descriptor.
+ */
 static uint32_t section_desc(uint32_t section, uint32_t cacheable)
 {
 	uint32_t desc = TTB_SECT_BASE(section) | TTB_SECT_AP | TTB_SECT_SECURE | TTB_SECT_DOMAIN(MMU_DOMAIN) | TTB_SECT;
@@ -65,6 +81,12 @@ static uint32_t section_desc(uint32_t section, uint32_t cacheable)
 	return desc;
 }
 
+/**
+ * @brief Populate a complete identity map and mark the RAM window cacheable.
+ * @param[out] page_table 16-KiB aligned level-1 descriptor table.
+ * @param[in] dram_base DRAM base address.
+ * @param[in] dram_size DRAM size in 1-MiB sections.
+ */
 static void init_mapping(uint32_t *page_table, uint32_t dram_base, uint32_t dram_size)
 {
 	uint32_t base_section = dram_base >> MMU_SECTION_SHIFT;
@@ -80,6 +102,10 @@ static void init_mapping(uint32_t *page_table, uint32_t dram_base, uint32_t dram
 		page_table[index] = section_desc(index, 1U);
 }
 
+/**
+ * @brief Install the level-1 table address and cacheability attributes.
+ * @param[in] page_table Physical address of the aligned level-1 table.
+ */
 static void set_ttbr(uint32_t page_table)
 {
 	uint32_t ttbr0 = page_table | TTBR0_IRGN_WB_WA | TTBR0_S | TTBR0_RGN_WT;
@@ -89,6 +115,7 @@ static void set_ttbr(uint32_t page_table)
 	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 1" : : "r"(zero) : "memory");
 }
 
+/** @brief Mark the configured MMU domain as a client domain. */
 static void set_dacr(void)
 {
 	uint32_t dacr = DACR_ALL_CLIENT;
@@ -97,6 +124,7 @@ static void set_dacr(void)
 	isb();
 }
 
+/** @brief Enable ARM SMP coherency when data caching is configured. */
 static void enable_smp(void)
 {
 #ifdef CONFIG_ARCH_DCACHE
@@ -110,6 +138,15 @@ static void enable_smp(void)
 #endif
 }
 
+/*
+ * @brief Build the ARM identity map and enable the MMU.
+ * @param[in] dram_base Physical DRAM base address.
+ * @param[in] dram_size DRAM size in MiB; values above the 2-GiB limit are
+ *                     clamped to the supported section-table range.
+ *
+ * The translation table is placed in the final usable DRAM megabyte.  Invalid
+ * or empty windows are rejected without changing the current MMU state.
+ */
 void arm32_mmu_enable(uint32_t dram_base, uint32_t dram_size)
 {
 	uint64_t table_address;
@@ -170,6 +207,12 @@ void arm32_mmu_enable(uint32_t dram_base, uint32_t dram_size)
 	printk_trace("MMU: table=0x%08x dram=0x%08x size=%uMiB CR=0x%08x\n", (uint32_t)table_address, dram_base, dram_size, reg);
 }
 
+/**
+ * @brief Disable configured ARM data/instruction caches and the MMU.
+ *
+ * TLB state is invalidated after clearing SCTLR.M so subsequent accesses use
+ * the physical identity regime.
+ */
 void arm32_mmu_disable(void)
 {
 	uint32_t reg = arm32_read_p15_c1();

@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file jmp.h
+ * @brief ARM hand-off helpers for SMP setup, FEL, and kernel entry.
+ */
+
 #ifndef _JMP_H_
 #define _JMP_H_
 

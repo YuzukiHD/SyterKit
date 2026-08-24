@@ -1,6 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-/** ARMv7/AArch32 cache maintenance interface. */
+/**
+ * @file cache.h
+ * @brief ARMv7/AArch32 cache maintenance interface.
+ *
+ * The low-level helpers perform set/way and MVA operations with the required
+ * DSB/ISB barriers. Compatibility wrappers expose the names used by the
+ * architecture-neutral cache API.
+ */
 #ifndef __ARM32_CACHE_H__
 #define __ARM32_CACHE_H__
 
@@ -16,6 +23,10 @@ enum {
 	ARM32_CCSIDR_LINE_SIZE_MASK = 0x7U,
 };
 
+/**
+ * @brief Read the ARM system-control register.
+ * @return Current SCTLR value, including cache enable bits.
+ */
 static inline __attribute__((always_inline)) uint32_t arm32_cache_read_sctlr(void)
 {
 	uint32_t value;
@@ -24,12 +35,20 @@ static inline __attribute__((always_inline)) uint32_t arm32_cache_read_sctlr(voi
 	return value;
 }
 
+/**
+ * @brief Write the ARM system-control register with a read-back barrier.
+ * @param[in] value New SCTLR value.
+ */
 static inline __attribute__((always_inline)) void arm32_cache_write_sctlr(uint32_t value)
 {
 	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0" : : "r"(value) : "memory");
 	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0" : "=r"(value) : : "memory");
 }
 
+/**
+ * @brief Read the level-0 data-cache line size from CCSIDR.
+ * @return Cache-line size in bytes.
+ */
 static inline __attribute__((always_inline)) uint32_t arch_dcache_get_cacheline_size(void)
 {
 	uint32_t csselr = 0;
@@ -43,6 +62,10 @@ static inline __attribute__((always_inline)) uint32_t arch_dcache_get_cacheline_
 	return ARM32_CACHE_LINE_MIN << (ccsidr & ARM32_CCSIDR_LINE_SIZE_MASK);
 }
 
+/**
+ * @brief Clean or invalidate every data-cache set and way.
+ * @param[in] invalidate Non-zero to discard lines; zero to clean them to PoC.
+ */
 static inline __attribute__((always_inline)) void arm32_dcache_maintain_all(uint32_t invalidate)
 {
 	uint32_t clidr;
@@ -100,6 +123,16 @@ static inline __attribute__((always_inline)) void arm32_dcache_maintain_all(uint
 	isb();
 }
 
+/**
+ * @brief Clean or invalidate data-cache lines covering an address range.
+ *
+ * Addresses are rounded to the implementation's line size and clipped to
+ * the 32-bit ARM address space before issuing MVA maintenance operations.
+ *
+ * @param[in] start Inclusive first byte address.
+ * @param[in] end Exclusive last byte address.
+ * @param[in] invalidate Non-zero to invalidate; zero to clean to PoC.
+ */
 static inline __attribute__((always_inline)) void arm32_dcache_maintain_range(uint64_t start, uint64_t end, uint32_t invalidate)
 {
 	uint32_t line;
@@ -133,6 +166,12 @@ static inline __attribute__((always_inline)) void arm32_dcache_maintain_range(ui
 	dsb();
 }
 
+/**
+ * @brief Invalidate and enable the ARM data cache.
+ *
+ * Existing lines are invalidated before setting SCTLR.C, then DSB/ISB make
+ * the new state visible to subsequent memory operations.
+ */
 static inline __attribute__((always_inline)) void arch_dcache_enable(void)
 {
 	uint32_t reg;
@@ -144,6 +183,12 @@ static inline __attribute__((always_inline)) void arch_dcache_enable(void)
 	isb();
 }
 
+/**
+ * @brief Clean and disable the ARM data cache.
+ *
+ * Cleaning preserves dirty memory before SCTLR.C is cleared and the barrier
+ * sequence completes the transition.
+ */
 static inline __attribute__((always_inline)) void arch_dcache_disable(void)
 {
 	uint32_t reg;
@@ -155,36 +200,53 @@ static inline __attribute__((always_inline)) void arch_dcache_disable(void)
 	isb();
 }
 
+/**
+ * @brief Clean a byte range from the ARM data cache.
+ * @param[in] start First byte address.
+ * @param[in] size Number of bytes in the range.
+ */
 static inline __attribute__((always_inline)) void arch_dcache_clean_range(unsigned long start, size_t size)
 {
 	arm32_dcache_maintain_range((uint64_t)start, (uint64_t)start + size, 0U);
 }
 
+/**
+ * @brief Invalidate a byte range from the ARM data cache.
+ * @param[in] start First byte address.
+ * @param[in] size Number of bytes in the range.
+ */
 static inline __attribute__((always_inline)) void arch_dcache_inval_range(unsigned long start, size_t size)
 {
 	arm32_dcache_maintain_range((uint64_t)start, (uint64_t)start + size, 1U);
 }
 
+/** @brief Clean every ARM data-cache line to the point of coherency. */
 static inline __attribute__((always_inline)) void arch_flush_dcache_all(void)
 {
 	arm32_dcache_maintain_all(0U);
 }
 
+/** @brief Invalidate every ARM data-cache line. */
 static inline __attribute__((always_inline)) void arch_invalidate_dcache_all(void)
 {
 	arm32_dcache_maintain_all(1U);
 }
 
+/** @brief Enable the ARM data cache through the architecture wrapper. */
 static inline __attribute__((always_inline)) void arm32_dcache_enable(void)
 {
 	arch_dcache_enable();
 }
 
+/** @brief Disable the ARM data cache through the architecture wrapper. */
 static inline __attribute__((always_inline)) void arm32_dcache_disable(void)
 {
 	arch_dcache_disable();
 }
 
+/**
+ * @brief Invalidate all ARM instruction-cache lines and branch predictors.
+ */
 static inline __attribute__((always_inline)) void arm32_icache_invalidate_all(void)
 {
 	uint32_t zero = 0;
@@ -195,6 +257,9 @@ static inline __attribute__((always_inline)) void arm32_icache_invalidate_all(vo
 	isb();
 }
 
+/**
+ * @brief Invalidate and enable the ARM instruction cache.
+ */
 static inline __attribute__((always_inline)) void arm32_icache_enable(void)
 {
 	uint32_t reg;
@@ -205,6 +270,9 @@ static inline __attribute__((always_inline)) void arm32_icache_enable(void)
 	isb();
 }
 
+/**
+ * @brief Disable and invalidate the ARM instruction cache.
+ */
 static inline __attribute__((always_inline)) void arm32_icache_disable(void)
 {
 	uint32_t reg = arm32_cache_read_sctlr() & ~ARM32_SCTLR_I;

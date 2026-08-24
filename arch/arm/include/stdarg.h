@@ -1,3 +1,7 @@
+/**
+ * @file stdarg.h
+ * @brief Compiler-backed variadic argument primitives for ARM firmware.
+ */
 #ifndef __STDARG_H__
 #define __STDARG_H__
 

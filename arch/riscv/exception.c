@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file exception.c
+ * @brief RISC-V trap decoding, misaligned access emulation, and dispatch.
+ *
+ * Faulting instructions are fetched through MPRV accessors. Supported
+ * byte/halfword/word loads and stores are emulated in software; unsupported
+ * traps are redirected to the previous context or reported as fatal errors.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -40,6 +49,18 @@ extern void f64_write(int n, uint64_t *v);
 #define STRINGIFY(x) _STRINGIFY(x)
 #endif
 
+/**
+ * @brief Generate a privileged-memory read helper for trap emulation.
+ *
+ * The generated inline function temporarily enables MPRV (and optional MXR)
+ * in @c mstatus, executes the requested load instruction, then restores the
+ * status bits even though the access is performed from machine mode.
+ *
+ * @param name Generated helper name.
+ * @param type C type returned by the helper.
+ * @param insn Load instruction mnemonic used by the assembler.
+ * @param flags MPRV/MXR status bits enabled around the access.
+ */
 #define DEFINE_MPRV_READ_FLAGS(name, type, insn, flags)                                        \
 	static inline type name(type *p)                                                       \
 	{                                                                                      \
@@ -53,10 +74,18 @@ extern void f64_write(int n, uint64_t *v);
 		return value;                                                                  \
 	}
 
+/** @brief Generate an MPRV read helper without MXR permission. */
 #define DEFINE_MPRV_READ(name, type, insn) DEFINE_MPRV_READ_FLAGS(name, type, insn, 0x00020000)
 
+/** @brief Generate an MPRV read helper that also permits execute-only pages. */
 #define DEFINE_MPRV_READ_MXR(name, type, insn) DEFINE_MPRV_READ_FLAGS(name, type, insn, 0x00020000 | 0x00080000)
 
+/**
+ * @brief Generate a privileged-memory write helper for trap emulation.
+ * @param name Generated helper name.
+ * @param type C type accepted by the helper.
+ * @param insn Store instruction mnemonic used by the assembler.
+ */
 #define DEFINE_MPRV_WRITE(name, type, insn)                                                                 \
 	static inline void name(type *p, type value)                                                        \
 	{                                                                                                   \
@@ -86,6 +115,7 @@ DEFINE_MPRV_WRITE(mprv_write_u64, uint64_t, sd)
 DEFINE_MPRV_WRITE(mprv_write_long, long, sd)
 DEFINE_MPRV_WRITE(mprv_write_ulong, unsigned long, sd)
 
+/** @brief Register frame saved by the RISC-V trap entry assembly. */
 struct pt_regs_t {
 	unsigned long x[32];
 	unsigned long status;
@@ -95,11 +125,13 @@ struct pt_regs_t {
 	unsigned long insn;
 };
 
+/** @brief Result container used while fetching a faulting instruction. */
 struct insn_fetch_t {
 	unsigned long error;
 	uint32_t insn;
 };
 
+/** @brief Byte-addressable storage for an emulated load or store. */
 union endian_buf_t {
 	uint8_t b[8];
 	uint16_t h[4];
@@ -108,6 +140,7 @@ union endian_buf_t {
 	unsigned long v;
 };
 
+/** @brief Decoder metadata for one supported load/store encoding. */
 struct instruction_info_t {
 	uint32_t opcode;
 	uint32_t mask;
@@ -233,6 +266,11 @@ static const char *exception_names[] = {
 	"Store page fault",
 };
 
+/**
+ * @brief Decode the privilege mode encoded in MSTATUS.MPP.
+ * @param[in] ms MSTATUS value.
+ * @return Human-readable privilege-mode name.
+ */
 static const char *mstatus_to_previous_mode(unsigned long ms)
 {
 	switch ((ms >> 11) & 0x3) {
@@ -250,6 +288,10 @@ static const char *mstatus_to_previous_mode(unsigned long ms)
 	return "unknown";
 }
 
+/**
+ * @brief Print a RISC-V trap frame and optional backtrace.
+ * @param[in] regs Saved register frame supplied by trap entry.
+ */
 static void show_regs(struct pt_regs_t *regs)
 {
 	unsigned long cause;
@@ -292,6 +334,11 @@ static void show_regs(struct pt_regs_t *regs)
 #endif
 }
 
+/**
+ * @brief Find decoder metadata matching an instruction word.
+ * @param[in] insn Instruction bits, either compressed or full width.
+ * @return Matching metadata, or NULL when the instruction is unsupported.
+ */
 static struct instruction_info_t *match_instruction(unsigned long insn)
 {
 	int i;
@@ -301,6 +348,13 @@ static struct instruction_info_t *match_instruction(unsigned long insn)
 	return NULL;
 }
 
+/**
+ * @brief Fetch and validate a compressed 16-bit instruction under MPRV.
+ * @param[in] vaddr Faulting instruction address.
+ * @param[out] insn Receives the instruction when valid.
+ * @return Zero for a compressed instruction, or -1 when the encoding is not
+ *         16-bit.
+ */
 static int fetch_16bit_instruction(unsigned long vaddr, unsigned long *insn)
 {
 	uint16_t ins = mprv_read_mxr_u16((uint16_t *)vaddr);
@@ -311,6 +365,12 @@ static int fetch_16bit_instruction(unsigned long vaddr, unsigned long *insn)
 	return -1;
 }
 
+/**
+ * @brief Fetch and validate a 32-bit instruction under MPRV.
+ * @param[in] vaddr Faulting instruction address.
+ * @param[out] insn Receives the instruction when valid.
+ * @return Zero for a supported 32-bit encoding, or -1 otherwise.
+ */
 static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn)
 {
 	uint32_t l = (uint32_t)mprv_read_mxr_u16((uint16_t *)vaddr + 0);
@@ -323,6 +383,10 @@ static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn)
 	return -1;
 }
 
+/**
+ * @brief Forward an unsupported trap to the previous execution context.
+ * @param[in,out] regs Trap frame whose return PC and status may be rewritten.
+ */
 static void redirect_trap(struct pt_regs_t *regs)
 {
 #if defined(CONFIG_ARCH_RISCV32_CORE_E907)
@@ -342,6 +406,11 @@ static void redirect_trap(struct pt_regs_t *regs)
 #endif
 }
 
+/**
+ * @brief Emulate a supported misaligned load or store instruction.
+ * @param[in,out] regs Trap frame containing the faulting address and register
+ *                     state; the PC advances after successful emulation.
+ */
 static void handle_misaligned(struct pt_regs_t *regs)
 {
 	struct instruction_info_t *match;
@@ -452,9 +521,17 @@ static void handle_misaligned(struct pt_regs_t *regs)
 }
 
 #if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+/**
+ * @brief Dispatch an E907 machine trap.
+ * @param[in,out] regs Saved trap frame from the assembly entry path.
+ */
 void riscv_handle_exception(struct pt_regs_t *regs)
 {
 #else
+/**
+ * @brief Dispatch a C906 machine trap.
+ * @param[in,out] regs Saved trap frame from the assembly entry path.
+ */
 void riscv64_handle_exception(struct pt_regs_t *regs)
 {
 #endif

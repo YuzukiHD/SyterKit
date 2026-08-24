@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file os.c
+ * @brief Cooperative timer-task list used by the firmware scheduler.
+ *
+ * Tasks are linked in creation order and advanced by ::timer_handle. The
+ * implementation is intentionally non-preemptive; callbacks run in the
+ * caller's context and must return promptly.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -82,6 +91,12 @@ static void task_loop(void)
 	}
 }
 
+/**
+ * @brief Initialize a software timer descriptor.
+ * @param[out] timer Timer object to initialize.
+ * @param[in] callback Callback invoked when the timer expires.
+ * @param[in] arg Opaque callback argument retained in the descriptor.
+ */
 void timer_create(timer_t *timer, void (*callback)(void *arg, uint32_t event), void *arg)
 {
 	timer->task.callback = callback; // Set the callback function of the timer's task to the given callback function
@@ -91,6 +106,12 @@ void timer_create(timer_t *timer, void (*callback)(void *arg, uint32_t event), v
 	timer->interval = 0; // Set the interval of the timer to 0 (default)
 }
 
+/**
+ * @brief Add a timer to the active scheduler list.
+ * @param[in,out] timer Initialized timer descriptor.
+ * @param[in] max_run_count Maximum callback count; zero means forever.
+ * @param[in] interval Scheduler ticks between callback invocations.
+ */
 void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval)
 {
 	timer->task.max_run_count = max_run_count ? max_run_count : TIMER_ALWAYS_RUN;
@@ -99,6 +120,11 @@ void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval)
 	add_task(&(timer->task)); // Add the timer's task to the task list
 }
 
+/**
+ * @brief Advance every active software timer by one scheduler tick.
+ *
+ * Applications should call this function from their periodic timer hook.
+ */
 void timer_handle(void)
 {
 	task_loop();

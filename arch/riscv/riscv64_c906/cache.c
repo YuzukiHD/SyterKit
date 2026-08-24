@@ -17,20 +17,20 @@
 #define L1_CACHE_BYTES (64) /**< Size of L1 cache line in bytes. */
 
 /**
- * @file
- * @brief Memory Management Unit (MMU) interface for cache operations.
+ * @file cache.c
+ * @brief C906 cache-control implementation used by the RISC-V MMU layer.
  *
- * This header file provides functions and definitions for initializing and 
- * managing the memory management unit (MMU), particularly concerning 
- * data and instruction caches.
+ * The C906 exposes cache controls through machine CSRs rather than the
+ * standard RISC-V cache-management instructions. This file centralizes the
+ * required CSR setup and line/all-cache maintenance operations, including
+ * the instruction synchronization barriers needed after each operation.
  */
 
 /**
  * @brief Insert a data synchronization barrier.
  *
- * This function ensures that all previous instructions are completed
- * before any subsequent instructions are executed, particularly useful 
- * for ensuring memory consistency.
+ * The C906 @c fence.i sequence drains prior instruction effects before code
+ * or data is observed through a newly configured cache state.
  */
 void data_sync_barrier(void)
 {
@@ -40,8 +40,9 @@ void data_sync_barrier(void)
 /**
  * @brief Initialize the cache configuration.
  *
- * This function configures the cache settings by writing specific 
- * values to the control and status registers.
+ * The writes select the C906 cache operation mode, enable hit-control
+ * features, configure machine status bits, and set implementation-specific
+ * prefetch hints. These values are part of the C906 programming model.
  */
 void cache_init(void)
 {
@@ -54,8 +55,8 @@ void cache_init(void)
 /**
  * @brief Enable the data cache.
  *
- * This function enables the data cache by writing to the machine 
- * cache control register.
+ * The write sets the C906 data-cache enable field in @c mhcr. Existing cache
+ * configuration from ::cache_init is preserved by the hardware register.
  */
 void dcache_enable(void)
 {
@@ -65,8 +66,8 @@ void dcache_enable(void)
 /**
  * @brief Enable the instruction cache.
  *
- * This function enables the instruction cache by setting the 
- * appropriate control bits in the machine cache control register.
+ * The set operation enables instruction fetches from the C906 instruction
+ * cache without disturbing the data-cache control bits.
  */
 void icache_enable(void)
 {
@@ -76,8 +77,9 @@ void icache_enable(void)
 /**
  * @brief Enable the SV39 MMU with cache initialization.
  *
- * This function initializes the cache and enables both data and
- * instruction caches for the SV39 memory management unit.
+ * Initialization is ordered so cache mode and status are programmed before
+ * either cache is enabled. The routine does not install a page table; it only
+ * enables the cache controls used with an already configured MMU.
  */
 void mmu_enable(void)
 {
@@ -86,15 +88,9 @@ void mmu_enable(void)
 	icache_enable();
 }
 
-/**
- * @brief Flush a range of the data cache.
- *
- * This function flushes the data cache for a specified range,
- * ensuring that any dirty cache lines are written back to memory.
- *
- * @param start The starting address of the range to flush.
- * @param end The ending address of the range to flush.
- */
+/* The first address is rounded down to a 64-byte line. The operation writes
+ * back dirty lines and finishes with sync.i so subsequent instruction/data
+ * accesses observe the completed maintenance. */
 void flush_dcache_range(uint64_t start, uint64_t end)
 {
 	register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
@@ -103,16 +99,8 @@ void flush_dcache_range(uint64_t start, uint64_t end)
 	asm volatile("sync.i");
 }
 
-/**
- * @brief Invalidate a range of the data cache.
- *
- * This function invalidates the data cache for a specified range,
- * ensuring that no stale data remains in the cache for the given
- * addresses.
- *
- * @param start The starting address of the range to invalidate.
- * @param end The ending address of the range to invalidate.
- */
+/* The range is rounded down to a cache-line boundary and each covered line is
+ * invalidated with the C906 physical-address operation before synchronization. */
 void invalidate_dcache_range(uint64_t start, uint64_t end)
 {
 	register uint64_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
@@ -121,11 +109,24 @@ void invalidate_dcache_range(uint64_t start, uint64_t end)
 	asm volatile("sync.i");
 }
 
+/**
+ * @brief Write back every C906 data-cache line.
+ *
+ * The @c dcache.call instruction cleans all levels of the data cache. The
+ * hardware instruction includes the C906 completion ordering required before
+ * another agent or the instruction stream consumes the modified memory.
+ */
 void flush_dcache_all(void)
 {
 	asm volatile("dcache.call");
 }
 
+/**
+ * @brief Invalidate every C906 data-cache line.
+ *
+ * The @c dcache.ciall operation discards all data-cache lines, so subsequent
+ * reads refill from memory rather than observing stale cached contents.
+ */
 void invalidate_dcache_all(void)
 {
 	asm volatile("dcache.ciall");

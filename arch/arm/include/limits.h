@@ -1,3 +1,7 @@
+/**
+ * @file limits.h
+ * @brief Integer and floating-point limits used by the freestanding ARM build.
+ */
 #ifndef __LIMITS_H__
 #define __LIMITS_H__
 

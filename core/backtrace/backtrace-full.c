@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file backtrace-full.c
+ * @brief Symbol-table-backed call-trace output for full firmware builds.
+ *
+ * The linker supplies sorted symbol and name tables. This module resolves
+ * program counters with a bounded binary search and formats unknown addresses
+ * explicitly when no generated symbol covers them.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -63,11 +72,26 @@ static const struct backtrace_symbol *backtrace_find_symbol(uintptr_t address, u
 	return symbol;
 }
 
+/**
+ * @brief Begin a symbolized call-trace listing.
+ *
+ * The function emits the common heading used by both symbolized and
+ * architecture-specific unwinders.  It does not change unwind state.
+ */
 void backtrace_print_begin(void)
 {
 	printk(LOG_LEVEL_BACKTRACE, "Call trace:\n");
 }
 
+/**
+ * @brief Print one program-counter address and its nearest generated symbol.
+ *
+ * ARM addresses have their Thumb-state bit removed before symbol lookup.
+ * Addresses outside the generated symbol table are printed with an explicit
+ * `unknown` marker rather than being discarded.
+ *
+ * @param[in] raw_address Program-counter value supplied by the unwinder.
+ */
 void backtrace_print_frame(uintptr_t raw_address)
 {
 	const struct backtrace_symbol *symbol;
@@ -96,6 +120,12 @@ void backtrace_print_frame(uintptr_t raw_address)
 #endif
 }
 
+/**
+ * @brief Finish a symbolized call-trace listing.
+ *
+ * The full-symbol backend currently needs no trailer, but this hook keeps
+ * output framing consistent with the architecture-specific backtrace code.
+ */
 void backtrace_print_end(void)
 {
 }

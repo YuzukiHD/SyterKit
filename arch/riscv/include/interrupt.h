@@ -25,6 +25,10 @@ static inline void riscv_interrupt_enable(void)
 	csr_set(mstatus, MSTATUS_MIE);
 }
 
+/**
+ * @brief Enable machine interrupts through the common interrupt alias.
+ * @see riscv_interrupt_enable
+ */
 static inline void interrupt_enable(void)
 {
 	riscv_interrupt_enable();
@@ -42,6 +46,10 @@ static inline void riscv_interrupt_disable(void)
 	csr_clear(mstatus, MSTATUS_MIE);
 }
 
+/**
+ * @brief Disable machine interrupts through the common interrupt alias.
+ * @see riscv_interrupt_disable
+ */
 static inline void interrupt_disable(void)
 {
 	riscv_interrupt_disable();

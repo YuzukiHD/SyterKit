@@ -1,3 +1,11 @@
+/**
+ * @file bimage.c
+ * @brief Android boot-image header inspection.
+ *
+ * Android image loading is currently validation-only: the header is checked
+ * and useful sizes are logged, while payload relocation remains unsupported.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -14,6 +22,7 @@
 #define ANDR_BOOT_ARGS_SIZE 512
 #define BOOT_EXTRA_ARGS_SIZE 1024
 
+/** @brief Packed Android boot-image header used by the supported format. */
 typedef struct linux_bimage_header {
 	char magic[ANDR_BOOT_MAGIC_SIZE];
 
@@ -53,6 +62,13 @@ typedef struct linux_bimage_header {
 	uint64_t dtb_addr;
 } __attribute__((packed)) linux_bimage_header_t;
 
+/**
+ * @brief Validate an Android boot image and report its payload sizes.
+ * @param[in] addr Address containing a packed Android image header.
+ * @param[out] entry Reserved for a future kernel entry address; unchanged.
+ * @return -1 for both invalid headers and the currently unsupported valid
+ *         payload-loading path.
+ */
 int bImage_loader(uint8_t *addr, uint32_t *entry)
 {
 	linux_bimage_header_t *image_header = (linux_bimage_header_t *)addr;

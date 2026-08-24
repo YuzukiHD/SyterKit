@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file io.h
+ * @brief Volatile ARM memory-mapped I/O accessors and register helpers.
+ *
+ * Accessors preserve the requested width and prevent compiler reordering of
+ * device reads and writes through volatile-qualified pointers.
+ */
+
 #ifndef __IO_H__
 #define __IO_H__
 

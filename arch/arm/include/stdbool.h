@@ -1,3 +1,7 @@
+/**
+ * @file stdbool.h
+ * @brief Boolean type and constants for the freestanding ARM C runtime.
+ */
 #ifndef __STDBOOL_H__
 #define __STDBOOL_H__
 

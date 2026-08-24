@@ -29,6 +29,12 @@ static inline void arm32_interrupt_enable(void)
 			     : "memory");
 }
 
+/**
+ * @brief Enable IRQ interrupts through the architecture-neutral alias.
+ *
+ * This wrapper is provided so common code can use the same name on ARM and
+ * RISC-V without directly depending on the CPSR implementation.
+ */
 static inline void interrupt_enable(void)
 {
 	arm32_interrupt_enable();
@@ -52,6 +58,9 @@ static inline void arm32_interrupt_disable(void)
 			     : "memory");
 }
 
+/**
+ * @brief Disable IRQ interrupts through the architecture-neutral alias.
+ */
 static inline void interrupt_disable(void)
 {
 	arm32_interrupt_disable();
