@@ -10,7 +10,8 @@
 #
 ---
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
+# Do not align braced-list elements back onto a packed initializer line.
+AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: Left
@@ -28,6 +29,8 @@ AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: false
 BinPackArguments: true
 BinPackParameters: true
+# Keep array and braced initializer elements on separate lines.
+BreakArrays: true
 BraceWrapping:
   AfterClass: false
   AfterControlStatement: false
