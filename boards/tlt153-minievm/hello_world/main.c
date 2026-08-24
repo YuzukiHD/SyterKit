@@ -80,7 +80,7 @@ int cmd_write(int argc, const char **argv) {
 	uint32_t test_time;
 
 	printk_debug("Set Buffer data\n");
-	memset((void *) dram.memory_base, 0x00, 0x2000);
+	memset((void *) dram.memory_base, 0x5a, 0x2000);
 	memcpy((void *) dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
