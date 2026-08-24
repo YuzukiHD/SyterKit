@@ -9,6 +9,9 @@
  */
 
 #include <io.h>
+#ifdef CONFIG_ARCH_DCACHE
+#include <cache.h>
+#endif
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -269,6 +272,12 @@ int sunxi_dma_start(uintptr_t dma_fd, uintptr_t saddr, uintptr_t daddr, uint32_t
 	desc->source_addr = (uint32_t) saddr;
 	desc->dest_addr = (uint32_t) daddr;
 	desc->byte_count = bytes;
+
+#ifdef CONFIG_ARCH_DCACHE
+	/* The DMA engine reads the descriptor from memory, not from the CPU cache. */
+	flush_dcache_range((uint64_t)(uintptr_t)desc,
+			   (uint64_t)(uintptr_t)desc + sizeof(*desc));
+#endif
 
 	/* Start DMA transfer */
 	channel->desc_addr = (uint32_t) (uintptr_t) desc;

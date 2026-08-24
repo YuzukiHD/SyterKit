@@ -21,6 +21,9 @@
 #endif
 
 #include <io.h>
+#ifdef CONFIG_ARCH_DCACHE
+#include <cache.h>
+#endif
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -434,6 +437,12 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
 	// Initialize the buffer to zero
 	memset(buf, 0x0, len);
 
+#ifdef CONFIG_ARCH_DCACHE
+	/* Make the destination visible to DMA and discard its stale cache copy after RX. */
+	flush_dcache_range((uint64_t)(uintptr_t)buf,
+			   (uint64_t)(uintptr_t)buf + len);
+#endif
+
 	// Enable the RX DMA request in the FIFO control register
 	spi_reg->fifo_ctl |= SPI_FIFO_CTL_RX_DRQEN;
 
@@ -447,6 +456,11 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len) 
 	// Wait for the DMA transfer to complete
 	while (sunxi_dma_querystatus(spi->dma_handler))
 		;
+
+#ifdef CONFIG_ARCH_DCACHE
+	invalidate_dcache_range((uint64_t)(uintptr_t)buf,
+				(uint64_t)(uintptr_t)buf + len);
+#endif
 }
 
 /**
