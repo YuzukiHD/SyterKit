@@ -1,224 +1,278 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-/**
- * @file
- * @brief Cache control functions for ARM32 architecture.
- *
- * This header file provides functions for controlling data and instruction caches
- * on ARM32 architecture.
- */
+/** ARMv7/AArch32 cache maintenance interface. */
+#ifndef __ARM32_CACHE_H__
+#define __ARM32_CACHE_H__
 
-#ifndef __CACHE_H__
-#define __CACHE_H__
-
+#include <stddef.h>
 #include <stdint.h>
+
 #include "barrier.h"
 
-/**
- * @brief Enable the ARM32 data cache.
- *
- * This function enables the data cache by setting the C-bit in the system control register.
- */
-static inline void arm32_dcache_enable(void);
+enum {
+	ARM32_SCTLR_C = 1U << 2,
+	ARM32_SCTLR_I = 1U << 12,
+	ARM32_CACHE_LINE_MIN = 16U,
+	ARM32_CCSIDR_LINE_SIZE_MASK = 0x7U,
+};
 
-/**
- * @brief Disable the ARM32 data cache.
- *
- * This function disables the data cache by clearing the C-bit in the system control register.
- */
-static inline void arm32_dcache_disable(void);
+static inline __attribute__((always_inline)) uint32_t arm32_cache_read_sctlr(void)
+{
+	uint32_t value;
 
-/**
- * @brief Enable the ARM32 instruction cache.
- *
- * This function enables the instruction cache by setting the I-bit in the system control register.
- */
-static inline void arm32_icache_enable(void);
+	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0" : "=r"(value) : : "memory");
+	return value;
+}
 
-/**
- * @brief Disable the ARM32 instruction cache.
- *
- * This function disables the instruction cache by clearing the I-bit in the system control register.
- */
-static inline void arm32_icache_disable(void);
+static inline __attribute__((always_inline)) void arm32_cache_write_sctlr(uint32_t value)
+{
+	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0" : : "r"(value) : "memory");
+	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0" : "=r"(value) : : "memory");
+}
 
-/**
- * @brief Flush a range of addresses from the data cache.
- *
- * This function flushes (cleans) a specified range of addresses from the data cache,
- * ensuring that any modified data is written back to memory. The function aligns the
- * addresses to cache line boundaries and processes each line individually.
- *
- * @param start The starting address of the range to flush.
- * @param end The ending address of the range to flush (inclusive).
- *
- * @note The function assumes a 32-byte cache line size, which may need to be adjusted
- *       for different ARM32 processor implementations.
- */
-static inline void flush_dcache_range(uint64_t start, uint64_t end);
+static inline __attribute__((always_inline)) uint32_t arch_dcache_get_cacheline_size(void)
+{
+	uint32_t csselr = 0;
+	uint32_t ccsidr;
 
-/**
- * @brief Invalidate a range of addresses in the data cache.
- *
- * This function invalidates a specified range of addresses in the data cache,
- * ensuring that subsequent reads will fetch fresh data from memory rather than
- * using potentially stale cached data. The function aligns the addresses to
- * cache line boundaries and processes each line individually.
- *
- * @param start The starting address of the range to invalidate.
- * @param end The ending address of the range to invalidate (inclusive).
- *
- * @note The function assumes a 32-byte cache line size, which may need to be adjusted
- *       for different ARM32 processor implementations.
- */
-static inline void invalidate_dcache_range(uint64_t start, uint64_t end);
+	/* Select level 0 data/unified cache before reading CCSIDR. */
+	__asm__ __volatile__("mcr p15, 2, %0, c0, c0, 0" : : "r"(csselr));
+	isb();
+	__asm__ __volatile__("mrc p15, 1, %0, c0, c0, 0" : "=r"(ccsidr));
 
-/**
- * @brief Flush (clean) the entire data cache.
- *
- * This function flushes all data cache lines, ensuring that any modified data is
- * written back to memory. It uses a single CP15 instruction to clean the entire cache.
- */
-static inline void flush_dcache_all();
+	return ARM32_CACHE_LINE_MIN << (ccsidr & ARM32_CCSIDR_LINE_SIZE_MASK);
+}
 
-/**
- * @brief Invalidate the entire data cache.
- *
- * This function invalidates all data cache lines, discarding any data they contain.
- * Subsequent reads will fetch fresh data from memory. It uses a single CP15 instruction
- * to invalidate the entire cache.
- */
-static inline void invalidate_dcache_all();
+static inline __attribute__((always_inline)) void arm32_dcache_maintain_all(uint32_t invalidate)
+{
+	uint32_t clidr;
+	uint32_t level;
+	uint32_t loc;
 
-/**
- * @brief Insert a data synchronization barrier.
- *
- * This function ensures that all previous instructions are completed
- * before any subsequent instructions are executed, particularly useful 
- * for ensuring memory consistency.
- */
-static inline void data_sync_barrier(void) {
+	__asm__ __volatile__("mrc p15, 1, %0, c0, c0, 1" : "=r"(clidr));
+	loc = (clidr >> 24) & 0x7U;
+
+	for (level = 0; level < loc; level++) {
+		uint32_t cache_type = (clidr >> (level * 3U)) & 0x7U;
+		uint32_t csselr;
+		uint32_t ccsidr;
+		uint32_t line_shift;
+		uint32_t ways;
+		uint32_t sets;
+		uint32_t way_shift;
+		uint32_t set;
+
+		/* Skip absent and instruction-only cache levels. */
+		if (cache_type < 2U)
+			continue;
+
+		csselr = level << 1;
+		__asm__ __volatile__("mcr p15, 2, %0, c0, c0, 0" : : "r"(csselr) : "memory");
+		isb();
+		__asm__ __volatile__("mrc p15, 1, %0, c0, c0, 0" : "=r"(ccsidr));
+
+		line_shift = (ccsidr & ARM32_CCSIDR_LINE_SIZE_MASK) + 4U;
+		ways = ((ccsidr >> 3) & 0x3ffU) + 1U;
+		sets = ((ccsidr >> 13) & 0x7fffU) + 1U;
+		way_shift = ways > 1U ? __builtin_clz(ways - 1U) : 32U;
+
+		for (set = sets; set != 0U; set--) {
+			uint32_t way;
+
+			for (way = ways; way != 0U; way--) {
+				uint32_t setway = csselr | ((set - 1U) << line_shift);
+
+				if (way > 1U)
+					setway |= (way - 1U) << way_shift;
+				if (invalidate != 0U) {
+					__asm__ __volatile__("mcr p15, 0, %0, c7, c6, 2" : : "r"(setway) : "memory");
+				} else {
+					__asm__ __volatile__("mcr p15, 0, %0, c7, c14, 2" : : "r"(setway) : "memory");
+				}
+			}
+		}
+	}
+
+	/* Restore the L1 data-cache selection for subsequent CCSIDR readers. */
+	level = 0;
+	__asm__ __volatile__("mcr p15, 2, %0, c0, c0, 0" : : "r"(level) : "memory");
+	dsb();
+	isb();
+}
+
+static inline __attribute__((always_inline)) void arm32_dcache_maintain_range(uint64_t start, uint64_t end, uint32_t invalidate)
+{
+	uint32_t line;
+	uint64_t first;
+	uint64_t last;
+	uint64_t address;
+
+	if (start >= end || start > 0xffffffffULL)
+		return;
+	if (end > 0x100000000ULL)
+		end = 0x100000000ULL;
+
+	line = arch_dcache_get_cacheline_size();
+	first = start & ~((uint64_t)line - 1U);
+	last = (end + line - 1U) & ~((uint64_t)line - 1U);
+	if (last > 0x100000000ULL)
+		last = 0x100000000ULL;
+
+	for (address = first; address < last; address += line) {
+		uint32_t mva = (uint32_t)address;
+
+		if (invalidate != 0U) {
+			/* DCIMVAC: invalidate data cache line by MVA to PoC. */
+			__asm__ __volatile__("mcr p15, 0, %0, c7, c6, 1" : : "r"(mva) : "memory");
+		} else {
+			/* DCCMVAC: clean data cache line by MVA to PoC. */
+			__asm__ __volatile__("mcr p15, 0, %0, c7, c10, 1" : : "r"(mva) : "memory");
+		}
+	}
+
 	dsb();
 }
 
-/* Function implementations */
+static inline __attribute__((always_inline)) void arch_dcache_enable(void)
+{
+	uint32_t reg;
 
-static inline void arm32_dcache_enable(void) {
-	uint32_t value;
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
-	value |= (1 << 2);
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
-						 :
-						 : "r"(value)
-						 : "memory");
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
+	arm32_dcache_maintain_all(1U);
+	reg = arm32_cache_read_sctlr() | ARM32_SCTLR_C;
+	arm32_cache_write_sctlr(reg);
+	dsb();
+	isb();
 }
 
-static inline void arm32_dcache_disable(void) {
-	uint32_t value;
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
-	value &= ~(1 << 2);
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
-						 :
-						 : "r"(value)
-						 : "memory");
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
+static inline __attribute__((always_inline)) void arch_dcache_disable(void)
+{
+	uint32_t reg;
+
+	arm32_dcache_maintain_all(0U);
+	reg = arm32_cache_read_sctlr() & ~ARM32_SCTLR_C;
+	arm32_cache_write_sctlr(reg);
+	dsb();
+	isb();
 }
 
-static inline void arm32_icache_enable(void) {
-	uint32_t value;
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
-	value |= (1 << 12);
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
-						 :
-						 : "r"(value)
-						 : "memory");
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
+static inline __attribute__((always_inline)) void arch_dcache_clean_range(unsigned long start, size_t size)
+{
+	arm32_dcache_maintain_range((uint64_t)start, (uint64_t)start + size, 0U);
 }
 
-static inline void arm32_icache_disable(void) {
-	uint32_t value;
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
-	value &= ~(1 << 12);
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 0"
-						 :
-						 : "r"(value)
-						 : "memory");
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 0"
-						 : "=r"(value)
-						 :
-						 : "memory");
+static inline __attribute__((always_inline)) void arch_dcache_inval_range(unsigned long start, size_t size)
+{
+	arm32_dcache_maintain_range((uint64_t)start, (uint64_t)start + size, 1U);
 }
 
-static inline void flush_dcache_range(uint64_t start, uint64_t end) {
-	/* Ensure addresses are cache line aligned */
-	uint32_t line_size = 32; /* Assume 32-byte cache line size, may need adjustment for specific processors */
-	uint32_t aligned_start = (uint32_t) start & ~(line_size - 1);
-	uint32_t aligned_end = ((uint32_t) end + line_size - 1) & ~(line_size - 1);
-	uint32_t addr;
-
-	/* Iterate through cache lines and flush */
-	for (addr = aligned_start; addr < aligned_end; addr += line_size) {
-		__asm__ __volatile__(
-				"mcr p15, 0, %0, c7, c14, 1" /* Clean data cache line */
-				:
-				: "r"(addr)
-				: "memory");
-	}
-
-	/* Ensure all operations are complete */
-	data_sync_barrier();
+static inline __attribute__((always_inline)) void arch_flush_dcache_all(void)
+{
+	arm32_dcache_maintain_all(0U);
 }
 
-static inline void invalidate_dcache_range(uint64_t start, uint64_t end) {
-	/* Ensure addresses are cache line aligned */
-	uint32_t line_size = 32; /* Assume 32-byte cache line size */
-	uint32_t aligned_start = (uint32_t) start & ~(line_size - 1);
-	uint32_t aligned_end = ((uint32_t) end + line_size - 1) & ~(line_size - 1);
-	uint32_t addr;
-
-	/* Iterate through cache lines and invalidate */
-	for (addr = aligned_start; addr < aligned_end; addr += line_size) {
-		__asm__ __volatile__(
-				"mcr p15, 0, %0, c7, c6, 1" /* Invalidate data cache line */
-				:
-				: "r"(addr)
-				: "memory");
-	}
-
-	/* Ensure all operations are complete */
-	data_sync_barrier();
+static inline __attribute__((always_inline)) void arch_invalidate_dcache_all(void)
+{
+	arm32_dcache_maintain_all(1U);
 }
 
-static inline void flush_dcache_all() {
-	/* Ensure all operations are complete */
-	data_sync_barrier();
+static inline __attribute__((always_inline)) void arm32_dcache_enable(void)
+{
+	arch_dcache_enable();
 }
 
-static inline void invalidate_dcache_all() {
-	/* Ensure all operations are complete */
-	data_sync_barrier();
+static inline __attribute__((always_inline)) void arm32_dcache_disable(void)
+{
+	arch_dcache_disable();
 }
 
-#endif /* __CACHE_H__ */
+static inline __attribute__((always_inline)) void arm32_icache_invalidate_all(void)
+{
+	uint32_t zero = 0;
+
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r"(zero) : "memory");
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 6" : : "r"(zero) : "memory");
+	dsb();
+	isb();
+}
+
+static inline __attribute__((always_inline)) void arm32_icache_enable(void)
+{
+	uint32_t reg;
+
+	arm32_icache_invalidate_all();
+	reg = arm32_cache_read_sctlr() | ARM32_SCTLR_I;
+	arm32_cache_write_sctlr(reg);
+	isb();
+}
+
+static inline __attribute__((always_inline)) void arm32_icache_disable(void)
+{
+	uint32_t reg = arm32_cache_read_sctlr() & ~ARM32_SCTLR_I;
+
+	arm32_cache_write_sctlr(reg);
+	arm32_icache_invalidate_all();
+}
+
+/* Compatibility operations use an exclusive end address. */
+static inline __attribute__((always_inline)) void flush_dcache_range(uint64_t start, uint64_t end)
+{
+	arm32_dcache_maintain_range(start, end, 0U);
+}
+
+static inline __attribute__((always_inline)) void invalidate_dcache_range(uint64_t start, uint64_t end)
+{
+	arm32_dcache_maintain_range(start, end, 1U);
+}
+
+static inline __attribute__((always_inline)) void flush_dcache_all(void)
+{
+	arch_flush_dcache_all();
+}
+
+static inline __attribute__((always_inline)) void invalidate_dcache_all(void)
+{
+	arch_invalidate_dcache_all();
+}
+
+/* spl-2.0-compatible names. */
+static inline __attribute__((always_inline)) void dcache_enable(void)
+{
+	arm32_dcache_enable();
+}
+
+static inline __attribute__((always_inline)) void dcache_disable(void)
+{
+	arm32_dcache_disable();
+}
+
+static inline __attribute__((always_inline)) void dcache_clean_range(unsigned long start, size_t size)
+{
+	arch_dcache_clean_range(start, size);
+}
+
+static inline __attribute__((always_inline)) void dcache_inval_range(unsigned long start, size_t size)
+{
+	arch_dcache_inval_range(start, size);
+}
+
+static inline __attribute__((always_inline)) void dcache_flush_all(void)
+{
+	arch_flush_dcache_all();
+}
+
+static inline __attribute__((always_inline)) void dcache_invalidate_all(void)
+{
+	arch_invalidate_dcache_all();
+}
+
+static inline __attribute__((always_inline)) uint32_t dcache_get_cacheline_size(void)
+{
+	return arch_dcache_get_cacheline_size();
+}
+
+static inline __attribute__((always_inline)) void data_sync_barrier(void)
+{
+	dsb();
+}
+
+#endif /* __ARM32_CACHE_H__ */
