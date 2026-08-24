@@ -18,4 +18,4 @@ void LCD_WR_DATA(uint16_t dat);
 
 void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 
-#endif//__LCD_INIT_H__
+#endif //__LCD_INIT_H__

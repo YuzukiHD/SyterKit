@@ -30,34 +30,34 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-
 extern void board_common_init(void);
-
 
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
-int cmd_bt(int argc, const char **argv) {
+int cmd_bt(int argc, const char **argv)
+{
 	dump_stack();
 	return 0;
 }
 
 msh_declare_command(ddr_test);
 msh_define_help(ddr_test, "ddr w/r test", "Usage: ddr_test\n");
-int cmd_ddr_test(int argc, const char **argv) {
+int cmd_ddr_test(int argc, const char **argv)
+{
 	dump_hex(dram.memory_base, 0x100);
-	memset((void *) dram.memory_base, 0x5A, 0x2000);
+	memset((void *)dram.memory_base, 0x5A, 0x2000);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(bt),
-		msh_define_command(ddr_test),
-		msh_command_end,
+	msh_define_command(bt),
+	msh_define_command(ddr_test),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -65,8 +65,7 @@ int main(void) {
 		return -1;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp8191_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp8191_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -74,7 +73,6 @@ int main(void) {
 	board_common_init();
 
 	sunxi_i2c_init(&i2c);
-
 
 	sunxi_clk_init();
 

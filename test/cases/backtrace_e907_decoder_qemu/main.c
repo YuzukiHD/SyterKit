@@ -15,10 +15,11 @@ static const struct {
 	uint8_t value[4];
 } __attribute__((packed)) unaligned_word = {
 	.padding = 0,
-	.value = {0x11, 0x22, 0x33, 0x44},
+	.value = { 0x11, 0x22, 0x33, 0x44 },
 };
 
-static int check(const char *name, int actual, int expected) {
+static int check(const char *name, int actual, int expected)
+{
 	if (actual != expected) {
 		qemu_puts("CHECK FAIL ");
 		qemu_puts(name);
@@ -31,7 +32,8 @@ static int check(const char *name, int actual, int expected) {
 	return 1;
 }
 
-void test_boot(void) {
+void test_boot(void)
+{
 	int offset = -1;
 	int passed = 1;
 
@@ -45,8 +47,7 @@ void test_boot(void) {
 	passed &= check("sw-ra-offset", offset, 3);
 	passed &= check("addi-sp", backtrace_test_riscv_stack_push(0xfe010113U), 8);
 	passed &= check("ret", backtrace_test_riscv_return(0x00008067U), 0);
-	passed &= check("unaligned-read", __thead_uread4(unaligned_word.value),
-			0x44332211);
+	passed &= check("unaligned-read", __thead_uread4(unaligned_word.value), 0x44332211);
 	if (passed) {
 		qemu_puts("TEST PASS backtrace_e907_decoder_qemu\n");
 		qemu_exit(1);

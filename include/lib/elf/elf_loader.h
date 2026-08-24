@@ -5,14 +5,14 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief The structure vaddr_range_t represents the mapping between a virtual address range and the starting physical address.
  */
 typedef struct vaddr_range {
 	uint64_t vstart; /**< The starting address of the virtual address range */
-	uint64_t vend;	 /**< The ending address of the virtual address range */
+	uint64_t vend; /**< The ending address of the virtual address range */
 	uint64_t pstart; /**< The starting position of the corresponding physical address */
 } vaddr_range_t;
 
@@ -67,6 +67,6 @@ int load_elf64_image(phys_addr_t img_addr);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __ELF_LOADER_H__
+#endif // __ELF_LOADER_H__

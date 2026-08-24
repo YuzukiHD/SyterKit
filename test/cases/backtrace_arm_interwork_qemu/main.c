@@ -4,19 +4,23 @@ int dump_stack(void);
 void qemu_puts(const char *text);
 void qemu_exit(int success);
 
-static int __attribute__((noinline, target("thumb"))) interwork_thumb_leaf(void) {
+static int __attribute__((noinline, target("thumb"))) interwork_thumb_leaf(void)
+{
 	return dump_stack();
 }
 
-static int __attribute__((noinline, target("arm"))) interwork_arm_bridge(void) {
+static int __attribute__((noinline, target("arm"))) interwork_arm_bridge(void)
+{
 	return interwork_thumb_leaf();
 }
 
-static int __attribute__((noinline, target("thumb"))) interwork_thumb_entry(void) {
+static int __attribute__((noinline, target("thumb"))) interwork_thumb_entry(void)
+{
 	return interwork_arm_bridge();
 }
 
-void test_boot(void) {
+void test_boot(void)
+{
 	int levels;
 
 	qemu_puts("TEST START backtrace_arm_interwork_qemu\n");

@@ -20,7 +20,8 @@ enum sun8iw21_e907_register {
 	SUN8IW21_E907_CFG,
 };
 
-static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t ccu = remoteproc->registers[SUN8IW21_E907_CCU].base;
 	uintptr_t cfg = remoteproc->registers[SUN8IW21_E907_CFG].base;
@@ -28,8 +29,7 @@ static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc) {
 	value = read32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET);
 	value |= CCU_RISCV_CFG_RST | CCU_RISCV_CFG_GATING;
 	write32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET, value);
-	write32(cfg + SUN8IW21_RISCV_START_OFFSET,
-		(uint32_t) remoteproc->entry);
+	write32(cfg + SUN8IW21_RISCV_START_OFFSET, (uint32_t)remoteproc->entry);
 
 	value = read32(ccu + SUN8IW21_RISCV_CLK_OFFSET);
 	value &= ~CCU_RISCV_CLK_MASK;
@@ -37,25 +37,25 @@ static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc) {
 	write32(ccu + SUN8IW21_RISCV_CLK_OFFSET, value);
 
 	value = read32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET);
-	value |= CCU_RISCV_CLK_GATING | CCU_RISCV_SOFT_RSTN |
-		 CCU_RISCV_SYS_APB_SOFT_RSTN | CCU_RISCV_GATING_RST_FIELD;
+	value |= CCU_RISCV_CLK_GATING | CCU_RISCV_SOFT_RSTN | CCU_RISCV_SYS_APB_SOFT_RSTN | CCU_RISCV_GATING_RST_FIELD;
 	write32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET, value);
 	return DRIVER_OK;
 }
 
-static int sun8iw21_e907_reset(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw21_e907_reset(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t ccu = remoteproc->registers[SUN8IW21_E907_CCU].base;
 
-	write32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET,
-		CCU_RISCV_GATING_RST_FIELD);
+	write32(ccu + SUN8IW21_RISCV_GATING_RST_OFFSET, CCU_RISCV_GATING_RST_FIELD);
 	value = read32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET);
 	value &= ~(CCU_RISCV_CFG_RST | CCU_RISCV_CFG_GATING);
 	write32(ccu + SUN8IW21_RISCV_CFG_BGR_OFFSET, value);
 	return DRIVER_OK;
 }
 
-static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc) {
+static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t factor_m;
 	uint32_t factor_n;
 	uint32_t pll_peripheral;
@@ -73,7 +73,7 @@ static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc) {
 	}
 	plln = ((value >> 8) & 0xffU) + 1U;
 	pllm = (value & 0x01U) + 1U;
-	p0 = (uint8_t) (((value >> 16) & 0x03U) + 1U);
+	p0 = (uint8_t)(((value >> 16) & 0x03U) + 1U);
 	pll_peripheral = ((24U * plln) / (pllm * p0)) >> 1;
 
 	value = read32(ccu + SUN8IW21_RISCV_CLK_OFFSET);

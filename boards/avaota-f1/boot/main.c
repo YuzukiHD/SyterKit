@@ -43,13 +43,13 @@ static sunxi_dram_t dram;
 
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
-#define CONFIG_CMDLINE                                     \
+#define CONFIG_CMDLINE                                         \
 	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
 	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
 	"root=/dev/mmcblk0p2 init=/init rdinit=/rdinit"        \
 	"partitions=boot@mmcblk0p1:rootfs@mmcblk0p2:rootfs_data@mmcblk0p3:UDISK@mmcblk0p4"
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DTB_LOAD_ADDR (0x81008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x81800000)
@@ -69,12 +69,12 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-
 image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -94,7 +94,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -112,14 +112,14 @@ read_fail:
 	fret = f_close(&file);
 
 	uint32_t kib_per_ms = total_read / time;
-	printk_info("FATFS: read in %ums at %u.%02uMB/S\n", time,
-				kib_per_ms / 1024, (kib_per_ms % 1024) * 100 / 1024);
+	printk_info("FATFS: read in %ums at %u.%02uMB/S\n", time, kib_per_ms / 1024, (kib_per_ms % 1024) * 100 / 1024);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -136,13 +136,13 @@ static int load_sdcard(image_info_t *image) {
 	}
 
 	/* load DTB */
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
 	/* load Kernel */
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t) image->dest);
+	printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -160,36 +160,40 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size) {
+static int fdt_pack_reg(const void *fdt, void *buf, uint64_t address, uint64_t size)
+{
 	int address_cells = fdt_address_cells(fdt, 0);
 	int size_cells = fdt_size_cells(fdt, 0);
 	char *p = buf;
 
 	if (address_cells == 2)
-		*(fdt64_t *) p = cpu_to_fdt64(address);
+		*(fdt64_t *)p = cpu_to_fdt64(address);
 	else
-		*(fdt32_t *) p = cpu_to_fdt32(address);
+		*(fdt32_t *)p = cpu_to_fdt32(address);
 	p += 4 * address_cells;
 
 	if (size_cells == 2)
-		*(fdt64_t *) p = cpu_to_fdt64(size);
+		*(fdt64_t *)p = cpu_to_fdt64(size);
 	else
-		*(fdt32_t *) p = cpu_to_fdt32(size);
+		*(fdt32_t *)p = cpu_to_fdt32(size);
 	p += 4 * size_cells;
 
-	return p - (char *) buf;
+	return p - (char *)buf;
 }
 
-static char *skip_spaces(char *str) {
-	while (*str == ' ') str++;
+static char *skip_spaces(char *str)
+{
+	while (*str == ' ')
+		str++;
 	return str;
 }
 
-static int update_dtb_for_linux(uint32_t dram_size) {
+static int update_dtb_for_linux(uint32_t dram_size)
+{
 	int ret = 0;
 
 	/* Force image.of_dest to be a pointer to fdt_header structure */
-	struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+	struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
@@ -214,7 +218,7 @@ static int update_dtb_for_linux(uint32_t dram_size) {
 		goto _error;
 	}
 
-	uint8_t *tmp_buf = (uint8_t *) malloc(16 * sizeof(uint8_t));
+	uint8_t *tmp_buf = (uint8_t *)malloc(16 * sizeof(uint8_t));
 
 	/* fix up memory region */
 	int len = fdt_pack_reg(image.of_dest, tmp_buf, dram.memory_base, (dram_size * 1024 * 1024));
@@ -230,9 +234,9 @@ static int update_dtb_for_linux(uint32_t dram_size) {
 
 	len = 0;
 	/* Get bootargs string */
-	char *bootargs_str = (void *) fdt_getprop(image.of_dest, chosen_node, "bootargs", &len);
+	char *bootargs_str = (void *)fdt_getprop(image.of_dest, chosen_node, "bootargs", &len);
 	if (bootargs_str == NULL) {
-		bootargs_str = (char *) malloc(strlen(CONFIG_CMDLINE) + 1);
+		bootargs_str = (char *)malloc(strlen(CONFIG_CMDLINE) + 1);
 		bootargs_str[0] = '\0';
 	} else {
 		strcat(bootargs_str, " ");
@@ -273,14 +277,15 @@ _error:
 	return -1;
 }
 
-static int abortboot_single_key(int bootdelay) {
+static int abortboot_single_key(int bootdelay)
+{
 	int abort = 0;
 	unsigned long ts;
 
 	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
-	if (tstc()) {		/* we got a key press */
+	if (tstc()) { /* we got a key press */
 		uart_getchar(); /* consume input */
 		printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
 		abort = 0; /* auto boot */
@@ -291,7 +296,7 @@ static int abortboot_single_key(int bootdelay) {
 		/* delay 1000 ms */
 		ts = time_ms();
 		do {
-			if (tstc()) {  /* we got a key press */
+			if (tstc()) { /* we got a key press */
 				abort = 1; /* don't auto boot */
 				break;
 			}
@@ -305,13 +310,14 @@ static int abortboot_single_key(int bootdelay) {
 
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
+int cmd_boot(int argc, const char **argv)
+{
 	/* Initialize variables for kernel entry point and SD card access. */
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, uint32_t params);
 
 	/* Set up boot parameters for the kernel. */
-	if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
+	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
 		printk_error("boot setup failed\n");
 		abort();
 	}
@@ -322,23 +328,24 @@ int cmd_boot(int argc, const char **argv) {
 	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
-	kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
-	kernel_entry(0, ~0, (uint32_t) image.of_dest);
+	kernel_entry = (void (*)(int, int, uint32_t))entry_point;
+	kernel_entry(0, ~0, (uint32_t)image.of_dest);
 
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(boot),
-		msh_command_end,
+	msh_define_command(boot),
+	msh_command_end,
 };
 
 /* 
  * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
-int main(void) {
-	sdmmc_pdata_t boot_card = {0};
+int main(void)
+{
+	sdmmc_pdata_t boot_card = { 0 };
 	sunxi_sdhci_t sdhci0;
 
 	sunxi_clk_preinit();
@@ -373,8 +380,8 @@ int main(void) {
 	memset(&image, 0, sizeof(image_info_t));
 
 	/* Set the destination address for the device tree binary (DTB), kernel image, and configuration data. */
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
 
 	/* Copy the filenames for the DTB, kernel image, and configuration data. */
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);

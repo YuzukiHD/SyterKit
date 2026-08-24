@@ -88,12 +88,11 @@
  * @param addr The address to read from.
  * @return The 8-bit value read from the address.
  */
-static inline __attribute__((__always_inline__)) uint8_t read8(virtual_addr_t addr) {
+static inline __attribute__((__always_inline__)) uint8_t read8(virtual_addr_t addr)
+{
 	uint8_t val;
 
-	asm volatile("lb %0, 0(%1)"
-				 : "=r"(val)
-				 : "r"(addr));
+	asm volatile("lb %0, 0(%1)" : "=r"(val) : "r"(addr));
 	return val;
 }
 
@@ -103,12 +102,11 @@ static inline __attribute__((__always_inline__)) uint8_t read8(virtual_addr_t ad
  * @param addr The address to read from.
  * @return The 16-bit value read from the address.
  */
-static inline __attribute__((__always_inline__)) uint16_t read16(virtual_addr_t addr) {
+static inline __attribute__((__always_inline__)) uint16_t read16(virtual_addr_t addr)
+{
 	uint16_t val;
 
-	asm volatile("lh %0, 0(%1)"
-				 : "=r"(val)
-				 : "r"(addr));
+	asm volatile("lh %0, 0(%1)" : "=r"(val) : "r"(addr));
 	return val;
 }
 
@@ -118,12 +116,11 @@ static inline __attribute__((__always_inline__)) uint16_t read16(virtual_addr_t 
  * @param addr The address to read from.
  * @return The 32-bit value read from the address.
  */
-static inline __attribute__((__always_inline__)) uint32_t read32(virtual_addr_t addr) {
+static inline __attribute__((__always_inline__)) uint32_t read32(virtual_addr_t addr)
+{
 	uint32_t val;
 
-	asm volatile("lw %0, 0(%1)"
-				 : "=r"(val)
-				 : "r"(addr));
+	asm volatile("lw %0, 0(%1)" : "=r"(val) : "r"(addr));
 	return val;
 }
 
@@ -133,12 +130,11 @@ static inline __attribute__((__always_inline__)) uint32_t read32(virtual_addr_t 
  * @param addr The address to read from.
  * @return The 64-bit value read from the address.
  */
-static inline __attribute__((__always_inline__)) uint64_t read64(virtual_addr_t addr) {
+static inline __attribute__((__always_inline__)) uint64_t read64(virtual_addr_t addr)
+{
 	uint64_t val;
 
-	asm volatile("ld %0, 0(%1)"
-				 : "=r"(val)
-				 : "r"(addr));
+	asm volatile("ld %0, 0(%1)" : "=r"(val) : "r"(addr));
 	return val;
 }
 
@@ -148,10 +144,9 @@ static inline __attribute__((__always_inline__)) uint64_t read64(virtual_addr_t 
  * @param addr The address to write to.
  * @param value The 8-bit value to write.
  */
-static inline __attribute__((__always_inline__)) void write8(virtual_addr_t addr, uint8_t value) {
-	asm volatile("sb %0, 0(%1)"
-				 :
-				 : "r"(value), "r"(addr));
+static inline __attribute__((__always_inline__)) void write8(virtual_addr_t addr, uint8_t value)
+{
+	asm volatile("sb %0, 0(%1)" : : "r"(value), "r"(addr));
 }
 
 /**
@@ -160,10 +155,9 @@ static inline __attribute__((__always_inline__)) void write8(virtual_addr_t addr
  * @param addr The address to write to.
  * @param value The 16-bit value to write.
  */
-static inline __attribute__((__always_inline__)) void write16(virtual_addr_t addr, uint16_t value) {
-	asm volatile("sh %0, 0(%1)"
-				 :
-				 : "r"(value), "r"(addr));
+static inline __attribute__((__always_inline__)) void write16(virtual_addr_t addr, uint16_t value)
+{
+	asm volatile("sh %0, 0(%1)" : : "r"(value), "r"(addr));
 }
 
 /**
@@ -172,10 +166,9 @@ static inline __attribute__((__always_inline__)) void write16(virtual_addr_t add
  * @param addr The address to write to.
  * @param value The 32-bit value to write.
  */
-static inline __attribute__((__always_inline__)) void write32(virtual_addr_t addr, uint32_t value) {
-	asm volatile("sw %0, 0(%1)"
-				 :
-				 : "r"(value), "r"(addr));
+static inline __attribute__((__always_inline__)) void write32(virtual_addr_t addr, uint32_t value)
+{
+	asm volatile("sw %0, 0(%1)" : : "r"(value), "r"(addr));
 }
 
 /**
@@ -184,10 +177,9 @@ static inline __attribute__((__always_inline__)) void write32(virtual_addr_t add
  * @param addr The address to write to.
  * @param value The 64-bit value to write.
  */
-static inline __attribute__((__always_inline__)) void write64(virtual_addr_t addr, uint64_t value) {
-	asm volatile("sd %0, 0(%1)"
-				 :
-				 : "r"(value), "r"(addr));
+static inline __attribute__((__always_inline__)) void write64(virtual_addr_t addr, uint64_t value)
+{
+	asm volatile("sd %0, 0(%1)" : : "r"(value), "r"(addr));
 }
 
 #endif

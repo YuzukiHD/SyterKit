@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /* RISC-V CLIC register offset */
 #define CLIC_CFG_REG_OFF 0x00
@@ -20,12 +20,12 @@ extern "C" {
 
 #define CLIC_INT_REG_ADDR_INTERVAL 0x4
 
-#define CLIC_INT_X_IP_REG_OFF(id) (0x1000 + ((id) *CLIC_INT_REG_ADDR_INTERVAL))
-#define CLIC_INT_X_IE_REG_OFF(id) (0x1001 + ((id) *CLIC_INT_REG_ADDR_INTERVAL))
-#define CLIC_INT_X_ATTR_REG_OFF(id) (0x1002 + ((id) *CLIC_INT_REG_ADDR_INTERVAL))
-#define CLIC_INT_X_CTRL_REG_OFF(id) (0x1003 + ((id) *CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_IP_REG_OFF(id) (0x1000 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_IE_REG_OFF(id) (0x1001 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_ATTR_REG_OFF(id) (0x1002 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_CTRL_REG_OFF(id) (0x1003 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
 
-#define CLIC_INX_X_32BIT_REG_OFF(id) (0x1000 + ((id) *CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INX_X_32BIT_REG_OFF(id) (0x1000 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
 
 /* CLIC_CFG_REG */
 #define PREEMPTION_PRIORITY_BITS_SHIFT 1
@@ -61,6 +61,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif /* __SUNXI_CLIC_REG_H__ */

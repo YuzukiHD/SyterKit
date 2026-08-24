@@ -5,12 +5,13 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	sunxi_usb_t usb0 = {0};
-	sunxi_usb_t usb1 = {0};
-	sunxi_usb_t rejected = {.base = 0xdeadbeefU};
+void test_case_main(const char *case_dir)
+{
+	sunxi_usb_t usb0 = { 0 };
+	sunxi_usb_t usb1 = { 0 };
+	sunxi_usb_t rejected = { .base = 0xdeadbeefU };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_usb_dt_read_alias(&usb0, "usb0"));
 	TEST_EQ(0x1000U, usb0.base);
 	TEST_EQ(0U, usb0.id);
@@ -35,23 +36,14 @@ void test_case_main(const char *case_dir) {
 	TEST_EQ(7U, usb1.reset_offset);
 	TEST_ASSERT(usb0.dt_node != usb1.dt_node);
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "usb-disabled"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "usb-invalid-id"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "usb-invalid-offset"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "usb-invalid-reset"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "usb-wrong-compatible"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, "missing"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(&rejected, NULL));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_alias(NULL, "usb0"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_usb_dt_read_config(&rejected, -1));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-disabled"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-invalid-id"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-invalid-offset"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-invalid-reset"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-wrong-compatible"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(NULL, "usb0"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_config(&rejected, -1));
 	TEST_EQ(0xdeadbeefU, rejected.base);
 }

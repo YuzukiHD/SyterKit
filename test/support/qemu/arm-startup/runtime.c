@@ -29,7 +29,8 @@ extern char __stack_srv_end[];
 
 static unsigned int failures;
 
-static void check(int condition, const char *name) {
+static void check(int condition, const char *name)
+{
 	if (condition)
 		return;
 	semihost_write0("CHECK FAIL ");
@@ -38,18 +39,18 @@ static void check(int condition, const char *name) {
 	failures++;
 }
 
-static uintptr_t address(const char *symbol) {
-	return (uintptr_t) symbol;
+static uintptr_t address(const char *symbol)
+{
+	return (uintptr_t)symbol;
 }
 
-int main(void) {
+int main(void)
+{
 	check(startup_bss_probe == 0U, "bss-clear");
 	check(startup_timer_seen == 0x54494d45U, "timer-before-startup");
 
-	check((startup_cpsr & ARMV7_MODE_MASK) == ARMV7_SVC_MODE,
-	      "svc-mode");
-	check((startup_cpsr & (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)) ==
-		(ARMV7_IRQ_MASK | ARMV7_FIQ_MASK), "interrupt-mask");
+	check((startup_cpsr & ARMV7_MODE_MASK) == ARMV7_SVC_MODE, "svc-mode");
+	check((startup_cpsr & (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)) == (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK), "interrupt-mask");
 	check((startup_cpsr & (1U << 9)) == 0U, "little-endian");
 	check(startup_svc_sp == address(__stack_srv_end), "svc-stack");
 	check((startup_svc_sp & 0xfU) == 0U, "stack-alignment");
@@ -70,29 +71,35 @@ int main(void) {
 
 	if (failures == 0U)
 		semihost_write0("TEST PASS arm_startup\n");
-	return (int) failures;
+	return (int)failures;
 }
 
-void arm32_do_undefined_instruction(void *regs) {
-	(void) regs;
+void arm32_do_undefined_instruction(void *regs)
+{
+	(void)regs;
 }
 
-void arm32_do_software_interrupt(void *regs) {
-	(void) regs;
+void arm32_do_software_interrupt(void *regs)
+{
+	(void)regs;
 }
 
-void arm32_do_prefetch_abort(void *regs) {
-	(void) regs;
+void arm32_do_prefetch_abort(void *regs)
+{
+	(void)regs;
 }
 
-void arm32_do_data_abort(void *regs) {
-	(void) regs;
+void arm32_do_data_abort(void *regs)
+{
+	(void)regs;
 }
 
-void arm32_do_irq(void *regs) {
-	(void) regs;
+void arm32_do_irq(void *regs)
+{
+	(void)regs;
 }
 
-void arm32_do_fiq(void *regs) {
-	(void) regs;
+void arm32_do_fiq(void *regs)
+{
+	(void)regs;
 }

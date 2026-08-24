@@ -51,9 +51,6 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-
-
 extern void set_rpio_power_mode(void);
 
 static sunxi_spi_t sunxi_spi0_lcd;
@@ -61,15 +58,18 @@ static gpio_mux_t lcd_dc_pins;
 static gpio_mux_t lcd_res_pins;
 static gpio_mux_t lcd_blk_pins;
 
-static void LCD_Set_DC(uint8_t val) {
+static void LCD_Set_DC(uint8_t val)
+{
 	sunxi_gpio_set_value(&lcd_dc_pins, val);
 }
 
-static void LCD_Set_RES(uint8_t val) {
+static void LCD_Set_RES(uint8_t val)
+{
 	sunxi_gpio_set_value(&lcd_res_pins, val);
 }
 
-static void LCD_Write_Bus(uint8_t dat) {
+static void LCD_Write_Bus(uint8_t dat)
+{
 	uint8_t tx[1]; /* Transmit buffer */
 
 	tx[0] = dat;
@@ -78,28 +78,33 @@ static void LCD_Write_Bus(uint8_t dat) {
 		printk_error("SPI: SPI Xfer error!\n");
 }
 
-void LCD_Write_Data_Bus(void *dat, uint32_t len) {
+void LCD_Write_Data_Bus(void *dat, uint32_t len)
+{
 	int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
 	if (r < 0)
 		printk_error("SPI: SPI Xfer error!\n");
 }
 
-void LCD_WR_DATA(uint16_t dat) {
+void LCD_WR_DATA(uint16_t dat)
+{
 	LCD_Write_Bus(dat >> 8);
 	LCD_Write_Bus(dat);
 }
 
-void LCD_WR_DATA8(uint8_t dat) {
+void LCD_WR_DATA8(uint8_t dat)
+{
 	LCD_Write_Bus(dat);
 }
 
-void LCD_WR_REG(uint8_t dat) {
+void LCD_WR_REG(uint8_t dat)
+{
 	LCD_Set_DC(0);
 	LCD_Write_Bus(dat);
 	LCD_Set_DC(1);
 }
 
-void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
 	LCD_WR_REG(0x2a);
 	LCD_WR_DATA(x1 + 52);
 	LCD_WR_DATA(x2 + 52);
@@ -109,8 +114,9 @@ void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 	LCD_WR_REG(0x2c);
 }
 
-static void LCD_Init(void) {
-	LCD_Set_RES(0);//复位
+static void LCD_Init(void)
+{
+	LCD_Set_RES(0); //复位
 	mdelay(100);
 	LCD_Set_RES(1);
 	mdelay(100);
@@ -195,18 +201,22 @@ static void LCD_Init(void) {
 #define LCD_W 135
 #define LCD_H 240
 
-void LCD_Fill_All(uint16_t color) {
-	LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1);// 设置显示范围
+void LCD_Fill_All(uint16_t color)
+{
+	LCD_Address_Set(0, 0, LCD_W - 1, LCD_H - 1); // 设置显示范围
 	uint16_t *video_mem = malloc(LCD_W * LCD_H);
 
-	for (uint32_t i = 0; i < LCD_W * LCD_H; i++) { video_mem[i] = color; }
+	for (uint32_t i = 0; i < LCD_W * LCD_H; i++) {
+		video_mem[i] = color;
+	}
 
 	LCD_Write_Data_Bus(video_mem, LCD_W * LCD_H * (sizeof(uint16_t) / sizeof(uint8_t)));
 
 	free(video_mem);
 }
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
 	sunxi_dma_t dma;
@@ -223,22 +233,14 @@ int main(void) {
 		return -1;
 	}
 	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    spi_lcd_node < 0 ||
-	    sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, &dma) != DRIVER_OK ||
-	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node,
-					 "allwinner,lcd-dc-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node,
-					 "allwinner,lcd-reset-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node,
-					 "allwinner,lcd-backlight-gpio")) {
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK || spi_lcd_node < 0 || sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, &dma) != DRIVER_OK ||
+	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node, "allwinner,lcd-dc-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node, "allwinner,lcd-reset-gpio") ||
+	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node, "allwinner,lcd-backlight-gpio")) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -293,7 +295,6 @@ int main(void) {
 	sunxi_gpio_init(&lcd_dc_pins);
 	sunxi_gpio_init(&lcd_res_pins);
 	sunxi_gpio_init(&lcd_blk_pins);
-
 
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
 		printk_error("SPI: init failed\n");

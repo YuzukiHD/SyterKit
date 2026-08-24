@@ -18,13 +18,13 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Represents the NAND Device ID structure.
  */
 typedef struct {
-	uint8_t mfr;  /**< Manufacturer ID byte. */
+	uint8_t mfr; /**< Manufacturer ID byte. */
 	uint16_t dev; /**< Device ID (16-bits) for identifying the specific NAND device. */
 	uint8_t dlen; /**< Length of the ID (in bytes). */
 } spi_nand_id_t;
@@ -33,15 +33,15 @@ typedef struct {
  * @brief Represents the specific information of a NAND Flash device.
  */
 typedef struct {
-	char *name;				  /**< Name of the NAND Flash device. */
-	spi_nand_id_t id;		  /**< Unique identifier for the NAND Flash device, containing manufacturer and device ID. */
-	uint32_t page_size;		  /**< Size of the data page (in bytes). */
-	uint32_t spare_size;	  /**< Size of the spare area for additional information (in bytes). */
+	char *name; /**< Name of the NAND Flash device. */
+	spi_nand_id_t id; /**< Unique identifier for the NAND Flash device, containing manufacturer and device ID. */
+	uint32_t page_size; /**< Size of the data page (in bytes). */
+	uint32_t spare_size; /**< Size of the spare area for additional information (in bytes). */
 	uint32_t pages_per_block; /**< Number of pages contained in a single block. */
-	uint32_t blocks_per_die;  /**< Number of blocks present on a single die. */
-	uint32_t planes_per_die;  /**< Number of planes present on a single die. */
-	uint32_t ndies;			  /**< Total number of dies in the NAND package. */
-	spi_io_mode_t mode;		  /**< I/O mode used for communication (assumes the existence of a spi_io_mode_t type). */
+	uint32_t blocks_per_die; /**< Number of blocks present on a single die. */
+	uint32_t planes_per_die; /**< Number of planes present on a single die. */
+	uint32_t ndies; /**< Total number of dies in the NAND package. */
+	spi_io_mode_t mode; /**< I/O mode used for communication (assumes the existence of a spi_io_mode_t type). */
 } spi_nand_info_t;
 
 #define SPI_NAND_COMPATIBLE "spi-nand"
@@ -71,11 +71,10 @@ int spi_nand_detect(spi_nand_t *nand);
  * @param rxlen Number of bytes to read.
  * @return Number of bytes read on success, -1 on failure.
  */
-uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf,
-		       uint32_t addr, uint32_t rxlen);
+uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf, uint32_t addr, uint32_t rxlen);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __SYS_SPI_NAND_H__
+#endif // __SYS_SPI_NAND_H__

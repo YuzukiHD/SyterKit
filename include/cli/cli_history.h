@@ -11,4 +11,4 @@ void history_append(const char *line);
 
 const char *history_get(int histnum);
 
-#endif// __CLI_HISTORY_H__
+#endif // __CLI_HISTORY_H__

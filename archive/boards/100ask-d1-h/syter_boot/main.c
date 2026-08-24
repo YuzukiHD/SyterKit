@@ -40,7 +40,7 @@
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_CONFIG_FILENAME "config.txt"
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DTB_LOAD_ADDR (0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
@@ -90,7 +90,8 @@ image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -110,7 +111,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -127,13 +128,14 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -141,8 +143,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&boot_card, (uint8_t *) (dram.memory_base), 0,
-		       CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&boot_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -170,7 +171,7 @@ static int load_sdcard(image_info_t *image) {
 
 	/* load config */
 	printk_info("FATFS: read %s addr=%p\n", image->config_filename, image->config_dest);
-	ret = fatfs_loadimage(image->config_filename, (BYTE *) image->config_dest);
+	ret = fatfs_loadimage(image->config_filename, (BYTE *)image->config_dest);
 	if (ret) {
 		printk_info("CONFIG: Cannot find config file, Using default config.\n");
 		image->is_config = 0;
@@ -191,16 +192,20 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-static void trim(char *str) {
+static void trim(char *str)
+{
 	int len = strlen(str);
-	while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\n' || str[len - 1] == '\r')) { str[--len] = '\0'; }
+	while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\n' || str[len - 1] == '\r')) {
+		str[--len] = '\0';
+	}
 	while (*str && (*str == ' ' || *str == '\n' || *str == '\r')) {
 		++str;
 		--len;
 	}
 }
 
-static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int max_entries) {
+static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int max_entries)
+{
 	char line[MAX_VALUE_LEN];
 	char current_section[MAX_SECTION_LEN] = "";
 	int entry_count = 0;
@@ -211,7 +216,9 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 	while (p < end) {
 		/* Read a line of data */
 		size_t len = 0;
-		while (p + len < end && *(p + len) != '\n') { ++len; }
+		while (p + len < end && *(p + len) != '\n') {
+			++len;
+		}
 		if (p + len < end && *(p + len) == '\n') {
 			++len;
 		}
@@ -260,7 +267,8 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 	return entry_count;
 }
 
-static char *find_entry_value(IniEntry *entries, int entry_count, const char *section, const char *key) {
+static char *find_entry_value(IniEntry *entries, int entry_count, const char *section, const char *key)
+{
 	for (int i = 0; i < entry_count; ++i) {
 		if (strcmp(entries[i].section, section) == 0 && strcmp(entries[i].key, key) == 0) {
 			return entries[i].value;
@@ -269,7 +277,8 @@ static char *find_entry_value(IniEntry *entries, int entry_count, const char *se
 	return NULL;
 }
 
-static int update_bootargs_from_config(uint32_t dram_size) {
+static int update_bootargs_from_config(uint32_t dram_size)
+{
 	int ret = 0;
 	char *bootargs_str_config = NULL;
 	char *mac_addr = NULL;
@@ -287,7 +296,7 @@ static int update_bootargs_from_config(uint32_t dram_size) {
 	}
 
 	/* Force image.dest to be a pointer to fdt_header structure */
-	struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+	struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
@@ -304,7 +313,7 @@ static int update_bootargs_from_config(uint32_t dram_size) {
 	uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
 
 	/* Get bootargs string */
-	char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+	char *bootargs_str = (void *)fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
 
 	/* If config file read fail or not using */
 	if (bootargs_str_config == NULL) {
@@ -356,14 +365,15 @@ _err_size:
 	return -1;
 }
 
-static int abortboot_single_key(int bootdelay) {
+static int abortboot_single_key(int bootdelay)
+{
 	int abort = 0;
 	unsigned long ts;
 
 	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
-	if (tstc()) {		/* we got a key press */
+	if (tstc()) { /* we got a key press */
 		uart_getchar(); /* consume input */
 		printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
 		abort = 1; /* don't auto boot */
@@ -374,7 +384,7 @@ static int abortboot_single_key(int bootdelay) {
 		/* delay 1000 ms */
 		ts = time_ms();
 		do {
-			if (tstc()) {  /* we got a key press */
+			if (tstc()) { /* we got a key press */
 				abort = 1; /* don't auto boot */
 				break;
 			}
@@ -388,9 +398,10 @@ static int abortboot_single_key(int bootdelay) {
 
 msh_declare_command(bootargs);
 msh_define_help(bootargs, "get/set bootargs for kernel",
-				"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
-				"       bootargs get            - get current bootargs\n");
-int cmd_bootargs(int argc, const char **argv) {
+		"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
+		"       bootargs get            - get current bootargs\n");
+int cmd_bootargs(int argc, const char **argv)
+{
 	int err = 0;
 
 	if (argc < 2) {
@@ -404,7 +415,7 @@ int cmd_bootargs(int argc, const char **argv) {
 			return 0;
 		}
 		/* Force image.of_dest to be a pointer to fdt_header structure */
-		struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+		struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 		/* Check if DTB header is valid */
 		if ((err = fdt_check_header(dtb_header)) != 0) {
@@ -417,14 +428,14 @@ int cmd_bootargs(int argc, const char **argv) {
 		uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
 
 		/* Get bootargs string */
-		char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+		char *bootargs_str = (void *)fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
 		printk(LOG_LEVEL_MUTE, "DTB OLD bootargs = \"%s\"\n", bootargs_str);
 
 		/* New bootargs string */
 		const char *new_bootargs_str = argv[2];
 		printk(LOG_LEVEL_MUTE, "Now set bootargs to \"%s\"\n", new_bootargs_str);
 
-	_add_dts_size:
+_add_dts_size:
 		/* Modify bootargs string */
 		err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 		if (err == -FDT_ERR_NOSPACE) {
@@ -440,11 +451,11 @@ int cmd_bootargs(int argc, const char **argv) {
 		}
 
 		/* Get updated bootargs string */
-		char *updated_bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+		char *updated_bootargs_str = (void *)fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
 		printk(LOG_LEVEL_MUTE, "DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
 	} else if (strncmp(argv[1], "get", 3) == 0) {
 		/* Force image.of_dest to be a pointer to fdt_header structure */
-		struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+		struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 		int err = 0;
 
@@ -459,7 +470,7 @@ int cmd_bootargs(int argc, const char **argv) {
 		uint32_t bootargs_node = fdt_path_offset(image.of_dest, "/chosen");
 
 		/* Get bootargs string */
-		char *bootargs_str = (void *) fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
+		char *bootargs_str = (void *)fdt_getprop(image.of_dest, bootargs_node, "bootargs", &len);
 		printk(LOG_LEVEL_MUTE, "DTB bootargs = \"%s\"\n", bootargs_str);
 	} else {
 		uart_puts(cmd_bootargs_usage);
@@ -474,7 +485,8 @@ _err_size:
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+int cmd_reload(int argc, const char **argv)
+{
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
@@ -490,7 +502,8 @@ int cmd_reload(int argc, const char **argv) {
 
 msh_declare_command(print);
 msh_define_help(print, "print out env config", "Usage: print\n");
-int cmd_print(int argc, const char **argv) {
+int cmd_print(int argc, const char **argv)
+{
 	if (image.is_config) {
 		size_t size_a = strlen(image.config_dest);
 		int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
@@ -506,13 +519,14 @@ int cmd_print(int argc, const char **argv) {
 
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
+int cmd_boot(int argc, const char **argv)
+{
 	/* Initialize variables for kernel entry point and SD card access. */
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, uint32_t params);
 
 	/* Set up boot parameters for the kernel. */
-	if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
+	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
 		printk_error("boot setup failed\n");
 		abort();
 	}
@@ -526,26 +540,23 @@ int cmd_boot(int argc, const char **argv) {
 	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
-	kernel_entry = (void (*)(int, int, uint32_t)) (uintptr_t) entry_point;
-	kernel_entry(0, ~0, (uint32_t) (uintptr_t) image.of_dest);
+	kernel_entry = (void (*)(int, int, uint32_t))(uintptr_t)entry_point;
+	kernel_entry(0, ~0, (uint32_t)(uintptr_t)image.of_dest);
 
 	// if kernel boot not success, jump to fel.
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(bootargs),
-		msh_define_command(reload),
-		msh_define_command(boot),
-		msh_define_command(print),
-		msh_command_end,
+	msh_define_command(bootargs), msh_define_command(reload), msh_define_command(boot), msh_define_command(print), msh_command_end,
 };
 
 /* 
  * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
  * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
  */
-int main(void) {
+int main(void)
+{
 	/* Initialize the debug serial interface. */
 
 	/* Display the bootloader banner. */
@@ -579,9 +590,9 @@ int main(void) {
 	memset(&image, 0, sizeof(image_info_t));
 
 	/* Set the destination address for the device tree binary (DTB), kernel image, and configuration data. */
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
-	image.config_dest = (char *) CONFIG_CONFIG_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
+	image.config_dest = (char *)CONFIG_CONFIG_LOAD_ADDR;
 	image.is_config = 0;
 
 	/* Copy the filenames for the DTB, kernel image, and configuration data. */

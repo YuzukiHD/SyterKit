@@ -13,17 +13,19 @@
 
 #define OPENSBI_FW_TEXT_START 0x41fc0000
 
-void jmp_opensbi(uint32_t opensbi_base) {
+void jmp_opensbi(uint32_t opensbi_base)
+{
 	asm volatile("jr a0");
 __LOOP:
 	asm volatile("WFI");
 	goto __LOOP;
 }
 
-int main() {
+int main()
+{
 	int i = 0;
 
-	sys_uart_init();// init UART0
+	sys_uart_init(); // init UART0
 
 	sys_uart_printf(" _____     _           _____ _ _      _____ ___ ___ ___ \r\n");
 	sys_uart_printf("|   __|_ _| |_ ___ ___|  |  |_| |_   |     | . |   |  _|\r\n");

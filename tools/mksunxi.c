@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define __ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
-#define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x)) (a) -1)
+#define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x))(a) - 1)
 
 struct boot_head_t {
 	uint32_t instruction;
@@ -20,7 +20,8 @@ struct boot_head_t {
 	uint32_t string_pool[13];
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	struct boot_head_t *h;
 	FILE *fp;
 	char *buffer;
@@ -67,15 +68,16 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	h = (struct boot_head_t *) buffer;
-	p = (uint32_t *) h;
+	h = (struct boot_head_t *)buffer;
+	p = (uint32_t *)h;
 	l = (h->length);
 	printf("len: %u\n", l);
 	l = ALIGN(l, padding);
 	h->length = (l);
 	h->checksum = (0x5F0A6C39);
 	loop = l >> 2;
-	for (i = 0, sum = 0; i < loop; i++) sum += (p[i]);
+	for (i = 0, sum = 0; i < loop; i++)
+		sum += (p[i]);
 	h->checksum = (sum);
 
 	fseek(fp, 0L, SEEK_SET);

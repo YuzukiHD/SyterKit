@@ -7,17 +7,19 @@
 
 #include "syter_test.h"
 
-static unsigned int parse_value(char **cursor) {
+static unsigned int parse_value(char **cursor)
+{
 	unsigned int value = 0;
 
 	while (**cursor == ' ' || **cursor == '\n')
 		(*cursor)++;
 	while (**cursor >= '0' && **cursor <= '9')
-		value = value * 10U + (unsigned int) (*(*cursor)++ - '0');
+		value = value * 10U + (unsigned int)(*(*cursor)++ - '0');
 	return value;
 }
 
-void test_case_main(const char *case_dir) {
+void test_case_main(const char *case_dir)
+{
 	static unsigned char heap[2048];
 	char data[TEST_DATA_MAX];
 	char *cursor;
@@ -38,18 +40,18 @@ void test_case_main(const char *case_dir) {
 	second_size = parse_value(&cursor);
 	resize_size = parse_value(&cursor);
 
-	TEST_EQ(0, malloc_init((uintptr_t) heap, sizeof(heap)));
+	TEST_EQ(0, malloc_init((uintptr_t)heap, sizeof(heap)));
 	first = malloc(first_size);
 	second = malloc(second_size);
 	TEST_ASSERT(first != NULL && second != NULL);
-	TEST_EQ(0, (uintptr_t) first & 15U);
+	TEST_EQ(0, (uintptr_t)first & 15U);
 	for (unsigned int index = 0; index < first_size; index++)
-		first[index] = (unsigned char) (index + 1U);
+		first[index] = (unsigned char)(index + 1U);
 
 	resized = realloc(first, resize_size);
 	TEST_ASSERT(resized != NULL);
 	for (unsigned int index = 0; index < first_size; index++)
-		TEST_EQ((unsigned char) (index + 1U), resized[index]);
+		TEST_EQ((unsigned char)(index + 1U), resized[index]);
 	free(second);
 	free(resized);
 	TEST_ASSERT(malloc(second_size) != NULL);

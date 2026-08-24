@@ -8,7 +8,8 @@
 #include <string.h>
 #include <types.h>
 
-void sys_uart_init() {
+void sys_uart_init()
+{
 	virtual_addr_t addr;
 	u32_t val;
 

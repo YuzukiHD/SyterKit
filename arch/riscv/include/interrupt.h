@@ -19,12 +19,14 @@
  * This function enables machine interrupts by setting the MIE bit in the
  * Machine Status Register (mstatus).
  */
-static inline void riscv_interrupt_enable(void) {
+static inline void riscv_interrupt_enable(void)
+{
 	/* Set MIE bit in mstatus register */
 	csr_set(mstatus, MSTATUS_MIE);
 }
 
-static inline void interrupt_enable(void) {
+static inline void interrupt_enable(void)
+{
 	riscv_interrupt_enable();
 }
 
@@ -34,12 +36,14 @@ static inline void interrupt_enable(void) {
  * This function disables machine interrupts by clearing the MIE bit in the
  * Machine Status Register (mstatus).
  */
-static inline void riscv_interrupt_disable(void) {
+static inline void riscv_interrupt_disable(void)
+{
 	/* Clear MIE bit in mstatus register */
 	csr_clear(mstatus, MSTATUS_MIE);
 }
 
-static inline void interrupt_disable(void) {
+static inline void interrupt_disable(void)
+{
 	riscv_interrupt_disable();
 }
 

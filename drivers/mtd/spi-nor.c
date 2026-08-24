@@ -22,9 +22,9 @@
 #include <string.h>
 
 static const spi_nor_info_t spi_nor_info_table[] = {
-		{"W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0},
-		{"W25Q128JVEIQ", 0xefc018, 16 * 1024 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
-		{"GD25D10B", 0xc84011, 128 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0},
+	{ "W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, 0, NOR_OPCODE_E64K, 0 },
+	{ "W25Q128JVEIQ", 0xefc018, 16 * 1024 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0 },
+	{ "GD25D10B", 0xc84011, 128 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN, NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0 },
 };
 
 /**
@@ -40,7 +40,8 @@ static const spi_nor_info_t spi_nor_info_table[] = {
  * 
  * @warning If the provided `sfdp` pointer is NULL, the function will print a trace log indicating the issue.
  */
-__attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp) {
+__attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
+{
 	if (sfdp == NULL) {
 		printk_trace("SFDP data is NULL.\n");
 		return;
@@ -50,17 +51,14 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 	printk_trace("  Signature: %c%c%c%c\n", sfdp->header.sign[0], sfdp->header.sign[1], sfdp->header.sign[2], sfdp->header.sign[3]);
 	printk_trace("  Minor version: %u\n", sfdp->header.minor);
 	printk_trace("  Major version: %u\n", sfdp->header.major);
-	printk_trace("  Number of Parameter Headers: %u (wire NPH=%u)\n",
-		     sfdp->parameter_header_count, sfdp->header.nph);
+	printk_trace("  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
 	printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
 	printk_trace("SFDP Parameter Headers:\n");
 	for (int i = 0; i < sfdp->parameter_header_count; i++) {
 		const sfdp_parameter_header_t *header = &sfdp->parameter_header[i];
-		bool unused = header->idlsb == 0xff && header->minor == 0xff &&
-			      header->major == 0xff && header->length == 0xff &&
-			      header->ptp[0] == 0xff && header->ptp[1] == 0xff &&
-			      header->ptp[2] == 0xff && header->idmsb == 0xff;
+		bool unused = header->idlsb == 0xff && header->minor == 0xff && header->major == 0xff && header->length == 0xff && header->ptp[0] == 0xff &&
+			      header->ptp[1] == 0xff && header->ptp[2] == 0xff && header->idmsb == 0xff;
 
 		printk_trace("  Parameter Header #%d:\n", i + 1);
 		if (unused) {
@@ -81,7 +79,9 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 	printk_trace("  Table (%u x 4 bytes):\n", sfdp->basic_table.length);
 	for (int i = 0; i < sfdp->basic_table.length; i++) {
 		printk_trace("    ");
-		for (int j = 0; j < 4; j++) { printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]); }
+		for (int j = 0; j < 4; j++) {
+			printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]);
+		}
 		printk(LOG_LEVEL_MUTE, "\n");
 	}
 }
@@ -98,7 +98,8 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
  * 
  * @return 1 if the SFDP data was successfully read, 0 if there was an error or the data was invalid.
  */
-static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
+static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp)
+{
 	uint32_t addr;
 	uint8_t tx[5];
 	int i;
@@ -116,10 +117,10 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 		return 0;
 
 	/* NPH is zero-based on the wire: NPH=0 means one parameter header. */
-	uint32_t header_count = (uint32_t) sfdp->header.nph + 1U;
+	uint32_t header_count = (uint32_t)sfdp->header.nph + 1U;
 	if (header_count > SFDP_MAX_NPH)
 		header_count = SFDP_MAX_NPH;
-	sfdp->parameter_header_count = (uint8_t) header_count;
+	sfdp->parameter_header_count = (uint8_t)header_count;
 
 	for (i = 0; i < header_count; i++) {
 		addr = i * sizeof(sfdp_parameter_header_t) + sizeof(sfdp_header_t);
@@ -134,12 +135,10 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
 	for (i = 0; i < header_count; i++) {
 		uint32_t table_bytes;
 
-		if ((sfdp->parameter_header[i].idlsb == 0x00) &&
-		    (sfdp->parameter_header[i].idmsb == 0xff) &&
-		    sfdp->parameter_header[i].length != 0U &&
+		if ((sfdp->parameter_header[i].idlsb == 0x00) && (sfdp->parameter_header[i].idmsb == 0xff) && sfdp->parameter_header[i].length != 0U &&
 		    sfdp->parameter_header[i].length <= sizeof(sfdp->basic_table.table) / 4U) {
 			addr = (sfdp->parameter_header[i].ptp[0] << 0) | (sfdp->parameter_header[i].ptp[1] << 8) | (sfdp->parameter_header[i].ptp[2] << 16);
-			table_bytes = (uint32_t) sfdp->parameter_header[i].length * 4U;
+			table_bytes = (uint32_t)sfdp->parameter_header[i].length * 4U;
 			if (addr > 0x00ffffffU - table_bytes)
 				continue;
 			tx[0] = NOR_OPCODE_SFDP;
@@ -169,7 +168,8 @@ static inline int spi_nor_read_sfdp(sunxi_spi_t *spi, sfdp_t *sfdp) {
  * 
  * @return 1 if the ID was successfully read, 0 if the transfer failed.
  */
-static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id) {
+static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id)
+{
 	uint8_t tx[1];
 	uint8_t rx[3];
 
@@ -190,7 +190,8 @@ static inline int spinor_read_id(sunxi_spi_t *spi, uint32_t *id) {
  * 
  * @return The 1-byte status register value returned by the NOR Flash chip.
  */
-static inline uint8_t spi_nor_read_status_register(sunxi_spi_t *spi) {
+static inline uint8_t spi_nor_read_status_register(sunxi_spi_t *spi)
+{
 	uint8_t tx = NOR_OPCODE_RDSR;
 	uint8_t rx = 0;
 
@@ -207,7 +208,8 @@ static inline uint8_t spi_nor_read_status_register(sunxi_spi_t *spi) {
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  * @param sr The new status register value to write to the NOR Flash chip.
  */
-static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr) {
+static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr)
+{
 	uint8_t tx[2];
 
 	tx[0] = NOR_OPCODE_WRSR;
@@ -224,7 +226,8 @@ static inline void spi_nor_write_status_register(sunxi_spi_t *spi, uint8_t sr) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi) {
+static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi)
+{
 	uint32_t timeout = 0xffff;
 	while (((spi_nor_read_status_register(spi) & 0x1) == 0x1)) {
 		timeout--;
@@ -244,7 +247,8 @@ static inline void spi_nor_wait_for_busy(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
+static inline void spi_nor_chip_reset(sunxi_spi_t *spi)
+{
 	uint8_t tx[2];
 
 	tx[0] = 0x66;
@@ -261,13 +265,12 @@ static inline void spi_nor_chip_reset(sunxi_spi_t *spi) {
  * 
  * @param spi Pointer to a `sunxi_spi_t` structure representing the SPI device.
  */
-static inline void spi_nor_set_write_enable(spi_nor_t *nor) {
+static inline void spi_nor_set_write_enable(spi_nor_t *nor)
+{
 	uint8_t opcode = nor->info.opcode_write_enable;
 
-	sunxi_spi_transfer(nor->spi, SPI_IO_SINGLE, &opcode, sizeof(opcode),
-			   NULL, 0);
+	sunxi_spi_transfer(nor->spi, SPI_IO_SINGLE, &opcode, sizeof(opcode), NULL, 0);
 }
-
 
 /**
  * @brief Retrieves the information of the SPI NOR flash.
@@ -293,7 +296,8 @@ static inline void spi_nor_set_write_enable(spi_nor_t *nor) {
  * 
  * @see spinor_read_id(), spi_nor_read_sfdp(), spi_nor_dump_sfdp(), NOR_OPCODE_WREN, NOR_OPCODE_READ, NOR_OPCODE_PROG
  */
-static inline int spi_nor_get_info(spi_nor_t *nor) {
+static inline int spi_nor_get_info(spi_nor_t *nor)
+{
 	sfdp_t sfdp;
 	const spi_nor_info_t *tmp_info;
 	spi_nor_info_t *info = &nor->info;
@@ -335,71 +339,71 @@ static inline int spi_nor_get_info(spi_nor_t *nor) {
 		v = (sfdp.basic_table.table[31] << 24) | (sfdp.basic_table.table[30] << 16) | (sfdp.basic_table.table[29] << 8) | (sfdp.basic_table.table[28] << 0);
 
 		switch ((v >> 0) & 0xff) {
-			case 12:
-				info->opcode_erase_4k = (v >> 8) & 0xff;
-				break;
-			case 15:
-				info->opcode_erase_32k = (v >> 8) & 0xff;
-				break;
-			case 16:
-				info->opcode_erase_64k = (v >> 8) & 0xff;
-				break;
-			case 18:
-				info->opcode_erase_256k = (v >> 8) & 0xff;
-				break;
-			default:
-				break;
+		case 12:
+			info->opcode_erase_4k = (v >> 8) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 8) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 8) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 8) & 0xff;
+			break;
+		default:
+			break;
 		}
 		switch ((v >> 16) & 0xff) {
-			case 12:
-				info->opcode_erase_4k = (v >> 24) & 0xff;
-				break;
-			case 15:
-				info->opcode_erase_32k = (v >> 24) & 0xff;
-				break;
-			case 16:
-				info->opcode_erase_64k = (v >> 24) & 0xff;
-				break;
-			case 18:
-				info->opcode_erase_256k = (v >> 24) & 0xff;
-				break;
-			default:
-				break;
+		case 12:
+			info->opcode_erase_4k = (v >> 24) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 24) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 24) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 24) & 0xff;
+			break;
+		default:
+			break;
 		}
 
 		/* Basic flash parameter table 9th dword */
 		v = (sfdp.basic_table.table[35] << 24) | (sfdp.basic_table.table[34] << 16) | (sfdp.basic_table.table[33] << 8) | (sfdp.basic_table.table[32] << 0);
 		switch ((v >> 0) & 0xff) {
-			case 12:
-				info->opcode_erase_4k = (v >> 8) & 0xff;
-				break;
-			case 15:
-				info->opcode_erase_32k = (v >> 8) & 0xff;
-				break;
-			case 16:
-				info->opcode_erase_64k = (v >> 8) & 0xff;
-				break;
-			case 18:
-				info->opcode_erase_256k = (v >> 8) & 0xff;
-				break;
-			default:
-				break;
+		case 12:
+			info->opcode_erase_4k = (v >> 8) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 8) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 8) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 8) & 0xff;
+			break;
+		default:
+			break;
 		}
 		switch ((v >> 16) & 0xff) {
-			case 12:
-				info->opcode_erase_4k = (v >> 24) & 0xff;
-				break;
-			case 15:
-				info->opcode_erase_32k = (v >> 24) & 0xff;
-				break;
-			case 16:
-				info->opcode_erase_64k = (v >> 24) & 0xff;
-				break;
-			case 18:
-				info->opcode_erase_256k = (v >> 24) & 0xff;
-				break;
-			default:
-				break;
+		case 12:
+			info->opcode_erase_4k = (v >> 24) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 24) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 24) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 24) & 0xff;
+			break;
+		default:
+			break;
 		}
 		if (info->opcode_erase_4k != 0x00)
 			info->blksz = 4096;
@@ -465,29 +469,29 @@ static inline int spi_nor_get_info(spi_nor_t *nor) {
  * the provided buffer. The function supports 3-byte or 4-byte address
  * modes, but any other address length is not supported.
  */
-static void spi_nor_read_bytes(spi_nor_t *nor, uint32_t addr,
-			       uint8_t *buf, uint32_t count) {
+static void spi_nor_read_bytes(spi_nor_t *nor, uint32_t addr, uint8_t *buf, uint32_t count)
+{
 	const spi_nor_info_t *info = &nor->info;
 	sunxi_spi_t *spi = nor->spi;
 	uint8_t tx[5];
 	switch (info->address_length) {
-		case 3:
-			tx[0] = info->opcode_read;
-			tx[1] = (uint8_t) (addr >> 16);
-			tx[2] = (uint8_t) (addr >> 8);
-			tx[3] = (uint8_t) (addr >> 0);
-			sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, buf, count);
-			break;
-		case 4:
-			tx[0] = info->opcode_read;
-			tx[1] = (uint8_t) (addr >> 24);
-			tx[2] = (uint8_t) (addr >> 16);
-			tx[3] = (uint8_t) (addr >> 8);
-			tx[4] = (uint8_t) (addr >> 0);
-			sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, buf, count);
-			break;
-		default:
-			break;
+	case 3:
+		tx[0] = info->opcode_read;
+		tx[1] = (uint8_t)(addr >> 16);
+		tx[2] = (uint8_t)(addr >> 8);
+		tx[3] = (uint8_t)(addr >> 0);
+		sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 4, buf, count);
+		break;
+	case 4:
+		tx[0] = info->opcode_read;
+		tx[1] = (uint8_t)(addr >> 24);
+		tx[2] = (uint8_t)(addr >> 16);
+		tx[3] = (uint8_t)(addr >> 8);
+		tx[4] = (uint8_t)(addr >> 0);
+		sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 5, buf, count);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -513,16 +517,17 @@ static void spi_nor_read_bytes(spi_nor_t *nor, uint32_t addr,
  *          4. If a chip is detected, its ID and capacity are logged to 
  *             inform the user.
  */
-static int spi_nor_select(spi_nor_t *nor) {
-	if (nor == NULL || nor->spi == NULL || nor->max_frequency == 0U ||
-	    sunxi_spi_select(nor->spi, nor->chip_select) != 0)
+static int spi_nor_select(spi_nor_t *nor)
+{
+	if (nor == NULL || nor->spi == NULL || nor->max_frequency == 0U || sunxi_spi_select(nor->spi, nor->chip_select) != 0)
 		return -1;
 	if (nor->spi->clk_rate != nor->max_frequency)
 		return sunxi_spi_update_clk(nor->spi, nor->max_frequency);
 	return 0;
 }
 
-int spi_nor_detect(spi_nor_t *nor) {
+int spi_nor_detect(spi_nor_t *nor)
+{
 	spi_nor_info_t *info;
 	sunxi_spi_t *spi;
 
@@ -572,8 +577,8 @@ int spi_nor_detect(spi_nor_t *nor) {
  * exceeds the maximum read length (0x7FFFFFFF bytes), it adjusts the size of 
  * each read operation accordingly.
  */
-uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf,
-			    uint32_t blk_no, uint32_t blk_cnt) {
+uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf, uint32_t blk_no, uint32_t blk_cnt)
+{
 	const spi_nor_info_t *info;
 	sunxi_spi_t *spi;
 
@@ -626,8 +631,8 @@ uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf,
  *          as many complete blocks as possible before potentially reading 
  *          another partial block at the end.
  */
-uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf,
-		      uint32_t addr, uint32_t rxlen) {
+uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rxlen)
+{
 	const spi_nor_info_t *info;
 
 	if (nor == NULL || buf == NULL || nor->info.blksz == 0U)
@@ -646,7 +651,7 @@ uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf,
 			len = rxlen;
 		if (spi_nor_read_block(nor, &buf[0], blkno, 1) != 1)
 			return ret;
-		memcpy((void *) buf, (const void *) (&buf[tmp]), len);
+		memcpy((void *)buf, (const void *)(&buf[tmp]), len);
 		buf += len;
 		rxlen -= len;
 		ret += len;
@@ -669,7 +674,7 @@ uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf,
 		len = rxlen;
 		if (spi_nor_read_block(nor, &buf[0], blkno, 1) != 1)
 			return ret;
-		memcpy((void *) buf, (const void *) (&buf[0]), len);
+		memcpy((void *)buf, (const void *)(&buf[0]), len);
 		ret += len;
 	}
 	return ret;

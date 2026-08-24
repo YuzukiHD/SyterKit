@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Writes a single character 'c' to the UART output.
@@ -71,6 +71,6 @@ extern int puts(const char *s);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif//__CLI_UART_H__
+#endif //__CLI_UART_H__

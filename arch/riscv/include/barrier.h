@@ -40,10 +40,7 @@ extern "C" {
  * @note The fence instruction also acts as a compiler barrier via the
  *       "memory" clobber specification.
  */
-#define RISCV_FENCE(p, s) asm volatile("fence " #p "," #s \
-									   :                  \
-									   :                  \
-									   : "memory")
+#define RISCV_FENCE(p, s) asm volatile("fence " #p "," #s : : : "memory")
 
 /**
  * @brief Full memory barrier.

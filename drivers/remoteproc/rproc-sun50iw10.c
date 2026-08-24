@@ -18,60 +18,53 @@ enum sun50iw10_ar100_register {
 	SUN50IW10_AR100_RCPU_CFG,
 };
 
-static bool sun50iw10_ar100_affected(uint32_t id) {
+static bool sun50iw10_ar100_affected(uint32_t id)
+{
 	return id == 0U || id == 3U || id == 4U || id == 5U;
 }
 
-static int sun50iw10_ar100_copy(const sunxi_remoteproc_t *remoteproc,
-				const void *firmware, size_t size) {
+static int sun50iw10_ar100_copy(const sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
+{
 	const uint8_t *source = firmware;
 	size_t copied = 0U;
 	size_t index;
 
 	for (index = 0U; index < remoteproc->address_map_count; ++index) {
-		const sunxi_remoteproc_address_map_t *range =
-				&remoteproc->address_map[index];
+		const sunxi_remoteproc_address_map_t *range = &remoteproc->address_map[index];
 		size_t length;
 
 		if (range->device_start >= size)
 			continue;
-		if (range->device_start > range->device_end ||
-		    range->physical_start > (uintptr_t) -1 -
-				(range->device_end - range->device_start))
+		if (range->device_start > range->device_end || range->physical_start > (uintptr_t)-1 - (range->device_end - range->device_start))
 			return DRIVER_ERROR_INVALID;
 		length = size - range->device_start;
 		if (range->device_end - range->device_start < length - 1U)
 			length = range->device_end - range->device_start + 1U;
-		if (copied > (size_t) -1 - length)
+		if (copied > (size_t)-1 - length)
 			return DRIVER_ERROR_INVALID;
-		memcpy((void *) range->physical_start,
-		       source + range->device_start, length);
+		memcpy((void *)range->physical_start, source + range->device_start, length);
 		copied += length;
 	}
 	return copied == size ? DRIVER_OK : DRIVER_ERROR_INVALID;
 }
 
-static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc,
-				       const void *firmware, size_t size) {
+static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
+{
 	uint32_t cold_start;
 	uint32_t id;
 	uint32_t value;
-	uintptr_t sysctrl =
-			remoteproc->registers[SUN50IW10_AR100_SYSCTRL].base;
-	uintptr_t rcpu_cfg =
-			remoteproc->registers[SUN50IW10_AR100_RCPU_CFG].base;
+	uintptr_t sysctrl = remoteproc->registers[SUN50IW10_AR100_SYSCTRL].base;
+	uintptr_t rcpu_cfg = remoteproc->registers[SUN50IW10_AR100_RCPU_CFG].base;
 
 	id = readl(sysctrl + 0x24U) & 0x07U;
 	if (remoteproc->rtc == NULL)
 		return DRIVER_ERROR_INVALID;
-	cold_start = rtc_read_data(remoteproc->rtc,
-				   SUN50IW10_RTC_DATA_COLD_START);
+	cold_start = rtc_read_data(remoteproc->rtc, SUN50IW10_RTC_DATA_COLD_START);
 	printk_debug("AR100: soc-id=%u cold-start=%u\n", id, cold_start);
 	if (!sun50iw10_ar100_affected(id))
 		return DRIVER_OK;
 	if (cold_start != 0U) {
-		rtc_write_data(remoteproc->rtc,
-			       SUN50IW10_RTC_DATA_COLD_START, 0U);
+		rtc_write_data(remoteproc->rtc, SUN50IW10_RTC_DATA_COLD_START, 0U);
 		return DRIVER_OK;
 	}
 

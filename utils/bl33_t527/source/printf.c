@@ -33,22 +33,26 @@ static uart_serial_t *uart_dbg;
 
 static uint32_t init_timestamp = 0;
 
-void set_timer_count() {
+void set_timer_count()
+{
 	init_timestamp = read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4);
 }
 
-void sunxi_serial_init() {
-	uart_dbg = (uart_serial_t *) SUNXI_UART0_BASE;
+void sunxi_serial_init()
+{
+	uart_dbg = (uart_serial_t *)SUNXI_UART0_BASE;
 }
 
 // Function to transmit a single character via UART
-void sunxi_uart_putc(char c) {
+void sunxi_uart_putc(char c)
+{
 	while ((uart_dbg->lsr & (1 << 6)) == 0)
 		;
 	uart_dbg->thr = c;
 }
 
-void uart_log_putchar(void *arg, char c) {
+void uart_log_putchar(void *arg, char c)
+{
 	if (c == '\n') {
 		/* If the character is a newline, transmit a carriage return before newline */
 		sunxi_uart_putc('\r');
@@ -58,7 +62,8 @@ void uart_log_putchar(void *arg, char c) {
 }
 
 // Output a formatted string to the standard output
-int uart_printf(const char *fmt, ...) {
+int uart_printf(const char *fmt, ...)
+{
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
@@ -69,7 +74,8 @@ int uart_printf(const char *fmt, ...) {
 	return count;
 }
 
-int printf(const char *fmt, ...) {
+int printf(const char *fmt, ...)
+{
 	uint32_t now_timestamp = time_us() - init_timestamp;
 	uint32_t seconds = now_timestamp / (1000 * 1000);
 	uint32_t milliseconds = now_timestamp % (1000 * 1000);

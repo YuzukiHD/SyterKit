@@ -11,8 +11,9 @@
  *
  * @param[in] addr Entry address. The function does not return.
  */
-static inline __attribute__((noreturn)) void syterkit_jmp(uintptr_t addr) {
-	void (*entry)(void) = (void (*)(void)) addr;
+static inline __attribute__((noreturn)) void syterkit_jmp(uintptr_t addr)
+{
+	void (*entry)(void) = (void (*)(void))addr;
 
 	asm volatile("fence.i" ::: "memory");
 	entry();
@@ -20,7 +21,8 @@ static inline __attribute__((noreturn)) void syterkit_jmp(uintptr_t addr) {
 }
 
 /** @brief Return control to the SoC FEL entry point. */
-static inline __attribute__((noreturn)) void jmp_to_fel(void) {
+static inline __attribute__((noreturn)) void jmp_to_fel(void)
+{
 	syterkit_jmp(0x20);
 }
 

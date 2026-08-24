@@ -16,7 +16,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #define LOG_LEVEL_MUTE 0
 #define LOG_LEVEL_ERROR 1
@@ -34,9 +34,9 @@ extern "C" {
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_TRACE
 #else
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
-#endif// DEBUG_MODE
+#endif // DEBUG_MODE
 
-#endif// LOG_LEVEL_DEFAULT
+#endif // LOG_LEVEL_DEFAULT
 
 /* Driver subdirectories may override the global threshold per build unit. */
 #ifdef DRIVER_LOG_LEVEL
@@ -44,9 +44,9 @@ extern "C" {
 #define LOG_LEVEL_DEFAULT DRIVER_LOG_LEVEL
 #endif
 
-#define no_printk(level, fmt, ...)                 \
-	do {                                         \
-		if (0)                                 \
+#define no_printk(level, fmt, ...)                         \
+	do {                                               \
+		if (0)                                     \
 			printk(level, fmt, ##__VA_ARGS__); \
 	} while (0)
 
@@ -140,6 +140,6 @@ void dump_hex(uintptr_t start_addr, uint32_t count);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif

@@ -17,29 +17,30 @@ enum sun20iw1_hifi4_register {
 	SUN20IW1_HIFI4_CCU,
 };
 
-static void sun20iw1_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc,
-					      bool local) {
+static void sun20iw1_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local)
+{
 	uint32_t value;
 	uintptr_t sysctrl = remoteproc->registers[SUN20IW1_HIFI4_SYSCTRL].base;
 
 	value = readl(sysctrl + SRAMC_SRAM_REMAP_REG);
 	value &= ~(1U << BIT_SRAM_REMAP_ENABLE);
-	value |= (uint32_t) local << BIT_SRAM_REMAP_ENABLE;
+	value |= (uint32_t)local << BIT_SRAM_REMAP_ENABLE;
 	writel(value, sysctrl + SRAMC_SRAM_REMAP_REG);
 }
 
-static void sun20iw1_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc,
-						 bool stall) {
+static void sun20iw1_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool stall)
+{
 	uint32_t value;
 	uintptr_t dsp_cfg = remoteproc->registers[SUN20IW1_HIFI4_DSP_CFG].base;
 
 	value = readl(dsp_cfg + DSP_CTRL_REG0);
 	value &= ~(1U << BIT_RUN_STALL);
-	value |= (uint32_t) stall << BIT_RUN_STALL;
+	value |= (uint32_t)stall << BIT_RUN_STALL;
 	writel(value, dsp_cfg + DSP_CTRL_REG0);
 }
 
-static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
+static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value = 0U;
 	uintptr_t ccu = remoteproc->registers[SUN20IW1_HIFI4_CCU].base;
 	uintptr_t dsp_cfg = remoteproc->registers[SUN20IW1_HIFI4_DSP_CFG].base;
@@ -60,8 +61,7 @@ static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
 	writel(value, ccu + CCU_DSP_BGR_REG);
 
 	if (remoteproc->entry != DSP_DEFAULT_RST_VEC) {
-		writel((uint32_t) remoteproc->entry,
-		       dsp_cfg + DSP_ALT_RESET_VEC_REG);
+		writel((uint32_t)remoteproc->entry, dsp_cfg + DSP_ALT_RESET_VEC_REG);
 		value = readl(dsp_cfg + DSP_CTRL_REG0);
 		value |= 1U << BIT_START_VEC_SEL;
 		writel(value, dsp_cfg + DSP_CTRL_REG0);
@@ -78,13 +78,15 @@ static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static int sun20iw1_hifi4_start(sunxi_remoteproc_t *remoteproc) {
+static int sun20iw1_hifi4_start(sunxi_remoteproc_t *remoteproc)
+{
 	sun20iw1_hifi4_sram_remap(remoteproc, false);
 	sun20iw1_hifi4_set_run_stall(remoteproc, false);
 	return DRIVER_OK;
 }
 
-static int sun20iw1_hifi4_reset(sunxi_remoteproc_t *remoteproc) {
+static int sun20iw1_hifi4_reset(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t ccu = remoteproc->registers[SUN20IW1_HIFI4_CCU].base;
 

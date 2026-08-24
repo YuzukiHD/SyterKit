@@ -6,20 +6,20 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	sunxi_dma_t dma0 = {0};
-	sunxi_dma_t dma1 = {0};
-	sunxi_spi_t spi0 = {0};
-	sunxi_spi_t spi2 = {0};
-	sunxi_spi_t spi4 = {0};
-	sunxi_spi_t rejected = {.base = 0xdeadbeefU};
+void test_case_main(const char *case_dir)
+{
+	sunxi_dma_t dma0 = { 0 };
+	sunxi_dma_t dma1 = { 0 };
+	sunxi_spi_t spi0 = { 0 };
+	sunxi_spi_t spi2 = { 0 };
+	sunxi_spi_t spi4 = { 0 };
+	sunxi_spi_t rejected = { .base = 0xdeadbeefU };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_dma_dt_read_alias(&dma0, "dma0"));
 	TEST_EQ(DRIVER_OK, sunxi_dma_dt_read_alias(&dma1, "dma1"));
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_spi_dt_read_alias(&spi0, "spi0", &dma0));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_spi_dt_read_alias(&spi0, "spi0", &dma0));
 	TEST_EQ(DRIVER_OK, sunxi_spi_dt_read_alias(&spi0, "spi0", &dma1));
 	TEST_EQ(0xb000U, spi0.base);
 	TEST_EQ(0U, spi0.id);
@@ -43,8 +43,7 @@ void test_case_main(const char *case_dir) {
 	TEST_ASSERT(spi2.dma_handle == NULL);
 	TEST_EQ(0U, spi2.dma_rx_drq);
 
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		 sunxi_spi_dt_read_alias(&rejected, "spi3", &dma1));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_spi_dt_read_alias(&rejected, "spi3", &dma1));
 	TEST_EQ(0xdeadbeefU, rejected.base);
 
 	TEST_EQ(DRIVER_OK, sunxi_spi_dt_read_alias(&spi4, "spi4", &dma0));

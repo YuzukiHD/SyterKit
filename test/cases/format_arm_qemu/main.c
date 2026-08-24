@@ -37,8 +37,7 @@ static int string_equal(const char *left, const char *right)
 	return *left == *right;
 }
 
-static int run_case(const char *name, const char *expected,
-			const char *fmt, ...)
+static int run_case(const char *name, const char *expected, const char *fmt, ...)
 {
 	va_list args;
 	unsigned count;
@@ -65,8 +64,7 @@ static int run_pointer_case(void)
 	output_length = 0;
 	output[0] = '\0';
 	format(putc_buffer, NULL, "%p", (void *)(uintptr_t)0x1234U);
-	if (output_length < 6U || output[0] != '0' || output[1] != 'x' ||
-	    output[output_length - 4U] != '1' || output[output_length - 1U] != '4') {
+	if (output_length < 6U || output[0] != '0' || output[1] != 'x' || output[output_length - 4U] != '1' || output[output_length - 1U] != '4') {
 		qemu_puts("CHECK FAIL pointer\n");
 		return 0;
 	}
@@ -80,11 +78,11 @@ void test_boot(void)
 
 	qemu_puts("TEST START "
 #ifdef FORMAT_RISCV64_TEST
-		"format_riscv64_qemu"
+		  "format_riscv64_qemu"
 #else
-		"format_arm_qemu"
+		  "format_arm_qemu"
 #endif
-		"\n");
+		  "\n");
 	passed &= run_case("sign-width", "-0007", "%+05d", -7);
 	passed &= run_case("alternate-hex", "0x00002a", "%#08x", 42U);
 	passed &= run_case("string-precision", "abcdef|abc", "%.6s|%.3s", "abcdef", "abcdef");
@@ -100,11 +98,11 @@ void test_boot(void)
 	if (passed) {
 		qemu_puts("TEST PASS "
 #ifdef FORMAT_RISCV64_TEST
-			"format_riscv64_qemu"
+			  "format_riscv64_qemu"
 #else
-			"format_arm_qemu"
+			  "format_arm_qemu"
 #endif
-			"\n");
+			  "\n");
 		qemu_exit(1);
 	}
 	qemu_puts("TEST FAIL format_arm_qemu\n");

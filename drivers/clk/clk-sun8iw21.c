@@ -14,7 +14,8 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun8iw21/reg.h>
 
-void sunxi_clk_init(void) {
+void sunxi_clk_init(void)
+{
 	uint32_t val;
 
 	/* cpu_clk = CPU_PLL/P, AXI_DIV = 2 */
@@ -98,7 +99,8 @@ void sunxi_clk_init(void) {
 	return;
 }
 
-void sunxi_clk_reset(void) {
+void sunxi_clk_reset(void)
+{
 	uint32_t reg_val;
 
 	/*set ahb,apb to default, use OSC24M*/
@@ -115,8 +117,8 @@ void sunxi_clk_reset(void) {
 	return;
 }
 
-
-void sunxi_clk_dump(void) {
+void sunxi_clk_dump(void)
+{
 	uint32_t reg32;
 	uint32_t cpu_clk_src, plln, pllm;
 	uint8_t p0, p1;
@@ -128,32 +130,32 @@ void sunxi_clk_dump(void) {
 	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg32);
 
 	switch (cpu_clk_src) {
-		case 0x0:
-			clock_str = "OSC24M";
-			break;
+	case 0x0:
+		clock_str = "OSC24M";
+		break;
 
-		case 0x1:
-			clock_str = "CLK32";
-			break;
+	case 0x1:
+		clock_str = "CLK32";
+		break;
 
-		case 0x2:
-			clock_str = "CLK16M_RC";
-			break;
+	case 0x2:
+		clock_str = "CLK16M_RC";
+		break;
 
-		case 0x3:
-			clock_str = "PLL_CPU";
-			break;
+	case 0x3:
+		clock_str = "PLL_CPU";
+		break;
 
-		case 0x4:
-			clock_str = "PLL_PERI_600M";
-			break;
+	case 0x4:
+		clock_str = "PLL_PERI_600M";
+		break;
 
-		case 0x5:
-			clock_str = "PLL_PERI_800M";
-			break;
+	case 0x5:
+		clock_str = "PLL_PERI_800M";
+		break;
 
-		default:
-			clock_str = "ERROR";
+	default:
+		clock_str = "ERROR";
 	}
 
 	p0 = (reg32 >> 16) & 0x03;

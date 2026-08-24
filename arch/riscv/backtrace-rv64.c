@@ -26,9 +26,10 @@ extern uint8_t __stack_srv_end[];
  * @param[in] pc Program-counter value.
  * @return Nonzero when the address belongs to executable image storage.
  */
-static int backtrace_pc_valid(uintptr_t pc) {
-	uintptr_t start = (uintptr_t) __spl_start;
-	uintptr_t end = (uintptr_t) __spl_end;
+static int backtrace_pc_valid(uintptr_t pc)
+{
+	uintptr_t start = (uintptr_t)__spl_start;
+	uintptr_t end = (uintptr_t)__spl_end;
 
 	return pc >= start && pc < end;
 }
@@ -38,9 +39,10 @@ static int backtrace_pc_valid(uintptr_t pc) {
  * @param[in] sp Stack-pointer value.
  * @return Nonzero when at least one frame record can follow the pointer.
  */
-static int backtrace_sp_valid(uintptr_t sp) {
-	uintptr_t start = (uintptr_t) __stack_srv_start;
-	uintptr_t end = (uintptr_t) __stack_srv_end;
+static int backtrace_sp_valid(uintptr_t sp)
+{
+	uintptr_t start = (uintptr_t)__stack_srv_start;
+	uintptr_t end = (uintptr_t)__stack_srv_end;
 
 	return sp >= start && sp <= end - sizeof(struct stackframe);
 }
@@ -51,8 +53,9 @@ static int backtrace_sp_valid(uintptr_t sp) {
  * @param[in] fp Frame pointer for the current frame.
  * @return Nonzero when the complete frame record is readable.
  */
-static int backtrace_frame_valid(uintptr_t sp, uintptr_t fp) {
-	uintptr_t end = (uintptr_t) __stack_srv_end;
+static int backtrace_frame_valid(uintptr_t sp, uintptr_t fp)
+{
+	uintptr_t end = (uintptr_t)__stack_srv_end;
 
 	if (!backtrace_sp_valid(sp))
 		return 0;
@@ -61,14 +64,14 @@ static int backtrace_frame_valid(uintptr_t sp, uintptr_t fp) {
 	return fp >= sp + sizeof(struct stackframe) && fp <= end;
 }
 
-int backtrace_from_context(const struct backtrace_context *context) {
+int backtrace_from_context(const struct backtrace_context *context)
+{
 	uintptr_t fp;
 	uintptr_t pc;
 	uintptr_t sp;
 	unsigned int level;
 
-	if (!context || !backtrace_pc_valid(context->pc) ||
-	    !backtrace_sp_valid(context->sp))
+	if (!context || !backtrace_pc_valid(context->pc) || !backtrace_sp_valid(context->sp))
 		return 0;
 
 	pc = context->pc;
@@ -78,10 +81,8 @@ int backtrace_from_context(const struct backtrace_context *context) {
 	backtrace_print_frame(pc);
 	level = 1U;
 
-	while (level < BACKTRACE_LEVEL_LIMIT &&
-	       backtrace_frame_valid(sp, fp)) {
-		const struct stackframe *frame =
-			(const struct stackframe *) fp - 1;
+	while (level < BACKTRACE_LEVEL_LIMIT && backtrace_frame_valid(sp, fp)) {
+		const struct stackframe *frame = (const struct stackframe *)fp - 1;
 
 		sp = fp;
 		fp = frame->fp;
@@ -92,21 +93,21 @@ int backtrace_from_context(const struct backtrace_context *context) {
 		level++;
 	}
 
-	if (level == 1U && context->lr != pc &&
-	    backtrace_pc_valid(context->lr)) {
+	if (level == 1U && context->lr != pc && backtrace_pc_valid(context->lr)) {
 		backtrace_print_frame(context->lr);
 		level++;
 	}
 	backtrace_print_end();
-	return (int) level;
+	return (int)level;
 }
 
-int backtrace(char *pc, long *sp, char *lr) {
+int backtrace(char *pc, long *sp, char *lr)
+{
 	const struct backtrace_context context = {
-		.pc = (uintptr_t) pc,
-		.sp = (uintptr_t) sp,
+		.pc = (uintptr_t)pc,
+		.sp = (uintptr_t)sp,
 		.fp = 0U,
-		.lr = (uintptr_t) lr,
+		.lr = (uintptr_t)lr,
 	};
 
 	return backtrace_from_context(&context);
@@ -119,8 +120,8 @@ int backtrace(char *pc, long *sp, char *lr) {
  * @param[in] fp Captured frame pointer.
  * @return Number of frames printed.
  */
-static int __attribute__((noinline, used))
-dump_stack_from_context(uintptr_t sp, uintptr_t lr, uintptr_t fp) {
+static int __attribute__((noinline, used)) dump_stack_from_context(uintptr_t sp, uintptr_t lr, uintptr_t fp)
+{
 	const struct backtrace_context context = {
 		.pc = lr,
 		.sp = sp,
@@ -131,7 +132,8 @@ dump_stack_from_context(uintptr_t sp, uintptr_t lr, uintptr_t fp) {
 	return backtrace_from_context(&context);
 }
 
-int __attribute__((naked)) dump_stack(void) {
+int __attribute__((naked)) dump_stack(void)
+{
 	asm volatile("mv a0, sp\n"
 		     "mv a1, ra\n"
 		     "mv a2, s0\n"

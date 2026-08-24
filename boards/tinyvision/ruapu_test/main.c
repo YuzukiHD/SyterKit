@@ -30,13 +30,12 @@
 
 extern sunxi_serial_t uart_dbg;
 
-int main(void) {
-
+int main(void)
+{
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
 
 	show_banner();
-
 
 	sunxi_clk_init();
 
@@ -48,7 +47,6 @@ int main(void) {
 	PRINT_ISA_SUPPORT(neon)
 	PRINT_ISA_SUPPORT(vfpv4)
 	PRINT_ISA_SUPPORT(idiv)
-
 
 	printk_info("Ruapu Supported:\n");
 	const char *const *supported = ruapu_rua();

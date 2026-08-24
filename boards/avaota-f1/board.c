@@ -25,7 +25,8 @@
 #include <dt-compatible/sid-dt.h>
 #include <e907/sysmap.h>
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -43,10 +44,10 @@ void show_chip() {
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 
-int sunxi_hosc_detect(void) {
+int sunxi_hosc_detect(void)
+{
 	uintptr_t detect_reg;
 	uint32_t val;
-
 
 	detect_reg = SUNXI_CCU_AON_BASE + HOSC_FREQ_DET;
 	val = readl(detect_reg);
@@ -67,7 +68,8 @@ int sunxi_hosc_detect(void) {
 	}
 }
 
-void sysmap_init(void) {
+void sysmap_init(void)
+{
 	sysmap_add_mem_region(0x00000000, 0x10000000, SYSMAP_MEM_ATTR_RAM);
 	sysmap_add_mem_region(0x10000000, 0x02000000, SYSMAP_MEM_ATTR_RAM);
 	sysmap_add_mem_region(0x12000000, 0x1E000000, SYSMAP_MEM_ATTR_DEVICE);
@@ -78,7 +80,8 @@ void sysmap_init(void) {
 	sysmap_add_mem_region(0x80000000, 0x7FFFFFFF, SYSMAP_MEM_ATTR_RAM);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	setbits_le32(SUNXI_PRCM_BASE + 0x1c, 1U << 3);
 	write32(SUNXI_RTC_WDG_BASE + 0x18, 0x16aa0000U);
 	write32(SUNXI_RTC_WDG_BASE + 0x08, 0x16aa0001U);

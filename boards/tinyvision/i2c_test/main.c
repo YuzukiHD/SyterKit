@@ -16,14 +16,14 @@
 
 extern sunxi_serial_t uart_dbg;
 
-int main(void) {
+int main(void)
+{
 	sunxi_i2c_t i2c;
 
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK) {
 		printk_error("I2C: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 

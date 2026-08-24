@@ -16,10 +16,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef enum irq_trigger_type { IRQ_TRIGGER_TYPE_LEVEL,
-								IRQ_TRIGGER_TYPE_EDGE_RISING,
-								IRQ_TRIGGER_TYPE_EDGE_FALLING,
-								IRQ_TRIGGER_TYPE_EDGE_BOTH } irq_trigger_type_t;
+typedef enum irq_trigger_type { IRQ_TRIGGER_TYPE_LEVEL, IRQ_TRIGGER_TYPE_EDGE_RISING, IRQ_TRIGGER_TYPE_EDGE_FALLING, IRQ_TRIGGER_TYPE_EDGE_BOTH } irq_trigger_type_t;
 
 typedef struct sunxi_clic {
 	int dt_node;

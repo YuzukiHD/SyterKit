@@ -22,7 +22,8 @@
 #include <drivers/soc/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
-void gicr_set_waker(void) {
+void gicr_set_waker(void)
+{
 	uint32_t gicr_waker = read32(GICR_WAKER(0));
 	if ((gicr_waker & 2) == 0) {
 		gicr_waker |= 2;
@@ -30,7 +31,8 @@ void gicr_set_waker(void) {
 	}
 }
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -42,7 +44,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void set_rpio_power_mode(void) {
+void set_rpio_power_mode(void)
+{
 	sunxi_gpio_t r_pio;
 	uint32_t reg_val;
 
@@ -59,7 +62,8 @@ void set_rpio_power_mode(void) {
 	}
 }
 
-int sunxi_nsi_init(void) {
+int sunxi_nsi_init(void)
+{
 	/* IOMMU prio 3 */
 	writel(0x1, 0x02021418);
 	writel(0xf, 0x02021414);
@@ -91,7 +95,8 @@ int sunxi_nsi_init(void) {
 	return 0;
 }
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -111,31 +116,32 @@ void show_chip() {
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
-		case 0x5200:
-			printk_info("Chip type = A523M00X0000");
-			break;
-		case 0x5f10:
-			printk_info("Chip type = T527M02X0DCH");
-			break;
-		case 0x5f30:
-			printk_info("Chip type = T527M00X0DCH");
-			break;
-		case 0x5500:
-			printk_info("Chip type = MR527M02X0D00");
-			break;
-		case 0xff10:
-			printk_info("Chip type = A527M000000H");
-			break;
-		default:
-			printk_info("Chip type = UNKNOW");
-			break;
+	case 0x5200:
+		printk_info("Chip type = A523M00X0000");
+		break;
+	case 0x5f10:
+		printk_info("Chip type = T527M02X0DCH");
+		break;
+	case 0x5f30:
+		printk_info("Chip type = T527M00X0DCH");
+		break;
+	case 0x5500:
+		printk_info("Chip type = MR527M02X0D00");
+		break;
+	case 0xff10:
+		printk_info("Chip type = A527M000000H");
+		break;
+	default:
+		printk_info("Chip type = UNKNOW");
+		break;
 	}
 
 	uint32_t version = read32(SUNXI_SYSCTRL_BASE + 0x24) & 0x7;
 	printk(LOG_LEVEL_MUTE, " Chip Version = %x \n", version);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDT_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

@@ -17,7 +17,6 @@
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
 
-
 /**
  * @brief Set the SDHC controller's clock frequency.
  *
@@ -27,7 +26,8 @@
  * @param clk_hz Desired clock frequency in Hertz.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz) {
+int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
+{
 	uint32_t reg_val = 0x0, sclk_hz = 0x0, div = 0x0;
 	uint32_t source;
 
@@ -61,7 +61,7 @@ set_mclk:
 	writel(reg_val, clk.reg_base);
 
 	printk_trace("SMHC: sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base),
-				 source, div, clk.factor_n, clk.factor_m);
+		     source, div, clk.factor_n, clk.factor_m);
 	return 0;
 }
 
@@ -73,7 +73,8 @@ set_mclk:
  * @param sdhci Pointer to the SDHC controller structure.
  * @return Current clock frequency in Hertz.
  */
-uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
+uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
+{
 	uint32_t clk_hz = 0x0;
 	uint32_t reg_val = 0x0;
 	uint32_t source;
@@ -97,7 +98,7 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci) {
 	}
 
 	printk_trace("SMHC: sdhci%d clk parent %uHz, mclk=0x%08x clk_sel=%u, n=%u, m=%u\n", sdhci->id, clk_hz, readl(sdhci->sdhci_clk.reg_base), source, clk.factor_n + 1,
-				 clk.factor_m + 1);
+		     clk.factor_m + 1);
 
 	// Calculate the actual clock frequency based on the divider values
 	return clk_hz / (clk.factor_n + 1) / (clk.factor_m + 1);

@@ -24,7 +24,8 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -39,13 +40,13 @@ void clean_syterkit_data(void) {
 #define GPIO_POW_MOD_SEL_MASK (0x033ffff3)
 #define R_GPIO_POW_MOD_SEL_MASK (0xf)
 
-void sunxi_gpio_power_mode_init(void) {
+void sunxi_gpio_power_mode_init(void)
+{
 	sunxi_gpio_t pio;
 	sunxi_gpio_t r_pio;
 	uint32_t reg_val;
 
-	if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK ||
-	    sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
+	if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK || sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
 		printk_error("GPIO: invalid PIO devicetree configuration\n");
 		return;
 	}
@@ -60,7 +61,8 @@ void sunxi_gpio_power_mode_init(void) {
 	writel(reg_val, r_pio.base + 0x340);
 }
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -78,12 +80,12 @@ void show_chip() {
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
-		case 0x5f00:
-			printk_info("Chip type = T536MX-CXX");
-			break;
-		default:
-			printk_info("Chip type = UNKNOW");
-			break;
+	case 0x5f00:
+		printk_info("Chip type = T536MX-CXX");
+		break;
+	default:
+		printk_info("Chip type = UNKNOW");
+		break;
 	}
 
 	setbits_le32(SUNXI_SYSCTRL_BASE + 0x24, BIT(15));
@@ -91,7 +93,8 @@ void show_chip() {
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDG_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

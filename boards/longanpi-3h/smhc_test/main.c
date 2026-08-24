@@ -26,24 +26,28 @@
 
 extern sunxi_serial_t uart_dbg;
 
-
 extern void set_cpu_poweroff(void);
 
-void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
-			 uint32_t voltage) {
+void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name, uint32_t voltage)
+{
 	int temp_vol, src_vol = pmu_axp1530_get_vol(pmu, power_name);
 	if (src_vol > voltage) {
-		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) {
+			pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1);
+		}
 	} else if (src_vol < voltage) {
-		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) {
+			pmu_axp1530_set_vol(pmu, power_name, temp_vol, 1);
+		}
 	}
 	mdelay(30); /* Delay 300ms for pmu bootup */
 }
 
-int main(void) {
-	sunxi_dram_t dram = {0};
+int main(void)
+{
+	sunxi_dram_t dram = { 0 };
 	axp_pmu_t pmu;
-	sdmmc_pdata_t mmc_card = {0};
+	sdmmc_pdata_t mmc_card = { 0 };
 	sunxi_i2c_t i2c;
 	sunxi_sdhci_t sdhci0;
 
@@ -51,8 +55,7 @@ int main(void) {
 		return -1;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -60,7 +63,6 @@ int main(void) {
 		printk_error("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 

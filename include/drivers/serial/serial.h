@@ -9,7 +9,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /* defines baud rate of the UART frame. */
 typedef enum {
@@ -85,13 +85,13 @@ typedef struct {
 /* Define a structure sunxi_serial_t for serial configuration */
 typedef struct {
 	uintptr_t base; /* Base address of the serial device */
-	uint8_t id;	   /* ID of the serial device */
+	uint8_t id; /* ID of the serial device */
 	sunxi_clk_t uart_clk;
 	sunxi_serial_pin_t gpio_pin;
 	sunxi_serial_baudrate_t baud_rate; /* Baud rate configuration */
-	sunxi_serial_parity_t parity;	   /* Parity configuration */
-	sunxi_serial_stop_bit_t stop;	   /* Stop bit configuration */
-	sunxi_serial_dlen_t dlen;		   /* Data length configuration */
+	sunxi_serial_parity_t parity; /* Parity configuration */
+	sunxi_serial_stop_bit_t stop; /* Stop bit configuration */
+	sunxi_serial_dlen_t dlen; /* Data length configuration */
 } sunxi_serial_t;
 
 /** @brief Debug console selected from the board device tree. */
@@ -136,6 +136,6 @@ char sunxi_serial_getc(void *arg);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __DRIVERS_SERIAL_H__
+#endif // __DRIVERS_SERIAL_H__

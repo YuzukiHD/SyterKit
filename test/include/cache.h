@@ -5,7 +5,8 @@
 
 void test_data_sync_barrier(void);
 
-static inline void data_sync_barrier(void) {
+static inline void data_sync_barrier(void)
+{
 	test_data_sync_barrier();
 }
 

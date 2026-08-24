@@ -31,7 +31,8 @@ typedef enum {
 	SUNXI_SOC_VER_C = 2,
 } sunxi_soc_version_t;
 
-static sunxi_soc_version_t sunxi_get_soc_ver(void) {
+static sunxi_soc_version_t sunxi_get_soc_ver(void)
+{
 	uint32_t value;
 
 	value = readl(SUNXI_SOC_VER_REG);
@@ -40,7 +41,8 @@ static sunxi_soc_version_t sunxi_get_soc_ver(void) {
 	return SUNXI_SOC_VER_A + value;
 }
 
-static void sunxi_pll_ldo_init(sunxi_soc_version_t version) {
+static void sunxi_pll_ldo_init(sunxi_soc_version_t version)
+{
 	if (version == SUNXI_SOC_VER_A) {
 		writel(0xA7070025, PLL_LDO_REG);
 		writel(0xA7070025, PLL_LDO_REG);
@@ -50,7 +52,8 @@ static void sunxi_pll_ldo_init(sunxi_soc_version_t version) {
 	}
 }
 
-void board_common_init(void) {
+void board_common_init(void)
+{
 	sunxi_gpio_t pio;
 	sunxi_soc_version_t version = sunxi_get_soc_ver();
 
@@ -65,7 +68,8 @@ void board_common_init(void) {
 	sunxi_pll_ldo_init(version);
 }
 
-void clean_syterkit_data(void) {
+void clean_syterkit_data(void)
+{
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
 	printk_info("disable mmu ok...\n");
@@ -77,7 +81,8 @@ void clean_syterkit_data(void) {
 	printk_info("free interrupt ok...\n");
 }
 
-void show_chip() {
+void show_chip()
+{
 	sunxi_sid_t sid;
 	uint32_t chip_sid[4];
 
@@ -97,15 +102,15 @@ void show_chip() {
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
-		case 0x5100:
-			printk_info("Chip type = A733MX-HN3");
-			break;
-		case 0x5f00:
-			printk_info("Chip type = A733MX-N3X");
-			break;
-		default:
-			printk_info("Chip type = UNKNOW");
-			break;
+	case 0x5100:
+		printk_info("Chip type = A733MX-HN3");
+		break;
+	case 0x5f00:
+		printk_info("Chip type = A733MX-N3X");
+		break;
+	default:
+		printk_info("Chip type = UNKNOW");
+		break;
 	}
 
 	setbits_le32(SUNXI_SYSCTRL_BASE + 0x24, BIT(15));
@@ -113,7 +118,8 @@ void show_chip() {
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
-void sys_reset(void) {
+void sys_reset(void)
+{
 	write32(SUNXI_WDT0_BASE + 0x08, 0x16aa0001U);
 
 	for (;;) {

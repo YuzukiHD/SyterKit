@@ -48,8 +48,7 @@ uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset);
  * @param offset The offset in the eFuse memory to which the value will be written.
  * @param value The 32-bit value to be written to the eFuse memory.
  */
-int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset,
-		      uint32_t value);
+int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value);
 
 /**
  * @brief Dump the contents of the eFuse memory.

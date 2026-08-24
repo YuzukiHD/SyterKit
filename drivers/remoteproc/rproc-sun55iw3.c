@@ -20,15 +20,14 @@ enum sun55iw3_e906_register {
 	SUN55IW3_E906_CFG,
 };
 
-static int sun55iw3_e906_start(sunxi_remoteproc_t *remoteproc) {
+static int sun55iw3_e906_start(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
 	uintptr_t cfg = remoteproc->registers[SUN55IW3_E906_CFG].base;
 
-	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET,
-		RISCV_CFG_RST | RISCV_CFG_GATING);
-	write32(cfg + SUN55IW3_E906_START_OFFSET,
-		(uint32_t) remoteproc->entry);
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, RISCV_CFG_RST | RISCV_CFG_GATING);
+	write32(cfg + SUN55IW3_E906_START_OFFSET, (uint32_t)remoteproc->entry);
 	value = read32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET);
 	value |= RISCV_CORE_RST | RISCV_APB_DB_RST;
 	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, value);
@@ -38,7 +37,8 @@ static int sun55iw3_e906_start(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static int sun55iw3_e906_reset(sunxi_remoteproc_t *remoteproc) {
+static int sun55iw3_e906_reset(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
 
@@ -49,7 +49,8 @@ static int sun55iw3_e906_reset(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc) {
+static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t factor_m;
 	uint32_t factor_n;
 	uint32_t value;
@@ -58,8 +59,7 @@ static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc) {
 	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
 	factor_m = (value & 0x1fU) + 1U;
 	factor_n = ((value >> 8) & 0x3U) + 1U;
-	printk_debug("CLK: RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n",
-		     value, (value >> 24) & 0x7U, factor_m, factor_n);
+	printk_debug("CLK: RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m, factor_n);
 }
 
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {

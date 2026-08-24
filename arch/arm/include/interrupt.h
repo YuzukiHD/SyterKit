@@ -17,18 +17,20 @@
  * This function enables IRQ interrupts by clearing the I-bit in the Current
  * Program Status Register (CPSR).
  */
-static inline void arm32_interrupt_enable(void) {
+static inline void arm32_interrupt_enable(void)
+{
 	uint32_t tmp;
 
 	__asm__ __volatile__("mrs %0, cpsr\n"
-						 "bic %0, %0, #(1<<7)\n"
-						 "msr cpsr_cxsf, %0"
-						 : "=r"(tmp)
-						 :
-						 : "memory");
+			     "bic %0, %0, #(1<<7)\n"
+			     "msr cpsr_cxsf, %0"
+			     : "=r"(tmp)
+			     :
+			     : "memory");
 }
 
-static inline void interrupt_enable(void) {
+static inline void interrupt_enable(void)
+{
 	arm32_interrupt_enable();
 }
 
@@ -38,18 +40,20 @@ static inline void interrupt_enable(void) {
  * This function disables IRQ interrupts by setting the I-bit in the Current
  * Program Status Register (CPSR).
  */
-static inline void arm32_interrupt_disable(void) {
+static inline void arm32_interrupt_disable(void)
+{
 	uint32_t tmp;
 
 	__asm__ __volatile__("mrs %0, cpsr\n"
-						 "orr %0, %0, #(1<<7)\n"
-						 "msr cpsr_cxsf, %0"
-						 : "=r"(tmp)
-						 :
-						 : "memory");
+			     "orr %0, %0, #(1<<7)\n"
+			     "msr cpsr_cxsf, %0"
+			     : "=r"(tmp)
+			     :
+			     : "memory");
 }
 
-static inline void interrupt_disable(void) {
+static inline void interrupt_disable(void)
+{
 	arm32_interrupt_disable();
 }
 

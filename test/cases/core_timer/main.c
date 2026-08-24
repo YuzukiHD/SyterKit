@@ -9,26 +9,29 @@ struct callback_state {
 	unsigned int last_event;
 };
 
-static void count_callback(void *arg, uint32_t event) {
+static void count_callback(void *arg, uint32_t event)
+{
 	struct callback_state *state = arg;
 
 	state->calls++;
 	state->last_event = event;
 }
 
-static unsigned int parse_value(char **cursor) {
+static unsigned int parse_value(char **cursor)
+{
 	unsigned int value = 0;
 
 	while (**cursor == ' ')
 		(*cursor)++;
 	while (**cursor >= '0' && **cursor <= '9')
-		value = value * 10U + (unsigned int) (*(*cursor)++ - '0');
+		value = value * 10U + (unsigned int)(*(*cursor)++ - '0');
 	return value;
 }
 
-void test_case_main(const char *case_dir) {
-	struct callback_state finite = {0};
-	struct callback_state forever = {0};
+void test_case_main(const char *case_dir)
+{
+	struct callback_state finite = { 0 };
+	struct callback_state forever = { 0 };
 	timer_t finite_timer;
 	timer_t forever_timer;
 	char data[TEST_DATA_MAX];

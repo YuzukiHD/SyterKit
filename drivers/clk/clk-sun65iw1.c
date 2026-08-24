@@ -14,8 +14,10 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun65iw1/reg.h>
 
-void sunxi_clk_init(void) {
-	}
+void sunxi_clk_init(void)
+{
+}
 
-void sunxi_clk_reset(void) {
+void sunxi_clk_reset(void)
+{
 }

@@ -128,17 +128,17 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
-int pmu_axp8191_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c) {
-	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP8191,
-				AXP8191_RUNTIME_ADDR, 0U);
+int pmu_axp8191_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c)
+{
+	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP8191, AXP8191_RUNTIME_ADDR, 0U);
 }
 
-int pmu_axp8191_init(axp_pmu_t *pmu) {
+int pmu_axp8191_init(axp_pmu_t *pmu)
+{
 	uint8_t axp_val;
 	int ret;
 
-	if (!axp_pmu_matches(pmu, AXP_PMU_AXP8191) ||
-	    !pmu->i2c->status) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP8191) || !pmu->i2c->status) {
 		printk_warning("PMU: I2C not init\n");
 		return -1;
 	}
@@ -149,43 +149,43 @@ int pmu_axp8191_init(axp_pmu_t *pmu) {
 	}
 
 	if (axp_val == AXP8191_IC_TYPE) {
-		printk_info("PMU: Found AXP318W PMU, Addr 0x%02x\n",
-			    pmu->address);
+		printk_info("PMU: Found AXP318W PMU, Addr 0x%02x\n", pmu->address);
 	} else {
 		printk_warning("PMU: AXP PMU Check error\n");
 		return -1;
 	}
 
-	if (sunxi_i2c_read(pmu->i2c, pmu->address,
-			   AXP8191_DCDC_POWER_ON_OFF_CTL1, &axp_val))
+	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_DCDC_POWER_ON_OFF_CTL1, &axp_val))
 		return -1;
 	axp_val |= 0x08;
-	if (sunxi_i2c_write(pmu->i2c, pmu->address,
-			    AXP8191_DCDC_POWER_ON_OFF_CTL1, axp_val))
+	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP8191_DCDC_POWER_ON_OFF_CTL1, axp_val))
 		return -1;
 
 	/* enable dcdc2~dcdc9 dvm */
 	for (int i = 0; i <= (AXP8191_DC9OUT_VOL - AXP8191_DC2OUT_VOL); i++) {
-		if (sunxi_i2c_read(pmu->i2c, pmu->address,
-				   AXP8191_DC2OUT_VOL + i, &axp_val))
+		if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, &axp_val))
 			return -1;
 		axp_val |= 0x80;
-		if (sunxi_i2c_write(pmu->i2c, pmu->address,
-				    AXP8191_DC2OUT_VOL + i, axp_val))
+		if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP8191_DC2OUT_VOL + i, axp_val))
 			return -1;
 	}
 
 	return AXP8191_CHIP_ID;
 }
 
-int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff) {
+int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
+{
 	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name) {
+int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
+{
 	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-void pmu_axp8191_dump(axp_pmu_t *pmu) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name)); }
+void pmu_axp8191_dump(axp_pmu_t *pmu)
+{
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
+		printk_debug("PMU: axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name));
+	}
 }

@@ -32,17 +32,17 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
-int pmu_axp1530_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c) {
-	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP1530,
-				AXP1530_RUNTIME_ADDR, 0U);
+int pmu_axp1530_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c)
+{
+	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP1530, AXP1530_RUNTIME_ADDR, 0U);
 }
 
-int pmu_axp1530_init(axp_pmu_t *pmu) {
+int pmu_axp1530_init(axp_pmu_t *pmu)
+{
 	uint8_t axp_val;
 	int ret;
 
-	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530) ||
-	    !pmu->i2c->status) {
+	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530) || !pmu->i2c->status) {
 		printk_warning("PMU: I2C not init\n");
 		return -1;
 	}
@@ -54,21 +54,21 @@ int pmu_axp1530_init(axp_pmu_t *pmu) {
 
 	axp_val &= 0xCF;
 	switch (axp_val) {
-		case AXP1530_CHIP_ID:
-			printk_info("PMU: Found AXP1530 PMU\n");
-			break;
-		case AXP313A_CHIP_ID:
-			printk_info("PMU: Found AXP313A PMU\n");
-			break;
-		case AXP313B_CHIP_ID:
-			printk_info("PMU: Found AXP313B PMU\n");
-			break;
-		case AXP323_CHIP_ID:
-			printk_info("PMU: Found AXP323 PMU\n");
-			break;
-		default:
-			printk_info("PMU: Cannot found match PMU\n");
-			return -1;
+	case AXP1530_CHIP_ID:
+		printk_info("PMU: Found AXP1530 PMU\n");
+		break;
+	case AXP313A_CHIP_ID:
+		printk_info("PMU: Found AXP313A PMU\n");
+		break;
+	case AXP313B_CHIP_ID:
+		printk_info("PMU: Found AXP313B PMU\n");
+		break;
+	case AXP323_CHIP_ID:
+		printk_info("PMU: Found AXP323 PMU\n");
+		break;
+	default:
+		printk_info("PMU: Cannot found match PMU\n");
+		return -1;
 	}
 
 	/* Set over temperature shutdown functtion */
@@ -81,7 +81,8 @@ int pmu_axp1530_init(axp_pmu_t *pmu) {
 	return 0;
 }
 
-int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu) {
+int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu)
+{
 	uint8_t axp_val;
 	int ret;
 
@@ -94,32 +95,33 @@ int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu) {
 
 	axp_val &= 0xCF;
 	switch (axp_val) {
-		case AXP323_CHIP_ID: /* Only AXP323 Support Dual phase */
-			break;
-		default:
-			printk_info("PMU: PMU not support dual phase\n");
-			return -1;
+	case AXP323_CHIP_ID: /* Only AXP323 Support Dual phase */
+		break;
+	default:
+		printk_info("PMU: PMU not support dual phase\n");
+		return -1;
 	}
 
-	if (sunxi_i2c_write(pmu->i2c, pmu->address,
-			    AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E) ||
-	    sunxi_i2c_write(pmu->i2c, pmu->address,
-			    AXP1530_DCDC_MODE_CTRL2, 0x02) ||
-	    sunxi_i2c_write(pmu->i2c, pmu->address,
-			    AXP1530_POWER_DOMN_SEQUENCE, 0x22))
+	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E) || sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_DCDC_MODE_CTRL2, 0x02) ||
+	    sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, 0x22))
 		return -1;
 
 	return 0;
 }
 
-int pmu_axp1530_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff) {
+int pmu_axp1530_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
+{
 	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-int pmu_axp1530_get_vol(axp_pmu_t *pmu, char *name) {
+int pmu_axp1530_get_vol(axp_pmu_t *pmu, char *name)
+{
 	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
-void pmu_axp1530_dump(axp_pmu_t *pmu) {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) { printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp_ctrl_tbl[i].name)); }
+void pmu_axp1530_dump(axp_pmu_t *pmu)
+{
+	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
+		printk_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp_ctrl_tbl[i].name));
+	}
 }

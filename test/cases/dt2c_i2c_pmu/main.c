@@ -6,13 +6,14 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	sunxi_i2c_t i2c0 = {0};
-	sunxi_i2c_t i2c1 = {0};
-	axp_pmu_t axp2202 = {0};
-	axp_pmu_t axp1530 = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_i2c_t i2c0 = { 0 };
+	sunxi_i2c_t i2c1 = { 0 };
+	axp_pmu_t axp2202 = { 0 };
+	axp_pmu_t axp1530 = { 0 };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_i2c_dt_read_alias(&i2c0, "i2c0"));
 	TEST_EQ(0x3000U, i2c0.base);
 	TEST_EQ(SUNXI_R_I2C0, i2c0.id);

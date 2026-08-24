@@ -8,7 +8,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief Copies the values of 'cnt' bytes from memory area 'src' to memory area 'dst'.
@@ -184,10 +184,10 @@ int snprintf(char *buf, size_t n, const char *fmt, ...);
  */
 int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap);
 
-#endif// CONFIG_SPRINTF
+#endif // CONFIG_SPRINTF
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif /* #ifndef __STRING_H__ */

@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #ifndef __packed
 #define __packed __attribute__((__packed__))
@@ -13,7 +13,7 @@ extern "C" {
 #define __aligned(x) __attribute__((__aligned__(x)))
 #endif
 
-#define MAX_LEVEL 32	/* how deeply nested we will go */
+#define MAX_LEVEL 32 /* how deeply nested we will go */
 #define SCRATCHPAD 1024 /* bytes of scratchpad memory */
 #define CMD_FDT_MAX_DUMP 64
 
@@ -26,8 +26,7 @@ extern "C" {
  * @param depth The maximum depth to traverse while printing.
  * @return The number of printed properties.
  */
-int fdt_print(unsigned char *working_fdt, const char *pathp, const char *prop,
-	      int depth);
+int fdt_print(unsigned char *working_fdt, const char *pathp, const char *prop, int depth);
 
 /**
  * @brief Parse the property values in the data buffer and return the new value pointers and lengths.
@@ -70,6 +69,6 @@ int fdt_overlay_apply_verbose(void *fdt, void *fdto);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif//__FDT_WRAPPER_H__
+#endif //__FDT_WRAPPER_H__

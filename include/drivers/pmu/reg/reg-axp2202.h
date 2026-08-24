@@ -74,4 +74,4 @@
 
 #define AXP2202_MODULE_EN (0x19)
 
-#endif// __REG_AXP2202_H__
+#endif // __REG_AXP2202_H__

@@ -5,11 +5,12 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
-	sunxi_dma_t dma0 = {0};
-	sunxi_dma_t dma1 = {0};
+void test_case_main(const char *case_dir)
+{
+	sunxi_dma_t dma0 = { 0 };
+	sunxi_dma_t dma1 = { 0 };
 
-	(void) case_dir;
+	(void)case_dir;
 	TEST_EQ(DRIVER_OK, sunxi_dma_dt_read_alias(&dma0, "dma0"));
 	TEST_EQ(0x7000U, dma0.dma_reg_base);
 	TEST_EQ(0x8000U, dma0.bus_clk.gate_reg_base);

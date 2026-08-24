@@ -14,7 +14,8 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun8iw20/reg.h>
 
-static void set_pll_cpux_axi(void) {
+static void set_pll_cpux_axi(void)
+{
 	uint32_t val;
 
 	/* AXI: Select cpu clock src to PLL_PERI(1x) */
@@ -67,13 +68,14 @@ static void set_pll_cpux_axi(void) {
 
 	/* AXI: set and change cpu clk src to PLL_CPUX, PLL_CPUX:AXI0 = 1200MHz:600MHz */
 	val = read32(CCU_BASE + CCU_CPU_AXI_CFG_REG);
-	val &= ~(0x07 << 24 | 0x3 << 16 | 0x3 << 8 | 0xf << 0);// Clear
+	val &= ~(0x07 << 24 | 0x3 << 16 | 0x3 << 8 | 0xf << 0); // Clear
 	val |= (0x03 << 24 | 0x0 << 16 | 0x1 << 8 | 0x1 << 0); // CLK_SEL=PLL_CPU/P, DIVP=0, DIV2=1, DIV1=1
 	write32(CCU_BASE + CCU_CPU_AXI_CFG_REG, val);
 	sdelay(1);
 }
 
-static void set_pll_periph0(void) {
+static void set_pll_periph0(void)
+{
 	uint32_t val;
 
 	/* Periph0 has been enabled */
@@ -104,17 +106,20 @@ static void set_pll_periph0(void) {
 	write32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG, val);
 }
 
-static void set_ahb(void) {
+static void set_ahb(void)
+{
 	write32(CCU_BASE + CCU_PSI_CLK_REG, (2 << 0) | (0 << 8) | (0x03 << 24));
 	sdelay(1);
 }
 
-static void set_apb(void) {
+static void set_apb(void)
+{
 	write32(CCU_BASE + CCU_APB0_CLK_REG, (2 << 0) | (1 << 8) | (0x03 << 24));
 	sdelay(1);
 }
 
-static void set_dma(void) {
+static void set_dma(void)
+{
 	/* Dma reset */
 	write32(CCU_BASE + CCU_DMA_BGR_REG, read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 16));
 	sdelay(20);
@@ -122,7 +127,8 @@ static void set_dma(void) {
 	write32(CCU_BASE + CCU_DMA_BGR_REG, read32(CCU_BASE + CCU_DMA_BGR_REG) | (1 << 0));
 }
 
-static void set_mbus(void) {
+static void set_mbus(void)
+{
 	uint32_t val;
 
 	/* Reset mbus domain */
@@ -135,7 +141,8 @@ static void set_mbus(void) {
 	write32(CCU_BASE + CCU_MBUS_MAT_CLK_GATING_REG, 0x00000d87);
 }
 
-static void set_module(virtual_addr_t addr) {
+static void set_module(virtual_addr_t addr)
+{
 	uint32_t val;
 
 	if (!(read32(addr) & (1 << 31))) {
@@ -159,7 +166,8 @@ static void set_module(virtual_addr_t addr) {
 	}
 }
 
-void sunxi_clk_init(void) {
+void sunxi_clk_init(void)
+{
 	set_pll_cpux_axi();
 	set_pll_periph0();
 	set_ahb();
@@ -174,7 +182,8 @@ void sunxi_clk_init(void) {
 	set_module(CCU_BASE + CCU_PLL_AUDIO1_CTRL_REG);
 }
 
-void sunxi_clk_reset(void) {
+void sunxi_clk_reset(void)
+{
 	uint32_t reg_val;
 
 	/*set ahb,apb to default, use OSC24M*/
@@ -191,8 +200,8 @@ void sunxi_clk_reset(void) {
 	return;
 }
 
-
-void sunxi_clk_dump(void) {
+void sunxi_clk_dump(void)
+{
 	uint32_t reg32;
 	uint32_t cpu_clk_src;
 	uint32_t plln, pllm;
@@ -205,36 +214,36 @@ void sunxi_clk_dump(void) {
 	cpu_clk_src = (reg32 >> 24) & 0x7;
 
 	switch (cpu_clk_src) {
-		case 0x0:
-			clock_str = "OSC24M";
-			break;
+	case 0x0:
+		clock_str = "OSC24M";
+		break;
 
-		case 0x1:
-			clock_str = "CLK32";
-			break;
+	case 0x1:
+		clock_str = "CLK32";
+		break;
 
-		case 0x2:
-			clock_str = "CLK16M_RC";
-			break;
+	case 0x2:
+		clock_str = "CLK16M_RC";
+		break;
 
-		case 0x3:
-			clock_str = "PLL_CPU";
-			break;
+	case 0x3:
+		clock_str = "PLL_CPU";
+		break;
 
-		case 0x4:
-			clock_str = "PLL_PERI(1X)";
-			break;
+	case 0x4:
+		clock_str = "PLL_PERI(1X)";
+		break;
 
-		case 0x5:
-			clock_str = "PLL_PERI(2X)";
-			break;
+	case 0x5:
+		clock_str = "PLL_PERI(2X)";
+		break;
 
-		case 0x6:
-			clock_str = "PLL_PERI(800M)";
-			break;
+	case 0x6:
+		clock_str = "PLL_PERI(800M)";
+		break;
 
-		default:
-			clock_str = "ERROR";
+	default:
+		clock_str = "ERROR";
 	}
 
 	reg32 = read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG);

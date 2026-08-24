@@ -35,7 +35,7 @@
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DTB_LOAD_ADDR (0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
@@ -57,14 +57,15 @@ extern sunxi_serial_t uart_dbg;
 
 static sunxi_dram_t dram;
 
-static sunxi_sdhci_t sdhci0 = {0};
-static sdmmc_pdata_t card0 = {0};
+static sunxi_sdhci_t sdhci0 = { 0 };
+static sdmmc_pdata_t card0 = { 0 };
 
 image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -84,7 +85,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -101,13 +102,14 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -115,7 +117,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -129,12 +131,12 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int) image->of_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
+	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -154,9 +156,10 @@ static int load_sdcard(image_info_t *image) {
 
 msh_declare_command(bootargs);
 msh_define_help(bootargs, "get/set bootargs for kernel",
-				"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
-				"       bootargs get            - get current bootargs\n");
-int cmd_bootargs(int argc, const char **argv) {
+		"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
+		"       bootargs get            - get current bootargs\n");
+int cmd_bootargs(int argc, const char **argv)
+{
 	if (argc < 2) {
 		uart_puts(cmd_bootargs_usage);
 		return 0;
@@ -168,7 +171,7 @@ int cmd_bootargs(int argc, const char **argv) {
 			return 0;
 		}
 		/* Force image.of_dest to be a pointer to fdt_header structure */
-		struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+		struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 		int err = 0;
 
@@ -203,7 +206,7 @@ int cmd_bootargs(int argc, const char **argv) {
 		printk(LOG_LEVEL_MUTE, "DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
 	} else if (strncmp(argv[1], "get", 3) == 0) {
 		/* Force image.of_dest to be a pointer to fdt_header structure */
-		struct fdt_header *dtb_header = (struct fdt_header *) image.of_dest;
+		struct fdt_header *dtb_header = (struct fdt_header *)image.of_dest;
 
 		int err = 0;
 
@@ -229,7 +232,8 @@ int cmd_bootargs(int argc, const char **argv) {
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+int cmd_reload(int argc, const char **argv)
+{
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
@@ -245,11 +249,12 @@ int cmd_reload(int argc, const char **argv) {
 
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
+int cmd_boot(int argc, const char **argv)
+{
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, unsigned int params);
 
-	if (zImage_loader((unsigned char *) image.dest, &entry_point)) {
+	if (zImage_loader((unsigned char *)image.dest, &entry_point)) {
 		printk_error("boot setup failed\n");
 		return 0;
 	}
@@ -269,8 +274,8 @@ int cmd_boot(int argc, const char **argv) {
 
 	printk_info("jump to kernel address: 0x%x\n", image.dest);
 
-	kernel_entry = (void (*)(int, int, unsigned int)) entry_point;
-	kernel_entry(0, ~0, (unsigned int) image.of_dest);
+	kernel_entry = (void (*)(int, int, unsigned int))entry_point;
+	kernel_entry(0, ~0, (unsigned int)image.of_dest);
 
 	// if kernel boot not success, jump to fel.
 	jmp_to_fel();
@@ -278,14 +283,14 @@ int cmd_boot(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(bootargs),
-		msh_define_command(reload),
-		msh_define_command(boot),
-		msh_command_end,
+	msh_define_command(bootargs),
+	msh_define_command(reload),
+	msh_define_command(boot),
+	msh_command_end,
 };
 
-int main(void) {
-
+int main(void)
+{
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
 
@@ -294,7 +299,6 @@ int main(void) {
 		printk_error("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -308,8 +312,8 @@ int main(void) {
 
 	memset(&image, 0, sizeof(image_info_t));
 
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
 
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);

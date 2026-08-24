@@ -51,7 +51,7 @@ static sunxi_dram_t dram;
 #define CONFIG_KERNEL_FILENAME "Image"
 #define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DEFAULT_BOOTDELAY 3
 
@@ -63,21 +63,21 @@ extern sunxi_serial_t uart_dbg;
 extern unsigned char ar100code_bin[];
 extern unsigned int ar100code_bin_len;
 
-static sunxi_sdhci_t sdhci0 = {0};
-static sdmmc_pdata_t mmc_card = {0};
+static sunxi_sdhci_t sdhci0 = { 0 };
+static sdmmc_pdata_t mmc_card = { 0 };
 
 typedef struct atf_head {
 	uint32_t jump_instruction; /* jumping to real code */
-	uint8_t magic[8];		   /* ="u-boot" */
-	uint32_t scp_base;		   /* scp openrisc core bin */
-	uint32_t next_boot_base;   /* next boot base for uboot */
-	uint32_t nos_base;		   /* ARM SVC RUNOS base */
-	uint32_t secureos_base;	   /* optee base */
-	uint8_t version[8];		   /* atf version */
-	uint8_t platform[8];	   /* platform information */
-	uint32_t reserved[1];	   /* stamp space, 16bytes align */
-	uint32_t dram_para[32];	   /* the dram param */
-	uint64_t dtb_base;		   /* the address of dtb */
+	uint8_t magic[8]; /* ="u-boot" */
+	uint32_t scp_base; /* scp openrisc core bin */
+	uint32_t next_boot_base; /* next boot base for uboot */
+	uint32_t nos_base; /* ARM SVC RUNOS base */
+	uint32_t secureos_base; /* optee base */
+	uint8_t version[8]; /* atf version */
+	uint8_t platform[8]; /* platform information */
+	uint32_t reserved[1]; /* stamp space, 16bytes align */
+	uint32_t dram_para[32]; /* the dram param */
+	uint64_t dtb_base; /* the address of dtb */
 } atf_head_t;
 
 #define FILENAME_MAX_LEN 32
@@ -101,7 +101,8 @@ static sunxi_rtc_t rtc;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -121,7 +122,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -138,13 +139,14 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -152,7 +154,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&mmc_card, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&mmc_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -168,17 +170,17 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t) image->bl31_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t) image->of_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t) image->kernel_dest);
+	printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t)image->kernel_dest);
 	ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
 	if (ret)
 		return ret;
@@ -196,7 +198,8 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr) {
+void jmp_to_arm64(const sunxi_rtc_t *rtc, uint32_t addr)
+{
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
 	rtc_set_start_time_ms(rtc);
 
@@ -215,25 +218,30 @@ _loop:
 	goto _loop;
 }
 
-static void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name,
-				uint32_t voltage) {
+static void set_pmu_fin_voltage(axp_pmu_t *pmu, char *power_name, uint32_t voltage)
+{
 	int temp_vol, src_vol = pmu_axp2202_get_vol(pmu, power_name);
 	if (src_vol > voltage) {
-		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) { pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol >= voltage; temp_vol -= 50) {
+			pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1);
+		}
 	} else if (src_vol < voltage) {
-		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) { pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol <= voltage; temp_vol += 50) {
+			pmu_axp2202_set_vol(pmu, power_name, temp_vol, 1);
+		}
 	}
 	mdelay(30); /* Delay 300ms for pmu bootup */
 }
 
-static int abortboot_single_key(int bootdelay) {
+static int abortboot_single_key(int bootdelay)
+{
 	int abort = 0;
 	unsigned long ts;
 
 	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
-	if (tstc()) {		/* we got a key press */
+	if (tstc()) { /* we got a key press */
 		uart_getchar(); /* consume input */
 		printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
 		abort = 1; /* don't auto boot */
@@ -244,7 +252,7 @@ static int abortboot_single_key(int bootdelay) {
 		/* delay 1000 ms */
 		ts = time_ms();
 		do {
-			if (tstc()) {  /* we got a key press */
+			if (tstc()) { /* we got a key press */
 				abort = 1; /* don't auto boot */
 				break;
 			}
@@ -258,8 +266,9 @@ static int abortboot_single_key(int bootdelay) {
 
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
-	atf_head_t *atf_head = (atf_head_t *) image.bl31_dest;
+int cmd_boot(int argc, const char **argv)
+{
+	atf_head_t *atf_head = (atf_head_t *)image.bl31_dest;
 
 	atf_head->nos_base = CONFIG_KERNEL_LOAD_ADDR;
 	atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
@@ -279,11 +288,12 @@ int cmd_boot(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(boot),
-		msh_command_end,
+	msh_define_command(boot),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	sunxi_remoteproc_t ar100;
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
@@ -291,16 +301,12 @@ int main(void) {
 	printk_info("Checking SoC Version...\n");
 
 	show_banner();
-	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
-	    sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) !=
-			    DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) != DRIVER_OK ||
+	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_remoteproc_load_buffer(&ar100, ar100code_bin,
-					 ar100code_bin_len) != DRIVER_OK) {
+	if (sunxi_remoteproc_load_buffer(&ar100, ar100code_bin, ar100code_bin_len) != DRIVER_OK) {
 		printk_error("AR100: firmware load failed\n");
 		return -1;
 	}
@@ -308,7 +314,6 @@ int main(void) {
 		printk_error("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -339,9 +344,9 @@ int main(void) {
 	/* Clear the image_info_t struct. */
 	memset(&image, 0, sizeof(image_info_t));
 
-	image.bl31_dest = (uint8_t *) CONFIG_BL31_LOAD_ADDR;
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.kernel_dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+	image.bl31_dest = (uint8_t *)CONFIG_BL31_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.kernel_dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
 
 	strcpy(image.bl31_filename, CONFIG_BL31_FILENAME);
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);

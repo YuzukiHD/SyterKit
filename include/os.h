@@ -53,4 +53,4 @@ void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval);
  */
 void timer_handle(void);
 
-#endif// __OS_H__
+#endif // __OS_H__

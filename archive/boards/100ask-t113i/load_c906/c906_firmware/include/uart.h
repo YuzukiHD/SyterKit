@@ -3,4 +3,4 @@
 
 int sys_uart_printf(const char *fmt, ...);
 
-#endif// __UART_H__
+#endif // __UART_H__

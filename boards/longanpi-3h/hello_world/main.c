@@ -16,13 +16,12 @@
 
 extern sunxi_serial_t uart_dbg;
 
-int main(void) {
-
+int main(void)
+{
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
 
 	show_banner();
-
 
 	sunxi_clk_init();
 

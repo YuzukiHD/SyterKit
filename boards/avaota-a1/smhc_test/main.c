@@ -36,15 +36,15 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 static sdmmc_pdata_t test_card;
 static sunxi_sdhci_t test_mmc;
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+int cmd_reload(int argc, const char **argv)
+{
 	if (sdmmc_init(&test_card, &test_mmc) != 0) {
 		printk_error("SMHC: init failed\n");
 		return 0;
@@ -54,18 +54,19 @@ int cmd_reload(int argc, const char **argv) {
 
 msh_declare_command(read);
 msh_define_help(read, "test", "Usage: read\n");
-int cmd_read(int argc, const char **argv) {
+int cmd_read(int argc, const char **argv)
+{
 	uint32_t start;
 	uint32_t test_time;
 
 	printk_debug("Clear Buffer data\n");
-	memset((void *) dram.memory_base, 0x00, 0x2000);
+	memset((void *)dram.memory_base, 0x00, 0x2000);
 	dump_hex(dram.memory_base, 0x100);
 
 	printk_debug("Read data to buffer data\n");
 
 	start = time_ms();
-	sdmmc_blk_read(&test_card, (uint8_t *) (dram.memory_base), 0, 1024);
+	sdmmc_blk_read(&test_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
@@ -74,29 +75,31 @@ int cmd_read(int argc, const char **argv) {
 
 msh_declare_command(write);
 msh_define_help(write, "test", "Usage: write\n");
-int cmd_write(int argc, const char **argv) {
+int cmd_write(int argc, const char **argv)
+{
 	uint32_t start;
 	uint32_t test_time;
 
 	printk_debug("Set Buffer data\n");
-	memset((void *) dram.memory_base, 0x00, 0x2000);
-	memcpy((void *) dram.memory_base, argv[1], strlen(argv[1]));
+	memset((void *)dram.memory_base, 0x00, 0x2000);
+	memcpy((void *)dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
-	sdmmc_blk_write(&test_card, (uint8_t *) (dram.memory_base), 0, 1024);
+	sdmmc_blk_write(&test_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(reload),
-		msh_define_command(read),
-		msh_define_command(write),
-		msh_command_end,
+	msh_define_command(reload),
+	msh_define_command(read),
+	msh_define_command(write),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
 	sunxi_i2c_t i2c;
@@ -113,14 +116,11 @@ int main(void) {
 		printk_error("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&test_mmc, "mmc0") != DRIVER_OK) {
 		printk_error("Board: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 

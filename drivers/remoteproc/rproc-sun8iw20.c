@@ -23,8 +23,8 @@ enum sun8iw20_c906_register {
 	SUN8IW20_C906_CFG,
 };
 
-static void sun8iw20_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc,
-					      bool local) {
+static void sun8iw20_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local)
+{
 	uint32_t value;
 	uintptr_t sysctrl = remoteproc->registers[SUN8IW20_HIFI4_SYSCTRL].base;
 
@@ -36,18 +36,19 @@ static void sun8iw20_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc,
 	writel(value, sysctrl + SRAMC_SRAM_REMAP_REG);
 }
 
-static void sun8iw20_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc,
-						 bool stall) {
+static void sun8iw20_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool stall)
+{
 	uint32_t value;
 	uintptr_t dsp_cfg = remoteproc->registers[SUN8IW20_HIFI4_DSP_CFG].base;
 
 	value = readl(dsp_cfg + DSP_CTRL_REG0);
 	value &= ~(1U << BIT_RUN_STALL);
-	value |= (uint32_t) stall << BIT_RUN_STALL;
+	value |= (uint32_t)stall << BIT_RUN_STALL;
 	writel(value, dsp_cfg + DSP_CTRL_REG0);
 }
 
-static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value = 0U;
 	uintptr_t ccu = remoteproc->registers[SUN8IW20_HIFI4_CCU].base;
 	uintptr_t dsp_cfg = remoteproc->registers[SUN8IW20_HIFI4_DSP_CFG].base;
@@ -68,8 +69,7 @@ static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
 	writel(value, ccu + CCU_DSP_BGR_REG);
 
 	if (remoteproc->entry != DSP_DEFAULT_RST_VEC) {
-		writel((uint32_t) remoteproc->entry,
-		       dsp_cfg + DSP_ALT_RESET_VEC_REG);
+		writel((uint32_t)remoteproc->entry, dsp_cfg + DSP_ALT_RESET_VEC_REG);
 		value = readl(dsp_cfg + DSP_CTRL_REG0);
 		value |= 1U << BIT_START_VEC_SEL;
 		writel(value, dsp_cfg + DSP_CTRL_REG0);
@@ -86,13 +86,15 @@ static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static int sun8iw20_hifi4_start(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw20_hifi4_start(sunxi_remoteproc_t *remoteproc)
+{
 	sun8iw20_hifi4_sram_remap(remoteproc, true);
 	sun8iw20_hifi4_set_run_stall(remoteproc, false);
 	return DRIVER_OK;
 }
 
-static int sun8iw20_hifi4_reset(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw20_hifi4_reset(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t ccu = remoteproc->registers[SUN8IW20_HIFI4_CCU].base;
 
@@ -103,14 +105,15 @@ static int sun8iw20_hifi4_reset(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static int sun8iw20_c906_start(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw20_c906_start(sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t value;
 	uintptr_t ccu = remoteproc->registers[SUN8IW20_C906_CCU].base;
 	uintptr_t cfg = remoteproc->registers[SUN8IW20_C906_CFG].base;
 
 	value = CCU_RISCV_CFG_RST | CCU_RISCV_CFG_GATING;
 	writel(value, ccu + CCU_RISCV_CFG_BGR_REG);
-	writel((uint32_t) remoteproc->entry, cfg + 0x0004U);
+	writel((uint32_t)remoteproc->entry, cfg + 0x0004U);
 	writel(0U, cfg + 0x0008U);
 
 	value = readl(ccu + CCU_RISCV_CLK_REG);
@@ -123,16 +126,17 @@ static int sun8iw20_c906_start(sunxi_remoteproc_t *remoteproc) {
 	return DRIVER_OK;
 }
 
-static int sun8iw20_c906_reset(sunxi_remoteproc_t *remoteproc) {
+static int sun8iw20_c906_reset(sunxi_remoteproc_t *remoteproc)
+{
 	uintptr_t ccu = remoteproc->registers[SUN8IW20_C906_CCU].base;
 
-	writel(CCU_RISCV_CLK_GATING | CCU_RISCV_GATING_FIELD,
-	       ccu + CCU_RISCV_GATING_RST_REG);
+	writel(CCU_RISCV_CLK_GATING | CCU_RISCV_GATING_FIELD, ccu + CCU_RISCV_GATING_RST_REG);
 	writel(0U, ccu + CCU_RISCV_CFG_BGR_REG);
 	return DRIVER_OK;
 }
 
-static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc) {
+static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc)
+{
 	uint32_t factor_m;
 	uint32_t factor_n;
 	uint32_t pll_peripheral;
@@ -150,7 +154,7 @@ static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc) {
 	}
 	plln = ((value >> 8) & 0xffU) + 1U;
 	pllm = (value & 0x01U) + 1U;
-	p1 = (uint8_t) (((value >> 20) & 0x03U) + 1U);
+	p1 = (uint8_t)(((value >> 20) & 0x03U) + 1U);
 	pll_peripheral = (24U * plln) / (pllm * p1);
 
 	value = read32(ccu + CCU_RISCV_CLK_REG);

@@ -39,7 +39,7 @@
 #define CONFIG_KERNEL_FILENAME "zImage"
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 #define CONFIG_DTB_LOAD_ADDR (0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
@@ -65,12 +65,12 @@ typedef struct {
 
 extern sunxi_serial_t uart_dbg;
 
-
 static sunxi_dram_t dram;
 
 image_info_t image;
 
-static int load_spi_nand(spi_nand_t *nand, image_info_t *image) {
+static int load_spi_nand(spi_nand_t *nand, image_info_t *image)
+{
 	linux_zimage_header_t *hdr;
 	unsigned int size;
 	uint64_t start, time;
@@ -79,44 +79,44 @@ static int load_spi_nand(spi_nand_t *nand, image_info_t *image) {
 		return -1;
 
 	/* get dtb size and read */
-	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) sizeof(struct fdt_header));
+	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t)sizeof(struct fdt_header));
 	if (fdt_check_header(image->of_dest)) {
 		printk_error("SPI-NAND: DTB verification failed\n");
 		return -1;
 	}
 
 	size = fdt_totalsize(image->of_dest);
-	printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t) image->of_dest, size);
+	printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t)image->of_dest, size);
 	start = time_us();
-	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t) size);
+	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t)size);
 	time = time_us() - start;
-	printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32) (size / time));
+	printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32)(size / time));
 
 	/* get kernel size and read */
-	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) sizeof(linux_zimage_header_t));
-	hdr = (linux_zimage_header_t *) image->dest;
+	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)sizeof(linux_zimage_header_t));
+	hdr = (linux_zimage_header_t *)image->dest;
 	if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
 		printk_debug("SPI-NAND: zImage verification failed\n");
 		return -1;
 	}
 	size = hdr->end - hdr->start;
-	printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) image->dest, size);
+	printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)image->dest, size);
 	start = time_us();
-	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t) size);
+	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)size);
 	time = time_us() - start;
-	printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32) (size / time));
+	printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32)(size / time));
 
 	return 0;
 }
 
-static int load_from_spi(image_info_t *image) {
+static int load_from_spi(image_info_t *image)
+{
 	sunxi_dma_t dma;
 	spi_nand_t nand;
 	sunxi_spi_t spi;
 	int result;
 
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
-	    sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
 	    spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
 		printk_error("SPI: invalid devicetree configuration\n");
 		return -1;
@@ -130,14 +130,15 @@ static int load_from_spi(image_info_t *image) {
 	return result;
 }
 
-static int abortboot_single_key(int bootdelay) {
+static int abortboot_single_key(int bootdelay)
+{
 	int abort = 0;
 	unsigned long ts;
 
 	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
-	if (tstc()) {		/* we got a key press */
+	if (tstc()) { /* we got a key press */
 		uart_getchar(); /* consume input */
 		printk(LOG_LEVEL_MUTE, "\b\b\b%2d", bootdelay);
 		abort = 1; /* don't auto boot */
@@ -148,7 +149,7 @@ static int abortboot_single_key(int bootdelay) {
 		/* delay 1000 ms */
 		ts = time_ms();
 		do {
-			if (tstc()) {  /* we got a key press */
+			if (tstc()) { /* we got a key press */
 				abort = 1; /* don't auto boot */
 				break;
 			}
@@ -162,7 +163,8 @@ static int abortboot_single_key(int bootdelay) {
 
 msh_declare_command(reload);
 msh_define_help(reload, "rescan SPI NAND and reload DTB, Kernel zImage", "Usage: reload\n");
-int cmd_reload(int argc, const char **argv) {
+int cmd_reload(int argc, const char **argv)
+{
 	if (load_from_spi(&image) != 0) {
 		printk_error("SPI-NAND: loading failed\n");
 		return 0;
@@ -172,13 +174,14 @@ int cmd_reload(int argc, const char **argv) {
 
 msh_declare_command(boot);
 msh_define_help(boot, "boot to linux", "Usage: boot\n");
-int cmd_boot(int argc, const char **argv) {
+int cmd_boot(int argc, const char **argv)
+{
 	/* Initialize variables for kernel entry point and SD card access. */
 	uint32_t entry_point = 0;
 	void (*kernel_entry)(int zero, int arch, uint32_t params);
 
 	/* Set up boot parameters for the kernel. */
-	if (zImage_loader((uint8_t *) image.dest, &entry_point)) {
+	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
 		printk_error("boot setup failed\n");
 		abort();
 	}
@@ -193,8 +196,8 @@ int cmd_boot(int argc, const char **argv) {
 	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
-	kernel_entry = (void (*)(int, int, uint32_t)) entry_point;
-	kernel_entry(0, ~0, (uint32_t) image.of_dest);
+	kernel_entry = (void (*)(int, int, uint32_t))entry_point;
+	kernel_entry(0, ~0, (uint32_t)image.of_dest);
 
 	// if kernel boot not success, jump to fel.
 	jmp_to_fel();
@@ -202,12 +205,13 @@ int cmd_boot(int argc, const char **argv) {
 }
 
 const msh_command_entry commands[] = {
-		msh_define_command(reload),
-		msh_define_command(boot),
-		msh_command_end,
+	msh_define_command(reload),
+	msh_define_command(boot),
+	msh_command_end,
 };
 
-int main(void) {
+int main(void)
+{
 	sunxi_rtc_t rtc;
 
 	/* Initialize the debug serial interface. */
@@ -257,8 +261,8 @@ int main(void) {
 	memset(&image, 0, sizeof(image_info_t));
 
 	/* Set the destination address for the device tree binary (DTB), kernel image. */
-	image.of_dest = (uint8_t *) CONFIG_DTB_LOAD_ADDR;
-	image.dest = (uint8_t *) CONFIG_KERNEL_LOAD_ADDR;
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
 
 	/* Copy the filenames for the DTB, kernel image. */
 	strcpy(image.filename, CONFIG_KERNEL_FILENAME);

@@ -14,7 +14,8 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun50iw10/reg.h>
 
-static inline void set_pll_cpux_axi(void) {
+static inline void set_pll_cpux_axi(void)
+{
 	uint32_t reg_val;
 	/* select CPUX  clock src: OSC24M,AXI divide ratio is 2, system apb clk ratio is 4 */
 	writel((0 << 24) | (3 << 8) | (1 << 0), SUNXI_CCM_BASE + CCU_CPUX_AXI_CFG_REG);
@@ -59,7 +60,8 @@ static inline void set_pll_cpux_axi(void) {
 	udelay(1);
 }
 
-static inline void set_pll_periph0(void) {
+static inline void set_pll_periph0(void)
+{
 	uint32_t reg_val;
 
 	if ((1U << 31) & readl(SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG)) {
@@ -91,7 +93,8 @@ static inline void set_pll_periph0(void) {
 	writel(reg_val, SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG);
 }
 
-static inline void set_ahb(void) {
+static inline void set_ahb(void)
+{
 	/* PLL6:AHB1:APB1 = 600M:200M:100M */
 	writel((2 << 0) | (0 << 8), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
 	writel((0x03 << 24) | readl(SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
@@ -101,14 +104,16 @@ static inline void set_ahb(void) {
 	writel((0x03 << 24) | readl(SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG), SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG);
 }
 
-static inline void set_apb(void) {
+static inline void set_apb(void)
+{
 	/*PLL6:APB1 = 600M:100M */
 	writel((2 << 0) | (1 << 8), SUNXI_CCM_BASE + CCU_APB1_CFG_GREG);
 	writel((0x03 << 24) | readl(SUNXI_CCM_BASE + CCU_APB1_CFG_GREG), SUNXI_CCM_BASE + CCU_APB1_CFG_GREG);
 	udelay(1);
 }
 
-static inline void set_pll_dma(void) {
+static inline void set_pll_dma(void)
+{
 	/*dma reset*/
 	writel(readl(SUNXI_CCM_BASE + CCU_DMA_BGR_REG) | (1 << 16), SUNXI_CCM_BASE + CCU_DMA_BGR_REG);
 	udelay(20);
@@ -116,7 +121,8 @@ static inline void set_pll_dma(void) {
 	writel(readl(SUNXI_CCM_BASE + CCU_DMA_BGR_REG) | (1 << 0), SUNXI_CCM_BASE + CCU_DMA_BGR_REG);
 }
 
-static inline void set_pll_mbus(void) {
+static inline void set_pll_mbus(void)
+{
 	uint32_t reg_val;
 
 	/*reset mbus domain*/
@@ -143,51 +149,44 @@ static inline void set_pll_mbus(void) {
 	udelay(1);
 }
 
-static inline void set_circuits_analog(void) {
+static inline void set_circuits_analog(void)
+{
 	/* calibration circuits analog enable */
-	setbits_le32(SUNXI_RPRCM_BASE + 0x254U,
-		     0x01 << VDD_ADDA_OFF_GATING);
+	setbits_le32(SUNXI_RPRCM_BASE + 0x254U, 0x01 << VDD_ADDA_OFF_GATING);
 	udelay(1);
 
-	setbits_le32(SUNXI_IOMMU_BASE + 0x160U,
-		     0x01 << CAL_ANA_EN);
+	setbits_le32(SUNXI_IOMMU_BASE + 0x160U, 0x01 << CAL_ANA_EN);
 	udelay(1);
 
-	clrbits_le32(SUNXI_IOMMU_BASE + 0x160U,
-		     0x01 << CAL_EN);
+	clrbits_le32(SUNXI_IOMMU_BASE + 0x160U, 0x01 << CAL_EN);
 	udelay(1);
 
-	setbits_le32(SUNXI_IOMMU_BASE + 0x160U,
-		     0x01 << CAL_EN);
+	setbits_le32(SUNXI_IOMMU_BASE + 0x160U, 0x01 << CAL_EN);
 	udelay(1);
 }
 
-static inline void set_iommu_auto_gating(void) {
+static inline void set_iommu_auto_gating(void)
+{
 	/*gating clock for iommu*/
 	writel(0x01, SUNXI_CCM_BASE + CCU_IOMMU_BGR_REG);
 	/*enable auto gating*/
 	writel(0x01, SUNXI_SYSCRL_BASE + 0x40U);
 }
 
-static inline void set_platform_config(void) {
+static inline void set_platform_config(void)
+{
 	set_circuits_analog();
 	set_iommu_auto_gating();
 }
 
-
-static inline void set_modules_clock(void) {
+static inline void set_modules_clock(void)
+{
 	uint32_t reg_val, i;
 	uint32_t ccmu_pll_addr[] = {
-			SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_PERI1_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_GPU_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_VIDE00_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_VIDE01_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_VIDE02_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_VIDE03_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_VE_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_COM_CTRL_REG,
-			SUNXI_CCM_BASE + CCU_PLL_AUDIO_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG,  SUNXI_CCM_BASE + CCU_PLL_PERI1_CTRL_REG,  SUNXI_CCM_BASE + CCU_PLL_GPU_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE00_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VIDE01_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VIDE02_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE03_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VE_CTRL_REG,	    SUNXI_CCM_BASE + CCU_PLL_COM_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_AUDIO_CTRL_REG,
 	};
 
 	for (i = 0; i < sizeof(ccmu_pll_addr) / sizeof(ccmu_pll_addr[0]); i++) {
@@ -213,7 +212,8 @@ static inline void set_modules_clock(void) {
 	}
 }
 
-void sunxi_clk_init(void) {
+void sunxi_clk_init(void)
+{
 	printk_debug("Set SoC 1855 (A133/R818) CLK Start.\n");
 	set_platform_config();
 	set_pll_cpux_axi();
@@ -227,8 +227,8 @@ void sunxi_clk_init(void) {
 	return;
 }
 
-
-void sunxi_clk_dump(void) {
+void sunxi_clk_dump(void)
+{
 	uint32_t reg32;
 	uint32_t cpu_clk_src;
 	uint32_t plln, pllm;
@@ -241,28 +241,28 @@ void sunxi_clk_dump(void) {
 	cpu_clk_src = (reg32 >> 24) & 0x7;
 
 	switch (cpu_clk_src) {
-		case 0x0:
-			clock_str = "OSC24M";
-			break;
+	case 0x0:
+		clock_str = "OSC24M";
+		break;
 
-		case 0x1:
-			clock_str = "CLK32";
-			break;
+	case 0x1:
+		clock_str = "CLK32";
+		break;
 
-		case 0x2:
-			clock_str = "CLK16M_RC";
-			break;
+	case 0x2:
+		clock_str = "CLK16M_RC";
+		break;
 
-		case 0x3:
-			clock_str = "PLL_CPU";
-			break;
+	case 0x3:
+		clock_str = "PLL_CPU";
+		break;
 
-		case 0x4:
-			clock_str = "PLL_PERI0(1X)";
-			break;
+	case 0x4:
+		clock_str = "PLL_PERI0(1X)";
+		break;
 
-		default:
-			clock_str = "reserved";
+	default:
+		clock_str = "reserved";
 	}
 
 	reg32 = read32(SUNXI_CCM_BASE + CCU_PLL_CPUX_CTRL_REG);
@@ -319,7 +319,6 @@ void sunxi_clk_dump(void) {
 	} else {
 		printk_debug("CLK: PLL_DDR0 disabled\r\n");
 	}
-
 
 	/* PLL DDR1 */
 	reg32 = read32(SUNXI_CCM_BASE + CCU_PLL_DDR1_CTRL_REG);

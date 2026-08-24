@@ -31,8 +31,8 @@ extern void set_rpio_power_mode(void);
 
 static sunxi_dram_t dram;
 
-
-int main(void) {
+int main(void)
+{
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
 	sunxi_i2c_t i2c;
@@ -49,13 +49,10 @@ int main(void) {
 		printk_error("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
 		printk_error("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -103,8 +100,7 @@ int main(void) {
 	printk_info("DRAM: DRAM Size = %dMB", dram_size);
 
 	/* PLL DDR0 */
-	uint32_t reg32 =
-			read32(SUNXI_CCMU_BASE + CCU_PLL_DDR0_CTRL_REG);
+	uint32_t reg32 = read32(SUNXI_CCMU_BASE + CCU_PLL_DDR0_CTRL_REG);
 	if (reg32 & (1 << 31)) {
 		uint32_t plln = ((reg32 >> 8) & 0xff) + 1;
 
@@ -123,9 +119,9 @@ int main(void) {
 
 	static int i = 0;
 	while (1) {
-		do_memtester((uint64_t) dram.memory_base, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
-		do_memtester((uint64_t) dram.memory_base + (uint64_t) 0x40000000, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
-		do_memtester((uint64_t) dram.memory_base + (uint64_t) 0x80000000, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
+		do_memtester((uint64_t)dram.memory_base, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
+		do_memtester((uint64_t)dram.memory_base + (uint64_t)0x40000000, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
+		do_memtester((uint64_t)dram.memory_base + (uint64_t)0x80000000, DRAM_SIZE_BYTE, DRAM_TEST_SIZE, i);
 		i++;
 	}
 

@@ -5,38 +5,30 @@
 
 #include "syter_test.h"
 
-void test_case_main(const char *case_dir) {
+void test_case_main(const char *case_dir)
+{
 	sunxi_serial_t primary;
 	sunxi_serial_t secondary;
 	sunxi_serial_t stdout_uart_config;
 	int disabled_uart;
 	int stdout_uart;
 
-	(void) case_dir;
-	stdout_uart = dt2c_fdt_path_offset(DT2C_FDT_COMPILED_TREE,
-					   "/soc/serial@2000");
-	disabled_uart = dt2c_fdt_path_offset(DT2C_FDT_COMPILED_TREE,
-					     "/disabled-bus/serial@1000");
+	(void)case_dir;
+	stdout_uart = dt2c_fdt_path_offset(DT2C_FDT_COMPILED_TREE, "/soc/serial@2000");
+	disabled_uart = dt2c_fdt_path_offset(DT2C_FDT_COMPILED_TREE, "/disabled-bus/serial@1000");
 	TEST_ASSERT(stdout_uart >= 0);
 	TEST_ASSERT(disabled_uart >= 0);
 	TEST_EQ(stdout_uart, sunxi_serial_dt_stdout_node());
 	TEST_ASSERT(sunxi_serial_dt_node_available(stdout_uart));
 	TEST_ASSERT(!sunxi_serial_dt_node_available(disabled_uart));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		sunxi_serial_dt_read_config(&primary, disabled_uart));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		sunxi_serial_dt_read_alias(&primary, "uart-disabled"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		sunxi_serial_dt_read_alias(&primary, "missing"));
-	TEST_EQ(DRIVER_ERROR_INVALID,
-		sunxi_serial_dt_read_alias(&primary, NULL));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_serial_dt_read_config(&primary, disabled_uart));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_serial_dt_read_alias(&primary, "uart-disabled"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_serial_dt_read_alias(&primary, "missing"));
+	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_serial_dt_read_alias(&primary, NULL));
 
-	TEST_EQ(DRIVER_OK,
-		sunxi_serial_dt_read_config(&primary, stdout_uart));
-	TEST_EQ(DRIVER_OK,
-		sunxi_serial_dt_read_stdout(&stdout_uart_config));
-	TEST_EQ(DRIVER_OK,
-		sunxi_serial_dt_read_alias(&secondary, "uart-secondary"));
+	TEST_EQ(DRIVER_OK, sunxi_serial_dt_read_config(&primary, stdout_uart));
+	TEST_EQ(DRIVER_OK, sunxi_serial_dt_read_stdout(&stdout_uart_config));
+	TEST_EQ(DRIVER_OK, sunxi_serial_dt_read_alias(&secondary, "uart-secondary"));
 	TEST_EQ(primary.base, stdout_uart_config.base);
 	TEST_EQ(primary.id, stdout_uart_config.id);
 	TEST_EQ(0x2000U, primary.base);

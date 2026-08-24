@@ -20,7 +20,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
  * @brief SPI Input/Output Mode Enumeration
@@ -29,9 +29,9 @@ extern "C" {
  */
 typedef enum {
 	SPI_IO_SINGLE = 0x00, /**< Single I/O mode, using one data line */
-	SPI_IO_DUAL_RX,		  /**< Dual I/O mode, using two data lines for receiving */
-	SPI_IO_QUAD_RX,		  /**< Quad I/O mode, using four data lines for receiving */
-	SPI_IO_QUAD_IO,		  /**< Quad I/O mode, using four data lines for both transmitting and receiving */
+	SPI_IO_DUAL_RX, /**< Dual I/O mode, using two data lines for receiving */
+	SPI_IO_QUAD_RX, /**< Quad I/O mode, using four data lines for receiving */
+	SPI_IO_QUAD_IO, /**< Quad I/O mode, using four data lines for both transmitting and receiving */
 } spi_io_mode_t;
 
 /**
@@ -40,8 +40,8 @@ typedef enum {
  * This enum defines the different SPI clock frequencies.
  */
 typedef enum {
-	SPI_LOW_FREQUENCY = 24000000,  /**< Low frequency: 24 MHz */
-	SPI_MOD_FREQUENCY = 50000000,  /**< Medium frequency: 50 MHz */
+	SPI_LOW_FREQUENCY = 24000000, /**< Low frequency: 24 MHz */
+	SPI_MOD_FREQUENCY = 50000000, /**< Medium frequency: 50 MHz */
 	SPI_HIGH_FREQUENCY = 60000000, /**< High frequency: 60 MHz */
 	SPI_MAX_FREQUENCY = 100000000, /**< Maximum frequency: 100 MHz */
 } spi_speed_mode_t;
@@ -54,7 +54,7 @@ typedef enum {
 typedef enum {
 	SPI_CDR1_MODE = 0, /**< Clock Data Recovery mode 1 */
 	SPI_CDR2_MODE = 1, /**< Clock Data Recovery mode 2 */
-	SPI_CDR_NONE = 2,  /**< No Clock Data Recovery mode */
+	SPI_CDR_NONE = 2, /**< No Clock Data Recovery mode */
 } spi_clk_cdr_mode_t;
 
 /**
@@ -63,11 +63,11 @@ typedef enum {
  * This struct holds the GPIO configuration for the SPI interface.
  */
 typedef struct {
-	gpio_mux_t gpio_cs;	  /**< Chip Select GPIO pin */
-	gpio_mux_t gpio_sck;  /**< SPI Clock (SCK) GPIO pin */
+	gpio_mux_t gpio_cs; /**< Chip Select GPIO pin */
+	gpio_mux_t gpio_sck; /**< SPI Clock (SCK) GPIO pin */
 	gpio_mux_t gpio_miso; /**< Master In Slave Out (MISO) GPIO pin */
 	gpio_mux_t gpio_mosi; /**< Master Out Slave In (MOSI) GPIO pin */
-	gpio_mux_t gpio_wp;	  /**< Write Protect GPIO pin */
+	gpio_mux_t gpio_wp; /**< Write Protect GPIO pin */
 	gpio_mux_t gpio_hold; /**< Hold GPIO pin */
 } sunxi_spi_gpio_t;
 
@@ -77,11 +77,11 @@ typedef struct {
  * This struct holds the configuration for the SPI clock.
  */
 typedef struct {
-	uintptr_t spi_clock_cfg_base;		/**< Base address of the SPI clock configuration */
-	uint32_t spi_clock_source;			/**< Source of the SPI clock */
+	uintptr_t spi_clock_cfg_base; /**< Base address of the SPI clock configuration */
+	uint32_t spi_clock_source; /**< Source of the SPI clock */
 	uint32_t spi_clock_factor_n_offset; /**< Clock factor offset */
-	uint32_t spi_clock_freq;			/**< SPI clock frequency */
-	spi_clk_cdr_mode_t cdr_mode;		/**< Clock mode */
+	uint32_t spi_clock_freq; /**< SPI clock frequency */
+	spi_clk_cdr_mode_t cdr_mode; /**< Clock mode */
 } sunxi_spi_clk_t;
 
 /**
@@ -91,16 +91,16 @@ typedef struct {
  */
 typedef struct {
 	int dt_node;
-	uintptr_t base;			/**< Base address of the SPI peripheral */
-	uint8_t id;					/**< SPI device ID */
-	uint32_t clk_rate;			/**< Clock rate for the SPI device */
-	sunxi_spi_gpio_t gpio;		/**< GPIO configuration for the SPI device */
-	sunxi_dma_t *dma_handle;	/**< DMA handle for the SPI device */
-	uint8_t dma_rx_drq;		/**< DMA request line used for SPI RX */
+	uintptr_t base; /**< Base address of the SPI peripheral */
+	uint8_t id; /**< SPI device ID */
+	uint32_t clk_rate; /**< Clock rate for the SPI device */
+	sunxi_spi_gpio_t gpio; /**< GPIO configuration for the SPI device */
+	sunxi_dma_t *dma_handle; /**< DMA handle for the SPI device */
+	uint8_t dma_rx_drq; /**< DMA request line used for SPI RX */
 	sunxi_clk_t parent_clk_reg; /**< Parent clock register configuration */
-	sunxi_spi_clk_t spi_clk;	/**< SPI clock configuration */
-	sunxi_dma_set_t rx_dma;	/**< Per-controller RX DMA configuration */
-	uintptr_t dma_handler;	/**< Per-controller RX DMA channel */
+	sunxi_spi_clk_t spi_clk; /**< SPI clock configuration */
+	sunxi_dma_set_t rx_dma; /**< Per-controller RX DMA configuration */
+	uintptr_t dma_handler; /**< Per-controller RX DMA channel */
 } sunxi_spi_t;
 
 #define SUNXI_SPI_COMPATIBLE "allwinner,sunxi-spi"
@@ -172,9 +172,8 @@ int sunxi_spi_select(sunxi_spi_t *spi, uint8_t chip_select);
  */
 int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen);
 
-
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif

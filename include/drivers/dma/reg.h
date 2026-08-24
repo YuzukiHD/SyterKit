@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #define SUNXI_DMA_LINK_NULL (0xfffff800)
 
@@ -57,6 +57,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif// __DMA_REG_H__
+#endif // __DMA_REG_H__

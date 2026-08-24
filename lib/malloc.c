@@ -17,26 +17,28 @@ struct malloc_block {
 static struct malloc_block heap_head;
 static struct malloc_block heap_tail;
 
-static size_t align_size(size_t size) {
-	if (size > (size_t) -1 - (MALLOC_ALIGNMENT - 1U))
+static size_t align_size(size_t size)
+{
+	if (size > (size_t)-1 - (MALLOC_ALIGNMENT - 1U))
 		return 0;
 
 	return (size + MALLOC_ALIGNMENT - 1U) & ~(MALLOC_ALIGNMENT - 1U);
 }
 
-static uintptr_t block_limit(const struct malloc_block *block) {
+static uintptr_t block_limit(const struct malloc_block *block)
+{
 	if (block == &heap_tail)
 		return block->address;
 
 	return block->address - sizeof(*block);
 }
 
-static struct malloc_block *find_block(const void *ptr,
-				       struct malloc_block **previous) {
+static struct malloc_block *find_block(const void *ptr, struct malloc_block **previous)
+{
 	struct malloc_block *block = &heap_head;
 
 	while (block->next) {
-		if (block->next->address == (uintptr_t) ptr) {
+		if (block->next->address == (uintptr_t)ptr) {
 			if (previous)
 				*previous = block;
 			return block->next;
@@ -47,16 +49,16 @@ static struct malloc_block *find_block(const void *ptr,
 	return NULL;
 }
 
-int malloc_init(uintptr_t heap_start, size_t heap_size) {
+int malloc_init(uintptr_t heap_start, size_t heap_size)
+{
 	uintptr_t aligned_start;
 	uintptr_t heap_end;
 	size_t adjustment;
 
-	if (!heap_start || heap_start > (uintptr_t) -1 - heap_size)
+	if (!heap_start || heap_start > (uintptr_t)-1 - heap_size)
 		return -1;
 
-	aligned_start = (heap_start + MALLOC_ALIGNMENT - 1U) &
-			~(uintptr_t) (MALLOC_ALIGNMENT - 1U);
+	aligned_start = (heap_start + MALLOC_ALIGNMENT - 1U) & ~(uintptr_t)(MALLOC_ALIGNMENT - 1U);
 	if (aligned_start < heap_start)
 		return -1;
 
@@ -77,7 +79,8 @@ int malloc_init(uintptr_t heap_start, size_t heap_size) {
 	return 0;
 }
 
-void *malloc(size_t size) {
+void *malloc(size_t size)
+{
 	struct malloc_block *block;
 	struct malloc_block *new_block;
 	uintptr_t metadata_address;
@@ -92,30 +95,29 @@ void *malloc(size_t size) {
 		return NULL;
 
 	for (block = &heap_head; block->next; block = block->next) {
-		if (block->address > (uintptr_t) -1 - block->size)
+		if (block->address > (uintptr_t)-1 - block->size)
 			return NULL;
 
 		metadata_address = block->address + block->size;
 		limit = block_limit(block->next);
-		if (metadata_address > limit ||
-			limit - metadata_address < sizeof(*new_block) ||
-			limit - metadata_address - sizeof(*new_block) < aligned_size)
+		if (metadata_address > limit || limit - metadata_address < sizeof(*new_block) || limit - metadata_address - sizeof(*new_block) < aligned_size)
 			continue;
 
-		new_block = (struct malloc_block *) metadata_address;
+		new_block = (struct malloc_block *)metadata_address;
 		new_block->address = metadata_address + sizeof(*new_block);
 		new_block->size = aligned_size;
 		new_block->requested_size = size;
 		new_block->next = block->next;
 		block->next = new_block;
 
-		return (void *) new_block->address;
+		return (void *)new_block->address;
 	}
 
 	return NULL;
 }
 
-void *realloc(void *ptr, size_t size) {
+void *realloc(void *ptr, size_t size)
+{
 	struct malloc_block *block;
 	uintptr_t limit;
 	size_t aligned_size;
@@ -155,7 +157,8 @@ void *realloc(void *ptr, size_t size) {
 	return new_ptr;
 }
 
-void free(void *ptr) {
+void free(void *ptr)
+{
 	struct malloc_block *previous;
 	struct malloc_block *block;
 

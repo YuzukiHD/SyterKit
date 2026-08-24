@@ -32,12 +32,12 @@
 #define CONFIG_DTB_FILENAME "sunxi.dtb"
 #define CONFIG_DTB_LOADADDR (0x41008000)
 
-#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024// (unit: 512B sectors)
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
 static sunxi_dram_t dram;
 
-static sunxi_sdhci_t sdhci0 = {0};
-static sdmmc_pdata_t card0 = {0};
+static sunxi_sdhci_t sdhci0 = { 0 };
+static sdmmc_pdata_t card0 = { 0 };
 
 #define FILENAME_MAX_LEN 64
 typedef struct {
@@ -52,7 +52,8 @@ image_info_t image;
 
 #define CHUNK_SIZE 0x20000
 
-static int fatfs_loadimage(char *filename, BYTE *dest) {
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
 	FIL file;
 	UINT byte_to_read = CHUNK_SIZE;
 	UINT byte_read;
@@ -72,7 +73,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 
 	do {
 		byte_read = 0;
-		fret = f_read(&file, (void *) (dest), byte_to_read, &byte_read);
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 		total_read += byte_read;
 	} while (byte_read >= byte_to_read && fret == FR_OK);
@@ -89,13 +90,14 @@ static int fatfs_loadimage(char *filename, BYTE *dest) {
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32) (total_read / time) / 1024.0f);
+	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
 }
 
-static int load_sdcard(image_info_t *image) {
+static int load_sdcard(image_info_t *image)
+{
 	FATFS fs;
 	FRESULT fret;
 	int ret;
@@ -103,7 +105,7 @@ static int load_sdcard(image_info_t *image) {
 
 	uint32_t test_time;
 	start = time_ms();
-	sdmmc_blk_read(&card0, (uint8_t *) (dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
 	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
@@ -117,7 +119,7 @@ static int load_sdcard(image_info_t *image) {
 		printk_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int) image->dest);
+	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -135,8 +137,8 @@ static int load_sdcard(image_info_t *image) {
 	return 0;
 }
 
-
-int main(void) {
+int main(void)
+{
 	/* Initialize UART debug interface */
 
 	/* Print boot screen */
@@ -166,7 +168,7 @@ int main(void) {
 	memset(&image, 0, sizeof(image_info_t));
 
 	/* Set the target address of image to DTB load address */
-	image.dest = (uint8_t *) CONFIG_DTB_LOADADDR;
+	image.dest = (uint8_t *)CONFIG_DTB_LOADADDR;
 
 	/* Copy the DTB filename to the image structure */
 	strcpy(image.filename, CONFIG_DTB_FILENAME);
@@ -193,7 +195,7 @@ int main(void) {
 	}
 
 	/* Force image.dest to be a pointer to fdt_header structure */
-	struct fdt_header *dtb_header = (struct fdt_header *) image.dest;
+	struct fdt_header *dtb_header = (struct fdt_header *)image.dest;
 
 	int err = 0;
 
@@ -215,7 +217,7 @@ int main(void) {
 	uint32_t bootargs_node = fdt_path_offset(image.dest, "/chosen");
 
 	/* Get bootargs string */
-	char *bootargs_str = (void *) fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
+	char *bootargs_str = (void *)fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
 	printk_info("DTB OLD bootargs = \"%s\"\n", bootargs_str);
 
 	/* New bootargs string */
@@ -231,7 +233,7 @@ int main(void) {
 	}
 
 	/* Get updated bootargs string */
-	char *updated_bootargs_str = (void *) fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
+	char *updated_bootargs_str = (void *)fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
 	printk_info("DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
 
 	/* Terminate program execution */
