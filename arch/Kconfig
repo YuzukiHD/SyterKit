@@ -23,6 +23,9 @@ source "arch/riscv/Kconfig"
 config ARCH_DCACHE
 	bool "Enable the data cache"
 
+config ARCH_ICACHE
+	bool "Enable the instruction cache"
+
 config BACKTRACE
 	bool
 
