@@ -59,12 +59,14 @@ $(TEST_ELF): $(all_sources) $(CURDIR)/linker.ld $(BACKTRACE_LINK_DEPS)
 	@$(CC) $(TEST_CPPFLAGS) $(TEST_CFLAGS) $(all_sources) \
 		$(BACKTRACE_LINK_INPUTS) \
 		$(TEST_LDFLAGS) -lgcc -o $@
+ifeq ($(TEST_BACKTRACE_MODE),full)
 	@$(NM) -n -S --defined-only $@ > $(BACKTRACE_NM)
 	@$(BACKTRACE_TOOL) $(TEST_BACKTRACE_BITS) $(BACKTRACE_NM) $(BACKTRACE_SYMBOLS_S)
 	@$(CC) $(TEST_CPPFLAGS) $(TEST_AFLAGS) -c $(BACKTRACE_SYMBOLS_S) -o $(BACKTRACE_SYMBOLS_O)
 	@$(CC) $(TEST_CPPFLAGS) $(TEST_CFLAGS) $(all_sources) \
 		$(BACKTRACE_LINK_INPUTS) \
 		$(TEST_LDFLAGS) -lgcc -o $@
+endif
 
 run: $(TEST_ELF)
 	@command -v $(QEMU_RISCV64) >/dev/null || { \
