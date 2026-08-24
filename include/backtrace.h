@@ -15,6 +15,7 @@ struct backtrace_context {
 	uintptr_t lr; /**< Link register associated with the saved context. */
 };
 
+#ifdef CONFIG_BACKTRACE
 /**
  * @brief Walk a saved execution context and print its call trace.
  * @param[in] pc Program counter at which unwinding starts.
@@ -52,5 +53,33 @@ void backtrace_print_frame(uintptr_t address);
  * @brief Finish formatting one call trace.
  */
 void backtrace_print_end(void);
+
+#else /* CONFIG_BACKTRACE */
+
+#define backtrace(pc, sp, lr) \
+	do {                  \
+	} while (0)
+
+#define backtrace_from_context(context) \
+	do {                            \
+	} while (0)
+
+#define dump_stack() \
+	do {         \
+	} while (0)
+
+#define backtrace_print_begin() \
+	do {                    \
+	} while (0)
+
+#define backtrace_print_frame(address) \
+	do {                           \
+	} while (0)
+
+#define backtrace_print_end() \
+	do {                  \
+	} while (0)
+
+#endif /* CONFIG_BACKTRACE */
 
 #endif

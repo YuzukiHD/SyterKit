@@ -93,11 +93,21 @@ int cmd_write(int argc, const char **argv)
 	return 0;
 }
 
+static int fib(int n)
+{
+	if (n <= 1) {
+		printk_debug("fib(%d) base case, dumping stack:\n", n);
+		dump_stack();
+		return n;
+	}
+	return fib(n - 1) + fib(n - 2);
+}
+
 msh_declare_command(bt);
 msh_define_help(bt, "backtrace test", "Usage: bt\n");
 int cmd_bt(int argc, const char **argv)
 {
-	dump_stack();
+	fib(5);
 	return 0;
 }
 
@@ -180,8 +190,14 @@ int cmd_dram(int argc, const char **argv)
 }
 
 const msh_command_entry commands[] = {
-	msh_define_command(bt),	   msh_define_command(dram), msh_define_command(fault), msh_define_command(reload),
-	msh_define_command(reset), msh_define_command(read), msh_define_command(write), msh_command_end,
+	msh_define_command(bt),
+	msh_define_command(dram),
+	msh_define_command(fault),
+	msh_define_command(reload),
+	msh_define_command(reset),
+	msh_define_command(read),
+	msh_define_command(write),
+	msh_command_end,
 };
 
 int main(void)
@@ -199,7 +215,7 @@ int main(void)
 		return -1;
 	}
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
-	    spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
+		spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
 		printk_error("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
