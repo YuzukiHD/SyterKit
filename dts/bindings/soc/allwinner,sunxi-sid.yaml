@@ -9,6 +9,9 @@ properties:
   allwinner,efuse-hv-switch:
     type: uint32
     description: Optional high-voltage switch register used for eFuse writes
+  allwinner,sid-sram-base:
+    type: uint32
+    description: Optional base address of the eFuse SRAM mirror
   status:
     type: string
     enum: [okay, disabled]

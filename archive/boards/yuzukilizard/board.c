@@ -77,9 +77,9 @@ void sys_ldo_check(void)
 
 	/* read efuse */
 	printk_debug("Audio: avcc calibration\n");
-	reg_val = sunxi_sid_read_sram(&sid, 0x28U);
+	reg_val = sunxi_efuse_sram_read(&sid, 0x28U);
 	roughtrim_val = (reg_val >> 0) & 0xF;
-	reg_val = sunxi_sid_read_sram(&sid, 0x24U);
+	reg_val = sunxi_efuse_sram_read(&sid, 0x24U);
 	finetrim_val = (reg_val >> 16) & 0xFF;
 
 	if (roughtrim_val == 0 && finetrim_val == 0) {

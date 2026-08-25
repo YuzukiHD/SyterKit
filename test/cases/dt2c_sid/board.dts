@@ -10,6 +10,7 @@
 		sid-disabled = &sid_disabled;
 		sid-short = &sid_short;
 		sid-bad-switch = &sid_bad_switch;
+		sid-bad-sram = &sid_bad_sram;
 		sid-wrong-compatible = &sid_wrong_compatible;
 	};
 
@@ -41,6 +42,7 @@
 		sid1: efuse@2000 {
 			compatible = "allwinner,sunxi-sid";
 			reg = <0x2000 0x400>;
+			allwinner,sid-sram-base = <0x4000>;
 		};
 
 		sid_short: efuse@7000 {
@@ -53,6 +55,12 @@
 			compatible = "allwinner,sunxi-sid";
 			reg = <0xa000 0x400>;
 			allwinner,efuse-hv-switch = <0xb002>;
+		};
+
+		sid_bad_sram: efuse@e000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <0xe000 0x400>;
+			allwinner,sid-sram-base = <0xe002>;
 		};
 
 		sid_wrong_compatible: efuse@c000 {

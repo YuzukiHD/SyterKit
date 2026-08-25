@@ -529,10 +529,10 @@ static int load_extlinux(image_info_t *image, uint32_t dram_size, const sunxi_si
 
 	/* Append bootargs mac address */
 	uint32_t chip_sid[4];
-	chip_sid[0] = sunxi_sid_read_sram(sid, 0x0U);
-	chip_sid[1] = sunxi_sid_read_sram(sid, 0x4U);
-	chip_sid[2] = sunxi_sid_read_sram(sid, 0x8U);
-	chip_sid[3] = sunxi_sid_read_sram(sid, 0xcU);
+	chip_sid[0] = sunxi_efuse_sram_read(sid, 0x0U);
+	chip_sid[1] = sunxi_efuse_sram_read(sid, 0x4U);
+	chip_sid[2] = sunxi_efuse_sram_read(sid, 0x8U);
+	chip_sid[3] = sunxi_efuse_sram_read(sid, 0xcU);
 
 	char mac_address_str[18];
 	char *mac0_address = get_mac_address_from_sid(chip_sid, mac_address_str);

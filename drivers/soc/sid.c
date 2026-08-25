@@ -15,7 +15,6 @@
 #define SID_PRCTL_OFFSET 0x040U
 #define SID_PRKEY_OFFSET 0x050U
 #define SID_RDKEY_OFFSET 0x060U
-#define SID_SRAM_OFFSET 0x200U
 #define SID_OFFSET_MASK 0x1ffU
 #define SID_OPERATION_MASK 0x3U
 #define SID_KEY_MASK 0xffU
@@ -24,23 +23,39 @@
 
 static bool sunxi_sid_offset_valid(const sunxi_sid_t *sid, uint32_t offset)
 {
-	return sid != NULL && sid->base != 0U && sid->size >= SID_RDKEY_OFFSET + sizeof(uint32_t) && (offset & (sizeof(uint32_t) - 1U)) == 0U && offset <= SID_OFFSET_MASK;
+	return sid != NULL && sid->base != 0U && sid->size >= SID_RDKEY_OFFSET + sizeof(uint32_t) &&
+	       (offset & (sizeof(uint32_t) - 1U)) == 0U && offset <= SID_OFFSET_MASK;
 }
 
-uint32_t sunxi_sid_read_sram(const sunxi_sid_t *sid, uint32_t offset)
+static bool sunxi_sid_sram_address(const sunxi_sid_t *sid, uint32_t offset, uintptr_t *address)
 {
-	uintptr_t address;
 	uintptr_t sram_base;
 
-	if (sid == NULL || sid->base == 0U || (sid->base & (sizeof(uint32_t) - 1U)) != 0U || (offset & (sizeof(uint32_t) - 1U)) != 0U ||
-	    sid->size < SID_SRAM_OFFSET + sizeof(uint32_t) || offset > sid->size - SID_SRAM_OFFSET - sizeof(uint32_t))
-		return 0U;
+	if (address == NULL || sid == NULL || sid->base == 0U || (sid->base & (sizeof(uint32_t) - 1U)) != 0U ||
+		(offset & (sizeof(uint32_t) - 1U)) != 0U || sid->size < SUNXI_SID_SRAM_OFFSET + sizeof(uint32_t) ||
+		offset > sid->size - SUNXI_SID_SRAM_OFFSET - sizeof(uint32_t))
+		return false;
 
-	sram_base = sid->base + SID_SRAM_OFFSET;
-	if (sram_base < sid->base)
-		return 0U;
-	address = sram_base + offset;
-	if (address < sram_base)
+	sram_base = sid->sram_base;
+	if (sram_base == 0U) {
+		sram_base = sid->base + SUNXI_SID_SRAM_OFFSET;
+		if (sram_base < sid->base)
+			return false;
+	}
+	if ((sram_base & (sizeof(uint32_t) - 1U)) != 0U)
+		return false;
+
+	*address = sram_base + offset;
+	if (*address < sram_base)
+		return false;
+	return true;
+}
+
+uint32_t sunxi_efuse_sram_read(const sunxi_sid_t *sid, uint32_t offset)
+{
+	uintptr_t address;
+
+	if (!sunxi_sid_sram_address(sid, offset, &address))
 		return 0U;
 	return read32(address);
 }
@@ -126,7 +141,7 @@ void sunxi_efuse_dump(const sunxi_sid_t *sid)
 		for (size_t index = 0; index < count; index++) {
 			if (index % 8U == 0U)
 				printk(LOG_LEVEL_MUTE, "\n%-4s", "");
-			printk(LOG_LEVEL_MUTE, "%08x ", sunxi_efuse_read(sid, entry->offset + index * sizeof(uint32_t)));
+			printk(LOG_LEVEL_MUTE, "%08x ", sunxi_efuse_sram_read(sid, entry->offset + index * sizeof(uint32_t)));
 		}
 		printk(LOG_LEVEL_MUTE, "\n");
 	}

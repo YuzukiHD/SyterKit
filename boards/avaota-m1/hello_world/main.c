@@ -68,7 +68,7 @@ const msh_command_entry commands[] = {
 static void sunxi_res_ctrl_init(const sunxi_sid_t *sid)
 {
 	/* Read resource configuration field from SID register */
-	uint8_t sid_res_value = (uint8_t)(sunxi_sid_read_sram(sid, 0x40U) >> 24);
+	uint8_t sid_res_value = (uint8_t)(sunxi_efuse_sram_read(sid, 0x40U) >> 24);
 
 	/* No initialization needed if resource configuration value is 0 */
 	if (sid_res_value == 0) {
@@ -155,7 +155,7 @@ static voltage_config_t get_voltage_config(uint8_t efuse_value)
 static void sunxi_board_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c, axp_pmu_t *axp2202, axp_pmu_t *axp1530)
 {
 	/* Read EFUSE value to determine voltage configuration */
-	uint32_t efuse_reg_value = sunxi_sid_read_sram(sid, EFUSE_SRAM_OFFSET);
+	uint32_t efuse_reg_value = sunxi_efuse_sram_read(sid, EFUSE_SRAM_OFFSET);
 	uint8_t efuse_value = (uint8_t)((efuse_reg_value & EFUSE_MASK) >> EFUSE_SHIFT);
 	uint8_t efuse_ext_value = (uint8_t)((efuse_reg_value & EFUSE_EXT_MASK) >> EFUSE_EXT_SHIFT);
 
