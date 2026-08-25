@@ -3,10 +3,26 @@
 #include "sid-internal.h"
 
 const sunxi_sid_section_t sunxi_sid_sections[] = {
-	{ "chipid", 0x0000, 128 },	{ "brom-config", 0x0010, 32 },	 { "aldo-fix", 0x0014, 1 },	 { "thermal-sensor", 0x0030, 64 }, { "tf-zone", 0x0028, 128 },
-	{ "oem-program", 0x003c, 160 }, { "write-protect", 0x0080, 32 }, { "read-protect", 0x0084, 32 }, { "lcjs", 0x0088, 32 },	   { "attr", 0x0090, 32 },
-	{ "huk", 0x0094, 192 },		{ "reserved1", 0x00ac, 64 },	 { "rotpk", 0x00b4, 256 },	 { "ssk", 0x00d4, 128 },	   { "rssk", 0x00f4, 256 },
-	{ "sn", 0x00b0, 192 },		{ "nv1", 0x0124, 32 },		 { "nv2", 0x0128, 32 },		 { "hdcp-hash", 0x0114, 128 },	   { "backup-key", 0x0164, 192 },
+	{ "chipid", 0x0000, 128 },
+	{ "brom-config", 0x0010, 32 },
+	{ "aldo-fix", 0x0014, 1 },
+	{ "thermal-sensor", 0x0030, 64 },
+	{ "tf-zone", 0x0028, 128 },
+	{ "oem-program", 0x003c, 160 },
+	{ "write-protect", 0x0080, 32 },
+	{ "read-protect", 0x0084, 32 },
+	{ "lcjs", 0x0088, 32 },
+	{ "attr", 0x0090, 32 },
+	{ "huk", 0x0094, 192 },
+	{ "reserved1", 0x00ac, 64 },
+	{ "rotpk", 0x00b4, 256 },
+	{ "ssk", 0x00d4, 128 },
+	{ "rssk", 0x00f4, 256 },
+	{ "sn", 0x00b0, 192 },
+	{ "nv1", 0x0124, 32 },
+	{ "nv2", 0x0128, 32 },
+	{ "hdcp-hash", 0x0114, 128 },
+	{ "backup-key", 0x0164, 192 },
 	{ "backup-key2", 0x01a4, 72 },
 };
 
