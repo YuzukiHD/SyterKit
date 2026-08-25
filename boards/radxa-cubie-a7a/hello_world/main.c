@@ -20,13 +20,105 @@
 #include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
+#if defined(CONFIG_DRIVER_UFS)
+#include <drivers/ufs/ufs.h>
+#include <dt-compatible/ufs-dt.h>
+#endif
 
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 #include <string.h>
 
+#define UFS_RUNTIME_OFFSET 0x00100000U
+#define UFS_IO_OFFSET	   0x00200000U
+#define UFS_IO_BUFFER_SIZE 0x00100000U
+
 static sunxi_dram_t dram;
+
+#if defined(CONFIG_DRIVER_UFS)
+static struct ufs_device *ufs0;
+static struct sunxi_ufs_platform_data ufs_platform_data;
+static void *ufs_io_buffer;
+static bool ufs_ready;
+
+static bool ufs_parse_u64(const char *text, uint64_t *value)
+{
+	char *end;
+	unsigned long long parsed;
+
+	if (!text || !*text || !value)
+		return false;
+	parsed = simple_strtoull(text, &end, 0);
+	if (end == text || *end != '\0')
+		return false;
+	*value = (uint64_t)parsed;
+	return true;
+}
+
+msh_declare_command(ufs_info);
+msh_define_help(ufs_info, "show UFS device information", "Usage: ufs_info\n");
+int cmd_ufs_info(int argc, const char **argv)
+{
+	(void)argc;
+	(void)argv;
+	if (!ufs_ready) {
+		printk_error("UFS: device is not initialized\n");
+		return -1;
+	}
+	printk_info("UFS: LUN %u, %s, %llu blocks x %u bytes, manufacturer 0x%04x\n", ufs0->lun,
+		ufs0->scsi.model[0] ? ufs0->scsi.model : "unknown", (unsigned long long)ufs_capacity(ufs0),
+		ufs_block_size(ufs0), ufs_manufacturer_id(ufs0));
+	return 0;
+}
+
+msh_declare_command(ufs_read);
+msh_define_help(ufs_read, "read UFS blocks into the DRAM window", "Usage: ufs_read <lba> <blocks>\n");
+int cmd_ufs_read(int argc, const char **argv)
+{
+	uint64_t lba;
+	uint64_t blocks;
+	uint32_t block_size;
+
+	if (argc != 3 || !ufs_ready || !ufs_parse_u64(argv[1], &lba) || !ufs_parse_u64(argv[2], &blocks) ||
+		blocks == 0U || blocks > 0xffffffffULL) {
+		printk_error("Usage: ufs_read <lba> <blocks>\n");
+		return -1;
+	}
+	block_size = ufs_block_size(ufs0);
+	if (!block_size || blocks > UFS_IO_BUFFER_SIZE / block_size) {
+		printk_error("UFS: transfer does not fit the DRAM window\n");
+		return -1;
+	}
+	if (ufs_blk_read(ufs0, ufs_io_buffer, lba, (uint32_t)blocks) != blocks)
+		return -1;
+	dump_hex((uintptr_t)ufs_io_buffer, blocks * block_size > 0x100U ? 0x100U : blocks * block_size);
+	return 0;
+}
+
+msh_declare_command(ufs_write);
+msh_define_help(ufs_write, "write a pattern from the DRAM window to UFS", "Usage: ufs_write <lba> <blocks> <byte>\n");
+int cmd_ufs_write(int argc, const char **argv)
+{
+	uint64_t lba;
+	uint64_t blocks;
+	uint64_t pattern;
+	uint32_t block_size;
+
+	if (argc != 4 || !ufs_ready || !ufs_parse_u64(argv[1], &lba) || !ufs_parse_u64(argv[2], &blocks) ||
+		!ufs_parse_u64(argv[3], &pattern) || blocks == 0U || blocks > 0xffffffffULL || pattern > 0xffU) {
+		printk_error("Usage: ufs_write <lba> <blocks> <byte>\n");
+		return -1;
+	}
+	block_size = ufs_block_size(ufs0);
+	if (!block_size || blocks > UFS_IO_BUFFER_SIZE / block_size) {
+		printk_error("UFS: transfer does not fit the DRAM window\n");
+		return -1;
+	}
+	memset(ufs_io_buffer, (int)pattern, (size_t)blocks * block_size);
+	return ufs_blk_write(ufs0, ufs_io_buffer, lba, (uint32_t)blocks) == blocks ? 0 : -1;
+}
+#endif
 
 extern sunxi_serial_t uart_dbg;
 
@@ -53,6 +145,11 @@ int cmd_ddr_test(int argc, const char **argv)
 const msh_command_entry commands[] = {
 	msh_define_command(bt),
 	msh_define_command(ddr_test),
+#if defined(CONFIG_DRIVER_UFS)
+	msh_define_command(ufs_info),
+	msh_define_command(ufs_read),
+	msh_define_command(ufs_write),
+#endif
 	msh_command_end,
 };
 
@@ -87,7 +184,32 @@ int main(void)
 		printk_error("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
-	sunxi_dram_init(&dram);
+
+	uint32_t dram_size_mb = sunxi_dram_init(&dram);
+
+	if (!dram.memory_size && dram_size_mb)
+		dram.memory_size = (size_t)dram_size_mb * 1024U * 1024U;
+
+#if defined(CONFIG_DRIVER_UFS)
+	struct ufshc_config ufs_config;
+
+	/* Keep controller descriptors and I/O buffers in initialized DRAM;
+		 * the small SRAM image cannot hold an aligned UFS host object. */
+	if (!dram.memory_base || dram.memory_size < UFS_IO_OFFSET + UFS_IO_BUFFER_SIZE ||
+		dram.memory_size - UFS_RUNTIME_OFFSET < sizeof(struct ufs_device)) {
+		printk_error("UFS: DRAM window is too small for controller state\n");
+	} else if (sunxi_ufs_dt_read_alias(&ufs_config, "ufs0", &ufs_platform_data) != DRIVER_OK) {
+		printk_error("UFS: invalid devicetree configuration\n");
+	} else {
+		ufs0 = (struct ufs_device *)(dram.memory_base + UFS_RUNTIME_OFFSET);
+		ufs_io_buffer = (void *)(dram.memory_base + UFS_IO_OFFSET);
+		memset(ufs0, 0, sizeof(*ufs0));
+		if (ufs_init(ufs0, &ufs_config) != 0)
+			printk_error("UFS: controller/device initialization failed\n");
+		else
+			ufs_ready = true;
+	}
+#endif
 
 	printk_info("Hello World!\n");
 

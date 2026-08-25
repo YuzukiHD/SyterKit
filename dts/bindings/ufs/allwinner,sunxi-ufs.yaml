@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/ufs/allwinner,sunxi-ufs.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Allwinner UFS host controller
+
+maintainers:
+  - SyterKit maintainers
+
+properties:
+  compatible:
+    const: allwinner,sunxi-ufs
+
+  reg:
+    maxItems: 1
+    description: UFSHCI register space
+
+  clocks:
+    maxItems: 4
+
+  allwinner,axi-clock:
+    minItems: 6
+    maxItems: 6
+    description: AXI clock register and gate/source configuration cells
+
+  allwinner,cfg-clock:
+    minItems: 6
+    maxItems: 6
+    description: UFS configuration clock register, source and divider configuration cells
+
+  allwinner,controller-clock:
+    minItems: 15
+    maxItems: 15
+    description: >
+      UFS controller register offsets and clock field values: CFG offset,
+      gate offset, CFG frequency mask/value, reference-clock routing bits,
+      reference-clock field mask and values for detector types 0 through 3,
+      M-PHY and 24 MHz gate bits, and the controller auto-gate value
+
+  allwinner,phy-ref-clock:
+    minItems: 1
+    maxItems: 1
+    description: RMMI reference-clock control value written to CBREFCLKCTRL2
+
+  allwinner,rtc-clock:
+    minItems: 9
+    maxItems: 9
+    description: >
+      RTC oscillator control addresses followed by detector shift/mask,
+      external detector-type mask, DCXO gate, clock-request disable and
+      write-protection key values
+
+  allwinner,reset:
+    minItems: 6
+    maxItems: 6
+    description: UFS reset register followed by core, PHY, AXI, bus and AHB masks
+
+  resets:
+    maxItems: 1
+
+  allwinner,timeout-us:
+    description: Polling timeout for controller and transfer operations
+    $ref: /schemas/types.yaml#/definitions/uint32
+    default: 1000000
+
+required:
+  - compatible
+  - reg
+  - allwinner,axi-clock
+  - allwinner,cfg-clock
+  - allwinner,controller-clock
+  - allwinner,phy-ref-clock
+  - allwinner,rtc-clock
+  - allwinner,reset
+
+additionalProperties: true
+
+dt2c,device: true

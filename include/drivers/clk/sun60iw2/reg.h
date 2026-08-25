@@ -11,6 +11,10 @@
 
 #include <dt-bindings/soc/sun60iw2.h>
 
+/* UFS PHY calibration words in the IW2P1 SID eFuse map. */
+#define SUNXI_UFS_CAL_WORDS_EFUSE_ALIGN_LOW 0x60U
+#define SUNXI_UFS_CAL_WORDS_EFUSE_ALIGN_HIGH 0x64U
+
 #define PLL_REF_CTRL_REG 0x00000000 //PLL_REF Control Register
 #define PLL_REF_CTRL_REG_PLL_EN_OFFSET 31
 #define PLL_REF_CTRL_REG_PLL_EN_CLEAR_MASK (0x80000000)
