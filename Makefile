@@ -175,17 +175,8 @@ release: $(conf) | board-kconfig
 	@test -f $(KCONFIG_CONFIG) || { echo "No configuration found. Run 'make <board>_defconfig' first." >&2; exit 1; }
 	@set -e; \
 	tmp="$(KCONFIG_CONFIG).release.$$$$"; \
-	config_prefix=CONFIG; \
 	trap '$(RM) "$$tmp"' EXIT; \
-	cp "$(KCONFIG_CONFIG)" "$$tmp"; \
-	sed -i -E "/^(# )?$${config_prefix}_BUILD_(RELEASE|DEBUG|TRACE)(=.*| is not set)?$$/d" "$$tmp"; \
-	sed -i -E "/^(# )?$${config_prefix}_DRIVER_(CLK|DMA|DRAM|GPIO|I2C|INTC|MMC|MTD|PMU|PWM|REMOTEPROC|RTC|SERIAL|SOC|SPI|USB)_LOG_(GLOBAL|MUTE|ERROR|WARNING|INFO|DEBUG|TRACE|BACKTRACE)(=.*| is not set)?$$/d" "$$tmp"; \
-	{ \
-		echo "$${config_prefix}_BUILD_RELEASE=y"; \
-		for driver in CLK DMA DRAM GPIO I2C INTC MMC MTD PMU PWM REMOTEPROC RTC SERIAL SOC SPI USB; do \
-			echo "$${config_prefix}_DRIVER_$${driver}_LOG_GLOBAL=y"; \
-		done; \
-	} >> "$$tmp"; \
+	$(srctree)/scripts/release-config.sh "$(KCONFIG_CONFIG)" "$$tmp"; \
 	$(kconfig_env) $(conf) --defconfig="$$tmp" $(srctree)/Kconfig; \
 	$(MAKE) O=$(O) syncconfig
 
