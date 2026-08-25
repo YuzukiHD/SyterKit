@@ -18,6 +18,7 @@
 		gpio0 = &pio;
 		i2c0 = &i2c0;
 		mmc0 = &mmc0;
+		ufs0 = &ufs0;
 	};
 
 	chosen {
@@ -26,6 +27,7 @@
 
 	dram0: dram-controller {
 		compatible = "allwinner,sunxi-dram";
+		allwinner,dram-base = <0x40000000>;
 		allwinner,dram-parameters =
 			<0x00000960>,
 			<SUNXI_DRAM_LPDDR5>,
@@ -143,6 +145,38 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&mmc0_pins>;
 			status = "disabled";
+		};
+
+		ufs0: ufs@4520000 {
+			compatible = "allwinner,sunxi-ufs";
+			reg = <SUNXI_UFS_BASE 0x1000>;
+			allwinner,axi-clock = <SUNXI_UFS_AXI_CLK_REG
+				SUNXI_UFS_AXI_CLK_GATE SUNXI_UFS_AXI_CLK_SRC_MASK
+				SUNXI_UFS_AXI_CLK_SRC_300 SUNXI_UFS_AXI_CLK_SRC_200
+				SUNXI_UFS_AXI_CLK_FACTOR_MASK>;
+			allwinner,cfg-clock = <SUNXI_UFS_CFG_CLK_REG
+				SUNXI_UFS_CFG_CLK_GATE SUNXI_UFS_CFG_CLK_SRC_MASK
+				SUNXI_UFS_CFG_CLK_SRC_480 SUNXI_UFS_CFG_CLK_FACTOR_MASK
+				SUNXI_UFS_CFG_CLK_FACTOR>;
+			allwinner,controller-clock = <SUNXI_UFS_CFG_REG_OFFSET
+				SUNXI_UFS_CLK_GATE_REG_OFFSET SUNXI_UFS_CFG_CLK_FREQ_MASK
+				SUNXI_UFS_CFG_CLK_FREQ SUNXI_UFS_REF_CLK_UNIPRO_SEL
+				SUNXI_UFS_REF_CLK_APP_SEL SUNXI_UFS_REF_CLK_APP_ENABLE
+				SUNXI_UFS_REF_CLK_FREQ_MASK SUNXI_UFS_REF_CLK_FREQ_EXT_26M
+				SUNXI_UFS_REF_CLK_FREQ_INT_19_2M SUNXI_UFS_REF_CLK_FREQ_INT_26M
+				SUNXI_UFS_REF_CLK_FREQ_EXT_19_2M SUNXI_UFS_MPHY_CFGCLK_GATE
+				SUNXI_UFS_CLK24M_GATE SUNXI_UFS_CLK_GATE_AUTOGATE_OFF>;
+			allwinner,phy-ref-clock = <SUNXI_UFS_PHY_REF_CLK_CTRL>;
+			allwinner,rtc-clock = <SUNXI_UFS_RTC_XO_CTRL
+				SUNXI_UFS_RTC_XO_CTRL1 SUNXI_UFS_RTC_WP
+				SUNXI_UFS_RTC_REF_TYPE_SHIFT SUNXI_UFS_RTC_REF_TYPE_MASK
+				SUNXI_UFS_RTC_EXTERNAL_REF_TYPES SUNXI_UFS_RTC_DCXO_GATE
+				SUNXI_UFS_RTC_CLK_REQ_DISABLE SUNXI_UFS_RTC_WP_KEY>;
+			allwinner,reset = <SUNXI_UFS_RESET_REG SUNXI_UFS_CORE_RST
+				SUNXI_UFS_PHY_RST SUNXI_UFS_AXI_RST SUNXI_UFS_BUS_RST
+				SUNXI_UFS_AHB_GATE>;
+			allwinner,timeout-us = <1000000>;
+			status = "okay";
 		};
 
 		i2c0: i2c@7083000 {

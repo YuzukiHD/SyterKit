@@ -18,5 +18,6 @@ source "drivers/serial/Kconfig"
 source "drivers/soc/Kconfig"
 source "drivers/spi/Kconfig"
 source "drivers/usb/Kconfig"
+source "drivers/ufs/Kconfig"
 
 endmenu

@@ -17,3 +17,4 @@ obj-$(CONFIG_DRIVER_SERIAL) += serial/
 obj-$(CONFIG_DRIVER_SID) += soc/
 obj-$(CONFIG_DRIVER_SPI) += spi/
 obj-$(CONFIG_DRIVER_USB) += usb/
+obj-$(CONFIG_DRIVER_UFS) += ufs/
