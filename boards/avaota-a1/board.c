@@ -22,6 +22,7 @@
 #include <drivers/soc/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
+
 void gicr_set_waker(void)
 {
 	uint32_t gicr_waker = read32(GICR_WAKER(0));
