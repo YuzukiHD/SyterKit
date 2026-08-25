@@ -27,10 +27,10 @@ int main(void)
 
 	uint32_t id[4];
 
-	id[0] = sunxi_sid_read_sram(&sid, 0x0U);
-	id[1] = sunxi_sid_read_sram(&sid, 0x4U);
-	id[2] = sunxi_sid_read_sram(&sid, 0x8U);
-	id[3] = sunxi_sid_read_sram(&sid, 0xcU);
+	id[0] = sunxi_efuse_sram_read(&sid, 0x0U);
+	id[1] = sunxi_efuse_sram_read(&sid, 0x4U);
+	id[2] = sunxi_efuse_sram_read(&sid, 0x8U);
+	id[3] = sunxi_efuse_sram_read(&sid, 0xcU);
 
 	printk_info("Chip ID is: %08x%08x%08x%08x\n", id[0], id[1], id[2], id[3]);
 

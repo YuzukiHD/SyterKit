@@ -45,7 +45,7 @@ void set_cpu_poweroff(void)
 		printk_error("SID: invalid devicetree configuration\n");
 		return;
 	}
-	if (((sunxi_sid_read_sram(&sid, 0x48U) >> 29) & 0x1U) == 1U) {
+	if (((sunxi_efuse_sram_read(&sid, 0x48U) >> 29) & 0x1U) == 1U) {
 		set_cpu_down(2); /*power of cpu2*/
 		set_cpu_down(3); /*power of cpu3*/
 	}
