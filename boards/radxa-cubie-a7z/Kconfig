@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_RADXA_CUBIE_A7Z
+	bool "Radxa Cubie A7Z"
+	depends on ARCH_ARM32 && CPU_ARMV8_2
+	select SOC_SUN60IW2
