@@ -84,9 +84,8 @@ const struct sunxi_ufs_variant *__attribute__((weak)) sunxi_ufs_get_variant(void
 	return NULL;
 }
 
-int __attribute__((weak)) sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
+int __attribute__((weak)) sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal __attribute__((unused)))
 {
-	(void)cal;
 	return UFSHC_ERR_INVALID;
 }
 
@@ -190,6 +189,8 @@ static uint32_t sunxi_detect_ref_clk_type(void *priv)
 		udelay(3);
 	}
 
+	ufs_debug("UFS PHY: reference clock type=%u rtc_xo_ctrl=0x%08x\n", current,
+		readl(variant->rtc_xo_ctrl));
 	return current;
 }
 
@@ -253,6 +254,8 @@ static void sunxi_ext_res_init(void *priv)
 	/* IW2P1 requires EXT Res200 for the UFS PHY reference resistor. */
 	setbits_le32(variant->ext_res_ctrl, BIT(13));
 	clrbits_le32(variant->ext_res1_ctrl, 0xffU << 24);
+	ufs_debug("UFS PHY: external resistor calibration ext_res=0x%08x ext_res1=0x%08x\n",
+		readl(variant->ext_res_ctrl), readl(variant->ext_res1_ctrl));
 }
 
 static void sunxi_cfg_clk(void *priv)
@@ -358,29 +361,27 @@ static void sunxi_ref_clk(bool enable, void *priv)
 
 static int sunxi_enable(void *priv)
 {
-	if (!sunxi_variant_valid(sunxi_variant(priv)))
+	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+
+	if (!sunxi_variant_valid(variant)) 
 		return UFSHC_ERR_INVALID;
 	/* Native startup samples the oscillator detector once and reuses it for
 	 * both top-level clock routing and the UFS_CFG frequency fields. */
 	*sunxi_ref_clk_cache_valid(priv) = false;
-	(void)sunxi_ref_clk_type(priv);
+	sunxi_ref_clk_type(priv);
 	sunxi_ext_res_init(priv);
 	/* Assert the bus, AXI, core and PHY resets before changing clocks. */
 	sunxi_ahb_clk(false, priv);
 	sunxi_axi_clk(false, priv);
 	sunxi_axi_clk(true, priv);
 	sunxi_ahb_clk(true, priv);
-	{
-		const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
-
-		clrbits_le32(variant->reset_reg, variant->core_rst | variant->phy_rst);
-	}
+	clrbits_le32(variant->reset_reg, variant->core_rst | variant->phy_rst);
 	sunxi_cfg_clk(priv);
 	sunxi_ref_clk(true, priv);
 	return 0;
 }
 
-static int sunxi_prepare(uintptr_t base, void *priv)
+static int sunxi_prepare(uintptr_t base __attribute__((unused)), void *priv)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
 	uint32_t value;
@@ -394,7 +395,6 @@ static int sunxi_prepare(uintptr_t base, void *priv)
 	ref_freq = sunxi_ref_clk_freq(variant, ref_type);
 	external = sunxi_ref_clk_is_external(variant, ref_type);
 
-	(void)base;
 	value = readl(variant->ufs_cfg_reg);
 	value &= ~(SUNXI_UFS_MPHY_SRAM_BYPASS | SUNXI_UFS_MPHY_SRAM_EXT_DONE |
 		   variant->ufs_cfg_clk_freq_mask | variant->ufs_ref_clk_freq_mask |
@@ -575,31 +575,45 @@ static int sunxi_phy_link_startup(struct ufshc_host *host, void *priv)
 	 * this PHY-local deadline independent of the longer HCI transaction timeout. */
 	deadline = time_us() + UFSHC_PHY_INIT_TIMEOUT_US;
 	while (!(readl(variant->ufs_cfg_reg) & SUNXI_UFS_MPHY_SRAM_INIT_DONE)) {
-		if (time_us() >= deadline)
+		uint64_t now = time_us();
+
+		if (now >= deadline) {
+			ufs_debug("UFS PHY: M-PHY SRAM init timeout cfg=0x%08x\n", readl(variant->ufs_cfg_reg));
 			return UFSHC_ERR_TIMEOUT;
+		}
 	}
 
 	/* Exercise the indirect SRAM path as in the vendor sequence. */
 	ret = sunxi_c10_read(host, TC_RAM_CMN0_B0_R0 + 2U, &scratch);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: C10 SRAM read failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_c10_write(host, TC_RAM_CMN0_B0_R0 + 2U, scratch);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: C10 SRAM write failed ret=%d\n", ret);
 		return ret;
+	}
 	if (cal.pll_rate_a || cal.pll_rate_b) {
 		uint16_t coarse = cal.pll_rate_b ? cal.pll_rate_b : cal.pll_rate_a;
 
 		ret = sunxi_c10_write(host, TC_MPLL_COARSE_TUNE, coarse);
-		if (ret)
+		if (ret) {
+			ufs_debug("UFS PHY: C10 MPLL coarse tune failed ret=%d\n", ret);
 			return ret;
+		}
 		ret = sunxi_c10_write(host, TC_MPLL_SKIPCAL_COARSE_TUNE, coarse);
-		if (ret)
+		if (ret) {
+			ufs_debug("UFS PHY: C10 MPLL skip calibration failed ret=%d\n", ret);
 			return ret;
+		}
 	}
 	for (size_t i = 0; i < sizeof(c10) / sizeof(c10[0]); ++i) {
 		ret = sunxi_c10_write(host, c10[i].reg, c10[i].value);
-		if (ret)
+		if (ret) {
+			ufs_debug("UFS PHY: C10 tuning reg=0x%04x failed ret=%d\n", c10[i].reg, ret);
 			return ret;
+		}
 	}
 	if (cal.att_lane0 && cal.ctle_lane0 && cal.att_lane1 && cal.ctle_lane1) {
 		afe_cal[0].value = cal.att_lane0;
@@ -608,51 +622,74 @@ static int sunxi_phy_link_startup(struct ufshc_host *host, void *priv)
 		afe_cal[3].value = cal.ctle_lane1;
 		for (size_t i = 0; i < sizeof(afe_cal) / sizeof(afe_cal[0]); ++i) {
 			ret = sunxi_c10_write(host, afe_cal[i].reg, afe_cal[i].value);
-			if (ret)
+			if (ret) {
+				ufs_debug("UFS PHY: C10 AFE calibration reg=0x%04x failed ret=%d\n",
+					afe_cal[i].reg, ret);
 				return ret;
+			}
 		}
 	}
 	if (!cal.pll_rate_a && !cal.pll_rate_b) {
 		/* No fused PLL words: trigger the M-PHY automatic calibration. */
 		ret = sunxi_c10_write(host, TC_MPLL_PWR_CTL_CAL_CTRL, 8);
-		if (ret)
+		if (ret) {
+			ufs_debug("UFS PHY: automatic MPLL calibration failed ret=%d\n", ret);
 			return ret;
+		}
 	}
 
 	value = readl(variant->ufs_cfg_reg);
 	value |= SUNXI_UFS_MPHY_SRAM_EXT_DONE;
 	writel(value, variant->ufs_cfg_reg);
 	ret = sunxi_dme_write(host, TC_VS_MPHYCFGUPDT, 0, 1);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: M-PHY configuration update failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_dme_write(host, TC_VS_MPHY_DISABLE, 0, 0);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: M-PHY enable failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_dme_write(host, TC_VS_DEBUG_SAVE_CONFIG_TIME, 0, 0x1b);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: debug save-config timer setup failed ret=%d\n", ret);
 		return ret;
-	return sunxi_dme_write(host, TC_VS_CLK_MUX_SWITCHING_TIMER, 0, 0xa);
+	}
+	ret = sunxi_dme_write(host, TC_VS_CLK_MUX_SWITCHING_TIMER, 0, 0xa);
+	if (ret)
+		ufs_debug("UFS PHY: clock mux timer setup failed ret=%d\n", ret);
+	return ret;
 }
 
-static int sunxi_link_up(struct ufshc_host *host, void *priv)
+static int sunxi_link_up(struct ufshc_host *host, void *priv __attribute__((unused)))
 {
-	uint32_t value;
+	uint32_t value = 0;
 	int ret;
 
-	(void)priv;
 	ret = sunxi_dme_read(host, TC_VS_POWERSTATE, 0, &value);
-	if (ret || value != 2U)
+	if (ret || value != 2U) {
+		ufs_debug("UFS PHY: invalid power state value=%u ret=%d\n", value, ret);
 		return ret ? ret : UFSHC_ERR_IO;
+	}
 	ret = sunxi_dme_write(host, TC_T_CONNECTIONSTATE, 0, 0);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: clear connection state failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_dme_write(host, TC_T_CPORTFLAGS, 0, 6);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: set CPort flags failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_dme_write(host, TC_T_CONNECTIONSTATE, 0, 1);
-	if (ret)
+	if (ret) {
+		ufs_debug("UFS PHY: set connection state failed ret=%d\n", ret);
 		return ret;
+	}
 	ret = sunxi_dme_read(host, TC_T_CONNECTIONSTATE, 0, &value);
+	if (ret || value != 1U)
+		ufs_debug("UFS PHY: connection state verify failed value=%u ret=%d\n", value, ret);
 	return ret ? ret : (value == 1U ? 0 : UFSHC_ERR_IO);
 }
 

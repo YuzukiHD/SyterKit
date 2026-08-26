@@ -7,6 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <log.h>
+
+#ifdef CONFIG_DRIVER_UFS_DEBUG
+#define ufs_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#else
+#define ufs_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#endif
+
 #define UFSHC_ERR_INVALID (-1)
 #define UFSHC_ERR_IO	  (-2)
 #define UFSHC_ERR_TIMEOUT (-3)
@@ -19,6 +27,11 @@
 #define UFSHC_REG_INTERRUPT_ENABLE     0x24U
 #define UFSHC_REG_CONTROLLER_STATUS    0x30U
 #define UFSHC_REG_CONTROLLER_ENABLE    0x34U
+#define UFSHC_REG_UIC_ERROR_PHY_ADAPTER 0x38U
+#define UFSHC_REG_UIC_ERROR_DATA_LINK   0x3cU
+#define UFSHC_REG_UIC_ERROR_NETWORK     0x40U
+#define UFSHC_REG_UIC_ERROR_TRANSPORT   0x44U
+#define UFSHC_REG_UIC_ERROR_DME         0x48U
 #define UFSHC_REG_UTRL_INT_AGG_CONTROL 0x4cU
 #define UFSHC_REG_UTRL_BASE_L	       0x50U
 #define UFSHC_REG_UTRL_BASE_H	       0x54U
@@ -226,7 +239,7 @@ struct ufshc_request_desc {
 	uint16_t response_offset;
 	uint16_t prdt_length;
 	uint16_t prdt_offset;
-} __attribute__((packed, aligned(1024)));
+} __attribute__((packed));
 
 /* One task-management slot is enough for early boot while retaining the
  * standard 20-dword UTMRD request/response layout. */
@@ -238,13 +251,13 @@ struct ufshc_task_request_desc {
 	uint32_t response_header[3];
 	uint32_t output_param[2];
 	uint32_t response_reserved[3];
-} __attribute__((packed, aligned(1024)));
+} __attribute__((packed));
 
 struct ufshc_command_desc {
 	uint8_t command_upiu[UFSHC_UPIU_SIZE];
 	uint8_t response_upiu[UFSHC_UPIU_SIZE];
 	struct ufshc_prd prdt[UFSHC_MAX_PRDT];
-} __attribute__((aligned(1024)));
+};
 
 struct ufshc_host {
 	uintptr_t base;
@@ -256,19 +269,19 @@ struct ufshc_host {
 	bool controller_enabled;
 	struct ufshc_platform_ops platform_ops;
 	const struct ufshc_platform_ops *platform;
+};
 
-	/* One slot is intentional for early boot: it keeps ownership and polling
-	 * deterministic while still using the standard UFSHCI descriptors. */
-	struct ufshc_request_desc utrd __attribute__((aligned(1024)));
-	struct ufshc_task_request_desc utmrd __attribute__((aligned(1024)));
-	struct ufshc_command_desc ucd __attribute__((aligned(1024)));
+struct ufshc_uic_cmd_args {
+	uint32_t command;
+	uint32_t argument1;
+	uint32_t argument2;
+	uint32_t argument3;
 };
 
 int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config);
 void ufshc_exit(struct ufshc_host *host);
 int ufshc_exec(struct ufshc_host *host, struct ufshc_request *request);
-int ufshc_uic_command(
-	struct ufshc_host *host, uint32_t command, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t *result);
+int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *args, uint32_t *result);
 int ufshc_dme_get(struct ufshc_host *host, uint32_t attribute, uint32_t *value, bool peer);
 int ufshc_dme_set(struct ufshc_host *host, uint32_t attribute, uint32_t value, bool peer);
 int ufshc_dme_get_sel(struct ufshc_host *host, uint32_t attribute, uint16_t selector, uint32_t *value, bool peer);

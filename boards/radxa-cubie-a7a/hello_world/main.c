@@ -206,8 +206,10 @@ int main(void)
 			ufs_io_buffer = NULL;
 		} else {
 			memset(ufs0, 0, sizeof(*ufs0));
-			if (ufs_init(ufs0, &ufs_config) != 0) {
-				printk_error("UFS: controller/device initialization failed\n");
+			ufs_debug("UFS: init base=%p timeout_us=%u state=%p buffer=%p\n", (void *)ufs_config.base,
+				ufs_config.timeout_us, (void *)ufs0, ufs_io_buffer);
+			int ufs_ret = ufs_init(ufs0, &ufs_config);
+			if (ufs_ret != 0) {
 				free(ufs0);
 				free(ufs_io_buffer);
 				ufs0 = NULL;

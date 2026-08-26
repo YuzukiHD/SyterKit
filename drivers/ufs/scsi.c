@@ -119,10 +119,13 @@ static int ufs_scsi_inquiry(struct ufs_scsi_device *device)
 	size_t model_end;
 
 	memset(inquiry, 0, sizeof(inquiry));
+
 	if (ufs_scsi_exec(device, cdb, sizeof(cdb), inquiry, sizeof(inquiry), false))
 		return UFS_SCSI_ERR;
+
 	if ((inquiry[0] & 0x1fU) == 0x1fU)
 		return UFS_SCSI_ERR;
+
 	/* The model field is fixed-width and space padded by SCSI. */
 	model_end = 16U + 16U;
 	while (model_end > 16U && inquiry[model_end - 1U] == ' ')
@@ -254,21 +257,24 @@ int ufs_scsi_init(struct ufs_scsi_device *device, struct ufshc_host *host, uint8
 		/* Native UFS scan sends START STOP only after the first failed TUR;
 		 * subsequent groups simply allow the logical unit time to settle. */
 		if (!started) {
-			(void)ufs_scsi_start_stop(device);
+			ufs_scsi_start_stop(device);
 			started = true;
 		}
 		if (retry + 1U < 3U)
 			mdelay(1000);
 	}
-	if (ret || ufs_scsi_read_capacity(device)) {
-not_ready:
-		printk_error("UFS: SCSI logical unit %u is not ready\n", lun);
-		return UFS_SCSI_ERR;
+	if (ret) {
+		goto not_ready;
 	}
+	ret = ufs_scsi_read_capacity(device);
 	device->present = true;
 	printk_info("UFS: LUN %u, %s, %llu blocks x %u bytes\n", lun, device->model[0] ? device->model : "unknown",
 		(unsigned long long)device->block_count, device->block_size);
 	return 0;
+
+not_ready:
+	printk_error("UFS SCSI: logical unit %u is not ready ret=%d\n", lun, ret);
+	return UFS_SCSI_ERR;
 }
 
 int ufs_scsi_read(struct ufs_scsi_device *device, uint64_t lba, uint32_t blocks, void *buffer)

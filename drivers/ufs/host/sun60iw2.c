@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 #include <drivers/clk/sun60iw2/reg.h>
+#include <log.h>
 #include <drivers/soc/sid.h>
 #include <drivers/ufs/host/sunxi.h>
 #include <dt-compatible/sid-dt.h>
@@ -22,10 +23,28 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_ufs_get_variant();
 	sunxi_sid_t sid;
+	uint32_t low;
+	uint32_t high;
+	int ret;
 
-	if (!cal || !variant || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK)
+	if (!cal || !variant) {
+		printk_error("UFS PHY: invalid calibration request\n");
 		return UFSHC_ERR_INVALID;
-	return sunxi_decode_cal_words(cal,
-		sunxi_efuse_sram_read(&sid, variant->cal_low_offset),
-		sunxi_efuse_sram_read(&sid, variant->cal_high_offset));
+	}
+	ret = sunxi_sid_dt_read_alias(&sid, "sid0");
+	if (ret != DRIVER_OK) {
+		printk_error("UFS PHY: SID configuration failed ret=%d\n", ret);
+		return UFSHC_ERR_INVALID;
+	}
+	low = sunxi_efuse_sram_read(&sid, variant->cal_low_offset);
+	high = sunxi_efuse_sram_read(&sid, variant->cal_high_offset);
+	ufs_debug("UFS PHY: calibration words low=0x%08x high=0x%08x\n", low, high);
+	ret = sunxi_decode_cal_words(cal, low, high);
+	if (ret)
+		printk_error("UFS PHY: calibration decode failed ret=%d\n", ret);
+	else
+		ufs_debug("UFS PHY: calibration PLL(A/B)=0x%02x/0x%02x AFE0(att/ctle)=0x%02x/0x%02x "
+			"AFE1(att/ctle)=0x%02x/0x%02x\n", cal->pll_rate_a, cal->pll_rate_b,
+			cal->att_lane0, cal->ctle_lane0, cal->att_lane1, cal->ctle_lane1);
+	return ret;
 }
