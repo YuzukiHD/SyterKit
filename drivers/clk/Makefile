@@ -6,6 +6,7 @@ ccflags-y += $(call driver-log-flags,DRIVER_CLK)
 obj-y += clk.o
 obj-$(CONFIG_SOC_SUN20IW1) += clk-sun20iw1.o
 obj-$(CONFIG_SOC_SUN252IW1) += clk-sun252iw1.o
+obj-$(CONFIG_SOC_SUN252IW2) += clk-sun252iw2.o
 obj-$(CONFIG_SOC_SUN300IW1) += clk-sun300iw1.o
 obj-$(CONFIG_SOC_SUN50IW9) += clk-sun50iw9.o
 obj-$(CONFIG_SOC_SUN50IW10) += clk-sun50iw10.o

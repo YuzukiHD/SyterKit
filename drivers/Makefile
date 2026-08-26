@@ -11,6 +11,7 @@ obj-$(CONFIG_DRIVER_MTD) += mtd/
 obj-$(CONFIG_DRIVER_PMIC_AXP) += pmu/
 obj-$(CONFIG_DRIVER_PWM) += pwm/
 obj-$(CONFIG_DRIVER_DRAM) += dram/
+obj-$(CONFIG_DRIVER_PSRAM) += psram/
 obj-$(CONFIG_DRIVER_REMOTEPROC) += remoteproc/
 obj-$(CONFIG_DRIVER_RTC) += rtc/
 obj-$(CONFIG_DRIVER_SERIAL) += serial/

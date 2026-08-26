@@ -6,6 +6,9 @@ config SOC_SUN20IW1
 config SOC_SUN252IW1
 	bool
 
+config SOC_SUN252IW2
+	bool
+
 config SOC_SUN300IW1
 	bool
 
