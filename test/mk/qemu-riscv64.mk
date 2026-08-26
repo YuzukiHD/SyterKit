@@ -29,7 +29,7 @@ TEST_BACKTRACE_SOURCE := $(srctree)/core/backtrace/backtrace-min.c
 endif
 TEST_CPPFLAGS := -I$(srctree)/arch/riscv/include -I$(TEST_ROOT)/include \
 	-I$(srctree)/include \
-	-DCONFIG_ARCH_RISCV64=1 -DCONFIG_ARCH_RISCV64_CORE_C906=1 \
+	-DCONFIG_ARCH_RISCV64=1 -DCONFIG_ARCH_CPU_C906=1 \
 	$(TEST_BACKTRACE_CPPFLAGS) $(TEST_EXTRA_CPPFLAGS)
 TEST_CFLAGS := -std=gnu11 $(TEST_OPT) -g -Wall -Wextra -Werror -ffreestanding \
 	-fno-builtin -fno-common -fno-stack-protector -fno-omit-frame-pointer \
@@ -42,7 +42,7 @@ TEST_LDFLAGS := -nostdlib -nostartfiles -Wl,--gc-sections \
 	-Wl,-T,$(CURDIR)/linker.ld
 all_sources := $(TEST_ROOT)/support/qemu/riscv/start.S \
 	$(TEST_ROOT)/support/qemu/riscv/runtime.c $(CURDIR)/main.c \
-	$(srctree)/arch/riscv/backtrace-rv64.c \
+	$(srctree)/arch/riscv/riscv64/backtrace.c \
 	$(TEST_BACKTRACE_SOURCE) $(TEST_EXTRA_SOURCES)
 
 ifeq ($(TEST_BACKTRACE_MODE),full)

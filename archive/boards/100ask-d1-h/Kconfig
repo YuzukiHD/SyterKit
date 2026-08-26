@@ -2,5 +2,5 @@
 
 config BOARD_100ASK_D1_H
 	bool "100ASK D1-H"
-	depends on ARCH_RISCV64 && ARCH_RISCV64_CORE_C906
+	depends on ARCH_RISCV64 && ARCH_CPU_C906
 	select SOC_SUN20IW1

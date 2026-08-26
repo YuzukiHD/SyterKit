@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 /**
- * @file backtrace-rv64.c
+ * @file backtrace.c
  * @brief Frame-pointer call-trace unwinder for RV64 targets.
  *
  * The implementation validates both image and stack bounds before following

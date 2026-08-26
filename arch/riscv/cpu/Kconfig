@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice
+	prompt "RISC-V processor core"
+	depends on ARCH_RISCV
+	optional
+
+config ARCH_CPU_E907
+	bool "Xuantie E907"
+	depends on ARCH_RISCV32
+
+config ARCH_CPU_C907
+	bool "Xuantie C907"
+	depends on ARCH_RISCV32
+
+config ARCH_CPU_C906
+	bool "Xuantie C906"
+	depends on ARCH_RISCV64
+
+endchoice
+
+config ARCH_EXTRA_CFLAG
+	string
+	default "-mcpu=e907f" if ARCH_CPU_E907
+	default "-mtune=c907" if ARCH_CPU_C907
+	default "-mtune=c906" if ARCH_CPU_C906

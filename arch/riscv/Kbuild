@@ -2,11 +2,9 @@
 
 obj-y += timer.o exception.o memcpy.o memset.o fprw.o memcmp.o
 
-obj-$(CONFIG_ARCH_RISCV32_CORE_E907) += riscv32_e907/
-obj-$(CONFIG_ARCH_RISCV32_CORE_C907) += riscv32_c907/
-obj-$(CONFIG_ARCH_RISCV64_CORE_C906) += riscv64_c906/
+obj-$(CONFIG_ARCH_RISCV32) += riscv32/
+obj-$(CONFIG_ARCH_RISCV64) += riscv64/
 
-ifeq ($(CONFIG_BACKTRACE),y)
-obj-$(CONFIG_ARCH_RISCV32) += backtrace-rv32.o
-obj-$(CONFIG_ARCH_RISCV64) += backtrace-rv64.o
-endif
+obj-$(CONFIG_ARCH_CPU_E907) += cpu/e907/
+obj-$(CONFIG_ARCH_CPU_C907) += cpu/c907/
+obj-$(CONFIG_ARCH_CPU_C906) += cpu/c906/

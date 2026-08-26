@@ -40,7 +40,7 @@ TEST_LDFLAGS := -nostdlib -nostartfiles -Wl,--gc-sections \
 	-Wl,-T,$(CURDIR)/linker.ld
 all_sources := $(TEST_ROOT)/support/qemu/riscv/start.S \
 	$(TEST_ROOT)/support/qemu/riscv/runtime.c $(CURDIR)/main.c \
-	$(srctree)/arch/riscv/backtrace-rv32.c \
+	$(srctree)/arch/riscv/riscv32/backtrace.c \
 	$(TEST_BACKTRACE_SOURCE) $(TEST_EXTRA_SOURCES)
 
 ifeq ($(TEST_BACKTRACE_MODE),full)

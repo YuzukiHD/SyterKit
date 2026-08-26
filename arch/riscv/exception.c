@@ -154,7 +154,7 @@ struct instruction_info_t {
 	unsigned int sign_extend : 1;
 };
 
-#if defined(CONFIG_ARCH_RISCV64_CORE_C906)
+#if defined(CONFIG_ARCH_CPU_C906)
 typedef struct irq_handler {
 	void *data;
 	void (*func)(void *data);
@@ -318,7 +318,7 @@ static void show_regs(struct pt_regs_t *regs)
 #if defined(CONFIG_BACKTRACE)
 	printk_error("========== backtrace ==========\n");
 	dump_stack();
-#if defined(CONFIG_ARCH_RISCV64_CORE_C906)
+#if defined(CONFIG_ARCH_CPU_C906)
 	{
 		const struct backtrace_context context = {
 			.pc = regs->epc,
