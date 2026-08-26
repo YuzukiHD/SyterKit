@@ -27,7 +27,7 @@
 #include <drivers/gpio/gpio.h>
 #include <drivers/i2c/i2c.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 #include <dt-compatible/dram-dt.h>

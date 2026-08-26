@@ -10,7 +10,7 @@
 #include <drivers/clk/clk.h>
 
 #include <drivers/dram/dram.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/sid-dt.h>
 

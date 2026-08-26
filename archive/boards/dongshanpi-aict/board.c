@@ -13,7 +13,7 @@
 #include <dt-bindings/soc/sun8iw21.h>
 #include <drivers/clk/sun8iw21/reg.h>
 #include <drivers/clk/clk.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/sid-dt.h>
 
 #include <mmu.h>

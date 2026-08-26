@@ -28,7 +28,7 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun300iw1/clk.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 #include <dt-compatible/mmc-dt.h>

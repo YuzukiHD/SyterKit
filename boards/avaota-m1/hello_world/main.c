@@ -18,7 +18,7 @@
 #include <dt-compatible/dram-dt.h>
 #include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/sid-dt.h>
 

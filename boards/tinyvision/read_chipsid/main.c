@@ -10,7 +10,7 @@
 
 #include <common.h>
 
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/sid-dt.h>
 
 extern sunxi_serial_t uart_dbg;

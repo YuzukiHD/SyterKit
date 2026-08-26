@@ -2,7 +2,7 @@
 
 #include <drivers/clk/sun60iw2/reg.h>
 #include <log.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/ufs/host/sunxi.h>
 #include <dt-compatible/sid-dt.h>
 

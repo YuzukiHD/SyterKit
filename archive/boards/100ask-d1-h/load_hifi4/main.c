@@ -18,7 +18,7 @@
 #include <drivers/rtc/rtc.h>
 #include <drivers/remoteproc/remoteproc.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/dram-dt.h>
 #include <dt-compatible/mmc-dt.h>
