@@ -12,9 +12,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#if defined(CONFIG_BACKTRACE)
-#include <backtrace.h>
-#endif
 #include <types.h>
 
 #include <mmu.h>
@@ -25,7 +22,11 @@
 #include <common.h>
 #include <log.h>
 
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+#if defined(CONFIG_BACKTRACE)
+#include <backtrace.h>
+#endif
+
+#if defined(CONFIG_DRIVER_CLIC)
 #include <drivers/intc/clic.h>
 #endif
 
@@ -389,7 +390,7 @@ static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn)
  */
 static void redirect_trap(struct pt_regs_t *regs)
 {
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+#if defined(CONFIG_DRIVER_CLIC)
 	show_regs(regs);
 	abort();
 #else
@@ -520,25 +521,16 @@ static void handle_misaligned(struct pt_regs_t *regs)
 	regs->epc += insn_len;
 }
 
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
 /**
- * @brief Dispatch an E907 machine trap.
+ * @brief Dispatch an RV32 machine trap.
  * @param[in,out] regs Saved trap frame from the assembly entry path.
  */
 void riscv_handle_exception(struct pt_regs_t *regs)
 {
-#else
-/**
- * @brief Dispatch a C906 machine trap.
- * @param[in,out] regs Saved trap frame from the assembly entry path.
- */
-void riscv64_handle_exception(struct pt_regs_t *regs)
-{
-#endif
 	csr_write(mscratch, regs);
 	if (regs->cause & RISCV_CAUSE_INTERRUPT) {
 		unsigned long cause = regs->cause & ~RISCV_CAUSE_INTERRUPT;
-#if defined(CONFIG_ARCH_RISCV32_CORE_E907)
+#if defined(CONFIG_DRIVER_CLIC)
 		do_irq(cause & 0xfff);
 #else
 		unsigned long pending = csr_read(mip) & (1UL << cause);

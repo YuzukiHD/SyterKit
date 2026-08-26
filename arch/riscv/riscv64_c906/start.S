@@ -58,5 +58,5 @@ clear_bss:
 	.type vectors, @function
 vectors:
 	SAVE_ALL
-	jal riscv64_handle_exception
+	jal riscv_handle_exception
 	RESTORE_ALL

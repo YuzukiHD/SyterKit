@@ -2,17 +2,26 @@
 
 menu "Architecture"
 
+config ARCH_ARM
+	bool
+
+config ARCH_RISCV
+	bool
+
 choice
 	prompt "Architecture"
 	optional
 
 config ARCH_ARM32
+	select ARCH_ARM
 	bool "ARM 32-bit"
 
 config ARCH_RISCV32
+	select ARCH_RISCV
 	bool "RISC-V 32-bit"
 
 config ARCH_RISCV64
+	select ARCH_RISCV
 	bool "RISC-V 64-bit"
 
 endchoice
@@ -31,7 +40,6 @@ config BACKTRACE
 
 choice
 	prompt "Backtrace implementation"
-	depends on ARCH_ARM32 || ARCH_RISCV32_CORE_E907 || ARCH_RISCV64_CORE_C906
 	optional
 
 config BACKTRACE_MIN
