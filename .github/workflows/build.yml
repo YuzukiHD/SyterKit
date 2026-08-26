@@ -76,4 +76,15 @@ jobs:
         env:
           ARM_CROSS_COMPILE: arm-none-eabi-
           O: ${{ runner.temp }}/syterkit-build
-        run: utils/build.test
+        run: |
+          set -euo pipefail
+          for defconfig in configs/*_defconfig; do
+            name="${defconfig##*/}"
+            make "O=${O}" "${name}"
+            if grep -q '^CONFIG_ARCH_RISCV' "${O}/.config"; then
+              cross="${RISCV_CROSS_COMPILE}"
+            else
+              cross="${ARM_CROSS_COMPILE}"
+            fi
+            make "O=${O}" CROSS_COMPILE="${cross}" -j"$(nproc)"
+          done
