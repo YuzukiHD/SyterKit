@@ -4,7 +4,7 @@ menu "Interrupt controller driver"
 
 config DRIVER_CLIC
 	bool "Core-local interrupt controller support"
-	depends on ARCH_RISCV32_CORE_E907
+	depends on ARCH_RISCV
 
 config DRIVER_GIC
 	bool "Generic interrupt controller support"

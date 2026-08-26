@@ -165,7 +165,7 @@ while IFS= read -r defconfig; do
 	arch_count="$(sed -n -E '/^CONFIG_ARCH_(ARM32|RISCV32|RISCV64)=y$/p' \
 		"${defconfig}" | wc -l)"
 	core_count="$(sed -n -E \
-		'/^CONFIG_(CPU_(CORTEX_A7|ARMV8|ARMV8_2)|ARCH_RISCV(32_CORE_E907|64_CORE_C906))=y$/p' \
+		'/^CONFIG_(CPU_(CORTEX_A7|ARMV8|ARMV8_2)|ARCH_RISCV(32_CORE_(E907|C907)|64_CORE_C906))=y$/p' \
 		"${defconfig}" | wc -l)"
 	build_mode_count="$(sed -n -E \
 		'/^CONFIG_BUILD_(RELEASE|DEBUG|TRACE)=y$/p' \

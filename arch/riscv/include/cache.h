@@ -31,6 +31,9 @@ void cache_init(void);
  */
 void dcache_enable(void);
 
+/** @brief Disable the data cache. */
+void dcache_disable(void);
+
 /**
  * @brief Enable the instruction cache.
  *
