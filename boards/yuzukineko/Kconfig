@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_YUZUKINEKO
+	bool "Yuzuki Neko"
+	depends on ARCH_RISCV32 && ARCH_CPU_C907
+	select SOC_SUN252IW2
