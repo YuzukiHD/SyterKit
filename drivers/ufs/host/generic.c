@@ -16,7 +16,7 @@
 #include <log.h>
 #include <timer.h>
 
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/ufs/host/sunxi.h>
 
 #define SUNXI_UFS_MPHY_SRAM_INIT_DONE	(1U << 24)

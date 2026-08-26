@@ -4,7 +4,7 @@
 #define __DT_COMPATIBLE_SID_DT_H__
 
 #include <driver.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/dt-common.h>
 
 static inline __attribute__((always_inline)) int sunxi_sid_dt_read_config(sunxi_sid_t *sid, int node)

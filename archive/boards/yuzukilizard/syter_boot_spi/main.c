@@ -22,7 +22,7 @@
 
 #include <drivers/dram/dram.h>
 #include <dt-compatible/rtc-dt.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <drivers/dma/dma.h>
 #include <drivers/mtd/spi-nand.h>

@@ -32,7 +32,7 @@
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/rtc-dt.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 
 #include "fdt_wrapper.h"

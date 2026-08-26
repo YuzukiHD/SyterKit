@@ -28,7 +28,7 @@
 #include <dt-compatible/remoteproc-dt.h>
 #include <drivers/mmc/sdhci.h>
 #include <drivers/mmc/sdcard.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 

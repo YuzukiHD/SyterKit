@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 include $(srctree)/drivers/log-level.mk
-ccflags-y += $(call driver-log-flags,DRIVER_SOC)
+ccflags-y += $(call driver-log-flags,DRIVER_SID)
 obj-y += sid.o
 obj-$(CONFIG_SOC_SUN20IW1) += sid-sun20iw1.o
 obj-$(CONFIG_SOC_SUN252IW1) += sid-sun252iw1.o

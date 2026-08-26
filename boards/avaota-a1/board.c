@@ -19,7 +19,7 @@
 #include <drivers/gpio/gpio.h>
 #include <dt-compatible/gpio-dt.h>
 #include <drivers/i2c/i2c.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 

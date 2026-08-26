@@ -16,7 +16,7 @@
 #include <mmu.h>
 
 #include <drivers/i2c/i2c.h>
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt-compatible/sid-dt.h>
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>

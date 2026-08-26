@@ -7,18 +7,18 @@
 #include <io.h>
 #include <log.h>
 
-#include <drivers/soc/sid.h>
+#include <drivers/sid/sid.h>
 #include <dt2c/driver.h>
 
 #include "sid-internal.h"
 
-#define SID_PRCTL_OFFSET 0x040U
-#define SID_PRKEY_OFFSET 0x050U
-#define SID_RDKEY_OFFSET 0x060U
-#define SID_OFFSET_MASK 0x1ffU
-#define SID_OPERATION_MASK 0x3U
-#define SID_KEY_MASK 0xffU
-#define SID_ACCESS_KEY 0xacU
+#define SID_PRCTL_OFFSET      0x040U
+#define SID_PRKEY_OFFSET      0x050U
+#define SID_RDKEY_OFFSET      0x060U
+#define SID_OFFSET_MASK	      0x1ffU
+#define SID_OPERATION_MASK    0x3U
+#define SID_KEY_MASK	      0xffU
+#define SID_ACCESS_KEY	      0xacU
 #define SID_OPERATION_RETRIES 1000000U
 
 static bool sunxi_sid_offset_valid(const sunxi_sid_t *sid, uint32_t offset)
@@ -60,7 +60,7 @@ uint32_t sunxi_efuse_sram_read(const sunxi_sid_t *sid, uint32_t offset)
 	return read32(address);
 }
 
-uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
+uint32_t __attribute__((weak)) sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
 {
 	uintptr_t prctl;
 	uint32_t value;
@@ -93,7 +93,7 @@ uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
 	return read32(sid->base + SID_RDKEY_OFFSET);
 }
 
-int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value)
+int __attribute__((weak)) sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value)
 {
 	uintptr_t prctl;
 	uint32_t control;
@@ -141,7 +141,8 @@ void sunxi_efuse_dump(const sunxi_sid_t *sid)
 		for (size_t index = 0; index < count; index++) {
 			if (index % 8U == 0U)
 				printk(LOG_LEVEL_MUTE, "\n%-4s", "");
-			printk(LOG_LEVEL_MUTE, "%08x ", sunxi_efuse_sram_read(sid, entry->offset + index * sizeof(uint32_t)));
+			printk(LOG_LEVEL_MUTE, "%08x ",
+				sunxi_efuse_sram_read(sid, entry->offset + index * sizeof(uint32_t)));
 		}
 		printk(LOG_LEVEL_MUTE, "\n");
 	}
