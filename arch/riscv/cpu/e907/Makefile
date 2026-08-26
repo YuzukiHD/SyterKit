@@ -1,3 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-source "arch/riscv/cpu/Kconfig"
+obj-y += cache.o

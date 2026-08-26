@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 /**
- * @file backtrace-rv32.c
+ * @file backtrace.c
  * @brief Instruction-scanning call-trace unwinder for RV32 targets.
  *
  * The scanner handles standard and compressed RISC-V prologue/epilogue
