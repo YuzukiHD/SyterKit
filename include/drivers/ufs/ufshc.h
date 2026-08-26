@@ -21,32 +21,32 @@
 
 /* UFSHCI register offsets.  Keeping these in the host-controller layer makes
  * the SCSI and device layers independent of a particular UFSHCI revision. */
-#define UFSHC_REG_CAP		       0x00U
-#define UFSHC_REG_VERSION	       0x08U
-#define UFSHC_REG_INTERRUPT_STATUS     0x20U
-#define UFSHC_REG_INTERRUPT_ENABLE     0x24U
-#define UFSHC_REG_CONTROLLER_STATUS    0x30U
-#define UFSHC_REG_CONTROLLER_ENABLE    0x34U
+#define UFSHC_REG_CAP			0x00U
+#define UFSHC_REG_VERSION		0x08U
+#define UFSHC_REG_INTERRUPT_STATUS	0x20U
+#define UFSHC_REG_INTERRUPT_ENABLE	0x24U
+#define UFSHC_REG_CONTROLLER_STATUS	0x30U
+#define UFSHC_REG_CONTROLLER_ENABLE	0x34U
 #define UFSHC_REG_UIC_ERROR_PHY_ADAPTER 0x38U
-#define UFSHC_REG_UIC_ERROR_DATA_LINK   0x3cU
-#define UFSHC_REG_UIC_ERROR_NETWORK     0x40U
-#define UFSHC_REG_UIC_ERROR_TRANSPORT   0x44U
-#define UFSHC_REG_UIC_ERROR_DME         0x48U
-#define UFSHC_REG_UTRL_INT_AGG_CONTROL 0x4cU
-#define UFSHC_REG_UTRL_BASE_L	       0x50U
-#define UFSHC_REG_UTRL_BASE_H	       0x54U
-#define UFSHC_REG_UTRL_DOOR_BELL       0x58U
-#define UFSHC_REG_UTRL_LIST_CLEAR       0x5cU
-#define UFSHC_REG_UTRL_RUN_STOP	       0x60U
-#define UFSHC_REG_UTMRL_BASE_L	       0x70U
-#define UFSHC_REG_UTMRL_BASE_H	       0x74U
-#define UFSHC_REG_UTMRL_DOOR_BELL       0x78U
-#define UFSHC_REG_UTMRL_LIST_CLEAR       0x7cU
-#define UFSHC_REG_UTMRL_RUN_STOP       0x80U
-#define UFSHC_REG_UIC_COMMAND	       0x90U
-#define UFSHC_REG_UIC_ARG1	       0x94U
-#define UFSHC_REG_UIC_ARG2	       0x98U
-#define UFSHC_REG_UIC_ARG3	       0x9cU
+#define UFSHC_REG_UIC_ERROR_DATA_LINK	0x3cU
+#define UFSHC_REG_UIC_ERROR_NETWORK	0x40U
+#define UFSHC_REG_UIC_ERROR_TRANSPORT	0x44U
+#define UFSHC_REG_UIC_ERROR_DME		0x48U
+#define UFSHC_REG_UTRL_INT_AGG_CONTROL	0x4cU
+#define UFSHC_REG_UTRL_BASE_L		0x50U
+#define UFSHC_REG_UTRL_BASE_H		0x54U
+#define UFSHC_REG_UTRL_DOOR_BELL	0x58U
+#define UFSHC_REG_UTRL_LIST_CLEAR	0x5cU
+#define UFSHC_REG_UTRL_RUN_STOP		0x60U
+#define UFSHC_REG_UTMRL_BASE_L		0x70U
+#define UFSHC_REG_UTMRL_BASE_H		0x74U
+#define UFSHC_REG_UTMRL_DOOR_BELL	0x78U
+#define UFSHC_REG_UTMRL_LIST_CLEAR	0x7cU
+#define UFSHC_REG_UTMRL_RUN_STOP	0x80U
+#define UFSHC_REG_UIC_COMMAND		0x90U
+#define UFSHC_REG_UIC_ARG1		0x94U
+#define UFSHC_REG_UIC_ARG2		0x98U
+#define UFSHC_REG_UIC_ARG3		0x9cU
 
 /* Controller status power-mode change request status (UPMCRS). */
 #define UFSHC_HCS_UPMCRS_SHIFT 8U
@@ -76,20 +76,20 @@
 #define UFSHC_UIC_DME_PEER_SET 0x04U
 #define UFSHC_UIC_LINK_STARTUP 0x16U
 
-#define UFSHC_UIC_RESULT_MASK	0xffU
-#define UFSHC_TIMEOUT_US	1000000U
+#define UFSHC_UIC_RESULT_MASK		0xffU
+#define UFSHC_TIMEOUT_US		1000000U
 #define UFSHC_DEV_MANAGEMENT_TIMEOUT_US 3000000U
-#define UFSHC_PHY_INIT_TIMEOUT_US 10000U
-#define UFSHC_LINK_STARTUP_RETRIES 3U
-#define UFSHC_MAX_PRDT		32U
-#define UFSHC_PRDT_MAX_BYTES	(256U * 1024U)
-#define UFSHC_CDB_SIZE		16U
-#define UFSHC_UPIU_SIZE		512U
-#define UFSHC_UPIU_HEADER_SIZE	12U
-#define UFSHC_UPIU_QUERY_SIZE	20U
-#define UFSHC_UPIU_DATA_OFFSET	(UFSHC_UPIU_HEADER_SIZE + UFSHC_UPIU_QUERY_SIZE)
-#define UFSHC_SCSI_SENSE_OFFSET 34U
-#define UFSHC_SCSI_SENSE_SIZE	18U
+#define UFSHC_PHY_INIT_TIMEOUT_US	10000U
+#define UFSHC_LINK_STARTUP_RETRIES	3U
+#define UFSHC_MAX_PRDT			32U
+#define UFSHC_PRDT_MAX_BYTES		(256U * 1024U)
+#define UFSHC_CDB_SIZE			16U
+#define UFSHC_UPIU_SIZE			512U
+#define UFSHC_UPIU_HEADER_SIZE		12U
+#define UFSHC_UPIU_QUERY_SIZE		20U
+#define UFSHC_UPIU_DATA_OFFSET		(UFSHC_UPIU_HEADER_SIZE + UFSHC_UPIU_QUERY_SIZE)
+#define UFSHC_SCSI_SENSE_OFFSET		34U
+#define UFSHC_SCSI_SENSE_SIZE		18U
 
 /* UPIU transaction types. */
 #define UFSHC_UPIU_NOP_OUT   0x00U
@@ -119,12 +119,12 @@
 #define UFSHC_QUERY_ATTR_REF_CLK_FREQ 0x0aU
 
 /* UFS task-management function codes. */
-#define UFSHC_TASK_ABORT 0x01U
-#define UFSHC_TASK_ABORT_SET 0x02U
-#define UFSHC_TASK_CLEAR_SET 0x04U
+#define UFSHC_TASK_ABORT	 0x01U
+#define UFSHC_TASK_ABORT_SET	 0x02U
+#define UFSHC_TASK_CLEAR_SET	 0x04U
 #define UFSHC_TASK_LOGICAL_RESET 0x08U
-#define UFSHC_TASK_QUERY 0x80U
-#define UFSHC_TASK_QUERY_SET 0x81U
+#define UFSHC_TASK_QUERY	 0x80U
+#define UFSHC_TASK_QUERY_SET	 0x81U
 
 /* UniPro PA-layer attributes used during the initial power-mode change. */
 #define UFSHC_PA_ACTIVETXDATALANES    0x1560U
@@ -140,19 +140,19 @@
 #define UFSHC_PA_MAXRXPWMGEAR	      0x1586U
 #define UFSHC_PA_MAXRXHSGEAR	      0x1587U
 #define UFSHC_PA_TXHSADAPTTYPE	      0x15d4U
-#define UFSHC_PA_PWRMODEUSERDATA0      0x15b0U
-#define UFSHC_PA_PWRMODEUSERDATA1      0x15b1U
-#define UFSHC_PA_PWRMODEUSERDATA2      0x15b2U
-#define UFSHC_PA_PWRMODEUSERDATA3      0x15b3U
-#define UFSHC_PA_PWRMODEUSERDATA4      0x15b4U
-#define UFSHC_PA_PWRMODEUSERDATA5      0x15b5U
-#define UFSHC_DME_LOCAL_FC0_TIMEOUT    0xd041U
-#define UFSHC_DME_LOCAL_TC0_TIMEOUT    0xd042U
-#define UFSHC_DME_LOCAL_AFC0_TIMEOUT   0xd043U
-#define UFSHC_DL_FC0_TIMEOUT_DEFAULT   8191U
-#define UFSHC_DL_TC0_TIMEOUT_DEFAULT   65535U
-#define UFSHC_DL_AFC0_TIMEOUT_DEFAULT  32767U
-#define UFSHC_PA_INITIAL_ADAPT_GEAR    4U
+#define UFSHC_PA_PWRMODEUSERDATA0     0x15b0U
+#define UFSHC_PA_PWRMODEUSERDATA1     0x15b1U
+#define UFSHC_PA_PWRMODEUSERDATA2     0x15b2U
+#define UFSHC_PA_PWRMODEUSERDATA3     0x15b3U
+#define UFSHC_PA_PWRMODEUSERDATA4     0x15b4U
+#define UFSHC_PA_PWRMODEUSERDATA5     0x15b5U
+#define UFSHC_DME_LOCAL_FC0_TIMEOUT   0xd041U
+#define UFSHC_DME_LOCAL_TC0_TIMEOUT   0xd042U
+#define UFSHC_DME_LOCAL_AFC0_TIMEOUT  0xd043U
+#define UFSHC_DL_FC0_TIMEOUT_DEFAULT  8191U
+#define UFSHC_DL_TC0_TIMEOUT_DEFAULT  65535U
+#define UFSHC_DL_AFC0_TIMEOUT_DEFAULT 32767U
+#define UFSHC_PA_INITIAL_ADAPT_GEAR   4U
 
 #define UFSHC_PWR_FAST	       1U
 #define UFSHC_PWR_SLOW	       2U
@@ -162,14 +162,17 @@
 #define UFSHC_PA_NO_ADAPT      3U
 
 /* UTP request descriptor flags. */
-#define UFSHC_REQ_INT		    0x01000000U
-#define UFSHC_REQ_HOST_TO_DEVICE    0x02000000U
-#define UFSHC_REQ_DEVICE_TO_HOST    0x04000000U
-#define UFSHC_REQ_CMD_TYPE_SCSI	    0x00000000U
+#define UFSHC_REQ_INT		       0x01000000U
+#define UFSHC_REQ_HOST_TO_DEVICE       0x02000000U
+#define UFSHC_REQ_DEVICE_TO_HOST       0x04000000U
+#define UFSHC_REQ_CMD_TYPE_SCSI	       0x00000000U
 #define UFSHC_REQ_CMD_TYPE_UFS_STORAGE 0x10000000U
-#define UFSHC_REQ_CMD_TYPE_DEV_MGMT 0x20000000U
-#define UFSHC_OCS_MASK		    0x0fU
+#define UFSHC_REQ_CMD_TYPE_DEV_MGMT    0x20000000U
+#define UFSHC_OCS_MASK		       0x0fU
 
+/**
+ * @brief UniPro power-mode parameters negotiated with a UFS device.
+ */
 struct ufshc_power_mode {
 	uint8_t pwr_tx;
 	uint8_t pwr_rx;
@@ -180,11 +183,17 @@ struct ufshc_power_mode {
 	uint8_t hs_rate;
 };
 
+/**
+ * @brief Host-controller initialization parameters.
+ */
 struct ufshc_config {
 	uintptr_t base;
 	uint32_t timeout_us;
 };
 
+/**
+ * @brief One SCSI, query, or device-management request.
+ */
 struct ufshc_request {
 	uint8_t lun;
 	uint8_t cdb[UFSHC_CDB_SIZE];
@@ -201,6 +210,9 @@ struct ufshc_request {
 	uint32_t residual_transfer_count;
 };
 
+/**
+ * @brief One physical region descriptor in a UTP request.
+ */
 struct ufshc_prd {
 	uint32_t base;
 	uint32_t upper;
@@ -208,6 +220,9 @@ struct ufshc_prd {
 	uint32_t size;
 };
 
+/**
+ * @brief UTP transfer request descriptor.
+ */
 struct ufshc_request_desc {
 	uint32_t header[4];
 	uint32_t command_base_lo;
@@ -230,12 +245,18 @@ struct ufshc_task_request_desc {
 	uint32_t response_reserved[3];
 } __attribute__((packed));
 
+/**
+ * @brief Command, response, and PRD storage referenced by a UTRD.
+ */
 struct ufshc_command_desc {
 	uint8_t command_upiu[UFSHC_UPIU_SIZE];
 	uint8_t response_upiu[UFSHC_UPIU_SIZE];
 	struct ufshc_prd prdt[UFSHC_MAX_PRDT];
 };
 
+/**
+ * @brief Runtime state of one UFS host controller.
+ */
 struct ufshc_host {
 	uintptr_t base;
 	uint32_t version;
@@ -245,6 +266,9 @@ struct ufshc_host {
 	bool controller_enabled;
 };
 
+/**
+ * @brief Arguments for a UIC command.
+ */
 struct ufshc_uic_cmd_args {
 	uint32_t command;
 	uint32_t argument1;
@@ -252,29 +276,174 @@ struct ufshc_uic_cmd_args {
 	uint32_t argument3;
 };
 
+/**
+ * @brief Initialize a UFSHCI host controller and establish its link.
+ * @param[out] host Host state to initialize.
+ * @param[in] config Register base and timeout configuration.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config);
+
+/**
+ * @brief Disable a host controller and clear its runtime state.
+ * @param[in,out] host Host state to shut down.
+ */
 void ufshc_exit(struct ufshc_host *host);
+
+/**
+ * @brief Execute one request through the UTP transfer list.
+ * @param[in,out] host Initialized host controller.
+ * @param[in,out] request Request descriptor and response storage.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_exec(struct ufshc_host *host, struct ufshc_request *request);
+
+/**
+ * @brief Issue a UIC command and optionally return its result code.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] args UIC command and argument values.
+ * @param[out] result Optional UIC result code.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *args, uint32_t *result);
+
+/**
+ * @brief Read a local or peer DME attribute.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] attribute DME attribute identifier.
+ * @param[out] value Receives the attribute value.
+ * @param[in] peer Selects the peer device when true.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_dme_get(struct ufshc_host *host, uint32_t attribute, uint32_t *value, bool peer);
+
+/**
+ * @brief Write a local or peer DME attribute.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] value Attribute value to write.
+ * @param[in] peer Selects the peer device when true.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_dme_set(struct ufshc_host *host, uint32_t attribute, uint32_t value, bool peer);
+
+/**
+ * @brief Read a selected local or peer DME attribute.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[out] value Receives the attribute value.
+ * @param[in] peer Selects the peer device when true.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_dme_get_sel(struct ufshc_host *host, uint32_t attribute, uint16_t selector, uint32_t *value, bool peer);
+
+/**
+ * @brief Write a selected local or peer DME attribute.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[in] value Attribute value to write.
+ * @param[in] peer Selects the peer device when true.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_dme_set_sel(struct ufshc_host *host, uint32_t attribute, uint16_t selector, uint32_t value, bool peer);
+
+/**
+ * @brief Query the maximum power mode supported by the device.
+ * @param[in,out] host Initialized host controller.
+ * @param[out] mode Receives the supported power-mode limits.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *mode);
+
+/**
+ * @brief Change the UniPro link to the requested power mode.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] mode Requested power-mode parameters.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mode *mode);
+
+/**
+ * @brief Submit a UFS NOP OUT request and validate the response.
+ * @param[in,out] host Initialized host controller.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_nop(struct ufshc_host *host);
+
+/**
+ * @brief Read, set, or clear a standard UFS query flag.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] idn Query flag identifier.
+ * @param[in] set Set the flag when true; read it when false.
+ * @param[out] value Optional flag value returned by the device.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_query_flag(struct ufshc_host *host, uint8_t idn, bool set, bool *value);
-int ufshc_query_flag_op(struct ufshc_host *host, uint8_t idn, uint8_t opcode,
-			bool *value);
+
+/**
+ * @brief Execute a query-flag operation with an explicit opcode.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] idn Query flag identifier.
+ * @param[in] opcode Query operation code.
+ * @param[out] value Receives the flag value.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
+int ufshc_query_flag_op(struct ufshc_host *host, uint8_t idn, uint8_t opcode, bool *value);
+
+/**
+ * @brief Read or write a UFS query attribute.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] idn Attribute identifier.
+ * @param[in] index Attribute index.
+ * @param[in] selector Attribute selector.
+ * @param[in,out] value Attribute value.
+ * @param[in] write Write when true; read when false.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_query_attribute(
 	struct ufshc_host *host, uint8_t idn, uint8_t index, uint8_t selector, uint32_t *value, bool write);
+
+/**
+ * @brief Read a UFS descriptor into a caller-provided buffer.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] idn Descriptor identifier.
+ * @param[in] index Descriptor index.
+ * @param[in] selector Descriptor selector.
+ * @param[out] buffer Destination buffer.
+ * @param[in] buffer_len Destination buffer capacity.
+ * @param[out] actual_len Actual descriptor length when non-NULL.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int ufshc_query_descriptor(struct ufshc_host *host, uint8_t idn, uint8_t index, uint8_t selector, void *buffer,
 	size_t buffer_len, size_t *actual_len);
-int ufshc_query_descriptor_op(struct ufshc_host *host, uint8_t opcode,
-			       uint8_t idn, uint8_t index, uint8_t selector,
-			       void *buffer, size_t buffer_len, size_t *actual_len);
-int ufshc_task_request(struct ufshc_host *host, uint8_t lun,
-			       uint8_t function, uint16_t task_id,
-			       uint8_t *service_response);
+
+/**
+ * @brief Execute a descriptor query using an explicit query opcode.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] opcode Query operation code.
+ * @param[in] idn Descriptor identifier.
+ * @param[in] index Descriptor index.
+ * @param[in] selector Descriptor selector.
+ * @param[out] buffer Destination buffer.
+ * @param[in] buffer_len Destination buffer capacity.
+ * @param[out] actual_len Actual descriptor length when non-NULL.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
+int ufshc_query_descriptor_op(struct ufshc_host *host, uint8_t opcode, uint8_t idn, uint8_t index, uint8_t selector,
+	void *buffer, size_t buffer_len, size_t *actual_len);
+
+/**
+ * @brief Submit a task-management request for one logical unit.
+ * @param[in,out] host Initialized host controller.
+ * @param[in] lun Target logical unit.
+ * @param[in] function Task-management function code.
+ * @param[in] task_id Task identifier.
+ * @param[out] service_response Device service response when non-NULL.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
+int ufshc_task_request(
+	struct ufshc_host *host, uint8_t lun, uint8_t function, uint16_t task_id, uint8_t *service_response);
 
 #endif /* __SYTERKIT_UFSHC_H__ */
