@@ -9,7 +9,7 @@
 #include <dt2c/driver.h>
 #include <timer.h>
 
-#include <drivers/ufs/host.h>
+#include <drivers/ufs/host/sunxi.h>
 #include <drivers/ufs/ufs.h>
 
 static int ufs_nop_retry(struct ufshc_host *host)
@@ -72,9 +72,9 @@ static int ufs_sync_device_ref_clk(struct ufshc_host *host)
 	uint32_t current;
 	int ret;
 
-	if (!host || !host->platform || !host->platform->get_ref_clk_freq)
+	if (!host)
 		return 0;
-	ret = host->platform->get_ref_clk_freq(host->platform->priv, &target);
+	ret = sunxi_ufs_get_ref_clk_freq(&target);
 	if (ret || target > 3U)
 		return ret ? ret : UFSHC_ERR_INVALID;
 	ufs_debug("UFS: device bRefClkFreq target=%u\n", target);
@@ -112,7 +112,7 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 	 * falls back to the device's PWM parameters when the device has no HS
 	 * capability. */
 	device_supports_hs = device_mode.pwr_rx == UFSHC_PWR_FAST;
-	host_prefers_hs = host->platform && host->platform->get_hs_rate;
+	host_prefers_hs = true;
 	if (host_prefers_hs && !device_supports_hs)
 		host_prefers_hs = false;
 	memset(&mode, 0, sizeof(mode));
@@ -128,11 +128,9 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 
 	if (mode.pwr_rx == UFSHC_PWR_FAST || mode.pwr_tx == UFSHC_PWR_FAST) {
 		hs_rate = UFSHC_HS_RATE_B;
-		if (host->platform && host->platform->get_hs_rate) {
-			ret = host->platform->get_hs_rate(host->platform->priv, &hs_rate);
-			if (ret || (hs_rate != UFSHC_HS_RATE_A && hs_rate != UFSHC_HS_RATE_B))
-				return ret ? ret : UFSHC_ERR_IO;
-		}
+		ret = sunxi_ufs_get_hs_rate(&hs_rate);
+		if (ret || (hs_rate != UFSHC_HS_RATE_A && hs_rate != UFSHC_HS_RATE_B))
+			return ret ? ret : UFSHC_ERR_IO;
 		mode.hs_rate = (uint8_t)hs_rate;
 	}
 	*selected = mode;
@@ -143,7 +141,6 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 
 int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, uint8_t lun)
 {
-	struct ufshc_config selected_config;
 	uint64_t start;
 	uint32_t timeout_us;
 	bool device_init;
@@ -155,10 +152,7 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 		return -1;
 	printk_info("UFS: initialize LUN %u\n", lun);
 	memset(device, 0, sizeof(*device));
-	selected_config = *config;
-	if (!selected_config.platform)
-		selected_config.platform = ufs_platform_default();
-	ret = ufshc_init(&device->host, &selected_config);
+	ret = ufshc_init(&device->host, config);
 	if (ret) {
 		printk_error("UFS: UFSHCI initialization failed ret=%d\n", ret);
 		return ret;

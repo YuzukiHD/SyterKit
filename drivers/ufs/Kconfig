@@ -9,13 +9,7 @@ config DRIVER_UFS
 	  the SCSI layer implements block commands, and the top-level UFS
 	  layer exposes the storage device to board code.
 
-config DRIVER_UFS_DEBUG
-	bool "Enable detailed UFS debug diagnostics"
-	depends on DRIVER_UFS
-	default n
-	help
-	  Keep detailed UFS controller and PHY diagnostics in the image.
-	  Disable this for normal boot images to reduce log output and text size.
+source "drivers/ufs/host/Kconfig"
 
 choice
 	prompt "UFS driver log level"
@@ -50,6 +44,12 @@ config DRIVER_UFS_LOG_BACKTRACE
 
 endchoice
 
-source "drivers/ufs/host/Kconfig"
+config DRIVER_UFS_DEBUG
+	bool "Enable detailed UFS debug diagnostics"
+	depends on DRIVER_UFS
+	default n
+	help
+	  Keep detailed UFS controller and PHY diagnostics in the image.
+	  Disable this for normal boot images to reduce log output and text size.
 
 endmenu

@@ -39,7 +39,6 @@ static sunxi_dram_t dram;
 
 #if defined(CONFIG_DRIVER_UFS)
 static struct ufs_device *ufs0;
-static struct sunxi_ufs_platform_data ufs_platform_data;
 static void *ufs_io_buffer;
 static bool ufs_ready;
 
@@ -198,7 +197,7 @@ int main(void)
 #if defined(CONFIG_DRIVER_UFS)
 	struct ufshc_config ufs_config;
 
-	if (sunxi_ufs_dt_read_alias(&ufs_config, "ufs0", &ufs_platform_data) != DRIVER_OK) {
+	if (sunxi_ufs_dt_read_alias(&ufs_config, "ufs0") != DRIVER_OK) {
 		printk_error("UFS: invalid devicetree configuration\n");
 	} else {
 		ufs0 = malloc(sizeof(*ufs0));

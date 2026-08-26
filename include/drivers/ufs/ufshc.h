@@ -170,27 +170,6 @@
 #define UFSHC_REQ_CMD_TYPE_DEV_MGMT 0x20000000U
 #define UFSHC_OCS_MASK		    0x0fU
 
-struct ufshc_host;
-
-struct ufshc_platform_ops {
-	/* These callbacks own SoC-specific clocks, reset and PHY sequencing. */
-	int (*enable)(void *priv);
-	void (*disable)(void *priv);
-	int (*phy_init)(void *priv);
-	/* Return the encoded bRefClkFreq value used by the active PHY clock. */
-	int (*get_ref_clk_freq)(void *priv, uint32_t *value);
-	/* Return the calibrated PA_HSSERIES value (A or B). */
-	int (*get_hs_rate)(void *priv, uint32_t *value);
-	/* Controller-specific setup happens after clocks are on and before HCE. */
-	int (*prepare)(uintptr_t base, void *priv);
-	/* Assert and release the device-side RST_n input before HCE. */
-	void (*device_reset)(uintptr_t base, void *priv);
-	/* PHY/UniPro hooks run around the standard DME LINK STARTUP command. */
-	int (*link_startup)(struct ufshc_host *host, void *priv);
-	int (*link_up)(struct ufshc_host *host, void *priv);
-	void *priv;
-};
-
 struct ufshc_power_mode {
 	uint8_t pwr_tx;
 	uint8_t pwr_rx;
@@ -204,8 +183,6 @@ struct ufshc_power_mode {
 struct ufshc_config {
 	uintptr_t base;
 	uint32_t timeout_us;
-	const struct ufshc_platform_ops *platform;
-	void *platform_priv;
 };
 
 struct ufshc_request {
@@ -265,10 +242,7 @@ struct ufshc_host {
 	uint32_t capabilities;
 	uint32_t timeout_us;
 	bool initialized;
-	bool platform_active;
 	bool controller_enabled;
-	struct ufshc_platform_ops platform_ops;
-	const struct ufshc_platform_ops *platform;
 };
 
 struct ufshc_uic_cmd_args {

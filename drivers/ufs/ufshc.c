@@ -19,6 +19,7 @@
 #include <log.h>
 #include <timer.h>
 
+#include <drivers/ufs/host/sunxi.h>
 #include <drivers/ufs/ufshc.h>
 
 #define UFS_ERR_INVALID UFSHC_ERR_INVALID
@@ -552,6 +553,7 @@ int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mo
 
 int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 {
+	bool skip_phy_setup = false;
 	int ret;
 
 	if (!host || !config || !config->base) {
@@ -567,36 +569,15 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 		(void *)ufshc_utmrd());
 	host->base = config->base;
 	host->timeout_us = config->timeout_us ? config->timeout_us : UFSHC_TIMEOUT_US;
-	if (config->platform) {
-		host->platform_ops = *config->platform;
-		if (config->platform_priv)
-			host->platform_ops.priv = config->platform_priv;
-		host->platform = &host->platform_ops;
+	ret = sunxi_ufs_enable();
+	if (ret) {
+		printk_error("UFSHCI: host enable failed ret=%d\n", ret);
+		goto disable_host;
 	}
-
-	if (host->platform && host->platform->enable) {
-		host->platform_active = true;
-		ret = host->platform->enable(host->platform->priv);
-		if (ret) {
-			printk_error("UFSHCI: platform enable failed ret=%d\n", ret);
-			goto disable_platform;
-		}
-	}
-	if (host->platform && host->platform->phy_init) {
-		host->platform_active = true;
-		ret = host->platform->phy_init(host->platform->priv);
-		if (ret) {
-			printk_error("UFSHCI: PHY init failed ret=%d\n", ret);
-			goto disable_platform;
-		}
-	}
-	if (host->platform && host->platform->prepare) {
-		host->platform_active = true;
-		ret = host->platform->prepare(host->base, host->platform->priv);
-		if (ret) {
-			printk_error("UFSHCI: controller prepare failed ret=%d\n", ret);
-			goto disable_platform;
-		}
+	ret = sunxi_ufs_prepare();
+	if (ret) {
+		printk_error("UFSHCI: host prepare failed ret=%d\n", ret);
+		goto disable_host;
 	}
 
 	host->capabilities = ufshc_read(host, UFSHC_REG_CAP);
@@ -607,8 +588,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	 * native flow enables only UIC completion/error reporting before link
 	 * startup and enables transfer/task completion after the link is up. */
 	ufshc_write(host, UFSHC_REG_INTERRUPT_ENABLE, 0U);
-	if (host->platform && host->platform->device_reset)
-		host->platform->device_reset(host->base, host->platform->priv);
+	sunxi_ufs_device_reset();
 	/* A warm re-entry may leave HCE asserted.  Native UFSHCI startup first
 	 * drives the controller through its disabled state so the next HCE write
 	 * performs the required 1->0->1 initialization transition. */
@@ -616,101 +596,93 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 		ufshc_write(host, UFSHC_REG_CONTROLLER_ENABLE, 0U);
 		ret = ufshc_wait_mask(host, UFSHC_REG_CONTROLLER_ENABLE, UFSHC_HCE, 0U);
 		if (ret)
-			goto disable_platform;
+			goto disable_host;
 	}
 	host->controller_enabled = true;
 	ret = ufshc_enable_controller(host);
 	if (ret) {
 		printk_error("UFSHCI: HCE enable failed ret=%d\n", ret);
-		goto disable_platform;
+		goto disable_host;
 	}
 	ufshc_write(host, UFSHC_REG_INTERRUPT_ENABLE, UFSHC_INT_UIC_COMPLETE_MASK | UFSHC_INT_UIC_POWER_MODE);
 	/* Allow the UIC helper to be used during the link phase as well. */
 	host->initialized = true;
-	{
-		bool skip_phy_setup = false;
+	/* The native DME_LINKSTARTUP_RETRIES value counts retries after the
+	 * initial attempt, so the loop has four total iterations. */
+	for (unsigned int retry = 0; retry <= UFSHC_LINK_STARTUP_RETRIES; ++retry) {
+		bool retry_without_phy = skip_phy_setup;
 
-		/* The native DME_LINKSTARTUP_RETRIES value counts retries after the
-		 * initial attempt, so the loop has four total iterations. */
-		for (unsigned int retry = 0; retry <= UFSHC_LINK_STARTUP_RETRIES; ++retry) {
-			bool retry_without_phy = skip_phy_setup;
-
-			/* A peer-initiated boot skips PHY programming for exactly one
-			 * subsequent LINK STARTUP attempt, matching the native skip_no
-			 * state machine. */
-			skip_phy_setup = false;
-			if (!retry_without_phy && host->platform && host->platform->link_startup) {
-				ret = host->platform->link_startup(host, host->platform->priv);
-				if (ret) {
-					printk_error("UFSHCI: platform PHY link setup failed attempt=%u ret=%d\n",
-						retry + 1U, ret);
-					if (retry < UFSHC_LINK_STARTUP_RETRIES) {
-						ret = ufshc_reinitialize_controller(host);
-						if (ret)
+		/* A peer-initiated boot skips PHY programming for exactly one
+		 * subsequent LINK STARTUP attempt, matching the native skip_no
+		 * state machine. */
+		skip_phy_setup = false;
+		if (!retry_without_phy) {
+			ret = sunxi_ufs_link_startup(host);
+			if (ret) {
+				printk_error("UFSHCI: host PHY link setup failed attempt=%u ret=%d\n",
+					retry + 1U, ret);
+				if (retry < UFSHC_LINK_STARTUP_RETRIES) {
+					ret = ufshc_reinitialize_controller(host);
+					if (ret)
 							break;
-					}
+				}
+				continue;
+			}
+		}
+		struct ufshc_uic_cmd_args args = {
+			.command = UFSHC_UIC_LINK_STARTUP,
+		};
+
+		ret = ufshc_uic_command(host, &args, NULL);
+		if (!ret) {
+			uint32_t controller_status = ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS);
+
+			if (controller_status & UFSHC_HCS_DEVICE_PRESENT)
+				break;
+			printk_warning("UFSHCI: link is up but device is not present\n");
+
+			/* Match SUPPORT_PEER_INITED_BOOT from the reference driver.  The
+			 * peer's ULSS event is cleared and the host retries LINK STARTUP
+			 * without reprogramming the PHY. */
+			if (!ufshc_wait_peer_link_startup(host)) {
+				ufshc_write(host, UFSHC_REG_INTERRUPT_STATUS, UFSHC_INT_UIC_LINK_STARTUP);
+				if (retry < UFSHC_LINK_STARTUP_RETRIES - 1U) {
+					skip_phy_setup = true;
 					continue;
 				}
+				/* On the last retry before the final attempt, the native
+				 * peer-initiated-boot path resets RST_n and reinitializes HCE,
+				 * then performs one final startup with PHY setup enabled. */
+				if (retry == UFSHC_LINK_STARTUP_RETRIES - 1U)
+					sunxi_ufs_device_reset();
+			} else if (retry + 1U == 3U) {
+				/* No peer ULSS event arrived.  Match the native final
+				 * retry by resetting RST_n before the last startup attempt. */
+				sunxi_ufs_device_reset();
 			}
-			struct ufshc_uic_cmd_args args = {
-				.command = UFSHC_UIC_LINK_STARTUP,
-			};
+			ret = UFS_ERR_IO;
+		}
 
-			ret = ufshc_uic_command(host, &args, NULL);
-			if (!ret) {
-				uint32_t controller_status = ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS);
-
-				if (controller_status & UFSHC_HCS_DEVICE_PRESENT)
-					break;
-				printk_warning("UFSHCI: link is up but device is not present\n");
-
-				/* Match SUPPORT_PEER_INITED_BOOT from the reference driver.  The
-				 * peer's ULSS event is cleared and the host retries LINK STARTUP
-				 * without reprogramming the PHY. */
-				if (!ufshc_wait_peer_link_startup(host)) {
-					ufshc_write(host, UFSHC_REG_INTERRUPT_STATUS, UFSHC_INT_UIC_LINK_STARTUP);
-					if (retry < UFSHC_LINK_STARTUP_RETRIES - 1U) {
-						skip_phy_setup = true;
-						continue;
-					}
-					/* On the last retry before the final attempt, the native
-					 * peer-initiated-boot path resets RST_n and reinitializes HCE,
-					 * then performs one final startup with PHY setup enabled. */
-					if (retry == UFSHC_LINK_STARTUP_RETRIES - 1U && host->platform &&
-						host->platform->device_reset)
-						host->platform->device_reset(host->base, host->platform->priv);
-				} else if (retry + 1U == 3U) {
-					/* No peer ULSS event arrived.  Match the native final
-					 * retry by resetting RST_n before the last startup attempt. */
-					if (host->platform && host->platform->device_reset)
-						host->platform->device_reset(host->base, host->platform->priv);
-				}
-				ret = UFS_ERR_IO;
-			}
-
-			if (retry < UFSHC_LINK_STARTUP_RETRIES) {
-				ret = ufshc_reinitialize_controller(host);
-				if (ret)
-					break;
-			}
+		if (retry < UFSHC_LINK_STARTUP_RETRIES) {
+			ret = ufshc_reinitialize_controller(host);
+			if (ret)
+				break;
 		}
 	}
 
 	if (ret)
-		goto disable_platform;
+		goto disable_host;
 
 	if (!(ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS) & UFSHC_HCS_DEVICE_PRESENT)) {
 		ret = UFS_ERR_IO;
 		printk_error("UFSHCI: device absent after link startup\n");
-		goto disable_platform;
+		goto disable_host;
 	}
 
-	if (host->platform && host->platform->link_up) {
-		ret = host->platform->link_up(host, host->platform->priv);
-		if (ret) {
-			printk_error("UFSHCI: platform link-up configuration failed ret=%d\n", ret);
-			goto disable_platform;
-		}
+	ret = sunxi_ufs_link_up(host);
+	if (ret) {
+		printk_error("UFSHCI: host link-up configuration failed ret=%d\n", ret);
+		goto disable_host;
 	}
 	/* Early-boot polling expects one completion interrupt per request. */
 	ufshc_write(host, UFSHC_REG_UTRL_INT_AGG_CONTROL, 0U);
@@ -721,7 +693,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	ret = ufshc_wait_operational(host);
 	if (ret) {
 		printk_error("UFSHCI: controller not operational ret=%d\n", ret);
-		goto disable_platform;
+		goto disable_host;
 	}
 
 	ufshc_write(host, UFSHC_REG_UTMRL_RUN_STOP, 1U);
@@ -729,7 +701,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	printk_info("UFSHCI: init complete\n");
 	return 0;
 
-disable_platform:
+disable_host:
 	printk_error("UFSHCI: init aborted ret=%d\n", ret);
 	ufshc_log_state(host, "init abort");
 	if (host->controller_enabled) {
@@ -739,10 +711,7 @@ disable_platform:
 		host->controller_enabled = false;
 	}
 
-	if (host->platform_active && host->platform && host->platform->disable)
-		host->platform->disable(host->platform->priv);
-
-	host->platform_active = false;
+	sunxi_ufs_disable();
 	host->initialized = false;
 	return ret;
 }
@@ -1197,8 +1166,6 @@ void ufshc_exit(struct ufshc_host *host)
 		ufshc_wait_mask(host, UFSHC_REG_CONTROLLER_ENABLE, UFSHC_HCE, 0U);
 		host->controller_enabled = false;
 	}
-	if (host->platform_active && host->platform && host->platform->disable)
-		host->platform->disable(host->platform->priv);
-	host->platform_active = false;
+	sunxi_ufs_disable();
 	host->initialized = false;
 }
