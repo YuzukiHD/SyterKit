@@ -25,7 +25,6 @@
 
 #define C907_L2C_OPERATION_INVALIDATE	    (0x1U << 4)
 #define C907_L2C_OPERATION_CLEAN	    (0x2U << 4)
-#define C907_L2C_OPERATION_CLEAN_INVALIDATE (0x3U << 4)
 #define C907_L2C_OPERATION_ENABLE	    (1U)
 
 static void l2c_operation(uint32_t operation)
@@ -43,11 +42,6 @@ static void l2c_invalid_all(void)
 static void l2c_clear_all(void)
 {
 	l2c_operation(C907_L2C_OPERATION_CLEAN);
-}
-
-static void l2c_clear_invalid_all(void)
-{
-	l2c_operation(C907_L2C_OPERATION_CLEAN_INVALIDATE);
 }
 
 /**
