@@ -19,6 +19,12 @@ config ARCH_CPU_C906
 
 endchoice
 
+config ARCH_MTVT
+	bool "Enable the mtvt vector-table base register"
+	depends on ARCH_RISCV
+	help
+	  Program the Xuantie mtvt CSR (0x307) with the interrupt vector-table base.
+
 config ARCH_EXTRA_CFLAG
 	string
 	default "-mcpu=e907f" if ARCH_CPU_E907

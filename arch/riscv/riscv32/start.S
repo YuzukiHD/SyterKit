@@ -13,6 +13,7 @@ _start:
 	csrw mie, zero
 
 	la sp, __stack_srv_end
+
 	la a0, irq_handler
 	ori a0, a0, 3
 	csrw mtvec, a0
@@ -26,8 +27,10 @@ _start:
 	csrs mxstatus, t0
 	fence.i
 
+#ifdef CONFIG_ARCH_MTVT
 	la a0, vectors
 	csrw mtvt, a0
+#endif
 
 	jal set_timer_count
 
