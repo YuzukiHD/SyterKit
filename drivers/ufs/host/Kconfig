@@ -1,26 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-config DRIVER_UFS_HOST_GENERIC
-	bool "Generic UFS host platform"
-	depends on DRIVER_UFS && !DRIVER_UFS_HOST_SUNXI
-	help
-	  Use a no-op platform for boards which enable UFS clocks and PHY in
-	  firmware.  This is also the fallback for SoCs without a host driver.
-
-menuconfig DRIVER_UFS_HOST_SUNXI
-	bool "Allwinner Sunxi UFS host"
-	default SOC_SUN60IW2
-	depends on DRIVER_UFS && SOC_SUN60IW2
-	help
-	  Select one of the chip-specific clock/reset/PHY implementations below.
-	  Disable this option when firmware has already initialized the host.
-
-if DRIVER_UFS_HOST_SUNXI
-
 choice DRIVER_UFS_HOST_SUNXI_CHIP
 	prompt "Allwinner UFS host chip"
 	depends on DRIVER_UFS
-	default DRIVER_UFS_HOST_SUN60IW2 if SOC_SUN60IW2
 
 config DRIVER_UFS_HOST_SUN60IW2
 	bool "Sun60IW2P1"
@@ -30,5 +12,3 @@ config DRIVER_UFS_HOST_SUN60IW2
 	  Use the Sun60IW2P1 BGR-based UFS CCU and PHY sequence.
 
 endchoice
-
-endif

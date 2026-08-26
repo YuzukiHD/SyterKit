@@ -17,7 +17,6 @@
 #include <timer.h>
 
 #include <drivers/soc/sid.h>
-#include <drivers/ufs/host.h>
 #include <drivers/ufs/host/sunxi.h>
 
 #define SUNXI_UFS_MPHY_SRAM_INIT_DONE	(1U << 24)
@@ -62,22 +61,11 @@
 #define TC_RX_DFE_TAP3_1	    0x411eU
 #define TC_RAM_CMN0_B0_R0	    0xc000U
 
+/* Early boot has one active UFS host; each DT parse replaces this variant. */
+static struct sunxi_ufs_variant sunxi_active_variant;
+static bool sunxi_active_variant_valid;
 static uint32_t sunxi_cached_ref_clk_type;
 static bool sunxi_cached_ref_clk_valid;
-
-static uint32_t *sunxi_ref_clk_cache_type(void *priv)
-{
-	if (priv)
-		return &((struct sunxi_ufs_platform_data *)priv)->ref_clk_type;
-	return &sunxi_cached_ref_clk_type;
-}
-
-static bool *sunxi_ref_clk_cache_valid(void *priv)
-{
-	if (priv)
-		return &((struct sunxi_ufs_platform_data *)priv)->ref_clk_type_valid;
-	return &sunxi_cached_ref_clk_valid;
-}
 
 const struct sunxi_ufs_variant *__attribute__((weak)) sunxi_ufs_get_variant(void)
 {
@@ -122,25 +110,23 @@ int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
 	return 0;
 }
 
-int sunxi_ufs_platform_data_init(struct sunxi_ufs_platform_data *data)
+int sunxi_ufs_variant_init(struct sunxi_ufs_variant *variant)
 {
-	const struct sunxi_ufs_variant *variant;
+	const struct sunxi_ufs_variant *base;
 
-	if (!data)
-		return UFSHC_ERR_INVALID;
-	variant = sunxi_ufs_get_variant();
 	if (!variant)
 		return UFSHC_ERR_INVALID;
-	data->variant = *variant;
-	data->ref_clk_type = 0;
-	data->ref_clk_type_valid = false;
+	base = sunxi_ufs_get_variant();
+	if (!base)
+		return UFSHC_ERR_INVALID;
+	*variant = *base;
 	return 0;
 }
 
-static const struct sunxi_ufs_variant *sunxi_variant(void *priv)
+static const struct sunxi_ufs_variant *sunxi_variant(void)
 {
-	if (priv)
-		return &((struct sunxi_ufs_platform_data *)priv)->variant;
+	if (sunxi_active_variant_valid)
+		return &sunxi_active_variant;
 	return sunxi_ufs_get_variant();
 }
 
@@ -163,9 +149,19 @@ static bool sunxi_variant_valid(const struct sunxi_ufs_variant *variant)
 		variant->rtc_ref_type_shift < 32U;
 }
 
-static uint32_t sunxi_detect_ref_clk_type(void *priv)
+int sunxi_ufs_configure(const struct sunxi_ufs_variant *variant)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	if (!sunxi_variant_valid(variant))
+		return UFSHC_ERR_INVALID;
+	sunxi_active_variant = *variant;
+	sunxi_active_variant_valid = true;
+	sunxi_cached_ref_clk_valid = false;
+	return 0;
+}
+
+static uint32_t sunxi_detect_ref_clk_type(void)
+{
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t previous;
 	uint32_t current;
 	unsigned int stable = 0;
@@ -194,16 +190,13 @@ static uint32_t sunxi_detect_ref_clk_type(void *priv)
 	return current;
 }
 
-static uint32_t sunxi_ref_clk_type(void *priv)
+static uint32_t sunxi_ref_clk_type(void)
 {
-	uint32_t *type = sunxi_ref_clk_cache_type(priv);
-	bool *valid = sunxi_ref_clk_cache_valid(priv);
-
-	if (!*valid) {
-		*type = sunxi_detect_ref_clk_type(priv);
-		*valid = true;
+	if (!sunxi_cached_ref_clk_valid) {
+		sunxi_cached_ref_clk_type = sunxi_detect_ref_clk_type();
+		sunxi_cached_ref_clk_valid = true;
 	}
-	return *type;
+	return sunxi_cached_ref_clk_type;
 }
 
 static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant,
@@ -221,15 +214,15 @@ static uint32_t sunxi_ref_clk_freq(const struct sunxi_ufs_variant *variant,
 	return variant->ufs_ref_clk_freq[type];
 }
 
-static int sunxi_get_ref_clk_freq(void *priv, uint32_t *value)
+int __attribute__((weak)) sunxi_ufs_get_ref_clk_freq(uint32_t *value)
 {
 	if (!value)
 		return UFSHC_ERR_INVALID;
-	*value = sunxi_ref_clk_freq(sunxi_variant(priv), sunxi_ref_clk_type(priv));
+	*value = sunxi_ref_clk_freq(sunxi_variant(), sunxi_ref_clk_type());
 	return 0;
 }
 
-static int sunxi_get_hs_rate(void *priv __attribute__((unused)), uint32_t *value)
+int __attribute__((weak)) sunxi_ufs_get_hs_rate(uint32_t *value)
 {
 	struct sunxi_ufs_cal_words cal;
 	int ret;
@@ -245,9 +238,9 @@ static int sunxi_get_hs_rate(void *priv __attribute__((unused)), uint32_t *value
 	return 0;
 }
 
-static void sunxi_ext_res_init(void *priv)
+static void sunxi_ext_res_init(void)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 
 	if (!variant || !variant->has_ext_res_cal)
 		return;
@@ -258,9 +251,9 @@ static void sunxi_ext_res_init(void *priv)
 		readl(variant->ext_res_ctrl), readl(variant->ext_res1_ctrl));
 }
 
-static void sunxi_cfg_clk(void *priv)
+static void sunxi_cfg_clk(void)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t value;
 
 	if (!sunxi_variant_valid(variant))
@@ -284,9 +277,9 @@ static void sunxi_cfg_clk(void *priv)
 	udelay(10);
 }
 
-static void sunxi_axi_clk(bool enable, void *priv)
+static void sunxi_axi_clk(bool enable)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t value;
 
 	if (!sunxi_variant_valid(variant))
@@ -312,9 +305,9 @@ static void sunxi_axi_clk(bool enable, void *priv)
 	setbits_le32(variant->axi_clk_reg, variant->axi_clk_gate);
 }
 
-static void sunxi_ahb_clk(bool enable, void *priv)
+static void sunxi_ahb_clk(bool enable)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 
 	if (!sunxi_variant_valid(variant))
 		return;
@@ -327,9 +320,9 @@ static void sunxi_ahb_clk(bool enable, void *priv)
 	}
 }
 
-static void sunxi_ref_clk(bool enable, void *priv)
+static void sunxi_ref_clk(bool enable)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t value;
 	bool external = false;
 
@@ -337,7 +330,7 @@ static void sunxi_ref_clk(bool enable, void *priv)
 		return;
 
 	if (enable) {
-		uint32_t type = sunxi_ref_clk_type(priv);
+		uint32_t type = sunxi_ref_clk_type();
 
 		external = sunxi_ref_clk_is_external(variant, type);
 	}
@@ -359,31 +352,31 @@ static void sunxi_ref_clk(bool enable, void *priv)
 	}
 }
 
-static int sunxi_enable(void *priv)
+int __attribute__((weak)) sunxi_ufs_enable(void)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 
-	if (!sunxi_variant_valid(variant)) 
+	if (!sunxi_variant_valid(variant))
 		return UFSHC_ERR_INVALID;
 	/* Native startup samples the oscillator detector once and reuses it for
 	 * both top-level clock routing and the UFS_CFG frequency fields. */
-	*sunxi_ref_clk_cache_valid(priv) = false;
-	sunxi_ref_clk_type(priv);
-	sunxi_ext_res_init(priv);
+	sunxi_cached_ref_clk_valid = false;
+	sunxi_ref_clk_type();
+	sunxi_ext_res_init();
 	/* Assert the bus, AXI, core and PHY resets before changing clocks. */
-	sunxi_ahb_clk(false, priv);
-	sunxi_axi_clk(false, priv);
-	sunxi_axi_clk(true, priv);
-	sunxi_ahb_clk(true, priv);
+	sunxi_ahb_clk(false);
+	sunxi_axi_clk(false);
+	sunxi_axi_clk(true);
+	sunxi_ahb_clk(true);
 	clrbits_le32(variant->reset_reg, variant->core_rst | variant->phy_rst);
-	sunxi_cfg_clk(priv);
-	sunxi_ref_clk(true, priv);
+	sunxi_cfg_clk();
+	sunxi_ref_clk(true);
 	return 0;
 }
 
-static int sunxi_prepare(uintptr_t base __attribute__((unused)), void *priv)
+int __attribute__((weak)) sunxi_ufs_prepare(void)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t value;
 	uint32_t ref_type;
 	uint32_t ref_freq;
@@ -391,7 +384,7 @@ static int sunxi_prepare(uintptr_t base __attribute__((unused)), void *priv)
 
 	if (!sunxi_variant_valid(variant))
 		return UFSHC_ERR_INVALID;
-	ref_type = sunxi_ref_clk_type(priv);
+	ref_type = sunxi_ref_clk_type();
 	ref_freq = sunxi_ref_clk_freq(variant, ref_type);
 	external = sunxi_ref_clk_is_external(variant, ref_type);
 
@@ -419,15 +412,9 @@ static int sunxi_prepare(uintptr_t base __attribute__((unused)), void *priv)
 	return 0;
 }
 
-static int sunxi_phy_init(void *priv __attribute__((unused)))
+void __attribute__((weak)) sunxi_ufs_device_reset(void)
 {
-	/* The PHY remains in reset until link_startup has programmed RMMI. */
-	return 0;
-}
-
-static void sunxi_device_reset(uintptr_t base __attribute__((unused)), void *priv)
-{
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	uint32_t value;
 
 	if (!sunxi_variant_valid(variant))
@@ -504,9 +491,9 @@ static int sunxi_c10_write(struct ufshc_host *host, uint16_t reg, uint16_t value
 	return sunxi_dme_write(host, TC_VS_MPHYCFGUPDT, 0, 1);
 }
 
-static int sunxi_phy_link_startup(struct ufshc_host *host, void *priv)
+int __attribute__((weak)) sunxi_ufs_link_startup(struct ufshc_host *host)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 	struct sunxi_ufs_cal_words cal = { 0 };
 	struct {
 		uint32_t attr;
@@ -662,7 +649,7 @@ static int sunxi_phy_link_startup(struct ufshc_host *host, void *priv)
 	return ret;
 }
 
-static int sunxi_link_up(struct ufshc_host *host, void *priv __attribute__((unused)))
+int __attribute__((weak)) sunxi_ufs_link_up(struct ufshc_host *host)
 {
 	uint32_t value = 0;
 	int ret;
@@ -693,31 +680,18 @@ static int sunxi_link_up(struct ufshc_host *host, void *priv __attribute__((unus
 	return ret ? ret : (value == 1U ? 0 : UFSHC_ERR_IO);
 }
 
-static void sunxi_disable(void *priv)
+void __attribute__((weak)) sunxi_ufs_disable(void)
 {
-	const struct sunxi_ufs_variant *variant = sunxi_variant(priv);
+	const struct sunxi_ufs_variant *variant = sunxi_variant();
 
 	if (!sunxi_variant_valid(variant))
 		return;
 	/* Both core and PHY reset inputs are active low. */
 	clrbits_le32(variant->reset_reg, variant->phy_rst);
 	clrbits_le32(variant->reset_reg, variant->core_rst);
-	sunxi_ref_clk(false, priv);
-	sunxi_cfg_clk(priv);
-	sunxi_ahb_clk(false, priv);
-	sunxi_axi_clk(false, priv);
-	*sunxi_ref_clk_cache_valid(priv) = false;
+	sunxi_ref_clk(false);
+	sunxi_cfg_clk();
+	sunxi_ahb_clk(false);
+	sunxi_axi_clk(false);
+	sunxi_cached_ref_clk_valid = false;
 }
-
-const struct ufshc_platform_ops sunxi_ufs_platform_ops = {
-	.enable = sunxi_enable,
-	.disable = sunxi_disable,
-	.phy_init = sunxi_phy_init,
-	.get_ref_clk_freq = sunxi_get_ref_clk_freq,
-	.get_hs_rate = sunxi_get_hs_rate,
-	.prepare = sunxi_prepare,
-	.device_reset = sunxi_device_reset,
-	.link_startup = sunxi_phy_link_startup,
-	.link_up = sunxi_link_up,
-	.priv = 0,
-};

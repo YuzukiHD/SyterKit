@@ -79,12 +79,6 @@ struct sunxi_ufs_cal_words {
 	uint16_t ctle_lane1;
 };
 
-struct sunxi_ufs_platform_data {
-	struct sunxi_ufs_variant variant;
-	uint32_t ref_clk_type;
-	bool ref_clk_type_valid;
-};
-
 /* Weak defaults live in the common implementation and are overridden by a
  * selected Sun60 variant object. */
 const struct sunxi_ufs_variant *sunxi_ufs_get_variant(void);
@@ -94,8 +88,16 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal);
 int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
 		uint32_t low, uint32_t high);
 
-int sunxi_ufs_platform_data_init(struct sunxi_ufs_platform_data *data);
+int sunxi_ufs_variant_init(struct sunxi_ufs_variant *variant);
+int sunxi_ufs_configure(const struct sunxi_ufs_variant *variant);
 
-extern const struct ufshc_platform_ops sunxi_ufs_platform_ops;
+int sunxi_ufs_enable(void);
+void sunxi_ufs_disable(void);
+int sunxi_ufs_prepare(void);
+void sunxi_ufs_device_reset(void);
+int sunxi_ufs_get_ref_clk_freq(uint32_t *value);
+int sunxi_ufs_get_hs_rate(uint32_t *value);
+int sunxi_ufs_link_startup(struct ufshc_host *host);
+int sunxi_ufs_link_up(struct ufshc_host *host);
 
 #endif /* __SYTERKIT_UFS_SUNXI_HOST_H__ */
