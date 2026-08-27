@@ -15,6 +15,8 @@
 		psram0 = &psram0;
 		intc0 = &clic0;
 		uart1 = &uart1;
+		spi0 = &spi0;
+		spi-nor0 = &spi_nor0;
 	};
 
 	chosen {
@@ -44,6 +46,16 @@
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 0 4>,
 				<SUNXI_GPIO_PORT_B 1 4>;
+		};
+
+		spi0_pins: spi0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_C 1 3>,
+				<SUNXI_GPIO_PORT_C 0 3>,
+				<SUNXI_GPIO_PORT_C 4 3>,
+				<SUNXI_GPIO_PORT_C 2 3>,
+				<SUNXI_GPIO_PORT_C 3 3>,
+				<SUNXI_GPIO_PORT_C 5 3>;
 		};
 	};
 
@@ -80,6 +92,27 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart1_pins>;
 			status = "okay";
+		};
+
+		spi0: spi@4025000 {
+			compatible = "allwinner,sunxi-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			allwinner,spi-id = <0>;
+			reg = <SUNXI_SPI0_BASE 0x1000>;
+			clock-frequency = <24000000>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x940) 1 8 600000000 0>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x96c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x96c) 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi0_pins>;
+			status = "okay";
+
+			spi_nor0: flash@0 {
+				compatible = "jedec,spi-nor";
+				reg = <0>;
+				spi-max-frequency = <24000000>;
+			};
 		};
 	};
 };
