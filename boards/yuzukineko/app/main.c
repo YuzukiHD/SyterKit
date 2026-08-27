@@ -30,6 +30,7 @@
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
+#include <dt-compatible/dma-dt.h>
 #include <dt-compatible/psram-dt.h>
 #include <dt-compatible/spi-dt.h>
 #include <dt-compatible/spi-nor-dt.h>
@@ -63,8 +64,14 @@ int main(void)
 #ifdef CONFIG_DRIVER_SPI
 	sunxi_spi_t spi = { 0 };
 	spi_nor_t nor = { 0 };
+	sunxi_dma_t dma = { 0 };
 
-	if (sunxi_spi_dt_read_alias(&spi, "spi0", NULL) != DRIVER_OK ||
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK) {
+		printk_error("DMA: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	if (sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
 	    spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
 		printk_error("SPI: invalid devicetree configuration\n");
 		return -1;
