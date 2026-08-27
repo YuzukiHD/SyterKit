@@ -9,37 +9,16 @@ ifeq ($(CONFIG_BACKTRACE),y)
 KBUILD_CFLAGS += -fno-omit-frame-pointer -fno-optimize-sibling-calls
 endif
 
+# Each CPU core owns its toolchain flags and object list in
+# arch/riscv/cpu/<core>/Makefile.  Pull the selected core's flags up into the
+# top-level Kbuild so they apply to the whole image; the obj-y it defines is
+# only consumed when Makefile.build recurses into the core directory.
 ifeq ($(CONFIG_ARCH_CPU_E907),y)
-	KBUILD_CFLAGS += $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_AFLAGS += $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_LDFLAGS += -m elf32lriscv
+include $(srctree)/arch/riscv/cpu/e907/Makefile
 endif
-
 ifeq ($(CONFIG_ARCH_CPU_C907),y)
-ifeq ($(CONFIG_ARCH_RISCV64),y)
-	KBUILD_CFLAGS += -mcpu=c907fdv -mabi=lp64d \
-		-mcmodel=medlow -mstrict-align -mtune=c907 \
-		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_AFLAGS += -mcpu=c907fdv -mabi=lp64d \
-		-mcmodel=medlow -mstrict-align -mtune=c907 \
-		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_LDFLAGS += -m elf64lriscv
+include $(srctree)/arch/riscv/cpu/c907/Makefile
 endif
-ifeq ($(CONFIG_ARCH_RISCV32),y)
-	KBUILD_CFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32 \
-		-mcmodel=medlow -mstrict-align -mtune=c907 \
-		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_AFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32 \
-		-mcmodel=medlow -mstrict-align -mtune=c907 \
-		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_LDFLAGS += -m elf32lriscv
-endif
-endif
-
 ifeq ($(CONFIG_ARCH_CPU_C906),y)
-	KBUILD_CFLAGS += -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d \
-	-mcmodel=medlow -mstrict-align $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_AFLAGS += -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d \
-	-mcmodel=medlow -mstrict-align $(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_LDFLAGS += -m elf64lriscv
+include $(srctree)/arch/riscv/cpu/c906/Makefile
 endif
