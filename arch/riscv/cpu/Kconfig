@@ -11,7 +11,7 @@ config ARCH_CPU_E907
 
 config ARCH_CPU_C907
 	bool "Xuantie C907"
-	depends on ARCH_RISCV32
+	depends on ARCH_RISCV32 || ARCH_RISCV64
 
 config ARCH_CPU_C906
 	bool "Xuantie C906"

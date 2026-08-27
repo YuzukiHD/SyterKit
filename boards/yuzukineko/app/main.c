@@ -33,8 +33,6 @@
 
 int main(void)
 {
-	sunxi_psram_t psram = { 0 };
-
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
 
@@ -46,6 +44,11 @@ int main(void)
 
 	sunxi_clk_dump();
 
+#ifdef CONFIG_DRIVER_PSRAM
+	/* The prebuilt libpsram.a is ELF32-only; it cannot link into the RV64
+	 * build.  Skip PSRAM init until a 64-bit library is available. */
+	sunxi_psram_t psram = { 0 };
+
 	if (sunxi_psram_dt_read_alias(&psram, "psram0") != DRIVER_OK) {
 		printk_error("PSRAM: invalid devicetree configuration\n");
 		return -1;
@@ -53,6 +56,7 @@ int main(void)
 	sunxi_psram_init(&psram);
 
 	printk_info("LPSRAM Size = %d MB\n", sunxi_get_psram_size(&psram));
+#endif
 
 	syterkit_shell_attach(NULL);
 

@@ -8,36 +8,43 @@
 	.globl _start
 	.type _start, @function
 _start:
+	/* Boot ROM may leave machine interrupts enabled. */
 	csrc mstatus, MSTATUS_MIE
 	csrw mie, zero
 
 	la sp, __stack_srv_end
-	la a0, vectors
+
+	la a0, irq_handler
+	ori a0, a0, 3
 	csrw mtvec, a0
 	jal clear_bss
 
-	/* Enable T-Head ISA extensions and misaligned access handling. */
-	li t1, (1 << 22) | (1 << 21) | (1 << 15)
-	csrs mxstatus, t1
-
-	/* Invalidate I-cache, D-cache, BTB and BHT. */
-	li t2, 0x30013
-	csrs mcor, t2
-
-	/* Give machine mode access to the 32-bit physical address space. */
-	li t0, (0xfffffffc >> 2)
-	csrw pmpaddr0, t0
-	li t0, (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0)
-	csrw pmpcfg0, t0
-
-	csrw mideleg, zero
-	csrw medeleg, zero
-	csrw mip, zero
-
-	li t0, MSTATUS_FS | MSTATUS_XS | (3 << 23)
+	li t0, MSTATUS_FS | MSTATUS_XS
 	csrs mstatus, t0
 
+	/* Enable MXSTATUS.MM and the T-Head extended ISA. */
+	li t0, MXSTATUS_MM | MXSTATUS_THEADISAEE
+	csrs mxstatus, t0
+	fence.i
+
+#ifdef CONFIG_ARCH_MTVT
+	la a0, vectors
+	csrw mtvt, a0
+#endif
+
 	jal set_timer_count
+
+#ifdef CONFIG_ARCH_DCACHE
+	jal cache_init
+
+	jal icache_enable
+
+	jal dcache_enable
+#endif
+
+	fence.i
+
+	sync.is
 
 	jal main
 
@@ -53,10 +60,20 @@ clear_bss:
 	bltu t0, t1, 1b
 2:	ret
 
-	.balign 4
-	.globl vectors
-	.type vectors, @function
-vectors:
+	.balign 64
+	.globl irq_handler
+	.type irq_handler, @function
+irq_handler:
 	SAVE_ALL
 	jal riscv_handle_exception
 	RESTORE_ALL
+
+	.section .vectors, "a", @progbits
+	.balign 64
+	.globl vectors
+	.type vectors, @object
+vectors:
+	.rept 16
+	.word irq_handler
+	.endr
+	.size vectors, . - vectors

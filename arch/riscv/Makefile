@@ -16,13 +16,24 @@ ifeq ($(CONFIG_ARCH_CPU_E907),y)
 endif
 
 ifeq ($(CONFIG_ARCH_CPU_C907),y)
-	KBUILD_CFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32 \
+ifeq ($(CONFIG_ARCH_RISCV64),y)
+	KBUILD_CFLAGS += -mcpu=c907fdv -mabi=lp64d \
 		-mcmodel=medlow -mstrict-align -mtune=c907 \
 		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-	KBUILD_AFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32 \
+	KBUILD_AFLAGS += -mcpu=c907fdv -mabi=lp64d \
+		-mcmodel=medlow -mstrict-align -mtune=c907 \
+		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
+	KBUILD_LDFLAGS += -m elf64lriscv
+endif
+ifeq ($(CONFIG_ARCH_RISCV32),y)
+	KBUILD_CFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32d \
+		-mcmodel=medlow -mstrict-align -mtune=c907 \
+		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
+	KBUILD_AFLAGS += -mcpu=c907fdv-rv32 -mabi=ilp32d \
 		-mcmodel=medlow -mstrict-align -mtune=c907 \
 		$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 	KBUILD_LDFLAGS += -m elf32lriscv
+endif
 endif
 
 ifeq ($(CONFIG_ARCH_CPU_C906),y)

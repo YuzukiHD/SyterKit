@@ -57,6 +57,19 @@ SECTIONS
 	} > ram :data
 	. = ALIGN(4);
 	_end = .;
+#ifndef CONFIG_ARCH_BOOT
 	ASSERT(_start == __spl_start + 0x40,
 	       "Boot0 entry must be 0x40 bytes from the image start")
+#else
+	/*
+	 * RV64 boards boot the C907 in RV32 mode: .boot0_head is boot_head
+	 * (0x40) followed by the arch_boot payload arch_boot_payload (0x80), so
+	 * the BROM's JUMP_INSTRUCTION (image + 0x40) hits the payload and the
+	 * payload's PC-relative `la t1, _start` hits image + 0xc0.
+	 */
+	ASSERT(arch_boot_payload == __spl_start + 0x40,
+	       "Boot0 entry (riscv_32_to_64) must be 0x40 bytes from the image start")
+	ASSERT(_start == __spl_start + 0xc0,
+	       "RV64 _start must be 0xc0 bytes from the image start")
+#endif
 }
