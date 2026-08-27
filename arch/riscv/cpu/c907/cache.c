@@ -2,11 +2,14 @@
 
 /**
  * @file cache.c
- * @brief C907 L1 and L2 cache control.
+ * @brief C907 L1 cache control.
  *
  * C907 uses the T-Head C9xx cache CSRs and address-based maintenance
- * instructions.  The sun252iw2p1 cache hierarchy also has a memory-mapped
- * L2 controller, so whole-cache operations update both cache levels.
+ * instructions.  Cache maintenance is done purely with the T-Head cache
+ * instructions (dcache.call/iall/cpa/ipa) plus a sync.is barrier.  The
+ * memory-mapped L2 controller is deliberately not used: it is not
+ * wired up on this SoC, and polling its status register spins
+ * forever.
  */
 
 #include <stddef.h>
@@ -15,34 +18,8 @@
 
 #include <cache.h>
 #include <csr.h>
-#include <io.h>
 
 #define L1_CACHE_BYTES (64U)
-
-#define C907_L2C_BASE	   (0x37fff000U)
-#define C907_L2C_STATUS	   (C907_L2C_BASE + 0x08U)
-#define C907_L2C_OPERATION (C907_L2C_BASE + 0x18U)
-
-#define C907_L2C_OPERATION_INVALIDATE	    (0x1U << 4)
-#define C907_L2C_OPERATION_CLEAN	    (0x2U << 4)
-#define C907_L2C_OPERATION_ENABLE	    (1U)
-
-static void l2c_operation(uint32_t operation)
-{
-	writel(operation | C907_L2C_OPERATION_ENABLE, C907_L2C_OPERATION);
-	while (readl(C907_L2C_STATUS) != 0U)
-		;
-}
-
-static void l2c_invalid_all(void)
-{
-	l2c_operation(C907_L2C_OPERATION_INVALIDATE);
-}
-
-static void l2c_clear_all(void)
-{
-	l2c_operation(C907_L2C_OPERATION_CLEAN);
-}
 
 /**
  * @brief Insert the C907 instruction/data synchronization barrier.
@@ -98,7 +75,7 @@ void mmu_enable(void)
 }
 
 /**
- * @brief Clean a C907 L1/L2 cache range.
+ * @brief Clean a C907 L1 cache range.
  * @param[in] start Inclusive start address.
  * @param[in] end Exclusive end address.
  */
@@ -110,11 +87,10 @@ void flush_dcache_range(uint64_t start, uint64_t end)
 	for (; address < limit; address += L1_CACHE_BYTES)
 		asm volatile("dcache.cpa %0" : : "r"(address) : "memory");
 	data_sync_barrier();
-	l2c_clear_all();
 }
 
 /**
- * @brief Invalidate a C907 L1/L2 cache range.
+ * @brief Invalidate a C907 L1 cache range.
  * @param[in] start Inclusive start address.
  * @param[in] end Exclusive end address.
  */
@@ -126,25 +102,22 @@ void invalidate_dcache_range(uint64_t start, uint64_t end)
 	for (; address < limit; address += L1_CACHE_BYTES)
 		asm volatile("dcache.ipa %0" : : "r"(address) : "memory");
 	data_sync_barrier();
-	l2c_invalid_all();
 }
 
 /**
- * @brief Clean all C907 L1 and L2 data-cache lines.
+ * @brief Clean all C907 L1 data-cache lines.
  */
 void flush_dcache_all(void)
 {
 	asm volatile("dcache.call" ::: "memory");
 	data_sync_barrier();
-	l2c_clear_all();
 }
 
 /**
- * @brief Invalidate all C907 L1 and L2 data-cache lines.
+ * @brief Invalidate all C907 L1 data-cache lines.
  */
 void invalidate_dcache_all(void)
 {
 	asm volatile("dcache.iall" ::: "memory");
 	data_sync_barrier();
-	l2c_invalid_all();
 }
