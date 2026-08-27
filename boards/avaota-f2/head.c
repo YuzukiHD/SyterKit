@@ -38,8 +38,15 @@ typedef struct boot_file_head {
 * bitwise operations and utilizes it to construct a jump instruction. 
 */
 
-#define BROM_FILE_HEAD_PADDING (0x10)
-#define BROM_FILE_HEAD_SIZE ((sizeof(boot_file_head_t) + BROM_FILE_HEAD_PADDING) & 0x00FFFFF)
+/*
+ * The linker places the entry code on a 64-byte boundary right after the boot
+ * head (arch/riscv/syterkit.lds.S: ". = ALIGN(64)" plus the
+ * "__spl_start + 0x40" assertion), so the BROM's jump instruction must skip
+ * ALIGN(64, sizeof(boot_file_head_t)) bytes.  sizeof() depends on the ISA
+ * (0x30 on RV32, 0x40 on RV64 because of the pointer fields); rounding it up
+ * to 64 keeps the jump correct for both without a fixed padding constant.
+ */
+#define BROM_FILE_HEAD_SIZE (((sizeof(boot_file_head_t) + 0x3f) & ~0x3f) & 0x00FFFFF)
 #define BROM_FILE_HEAD_BIT_10_1 ((BROM_FILE_HEAD_SIZE & 0x7FE) >> 1)
 #define BROM_FILE_HEAD_BIT_11 ((BROM_FILE_HEAD_SIZE & 0x800) >> 11)
 #define BROM_FILE_HEAD_BIT_19_12 ((BROM_FILE_HEAD_SIZE & 0xFF000) >> 12)

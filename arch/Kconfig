@@ -60,4 +60,6 @@ endchoice
 
 source "arch/Kconfig.soc"
 
+source "arch/Kconfig.boot"
+
 endmenu
