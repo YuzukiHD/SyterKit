@@ -41,7 +41,7 @@ void show_chip()
 #if __riscv_xlen == 32
 	printk_info("Core: XuanTie C907 RISC-V ILP32 Core.\n");
 #else
-	printk_info("Core: XuanTie C906 RISC-V LP64D Core.\n");
+	printk_info("Core: XuanTie C907 RISC-V LP64D Core.\n");
 #endif
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
