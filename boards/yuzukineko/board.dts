@@ -15,6 +15,7 @@
 		psram0 = &psram0;
 		intc0 = &clic0;
 		uart1 = &uart1;
+		dma0 = &dma0;
 		spi0 = &spi0;
 		spi-nor0 = &spi_nor0;
 	};
@@ -94,16 +95,28 @@
 			status = "okay";
 		};
 
+		dma0: dma-controller@3002000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <SUNXI_DMA_BASE 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <(SUNXI_CCU_BASE + 0x804) 0>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x70c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x70c) 16>;
+			status = "okay";
+		};
+
 		spi0: spi@4025000 {
 			compatible = "allwinner,sunxi-spi";
 			#address-cells = <1>;
 			#size-cells = <0>;
 			allwinner,spi-id = <0>;
 			reg = <SUNXI_SPI0_BASE 0x1000>;
-			clock-frequency = <24000000>;
+			clock-frequency = <100000000>;
 			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x940) 1 8 600000000 0>;
 			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x96c) 0>;
 			allwinner,reset = <(SUNXI_CCU_BASE + 0x96c) 16>;
+			dmas = <&dma0 22>;
+			dma-names = "rx";
 			pinctrl-names = "default";
 			pinctrl-0 = <&spi0_pins>;
 			status = "okay";
@@ -111,7 +124,7 @@
 			spi_nor0: flash@0 {
 				compatible = "jedec,spi-nor";
 				reg = <0>;
-				spi-max-frequency = <24000000>;
+				spi-max-frequency = <100000000>;
 			};
 		};
 	};
