@@ -66,21 +66,36 @@ static const spi_nand_info_t spi_nand_infos[] = {
 	{ "W25N02KV", { .mfr = SPI_NAND_MFR_WINBOND, .dev = 0xaa22, 2 }, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
 
 	/* Gigadevice */
-	{ "GD5F1GQ4UAWxx", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x10, 1 }, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F1GQ5UExxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x51, 1 }, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F1GQ4UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd1, 1 }, 2048, 128, 64, 1024, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GQ4xFxxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1 }, 2048, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F1GQ4UExxH", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd9, 1 }, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F1GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf1, 1 }, 2048, 64, 64, 1024, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GQ4UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1 }, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GQ5UExxH", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x32, 1 }, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf2, 1 }, 2048, 64, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F4GQ4UBxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd4, 1 }, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F4GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf4, 1 }, 2048, 64, 64, 4096, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GQ5UExxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x52, 1 }, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F4GQ4UCxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xb4, 1 }, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F4GQ4RCxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xa4, 1 }, 4096, 256, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
-	{ "GD5F2GM7UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x92, 1 }, 2048, 128, 64, 2048, 1, 1, SPI_IO_QUAD_RX },
+	{ "GD5F1GQ4UAWxx", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x10, 1 }, 2048, 64, 64, 1024, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F1GQ5UExxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x51, 1 }, 2048, 128, 64, 1024, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F1GQ4UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd1, 1 }, 2048, 128, 64, 1024, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GQ4xFxxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1 }, 2048, 256, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F1GQ4UExxH", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd9, 1 }, 2048, 64, 64, 1024, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F1GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf1, 1 }, 2048, 64, 64, 1024, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GQ4UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd2, 1 }, 2048, 128, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GQ5UExxH", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x32, 1 }, 2048, 64, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf2, 1 }, 2048, 64, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F4GQ4UBxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xd4, 1 }, 4096, 256, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F4GQ4xAYIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xf4, 1 }, 2048, 64, 64, 4096, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GQ5UExxG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x52, 1 }, 2048, 128, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F4GQ4UCxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xb4, 1 }, 4096, 256, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F4GQ4RCxIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0xa4, 1 }, 4096, 256, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
+	{ "GD5F2GM7UExIG", { .mfr = SPI_NAND_MFR_GIGADEVICE, .dev = 0x92, 1 }, 2048, 128, 64, 2048, 1, 1,
+		SPI_IO_QUAD_RX },
 
 	/* Macronix */
 	{ "MX35LF1GE4AB", { .mfr = SPI_NAND_MFR_MACRONIX, .dev = 0x12, 1 }, 2048, 64, 64, 1024, 1, 1, SPI_IO_DUAL_RX },
@@ -349,7 +364,8 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi)
  */
 static int spi_nand_select(spi_nand_t *nand)
 {
-	if (nand == NULL || nand->spi == NULL || nand->max_frequency == 0U || sunxi_spi_select(nand->spi, nand->chip_select) != 0)
+	if (nand == NULL || nand->spi == NULL || nand->max_frequency == 0U ||
+		sunxi_spi_select(nand->spi, nand->chip_select) != 0)
 		return -1;
 	if (nand->spi->clk_rate != nand->max_frequency)
 		return sunxi_spi_update_clk(nand->spi, nand->max_frequency);
@@ -386,7 +402,8 @@ int spi_nand_detect(spi_nand_t *nand)
 			}
 		}
 
-		if (info->id.mfr == (uint8_t)SPI_NAND_MFR_GIGADEVICE || info->id.mfr == (uint8_t)SPI_NAND_MFR_FORESEE || info->id.mfr == (uint8_t)SPI_NAND_MFR_XTX) {
+		if (info->id.mfr == (uint8_t)SPI_NAND_MFR_GIGADEVICE || info->id.mfr == (uint8_t)SPI_NAND_MFR_FORESEE ||
+			info->id.mfr == (uint8_t)SPI_NAND_MFR_XTX) {
 			if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
 				printk_debug("SPI-NAND: enable Quad mode\n");
 				val |= (1 << 0);
@@ -482,7 +499,8 @@ uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf, uint32_t addr, uint32_t r
 		return -1;
 	}
 
-	if (info->id.mfr == SPI_NAND_MFR_GIGADEVICE || info->id.mfr == SPI_NAND_MFR_FORESEE || info->id.mfr == SPI_NAND_MFR_XTX) {
+	if (info->id.mfr == SPI_NAND_MFR_GIGADEVICE || info->id.mfr == SPI_NAND_MFR_FORESEE ||
+		info->id.mfr == SPI_NAND_MFR_XTX) {
 		while (cnt > 0) {
 			ca = address & (info->page_size - 1);
 			n = cnt > (info->page_size - ca) ? (info->page_size - ca) : cnt;
