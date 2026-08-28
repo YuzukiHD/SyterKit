@@ -19,10 +19,3 @@ endchoice
 config ARM_HARDFP
 	bool "Use the hard-float ABI"
 	depends on CPU_CORTEX_A7
-
-config ARCH_MINSTACK
-	bool "Disable exception-mode stacks"
-	depends on ARCH_ARM32
-	help
-	  Omit the UND, ABT, IRQ and FIQ stacks to save SRAM. Exceptions use a
-	  no-stack halt vector in this mode and cannot be handled or resumed.
