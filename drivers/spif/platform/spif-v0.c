@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
-#include "../spif-internal.h"
+#include <driver.h>
+#include <drivers/spif/spif.h>
+
+#include "spif-platform.h"
+#include "../spif-regs.h"
 
 uint32_t sunxi_spif_platform_max_transfer(void)
 {
@@ -83,10 +87,10 @@ bool sunxi_spif_platform_needs_cache_bounce(uintptr_t address)
 	return false;
 }
 
-void sunxi_spif_platform_set_data_length(struct spif_descriptor_op *desc, uint32_t length)
+void sunxi_spif_platform_set_data_length(uint32_t *block_data_len, uint32_t *addr_dummy_data_count, uint32_t length)
 {
-	desc->block_data_len = (desc->block_data_len & ~SPIF_DMA_DATA_LEN_V0) |
+	*block_data_len = (*block_data_len & ~SPIF_DMA_DATA_LEN_V0) |
 		(length & SPIF_DMA_DATA_LEN_V0);
-	desc->addr_dummy_data_count = (desc->addr_dummy_data_count & ~SPIF_DMA_DATA_LEN_V0) |
+	*addr_dummy_data_count = (*addr_dummy_data_count & ~SPIF_DMA_DATA_LEN_V0) |
 		(length & SPIF_DMA_DATA_LEN_V0);
 }

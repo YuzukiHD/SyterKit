@@ -38,4 +38,28 @@ config DRIVER_MTD_LOG_BACKTRACE
 
 endchoice
 
+choice DRIVER_MTD_FLASH_BACKEND
+	prompt "MTD flash driver"
+	default DRIVER_MTD_SPI_NOR if DRIVER_SPI
+	default DRIVER_MTD_SPIF_NOR if DRIVER_SPIF
+	depends on DRIVER_MTD
+
+config DRIVER_MTD_SPI_NOR
+	bool "SPI NOR (standard SPI controller)"
+	depends on DRIVER_SPI
+
+config DRIVER_MTD_SPIF_NOR
+	bool "SPI NOR (SPIF controller)"
+	depends on DRIVER_SPIF
+
+config DRIVER_MTD_SPI_NAND
+	bool "SPI NAND"
+	depends on DRIVER_SPI
+
+endchoice
+
+source "drivers/mtd/nand/Kconfig"
+source "drivers/mtd/spi-nor/Kconfig"
+source "drivers/mtd/spif-nor/Kconfig"
+
 endmenu

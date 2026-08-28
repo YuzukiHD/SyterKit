@@ -65,16 +65,17 @@
 #define SPIF_DMA_BLOCK_LEN_64B	 (3U << 24)
 #define SPIF_DMA_DATA_LEN_V0	 0xffffU
 #define SPIF_DMA_DATA_LEN_V1	 0x1ffffU
+#define SPIF_DMA_TRANS_NUM	 0xffffU
 #define SPIF_DMA_TRANS_NUM_16BIT BIT(31)
 #define SPIF_DMA_NORMAL_DESC	 BIT(28)
 #define SPIF_DMA_DONE_INT	 BIT(24)
 
-#define SPIF_CSD_DEFAULT   ((5U << 16) | (6U << 8) | 6U)
-#define SPIF_TIMEOUT	   0x1000000U
+#define SPIF_CSD_DEFAULT    ((5U << 16) | (6U << 8) | 6U)
+#define SPIF_TIMEOUT	    0x1000000U
 #define SPIF_MAX_TRANS_SIZE 65536U
-#define SPIF_MAX_TRANS_V0  4096U
-#define SPIF_MAX_TRANS_V1  65536U
-#define SPIF_MIN_TRANS_NUM 8U
+#define SPIF_MAX_TRANS_V0   4096U
+#define SPIF_MAX_TRANS_V1   65536U
+#define SPIF_MIN_TRANS_NUM  8U
 
 /* Descriptor dword 6 and dword 7 fields. */
 #define SPIF_DATA_TRANS_POS    0U

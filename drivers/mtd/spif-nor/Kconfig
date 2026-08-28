@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# SPIF NOR is built with the SPIF controller from the parent MTD Makefile.

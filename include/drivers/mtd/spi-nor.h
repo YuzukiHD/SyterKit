@@ -82,6 +82,44 @@ typedef struct sfdp {
 	sfdp_basic_table_t basic_table; /**< Basic parameter table containing the flash parameters. */
 } sfdp_t;
 
+/* SPI NOR command protocols, encoded as instruction/address/data widths. */
+#define SNOR_PROTO_INST_MASK (0xffUL << 16)
+#define SNOR_PROTO_ADDR_MASK (0xffUL << 8)
+#define SNOR_PROTO_DATA_MASK (0xffUL << 0)
+#define SNOR_PROTO_IS_DTR   (1UL << 24)
+
+#define SNOR_PROTO_STR(__inst, __addr, __data) \
+	((((unsigned long)(__inst)) << 16) | (((unsigned long)(__addr)) << 8) | (unsigned long)(__data))
+#define SNOR_PROTO_DTR(__inst, __addr, __data) (SNOR_PROTO_IS_DTR | SNOR_PROTO_STR(__inst, __addr, __data))
+
+enum spi_nor_protocol {
+	SNOR_PROTO_1_1_1 = SNOR_PROTO_STR(1, 1, 1),
+	SNOR_PROTO_1_1_4 = SNOR_PROTO_STR(1, 1, 4),
+	SNOR_PROTO_1_4_4 = SNOR_PROTO_STR(1, 4, 4),
+	SNOR_PROTO_4_4_4 = SNOR_PROTO_STR(4, 4, 4),
+	SNOR_PROTO_1_4_4_DTR = SNOR_PROTO_DTR(1, 4, 4),
+};
+
+static inline bool spi_nor_protocol_is_dtr(enum spi_nor_protocol proto)
+{
+	return (proto & SNOR_PROTO_IS_DTR) != 0UL;
+}
+
+static inline uint8_t spi_nor_get_protocol_inst_nbits(enum spi_nor_protocol proto)
+{
+	return (uint8_t)((proto & SNOR_PROTO_INST_MASK) >> 16);
+}
+
+static inline uint8_t spi_nor_get_protocol_addr_nbits(enum spi_nor_protocol proto)
+{
+	return (uint8_t)((proto & SNOR_PROTO_ADDR_MASK) >> 8);
+}
+
+static inline uint8_t spi_nor_get_protocol_data_nbits(enum spi_nor_protocol proto)
+{
+	return (uint8_t)(proto & SNOR_PROTO_DATA_MASK);
+}
+
 /**
  * @struct spi_nor_info_t
  * @brief Structure containing information about a specific SPI NOR Flash device.
@@ -104,6 +142,9 @@ typedef struct spi_nor_info {
 	uint8_t opcode_erase_32k; /**< Opcode to erase a 32K block of the SPI NOR Flash. */
 	uint8_t opcode_erase_64k; /**< Opcode to erase a 64K block of the SPI NOR Flash. */
 	uint8_t opcode_erase_256k; /**< Opcode to erase a 256K block of the SPI NOR Flash. */
+	enum spi_nor_protocol read_proto; /**< Instruction/address/data protocol for reads. */
+	uint8_t read_dummy; /**< Number of read dummy clock cycles. */
+	uint8_t qe_method; /**< SFDP Quad Enable Requirements value. */
 } spi_nor_info_t;
 
 #define SPI_NOR_COMPATIBLE "jedec,spi-nor"
@@ -130,12 +171,32 @@ enum SPI_NOR_OPS {
 	NOR_OPCODE_RDID = 0x9f, /**< Read ID Command: Retrieve the identity of the memory device */
 	NOR_OPCODE_WRSR = 0x01, /**< Write Status Register Command: Write to the status register */
 	NOR_OPCODE_RDSR = 0x05, /**< Read Status Register Command: Read the current status register */
+	NOR_OPCODE_WRSR2 = 0x31, /**< Write Status Register 2 Command. */
+	NOR_OPCODE_RDSR2 = 0x35, /**< Read Status Register 2 or Configuration Register. */
 	NOR_OPCODE_WREN = 0x06, /**< Write Enable Command: Enable write operations on the memory */
 	NOR_OPCODE_READ = 0x03, /**< Read Data Command: Read data from the memory */
+	NOR_OPCODE_READ_FAST = 0x0b, /**< Fast Read Command: single-bit address/data. */
+	NOR_OPCODE_READ_4B = 0x13, /**< 4-byte Read Data Command. */
+	NOR_OPCODE_READ_1_1_2 = 0x3b, /**< Fast Read 1-1-2 Command. */
+	NOR_OPCODE_READ_1_2_2 = 0xbb, /**< Fast Read 1-2-2 Command. */
+	NOR_OPCODE_READ_1_1_4 = 0x6b, /**< Fast Read 1-1-4 Command. */
+	NOR_OPCODE_READ_1_4_4 = 0xeb, /**< Fast Read 1-4-4 Command. */
+	NOR_OPCODE_READ_4_4_4 = 0xeb, /**< Fast Read 4-4-4 Command. */
+	NOR_OPCODE_READ_DTR = 0xed, /**< Fast Read 1-4-4 DTR Command. */
+	NOR_OPCODE_READ_FAST_4B = 0x0c, /**< 4-byte Fast Read Command. */
+	NOR_OPCODE_READ_1_1_2_4B = 0x3c, /**< 4-byte Fast Read 1-1-2 Command. */
+	NOR_OPCODE_READ_1_2_2_4B = 0xbc, /**< 4-byte Fast Read 1-2-2 Command. */
+	NOR_OPCODE_READ_1_1_4_4B = 0x6c, /**< 4-byte Fast Read 1-1-4 Command. */
+	NOR_OPCODE_READ_1_4_4_4B = 0xec, /**< 4-byte Fast Read 1-4-4 Command. */
+	NOR_OPCODE_READ_DTR_4B = 0xee, /**< 4-byte Fast Read 1-4-4 DTR Command. */
 	NOR_OPCODE_PROG = 0x02, /**< Page Program Command: Program data into a memory page */
+	NOR_OPCODE_PROG_4B = 0x12, /**< 4-byte Page Program Command. */
 	NOR_OPCODE_E4K = 0x20, /**< 4K Block Erase Command: Erase a 4K block of memory */
+	NOR_OPCODE_E4K_4B = 0x21, /**< 4-byte 4K Block Erase Command. */
 	NOR_OPCODE_E32K = 0x52, /**< 32K Block Erase Command: Erase a 32K block of memory */
+	NOR_OPCODE_E32K_4B = 0x5c, /**< 4-byte 32K Block Erase Command. */
 	NOR_OPCODE_E64K = 0xd8, /**< 64K Block Erase Command: Erase a 64K block of memory */
+	NOR_OPCODE_E64K_4B = 0xdc, /**< 4-byte 64K Block Erase Command. */
 	NOR_OPCODE_ENTER_4B = 0xb7, /**< Enter 4-Byte Address Mode Command: Switch to 4-byte addressing mode */
 	NOR_OPCODE_EXIT_4B = 0xe9, /**< Exit 4-Byte Address Mode Command: Return to 3-byte addressing mode */
 };

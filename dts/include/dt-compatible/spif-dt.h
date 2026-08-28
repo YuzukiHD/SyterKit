@@ -102,9 +102,9 @@ static inline __attribute__((always_inline)) int sunxi_spif_dt_read_config(sunxi
 		spif->mode |= SPIF_TX_OCTAL;
 	else
 		spif->mode |= SPIF_TX_BYTE;
-	if (sunxi_spif_dt_optional_u32(node, "dtr_mode_enabled", 0U) != 0U)
+	if (sunxi_spif_dt_optional_u32(node, "dtr-enable", 0U) != 0U)
 		spif->mode |= SPIF_DTR_MODE;
-	if (sunxi_spif_dt_optional_u32(node, "io_mode_enabled", 0U) != 0U)
+	if (sunxi_spif_dt_optional_u32(node, "io-mode-enable", 0U) != 0U)
 		spif->mode |= SPIF_IO_MODE;
 	spif->sample_mode = SUNXI_SPIF_SAMPLE_DEFAULT;
 	spif->sample_delay = SUNXI_SPIF_SAMPLE_DEFAULT;
