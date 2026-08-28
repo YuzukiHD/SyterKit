@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "SPIF driver"
+
+config DRIVER_SPIF
+	bool "SPIF controller support"
+	default n
+	help
+	  Enable the Allwinner SPIF controller used by SPI NOR/NAND boot flash.
+	  The controller is configured from an allwinner,sunxi-spif device-tree
+	  node and owns the SPI memory operation interface internally.
+
+source "drivers/spif/platform/Kconfig"
+
+endmenu
