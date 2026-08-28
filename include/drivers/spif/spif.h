@@ -57,6 +57,7 @@ typedef struct sunxi_spif {
 	uint8_t id;
 	uint8_t chip_select;
 	uint8_t initialized;
+	uint8_t dtr_active;
 
 	uint32_t bus_freq;
 	uint32_t speed_hz;
@@ -84,6 +85,57 @@ typedef struct sunxi_spif {
 	gpio_mux_t gpio_hold;
 } sunxi_spif_t;
 
+enum spi_mem_data_dir {
+	SPI_MEM_NO_DATA,
+	SPI_MEM_DATA_IN,
+	SPI_MEM_DATA_OUT,
+};
+
+struct spi_mem_op {
+	struct {
+		u8 nbytes;
+		u8 buswidth;
+		u8 dtr : 1;
+		u16 opcode;
+	} cmd;
+
+	struct {
+		u8 nbytes;
+		u8 buswidth;
+		u8 dtr : 1;
+		u64 val;
+	} addr;
+
+	struct {
+		u8 buswidth;
+		const void *val;
+	} mode;
+
+	struct {
+		u8 nbytes;
+		u8 buswidth;
+		u8 dtr : 1;
+	} dummy;
+
+	struct {
+		u8 buswidth;
+		u8 dtr : 1;
+		enum spi_mem_data_dir dir;
+		u32 nbytes;
+		union {
+			void *in;
+			const void *out;
+		} buf;
+	} data;
+};
+
+enum spi_mem_buswidth {
+	SPI_MEM_BUSWIDTH_1 = 1,
+	SPI_MEM_BUSWIDTH_2 = 2,
+	SPI_MEM_BUSWIDTH_4 = 4,
+	SPI_MEM_BUSWIDTH_8 = 8,
+};
+
 /** @brief Initialize a SPIF instance after sunxi_spif_dt_read_* filled it. */
 int sunxi_spif_init(sunxi_spif_t *spif);
 
@@ -98,6 +150,9 @@ int sunxi_spif_update_clk(sunxi_spif_t *spif, uint32_t speed_hz);
 
 /** @brief Apply a subset of the SPIF runtime configuration. */
 int sunxi_spif_set_config(sunxi_spif_t *spif, const struct spif_cfg *cfg);
+
+/** @brief Execute one SPI operation synchronously. */
+int sunxi_spif_exec_op(sunxi_spif_t *spif, const struct spi_mem_op *op);
 
 #ifdef __cplusplus
 }

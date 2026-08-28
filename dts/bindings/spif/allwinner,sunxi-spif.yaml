@@ -25,9 +25,9 @@ properties:
   spif-tx-bus-width:
     type: uint32
     enum: [1, 4, 8]
-  dtr_mode_enabled:
+  dtr-enable:
     type: uint32
-  io_mode_enabled:
+  io-mode-enable:
     type: uint32
   pinctrl-names:
     type: string

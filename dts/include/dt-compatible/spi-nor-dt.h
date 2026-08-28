@@ -36,7 +36,8 @@ static inline __attribute__((always_inline)) int spi_nor_dt_read_config(spi_nor_
 	config.spi = spi;
 	*nor = config;
 	SYTERKIT_DT_TRACE_NODE("spi-nor", node);
-	SYTERKIT_DT_TRACE("spi-nor config spi=%p chip_select=%u max_frequency=%u\n", (void *)nor->spi, nor->chip_select, nor->max_frequency);
+	SYTERKIT_DT_TRACE("spi-nor config spi=%p chip_select=%u max_frequency=%u\n", (void *)nor->spi,
+		nor->chip_select, nor->max_frequency);
 	return DRIVER_OK;
 }
 
@@ -51,5 +52,4 @@ static inline __attribute__((always_inline)) int spi_nor_dt_read_alias(spi_nor_t
 		return DRIVER_ERROR_INVALID;
 	return spi_nor_dt_read_config(nor, node, spi);
 }
-
 #endif /* __DT_COMPATIBLE_SPI_NOR_DT_H__ */
