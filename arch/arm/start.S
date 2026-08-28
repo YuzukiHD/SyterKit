@@ -61,7 +61,7 @@ _start:
 	.align 5
 _vector:
 	b reset
-#ifdef CONFIG_ARCH_MINSTACK
+#ifndef CONFIG_ARCH_EXCEPTION
 	ldr pc, _unhandled_exception
 	ldr pc, _unhandled_exception
 	ldr pc, _unhandled_exception
@@ -120,7 +120,7 @@ reset:
 
 	bl neon_enable
 
-#ifndef CONFIG_ARCH_MINSTACK
+#ifdef CONFIG_ARCH_EXCEPTION
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_UND_MODE
@@ -187,7 +187,7 @@ clear_bss:
 	blo 1b
 2:	bx lr
 
-#ifdef CONFIG_ARCH_MINSTACK
+#ifndef CONFIG_ARCH_EXCEPTION
 	.align 5
 unhandled_exception:
 	wfi

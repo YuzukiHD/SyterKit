@@ -15,10 +15,10 @@ PHDRS
 	data PT_LOAD FLAGS(6);
 }
 
-#ifdef CONFIG_ARCH_MINSTACK
-#define IRQ_STACK_SIZE 0
-#else
+#ifdef CONFIG_ARCH_EXCEPTION
 #define IRQ_STACK_SIZE 0x100
+#else
+#define IRQ_STACK_SIZE 0
 #endif
 
 SECTIONS

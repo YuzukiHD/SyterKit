@@ -14,8 +14,12 @@ _start:
 
 	la sp, __stack_srv_end
 
+#ifndef CONFIG_ARCH_EXCEPTION
+	la a0, unhandled_exception
+#else
 	la a0, irq_handler
 	ori a0, a0, 3
+#endif
 	csrw mtvec, a0
 	jal clear_bss
 
@@ -27,7 +31,7 @@ _start:
 	csrs mxstatus, t0
 	fence.i
 
-#ifdef CONFIG_ARCH_MTVT
+#if defined(CONFIG_ARCH_EXCEPTION) && defined(CONFIG_ARCH_MTVT)
 	la a0, vectors
 	csrw mtvt, a0
 #endif
@@ -60,6 +64,7 @@ clear_bss:
 	bltu t0, t1, 1b
 2:	ret
 
+#ifdef CONFIG_ARCH_EXCEPTION
 	.balign 64
 	.globl irq_handler
 	.type irq_handler, @function
@@ -77,3 +82,11 @@ vectors:
 	.word irq_handler
 	.endr
 	.size vectors, . - vectors
+#else
+	.balign 64
+	.globl unhandled_exception
+	.type unhandled_exception, @function
+unhandled_exception:
+	wfi
+	j unhandled_exception
+#endif
