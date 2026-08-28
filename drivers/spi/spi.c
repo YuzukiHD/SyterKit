@@ -540,7 +540,8 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t m
 clk_out:
 	// Print debug information about clock divider and actual SPI frequency
 	printk_debug("SPI: clock div=%u \n", div);
-	printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000, mclk / 1000000);
+	printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000,
+		mclk / 1000000);
 
 	return freq;
 }
@@ -581,7 +582,8 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi)
 	spi->rx_dma.data_block_size = 1 * 32 / 8; // Data block size is 32 bits (4 bytes).
 
 	// Configure the source request line for this SPI controller.
-	spi->rx_dma.channel_cfg.src_drq_type = spi->dma_rx_drq != 0U ? spi->dma_rx_drq : (uint8_t)(DMAC_CFG_TYPE_SPI0 + spi->id);
+	spi->rx_dma.channel_cfg.src_drq_type = spi->dma_rx_drq != 0U ? spi->dma_rx_drq :
+								       (uint8_t)(DMAC_CFG_TYPE_SPI0 + spi->id);
 	spi->rx_dma.channel_cfg.src_addr_mode = DMAC_CFG_SRC_ADDR_TYPE_IO_MODE; // Source address is I/O mode.
 	spi->rx_dma.channel_cfg.src_burst_length = DMAC_CFG_SRC_8_BURST; // 8-byte burst length for source.
 	spi->rx_dma.channel_cfg.src_data_width = DMAC_CFG_SRC_DATA_WIDTH_32BIT; // Source data width is 32 bits.
@@ -589,7 +591,8 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi)
 
 	// Configure destination (DRAM) settings for DMA.
 	spi->rx_dma.channel_cfg.dst_drq_type = DMAC_CFG_TYPE_DRAM; // Destination is DRAM.
-	spi->rx_dma.channel_cfg.dst_addr_mode = DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE; // Destination address is linear mode.
+	spi->rx_dma.channel_cfg.dst_addr_mode =
+		DMAC_CFG_DEST_ADDR_TYPE_LINEAR_MODE; // Destination address is linear mode.
 	spi->rx_dma.channel_cfg.dst_burst_length = DMAC_CFG_DEST_8_BURST; // 8-byte burst length for destination.
 	spi->rx_dma.channel_cfg.dst_data_width = DMAC_CFG_DEST_DATA_WIDTH_32BIT; // Destination data width is 32 bits.
 	spi->rx_dma.channel_cfg.reserved1 = 0;
@@ -710,7 +713,8 @@ void __attribute__((weak)) sunxi_spi_clk_init(sunxi_spi_t *spi)
 		m = div;
 	}
 
-	printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n", spi->id, source_clk, readl(spi->spi_clk.spi_clock_cfg_base), n, m);
+	printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n", spi->id, source_clk,
+		readl(spi->spi_clk.spi_clock_cfg_base), n, m);
 
 	/* set m factor, factor_m = m -1 */
 	m -= 1;
@@ -877,7 +881,8 @@ static inline __attribute__((always_inline)) bool sunxi_spi_gpio_available(gpio_
 
 static inline __attribute__((always_inline)) bool sunxi_spi_clock_managed(const sunxi_spi_t *spi)
 {
-	return spi->spi_clk.spi_clock_cfg_base != 0U && spi->parent_clk_reg.parent_clk != 0U && spi->parent_clk_reg.gate_reg_base != 0U && spi->parent_clk_reg.rst_reg_base != 0U;
+	return spi->spi_clk.spi_clock_cfg_base != 0U && spi->parent_clk_reg.parent_clk != 0U &&
+	       spi->parent_clk_reg.gate_reg_base != 0U && spi->parent_clk_reg.rst_reg_base != 0U;
 }
 
 /**
