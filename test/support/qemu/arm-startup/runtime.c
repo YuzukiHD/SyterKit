@@ -55,7 +55,7 @@ int main(void)
 	check(startup_svc_sp == address(__stack_srv_end), "svc-stack");
 	check((startup_svc_sp & 0xfU) == 0U, "stack-alignment");
 
-#ifndef CONFIG_ARCH_MINSTACK
+#ifdef CONFIG_ARCH_EXCEPTION
 	check(startup_und_sp == address(__stack_und_end), "und-stack");
 	check(startup_abt_sp == address(__stack_abt_end), "abt-stack");
 	check(startup_irq_sp == address(__stack_irq_end), "irq-stack");
