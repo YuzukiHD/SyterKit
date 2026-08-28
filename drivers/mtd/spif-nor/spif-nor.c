@@ -1102,10 +1102,47 @@ static int spif_nor_program_training_pattern(spif_nor_t *nor, struct spif_nor_tr
 	return DRIVER_OK;
 }
 
+struct spif_nor_training_window {
+	uint32_t start;
+	uint32_t length;
+};
+
+static void spif_nor_print_training_chart(
+	const char samples[SPIF_NOR_TRAINING_MODES][SPIF_NOR_TRAINING_DELAYS + 1U],
+	const struct spif_nor_training_window windows[SPIF_NOR_TRAINING_MODES], uint32_t best_mode,
+	uint32_t best_delay, uint32_t best_length)
+{
+	char selected[SPIF_NOR_TRAINING_DELAYS + 1U];
+	uint32_t mode;
+
+	printk_info("SPIF NOR: training diagram (O=OK, x=FAIL)\n");
+	printk_info("SPIF NOR: vertical axis: sample mode; horizontal axis: delay\n");
+	printk_info("SPIF NOR: delay    0         1         2         3         4         5         6\n");
+	printk_info("SPIF NOR:          0123456789012345678901234567890123456789012345678901234567890123\n");
+	printk_info("SPIF NOR:         +----------------------------------------------------------------+\n");
+	for (mode = 0U; mode < SPIF_NOR_TRAINING_MODES; ++mode) {
+		if (windows[mode].length == 0U)
+			printk_info("SPIF NOR: mode=%u  |%s| window=none\n", mode, samples[mode]);
+		else
+			printk_info("SPIF NOR: mode=%u  |%s| window=%u-%u (%u)\n", mode, samples[mode],
+				windows[mode].start, windows[mode].start + windows[mode].length - 1U,
+				windows[mode].length);
+	}
+	printk_info("SPIF NOR:         +----------------------------------------------------------------+\n");
+	if (best_length == 0U)
+		return;
+	memset(selected, ' ', SPIF_NOR_TRAINING_DELAYS);
+	selected[best_delay] = '^';
+	selected[SPIF_NOR_TRAINING_DELAYS] = '\0';
+	printk_info("SPIF NOR: select  |%s| mode=%u delay=%u\n", selected, best_mode, best_delay);
+}
+
 static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_training *training, bool dtr,
 	uint32_t *best_mode, uint32_t *best_delay, uint32_t *best_length)
 {
 	const spi_nor_info_t *info = &nor->info;
+	char samples[SPIF_NOR_TRAINING_MODES][SPIF_NOR_TRAINING_DELAYS + 1U];
+	struct spif_nor_training_window windows[SPIF_NOR_TRAINING_MODES] = { 0 };
 	uint32_t mode;
 
 	if (spif_nor_set_controller_config(nor, SPIF_CFG_SPEED_HZ | SPIF_CFG_RX_DTR | SPIF_CFG_TX_DTR,
@@ -1126,20 +1163,27 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 					 delay * SPIF_NOR_TRAINING_PAGE_SIZE, training->result,
 					 SPIF_NOR_TRAINING_PAGE_SIZE) == 0 &&
 				 memcmp(training->pattern, training->result, SPIF_NOR_TRAINING_PAGE_SIZE) == 0;
+			samples[mode][delay] = passed ? 'O' : 'x';
 			if (!passed) {
 				run_length = 0U;
-				continue;
-			}
-			if (run_length == 0U)
-				run_start = delay;
-			++run_length;
-			if (run_length > *best_length) {
-				*best_length = run_length;
-				*best_mode = mode;
-				*best_delay = (run_start + delay) / 2U;
+			} else {
+				if (run_length == 0U)
+					run_start = delay;
+				++run_length;
+				if (run_length > *best_length) {
+					*best_length = run_length;
+					*best_mode = mode;
+					*best_delay = (run_start + delay) / 2U;
+				}
+				if (run_length > windows[mode].length) {
+					windows[mode].length = run_length;
+					windows[mode].start = run_start;
+				}
 			}
 		}
+		samples[mode][SPIF_NOR_TRAINING_DELAYS] = '\0';
 	}
+	spif_nor_print_training_chart(samples, windows, *best_mode, *best_delay, *best_length);
 	return *best_length == 0U ? DRIVER_ERROR_INVALID : DRIVER_OK;
 }
 
