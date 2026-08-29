@@ -13,8 +13,8 @@
  * SoCs with a different divider or DDR clock relationship override these
  * weak symbols in their host file.
  */
-int __attribute__((weak, section(".text.mmc_generic_set_mclk")))
-sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
+int __attribute__((weak, section(".text.mmc_generic_set_mclk"))) sunxi_sdhci_set_mclk(
+	sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 {
 	uint32_t reg_val;
 	uint32_t source;
@@ -54,18 +54,16 @@ sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 		clk.factor_m = div;
 	}
 
-	reg_val = BIT(31) | (source << 24) |
-		((uint32_t)clk.factor_n << clk.reg_factor_n_offset) |
-		((uint32_t)(clk.factor_m - 1U) << clk.reg_factor_m_offset);
+	reg_val = BIT(31) | (source << 24) | ((uint32_t)clk.factor_n << clk.reg_factor_n_offset) |
+		  ((uint32_t)(clk.factor_m - 1U) << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
-	pr_trace("sdhci%u clk want %uHz parent %uHz, div=%u, n=%u, m=%u\n",
-		 sdhci->id, clk_hz, source_rate, div, clk.factor_n, clk.factor_m);
+	pr_trace("sdhci%u clk want %uHz parent %uHz, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, source_rate, div,
+		clk.factor_n, clk.factor_m);
 	return 0;
 }
 
-uint32_t __attribute__((weak, section(".text.mmc_generic_get_mclk")))
-sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
+uint32_t __attribute__((weak, section(".text.mmc_generic_get_mclk"))) sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 {
 	uint32_t reg_val;
 	uint32_t source;
@@ -88,4 +86,16 @@ sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 	}
 
 	return source_rate / (clk.factor_n + 1U) / (clk.factor_m + 1U);
+}
+
+/*
+ * Default I/O-voltage implementation: the common Allwinner MMC host has no
+ * programmable I/O rail, so this is a no-op.  SoCs with a power-mode
+ * selector (e.g. Sun55 GPIO v2-pow) override this weak symbol in their
+ * host file.
+ */
+int __attribute__((weak, section(".text.mmc_generic_set_io_voltage"))) sunxi_sdhci_set_io_voltage(
+	sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio, uint32_t voltage_uv)
+{
+	return 0;
 }

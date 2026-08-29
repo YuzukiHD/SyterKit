@@ -124,8 +124,8 @@ typedef struct sunxi_sdhci {
 	uint32_t dma_des_addr;
 	uint32_t dma_des_size;
 	sunxi_sdhci_type_t sdhci_mmc_type;
-	/* The board keeps the MMC I/O rail at 1.8 V for HS200/HS400. */
-	bool io_is_1v8;
+	/* Requested GPIO withstand voltage for the MMC I/O bank, in microvolts. */
+	uint32_t io_voltage_uv;
 
 	/* Pinctrl info */
 	sunxi_sdhci_pinctrl_t pinctrl;
@@ -227,6 +227,21 @@ extern int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz);
  * @return Current clock frequency in Hertz.
  */
 extern uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci);
+
+/**
+ * @brief Program the MMC I/O bank withstand voltage.
+ *
+ * The host layer owns the physical I/O rail; SoCs with a programmable
+ * power-mode selector (e.g. Sun55 GPIO v2-pow) override the generic
+ * no-op implementation in their host file.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param gpio GPIO pin identifying the physical I/O bank.
+ * @param voltage_uv Requested withstand voltage in microvolts.
+ * @return 0 on success, or a negative value for an unsupported bank/value.
+ */
+extern int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio,
+				      uint32_t voltage_uv);
 
 #ifdef __cplusplus
 }

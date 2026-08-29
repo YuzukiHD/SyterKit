@@ -76,6 +76,7 @@
 			allwinner,mmc-id = <0>;
 			bus-width = <4>;
 			max-frequency = <50000000>;
+			allwinner,io-voltage = <3300>;
 			memory-region = <&mmc0_dma>;
 			allwinner,clock-gate = <0x0200184c 0>;
 			allwinner,reset = <0x0200184c 16>;
@@ -98,7 +99,6 @@
 			bus-width = <8>;
 			max-frequency = <5200000>;
 			non-removable;
-			allwinner,io-1v8;
 			memory-region = <&mmc2_dma>;
 			allwinner,clock-gate = <0x0200184c 2>;
 			allwinner,reset = <0x0200184c 18>;
