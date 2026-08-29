@@ -1,3 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# SPIF NOR is built with the SPIF controller from the parent MTD Makefile.
+config DRIVER_MTD_SPIF_NOR_SHOW_TRAINING
+	bool "Show sampling training chart"
+	depends on DRIVER_MTD_SPIF_NOR
+	help
+	  Print the SPIF NOR sampling training result as a mode-by-delay chart.
+	  Disable this option to remove the chart buffers and logging code.
