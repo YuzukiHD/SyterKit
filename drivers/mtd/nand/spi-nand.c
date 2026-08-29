@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "spi-nand: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -255,7 +256,7 @@ static int spi_nand_info(spi_nand_t *nand)
 		}
 	}
 
-	pr_err("SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
+	pr_err("unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
 
 	return -1; /* Return failure */
 }
@@ -348,7 +349,7 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi)
 			break;
 		timeout--;
 		if (!timeout) {
-			pr_warn("SPI NAND: wait busy timeout\n");
+			pr_warn("NAND: wait busy timeout\n");
 			return false;
 		}
 	} while ((rx[0] & 0x1) == 0x1); /* Check SR3 Busy bit */
@@ -405,19 +406,19 @@ int spi_nand_detect(spi_nand_t *nand)
 		if (info->id.mfr == (uint8_t)SPI_NAND_MFR_GIGADEVICE || info->id.mfr == (uint8_t)SPI_NAND_MFR_FORESEE ||
 			info->id.mfr == (uint8_t)SPI_NAND_MFR_XTX) {
 			if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
-				pr_debug("SPI-NAND: enable Quad mode\n");
+				pr_debug("enable Quad mode\n");
 				val |= (1 << 0);
 				spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
 				spi_nand_wait_while_busy(spi);
 			}
 		}
 
-		pr_info("SPI-NAND: %s detected\n", info->name);
+		pr_info("%s detected\n", info->name);
 
 		return 0; /* Return success */
 	}
 
-	pr_err("SPI-NAND: flash not found\n");
+	pr_err("flash not found\n");
 	return -1; /* Return failure */
 }
 

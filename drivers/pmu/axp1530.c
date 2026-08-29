@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "axp1530: " fmt
 
 /**
  * @file axp1530.c
@@ -71,31 +72,31 @@ int pmu_axp1530_init(axp_pmu_t *pmu)
 	int ret;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530) || !pmu->i2c->status) {
-		pr_warn("PMU: I2C not init\n");
+		pr_warn("not init\n");
 		return -1;
 	}
 
 	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP1530_VERSION, &axp_val))) {
-		pr_warn("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
+		pr_warn("Probe target device AXP1530 failed. ret = %d\n", ret);
 		return -1;
 	}
 
 	axp_val &= 0xCF;
 	switch (axp_val) {
 	case AXP1530_CHIP_ID:
-		pr_info("PMU: Found AXP1530 PMU\n");
+		pr_info("Found AXP1530 PMU\n");
 		break;
 	case AXP313A_CHIP_ID:
-		pr_info("PMU: Found AXP313A PMU\n");
+		pr_info("Found AXP313A PMU\n");
 		break;
 	case AXP313B_CHIP_ID:
-		pr_info("PMU: Found AXP313B PMU\n");
+		pr_info("Found AXP313B PMU\n");
 		break;
 	case AXP323_CHIP_ID:
-		pr_info("PMU: Found AXP323 PMU\n");
+		pr_info("Found AXP323 PMU\n");
 		break;
 	default:
-		pr_info("PMU: Cannot found match PMU\n");
+		pr_info("Cannot found match PMU\n");
 		return -1;
 	}
 
@@ -126,7 +127,7 @@ int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu)
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP1530))
 		return -1;
 	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP1530_VERSION, &axp_val))) {
-		pr_warn("PMU: Probe target device AXP1530 failed. ret = %d\n", ret);
+		pr_warn("Probe target device AXP1530 failed. ret = %d\n", ret);
 		return -1;
 	}
 
@@ -135,7 +136,7 @@ int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu)
 	case AXP323_CHIP_ID: /* Only AXP323 Support Dual phase */
 		break;
 	default:
-		pr_info("PMU: PMU not support dual phase\n");
+		pr_info("not support dual phase\n");
 		return -1;
 	}
 
@@ -180,6 +181,6 @@ int pmu_axp1530_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp1530_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("PMU: AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp_ctrl_tbl[i].name));
+		pr_debug("AXP1530 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }

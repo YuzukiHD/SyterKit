@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "psram-sun252iw2: " fmt
 
 /**
  * @file psram-sun252iw2.c

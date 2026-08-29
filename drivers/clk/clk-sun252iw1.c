@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "clk-sun252iw1: " fmt
 
 /**
  * @file clk-sun252iw1.c
@@ -276,7 +277,7 @@ void sunxi_clk_dump(void)
 	/* PLL CPU */
 	reg_val = readl(SUNXI_CCU_BASE + CPU_CLK_REG);
 	cpu_clk_src = (reg_val & CPU_CLK_REG_CPU_CLK_SEL_CLEAR_MASK) >> CPU_CLK_REG_CPU_CLK_SEL_OFFSET;
-	pr_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
+	pr_debug("CPU CLK_reg=0x%08x\n", reg_val);
 
 	switch (cpu_clk_src) {
 	case CPU_CLK_REG_CPU_CLK_SEL_HOSC:
@@ -322,5 +323,5 @@ void sunxi_clk_dump(void)
 	pllm = (readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_M1_CLEAR_MASK) >> PLL_CPU_CTRL_REG_PLL_M1_OFFSET;
 	clk_freq = 24 * (pllm + 1) * plln / p1;
 
-	pr_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
+	pr_debug("CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
 }

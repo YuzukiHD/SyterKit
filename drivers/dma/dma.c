@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "dma: " fmt
 
 /**
  * @file
@@ -172,7 +173,7 @@ uintptr_t sunxi_dma_request(sunxi_dma_t *dma, uint32_t dmatype)
 		if (dma->channel_source[i].used == 0) {
 			dma->channel_source[i].used = 1;
 			dma->channel_source[i].channel_count = i;
-			pr_debug("DMA: provide channel %u\n", i);
+			pr_debug("provide channel %u\n", i);
 			return (uintptr_t)&dma->channel_source[i];
 		}
 	}
@@ -357,7 +358,7 @@ int sunxi_dma_install_int(uintptr_t dma_fd, void *p)
 		dma_source->dma_func.m_data = p;
 		dma_source->dma_func.registered = true;
 	} else {
-		pr_err("DMA: %p int is used already, you have to free it first\n", (void *)dma_fd);
+		pr_err("%p int is used already, you have to free it first\n", (void *)dma_fd);
 		return -1;
 	}
 
@@ -384,7 +385,7 @@ int sunxi_dma_enable_int(uintptr_t dma_fd)
 	if (channel_count < 8) {
 		// Check if interrupt is already enabled
 		if ((dma_reg->irq_en0) & (DMA_PKG_END_INT << channel_count * 4)) {
-			pr_debug("DMA: %p int is available already\n", (void *)dma_fd);
+			pr_debug("%p int is available already\n", (void *)dma_fd);
 			return 0;
 		}
 		// Enable package end interrupt for this channel
@@ -392,7 +393,7 @@ int sunxi_dma_enable_int(uintptr_t dma_fd)
 	} else {
 		// Check if interrupt is already enabled
 		if ((dma_reg->irq_en1) & (DMA_PKG_END_INT << (channel_count - 8) * 4)) {
-			pr_debug("DMA: %p int is available already\n", (void *)dma_fd);
+			pr_debug("%p int is available already\n", (void *)dma_fd);
 			return 0;
 		}
 		// Enable package end interrupt for this channel
@@ -425,7 +426,7 @@ int sunxi_dma_disable_int(uintptr_t dma_fd)
 	if (channel_count < 8) {
 		// Check if interrupt is not enabled
 		if (!((dma_reg->irq_en0) & (DMA_PKG_END_INT << channel_count * 4))) {
-			pr_debug("DMA: %p int is not used yet\n", (void *)dma_fd);
+			pr_debug("%p int is not used yet\n", (void *)dma_fd);
 			return 0;
 		}
 		// Disable package end interrupt for this channel
@@ -433,7 +434,7 @@ int sunxi_dma_disable_int(uintptr_t dma_fd)
 	} else {
 		// Check if interrupt is not enabled
 		if (!((dma_reg->irq_en1) & (DMA_PKG_END_INT << (channel_count - 8) * 4))) {
-			pr_debug("DMA: %p int is not used yet\n", (void *)dma_fd);
+			pr_debug("%p int is not used yet\n", (void *)dma_fd);
 			return 0;
 		}
 		// Disable package end interrupt for this channel
@@ -475,7 +476,7 @@ int sunxi_dma_free_int(uintptr_t dma_fd)
 		dma_source->dma_func.m_data = NULL;
 		dma_source->dma_func.registered = false;
 	} else {
-		pr_debug("DMA: %p int is free, you do not need to free it again\n", (void *)dma_fd);
+		pr_debug("%p int is free, you do not need to free it again\n", (void *)dma_fd);
 		return -1;
 	}
 
@@ -508,7 +509,7 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uin
 
 	// Align length to 4-byte boundary
 	len = ALIGN(len, 4);
-	pr_debug("DMA: test %p ====> %p, len %uKB \n", src_addr, dst_addr, (len / 1024));
+	pr_debug("test %p ====> %p, len %uKB \n", src_addr, dst_addr, (len / 1024));
 
 	/* Configure DMA settings */
 	dma_set.loop_mode = 0;
@@ -531,7 +532,7 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uin
 	// Request a DMA channel
 	dma_fd = sunxi_dma_request(dma, 0);
 	if (!dma_fd) {
-		pr_err("DMA: can't request dma\n");
+		pr_err("can't request dma\n");
 		return -1;
 	}
 
@@ -560,14 +561,14 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uin
 
 	if (st) {
 		// Transfer timed out
-		pr_err("DMA: test timeout!\n");
+		pr_err("test timeout!\n");
 		sunxi_dma_stop(dma_fd);
 		sunxi_dma_release(dma_fd);
 		return -2;
 	} else {
 		// Verify data integrity
 		valid = 1;
-		pr_debug("DMA: test done in %lums\n", (time_ms() - timeout));
+		pr_debug("test done in %lums\n", (time_ms() - timeout));
 
 		for (i = 0; i < (len / 4); i += 4) {
 			if (dst_addr[i] != i || dst_addr[i + 1] != i + 1 || dst_addr[i + 2] != i + 2 || dst_addr[i + 3] != i + 3) {
@@ -577,9 +578,9 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uin
 		}
 
 		if (valid)
-			pr_debug("DMA: test check valid\n");
+			pr_debug("test check valid\n");
 		else
-			pr_err("DMA: test check failed at %u bytes\n", i);
+			pr_err("test check failed at %u bytes\n", i);
 	}
 
 	// Clean up

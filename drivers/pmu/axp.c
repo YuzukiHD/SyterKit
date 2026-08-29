@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "axp: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -130,7 +131,7 @@ int axp_get_vol(axp_pmu_t *pmu, char *name, axp_contrl_info *axp_ctrl_tbl, uint8
 		return -1;
 	}
 
-	pr_trace("PMU: %s reg_val = 0x%x\n", name, reg_value);
+	pr_trace("%s reg_val = 0x%x\n", name, reg_value);
 	reg_value &= p_item->cfg_reg_mask;
 	reg_value >>= p_item->reg_addr_offset;
 	for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {

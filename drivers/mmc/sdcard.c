@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "sdcard: " fmt
 
 #include <barrier.h>
 #include <io.h>
@@ -34,9 +35,9 @@ int sdmmc_init(sdmmc_pdata_t *data, sunxi_sdhci_t *hci)
 	data->hci = hci;
 	data->online = false;
 
-	pr_debug("SMHC: try to init sdmmc device at %s\n", data->hci->name);
+	pr_debug("try to init sdmmc device at %s\n", data->hci->name);
 	if (sunxi_mmc_init(data->hci) == 0) {
-		pr_info("SHMC: %s card detected\n", data->hci->sdhci_mmc_type == MMC_TYPE_SD ? "SD" : "MMC");
+		pr_info("%s card detected\n", data->hci->sdhci_mmc_type == MMC_TYPE_SD ? "SD" : "MMC");
 		data->online = true;
 		return 0;
 	}

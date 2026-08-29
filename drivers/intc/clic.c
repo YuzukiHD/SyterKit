@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "clic: " fmt
 
 /**
  * @file clic.c
@@ -168,7 +169,7 @@ int sunxi_clic_init(sunxi_clic_t *clic)
 	clic->initialized = false;
 	info = readl(clic->base + CLIC_INFO_REG_OFF);
 	hardware_irq_count = (info & IRQ_CNT_MASK) >> IRQ_CNT_SHIFT;
-	pr_trace("CLIC: hardware sources %u, devicetree sources %u\n", hardware_irq_count, clic->irq_count);
+	pr_trace("hardware sources %u, devicetree sources %u\n", hardware_irq_count, clic->irq_count);
 	if (hardware_irq_count != clic->irq_count)
 		return DRIVER_ERROR_INVALID;
 
@@ -252,7 +253,7 @@ void irq_free_handler(int irq)
 int irq_enable(int irq)
 {
 	if (!sunxi_clic_irq_valid(&sunxi_clic_controller, irq)) {
-		pr_err("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
+		pr_err("invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 
@@ -268,7 +269,7 @@ int irq_enable(int irq)
 int irq_disable(int irq)
 {
 	if (!sunxi_clic_irq_valid(&sunxi_clic_controller, irq)) {
-		pr_err("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
+		pr_err("invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 

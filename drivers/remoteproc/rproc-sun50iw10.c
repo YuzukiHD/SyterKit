@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "rproc-sun50iw10: " fmt
 
 /**
  * @file rproc-sun50iw10.c
@@ -103,7 +104,7 @@ static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc, const voi
 	if (remoteproc->rtc == NULL)
 		return DRIVER_ERROR_INVALID;
 	cold_start = rtc_read_data(remoteproc->rtc, SUN50IW10_RTC_DATA_COLD_START);
-	pr_debug("AR100: soc-id=%u cold-start=%u\n", id, cold_start);
+	pr_debug("soc-id=%u cold-start=%u\n", id, cold_start);
 	if (!sun50iw10_ar100_affected(id))
 		return DRIVER_OK;
 	if (cold_start != 0U) {

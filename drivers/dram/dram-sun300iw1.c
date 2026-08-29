@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "dram-sun300iw1: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -591,7 +592,7 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 		pll_clk = (para->dram_tpr9 << 1);
 
 	hosc_freq = (para->dram_tpr10 >> 16) & 0xff;
-	pr_debug("DRAM set hosc_freq = 0x%x\n", hosc_freq);
+	pr_debug("set hosc_freq = 0x%x\n", hosc_freq);
 	n = pll_clk * m0 * m1 / hosc_freq;
 	if (n < 12) {
 		n = n * 4;
@@ -715,7 +716,7 @@ static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para)
 
 	/* Set PLL for DDR clock */
 	reg_val = ccu_set_pll_ddr_clk(dram, 0, para);
-	pr_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
+	pr_debug("FREQ = %dMHz\n", reg_val);
 	para->dram_clk = reg_val / 2; // Store the actual DRAM clock frequency
 
 	/* Disable all DRAM masters (if any) */
@@ -1218,20 +1219,20 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, i
 		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			pr_err("DRAM: simple test FAIL\n");
+			pr_err("simple test FAIL\n");
 			pr_err("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			pr_err("DRAM: simple test FAIL\n");
+			pr_err("simple test FAIL\n");
 			pr_err("%x != %x at address %p\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
 
-	pr_debug("DRAM: simple test OK\n");
+	pr_debug("simple test OK\n");
 	return 0;
 }
 
@@ -1347,7 +1348,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 
 	// init core
 	if (mctl_core_init(dram, para) == 0) {
-		pr_debug("DRAM initial error : 0!\n");
+		pr_debug("initial error : 0!\n");
 		return 0;
 	}
 
@@ -1633,17 +1634,17 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 {
 	uint32_t rc, mem_size_mb;
 
-	pr_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.1");
-	pr_debug("DRAM CLK = %d MHz\n", para->dram_clk);
-	pr_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	pr_debug("BOOT DRIVE INFO: %s\n", "V0.1");
+	pr_debug("= %d MHz\n", para->dram_clk);
+	pr_debug("Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
-		pr_debug("DRAMC read ODT off\n");
+		pr_debug("read ODT off\n");
 	else
-		pr_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		pr_debug("ZQ value: 0x%x\n", para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
-		pr_debug("DRAM only have internal ZQ\n");
+		pr_debug("only have internal ZQ\n");
 		setbits_le32((dram->registers.sysctrl.base + 0x160U), (1 << 8));
 		writel(0, (dram->registers.sysctrl.base + 0x168U));
 		udelay(10);
@@ -1669,13 +1670,13 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	/* report ODT */
 	rc = para->dram_mr1;
 	if ((rc & 0x44) == 0)
-		pr_debug("DRAM ODT off\n");
+		pr_debug("ODT off\n");
 	else
-		pr_debug("DRAM ODT value: 0x%08x\n", rc);
+		pr_debug("ODT value: 0x%08x\n", rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(dram, para) == 0) {
-		pr_debug("DRAM initialisation error: 1\n");
+		pr_debug("initialisation error: 1\n");
 		return 0;
 	}
 
@@ -1687,7 +1688,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		rc = (rc >> 16) & ~(1 << 15);
 	} else {
 		rc = get_dram_size(dram);
-		pr_info("DRAM: size = %uMB\n", rc);
+		pr_info("size = %uMB\n", rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;

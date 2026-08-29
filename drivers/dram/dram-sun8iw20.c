@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "dram-sun8iw20: " fmt
 
 /**
  * @file dram-sun8iw20.c
@@ -786,7 +787,7 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 		return;
 
 	fuse = (readl(dram->registers.sid.base + SYS_EFUSE_REG) & 0xf00) >> 8;
-	pr_debug("DDR efuse: 0x%x\n", fuse);
+	pr_debug("efuse: 0x%x\n", fuse);
 
 	mask = (readl(dram->registers.sid.base + SYS_CHIP_ID) & 0xffff);
 	pr_debug("Chip MASK = 0x%08x\n", mask);
@@ -799,44 +800,44 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 		}
 		if (fuse == 15)
 			return;
-		pr_debug("DDR Using MAP: 6 \n");
+		pr_debug("Using MAP: 6 \n");
 		cfg = ac_remapping_tables[6];
 	} else {
 		if (mask == 0x7200) {
-			pr_debug("DDR Using MAP: 0 \n");
+			pr_debug("Using MAP: 0 \n");
 			cfg = ac_remapping_tables[0];
 		} else if (para->dram_tpr13 & 0xc0000) {
-			pr_debug("DDR Using MAP: 7 \n");
+			pr_debug("Using MAP: 7 \n");
 			cfg = ac_remapping_tables[7];
 		} else if (para->dram_tpr13 & 0x0c000) {
-			pr_debug("DDR Using MAP: 10 (86Box)\n");
+			pr_debug("Using MAP: 10 (86Box)\n");
 			cfg = ac_remapping_tables[10];
 		} else {
 			switch (fuse) {
 			case 8:
-				pr_debug("DDR Using MAP: 2 \n");
+				pr_debug("Using MAP: 2 \n");
 				cfg = ac_remapping_tables[2];
 				break;
 			case 9:
-				pr_debug("DDR Using MAP: 3 \n");
+				pr_debug("Using MAP: 3 \n");
 				cfg = ac_remapping_tables[3];
 				break;
 			case 10:
-				pr_debug("DDR Using MAP: 5 \n");
+				pr_debug("Using MAP: 5 \n");
 				cfg = ac_remapping_tables[5];
 				break;
 			case 11:
-				pr_debug("DDR Using MAP: 4 \n");
+				pr_debug("Using MAP: 4 \n");
 				cfg = ac_remapping_tables[4];
 				break;
 			default:
 			case 12:
-				pr_debug("DDR Using MAP: 1 \n");
+				pr_debug("Using MAP: 1 \n");
 				cfg = ac_remapping_tables[1];
 				break;
 			case 13:
 			case 14:
-				pr_debug("DDR Using MAP: 0 \n");
+				pr_debug("Using MAP: 0 \n");
 				cfg = ac_remapping_tables[0];
 				break;
 			}
@@ -1181,20 +1182,20 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, i
 		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			pr_err("DRAM: simple test FAIL\n");
+			pr_err("simple test FAIL\n");
 			pr_err("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			pr_err("DRAM: simple test FAIL\n");
+			pr_err("simple test FAIL\n");
 			pr_err("%x != %x at address %p\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
 
-	pr_debug("DRAM: simple test OK\n");
+	pr_debug("simple test OK\n");
 	return 0;
 }
 
@@ -1287,7 +1288,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 
 	// init core
 	if (mctl_core_init(dram, para) == 0) {
-		pr_debug("DRAM initial error : 0!\n");
+		pr_debug("initial error : 0!\n");
 		return 0;
 	}
 
@@ -1523,17 +1524,17 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 {
 	uint32_t rc, mem_size_mb;
 
-	pr_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
-	pr_debug("DRAM CLK = %d MHz\n", para->dram_clk);
-	pr_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	pr_debug("BOOT DRIVE INFO: %s\n", "V0.24");
+	pr_debug("= %d MHz\n", para->dram_clk);
+	pr_debug("Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
-		pr_debug("DRAMC read ODT off\n");
+		pr_debug("read ODT off\n");
 	else
-		pr_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		pr_debug("ZQ value: 0x%x\n", para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
-		pr_debug("DRAM only have internal ZQ\n");
+		pr_debug("only have internal ZQ\n");
 		setbits_le32((dram->registers.sysctrl.base + ZQ_CAL_CTRL_REG), (1 << 8));
 		writel(0, (dram->registers.sysctrl.base + ZQ_RES_CTRL_REG));
 		udelay(10);
@@ -1561,13 +1562,13 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	/* report ODT */
 	rc = para->dram_mr1;
 	if ((rc & 0x44) == 0)
-		pr_debug("DRAM ODT off\n");
+		pr_debug("ODT off\n");
 	else
-		pr_debug("DRAM ODT value: 0x%08x\n", rc);
+		pr_debug("ODT value: 0x%08x\n", rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(dram, para) == 0) {
-		pr_debug("DRAM initialisation error: 1\n");
+		pr_debug("initialisation error: 1\n");
 		return 0;
 	}
 
@@ -1579,7 +1580,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		rc = (rc >> 16) & ~(1 << 15);
 	} else {
 		rc = DRAMC_get_dram_size(dram);
-		pr_info("DRAM: size = %uMB\n", rc);
+		pr_info("size = %uMB\n", rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;

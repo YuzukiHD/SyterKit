@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "clk-sun300iw1: " fmt
 
 /**
  * @file clk-sun300iw1.c
@@ -411,12 +412,12 @@ void sunxi_clk_dump(void)
 	reg_val = readl(SUNXI_CCU_AON_BASE + E907_CLK_REG);
 	m = reg_val & E907_CLK_REG_E907_CLK_DIV_CLEAR_MASK;
 
-	pr_debug("CLK: CPU FREQ = %d MHz\n", clock / (m + 1));
+	pr_debug("CPU FREQ = %d MHz\n", clock / (m + 1));
 
 	reg_val = read32(SUNXI_CCU_AON_BASE + PLL_PERI_CTRL0_REG);
 	n = (reg_val & PLL_PERI_CTRL0_REG_PLL_N_CLEAR_MASK) >> PLL_PERI_CTRL0_REG_PLL_N_OFFSET;
 	m = reg_val & PLL_PERI_CTRL0_REG_PLL_INPUT_DIV_CLEAR_MASK;
-	pr_debug("CLK: PERI FREQ = %lu MHz\r\n", (sun300iw1_clk_get_hosc_rate() * 2 * (n + 1)) / (m + 1));
+	pr_debug("PERI FREQ = %lu MHz\r\n", (sun300iw1_clk_get_hosc_rate() * 2 * (n + 1)) / (m + 1));
 }
 
 /* we got hosc freq in arch/timer.c */

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "spi-nor: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -367,7 +368,7 @@ static int spi_nor_wait_for_busy(spi_nor_t *nor)
 			return DRIVER_OK;
 		timeout--;
 		if (!timeout) {
-			pr_warn("SPI NOR: wait busy timeout\n");
+			pr_warn("NOR: wait busy timeout\n");
 			return DRIVER_ERROR_INVALID;
 		}
 	}
@@ -919,22 +920,22 @@ int spi_nor_detect(spi_nor_t *nor)
 		return -1;
 
 	if (!spi_nor_get_info(nor)) {
-		pr_warn("SPI NOR: Can not find any supported SPI NOR\n");
+		pr_warn("NOR: Can not find any supported SPI NOR\n");
 		return -1;
 	}
 
 	info = &nor->info;
 	if (spi_nor_get_protocol_data_nbits(info->read_proto) == 4U) {
 		if (spi_nor_enable_quad(nor) != 0) {
-			pr_warn("SPI NOR: quad enable failed, using single-bit reads\n");
+			pr_warn("NOR: quad enable failed, using single-bit reads\n");
 			info->read_proto = SNOR_PROTO_1_1_1;
 			info->read_dummy = 0U;
 			info->opcode_read = info->address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
 		}
 	}
 
-	pr_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
-	pr_info("SPI NOR: read_proto=%d read_dummy=%d opcode_read=0x%02x\n", info->read_proto, info->read_dummy,
+	pr_info("NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
+	pr_info("NOR: read_proto=%d read_dummy=%d opcode_read=0x%02x\n", info->read_proto, info->read_dummy,
 		    info->opcode_read);
 
 	return 0;

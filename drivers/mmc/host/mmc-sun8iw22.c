@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "mmc-sun8iw22: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -40,7 +41,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	}
 	sclk_hz = sunxi_sdhci_clk_source_rate(&clk, src);
 	if (sclk_hz == 0U) {
-		pr_debug("SMHC: unsupported clock source %u\n", src);
+		pr_debug("unsupported clock source %u\n", src);
 		return -1;
 	}
 	div = sclk_hz / clk_hz;
@@ -50,7 +51,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	for (n = 1; n <= 32; n++) {
 		for (m = n; m <= 32; m++) {
 			if (n * m == div) {
-				pr_debug("SMHC: div=%d n=%d m=%d\n", div, n, m);
+				pr_debug("div=%d n=%d m=%d\n", div, n, m);
 				clk.factor_n = n - 1;
 				clk.factor_m = m - 1;
 				goto freq_out;
@@ -58,7 +59,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 		}
 	}
 
-	pr_warn("SMHC: wrong clock source, div=%d n = %d m=%d\n", div, n, m);
+	pr_warn("wrong clock source, div=%d n = %d m=%d\n", div, n, m);
 	return -1;
 
 freq_out:
@@ -97,7 +98,7 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 
 	clk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (clk_hz == 0U) {
-		pr_debug("SMHC: unsupported clock source %u\n", source);
+		pr_debug("unsupported clock source %u\n", source);
 		return 0U;
 	}
 

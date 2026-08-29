@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "pcie-phy-sun55iw6: " fmt
 
 /**
  * @file pcie-phy-sun55iw6.c

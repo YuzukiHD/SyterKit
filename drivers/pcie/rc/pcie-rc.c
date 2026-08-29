@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "pcie-rc: " fmt
 
 /**
  * @file pcie-rc.c
@@ -239,7 +240,7 @@ int pcie_rc_start(struct pcie *pcie, uint32_t timeout_us)
 	ret = pcie_controller_wait_link(&pcie->controller, timeout_us);
 	if (ret) {
 		pcie_controller_ltssm(&pcie->controller, false);
-		pr_err("PCIe: link training timeout\n");
+		pr_err("link training timeout\n");
 		return ret;
 	}
 	if (pcie->controller.config.link_gen > 1U) {

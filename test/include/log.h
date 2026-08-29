@@ -19,6 +19,10 @@
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
 #endif
 
+#ifndef pr_fmt
+#define pr_fmt(fmt) fmt
+#endif
+
 #define no_printk(level, fmt, ...)                         \
 	do {                                               \
 		if (0)                                     \
@@ -26,20 +30,20 @@
 	} while (0)
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
-#define pr_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#define pr_trace(fmt, ...) printk(LOG_LEVEL_TRACE, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define pr_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#define pr_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
-#define pr_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define pr_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define pr_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define pr_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
-#define pr_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
-#define pr_warn(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
-#define pr_err(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+#define pr_info(fmt, ...) printk(LOG_LEVEL_INFO, pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_warn(fmt, ...) printk(LOG_LEVEL_WARNING, pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_err(fmt, ...) printk(LOG_LEVEL_ERROR, pr_fmt(fmt), ##__VA_ARGS__)
 
 void printk(int level, const char *fmt, ...);
 void uart_printf(const char *fmt, ...);

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "axp2101: " fmt
 
 /**
  * @file axp2101.c
@@ -98,18 +99,18 @@ int pmu_axp2101_init(axp_pmu_t *pmu)
 	int ret;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2101) || !pmu->i2c->status) {
-		pr_warn("PMU: I2C not init\n");
+		pr_warn("not init\n");
 		return -1;
 	}
 
 	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP2101_VERSION, &axp_val))) {
-		pr_warn("PMU: Probe target device AXP2101 failed. ret = %d\n", ret);
+		pr_warn("Probe target device AXP2101 failed. ret = %d\n", ret);
 		return -1;
 	}
 
 	axp_val &= 0xCF;
 	if (axp_val == AXP2101_CHIP_ID || axp_val == AXP2101_CHIP_ID_B) {
-		pr_info("PMU: Found AXP2101 PMU\n");
+		pr_info("Found AXP2101 PMU\n");
 
 		/* limit charge current to 300mA */
 		reg_value = 0x9;
@@ -232,6 +233,6 @@ int pmu_axp2101_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp2101_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("PMU: AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(pmu, axp_ctrl_tbl[i].name));
+		pr_debug("AXP2101 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2101_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }
