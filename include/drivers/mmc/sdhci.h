@@ -126,7 +126,6 @@ typedef struct sunxi_sdhci {
 	sunxi_sdhci_type_t sdhci_mmc_type;
 	/* Requested GPIO withstand voltage for the MMC I/O bank, in microvolts. */
 	uint32_t io_voltage_uv;
-
 	/* Pinctrl info */
 	sunxi_sdhci_pinctrl_t pinctrl;
 
@@ -195,6 +194,18 @@ int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci);
  * @return Returns 0 on success, -1 on failure.
  */
 int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data);
+
+/**
+ * @brief Perform a transfer with a caller-selected polling timeout.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param cmd Pointer to the MMC command structure.
+ * @param data Pointer to the MMC data structure, or NULL for command-only transfers.
+ * @param timeout_us Command and data completion polling timeout in microseconds.
+ * @return Returns 0 on success, -1 on failure.
+ */
+int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
+			     mmc_data_t *data, uint32_t timeout_us);
 
 /**
  * @brief Dump the contents of the SDHCI registers.
