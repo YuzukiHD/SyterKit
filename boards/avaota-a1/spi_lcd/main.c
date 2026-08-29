@@ -273,8 +273,6 @@ int main(void)
 	}
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
-	dram.pmu = &axp2202;
-	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;

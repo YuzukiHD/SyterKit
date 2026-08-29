@@ -213,8 +213,8 @@ int main(void)
 
 	sunxi_board_power_init(&sid, &i2c, &axp2202, &axp1530);
 
-	dram.pmu = &axp2202;
-	dram.pmu_aux = &axp1530;
+	dram.power.vdd_sys = &axp2202;
+	dram.power.ddr = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;

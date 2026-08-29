@@ -29,8 +29,8 @@
 
 #include <drivers/pmu/reg/reg-axp2202.h>
 
-static axp_pmu_t *dram_pmu_axp2202;
-static axp_pmu_t *dram_pmu_axp1530;
+static axp_pmu_t *dram_vdd_sys_pmu;
+static axp_pmu_t *dram_ddr_pmu;
 
 extern int init_DRAM(int type, void *buff);
 
@@ -45,8 +45,8 @@ extern int init_DRAM(int type, void *buff);
  */
 int set_ddr_voltage(uint32_t vol_val)
 {
-	pr_debug("Setting DDR voltage to %u mV for axp323 dcdc3\n", vol_val);
-	return pmu_axp1530_set_vol(dram_pmu_axp1530, "dcdc3", vol_val, 1);
+	pr_debug("Setting DDR voltage to %u mV for AXP1530 dcdc3\n", vol_val);
+	return pmu_axp1530_set_vol(dram_ddr_pmu, "dcdc3", vol_val, 1);
 }
 
 /**
@@ -57,17 +57,17 @@ int set_ddr_voltage(uint32_t vol_val)
  */
 void get_vdd_sys_pmu_id(void)
 {
-	axp_pmu_t *pmu = dram_pmu_axp2202;
+	axp_pmu_t *vdd_sys_pmu = dram_vdd_sys_pmu;
 	uint8_t axp_val;
 
-	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202))
+	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202))
 		return;
-	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
-		if (pmu->fallback_address == 0U || sunxi_i2c_read(pmu->i2c, pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
+	if (sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
+		if (vdd_sys_pmu->fallback_address == 0U || sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
 			pr_warn("AXP2202 PMU Read error\n");
 			return;
 		}
-		pmu->address = pmu->fallback_address;
+		vdd_sys_pmu->address = vdd_sys_pmu->fallback_address;
 	}
 }
 
@@ -83,25 +83,25 @@ void get_vdd_sys_pmu_id(void)
  */
 int set_vdd_sys_reg(int set_vol, int onoff)
 {
-	axp_pmu_t *pmu = dram_pmu_axp2202;
+	axp_pmu_t *vdd_sys_pmu = dram_vdd_sys_pmu;
 	uint8_t reg_value;
 
-	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202))
+	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202))
 		return -1;
 
 	/* read cfg value */
-	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_DC2OUT_VOL, &reg_value))
+	if (sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_DC2OUT_VOL, &reg_value))
 		return -1;
 
 	/* set voltage */
 	reg_value &= ~0x7f;
 	set_vol &= 0x7f;
 	reg_value |= set_vol;
-	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_DC2OUT_VOL, reg_value))
+	if (sunxi_i2c_write(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_DC2OUT_VOL, reg_value))
 		return -1;
 
 	/* set on/onff */
-	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_OUTPUT_CTL0, &reg_value))
+	if (sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_OUTPUT_CTL0, &reg_value))
 		return -1;
 
 	if (onoff == 0) {
@@ -109,10 +109,10 @@ int set_vdd_sys_reg(int set_vol, int onoff)
 	} else {
 		reg_value |= (1 << 1);
 	}
-	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP2202_OUTPUT_CTL0, reg_value))
+	if (sunxi_i2c_write(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_OUTPUT_CTL0, reg_value))
 		return -1;
 
-	pr_debug("Setting VDD_SYS to %d mV, state: %s\n", pmu_axp2202_get_vol(pmu, "dcdc2"), onoff ? "ON" : "OFF");
+	pr_debug("Setting VDD_SYS to %d mV, state: %s\n", pmu_axp2202_get_vol(vdd_sys_pmu, "dcdc2"), onoff ? "ON" : "OFF");
 
 	return 0;
 }
@@ -124,10 +124,10 @@ int set_vdd_sys_reg(int set_vol, int onoff)
  */
 uint8_t get_vdd_sys_reg(void)
 {
-	axp_pmu_t *pmu = dram_pmu_axp2202;
+	axp_pmu_t *vdd_sys_pmu = dram_vdd_sys_pmu;
 	uint8_t reg_val = 0;
 
-	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202) || sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_DC2OUT_VOL, &reg_val))
+	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202) || sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_DC2OUT_VOL, &reg_val))
 		return -1;
 
 	pr_debug("Getting VDD_SYS reg = 0x%x\n", reg_val);
@@ -158,8 +158,8 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
 	if (dram == NULL || dram->parameter_count == 0U)
 		return 0U;
-	dram_pmu_axp2202 = dram->pmu;
-	dram_pmu_axp1530 = dram->pmu_aux;
+	dram_vdd_sys_pmu = dram->power.vdd_sys;
+	dram_ddr_pmu = dram->power.ddr;
 	get_vdd_sys_pmu_id();
 	dram->size = init_DRAM(0, dram->parameters);
 	return dram->size;

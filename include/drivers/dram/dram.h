@@ -43,6 +43,19 @@ typedef struct {
 	sunxi_dram_register_t pmu_rtc;
 } sunxi_dram_registers_t;
 
+/**
+ * @brief PMU rails required by the DRAM controller.
+ *
+ * A board may use different PMU devices for the SoC system rail and the DRAM
+ * rail.  The roles are named here so callers do not need to rely on an
+ * arbitrary primary/auxiliary ordering.  Unused roles are represented by a
+ * `NULL` pointer.
+ */
+typedef struct {
+	axp_pmu_t *vdd_sys; /**< PMU that supplies the SoC VDD_SYS rail. */
+	axp_pmu_t *ddr; /**< PMU that supplies the DRAM/DDR rail. */
+} sunxi_dram_power_t;
+
 typedef struct {
 	uint32_t parameters[SUNXI_DRAM_MAX_PARAM_WORDS];
 	size_t parameter_count;
@@ -53,9 +66,8 @@ typedef struct {
 	sunxi_dram_registers_t registers;
 	uintptr_t init_code_base; /**< Reserved SRAM for external init code. */
 	size_t init_code_size; /**< Capacity of the external init code region. */
-	/* Optional board-supplied PMU handles; DT never resolves these. */
-	axp_pmu_t *pmu;
-	axp_pmu_t *pmu_aux;
+	/* Optional board-supplied power handles; DT never resolves these. */
+	sunxi_dram_power_t power;
 	sunxi_rtc_t rtc;
 } sunxi_dram_t;
 
@@ -146,7 +158,9 @@ uint32_t sunxi_get_dram_size(const sunxi_dram_t *dram);
  * This function initializes the DRAM with the specified parameters. The 
  * initialization process may involve configuration of memory controllers 
  * and other hardware settings. The user must provide a pointer to a 
- * structure containing the necessary initialization parameters.
+ * structure containing the necessary initialization parameters. Board-supplied
+ * PMU handles, when required by the selected SoC, are provided through
+ * `dram->power`.
  * 
  * @param dram DRAM instance containing the mutable initialization parameters.
  * @return A status code indicating the result of the initialization. 

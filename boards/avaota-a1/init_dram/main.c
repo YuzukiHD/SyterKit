@@ -89,8 +89,6 @@ int main(void)
 		return -1;
 	}
 
-	dram.pmu = &axp2202;
-	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
