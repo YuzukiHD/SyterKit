@@ -7,7 +7,7 @@ case_makefiles := $(sort $(wildcard $(TEST_ROOT)/cases/*/Makefile))
 case_dirs := $(patsubst %/Makefile,%,$(case_makefiles))
 cases := $(notdir $(case_dirs))
 host_cases := $(notdir $(patsubst %/Makefile,%,$(shell \
-	rg -l '^TEST_TYPE[[:space:]]*:=[[:space:]]*host$$' $(case_makefiles))))
+	grep -rl '^TEST_TYPE[[:space:]]*:=[[:space:]]*host$$' $(case_makefiles))))
 qemu_cases := $(filter-out $(host_cases),$(cases))
 
 .PHONY: all host qemu list clean $(cases)
