@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Avaota F2 (sun252iw1).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -25,6 +29,12 @@
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 
+/**
+ * @brief Print the SoC identification banner for the Avaota F2 board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the board model, CPU core, and chip SID to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -44,6 +54,12 @@ void show_chip()
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 
+/**
+ * @brief Reset the system using the CPUX watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_CPUX_WDG_BASE + 0x08, 0x16aa0001U);

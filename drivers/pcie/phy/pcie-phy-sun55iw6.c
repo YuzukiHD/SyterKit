@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-phy-sun55iw6.c
+ * @brief sun55iw6 PCIe PHY and SerDes subsystem control.
+ *
+ * Powers up the PCK600 domain, programs the CCU and SerDes clocks, brings up
+ * the INNO 100 MHz clock block, and drives the subsystem PHY enable/reset
+ * sequence for the sun55iw6 PCIe PHY.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -36,6 +45,13 @@
 #define SUN55IW6_ITS0_ENABLE_MASK         ((1U << 16) | (1U << 1))
 #define SUN55IW6_PCIE_CLK_ENABLE          (1U << 31)
 
+/**
+ * @brief Modify selected bits of a register.
+ *
+ * @param[in] address Register address.
+ * @param[in] clear Bit mask to clear.
+ * @param[in] set Bit mask to set.
+ */
 static void pcie_phy_update(uintptr_t address, uint32_t clear, uint32_t set)
 {
 	uint32_t value = readl(address);
@@ -45,6 +61,12 @@ static void pcie_phy_update(uintptr_t address, uint32_t clear, uint32_t set)
 	writel(value, address);
 }
 
+/**
+ * @brief Enable or disable the PHY, SerDes, and ITS clocks.
+ *
+ * @param[in] phy PCIe PHY descriptor.
+ * @param[in] enable true to enable the clocks, false to disable them.
+ */
 static void sun55iw6_configure_clocks(const struct pcie_phy *phy, bool enable)
 {
 	uintptr_t ccu = phy->config.ccu_base;
@@ -98,6 +120,11 @@ static void sun55iw6_configure_clocks(const struct pcie_phy *phy, bool enable)
 		SUN55IW6_SERDES_CCU_RESET_MASK, 0U);
 }
 
+/**
+ * @brief Select PCIe and assert the subsystem PHY resets.
+ *
+ * @param[in] phy PCIe PHY descriptor.
+ */
 static void sun55iw6_subsys_phy_enable(const struct pcie_phy *phy)
 {
 	uintptr_t address = phy->config.subsys_base + SUN55IW6_SERDES_PHY_CTL;
@@ -117,6 +144,11 @@ static void sun55iw6_subsys_phy_enable(const struct pcie_phy *phy)
 	writel(value, address);
 }
 
+/**
+ * @brief Deassert the subsystem PHY resets and deselect PCIe.
+ *
+ * @param[in] phy PCIe PHY descriptor.
+ */
 static void sun55iw6_subsys_phy_disable(const struct pcie_phy *phy)
 {
 	uintptr_t address = phy->config.subsys_base + SUN55IW6_SERDES_PHY_CTL;
@@ -128,6 +160,11 @@ static void sun55iw6_subsys_phy_disable(const struct pcie_phy *phy)
 }
 
 /* This sequence is required by the sun55iw6 INNO PHY clock block. */
+/**
+ * @brief Program the INNO PHY 100 MHz clock block.
+ *
+ * @param[in] phy PCIe PHY descriptor.
+ */
 static void sun55iw6_phy_100m_setup(const struct pcie_phy *phy)
 {
 	uintptr_t base = phy->config.phy_base;
@@ -145,6 +182,15 @@ static void sun55iw6_phy_100m_setup(const struct pcie_phy *phy)
 	writel(0x80540a0aU, base + 0x1418U);
 }
 
+/**
+ * @brief Initialize the sun55iw6 PCIe PHY.
+ *
+ * Powers the PCK600 domain, enables the clocks, programs the 100 MHz clock
+ * block, and brings up the subsystem PHY.
+ *
+ * @param[in,out] phy PCIe PHY descriptor.
+ * @return PCIE_OK on success, PCIE_ERR_INVALID on bad configuration.
+ */
 static int sun55iw6_phy_init(struct pcie_phy *phy)
 {
 	if (phy == NULL || phy->config.subsys_base == 0U ||
@@ -159,6 +205,11 @@ static int sun55iw6_phy_init(struct pcie_phy *phy)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Tear down the sun55iw6 PCIe PHY.
+ *
+ * @param[in,out] phy PCIe PHY descriptor.
+ */
 static void sun55iw6_phy_exit(struct pcie_phy *phy)
 {
 	if (phy == NULL || !phy->initialized)
@@ -167,11 +218,19 @@ static void sun55iw6_phy_exit(struct pcie_phy *phy)
 	sun55iw6_configure_clocks(phy, false);
 }
 
+/** @brief sun55iw6 PCIe PHY operations table. */
 const struct pcie_phy_ops pcie_phy_sun55iw6_ops = {
 	.init = sun55iw6_phy_init,
 	.exit = sun55iw6_phy_exit,
 };
 
+/**
+ * @brief Initialize a PCIe PHY from its configuration.
+ *
+ * @param[out] phy PCIe PHY descriptor to initialize.
+ * @param[in] config PHY configuration to apply.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_phy_init(struct pcie_phy *phy, const struct pcie_phy_config *config)
 {
 	int ret;
@@ -188,6 +247,11 @@ int pcie_phy_init(struct pcie_phy *phy, const struct pcie_phy_config *config)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Tear down a PCIe PHY.
+ *
+ * @param[in,out] phy PCIe PHY descriptor to deinitialize.
+ */
 void pcie_phy_exit(struct pcie_phy *phy)
 {
 	if (phy == NULL || !phy->initialized)

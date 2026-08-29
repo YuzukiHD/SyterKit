@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun50iw9.c
+ * @brief Clock driver for the Allwinner H616/H313/H618 (sun50iw9) SoC.
+ *
+ * Programs the CPU and peripheral PLLs, the AHB/APB dividers, the MBUS clock
+ * and the module clocks during early boot, and provides a clock dump helper.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +22,13 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun50iw9/reg.h>
 
+/**
+ * @brief Configure the CPUX PLL and the CPUX/AXI clock dividers.
+ *
+ * Selects OSC24M as the initial CPUX clock source, programs the PLL_CPUX
+ * control register for 1008 MHz, then switches the CPUX clock to PLL_CPUX
+ * (CPUX:AXI = 408:136 MHz).
+ */
 static inline void set_pll_cpux_axi(void)
 {
 	uint32_t reg_val;
@@ -52,6 +67,12 @@ static inline void set_pll_cpux_axi(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Enable the PERIPH0 PLL.
+ *
+ * Programs the default PLL factors, enables lock, then enables the PLL and
+ * waits for it to lock. If FEL has already enabled the PLL this is a no-op.
+ */
 static inline void set_pll_periph0(void)
 {
 	uint32_t reg_val;
@@ -81,6 +102,12 @@ static inline void set_pll_periph0(void)
 	writel(reg_val, SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG);
 }
 
+/**
+ * @brief Configure the AHB bus clocks.
+ *
+ * Sets the AHB1/AHB2 and AHB3 dividers so they run at 200 MHz derived from
+ * the PLL6 600 MHz clock.
+ */
 static inline void set_ahb(void)
 {
 	/* PLL6:AHB1:APB1 = 600M:200M:100M */
@@ -92,6 +119,12 @@ static inline void set_ahb(void)
 	writel((0x03 << 24) | read32(SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG), SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG);
 }
 
+/**
+ * @brief Configure the APB1 bus clock.
+ *
+ * Sets the APB1 divider so it runs at 100 MHz derived from the PLL6 600 MHz
+ * clock.
+ */
 static inline void set_apb(void)
 {
 	/*PLL6:APB1 = 600M:100M */
@@ -100,6 +133,12 @@ static inline void set_apb(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Deassert the DMA reset and open the DMA clock gate.
+ *
+ * Releases the DMA from reset and enables the gating clock so the DMA engine
+ * can be used by the boot loader.
+ */
 static inline void set_pll_dma(void)
 {
 	/*dma reset*/
@@ -109,6 +148,12 @@ static inline void set_pll_dma(void)
 	writel(read32(SUNXI_CCM_BASE + CCU_DMA_BGR_REG) | (1 << 0), SUNXI_CCM_BASE + CCU_DMA_BGR_REG);
 }
 
+/**
+ * @brief Configure the MBUS clock.
+ *
+ * Resets the MBUS domain, sets the divider to derive 400 MHz from PLL6(2x),
+ * selects that clock source and opens the MBUS clock gate.
+ */
 static inline void set_pll_mbus(void)
 {
 	uint32_t reg_val;
@@ -137,6 +182,12 @@ static inline void set_pll_mbus(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Enable the analog calibration circuits.
+ *
+ * Powers on the analog calibration block used by the ADC and other analog
+ * peripherals.
+ */
 static inline void set_circuits_analog(void)
 {
 	/* calibration circuits analog enable */
@@ -163,6 +214,12 @@ static inline void set_circuits_analog(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Enable the IOMMU gating clock and auto gating.
+ *
+ * Opens the IOMMU clock gate and enables hardware auto gating so the IOMMU
+ * clock is only running when required.
+ */
 static inline void set_iommu_auto_gating(void)
 {
 	/*gating clock for iommu*/
@@ -171,9 +228,17 @@ static inline void set_iommu_auto_gating(void)
 	writel(0x01, SUNXI_IOMMU_BASE + 0x40U);
 }
 
+/**
+ * @brief Apply the platform-specific clock configuration.
+ *
+ * Enables the analog calibration circuits and the IOMMU auto gating.
+ *
+ * @note VRA1 is deliberately not accelerated during power-on because it
+ *       affects the stability of the bias circuit and the boot speed.
+ */
 static inline void set_platform_config(void)
 {
-	/* 
+	/*
      * At present, the audio codec finds a problem. VRA1 does not accelerate the power-on,
 	 * which will affect the stability of the bais circuit and affect the boot speed.
 	 * Therefore, the river vddon needs to be set to 1.
@@ -182,6 +247,12 @@ static inline void set_platform_config(void)
 	set_iommu_auto_gating();
 }
 
+/**
+ * @brief Enable all module clocks.
+ *
+ * Walks the list of module clock registers and enables the clock gate of each
+ * module that is not yet running.
+ */
 static inline void set_modules_clock(void)
 {
 	uint32_t reg_val = 0x0;
@@ -205,6 +276,14 @@ static inline void set_modules_clock(void)
 	}
 }
 
+/**
+ * @brief Reset and enable the GPADC (KEYADC) clock.
+ *
+ * Deasserts the GPADC reset and opens the GPADC gating clock so the key ADC
+ * can be used.
+ *
+ * @return 0 on success.
+ */
 static inline int sunxi_clock_init_gpadc(void)
 {
 	uint32_t reg_val = 0;
@@ -224,6 +303,12 @@ static inline int sunxi_clock_init_gpadc(void)
 	return 0;
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Applies the platform configuration, then programs the CPUX PLL, PERIPH0
+ * PLL, AHB/APB dividers, DMA, MBUS and module clocks.
+ */
 void sunxi_clk_init(void)
 {
 	printk_debug("Set SoC 1823 (H616/H313/H618) CLK Start.\n");
@@ -237,6 +322,12 @@ void sunxi_clk_init(void)
 	set_modules_clock();
 }
 
+/**
+ * @brief Dump the current SoC clock configuration.
+ *
+ * Prints the CPUX clock source and the computed frequencies of the CPU,
+ * PERIPH0/PERIPH1, DDR0/DDR1 and HSIC PLLs.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg32;

@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file rproc-sun8iw21.c
+ * @brief Sun8iw21 E907 remote processor bring-up.
+ *
+ * Implements the remoteproc callbacks that configure the RISC-V E907 core
+ * clock and reset controls and report the resulting clock frequencies.
+ */
+
 #include <stdint.h>
 
 #include <driver.h>
@@ -15,11 +23,25 @@
 #define SUN8IW21_RISCV_CFG_BGR_OFFSET 0x0d0cU
 #define SUN8IW21_RISCV_START_OFFSET 0x0204U
 
+/**
+ * @brief Register resource indices used by the E907 remote processor.
+ */
 enum sun8iw21_e907_register {
 	SUN8IW21_E907_CCU,
 	SUN8IW21_E907_CFG,
 };
 
+/**
+ * @brief Start the RISC-V E907 core.
+ *
+ * Releases the core from reset, sets the entry address, configures the
+ * RISC-V clock source to the 600 MHz peripheral PLL and enables the module
+ * clock and soft reset controls.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value;
@@ -42,6 +64,14 @@ static int sun8iw21_e907_start(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Reset the RISC-V E907 core.
+ *
+ * Halts the core clocks and holds the configuration block in reset.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw21_e907_reset(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value;
@@ -54,6 +84,14 @@ static int sun8iw21_e907_reset(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Report the current RISC-V E907 clock frequencies.
+ *
+ * Derives the peripheral PLL and the core and AXI frequencies from the CCU
+ * registers and prints them to the debug log.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ */
 static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t factor_m;
@@ -84,6 +122,9 @@ static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc)
 	printk_info("CLK: RISC-V AXI FREQ=%uMHz\n", pll_riscv / factor_n);
 }
 
+/**
+ * @brief E907 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun8iw21_e907_reset,
 	.start = sun8iw21_e907_start,

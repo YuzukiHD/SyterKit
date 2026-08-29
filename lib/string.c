@@ -1,11 +1,26 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file string.c
+ * @brief String and memory manipulation primitives.
+ *
+ * This file supplies the small C library string routines used by the
+ * firmware, including length, copy, compare, and search helpers.  When
+ * CONFIG_SPRINTF is enabled it also provides a compact printf-family
+ * implementation with integer and floating-point formatting.
+ */
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
+/**
+ * @brief Compute the length of a null-terminated string.
+ *
+ * @param[in] str Null-terminated string to measure.
+ * @return Number of characters before the terminating null byte.
+ */
 unsigned int strlen(const char *str)
 {
 	int i = 0;
@@ -16,6 +31,13 @@ unsigned int strlen(const char *str)
 	return i - 1;
 }
 
+/**
+ * @brief Compute the bounded length of a string.
+ *
+ * @param[in] s String to measure.
+ * @param[in] n Maximum number of characters to examine.
+ * @return The length of @p s, limited to @p n.
+ */
 unsigned int strnlen(const char *s, unsigned int n)
 {
 	const char *sc;
@@ -25,6 +47,13 @@ unsigned int strnlen(const char *s, unsigned int n)
 	return sc - s;
 }
 
+/**
+ * @brief Copy a null-terminated string into a destination buffer.
+ *
+ * @param[out] dst Destination buffer.
+ * @param[in] src Source string.
+ * @return A pointer to @p dst.
+ */
 char *strcpy(char *dst, const char *src)
 {
 	char *bak = dst;
@@ -35,6 +64,13 @@ char *strcpy(char *dst, const char *src)
 	return bak;
 }
 
+/**
+ * @brief Append a copy of a string to the end of another string.
+ *
+ * @param[out] dst Destination string to extend.
+ * @param[in] src Source string to append.
+ * @return A pointer to @p dst.
+ */
 char *strcat(char *dst, const char *src)
 {
 	char *p = dst;
@@ -48,6 +84,14 @@ char *strcat(char *dst, const char *src)
 	return p;
 }
 
+/**
+ * @brief Compare two null-terminated strings lexicographically.
+ *
+ * @param[in] p1 First string.
+ * @param[in] p2 Second string.
+ * @return Negative, zero, or positive as @p p1 is less than, equal to, or
+ *         greater than @p p2.
+ */
 int strcmp(const char *p1, const char *p2)
 {
 	unsigned char c1, c2;
@@ -64,6 +108,15 @@ int strcmp(const char *p1, const char *p2)
 	return 0;
 }
 
+/**
+ * @brief Compare at most cnt characters of two strings.
+ *
+ * @param[in] p1 First string.
+ * @param[in] p2 Second string.
+ * @param[in] cnt Maximum number of characters to compare.
+ * @return Negative, zero, or positive as @p p1 is less than, equal to, or
+ *         greater than @p p2 within the first @p cnt characters.
+ */
 int strncmp(const char *p1, const char *p2, unsigned int cnt)
 {
 	unsigned char c1, c2;
@@ -82,6 +135,14 @@ int strncmp(const char *p1, const char *p2, unsigned int cnt)
 	return 0;
 }
 
+/**
+ * @brief Locate the first occurrence of a character in a string.
+ *
+ * @param[in] s Null-terminated string to search.
+ * @param[in] c Character to find, interpreted as an unsigned char.
+ * @return Pointer to the first occurrence of @p c, or NULL if it is not
+ *         present.
+ */
 char *strchr(const char *s, int c)
 {
 	for (; *s != (char)c; ++s)
@@ -91,6 +152,14 @@ char *strchr(const char *s, int c)
 	return (char *)s;
 }
 
+/**
+ * @brief Locate the last occurrence of a character in a string.
+ *
+ * @param[in] s Null-terminated string to search.
+ * @param[in] c Character to find, interpreted as an unsigned char.
+ * @return Pointer to the last occurrence of @p c, or NULL if it is not
+ *         present.
+ */
 char *strrchr(const char *s, int c)
 {
 	const char *p = s + strlen(s);
@@ -103,6 +172,14 @@ char *strrchr(const char *s, int c)
 	return NULL;
 }
 
+/**
+ * @brief Locate the first occurrence of a substring in a string.
+ *
+ * @param[in] s1 String to search.
+ * @param[in] s2 Substring to find.
+ * @return Pointer to the start of the first match, or NULL if @p s2 is not
+ *         present.
+ */
 char *strstr(const char *s1, const char *s2)
 {
 	register const char *s = s1;
@@ -126,6 +203,14 @@ char *strstr(const char *s1, const char *s2)
 	} while (1);
 }
 
+/**
+ * @brief Search a memory region for the first occurrence of a byte.
+ *
+ * @param[in] src Start of the memory region.
+ * @param[in] val Byte value to find, interpreted as an unsigned char.
+ * @param[in] cnt Number of bytes to scan.
+ * @return Pointer to the matching byte, or NULL if it is not found.
+ */
 void *memchr(const void *src, int val, unsigned int cnt)
 {
 	const unsigned char *s = src;
@@ -140,6 +225,17 @@ void *memchr(const void *src, int val, unsigned int cnt)
 	return NULL;
 }
 
+/**
+ * @brief Copy at most n characters from one string to another.
+ *
+ * The destination is padded with null bytes if the source is shorter than
+ * @p n.  No null terminator is appended when the source is longer.
+ *
+ * @param[out] dest Destination buffer.
+ * @param[in] src Source string.
+ * @param[in] n Maximum number of characters to copy.
+ * @return A pointer to @p dest.
+ */
 char *strncpy(char *dest, const char *src, unsigned int n)
 {
 	char *tmp = dest;
@@ -153,6 +249,17 @@ char *strncpy(char *dest, const char *src, unsigned int n)
 	return dest;
 }
 
+/**
+ * @brief Copy cnt bytes between overlapping memory regions.
+ *
+ * Copying is performed forward or backward as required so that the source
+ * remains valid for overlapping buffers.
+ *
+ * @param[out] dst Destination buffer.
+ * @param[in] src Source buffer.
+ * @param[in] cnt Number of bytes to copy.
+ * @return A pointer to @p dst.
+ */
 void *memmove(void *dst, const void *src, unsigned int cnt)
 {
 	char *p, *s;
@@ -174,6 +281,13 @@ void *memmove(void *dst, const void *src, unsigned int cnt)
 
 #ifdef CONFIG_SPRINTF
 
+/**
+ * @brief Format a message into a buffer without a size limit.
+ *
+ * @param[out] buf Destination buffer.
+ * @param[in] fmt printf-style format string.
+ * @return Number of characters written, excluding the null terminator.
+ */
 int sprintf(char *buf, const char *fmt, ...)
 {
 	va_list ap;
@@ -186,6 +300,15 @@ int sprintf(char *buf, const char *fmt, ...)
 	return rv;
 }
 
+/**
+ * @brief Format a message into a buffer with a size limit.
+ *
+ * @param[out] buf Destination buffer.
+ * @param[in] n Capacity of @p buf in bytes.
+ * @param[in] fmt printf-style format string.
+ * @return Number of characters that would have been written, excluding the
+ *         null terminator.
+ */
 int snprintf(char *buf, size_t n, const char *fmt, ...)
 {
 	va_list ap;
@@ -197,6 +320,9 @@ int snprintf(char *buf, size_t n, const char *fmt, ...)
 	return rv;
 }
 
+/** @enum flags
+ *  @brief Conversion flags for printf-style integer and float formatting.
+ */
 enum flags {
 	FL_ZERO = 0x01, /* Zero modifier */
 	FL_MINUS = 0x02, /* Minus modifier */
@@ -210,6 +336,9 @@ enum flags {
 
 /*
  * These may have to be adjusted on certain implementations
+ */
+/** @enum ranks
+ *  @brief Relative sizes of the integer conversion types.
  */
 enum ranks {
 	rank_char = -2,
@@ -233,6 +362,21 @@ enum ranks {
 		o++;                \
 	})
 
+/**
+ * @brief Render an integer value according to the conversion parameters.
+ *
+ * Emits sign, base prefix, padding, digit grouping, and the digit body of
+ * an integer conversion into @p q, honouring the width and precision.
+ *
+ * @param[out] q Output buffer for the rendered digits.
+ * @param[in] n Remaining capacity of @p q.
+ * @param[in] val Value to format.
+ * @param[in] flags Conversion flags from @ref flags.
+ * @param[in] base Radix of the conversion.
+ * @param[in] width Minimum field width.
+ * @param[in] prec Precision (minimum digit count), or -1 for none.
+ * @return Total number of characters the conversion produces.
+ */
 static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int base, int width, int prec)
 {
 	char *qq;
@@ -381,6 +525,13 @@ static size_t format_int(char *q, size_t n, uintmax_t val, enum flags flags, int
 
 #define CVT_BUFSZ (309 + 43)
 
+/**
+ * @brief Split a double into its integral and fractional parts.
+ *
+ * @param[in] x Value to split.
+ * @param[out] iptr Receives the signed integral part of @p x.
+ * @return The signed fractional part of @p x.
+ */
 static double modf(double x, double *iptr)
 {
 	union {
@@ -417,6 +568,21 @@ static double modf(double x, double *iptr)
 	return x - u.f;
 }
 
+/**
+ * @brief Convert a double to a run of ASCII digits with rounding.
+ *
+ * Generates the significant digits of @p arg together with the decimal
+ * point position, optionally using scientific (E) style.  The caller must
+ * provide a buffer of at least CVT_BUFSZ bytes.
+ *
+ * @param[in] arg Value to convert.
+ * @param[in] ndigits Number of significant digits to produce.
+ * @param[out] decpt Receives the decimal point position.
+ * @param[out] sign Receives non-zero when @p arg is negative.
+ * @param[out] buf Buffer receiving the null-terminated digit string.
+ * @param[in] eflag Non-zero for scientific notation.
+ * @return A pointer to @p buf.
+ */
 static char *cvt(double arg, int ndigits, int *decpt, int *sign, char *buf, int eflag)
 {
 	int r2;
@@ -496,6 +662,14 @@ static char *cvt(double arg, int ndigits, int *decpt, int *sign, char *buf, int 
 	return buf;
 }
 
+/**
+ * @brief Format a double in e, f, or g style into a buffer.
+ *
+ * @param[in] value Value to format.
+ * @param[out] buffer Buffer receiving the null-terminated result.
+ * @param[in] fmt Conversion style: 'e', 'E', 'f', 'g', or 'G'.
+ * @param[in] precision Number of digits after the decimal point.
+ */
 static void cfltcvt(double value, char *buffer, char fmt, int precision)
 {
 	int decpt, sign, exp, pos;
@@ -588,6 +762,14 @@ static void cfltcvt(double value, char *buffer, char fmt, int precision)
 	*buffer = '\0';
 }
 
+/**
+ * @brief Force a decimal point into a digit string.
+ *
+ * Inserts a '.' before an existing exponent or appends one at the end of
+ * the string when neither a point nor an exponent is present.
+ *
+ * @param[in,out] buffer Null-terminated digit string to modify.
+ */
 static void forcdecpt(char *buffer)
 {
 	while (*buffer) {
@@ -612,6 +794,14 @@ static void forcdecpt(char *buffer)
 	}
 }
 
+/**
+ * @brief Remove trailing fractional zeros from a formatted number.
+ *
+ * Trims insignificant zeroes after the decimal point, keeping the exponent
+ * intact, and removes a now-redundant decimal point.
+ *
+ * @param[in,out] buffer Null-terminated number string to modify.
+ */
 static void cropzeros(char *buffer)
 {
 	char *stop;
@@ -631,6 +821,21 @@ static void cropzeros(char *buffer)
 	}
 }
 
+/**
+ * @brief Render a floating-point value according to the conversion flags.
+ *
+ * Formats @p val in the requested style with sign, padding, and precision
+ * handling, writing into @p q up to its remaining capacity.
+ *
+ * @param[out] q Output buffer for the rendered characters.
+ * @param[in] n Remaining capacity of @p q.
+ * @param[in] val Value to format.
+ * @param[in] flags Conversion flags from @ref flags.
+ * @param[in] fmt Conversion style: 'e', 'E', 'f', 'g', or 'G'.
+ * @param[in] width Minimum field width.
+ * @param[in] prec Number of digits after the decimal point.
+ * @return Total number of characters the conversion produces.
+ */
 static size_t format_float(char *q, size_t n, double val, enum flags flags, char fmt, int width, int prec)
 {
 	size_t o = 0;
@@ -694,6 +899,19 @@ static size_t format_float(char *q, size_t n, double val, enum flags flags, char
 	return o;
 }
 
+/**
+ * @brief Format a message using a va_list into a bounded buffer.
+ *
+ * Supports the standard integer, pointer, character, and string
+ * conversions together with the floating-point styles when available.
+ *
+ * @param[out] buf Destination buffer.
+ * @param[in] n Capacity of @p buf in bytes.
+ * @param[in] fmt printf-style format string.
+ * @param[in] ap Variable argument list.
+ * @return Number of characters that would have been written, excluding the
+ *         null terminator.
+ */
 int vsnprintf(char *buf, size_t n, const char *fmt, va_list ap)
 {
 	const char *p = fmt;

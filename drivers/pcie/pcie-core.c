@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-core.c
+ * @brief PCIe core lifecycle management.
+ *
+ * Provides the SoC-specific sun55iw6 configuration tables and the platform
+ * independent init/exit/link-wait entry points shared by the RC and EP
+ * drivers.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -20,6 +29,15 @@
 #define SUN55IW6_PCIE_MEM_BASE          0x22000000ULL
 #define SUN55IW6_PCIE_EP_FUNCTION_STRIDE 0x10000U
 
+/**
+ * @brief Power on the PCIe platform rails.
+ *
+ * The default implementation is a no-op; SoC ports may override it with a
+ * weak replacement.
+ *
+ * @param[in] config PCIe configuration.
+ * @return PCIE_OK on success.
+ */
 int __attribute__((weak)) pcie_platform_power_on(
 		const struct pcie_config *config)
 {
@@ -27,6 +45,15 @@ int __attribute__((weak)) pcie_platform_power_on(
 	return PCIE_OK;
 }
 
+/**
+ * @brief Fill in the sun55iw6 PCIe configuration for a mode.
+ *
+ * Zeroes the configuration and populates the controller, PHY, and bus address
+ * windows with the fixed sun55iw6 memory map.
+ *
+ * @param[out] config Configuration to populate.
+ * @param[in] mode PCIE_MODE_RC or PCIE_MODE_EP.
+ */
 void pcie_config_sun55iw6(struct pcie_config *config, enum pcie_mode mode)
 {
 	if (config == NULL)
@@ -61,6 +88,17 @@ void pcie_config_sun55iw6(struct pcie_config *config, enum pcie_mode mode)
 	config->phy.timeout_us = 1000000U;
 }
 
+/**
+ * @brief Initialize a PCIe instance.
+ *
+ * Powers on the platform, initializes the PHY and controller, brings the
+ * link training state machine up, and selects the requested mode and link
+ * settings.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] config PCIe configuration to apply.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_init(struct pcie *pcie, const struct pcie_config *config)
 {
 	int ret;
@@ -105,6 +143,13 @@ int pcie_init(struct pcie *pcie, const struct pcie_config *config)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Initialize a PCIe instance from a devicetree node.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] node Devicetree node offset.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_init_dt(struct pcie *pcie, int node)
 {
 	struct pcie_config config;
@@ -114,6 +159,11 @@ int pcie_init_dt(struct pcie *pcie, int node)
 	return pcie_init(pcie, &config);
 }
 
+/**
+ * @brief Tear down a PCIe instance.
+ *
+ * @param[in,out] pcie PCIe instance to deinitialize.
+ */
 void pcie_exit(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized)
@@ -124,6 +174,13 @@ void pcie_exit(struct pcie *pcie)
 	pcie->initialized = false;
 }
 
+/**
+ * @brief Wait for the PCIe link to reach an up state.
+ *
+ * @param[in] pcie Initialized PCIe instance.
+ * @param[in] timeout_us Timeout in microseconds.
+ * @return PCIE_OK when the link is up, otherwise an error code.
+ */
 int pcie_wait_for_link(struct pcie *pcie, uint32_t timeout_us)
 {
 	if (pcie == NULL || !pcie->initialized)

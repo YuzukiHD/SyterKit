@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file axp-config.h
+ * @brief Shared PMU configuration helper for the X-Powers AXP PMU drivers.
+ *
+ * Provides the sunxi_pmu_config() helper used by the per-chip AXP driver
+ * files to fill in the common PMU identity and I2C runtime address fields.
+ */
+
 #ifndef __DRIVERS_PMU_AXP_CONFIG_H__
 #define __DRIVERS_PMU_AXP_CONFIG_H__
 

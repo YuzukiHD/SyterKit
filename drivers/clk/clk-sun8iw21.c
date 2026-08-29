@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun8iw21.c
+ * @brief Clock driver for the Allwinner sun8iw21 SoC.
+ *
+ * Programs the CPU PLL and the AHB/APB0 dividers together with the DMA and
+ * MBUS clocks during early boot, and provides clock dump and reset helpers.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +22,13 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun8iw21/reg.h>
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Programs the CPU PLL to 1200 MHz (N = 50) with an AXI divider of 2,
+ * configures the AHB clock to 200 MHz and the APB0 clock to 100 MHz, then
+ * releases the DMA and MBUS clock domains.
+ */
 void sunxi_clk_init(void)
 {
 	uint32_t val;
@@ -99,6 +114,12 @@ void sunxi_clk_init(void)
 	return;
 }
 
+/**
+ * @brief Reset the SoC clocks to their default state.
+ *
+ * Switches the AHB, APB0 and CPUX clocks back to their default OSC24M
+ * configuration.
+ */
 void sunxi_clk_reset(void)
 {
 	uint32_t reg_val;
@@ -117,6 +138,12 @@ void sunxi_clk_reset(void)
 	return;
 }
 
+/**
+ * @brief Dump the current SoC clock configuration.
+ *
+ * Prints the CPU PLL source and frequency, the PERI PLL frequencies and the
+ * DDR PLL frequency.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg32;

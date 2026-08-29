@@ -1,4 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+/**
+ * @file reg.h
+ * @brief Register map for the sun300iw1 clock controller.
+ */
+
 /*
  * (C) Copyright 2013-2025
  * Allwinner Technology Co., Ltd. <www.allwinnertech.com>

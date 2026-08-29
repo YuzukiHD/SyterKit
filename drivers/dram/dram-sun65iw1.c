@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file dram-sun65iw1.c
+ * @brief DRAM controller driver for the Allwinner sun65iw1 SoC.
+ *
+ * Provides the DDR/AXP2202 and VDD_SYS voltage hooks plus the microsecond
+ * delay helper used by the DRAM init blob, and drives the external DRAM
+ * initialization routine.
+ */
+
 #include <barrier.h>
 #include <io.h>
 #include <mmu.h>
@@ -24,12 +33,27 @@ static axp_pmu_t *dram_pmu_axp1530;
 
 extern int init_DRAM(int type, void *buff);
 
+/**
+ * @brief Set the DDR supply voltage.
+ *
+ * Programs the AXP1530 dcdc3 rail used for DDR power.
+ *
+ * @param[in] vol_val Target voltage value in millivolts.
+ *
+ * @return Result of the AXP1530 voltage programming.
+ */
 int set_ddr_voltage(uint32_t vol_val)
 {
 	printk_debug("Setting DDR voltage to %u mV for axp323 dcdc3\n", vol_val);
 	return pmu_axp1530_set_vol(dram_pmu_axp1530, "dcdc3", vol_val, 1);
 }
 
+/**
+ * @brief Identify the PMU that supplies VDD_SYS.
+ *
+ * Probes the AXP2202 chip ID and falls back to the fallback I2C address if the
+ * primary address cannot be read.
+ */
 void get_vdd_sys_pmu_id(void)
 {
 	axp_pmu_t *pmu = dram_pmu_axp2202;
@@ -46,6 +70,16 @@ void get_vdd_sys_pmu_id(void)
 	}
 }
 
+/**
+ * @brief Set the VDD_SYS rail voltage and power state.
+ *
+ * Programs the AXP2202 dcdc2 (DC2OUT) voltage and output control register.
+ *
+ * @param[in] set_vol Target voltage value in millivolts.
+ * @param[in] onoff   Non-zero to enable the rail, zero to disable it.
+ *
+ * @return 0 on success, -1 on error.
+ */
 int set_vdd_sys_reg(int set_vol, int onoff)
 {
 	axp_pmu_t *pmu = dram_pmu_axp2202;
@@ -82,6 +116,11 @@ int set_vdd_sys_reg(int set_vol, int onoff)
 	return 0;
 }
 
+/**
+ * @brief Get the VDD_SYS rail voltage register value.
+ *
+ * @return Current AXP2202 DC2OUT voltage register value, or -1 on error.
+ */
 uint8_t get_vdd_sys_reg(void)
 {
 	axp_pmu_t *pmu = dram_pmu_axp2202;
@@ -94,11 +133,26 @@ uint8_t get_vdd_sys_reg(void)
 	return reg_val;
 }
 
+/**
+ * @brief Delay for a number of microseconds.
+ *
+ * @param[in] us Delay duration in microseconds.
+ */
 void __usdelay(unsigned long us)
 {
 	udelay((uint32_t)us);
 }
 
+/**
+ * @brief Initialize the DRAM controller.
+ *
+ * Validates the DRAM parameters, saves the AXP2202/AXP1530 PMU handles,
+ * identifies the VDD_SYS PMU and delegates to the external init_DRAM routine.
+ *
+ * @param[in] dram DRAM configuration block.
+ *
+ * @return Detected DRAM size in bytes, or 0 on failure.
+ */
 uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
 	if (dram == NULL || dram->parameter_count == 0U)

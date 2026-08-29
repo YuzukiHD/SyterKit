@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Avaota M1 (sun65iw1).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,6 +27,14 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
+/**
+ * @brief Initialize the NSI (NoC) port priorities.
+ *
+ * Programs the AXI interconnect priority and attribute registers for the
+ * boot-stage masters.
+ *
+ * @return 0 on success.
+ */
 int sunxi_nsi_init(void)
 {
 	writel(0x40005, 0x2402C00 + 0x6c);
@@ -34,6 +46,9 @@ int sunxi_nsi_init(void)
 	return 0;
 }
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -47,6 +62,13 @@ void clean_syterkit_data(void)
 	printk_info("free interrupt ok...\n");
 }
 
+/**
+ * @brief Print the SoC identification banner for the Avaota M1 board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the board model, CPU cores, chip SID, chip type, and
+ * chip version to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -82,6 +104,12 @@ void show_chip()
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
+/**
+ * @brief Reset the system using the CPUX watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDT_CPUX_BASE + 0x08, 0x16aa0001U);

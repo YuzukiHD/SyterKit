@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file elf64.c
+ * @brief 64-bit ELF image parsing for the firmware ELF loader.
+ *
+ * This file decodes 64-bit ELF headers, program headers, and sections and
+ * provides the print and load helpers used to boot 64-bit ELF payloads.
+ * The ELF loader is derived from U-Boot.
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

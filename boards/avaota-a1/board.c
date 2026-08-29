@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Avaota A1 (sun55iw3).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,6 +27,12 @@
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 
+/**
+ * @brief Wake the GIC redistributor for CPU0.
+ *
+ * Sets the ProcessorSleep bit in the GICR_WAKER register so the GIC
+ * redistributor can deliver interrupts to the boot CPU.
+ */
 void gicr_set_waker(void)
 {
 	uint32_t gicr_waker = read32(GICR_WAKER(0));
@@ -32,6 +42,9 @@ void gicr_set_waker(void)
 	}
 }
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -45,6 +58,12 @@ void clean_syterkit_data(void)
 	printk_info("free interrupt ok...\n");
 }
 
+/**
+ * @brief Set the R_PIO (PL) GPIO power mode according to the detected level.
+ *
+ * Reads the PL GPIO voltage indicator and programs the power mode register
+ * for a 1.8 V rail when the GPIO level indicates 1.8 V operation.
+ */
 void set_rpio_power_mode(void)
 {
 	sunxi_gpio_t r_pio;
@@ -63,6 +82,14 @@ void set_rpio_power_mode(void)
 	}
 }
 
+/**
+ * @brief Initialize the NSI (NoC) port priorities and autogating.
+ *
+ * Programs the AXI interconnect priority registers for the main bus masters
+ * and disables the RA, TA, and PCIe autogating blocks.
+ *
+ * @return 0 on success.
+ */
 int sunxi_nsi_init(void)
 {
 	/* IOMMU prio 3 */
@@ -96,6 +123,13 @@ int sunxi_nsi_init(void)
 	return 0;
 }
 
+/**
+ * @brief Print the SoC identification banner for the Avaota A1 board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the board model, CPU cores, chip SID, chip type, and
+ * chip version to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -141,6 +175,12 @@ void show_chip()
 	printk(LOG_LEVEL_MUTE, " Chip Version = %x \n", version);
 }
 
+/**
+ * @brief Reset the system using the watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDT_BASE + 0x08, 0x16aa0001U);

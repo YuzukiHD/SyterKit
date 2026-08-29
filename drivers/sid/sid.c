@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sid.c
+ * @brief SID / efuse register access and dump helpers.
+ *
+ * Provides SRAM-backed efuse reads, the register-based efuse read/write
+ * sequence with the correct operation key, and a textual dump of the known
+ * SID sections.  Offsets and masks are taken from the SID control registers.
+ */
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -21,12 +30,27 @@
 #define SID_ACCESS_KEY	      0xacU
 #define SID_OPERATION_RETRIES 1000000U
 
+/**
+ * @brief Check that a SID offset is addressable through the register window.
+ *
+ * @param[in] sid SID controller descriptor.
+ * @param[in] offset Byte offset relative to the SID base.
+ * @return true when the offset is word-aligned and within the register window.
+ */
 static bool sunxi_sid_offset_valid(const sunxi_sid_t *sid, uint32_t offset)
 {
 	return sid != NULL && sid->base != 0U && sid->size >= SID_RDKEY_OFFSET + sizeof(uint32_t) &&
 	       (offset & (sizeof(uint32_t) - 1U)) == 0U && offset <= SID_OFFSET_MASK;
 }
 
+/**
+ * @brief Compute the SRAM-mapped address for a SID offset.
+ *
+ * @param[in] sid SID controller descriptor.
+ * @param[in] offset Byte offset into the SID SRAM window.
+ * @param[out] address Receives the computed SRAM address on success.
+ * @return true when the offset is valid and the address does not wrap.
+ */
 static bool sunxi_sid_sram_address(const sunxi_sid_t *sid, uint32_t offset, uintptr_t *address)
 {
 	uintptr_t sram_base;
@@ -51,6 +75,13 @@ static bool sunxi_sid_sram_address(const sunxi_sid_t *sid, uint32_t offset, uint
 	return true;
 }
 
+/**
+ * @brief Read a 32-bit word from the SID SRAM window.
+ *
+ * @param[in] sid SID controller descriptor.
+ * @param[in] offset Byte offset into the SID SRAM window.
+ * @return The read word, or zero when the offset is invalid.
+ */
 uint32_t sunxi_efuse_sram_read(const sunxi_sid_t *sid, uint32_t offset)
 {
 	uintptr_t address;
@@ -60,6 +91,16 @@ uint32_t sunxi_efuse_sram_read(const sunxi_sid_t *sid, uint32_t offset)
 	return read32(address);
 }
 
+/**
+ * @brief Read a 32-bit efuse word through the SID controller registers.
+ *
+ * Programs the PRCTL offset and access key, polls until the read operation
+ * completes, and returns the value latched in the RDKEY register.
+ *
+ * @param[in] sid SID controller descriptor.
+ * @param[in] offset Word offset of the efuse value to read.
+ * @return The efuse word, or zero on timeout or an invalid offset.
+ */
 uint32_t __attribute__((weak)) sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
 {
 	uintptr_t prctl;
@@ -93,6 +134,18 @@ uint32_t __attribute__((weak)) sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t
 	return read32(sid->base + SID_RDKEY_OFFSET);
 }
 
+/**
+ * @brief Write a 32-bit efuse word through the SID controller registers.
+ *
+ * Raises the high-voltage switch, programs the PRKEY data and PRCTL offset,
+ * starts the write operation, and polls for completion before restoring the
+ * high-voltage switch.
+ *
+ * @param[in] sid SID controller descriptor.
+ * @param[in] offset Word offset of the efuse value to write.
+ * @param[in] value Value to program into the efuse.
+ * @return 0 on success, -1 on timeout or an invalid offset.
+ */
 int __attribute__((weak)) sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value)
 {
 	uintptr_t prctl;
@@ -128,6 +181,14 @@ int __attribute__((weak)) sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t off
 	return 0;
 }
 
+/**
+ * @brief Dump all known SID sections to the console.
+ *
+ * Prints each section name, offset, and bit width followed by its 32-bit
+ * SRAM-read values in a compact table.
+ *
+ * @param[in] sid SID controller descriptor.
+ */
 void sunxi_efuse_dump(const sunxi_sid_t *sid)
 {
 	if (sid == NULL)

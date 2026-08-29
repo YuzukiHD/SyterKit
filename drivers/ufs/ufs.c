@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file ufs.c
+ * @brief Top-level UFS device layer.
+ *
+ * Composes the UFS host controller and SCSI layers into a block-device API:
+ * it performs the device-management handshake, selects the power mode, and
+ * exposes read, write, and capacity helpers.  It adds no register or protocol
+ * details of its own.
+ */
+
 /* Top-level UFS device layer.  It composes ufshc and SCSI without adding
  * register or protocol details of its own. */
 #include <stdbool.h>
@@ -12,6 +22,15 @@
 #include <drivers/ufs/host/sunxi.h>
 #include <drivers/ufs/ufs.h>
 
+/**
+ * @brief Send a NOP command, retrying protocol errors.
+ *
+ * Stops immediately on a transport timeout to avoid spinning on a dead
+ * controller.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return 0 on success, otherwise the last error.
+ */
 static int ufs_nop_retry(struct ufshc_host *host)
 {
 	int ret = UFSHC_ERR_IO;
@@ -32,6 +51,14 @@ static int ufs_nop_retry(struct ufshc_host *host)
 	return ret;
 }
 
+/**
+ * @brief Set or read the fDeviceInit flag with retries.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] set true to set the flag, false to read it.
+ * @param[out] value Receives the flag value when reading.
+ * @return 0 on success, otherwise the last error.
+ */
 static int ufs_query_flag_retry(struct ufshc_host *host, bool set, bool *value)
 {
 	int ret = UFSHC_ERR_IO;
@@ -49,6 +76,14 @@ static int ufs_query_flag_retry(struct ufshc_host *host, bool set, bool *value)
 	return ret;
 }
 
+/**
+ * @brief Read or write the bRefClkFreq attribute with retries.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in,out] value Attribute value to write, or storage for the read.
+ * @param[in] write true to write the attribute, false to read it.
+ * @return 0 on success, otherwise the last error.
+ */
 static int ufs_query_attribute_retry(struct ufshc_host *host, uint32_t *value, bool write)
 {
 	int ret = UFSHC_ERR_IO;
@@ -66,6 +101,15 @@ static int ufs_query_attribute_retry(struct ufshc_host *host, uint32_t *value, b
 	return ret;
 }
 
+/**
+ * @brief Synchronize the device reference clock attribute.
+ *
+ * Reads the platform-selected reference clock frequency and programs the
+ * device bRefClkFreq attribute to match when it differs.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return 0 on success, otherwise an error code.
+ */
 static int ufs_sync_device_ref_clk(struct ufshc_host *host)
 {
 	uint32_t target;
@@ -88,6 +132,17 @@ static int ufs_sync_device_ref_clk(struct ufshc_host *host)
 	return ret;
 }
 
+/**
+ * @brief Select a power mode negotiated with the device.
+ *
+ * Queries the device maximum power mode and computes a HS or PWM mode with
+ * matching gear and lane counts, preferring high speed with fallback to the
+ * device PWM parameters.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[out] selected Receives the selected power mode.
+ * @return 0 on success, otherwise an error code.
+ */
 static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mode *selected)
 {
 	struct ufshc_power_mode device_mode;
@@ -139,6 +194,18 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 	return 0;
 }
 
+/**
+ * @brief Initialize one UFS logical unit.
+ *
+ * Initializes the host controller, completes the NOP and fDeviceInit
+ * handshake, reads the device descriptor and power capabilities, transitions
+ * the link to the selected power mode, and scans the logical unit.
+ *
+ * @param[out] device UFS device descriptor to initialize.
+ * @param[in] config Host controller configuration.
+ * @param[in] lun Logical unit number to attach.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, uint8_t lun)
 {
 	uint64_t start;
@@ -241,11 +308,23 @@ exit_host:
 	return ret;
 }
 
+/**
+ * @brief Initialize the UFS device on LUN 0.
+ *
+ * @param[out] device UFS device descriptor to initialize.
+ * @param[in] config Host controller configuration.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufs_init(struct ufs_device *device, const struct ufshc_config *config)
 {
 	return ufs_init_lun(device, config, 0U);
 }
 
+/**
+ * @brief Tear down the UFS device.
+ *
+ * @param[in,out] device UFS device descriptor to deinitialize.
+ */
 void ufs_exit(struct ufs_device *device)
 {
 	if (!device)
@@ -255,6 +334,15 @@ void ufs_exit(struct ufs_device *device)
 	device->initialized = false;
 }
 
+/**
+ * @brief Read blocks from the UFS device.
+ *
+ * @param[in] device Initialized UFS device descriptor.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to read.
+ * @param[out] buffer Destination buffer.
+ * @return 0 on success, -1 when not initialized, or the SCSI error.
+ */
 int ufs_read(struct ufs_device *device, uint64_t lba, uint32_t blocks, void *buffer)
 {
 	if (!device || !device->initialized)
@@ -262,6 +350,15 @@ int ufs_read(struct ufs_device *device, uint64_t lba, uint32_t blocks, void *buf
 	return ufs_scsi_read(&device->scsi, lba, blocks, buffer);
 }
 
+/**
+ * @brief Write blocks to the UFS device.
+ *
+ * @param[in] device Initialized UFS device descriptor.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to write.
+ * @param[in] buffer Source buffer.
+ * @return 0 on success, -1 when not initialized, or the SCSI error.
+ */
 int ufs_write(struct ufs_device *device, uint64_t lba, uint32_t blocks, const void *buffer)
 {
 	if (!device || !device->initialized)
@@ -269,26 +366,62 @@ int ufs_write(struct ufs_device *device, uint64_t lba, uint32_t blocks, const vo
 	return ufs_scsi_write(&device->scsi, lba, blocks, buffer);
 }
 
+/**
+ * @brief Return the device capacity in blocks.
+ *
+ * @param[in] device UFS device descriptor.
+ * @return The block count, or zero when not initialized.
+ */
 uint64_t ufs_capacity(const struct ufs_device *device)
 {
 	return device && device->initialized ? device->scsi.block_count : 0;
 }
 
+/**
+ * @brief Return the device block size in bytes.
+ *
+ * @param[in] device UFS device descriptor.
+ * @return The block size, or zero when not initialized.
+ */
 uint32_t ufs_block_size(const struct ufs_device *device)
 {
 	return device && device->initialized ? device->scsi.block_size : 0;
 }
 
+/**
+ * @brief Return the device manufacturer ID.
+ *
+ * @param[in] device UFS device descriptor.
+ * @return The manufacturer ID, or zero when not initialized.
+ */
 uint16_t ufs_manufacturer_id(const struct ufs_device *device)
 {
 	return device && device->initialized ? device->scsi.manufacturer_id : 0;
 }
 
+/**
+ * @brief Block-layer read helper.
+ *
+ * @param[in] device UFS device descriptor.
+ * @param[out] buffer Destination buffer.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to read.
+ * @return The number of blocks read, or zero on failure.
+ */
 uint32_t ufs_blk_read(struct ufs_device *device, void *buffer, uint64_t lba, uint32_t blocks)
 {
 	return ufs_read(device, lba, blocks, buffer) ? 0U : blocks;
 }
 
+/**
+ * @brief Block-layer write helper.
+ *
+ * @param[in] device UFS device descriptor.
+ * @param[in] buffer Source buffer.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to write.
+ * @return The number of blocks written, or zero on failure.
+ */
 uint32_t ufs_blk_write(struct ufs_device *device, const void *buffer, uint64_t lba, uint32_t blocks)
 {
 	return ufs_write(device, lba, blocks, buffer) ? 0U : blocks;

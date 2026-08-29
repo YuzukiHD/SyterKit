@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file spif-regs.h
+ * @brief SPI flash (SPIF) controller register map and transfer bit fields.
+ *
+ * Describes the SPIF controller registers, global control bits, DMA
+ * descriptor fields and the opcodes recognized by the SPIF hardware.
+ */
+
 #ifndef __DRIVERS_SPIF_REGS_H__
 #define __DRIVERS_SPIF_REGS_H__
 

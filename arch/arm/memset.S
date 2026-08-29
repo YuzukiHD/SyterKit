@@ -1,3 +1,10 @@
+/**
+ * @file memset.S
+ * @brief ARM assembly implementation of memset().
+ *
+ * Optimised fill routine that word-aligns the destination and stores a
+ * replicated byte value, with a byte-wise path for the remainder.
+ */
     .text
 
     .global memset

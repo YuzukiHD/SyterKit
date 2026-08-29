@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file axp2101.c
+ * @brief X-Powers AXP2101 PMU driver.
+ *
+ * Implements the AXP2101 PMU probe, voltage read/write and debug dump
+ * operations used by the common PMU framework.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +22,9 @@
 #include "axp-config.h"
 
 /* clang-format off */
+/**
+ * @brief Voltage regulator control table for the AXP2101 PMU.
+ */
 static axp_contrl_info axp_ctrl_tbl[] = {
     { "dcdc1", 500, 3400, AXP2101_DC1OUT_VOL, 0x7f, AXP2101_OUTPUT_CTL0, 0, 0,
 	{ {500, 3400, 100}, } },
@@ -59,11 +70,27 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
+/**
+ * @brief Configure the AXP2101 PMU identity and I2C address.
+ *
+ * @param[in] pmu PMU descriptor to fill in.
+ * @param[in] i2c Initialized I2C bus used to reach the PMU.
+ * @return DRIVER_OK on success, or DRIVER_ERROR_INVALID on bad arguments.
+ */
 int pmu_axp2101_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c)
 {
 	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP2101, AXP2101_RUNTIME_ADDR, 0U);
 }
 
+/**
+ * @brief Probe and initialize the AXP2101 PMU.
+ *
+ * Verifies the chip ID over I2C and applies the charge current limit, VBUS
+ * current limit, ADC, PWM mode, VSYS minimum and power control settings.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @return AXP2101_CHIP_ID on success, or -1 on probe or register failure.
+ */
 int pmu_axp2101_init(axp_pmu_t *pmu)
 {
 	uint8_t axp_val;
@@ -171,16 +198,37 @@ int pmu_axp2101_init(axp_pmu_t *pmu)
 	return -1;
 }
 
+/**
+ * @brief Set the output voltage of a named AXP2101 regulator.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @param[in] name Name of the regulator rail to configure.
+ * @param[in] set_vol Desired voltage in millivolts.
+ * @param[in] onoff Non-zero to enable the rail, zero to disable it.
+ * @return 0 on success, or -1 on error.
+ */
 int pmu_axp2101_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
 {
 	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
+/**
+ * @brief Read the current output voltage of a named AXP2101 regulator.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @param[in] name Name of the regulator rail to read.
+ * @return The voltage in millivolts, or a negative value on error.
+ */
 int pmu_axp2101_get_vol(axp_pmu_t *pmu, char *name)
 {
 	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
+/**
+ * @brief Dump all AXP2101 regulator voltages to the debug log.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ */
 void pmu_axp2101_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {

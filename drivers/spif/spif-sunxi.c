@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file spif-sunxi.c
+ * @brief Sunxi SPI Flash (SPIF) controller driver.
+ *
+ * Implements the descriptor-based DMA transfer engine for the SPIF
+ * controller: clock programming, mode/sample configuration, descriptor
+ * encoding, and both normal and DTR transfers, on top of the platform glue
+ * defined in spif-platform.h.
+ */
+
 #include <io.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,34 +33,53 @@
 
 #define DEBUG_SPIF_CLK 0
 
+/** @struct spif_descriptor_op
+ * @brief Hardware DMA descriptor for one SPIF transfer segment.
+ */
 struct spif_descriptor_op {
-	u32 hburst_rw_flag;
-	u32 block_data_len;
-	u32 data_addr;
-	u32 next_des_addr;
-	u32 trans_phase;
-	u32 flash_addr;
-	u32 cmd_mode_buswidth;
-	u32 addr_dummy_data_count;
+	u32 hburst_rw_flag;      /**< Burst direction and DMA flags. */
+	u32 block_data_len;      /**< Data length encoded for the block. */
+	u32 data_addr;           /**< Memory address of the data buffer. */
+	u32 next_des_addr;       /**< Address of the next descriptor, or zero. */
+	u32 trans_phase;         /**< Enabled command/address/mode/dummy phases. */
+	u32 flash_addr;          /**< Target flash address for this segment. */
+	u32 cmd_mode_buswidth;   /**< Command opcode and bus-width encodings. */
+	u32 addr_dummy_data_count; /**< Address, dummy, and data count fields. */
 };
 
 /* SPI operation descriptor preparation. */
 #define SUNXI_SPIF_DESC_COUNT 16U
 #define SUNXI_SPIF_DESC_SIZE  (SUNXI_SPIF_DESC_COUNT * sizeof(struct spif_descriptor_op))
 
+/** @struct sunxi_spif_op_buffers
+ * @brief Descriptor and bounce-buffer allocations for one SPI operation.
+ */
 struct sunxi_spif_op_buffers {
-	struct spif_descriptor_op *desc;
-	void *desc_allocation;
-	uint8_t *cache;
-	void *cache_allocation;
+	struct spif_descriptor_op *desc; /**< Aligned descriptor array. */
+	void *desc_allocation;           /**< Raw allocation backing @p desc. */
+	uint8_t *cache;                  /**< Aligned bounce cache, when used. */
+	void *cache_allocation;          /**< Raw allocation backing @p cache. */
 };
 
 /* Controller register, clock, and mode helpers. */
+/**
+ * @brief Compute a SPIF controller register address.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] offset Register offset within the controller.
+ * @return The absolute register address.
+ */
 static inline uintptr_t sunxi_spif_reg(const sunxi_spif_t *spif, uint32_t offset)
 {
 	return spif->base + offset;
 }
 
+/**
+ * @brief Flush a data-cache range before a DMA transfer.
+ *
+ * @param[in] start Start address of the range.
+ * @param[in] size Size of the range in bytes.
+ */
 static void sunxi_spif_cache_clean(uintptr_t start, uint32_t size)
 {
 #ifdef CONFIG_ARCH_DCACHE
@@ -62,6 +91,12 @@ static void sunxi_spif_cache_clean(uintptr_t start, uint32_t size)
 #endif
 }
 
+/**
+ * @brief Invalidate a data-cache range after a DMA transfer.
+ *
+ * @param[in] start Start address of the range.
+ * @param[in] size Size of the range in bytes.
+ */
 static void sunxi_spif_cache_invalidate(uintptr_t start, uint32_t size)
 {
 #ifdef CONFIG_ARCH_DCACHE
@@ -73,6 +108,11 @@ static void sunxi_spif_cache_invalidate(uintptr_t start, uint32_t size)
 #endif
 }
 
+/**
+ * @brief Disable the SPIF controller clock and reset signals.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ */
 static void sunxi_spif_clock_disable(const sunxi_spif_t *spif)
 {
 	if (spif->clock_reg != 0U)
@@ -83,6 +123,11 @@ static void sunxi_spif_clock_disable(const sunxi_spif_t *spif)
 		clrbits_le32(spif->clk.rst_reg_base, BIT(spif->clk.rst_reg_offset));
 }
 
+/**
+ * @brief Enable the SPIF controller reset and clock signals.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ */
 static void sunxi_spif_clock_enable(const sunxi_spif_t *spif)
 {
 	if (spif->clk.rst_reg_base != 0U)
@@ -91,6 +136,14 @@ static void sunxi_spif_clock_enable(const sunxi_spif_t *spif)
 		setbits_le32(spif->clk.gate_reg_base, BIT(spif->clk.gate_reg_offset));
 }
 
+/**
+ * @brief Poll a controller register until the given bits are clear.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] offset Register offset to poll.
+ * @param[in] mask Bit mask that must read zero.
+ * @return 0 on success, -1 on timeout.
+ */
 static int sunxi_spif_wait_clear(const sunxi_spif_t *spif, uint32_t offset, uint32_t mask)
 {
 	uint32_t timeout = SPIF_TIMEOUT;
@@ -102,6 +155,12 @@ static int sunxi_spif_wait_clear(const sunxi_spif_t *spif, uint32_t offset, uint
 	return 0;
 }
 
+/**
+ * @brief Perform a soft reset of the SPIF controller.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @return 0 on success, -1 on timeout.
+ */
 static int sunxi_spif_soft_reset(const sunxi_spif_t *spif)
 {
 	uint32_t value = readl(sunxi_spif_reg(spif, SPIF_GCA_REG));
@@ -114,6 +173,12 @@ static int sunxi_spif_soft_reset(const sunxi_spif_t *spif)
 	return sunxi_spif_wait_clear(spif, SPIF_GCA_REG, SPIF_GCA_SOFT_SRST);
 }
 
+/**
+ * @brief Reset the SPIF receive and transmit FIFOs.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @return 0 on success, -1 on timeout.
+ */
 static int sunxi_spif_fifo_reset(const sunxi_spif_t *spif)
 {
 	uint32_t value = readl(sunxi_spif_reg(spif, SPIF_GCA_REG));
@@ -122,6 +187,12 @@ static int sunxi_spif_fifo_reset(const sunxi_spif_t *spif)
 	return sunxi_spif_wait_clear(spif, SPIF_GCA_REG, SPIF_GCA_RF_SRST | SPIF_GCA_WF_SRST);
 }
 
+/**
+ * @brief Program the SPI clock phase and polarity.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] mode Clock mode bits (CPHA/CPOL) to apply.
+ */
 static void sunxi_spif_set_mode(const sunxi_spif_t *spif, uint32_t mode)
 {
 	uint32_t value = readl(sunxi_spif_reg(spif, SPIF_GC_REG));
@@ -131,6 +202,13 @@ static void sunxi_spif_set_mode(const sunxi_spif_t *spif, uint32_t mode)
 	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
 }
 
+/**
+ * @brief Select the active chip-select line.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] chip_select Chip-select index (0-3).
+ * @return 0 on success, -1 when @p chip_select is out of range.
+ */
 static int sunxi_spif_set_cs(const sunxi_spif_t *spif, uint8_t chip_select)
 {
 	uint32_t value;
@@ -145,6 +223,11 @@ static int sunxi_spif_set_cs(const sunxi_spif_t *spif, uint8_t chip_select)
 	return 0;
 }
 
+/**
+ * @brief Program the RX sample delay and mode for the controller.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ */
 static void sunxi_spif_set_sample(const sunxi_spif_t *spif)
 {
 	uint32_t value;
@@ -166,6 +249,12 @@ static void sunxi_spif_set_sample(const sunxi_spif_t *spif)
 	mdelay(1);
 }
 
+/**
+ * @brief Enable or disable DTR mode.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] enable true to enable DTR, false to disable.
+ */
 static void sunxi_spif_set_dtr(const sunxi_spif_t *spif, bool enable)
 {
 	uint32_t value = readl(sunxi_spif_reg(spif, SPIF_GC_REG));
@@ -177,6 +266,12 @@ static void sunxi_spif_set_dtr(const sunxi_spif_t *spif, bool enable)
 	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
 }
 
+/**
+ * @brief Route the doubled DTR clock to the controller output.
+ *
+ * @param[in] spif SPIF controller descriptor.
+ * @param[in] enable true to select the doubled clock, false for the normal one.
+ */
 static void sunxi_spif_set_dtr_clock(const sunxi_spif_t *spif, bool enable)
 {
 	uint32_t value = readl(sunxi_spif_reg(spif, SPIF_TC_REG));
@@ -188,12 +283,29 @@ static void sunxi_spif_set_dtr_clock(const sunxi_spif_t *spif, bool enable)
 	writel(value, sunxi_spif_reg(spif, SPIF_TC_REG));
 }
 
+/**
+ * @brief Check whether an opcode uses DTR read addressing.
+ *
+ * @param[in] opcode Flash opcode to test.
+ * @return true for the DTR 1-1-1 / 1-2-2 / 1-4-4 read opcodes.
+ */
 static bool sunxi_spif_is_dtr_opcode(uint8_t opcode)
 {
 	return opcode == SPIF_DTR_READ_1_1_1 || opcode == SPIF_DTR_READ_1_2_2 || opcode == SPIF_DTR_READ_1_4_4 ||
 	       opcode == SPIF_DTR_READ_1_1_1_4B || opcode == SPIF_DTR_READ_1_2_2_4B || opcode == SPIF_DTR_READ_1_4_4_4B;
 }
 
+/**
+ * @brief Program the SPIF clock divider for a requested frequency.
+ *
+ * Searches the (n, m) divider pairs for the closest rate at or below the
+ * request, then writes the clock control register and records the achieved
+ * frequency.
+ *
+ * @param[in,out] spif SPIF controller descriptor.
+ * @param[in] speed_hz Desired bus frequency in Hz.
+ * @return 0 on success, -1 when the clock cannot be configured.
+ */
 static int sunxi_spif_program_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 {
 	uint32_t best_n = 0U;
@@ -268,6 +380,12 @@ static int sunxi_spif_program_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 }
 
 /* Controller lifecycle and runtime configuration. */
+/**
+ * @brief Reset the controller and configure the bus for a transfer.
+ *
+ * @param[in,out] spif SPIF controller descriptor.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_spif_claim_bus(sunxi_spif_t *spif)
 {
 	uint32_t value;
@@ -293,6 +411,13 @@ static int sunxi_spif_claim_bus(sunxi_spif_t *spif)
 	return 0;
 }
 
+/**
+ * @brief Disable, reprogram, and re-enable the SPIF clock.
+ *
+ * @param[in,out] spif SPIF controller descriptor.
+ * @param[in] speed_hz Desired bus frequency in Hz.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_spif_reconfigure_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 {
 	sunxi_spif_clock_disable(spif);
@@ -304,6 +429,14 @@ static int sunxi_spif_reconfigure_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 	return sunxi_spif_claim_bus(spif);
 }
 
+/**
+ * @brief Allocate a cache-line-aligned buffer.
+ *
+ * @param[in] size Requested buffer size in bytes.
+ * @param[out] allocation Raw heap allocation to free later.
+ * @param[out] aligned Cache-line-aligned pointer into the allocation.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on failure.
+ */
 static int sunxi_spif_alloc_aligned(size_t size, void **allocation, void **aligned)
 {
 	uintptr_t address;
@@ -325,6 +458,12 @@ static int sunxi_spif_alloc_aligned(size_t size, void **allocation, void **align
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Translate a SPIF bus-width constant to its hardware encoding.
+ *
+ * @param[in] buswidth SPIF_SINGLE/DUAL/QUAD/OCTAL_MODE constant.
+ * @return The hardware width encoding, or DRIVER_ERROR_INVALID if unknown.
+ */
 static int sunxi_spif_buswidth(uint8_t buswidth)
 {
 	switch (buswidth) {
@@ -341,6 +480,14 @@ static int sunxi_spif_buswidth(uint8_t buswidth)
 	}
 }
 
+/**
+ * @brief Compute a base-plus-offset address with overflow checking.
+ *
+ * @param[in] base Base address.
+ * @param[in] offset Offset to add.
+ * @param[out] result Receives the summed address on success.
+ * @return 0 on success, DRIVER_ERROR_INVALID on overflow or null @p result.
+ */
 static int sunxi_spif_add_offset(uintptr_t base, uint32_t offset, uintptr_t *result)
 {
 	if (result == NULL || (uintptr_t)offset > (uintptr_t)-1 - base)
@@ -349,6 +496,11 @@ static int sunxi_spif_add_offset(uintptr_t base, uint32_t offset, uintptr_t *res
 	return 0;
 }
 
+/**
+ * @brief Initialize a descriptor with the platform burst and length fields.
+ *
+ * @param[out] desc Descriptor to initialize.
+ */
 static void sunxi_spif_init_descriptor(struct spif_descriptor_op *desc)
 {
 	desc->hburst_rw_flag = sunxi_spif_platform_hburst_rw_flag();
@@ -356,6 +508,13 @@ static void sunxi_spif_init_descriptor(struct spif_descriptor_op *desc)
 	desc->addr_dummy_data_count = SPIF_DES_NORMAL_EN;
 }
 
+/**
+ * @brief Encode the command, address, mode, and dummy phases into a descriptor.
+ *
+ * @param[in] op SPI memory operation to encode.
+ * @param[in,out] desc Descriptor to populate.
+ * @return 0 on success, DRIVER_ERROR_INVALID on an unsupported phase.
+ */
 static int sunxi_spif_encode_phases(const struct spi_mem_op *op, struct spif_descriptor_op *desc)
 {
 	int width;
@@ -406,6 +565,21 @@ static int sunxi_spif_encode_phases(const struct spi_mem_op *op, struct spif_des
 	return 0;
 }
 
+/**
+ * @brief Encode the data phase and resolve the DMA buffer address.
+ *
+ * Selects the transfer direction, allocates a bounce cache when the platform
+ * requires one, and encodes the physical buffer address.
+ *
+ * @param[in] op SPI memory operation to encode.
+ * @param[in,out] desc Descriptor to populate.
+ * @param[in,out] buffers Bounce-buffer allocations for this operation.
+ * @param[out] data_len Effective data length to transfer.
+ * @param[out] buffer_addr Encoded DMA buffer address.
+ * @param[out] bounce Set when a bounce buffer is used.
+ * @param[out] bounce_rx Set when the bounce buffer holds received data.
+ * @return 0 on success, DRIVER_ERROR_INVALID on failure.
+ */
 static int sunxi_spif_encode_data(const struct spi_mem_op *op, struct spif_descriptor_op *desc,
 	struct sunxi_spif_op_buffers *buffers, u32 *data_len, u32 *buffer_addr, bool *bounce, bool *bounce_rx)
 {
@@ -462,6 +636,17 @@ static int sunxi_spif_encode_data(const struct spi_mem_op *op, struct spif_descr
 	return 0;
 }
 
+/**
+ * @brief Build the descriptor chain for a SPI memory operation.
+ *
+ * @param[in] op SPI memory operation to encode.
+ * @param[in,out] buffers Descriptor and bounce-buffer allocations.
+ * @param[out] descs First descriptor in the built chain.
+ * @param[out] transfer_len Total data length to transfer.
+ * @param[out] bounce Set when a bounce buffer is used.
+ * @param[out] bounce_rx Set when the bounce buffer holds received data.
+ * @return 0 on success, DRIVER_ERROR_INVALID on failure.
+ */
 static int sunxi_spif_build_descriptors(const struct spi_mem_op *op, struct sunxi_spif_op_buffers *buffers,
 	struct spif_descriptor_op **descs, u32 *transfer_len, bool *bounce, bool *bounce_rx)
 {
@@ -564,6 +749,19 @@ static int sunxi_spif_build_descriptors(const struct spi_mem_op *op, struct sunx
 }
 
 /* Descriptor DMA transfer engine. */
+/**
+ * @brief Execute a descriptor-chain DMA transfer.
+ *
+ * Selects the DTR mode and clock, programs the general-control, phase, address,
+ * and transfer registers for descriptor-based transfers, and polls for the DMA
+ * done interrupt.  The cache is cleaned before and invalidated after the
+ * transfer, and the mode and clock are restored on error.
+ *
+ * @param[in] spif SPI flash controller descriptor.
+ * @param[in] desc First descriptor of the chain to execute.
+ * @param[in] data_len Total data length to transfer in bytes.
+ * @return 0 on success, -1 on failure.
+ */
 static int sunxi_spif_transfer(sunxi_spif_t *spif, struct spif_descriptor_op *desc, uint32_t data_len)
 {
 	uint32_t timeout = SPIF_TIMEOUT;
@@ -687,6 +885,15 @@ restore_mode:
 	return ret;
 }
 
+/**
+ * @brief Initialize the SPI flash controller.
+ *
+ * Validates the descriptor, applies default speed limits, initializes the GPIO
+ * pins, enables the module clock, and programs the default bus frequency.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ * @return 0 on success, -1 on invalid configuration or clock setup failure.
+ */
 int sunxi_spif_init(sunxi_spif_t *spif)
 {
 	uint32_t default_speed;
@@ -732,6 +939,14 @@ int sunxi_spif_init(sunxi_spif_t *spif)
 	return 0;
 }
 
+/**
+ * @brief Disable the SPI flash controller.
+ *
+ * Clears the normal mode, disables the module clock, and marks the controller
+ * as uninitialized.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ */
 void sunxi_spif_disable(sunxi_spif_t *spif)
 {
 	if (spif == NULL || spif->base == 0U)
@@ -742,6 +957,13 @@ void sunxi_spif_disable(sunxi_spif_t *spif)
 	spif->dtr_active = 0U;
 }
 
+/**
+ * @brief Select the active SPI flash chip.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ * @param[in] chip_select Chip-select number to activate.
+ * @return 0 on success, -1 when the controller is invalid or the select fails.
+ */
 int sunxi_spif_select(sunxi_spif_t *spif, uint8_t chip_select)
 {
 	if (spif == NULL || spif->base == 0U || !spif->initialized)
@@ -752,6 +974,17 @@ int sunxi_spif_select(sunxi_spif_t *spif, uint8_t chip_select)
 	return 0;
 }
 
+/**
+ * @brief Update the SPI flash bus clock.
+ *
+ * Validates the requested frequency against the minimum and the maximum
+ * (doubled when DTR is active), disables DTR if it was active, and reprograms
+ * the clock divider.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ * @param[in] speed_hz Requested bus frequency in hertz.
+ * @return 0 on success, -1 when out of range or the clock setup fails.
+ */
 int sunxi_spif_update_clk(sunxi_spif_t *spif, uint32_t speed_hz)
 {
 	uint32_t max_speed;
@@ -772,6 +1005,17 @@ int sunxi_spif_update_clk(sunxi_spif_t *spif, uint32_t speed_hz)
 	return 0;
 }
 
+/**
+ * @brief Apply a set of configuration changes to the controller.
+ *
+ * Applies each flag-bearing field in the configuration: DTR enables, sample
+ * mode and delay, and the bus frequency.  A sample-mode change is re-applied
+ * when the controller is already initialized.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ * @param[in] cfg Configuration fields to apply.
+ * @return 0 on success, -1 on a null argument or invalid speed.
+ */
 int sunxi_spif_set_config(sunxi_spif_t *spif, const struct spif_cfg *cfg)
 {
 	if (spif == NULL || cfg == NULL)
@@ -795,6 +1039,17 @@ int sunxi_spif_set_config(sunxi_spif_t *spif, const struct spif_cfg *cfg)
 	return 0;
 }
 
+/**
+ * @brief Execute a SPI memory operation.
+ *
+ * Allocates the descriptor and bounce buffers, builds the descriptor chain for
+ * the operation, runs the DMA transfer, and copies the bounce buffer back into
+ * the operation data on a successful receive.
+ *
+ * @param[in,out] spif SPI flash controller descriptor.
+ * @param[in] op SPI memory operation to execute.
+ * @return 0 on success, a negative error code on failure.
+ */
 int sunxi_spif_exec_op(sunxi_spif_t *spif, const struct spi_mem_op *op)
 {
 	struct sunxi_spif_op_buffers buffers = { 0 };

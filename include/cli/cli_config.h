@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file cli_config.h
+ * @brief Compile-time configuration for the SyterKit command line shell.
+ *
+ * Defines the command line buffer sizes, history depth, prompt string and
+ * the key bindings and quoting characters used by the CLI line editor and
+ * parser.
+ */
+
 #ifndef __CLI_CONFIG_H__
 #define __CLI_CONFIG_H__
 

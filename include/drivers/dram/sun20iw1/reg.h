@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg.h
+ * @brief Register map for the sun20iw1 DRAM controller.
+ */
+
 #ifndef __SUN20IW1_DRAM_REG_H__
 #define __SUN20IW1_DRAM_REG_H__
 

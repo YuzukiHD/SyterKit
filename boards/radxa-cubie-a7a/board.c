@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Radxa Cubie A7A (sun60iw2).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -24,13 +28,22 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
+/**
+ * @enum sunxi_soc_version_t
+ * @brief SoC silicon revision identifiers.
+ */
 typedef enum {
-	SUNXI_SOC_VER_INVALID = -1,
-	SUNXI_SOC_VER_A = 0,
-	SUNXI_SOC_VER_B = 1,
-	SUNXI_SOC_VER_C = 2,
+	SUNXI_SOC_VER_INVALID = -1, /**< Invalid or unknown silicon revision. */
+	SUNXI_SOC_VER_A = 0, /**< Silicon revision A. */
+	SUNXI_SOC_VER_B = 1, /**< Silicon revision B. */
+	SUNXI_SOC_VER_C = 2, /**< Silicon revision C. */
 } sunxi_soc_version_t;
 
+/**
+ * @brief Read the SoC silicon version from the version register.
+ *
+ * @return The detected SoC revision as a sunxi_soc_version_t value.
+ */
 static sunxi_soc_version_t sunxi_get_soc_ver(void)
 {
 	uint32_t value;
@@ -41,6 +54,11 @@ static sunxi_soc_version_t sunxi_get_soc_ver(void)
 	return SUNXI_SOC_VER_A + value;
 }
 
+/**
+ * @brief Program the PLL LDO voltage for the detected silicon revision.
+ *
+ * @param[in] version SoC silicon revision reported by sunxi_get_soc_ver().
+ */
 static void sunxi_pll_ldo_init(sunxi_soc_version_t version)
 {
 	if (version == SUNXI_SOC_VER_A) {
@@ -52,6 +70,12 @@ static void sunxi_pll_ldo_init(sunxi_soc_version_t version)
 	}
 }
 
+/**
+ * @brief Perform common board initialization.
+ *
+ * Configures the GPIO power mode for revision-B silicon and programs the
+ * PLL LDO for the detected silicon revision.
+ */
 void board_common_init(void)
 {
 	sunxi_gpio_t pio;
@@ -68,6 +92,9 @@ void board_common_init(void)
 	sunxi_pll_ldo_init(version);
 }
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -81,6 +108,13 @@ void clean_syterkit_data(void)
 	printk_info("free interrupt ok...\n");
 }
 
+/**
+ * @brief Print the SoC identification banner for the Radxa Cubie A7A board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the board model, CPU cores, chip SID, chip type, and
+ * chip version to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -118,6 +152,12 @@ void show_chip()
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
+/**
+ * @brief Reset the system using the watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDT0_BASE + 0x08, 0x16aa0001U);

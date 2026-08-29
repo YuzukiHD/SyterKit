@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-ep.c
+ * @brief PCIe endpoint configuration and operation.
+ *
+ * Programs the endpoint header, BARs with optional resizable-BAR support,
+ * inbound and outbound ATU windows, and MSI capabilities for endpoint
+ * functions.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -11,6 +20,13 @@
 #define PCIE_EP_REBAR_MIN_SIZE           (1ULL << 20)
 #define PCIE_EP_BAR_MAX_SIZE             (1ULL << 39)
 
+/**
+ * @brief Validate a BAR size.
+ *
+ * @param[in] size Requested BAR size in bytes.
+ * @return PCIE_OK when the size is a power of two within the supported range,
+ *         PCIE_ERR_INVALID or PCIE_ERR_UNSUPPORTED otherwise.
+ */
 static int pcie_ep_bar_size_valid(uint64_t size)
 {
 	if (size == 0U)
@@ -21,6 +37,14 @@ static int pcie_ep_bar_size_valid(uint64_t size)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Compute the resizable-BAR capability entry for a BAR.
+ *
+ * @param[in] bar BAR number.
+ * @param[in] flags BAR flags (IO and 64-bit bits).
+ * @param[out] entry Receives the REBAR capability entry index.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_ep_rebar_entry(uint8_t bar, uint32_t flags,
 		uint32_t *entry)
 {
@@ -41,6 +65,13 @@ static int pcie_ep_rebar_entry(uint8_t bar, uint32_t flags,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Encode a size as a resizable-BAR control value.
+ *
+ * @param[in] size Requested BAR size in bytes.
+ * @param[out] value Receives the REBAR size field encoding.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_ep_rebar_size(uint64_t size, uint32_t *value)
 {
 	uint64_t rebar_size;
@@ -64,6 +95,14 @@ static int pcie_ep_rebar_size(uint64_t size, uint32_t *value)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Compute the DBI offset of an endpoint function.
+ *
+ * @param[in] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[out] offset Receives the function's configuration offset.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_ep_function_offset(const struct pcie *pcie, uint8_t function,
 		uint32_t *offset)
 {
@@ -77,6 +116,13 @@ static int pcie_ep_function_offset(const struct pcie *pcie, uint8_t function,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Initialize the PCIe instance for endpoint mode.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] config PCIe controller configuration.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_init(struct pcie *pcie, const struct pcie_config *config)
 {
 	uint32_t value;
@@ -101,6 +147,13 @@ fail:
 	return ret;
 }
 
+/**
+ * @brief Initialize the endpoint from a devicetree node.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] node Devicetree node offset.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_init_dt(struct pcie *pcie, int node)
 {
 	struct pcie_config config;
@@ -111,6 +164,14 @@ int pcie_ep_init_dt(struct pcie *pcie, int node)
 	return pcie_ep_init(pcie, &config);
 }
 
+/**
+ * @brief Write an endpoint function's type-0 configuration header.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[in] header Header fields to program.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
 		const struct pcie_ep_header *header)
 {
@@ -159,6 +220,17 @@ int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
 	return ret;
 }
 
+/**
+ * @brief Configure an endpoint BAR and its inbound ATU window.
+ *
+ * Programs the BAR register, enables the corresponding inbound translation
+ * window, and sets up resizable-BAR sizes when the capability is present.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[in] bar BAR configuration to apply.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 		const struct pcie_ep_bar *bar)
 {
@@ -264,6 +336,14 @@ disable_atu:
 	return ret;
 }
 
+/**
+ * @brief Disable an endpoint BAR and its inbound ATU window.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[in] bar BAR number to clear.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_clear_bar(struct pcie *pcie, uint8_t function, uint8_t bar)
 {
 	uint32_t function_offset;
@@ -302,6 +382,18 @@ int pcie_ep_clear_bar(struct pcie *pcie, uint8_t function, uint8_t bar)
 	return ret;
 }
 
+/**
+ * @brief Program an inbound address translation window.
+ *
+ * @param[in] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[in] index ATU window index.
+ * @param[in] type Window type (memory, IO, or config).
+ * @param[in] local_addr Local (CPU) base address.
+ * @param[in] pci_addr PCI-side base address.
+ * @param[in] size Window size in bytes.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function,
 		uint8_t index, enum pcie_atu_type type, uint64_t local_addr,
 		uint64_t pci_addr, uint64_t size)
@@ -324,6 +416,17 @@ int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function,
 	return pcie_controller_program_atu(&pcie->controller, &region);
 }
 
+/**
+ * @brief Program an outbound address translation window.
+ *
+ * @param[in] pcie Initialized PCIe instance in EP mode.
+ * @param[in] index ATU window index.
+ * @param[in] type Window type (memory, IO, or config).
+ * @param[in] local_addr Local (CPU) base address.
+ * @param[in] pci_addr PCI-side base address.
+ * @param[in] size Window size in bytes.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index,
 		enum pcie_atu_type type, uint64_t local_addr, uint64_t pci_addr,
 		uint64_t size)
@@ -343,6 +446,14 @@ int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index,
 	return pcie_controller_program_atu(&pcie->controller, &region);
 }
 
+/**
+ * @brief Configure the MSI multiple-message capability of a function.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @param[in] function Endpoint function number.
+ * @param[in] multiple_message_capable Encoded MMC value (0-5).
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function,
 		uint8_t multiple_message_capable)
 {
@@ -377,6 +488,12 @@ int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function,
 	return ret;
 }
 
+/**
+ * @brief Start the endpoint link training state machine.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_start(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP)
@@ -384,6 +501,12 @@ int pcie_ep_start(struct pcie *pcie)
 	return pcie_controller_ltssm(&pcie->controller, true);
 }
 
+/**
+ * @brief Stop the endpoint link training state machine.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in EP mode.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_ep_stop(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP)
@@ -391,6 +514,12 @@ int pcie_ep_stop(struct pcie *pcie)
 	return pcie_controller_ltssm(&pcie->controller, false);
 }
 
+/**
+ * @brief Report whether the endpoint link is up.
+ *
+ * @param[in] pcie Initialized PCIe instance in EP mode.
+ * @return true when the link is up.
+ */
 bool pcie_ep_link_up(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP)

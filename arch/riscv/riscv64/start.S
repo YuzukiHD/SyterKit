@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file start.S
+ * @brief RISC-V 64-bit firmware start-up assembly.
+ *
+ * Disables machine interrupts, sets up the stack, and performs the early
+ * initialisation required before the main firmware entry point runs.
+ */
 #include <asm/trap.h>
 #include <csr.h>
 

@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file dram-sun55iw6.c
+ * @brief DRAM controller driver for the Allwinner sun55iw6 SoC.
+ *
+ * Registers the DRAM driver with the DT2C driver framework. DRAM
+ * initialization is performed by the blob loaded at runtime.
+ */
+
 #include <barrier.h>
 #include <io.h>
 #include <mmu.h>

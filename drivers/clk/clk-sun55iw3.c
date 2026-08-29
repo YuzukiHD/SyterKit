@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun55iw3.c
+ * @brief Clock driver for the Allwinner A523/A527/MR527/T527 (sun55iw3) SoC.
+ *
+ * Programs the CPU, PERIPH and module PLLs together with the AHB/APB and MBUS
+ * clocks during early boot, and provides a clock dump helper.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -15,13 +23,23 @@
 #include <drivers/clk/sun55iw3/clk.h>
 #include <drivers/clk/sun55iw3/reg.h>
 
+/**
+ * @struct core_pll_freq_fact
+ * @brief PLL divider factors used to program a CPU core PLL.
+ */
 typedef struct {
-	int FactorN;
-	int FactorM0;
-	int FactorM1;
-	int FactorP;
+	int FactorN;  /**< N divider factor. */
+	int FactorM0; /**< M0 divider factor. */
+	int FactorM1; /**< M1 divider factor. */
+	int FactorP;  /**< P divider factor. */
 } core_pll_freq_fact;
 
+/**
+ * @brief Set a single bit in a memory mapped register.
+ *
+ * @param[in] cpux Register address.
+ * @param[in] bit  Bit number to set.
+ */
 static void set_bit(uintptr_t cpux, u8 bit)
 {
 	uint32_t reg_val;
@@ -31,6 +49,12 @@ static void set_bit(uintptr_t cpux, u8 bit)
 	printk_trace("set_bit cpux = 0x%08x, bit = %d\n", cpux, bit);
 }
 
+/**
+ * @brief Clear a single bit in a memory mapped register.
+ *
+ * @param[in] cpux Register address.
+ * @param[in] bit  Bit number to clear.
+ */
 static void clear_bit(uintptr_t cpux, u8 bit)
 {
 	uint32_t reg_val;
@@ -40,6 +64,17 @@ static void clear_bit(uintptr_t cpux, u8 bit)
 	printk_trace("clear_bit cpux = 0x%08x, bit = %d\n", cpux, bit);
 }
 
+/**
+ * @brief Enable a CPU PLL with the given divider factors.
+ *
+ * Writes the default register value, programs the PLL factors from @p CPUx,
+ * then enables the PLL, LDO, lock and update bits and waits for the PLL to
+ * lock.
+ *
+ * @param[in] cpux        PLL control register address.
+ * @param[in] CPUx        PLL divider factors.
+ * @param[in] default_val Default value written to the control register.
+ */
 static void enable_pll(uintptr_t cpux, core_pll_freq_fact *CPUx, uint32_t default_val)
 {
 	uint32_t reg_val;
@@ -81,6 +116,12 @@ static void enable_pll(uintptr_t cpux, core_pll_freq_fact *CPUx, uint32_t defaul
 	set_bit(cpux, 26);
 }
 
+/**
+ * @brief Configure the CPU and DSU PLLs and select the core clock sources.
+ *
+ * Enables PLL_CPU1 (core0~3), PLL_CPU3 (core4~7) and PLL_CPU2 (DSU), then
+ * selects these PLLs as the respective CPU/DSU clock sources.
+ */
 static void set_pll_cpux_axi(void)
 {
 	uint32_t reg_val;
@@ -142,6 +183,12 @@ static void set_pll_cpux_axi(void)
 	sdelay(20);
 }
 
+/**
+ * @brief Enable the PERIPH0 PLL.
+ *
+ * Programs the default PLL factors, enables lock and the PLL, and waits for
+ * the PLL to lock. If FEL has already enabled the PLL this is a no-op.
+ */
 static void set_pll_periph0(void)
 {
 	uint32_t reg_val;
@@ -179,6 +226,12 @@ static void set_pll_periph0(void)
 	writel(reg_val, SUNXI_CCMU_BASE + CCU_PLL_PERI0_CTRL_REG);
 }
 
+/**
+ * @brief Enable the PERIPH1 PLL.
+ *
+ * Programs the default PLL factors, enables lock and the PLL, and waits for
+ * the PLL to lock. If FEL has already enabled the PLL this is a no-op.
+ */
 static void set_pll_periph1(void)
 {
 	uint32_t reg_val;
@@ -216,6 +269,11 @@ static void set_pll_periph1(void)
 	writel(reg_val, SUNXI_CCMU_BASE + CCU_PLL_PERI1_CTRL_REG);
 }
 
+/**
+ * @brief Configure the AHB0 bus clock.
+ *
+ * Sets the AHB0 divider to derive 200 MHz from the 600 MHz PLL.
+ */
 static void set_ahb(void)
 {
 	/* PLL6:AHB1:APB1 = 600M:200M  AHB = src clk/M */
@@ -224,6 +282,11 @@ static void set_ahb(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Configure the APB0 bus clock.
+ *
+ * Sets the APB0 divider to derive 100 MHz from the 600 MHz PLL.
+ */
 static void set_apb(void)
 {
 	/*PLL6:APB0 = 600M:100M  APB = src clk/M */
@@ -232,6 +295,12 @@ static void set_apb(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Deassert the DMA reset and open the DMA clock gate.
+ *
+ * Releases the DMA from reset and enables the gating clock so the DMA engine
+ * can be used by the boot loader.
+ */
 static void set_pll_dma(void)
 {
 	/*dma reset*/
@@ -241,6 +310,12 @@ static void set_pll_dma(void)
 	writel(readl(SUNXI_CCMU_BASE + CCU_DMA_BGR_REG) | (1 << 0), SUNXI_CCMU_BASE + CCU_DMA_BGR_REG);
 }
 
+/**
+ * @brief Configure the MBUS clock.
+ *
+ * Resets the MBUS domain, sets the divider to derive 466 MHz from the DDR
+ * PLL, selects that source and opens the MBUS clock gate.
+ */
 static void set_pll_mbus(void)
 {
 	uint32_t reg_val = 0;
@@ -262,6 +337,12 @@ static void set_pll_mbus(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Enable the analog calibration circuits.
+ *
+ * Powers on the analog calibration block used by the ADC and other analog
+ * peripherals.
+ */
 static void set_circuits_analog(void)
 {
 	/* calibration circuits analog enable */
@@ -278,6 +359,12 @@ static void set_circuits_analog(void)
 	sdelay(1);
 }
 
+/**
+ * @brief Enable the IOMMU gating clock and auto gating.
+ *
+ * Opens the IOMMU clock gate and enables hardware auto gating so the IOMMU
+ * clock is only running when required.
+ */
 static inline void set_iommu_auto_gating(void)
 {
 	/*gating clock for iommu*/
@@ -286,12 +373,23 @@ static inline void set_iommu_auto_gating(void)
 	writel(0x01, SUNXI_IOMMU_BASE + 0x40U);
 }
 
+/**
+ * @brief Apply the platform-specific clock configuration.
+ *
+ * Enables the analog calibration circuits and the IOMMU auto gating.
+ */
 static void set_platform_config(void)
 {
 	set_circuits_analog();
 	set_iommu_auto_gating();
 }
 
+/**
+ * @brief Enable all module PLLs.
+ *
+ * Walks the list of module PLL control registers and enables any PLL that is
+ * not yet running, waiting for each one to lock.
+ */
 static void set_modules_clock(void)
 {
 	uint32_t reg_val, i;
@@ -324,6 +422,12 @@ static void set_modules_clock(void)
 	}
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Applies the platform configuration, then programs the CPU PLLs, PERIPH0/1
+ * PLLs, AHB/APB dividers, DMA, MBUS and module clocks.
+ */
 void sunxi_clk_init(void)
 {
 	printk_debug("Set SoC 1890 (A523/A527/MR527/T527) CLK Start.\n");
@@ -340,6 +444,12 @@ void sunxi_clk_init(void)
 	return;
 }
 
+/**
+ * @brief Reset the AHB/APB and CPUX clocks to their default state.
+ *
+ * Switches AHB0 and APB0 back to the OSC24M source and restores the default
+ * CPU clock configuration register.
+ */
 void sunxi_clk_reset(void)
 {
 	uint32_t reg_val;
@@ -357,6 +467,15 @@ void sunxi_clk_reset(void)
 	return;
 }
 
+/**
+ * @brief Set the CPU PLL to a given frequency.
+ *
+ * Switches the CPU clock to OSC24M, re-tunes PLL_CPU1 for the requested
+ * frequency and PLL_CPU2 for 936 MHz, then selects PLL_CPU1/P and PLL_CPU2/P
+ * as the core and DSU clock sources.
+ *
+ * @param[in] freq Desired CPU frequency in MHz.
+ */
 void sun55iw3_clk_set_cpu_pll(uint32_t freq)
 {
 	uint32_t reg_val = 0;
@@ -401,6 +520,15 @@ void sun55iw3_clk_set_cpu_pll(uint32_t freq)
 	sdelay(20);
 }
 
+/**
+ * @brief Dump the frequency of one CPU core clock.
+ *
+ * Resolves the clock source and prints the computed frequency of the given
+ * CPU domain.
+ *
+ * @param[in] cpuid   CPU index used for the log output.
+ * @param[in] cpu_reg PLL control register address of the CPU domain.
+ */
 static void sunxi_cpux_clk_dump(uint8_t cpuid, uintptr_t cpu_reg)
 {
 	uint32_t reg_val;
@@ -437,6 +565,12 @@ static void sunxi_cpux_clk_dump(uint8_t cpuid, uintptr_t cpu_reg)
 	printk_debug("CLK: CPU%d FREQ=%luMHz\r\n", cpuid, clock / factor_p);
 }
 
+/**
+ * @brief Dump the current SoC clock configuration.
+ *
+ * Prints the CPU0..CPU3 frequencies and the computed PERIPH0/PERIPH1, DDR0/
+ * DDR1 and HSIC PLL frequencies.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg32;

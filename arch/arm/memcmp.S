@@ -1,3 +1,10 @@
+/**
+ * @file memcmp.S
+ * @brief ARM assembly implementation of memcmp().
+ *
+ * Word-wise comparison routine that returns a negative, zero, or positive
+ * value based on the first differing byte of the two buffers.
+ */
     .text
 
     .global memcmp

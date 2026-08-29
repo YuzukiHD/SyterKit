@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file dram-sun8iw20.c
+ * @brief DRAM controller driver for the Allwinner sun8iw20 SoC.
+ *
+ * In-tree DRAM controller initialization for the sun8iw20 SoC: sets the DDR
+ * supply voltage, computes the timing parameters, configures the controller
+ * and PHY, auto-scans the SDRAM topology and size, and runs a memory
+ * write/read test.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -18,6 +28,14 @@
 
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
 
+/**
+ * @brief Convert a time in nanoseconds to DRAM clock ticks.
+ *
+ * @param[in] para        DRAM parameters providing the controller clock.
+ * @param[in] nanoseconds Time span in nanoseconds.
+ *
+ * @return Number of controller clock ticks covering the given time span.
+ */
 static int ns_to_t(dram_para_t *para, int nanoseconds)
 {
 	const unsigned int ctrl_freq = para->dram_clk / 2;
@@ -25,6 +43,15 @@ static int ns_to_t(dram_para_t *para, int nanoseconds)
 	return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
 }
 
+/**
+ * @brief Apply the LDOB calibration from the SID e-fuse.
+ *
+ * Reads the LDOB calibration value stored in the SID and adjusts the LDO
+ * control register according to the DRAM type.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the DRAM type.
+ */
 static void sid_read_ldoB_cal(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	uint32_t reg;
@@ -49,6 +76,15 @@ static void sid_read_ldoB_cal(const sunxi_dram_t *dram, dram_para_t *para)
 	clrsetbits_le32((dram->registers.sysctrl.base + LDO_CTAL_REG), 0xff00, reg << 8);
 }
 
+/**
+ * @brief Set the DRAM supply voltage.
+ *
+ * Programs the LDO control register with the voltage selected for the DRAM
+ * type, then applies the SID LDOB calibration.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the DRAM type.
+ */
 static void dram_voltage_set(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	int vol;
@@ -72,6 +108,13 @@ static void dram_voltage_set(const sunxi_dram_t *dram, dram_para_t *para)
 	sid_read_ldoB_cal(dram, para);
 }
 
+/**
+ * @brief Enable all DRAM masters.
+ *
+ * Writes the master enable registers so every master can access the DRAM.
+ *
+ * @param[in] dram DRAM controller register block.
+ */
 static void dram_enable_all_master(const sunxi_dram_t *dram)
 {
 	writel(~0, (dram->registers.mctl_com.base + MCTL_COM_MAER0));
@@ -80,6 +123,14 @@ static void dram_enable_all_master(const sunxi_dram_t *dram)
 	udelay(10);
 }
 
+/**
+ * @brief Disable all DRAM masters.
+ *
+ * Writes the master enable registers so no master can access the DRAM while
+ * it is being configured.
+ *
+ * @param[in] dram DRAM controller register block.
+ */
 static void dram_disable_all_master(const sunxi_dram_t *dram)
 {
 	writel(1, (dram->registers.mctl_com.base + MCTL_COM_MAER0));
@@ -88,6 +139,16 @@ static void dram_disable_all_master(const sunxi_dram_t *dram)
 	udelay(10);
 }
 
+/**
+ * @brief Program the PHY eye delay compensation values.
+ *
+ * Applies the read/write DQ, DQS and AC (RAS/CAS/CA/CK/CS) delay values taken
+ * from the DRAM timing parameters to the PHY IOCR registers, toggling the AC
+ * loopback FIFO reset around the configuration.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the delay values.
+ */
 static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	uint32_t delay, i = 0;
@@ -147,6 +208,16 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para)
  * Main purpose of the auto_set_timing routine seems to be to calculate all
  * timing settings for the specific type of sdram used. Read together with
  * an sdram datasheet for context on the various variables.
+ */
+/**
+ * @brief Compute and program the SDRAM timing parameters.
+ *
+ * Calculates the timing values for the configured DRAM type, then programs
+ * the mode registers, timing registers, refresh timing and PHY interface
+ * timing of the DRAM controller.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the timing configuration.
  */
 static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para)
 {
@@ -470,6 +541,18 @@ static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para)
 // Purpose of this routine seems to be to initialize the PLL driving
 // the MBUS and sdram.
 //
+/**
+ * @brief Configure the DDR PLL and clock gate.
+ *
+ * Programs the DDR PLL divider for the requested DRAM clock, waits for the
+ * PLL to lock, enables its output and turns on the DRAM clock gate.
+ *
+ * @param[in] dram  DRAM controller register block.
+ * @param[in] index PLL index, reserved for future use.
+ * @param[in] para  DRAM parameters providing the DRAM clock.
+ *
+ * @return The resulting PLL frequency in MHz (n * 24).
+ */
 static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
@@ -513,6 +596,16 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 //
+/**
+ * @brief Initialize the DRAM controller system clocks.
+ *
+ * Asserts the MBUS/DRAM resets, turns off the DRAM clock gates, configures
+ * the DDR PLL via ccu_set_pll_ddr_clk, then releases the resets and turns the
+ * clock gates on.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the DRAM clock.
+ */
 static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	// assert MBUS reset
@@ -553,6 +646,16 @@ static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para)
 // from the dram_para1 and dram_para2 fields to the PHY configuration registers
 // (MCTL_COM_WORK_MODE0, MCTL_COM_WORK_MODE1).
 //
+/**
+ * @brief Initialize the DRAM controller common registers.
+ *
+ * Sets the DRAM type, word width and rank/bank/row/page geometry in the
+ * controller work mode registers, the ODT mapping and the address remapping
+ * from the DRAM parameters.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the memory geometry.
+ */
 static void mctl_com_init(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	uint32_t val, width;
@@ -661,6 +764,16 @@ static const uint8_t ac_remapping_tables[][22] = {
  * It is unclear which lines are being remapped. It seems to pick
  * table cfg7 for the Nezha board.
  */
+/**
+ * @brief Apply the DRAM address/command pin remapping.
+ *
+ * Selects one of the AC remapping tables based on the DDR type, chip ID and
+ * efuse, programs the controller REMAP0-3 registers and enables the AC
+ * remapping. Only DDR2/DDR3 support remap.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the DRAM type.
+ */
 static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	const uint8_t *cfg;
@@ -754,6 +867,19 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 // Init the controller channel. The key part is placing commands in the main
 // Issue commands through PIR and check completion through PGSR0.
 //
+/**
+ * @brief Initialize the DRAM controller channel.
+ *
+ * Configures the clock, DQS gating mode, ZQ, ODT and delay compensation, then
+ * issues the PIR commands to drive the DRAM and PHY initialization sequence,
+ * waiting for completion and checking for ZQ calibration errors.
+ *
+ * @param[in] dram     DRAM controller register block.
+ * @param[in] ch_index Channel index, currently always 0.
+ * @param[in] para     DRAM parameters providing the memory configuration.
+ *
+ * @return 1 on success, 0 on failure.
+ */
 static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_index, dram_para_t *para)
 {
 	unsigned int val, dqs_gating_mode;
@@ -912,6 +1038,14 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 	return 1;
 }
 
+/**
+ * @brief Calculate the size of a single DRAM rank.
+ *
+ * @param[in] regval Work mode register value holding the page, row and bank
+ *                   bit widths.
+ *
+ * @return Rank size in megabytes.
+ */
 static unsigned int calculate_rank_size(uint32_t regval)
 {
 	unsigned int bits;
@@ -928,6 +1062,16 @@ static unsigned int calculate_rank_size(uint32_t regval)
  * The below routine reads the dram config registers and extracts
  * the number of address bits in each rank available. It then calculates
  * total memory size in MB.
+ */
+/**
+ * @brief Determine the total DRAM size.
+ *
+ * Reads the work mode registers and sums the sizes of both ranks, accounting
+ * for identical or different rank configurations.
+ *
+ * @param[in] dram DRAM controller register block.
+ *
+ * @return Total DRAM size in megabytes.
  */
 static unsigned int DRAMC_get_dram_size(const sunxi_dram_t *dram)
 {
@@ -954,6 +1098,17 @@ static unsigned int DRAMC_get_dram_size(const sunxi_dram_t *dram)
  * channel_init. If error bit 22 is reset, we have two ranks and full DQ.
  * If there was an error, figure out whether it was half DQ, single rank,
  * or both. Set bit 12 and 0 in dram_para2 with the results.
+ */
+/**
+ * @brief Detect the rank count and DQ width from the DQS training status.
+ *
+ * Reads the PHY status registers after the DQS training command and updates
+ * dram_para2 with the rank and DQ width findings.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters updated with the rank/DQ width.
+ *
+ * @return 1 on success, 0 on failure.
  */
 static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 {
@@ -996,6 +1151,18 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 	return 0;
 }
 
+/**
+ * @brief Run a simple DRAM write/read test.
+ *
+ * Writes two complementary patterns across the memory and reads them back,
+ * reporting the first mismatching address.
+ *
+ * @param[in] dram   DRAM controller register block providing the memory base.
+ * @param[in] mem_mb Total DRAM size in megabytes.
+ * @param[in] len    Number of words to test.
+ *
+ * @return 0 on success, 1 on test failure.
+ */
 static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, int len)
 {
 	unsigned int offs = (mem_mb / 2) << 18; // half of memory size
@@ -1033,6 +1200,15 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, i
 
 // Set the Vref mode for the controller
 //
+/**
+ * @brief Set the PHY Vref and ZQ values.
+ *
+ * Programs the I/O Vref calibration registers from the DRAM parameters unless
+ * the calibration is disabled.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the Vref values.
+ */
 static void mctl_vrefzq_init(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	if (para->dram_tpr13 & (1 << 17))
@@ -1050,6 +1226,18 @@ static void mctl_vrefzq_init(const sunxi_dram_t *dram, dram_para_t *para)
 // establish the actual ram size. The third time is final one, with the final
 // settings.
 //
+/**
+ * @brief Perform a full DRAM controller initialization.
+ *
+ * Runs the system, Vref/ZQ, controller common, AC remapping and timing
+ * configuration stages, then initializes the channel. This is used several
+ * times with progressively more complete settings.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters providing the memory configuration.
+ *
+ * @return Result of the channel initialization.
+ */
 static int mctl_core_init(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	mctl_sys_init(dram, para);
@@ -1075,6 +1263,18 @@ static int mctl_core_init(const sunxi_dram_t *dram, dram_para_t *para)
  * Next the BA2 line is checked. This seems to be placed above the column,
  * BA0-1 and row addresses. Finally, the column address is allocated 13 lines
  * and these are tested. The results are placed in dram_para1 and dram_para2.
+ */
+/**
+ * @brief Auto-scan the DRAM size.
+ *
+ * Initializes the controller and cycles through the address lines to determine
+ * the row, bank and page geometry of each rank, storing the results in
+ * dram_para1.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters updated with the scanned geometry.
+ *
+ * @return 1 on success, 0 on failure.
  */
 static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 {
@@ -1234,6 +1434,17 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
  * full or half DQ width. It then resets the parameters to the original values.
  * dram_para2 is updated with the rank and width findings.
  */
+/**
+ * @brief Auto-scan the DRAM rank count and DQ width.
+ *
+ * Configures the core with DQS probe mode and two ranks enabled, then detects
+ * the actual rank count and DQ width, updating dram_para2.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters updated with the rank/width findings.
+ *
+ * @return 1 on success, 0 on failure.
+ */
 static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	unsigned int s1 = para->dram_tpr13;
@@ -1265,6 +1476,17 @@ static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para
  * the size of each rank. It then updates dram_tpr13 to reflect that the sizes
  * are now known: a re-init will not repeat the autoscan.
  */
+/**
+ * @brief Auto-scan the complete DRAM configuration.
+ *
+ * Runs the rank/width and size scans when they are not already known, and
+ * marks the results as known so a re-init skips the autoscan.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] para DRAM parameters updated with the scanned configuration.
+ *
+ * @return 1 on success, 0 on failure.
+ */
 static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(dram, para) == 0)) {
@@ -1283,6 +1505,20 @@ static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para)
 	return 1;
 }
 
+/**
+ * @brief Initialize the DRAM.
+ *
+ * Configures the ZQ controller and DDR voltage, optionally auto-scans the
+ * DRAM topology, performs the final core initialization, determines the DRAM
+ * size, applies the refresh, ODT and VTF settings and runs a memory test if
+ * requested.
+ *
+ * @param[in] dram DRAM controller register block.
+ * @param[in] type Reserved for future use.
+ * @param[in] para DRAM parameters providing the memory configuration.
+ *
+ * @return Detected DRAM size in megabytes, or 0 on failure.
+ */
 static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 {
 	uint32_t rc, mem_size_mb;
@@ -1396,6 +1632,15 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	return mem_size_mb;
 }
 
+/**
+ * @brief Initialize the DRAM controller.
+ *
+ * Validates the DRAM parameters and runs the in-tree DRAM initialization.
+ *
+ * @param[in] dram DRAM configuration block.
+ *
+ * @return Detected DRAM size in bytes, or 0 on failure.
+ */
 uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
 	if (dram == NULL || dram->memory_size < sizeof(uint32_t) || dram->parameter_count < sizeof(dram_para_t) / sizeof(uint32_t))

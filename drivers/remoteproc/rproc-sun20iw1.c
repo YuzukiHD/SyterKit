@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file rproc-sun20iw1.c
+ * @brief Sun20iw1 HiFi4 remote processor bring-up.
+ *
+ * Implements the remoteproc callbacks that remap the SRAM, configure the
+ * HiFi4 DSP clock and reset controls and release the DSP from reset.
+ */
+
 #include <stdint.h>
 
 #include <driver.h>
@@ -11,12 +19,22 @@
 
 #include "hifi4-reg.h"
 
+/**
+ * @brief Register resource indices used by the HiFi4 remote processor.
+ */
 enum sun20iw1_hifi4_register {
 	SUN20IW1_HIFI4_SYSCTRL,
 	SUN20IW1_HIFI4_DSP_CFG,
 	SUN20IW1_HIFI4_CCU,
 };
 
+/**
+ * @brief Remap the SRAM window visible to the HiFi4 DSP.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @param[in] local When true the SRAM is mapped to the local (DSP) side,
+ *                  otherwise it is remapped to the host side.
+ */
 static void sun20iw1_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local)
 {
 	uint32_t value;
@@ -28,6 +46,12 @@ static void sun20iw1_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local
 	writel(value, sysctrl + SRAMC_SRAM_REMAP_REG);
 }
 
+/**
+ * @brief Set or clear the HiFi4 DSP run/stall control bit.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @param[in] stall When true the DSP is held in the stall state.
+ */
 static void sun20iw1_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool stall)
 {
 	uint32_t value;
@@ -39,6 +63,17 @@ static void sun20iw1_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool st
 	writel(value, dsp_cfg + DSP_CTRL_REG0);
 }
 
+/**
+ * @brief Prepare the HiFi4 DSP for execution.
+ *
+ * Remaps the SRAM, selects the DSP clock source and divisor, de-asserts the
+ * configuration and debug resets, programs the alternate reset vector when
+ * needed and enables the DSP clock.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success.
+ */
 static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value = 0U;
@@ -78,6 +113,14 @@ static int sun20iw1_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Start the HiFi4 DSP.
+ *
+ * Remaps the SRAM to the local side and releases the run/stall control.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun20iw1_hifi4_start(sunxi_remoteproc_t *remoteproc)
 {
 	sun20iw1_hifi4_sram_remap(remoteproc, false);
@@ -85,6 +128,15 @@ static int sun20iw1_hifi4_start(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Reset the HiFi4 DSP.
+ *
+ * Disables the DSP configuration gating and clears the DSP reset and gating
+ * register.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun20iw1_hifi4_reset(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value;
@@ -97,6 +149,9 @@ static int sun20iw1_hifi4_reset(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief HiFi4 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun20iw1_hifi4_reset,
 	.prepare = sun20iw1_hifi4_prepare,

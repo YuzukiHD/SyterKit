@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file syterkit.lds.S
+ * @brief ARM linker script for the SyterKit firmware image.
+ *
+ * Lays out the SPL output sections in RAM for the ARM32 target, with
+ * separate load segments for text and data.
+ */
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_start)

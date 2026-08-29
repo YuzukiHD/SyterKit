@@ -1,7 +1,19 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sid-sun50iw10.c
+ * @brief Sun50iw10 eFuse SID section layout.
+ *
+ * Defines the named eFuse storage sections available on this SoC.
+ */
+
 #include "sid-internal.h"
 
+/**
+ * @brief eFuse section layout for the Sun50iw10 SoC.
+ *
+ * Each entry names an eFuse region, its byte offset and its size in bits.
+ */
 const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "chipid", 0x0000, 128 },
 	{ "brom-conf", 0x0010, 32 },
@@ -26,4 +38,7 @@ const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "backup-key1", 0x00f8, 72 },
 };
 
+/**
+ * @brief Number of entries in #sunxi_sid_sections.
+ */
 const size_t sunxi_sid_section_count = sizeof(sunxi_sid_sections) / sizeof(sunxi_sid_sections[0]);

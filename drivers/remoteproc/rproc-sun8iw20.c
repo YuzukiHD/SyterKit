@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file rproc-sun8iw20.c
+ * @brief Sun8iw20 HiFi4 and C906 remote processor bring-up.
+ *
+ * Implements the remoteproc callbacks for both the HiFi4 DSP and the RISC-V
+ * C906 core, covering SRAM remap, clock, reset and clock reporting.
+ */
+
 #include <stdint.h>
 
 #include <driver.h>
@@ -12,17 +20,30 @@
 
 #include "hifi4-reg.h"
 
+/**
+ * @brief Register resource indices used by the HiFi4 remote processor.
+ */
 enum sun8iw20_hifi4_register {
 	SUN8IW20_HIFI4_SYSCTRL,
 	SUN8IW20_HIFI4_DSP_CFG,
 	SUN8IW20_HIFI4_CCU,
 };
 
+/**
+ * @brief Register resource indices used by the C906 remote processor.
+ */
 enum sun8iw20_c906_register {
 	SUN8IW20_C906_CCU,
 	SUN8IW20_C906_CFG,
 };
 
+/**
+ * @brief Remap the SRAM window visible to the HiFi4 DSP.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @param[in] local When true, keep the SRAM mapped to the local (DSP) side;
+ *                  otherwise remap it to the host side.
+ */
 static void sun8iw20_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local)
 {
 	uint32_t value;
@@ -36,6 +57,12 @@ static void sun8iw20_hifi4_sram_remap(sunxi_remoteproc_t *remoteproc, bool local
 	writel(value, sysctrl + SRAMC_SRAM_REMAP_REG);
 }
 
+/**
+ * @brief Set or clear the HiFi4 DSP run/stall control bit.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @param[in] stall When true the DSP is held in the stall state.
+ */
 static void sun8iw20_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool stall)
 {
 	uint32_t value;
@@ -47,6 +74,17 @@ static void sun8iw20_hifi4_set_run_stall(sunxi_remoteproc_t *remoteproc, bool st
 	writel(value, dsp_cfg + DSP_CTRL_REG0);
 }
 
+/**
+ * @brief Prepare the HiFi4 DSP for execution.
+ *
+ * Remaps the SRAM, selects the DSP clock source and divisor, de-asserts the
+ * configuration and debug resets, programs the alternate reset vector when
+ * needed and enables the DSP clock.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value = 0U;
@@ -86,6 +124,14 @@ static int sun8iw20_hifi4_prepare(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Start the HiFi4 DSP.
+ *
+ * Remaps the SRAM to the local side and releases the run/stall control.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw20_hifi4_start(sunxi_remoteproc_t *remoteproc)
 {
 	sun8iw20_hifi4_sram_remap(remoteproc, true);
@@ -93,6 +139,15 @@ static int sun8iw20_hifi4_start(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Reset the HiFi4 DSP.
+ *
+ * Disables the DSP configuration gating and clears the DSP reset and gating
+ * register.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw20_hifi4_reset(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value;
@@ -105,6 +160,16 @@ static int sun8iw20_hifi4_reset(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Start the RISC-V C906 core.
+ *
+ * Releases the core from reset, sets the entry address, selects the 800 MHz
+ * peripheral clock source and enables the soft reset control.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw20_c906_start(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t value;
@@ -126,6 +191,15 @@ static int sun8iw20_c906_start(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Reset the RISC-V C906 core.
+ *
+ * Disables the core clock gating and clears the configuration block reset
+ * register.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
 static int sun8iw20_c906_reset(sunxi_remoteproc_t *remoteproc)
 {
 	uintptr_t ccu = remoteproc->registers[SUN8IW20_C906_CCU].base;
@@ -135,6 +209,14 @@ static int sun8iw20_c906_reset(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Report the current RISC-V C906 clock frequencies.
+ *
+ * Derives the peripheral PLL and the core, AXI and PERI1X frequencies from
+ * the CCU registers and prints them to the debug log.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ */
 static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t factor_m;
@@ -167,12 +249,18 @@ static void sun8iw20_c906_dump(const sunxi_remoteproc_t *remoteproc)
 }
 
 #if defined(CONFIG_DRIVER_REMOTEPROC_SUN8IW20_C906)
+/**
+ * @brief C906 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun8iw20_c906_reset,
 	.start = sun8iw20_c906_start,
 	.dump = sun8iw20_c906_dump,
 };
 #else
+/**
+ * @brief HiFi4 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.reset = sun8iw20_hifi4_reset,
 	.prepare = sun8iw20_hifi4_prepare,

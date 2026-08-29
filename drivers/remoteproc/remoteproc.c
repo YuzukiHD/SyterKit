@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file remoteproc.c
+ * @brief Remote processor management and firmware loading.
+ *
+ * This layer validates a remoteproc descriptor, resolves the entry point from
+ * an ELF image, and drives the lifecycle (prepare, load, start, reset, dump)
+ * through the SoC-specific operations supplied in the descriptor.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -9,6 +18,17 @@
 #include <drivers/remoteproc/remoteproc.h>
 #include <lib/elf/elf_loader.h>
 
+/**
+ * @brief Validate a remoteproc descriptor.
+ *
+ * Checks that the descriptor carries an operations table and at least one
+ * firmware, that firmware and address-map counts are within limits, and that
+ * every address range is ordered, non-wrapping, and does not overlap its
+ * predecessor.
+ *
+ * @param[in] remoteproc Remote processor descriptor to validate.
+ * @return DRIVER_OK when valid, DRIVER_ERROR_INVALID otherwise.
+ */
 static int sunxi_remoteproc_validate(const sunxi_remoteproc_t *remoteproc)
 {
 	size_t index;
@@ -27,6 +47,16 @@ static int sunxi_remoteproc_validate(const sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Resolve the remote processor entry point from its firmware ELF.
+ *
+ * When the descriptor requests entry-point extraction from an ELF image, this
+ * reads the ELF entry address of the first firmware and stores it in the
+ * descriptor.
+ *
+ * @param[in,out] remoteproc Remote processor descriptor to update.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on failure.
+ */
 static int sunxi_remoteproc_resolve_entry(sunxi_remoteproc_t *remoteproc)
 {
 	phys_addr_t load_address;
@@ -46,6 +76,13 @@ static int sunxi_remoteproc_resolve_entry(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Reset the remote processor.
+ *
+ * @param[in] remoteproc Remote processor descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when the descriptor or
+ *         the reset operation is unavailable.
+ */
 int sunxi_remoteproc_reset(sunxi_remoteproc_t *remoteproc)
 {
 	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || remoteproc->ops->reset == NULL)
@@ -53,6 +90,15 @@ int sunxi_remoteproc_reset(sunxi_remoteproc_t *remoteproc)
 	return remoteproc->ops->reset(remoteproc);
 }
 
+/**
+ * @brief Load an ELF firmware image into the remote processor.
+ *
+ * Builds the address-map remapping table, resolves the entry point, and loads
+ * either an ELF32 image through the remapping path or an ELF64 image directly.
+ *
+ * @param[in,out] remoteproc Remote processor descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on any failure.
+ */
 int sunxi_remoteproc_load(sunxi_remoteproc_t *remoteproc)
 {
 	phys_addr_t load_address;
@@ -84,6 +130,18 @@ int sunxi_remoteproc_load(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Copy a raw firmware image into the remoteproc address maps.
+ *
+ * Walks each address-map range, clipping the copy to the range boundaries and
+ * the firmware size, and memcpy's the payload to the physical destination.
+ *
+ * @param[in,out] remoteproc Remote processor descriptor.
+ * @param[in] firmware Pointer to the raw firmware image.
+ * @param[in] size Size of the firmware image in bytes.
+ * @return DRIVER_OK when the whole image was copied, DRIVER_ERROR_INVALID
+ *         otherwise.
+ */
 static int sunxi_remoteproc_copy_raw(sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
 {
 	const uint8_t *source = firmware;
@@ -110,6 +168,18 @@ static int sunxi_remoteproc_copy_raw(sunxi_remoteproc_t *remoteproc, const void 
 	return copied == size ? DRIVER_OK : DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Load a firmware buffer into the remote processor.
+ *
+ * Validates the firmware payload size against the first firmware region and
+ * forwards the load to the optional SoC load_buffer operation, falling back to
+ * a raw copy when the operation is not provided.
+ *
+ * @param[in,out] remoteproc Remote processor descriptor.
+ * @param[in] firmware Pointer to the firmware image.
+ * @param[in] size Size of the firmware image in bytes.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on any failure.
+ */
 int sunxi_remoteproc_load_buffer(sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
 {
 	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || firmware == NULL || size == 0U || size > remoteproc->firmware[0].region_size)
@@ -119,6 +189,14 @@ int sunxi_remoteproc_load_buffer(sunxi_remoteproc_t *remoteproc, const void *fir
 	return sunxi_remoteproc_copy_raw(remoteproc, firmware, size);
 }
 
+/**
+ * @brief Prepare the remote processor for operation.
+ *
+ * Resolves the entry point and invokes the optional SoC prepare operation.
+ *
+ * @param[in,out] remoteproc Remote processor descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on any failure.
+ */
 int sunxi_remoteproc_prepare(sunxi_remoteproc_t *remoteproc)
 {
 	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || sunxi_remoteproc_resolve_entry(remoteproc) != DRIVER_OK)
@@ -126,6 +204,13 @@ int sunxi_remoteproc_prepare(sunxi_remoteproc_t *remoteproc)
 	return remoteproc->ops->prepare == NULL ? DRIVER_OK : remoteproc->ops->prepare(remoteproc);
 }
 
+/**
+ * @brief Start the remote processor.
+ *
+ * @param[in] remoteproc Remote processor descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when the descriptor or
+ *         the start operation is unavailable.
+ */
 int sunxi_remoteproc_start(sunxi_remoteproc_t *remoteproc)
 {
 	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || remoteproc->ops->start == NULL)
@@ -133,6 +218,13 @@ int sunxi_remoteproc_start(sunxi_remoteproc_t *remoteproc)
 	return remoteproc->ops->start(remoteproc);
 }
 
+/**
+ * @brief Dump remote processor state.
+ *
+ * Invokes the optional SoC dump operation when the descriptor is valid.
+ *
+ * @param[in] remoteproc Remote processor descriptor.
+ */
 void sunxi_remoteproc_dump(const sunxi_remoteproc_t *remoteproc)
 {
 	if (sunxi_remoteproc_validate(remoteproc) == DRIVER_OK && remoteproc->ops->dump != NULL)

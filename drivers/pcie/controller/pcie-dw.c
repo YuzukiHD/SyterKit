@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-dw.c
+ * @brief DesignWare PCIe controller driver.
+ *
+ * Implements the DBI and application register access paths, ATU window
+ * programming, link training, and the generic controller API dispatcher used
+ * by the root-complex and endpoint drivers.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -12,11 +21,25 @@
 #define PCIE_DW_DBI2_BASE               0x100000U
 #define PCIE_DW_DBI2_BAR_ENABLE         0x1U
 
+/**
+ * @brief Check that a configuration access width is supported.
+ *
+ * @param[in] size Access width in bytes.
+ * @return true when @p size is 1, 2, or 4.
+ */
 static bool pcie_access_size_valid(uint8_t size)
 {
 	return size == 1U || size == 2U || size == 4U;
 }
 
+/**
+ * @brief Validate a DBI register access.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] size Access width in bytes.
+ * @return PCIE_OK when the access is in range and aligned.
+ */
 static int pcie_dbi_access_valid(const struct pcie_controller *controller,
 		uint32_t offset, uint8_t size)
 {
@@ -29,6 +52,13 @@ static int pcie_dbi_access_valid(const struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Validate an application register access.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @return PCIE_OK when the access is in range.
+ */
 static int pcie_app_access_valid(const struct pcie_controller *controller,
 		uint32_t offset)
 {
@@ -40,6 +70,15 @@ static int pcie_app_access_valid(const struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Read a DBI configuration-space field.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] size Access width in bytes.
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_read_dbi(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t *value)
 {
@@ -57,6 +96,15 @@ static int pcie_dw_read_dbi(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Write a DBI configuration-space field.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] size Access width in bytes.
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_write_dbi(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t value)
 {
@@ -74,6 +122,14 @@ static int pcie_dw_write_dbi(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Read an application register.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_read_app(struct pcie_controller *controller,
 		uint32_t offset, uint32_t *value)
 {
@@ -83,6 +139,14 @@ static int pcie_dw_read_app(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Write an application register.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_write_app(struct pcie_controller *controller,
 		uint32_t offset, uint32_t value)
 {
@@ -92,6 +156,12 @@ static int pcie_dw_write_app(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Validate a DesignWare controller configuration.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @return PCIE_OK when the configuration is consistent and in range.
+ */
 static int pcie_dw_init(struct pcie_controller *controller)
 {
 	const struct pcie_controller_config *config;
@@ -130,6 +200,11 @@ static int pcie_dw_init(struct pcie_controller *controller)
 static int pcie_dw_disable_atu(struct pcie_controller *controller,
 		enum pcie_atu_direction direction, uint8_t index);
 
+/**
+ * @brief Disable all ATU windows and tear down the controller.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ */
 static void pcie_dw_exit(struct pcie_controller *controller)
 {
 	uint32_t ob_windows;
@@ -150,6 +225,16 @@ static void pcie_dw_exit(struct pcie_controller *controller)
 			(uint8_t)index);
 }
 
+/**
+ * @brief Set the controller operating mode.
+ *
+ * On sun55iw6 the role is platform-fixed; only the LTSSM enable is driven from
+ * the application registers, so this accepts either mode.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] mode PCIE_MODE_RC or PCIE_MODE_EP.
+ * @return PCIE_OK on success, PCIE_ERR_INVALID on a bad mode.
+ */
 static int pcie_dw_set_mode(struct pcie_controller *controller,
 		enum pcie_mode mode)
 {
@@ -160,6 +245,13 @@ static int pcie_dw_set_mode(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Enable or disable writes to read-only DBI fields.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] enable true to allow read-only field writes.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_set_dbi_ro_write(struct pcie_controller *controller,
 		bool enable)
 {
@@ -176,6 +268,16 @@ static int pcie_dw_set_dbi_ro_write(struct pcie_controller *controller,
 	return pcie_dw_write_dbi(controller, PCIE_DW_MISC_CONTROL_1, 4U, value);
 }
 
+/**
+ * @brief Enable or disable an endpoint BAR in the DBI2 address space.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] function Endpoint function number.
+ * @param[in] bar BAR number.
+ * @param[in] enable true to enable the BAR, false to disable it.
+ * @param[in] bar_64bit true when the BAR is 64-bit wide.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_set_ep_bar(struct pcie_controller *controller,
 		uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
 {
@@ -203,6 +305,12 @@ static int pcie_dw_set_ep_bar(struct pcie_controller *controller,
 	return ret;
 }
 
+/**
+ * @brief Program the link width, speed, and lane mode.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_set_link(struct pcie_controller *controller)
 {
 	uint32_t value;
@@ -296,6 +404,13 @@ disable_ro_write:
 	return ret;
 }
 
+/**
+ * @brief Retrain the link to a higher generation.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] link_gen Target link generation.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_change_speed(struct pcie_controller *controller,
 		uint8_t link_gen)
 {
@@ -368,6 +483,13 @@ disable_ro_write:
 	return ret;
 }
 
+/**
+ * @brief Enable or disable the link training state machine.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] enable true to start training, false to stop it.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_ltssm(struct pcie_controller *controller, bool enable)
 {
 	uint32_t value;
@@ -383,6 +505,12 @@ static int pcie_dw_ltssm(struct pcie_controller *controller, bool enable)
 	return pcie_dw_write_app(controller, PCIE_DW_LTSSM_CTRL, value);
 }
 
+/**
+ * @brief Report whether the link is up.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @return true when the link status registers indicate an up link.
+ */
 static bool pcie_dw_link_up(struct pcie_controller *controller)
 {
 	uint32_t value;
@@ -392,6 +520,13 @@ static bool pcie_dw_link_up(struct pcie_controller *controller)
 	return (value & PCIE_DW_LINK_UP_MASK) == PCIE_DW_LINK_UP_MASK;
 }
 
+/**
+ * @brief Wait for the link to come up.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] timeout_us Timeout in microseconds, or zero for the default.
+ * @return PCIE_OK when the link is up, PCIE_ERR_TIMEOUT otherwise.
+ */
 static int pcie_dw_wait_link(struct pcie_controller *controller,
 		uint32_t timeout_us)
 {
@@ -412,6 +547,14 @@ static int pcie_dw_wait_link(struct pcie_controller *controller,
 	}
 }
 
+/**
+ * @brief Compute the register address of an ATU window field.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] region ATU window descriptor.
+ * @param[in] offset Field offset within the window.
+ * @return The absolute register address.
+ */
 static uintptr_t pcie_dw_atu_reg(const struct pcie_controller *controller,
 		const struct pcie_atu_region *region, uint32_t offset)
 {
@@ -422,6 +565,14 @@ static uintptr_t pcie_dw_atu_reg(const struct pcie_controller *controller,
 		direction_offset + (uint32_t)region->index * PCIE_DW_ATU_REGION_STRIDE + offset;
 }
 
+/**
+ * @brief Check that an address range does not wrap.
+ *
+ * @param[in] address Range base address.
+ * @param[in] size Range size in bytes.
+ * @param[out] last Receives the last address of the range.
+ * @return true when the range is valid.
+ */
 static bool pcie_dw_u64_range_valid(uint64_t address, uint64_t size,
 		uint64_t *last)
 {
@@ -432,6 +583,16 @@ static bool pcie_dw_u64_range_valid(uint64_t address, uint64_t size,
 	return true;
 }
 
+/**
+ * @brief Program an ATU address translation window.
+ *
+ * Validates the window and region parameters, computes the base, limit, and
+ * target addresses, and programs the ATU control and address registers.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] region ATU window descriptor.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_program_atu(struct pcie_controller *controller,
 		const struct pcie_atu_region *region)
 {
@@ -523,6 +684,14 @@ static int pcie_dw_program_atu(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Disable an ATU address translation window.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] direction PCIE_ATU_OUTBOUND or PCIE_ATU_INBOUND.
+ * @param[in] index Window index.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_dw_disable_atu(struct pcie_controller *controller,
 		enum pcie_atu_direction direction, uint8_t index)
 {
@@ -551,6 +720,7 @@ static int pcie_dw_disable_atu(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/** @brief DesignWare PCIe controller operations table. */
 static const struct pcie_controller_ops pcie_dw_ops = {
 	.init = pcie_dw_init,
 	.exit = pcie_dw_exit,
@@ -570,12 +740,27 @@ static const struct pcie_controller_ops pcie_dw_ops = {
 	.disable_atu = pcie_dw_disable_atu,
 };
 
+/**
+ * @brief Initialize a PCIe controller with the DesignWare operations.
+ *
+ * @param[out] controller Controller descriptor to initialize.
+ * @param[in] config Controller configuration to apply.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_init(struct pcie_controller *controller,
 		const struct pcie_controller_config *config)
 {
 	return pcie_controller_init_with_ops(controller, config, &pcie_dw_ops);
 }
 
+/**
+ * @brief Initialize a PCIe controller with explicit operations.
+ *
+ * @param[out] controller Controller descriptor to initialize.
+ * @param[in] config Controller configuration to apply.
+ * @param[in] ops Controller operations table.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_init_with_ops(struct pcie_controller *controller,
 		const struct pcie_controller_config *config,
 		const struct pcie_controller_ops *ops)
@@ -594,6 +779,11 @@ int pcie_controller_init_with_ops(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Tear down a PCIe controller.
+ *
+ * @param[in,out] controller Controller descriptor to deinitialize.
+ */
 void pcie_controller_exit(struct pcie_controller *controller)
 {
 	if (controller == NULL || !controller->initialized)
@@ -603,6 +793,15 @@ void pcie_controller_exit(struct pcie_controller *controller)
 	controller->initialized = false;
 }
 
+/**
+ * @brief Read a DBI configuration-space field through the controller ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] size Access width in bytes.
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_dbi_read(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t *value)
 {
@@ -612,6 +811,15 @@ int pcie_controller_dbi_read(struct pcie_controller *controller,
 	return controller->ops->read_dbi(controller, offset, size, value);
 }
 
+/**
+ * @brief Write a DBI configuration-space field through the controller ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] size Access width in bytes.
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_dbi_write(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t value)
 {
@@ -621,6 +829,14 @@ int pcie_controller_dbi_write(struct pcie_controller *controller,
 	return controller->ops->write_dbi(controller, offset, size, value);
 }
 
+/**
+ * @brief Read an application register through the controller ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_app_read(struct pcie_controller *controller,
 		uint32_t offset, uint32_t *value)
 {
@@ -630,6 +846,14 @@ int pcie_controller_app_read(struct pcie_controller *controller,
 	return controller->ops->read_app(controller, offset, value);
 }
 
+/**
+ * @brief Write an application register through the controller ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_app_write(struct pcie_controller *controller,
 		uint32_t offset, uint32_t value)
 {
@@ -639,6 +863,13 @@ int pcie_controller_app_write(struct pcie_controller *controller,
 	return controller->ops->write_app(controller, offset, value);
 }
 
+/**
+ * @brief Enable or disable writes to read-only DBI fields.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] enable true to allow read-only field writes.
+ * @return PCIE_OK on success, PCIE_ERR_UNSUPPORTED when unavailable.
+ */
 int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller,
 		bool enable)
 {
@@ -649,6 +880,16 @@ int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller,
 	return controller->ops->dbi_ro_write_enable(controller, enable);
 }
 
+/**
+ * @brief Enable or disable an endpoint BAR through the controller ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] function Endpoint function number.
+ * @param[in] bar BAR number.
+ * @param[in] enable true to enable the BAR, false to disable it.
+ * @param[in] bar_64bit true when the BAR is 64-bit wide.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_set_ep_bar(struct pcie_controller *controller,
 		uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
 {
@@ -660,6 +901,13 @@ int pcie_controller_set_ep_bar(struct pcie_controller *controller,
 		bar_64bit);
 }
 
+/**
+ * @brief Set the controller operating mode through the ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] mode PCIE_MODE_RC or PCIE_MODE_EP.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_set_mode(struct pcie_controller *controller,
 		enum pcie_mode mode)
 {
@@ -676,6 +924,12 @@ int pcie_controller_set_mode(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Program the link configuration through the ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_set_link(struct pcie_controller *controller)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
@@ -684,6 +938,13 @@ int pcie_controller_set_link(struct pcie_controller *controller)
 	return controller->ops->set_link(controller);
 }
 
+/**
+ * @brief Retrain the link to a higher generation through the ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] link_gen Target link generation.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_change_speed(struct pcie_controller *controller,
 		uint8_t link_gen)
 {
@@ -693,6 +954,13 @@ int pcie_controller_change_speed(struct pcie_controller *controller,
 	return controller->ops->change_speed(controller, link_gen);
 }
 
+/**
+ * @brief Enable or disable the link training state machine through the ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] enable true to start training, false to stop it.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_ltssm(struct pcie_controller *controller, bool enable)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
@@ -701,6 +969,12 @@ int pcie_controller_ltssm(struct pcie_controller *controller, bool enable)
 	return controller->ops->ltssm(controller, enable);
 }
 
+/**
+ * @brief Report whether the link is up through the ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @return true when the link is up.
+ */
 bool pcie_controller_link_up(struct pcie_controller *controller)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
@@ -709,6 +983,13 @@ bool pcie_controller_link_up(struct pcie_controller *controller)
 	return controller->ops->link_up(controller);
 }
 
+/**
+ * @brief Wait for the link to come up through the ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] timeout_us Timeout in microseconds.
+ * @return PCIE_OK when the link is up, otherwise an error code.
+ */
 int pcie_controller_wait_link(struct pcie_controller *controller,
 		uint32_t timeout_us)
 {
@@ -718,6 +999,13 @@ int pcie_controller_wait_link(struct pcie_controller *controller,
 	return controller->ops->wait_link(controller, timeout_us);
 }
 
+/**
+ * @brief Program an ATU window through the controller ops.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] region ATU window descriptor.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_program_atu(struct pcie_controller *controller,
 		const struct pcie_atu_region *region)
 {
@@ -727,6 +1015,14 @@ int pcie_controller_program_atu(struct pcie_controller *controller,
 	return controller->ops->program_atu(controller, region);
 }
 
+/**
+ * @brief Disable an ATU window through the controller ops.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] direction PCIE_ATU_OUTBOUND or PCIE_ATU_INBOUND.
+ * @param[in] index Window index.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_disable_atu(struct pcie_controller *controller,
 		enum pcie_atu_direction direction, uint8_t index)
 {
@@ -736,6 +1032,14 @@ int pcie_controller_disable_atu(struct pcie_controller *controller,
 	return controller->ops->disable_atu(controller, direction, index);
 }
 
+/**
+ * @brief Find a PCIe capability in a function's configuration space.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] function_offset DBI offset of the function.
+ * @param[in] capability Capability ID to search for.
+ * @return The capability offset on success, otherwise an error code.
+ */
 int pcie_controller_find_capability(struct pcie_controller *controller,
 		uint32_t function_offset, uint8_t capability)
 {
@@ -768,6 +1072,14 @@ int pcie_controller_find_capability(struct pcie_controller *controller,
 	return PCIE_ERR_UNSUPPORTED;
 }
 
+/**
+ * @brief Find an extended capability in a function's configuration space.
+ *
+ * @param[in] controller PCIe controller descriptor.
+ * @param[in] function_offset DBI offset of the function.
+ * @param[in] capability Extended capability ID to search for.
+ * @return The capability offset on success, otherwise an error code.
+ */
 int pcie_controller_find_ext_capability(struct pcie_controller *controller,
 		uint32_t function_offset, uint16_t capability)
 {
@@ -799,6 +1111,22 @@ int pcie_controller_find_ext_capability(struct pcie_controller *controller,
 	return PCIE_ERR_UNSUPPORTED;
 }
 
+/**
+ * @brief Perform a configuration-space read or write access.
+ *
+ * Routes accesses to the root port directly through the DBI space and
+ * translates accesses to downstream devices through the configuration ATU
+ * window.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] bdf Bus/device/function of the target.
+ * @param[in] offset Register offset within the configuration space.
+ * @param[in] size Access width in bytes.
+ * @param[out] value For a read, receives the read value.
+ * @param[in] write true for a write, false for a read.
+ * @param[in] write_value Value to write for a write access.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 static int pcie_controller_cfg_access(struct pcie_controller *controller,
 		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value,
 		bool write, uint32_t write_value)
@@ -861,6 +1189,16 @@ static int pcie_controller_cfg_access(struct pcie_controller *controller,
 	return PCIE_OK;
 }
 
+/**
+ * @brief Read a configuration-space field.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] bdf Bus/device/function of the target.
+ * @param[in] offset Register offset within the configuration space.
+ * @param[in] size Access width in bytes.
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_cfg_read(struct pcie_controller *controller,
 		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value)
 {
@@ -868,6 +1206,16 @@ int pcie_controller_cfg_read(struct pcie_controller *controller,
 		false, 0U);
 }
 
+/**
+ * @brief Write a configuration-space field.
+ *
+ * @param[in,out] controller PCIe controller descriptor.
+ * @param[in] bdf Bus/device/function of the target.
+ * @param[in] offset Register offset within the configuration space.
+ * @param[in] size Access width in bytes.
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_controller_cfg_write(struct pcie_controller *controller,
 		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value)
 {

@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp1530.h
+ * @brief Register map for the AXP1530 PMIC.
+ */
+
 #ifndef __REG_AXP1530_H__
 #define __REG_AXP1530_H__
 

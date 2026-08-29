@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Yuzuki Neko (sun252iw2).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,6 +27,12 @@
 #include <drivers/spi/spi.h>
 #include <dt-compatible/sid-dt.h>
 
+/**
+ * @brief Print the SoC identification banner for the Yuzuki Neko board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the board model, CPU core, and chip SID to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -46,6 +56,12 @@ void show_chip()
 	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 
+/**
+ * @brief Reset the system using the RISC-V watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_RISCV_WDG_BASE + 0x08, 0x16aa0001U);

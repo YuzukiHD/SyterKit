@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file generic.c
+ * @brief Common Allwinner Sun60 UFS host glue.
+ *
+ * The UFSHCI transport does not know about CCU, RTC or the Synopsys TC
+ * interface.  This file owns that sequencing and follows the vendor boot
+ * flow: clocks and resets, controller-side M-PHY setup, RMMI/C10 tuning and
+ * finally the UniPro connection setup around DME LINK STARTUP.
+ */
+
 /*
  * Common Allwinner Sun60 UFS host glue.
  *
@@ -62,21 +72,42 @@
 #define TC_RAM_CMN0_B0_R0	    0xc000U
 
 /* Early boot has one active UFS host; each DT parse replaces this variant. */
+/** @brief Active Sunxi UFS variant selected by the configured host. */
 static struct sunxi_ufs_variant sunxi_active_variant;
+/** @brief Whether the active variant has been configured yet. */
 static bool sunxi_active_variant_valid;
+/** @brief Cached reference-clock type detected from the RTC. */
 static uint32_t sunxi_cached_ref_clk_type;
+/** @brief Whether the cached reference-clock type is valid. */
 static bool sunxi_cached_ref_clk_valid;
 
+/**
+ * @brief Return the board-selected Sunxi UFS variant configuration.
+ * @return A constant variant descriptor, or a weak default when no
+ *         SoC-specific implementation overrides it.
+ */
 const struct sunxi_ufs_variant *__attribute__((weak)) sunxi_ufs_get_variant(void)
 {
 	return NULL;
 }
 
+/**
+ * @brief Read and decode the UFS PHY calibration words from eFuse SRAM.
+ * @param[out] cal Receives the decoded PLL and lane calibration values.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal __attribute__((unused)))
 {
 	return UFSHC_ERR_INVALID;
 }
 
+/**
+ * @brief Decode the two raw eFuse calibration words.
+ * @param[out] cal Receives the decoded calibration fields.
+ * @param[in] low Low calibration word read from eFuse SRAM.
+ * @param[in] high High calibration word read from eFuse SRAM.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
 		uint32_t low, uint32_t high)
 {
@@ -110,6 +141,11 @@ int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
 	return 0;
 }
 
+/**
+ * @brief Merge the selected SoC variant defaults with device-tree settings.
+ * @param[out] variant Storage for the active variant configuration.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int sunxi_ufs_variant_init(struct sunxi_ufs_variant *variant)
 {
 	const struct sunxi_ufs_variant *base;
@@ -123,6 +159,12 @@ int sunxi_ufs_variant_init(struct sunxi_ufs_variant *variant)
 	return 0;
 }
 
+/**
+ * @brief Return the currently active variant configuration.
+ *
+ * @return Pointer to the active variant, or the weak default when no active
+ *         variant has been configured yet.
+ */
 static const struct sunxi_ufs_variant *sunxi_variant(void)
 {
 	if (sunxi_active_variant_valid)
@@ -130,6 +172,12 @@ static const struct sunxi_ufs_variant *sunxi_variant(void)
 	return sunxi_ufs_get_variant();
 }
 
+/**
+ * @brief Check whether a variant contains all required register fields.
+ *
+ * @param[in] variant Variant configuration to validate.
+ * @return true when the variant is complete and usable.
+ */
 static bool sunxi_variant_valid(const struct sunxi_ufs_variant *variant)
 {
 	return variant && variant->reset_reg && variant->axi_clk_reg &&
@@ -149,6 +197,11 @@ static bool sunxi_variant_valid(const struct sunxi_ufs_variant *variant)
 		variant->rtc_ref_type_shift < 32U;
 }
 
+/**
+ * @brief Configure Sunxi UFS clocks, resets, RTC, and PHY controls.
+ * @param[in] variant Fully initialized variant configuration.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int sunxi_ufs_configure(const struct sunxi_ufs_variant *variant)
 {
 	if (!sunxi_variant_valid(variant))
@@ -159,6 +212,11 @@ int sunxi_ufs_configure(const struct sunxi_ufs_variant *variant)
 	return 0;
 }
 
+/**
+ * @brief Sample the RTC reference-clock type until it is stable.
+ *
+ * @return The detected reference-clock type, or 0 when no variant is valid.
+ */
 static uint32_t sunxi_detect_ref_clk_type(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -190,6 +248,11 @@ static uint32_t sunxi_detect_ref_clk_type(void)
 	return current;
 }
 
+/**
+ * @brief Return the cached reference-clock type, detecting it on first use.
+ *
+ * @return The detected reference-clock type.
+ */
 static uint32_t sunxi_ref_clk_type(void)
 {
 	if (!sunxi_cached_ref_clk_valid) {
@@ -199,6 +262,13 @@ static uint32_t sunxi_ref_clk_type(void)
 	return sunxi_cached_ref_clk_type;
 }
 
+/**
+ * @brief Report whether a reference-clock type uses an external oscillator.
+ *
+ * @param[in] variant Variant configuration with external reference types.
+ * @param[in] type Reference-clock type to check.
+ * @return true when the type is an external reference clock.
+ */
 static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant,
 	uint32_t type)
 {
@@ -206,6 +276,13 @@ static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant,
 		(variant->rtc_external_ref_types & BIT(type)) != 0U;
 }
 
+/**
+ * @brief Return the encoded frequency of a reference-clock type.
+ *
+ * @param[in] variant Variant configuration with the frequency table.
+ * @param[in] type Reference-clock type to look up.
+ * @return The encoded frequency, or 0 for an unknown type.
+ */
 static uint32_t sunxi_ref_clk_freq(const struct sunxi_ufs_variant *variant,
 	uint32_t type)
 {
@@ -214,6 +291,11 @@ static uint32_t sunxi_ref_clk_freq(const struct sunxi_ufs_variant *variant,
 	return variant->ufs_ref_clk_freq[type];
 }
 
+/**
+ * @brief Read the device-tree-selected UniPro reference-clock frequency.
+ * @param[out] value Receives the encoded reference-clock frequency.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_get_ref_clk_freq(uint32_t *value)
 {
 	if (!value)
@@ -222,6 +304,11 @@ int __attribute__((weak)) sunxi_ufs_get_ref_clk_freq(uint32_t *value)
 	return 0;
 }
 
+/**
+ * @brief Read the PHY calibration-selected high-speed rate.
+ * @param[out] value Receives the supported high-speed rate identifier.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_get_hs_rate(uint32_t *value)
 {
 	struct sunxi_ufs_cal_words cal;
@@ -238,6 +325,9 @@ int __attribute__((weak)) sunxi_ufs_get_hs_rate(uint32_t *value)
 	return 0;
 }
 
+/**
+ * @brief Initialize the external-resistor calibration for the PHY.
+ */
 static void sunxi_ext_res_init(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -251,6 +341,9 @@ static void sunxi_ext_res_init(void)
 		readl(variant->ext_res_ctrl), readl(variant->ext_res1_ctrl));
 }
 
+/**
+ * @brief Program the UFS configuration clock source, factor, and gate.
+ */
 static void sunxi_cfg_clk(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -277,6 +370,11 @@ static void sunxi_cfg_clk(void)
 	udelay(10);
 }
 
+/**
+ * @brief Enable or disable the UFS AXI clock and its reset.
+ *
+ * @param[in] enable true to enable the AXI clock, false to disable it.
+ */
 static void sunxi_axi_clk(bool enable)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -305,6 +403,11 @@ static void sunxi_axi_clk(bool enable)
 	setbits_le32(variant->axi_clk_reg, variant->axi_clk_gate);
 }
 
+/**
+ * @brief Enable or disable the UFS AHB clock and its reset.
+ *
+ * @param[in] enable true to enable the AHB clock, false to disable it.
+ */
 static void sunxi_ahb_clk(bool enable)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -320,6 +423,11 @@ static void sunxi_ahb_clk(bool enable)
 	}
 }
 
+/**
+ * @brief Enable or disable the RTC reference clock.
+ *
+ * @param[in] enable true to enable the reference clock, false to disable it.
+ */
 static void sunxi_ref_clk(bool enable)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -352,6 +460,10 @@ static void sunxi_ref_clk(bool enable)
 	}
 }
 
+/**
+ * @brief Enable the Sunxi UFS power and clock resources.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_enable(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -374,6 +486,10 @@ int __attribute__((weak)) sunxi_ufs_enable(void)
 	return 0;
 }
 
+/**
+ * @brief Prepare the Sunxi UFS PHY and controller for link startup.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_prepare(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -412,6 +528,9 @@ int __attribute__((weak)) sunxi_ufs_prepare(void)
 	return 0;
 }
 
+/**
+ * @brief Reset the Sunxi UFS device-side PHY/controller path.
+ */
 void __attribute__((weak)) sunxi_ufs_device_reset(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -431,16 +550,42 @@ void __attribute__((weak)) sunxi_ufs_device_reset(void)
 	mdelay(15);
 }
 
+/**
+ * @brief Write a DME attribute through the host controller.
+ *
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @param[in] attr DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[in] value Value to write.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 static int sunxi_dme_write(struct ufshc_host *host, uint32_t attr, uint16_t selector, uint32_t value)
 {
 	return ufshc_dme_set_sel(host, attr, selector, value, false);
 }
 
+/**
+ * @brief Read a DME attribute through the host controller.
+ *
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @param[in] attr DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[out] value Receives the read value.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 static int sunxi_dme_read(struct ufshc_host *host, uint32_t attr, uint16_t selector, uint32_t *value)
 {
 	return ufshc_dme_get_sel(host, attr, selector, value, false);
 }
 
+/**
+ * @brief Read a 16-bit Synopsys Test Chip register.
+ *
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @param[in] reg Test Chip register address.
+ * @param[out] value Receives the read value.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 static int sunxi_c10_read(struct ufshc_host *host, uint16_t reg, uint16_t *value)
 {
 	uint32_t low;
@@ -469,6 +614,14 @@ static int sunxi_c10_read(struct ufshc_host *host, uint16_t reg, uint16_t *value
 	return 0;
 }
 
+/**
+ * @brief Write a 16-bit Synopsys Test Chip register.
+ *
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @param[in] reg Test Chip register address.
+ * @param[in] value Value to write.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 static int sunxi_c10_write(struct ufshc_host *host, uint16_t reg, uint16_t value)
 {
 	int ret;
@@ -491,6 +644,11 @@ static int sunxi_c10_write(struct ufshc_host *host, uint16_t reg, uint16_t value
 	return sunxi_dme_write(host, TC_VS_MPHYCFGUPDT, 0, 1);
 }
 
+/**
+ * @brief Perform the Sunxi-specific UniPro link-startup sequence.
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @return Zero when the link starts, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_link_startup(struct ufshc_host *host)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();
@@ -649,6 +807,11 @@ int __attribute__((weak)) sunxi_ufs_link_startup(struct ufshc_host *host)
 	return ret;
 }
 
+/**
+ * @brief Complete Sunxi-specific link setup after UFSHCI startup.
+ * @param[in,out] host Initialized UFS host-controller state.
+ * @return Zero when the link is usable, otherwise a UFS host-controller error code.
+ */
 int __attribute__((weak)) sunxi_ufs_link_up(struct ufshc_host *host)
 {
 	uint32_t value = 0;
@@ -680,6 +843,9 @@ int __attribute__((weak)) sunxi_ufs_link_up(struct ufshc_host *host)
 	return ret ? ret : (value == 1U ? 0 : UFSHC_ERR_IO);
 }
 
+/**
+ * @brief Disable the Sunxi UFS resources after controller shutdown.
+ */
 void __attribute__((weak)) sunxi_ufs_disable(void)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_variant();

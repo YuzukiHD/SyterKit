@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp8191.h
+ * @brief Register map for the AXP8191 PMIC.
+ */
+
 #ifndef __REG_AXP8191_H__
 #define __REG_AXP8191_H__
 

@@ -1,3 +1,10 @@
+/**
+ * @file memcpy.S
+ * @brief ARM assembly implementation of memcpy().
+ *
+ * Optimised copy routine that chooses its copy direction based on whether
+ * the source and destination buffers overlap.
+ */
     .text
 
     .global memcpy

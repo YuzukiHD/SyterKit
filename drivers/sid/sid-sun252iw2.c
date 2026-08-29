@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sid-sun252iw2.c
+ * @brief Sun252iw2 eFuse SID driver.
+ *
+ * Implements eFuse read and write access through the SID controller and
+ * defines the named eFuse storage sections available on this SoC.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -21,12 +29,34 @@
 #define SID_OFFSET_MASK 0x1ffU
 #define SID_OPERATION_RETRIES 1000000U
 
+/**
+ * @brief Validate a byte offset against the SID controller eFuse window.
+ *
+ * Checks that the SID descriptor is present, that the eFuse window is large
+ * enough for a full word, that the offset is word-aligned and that it lies
+ * within the SID offset mask.
+ *
+ * @param[in] sid SID controller description.
+ * @param[in] offset Word-aligned eFuse byte offset.
+ * @return True when the offset is usable, false otherwise.
+ */
 static bool sunxi_sid_offset_valid(const sunxi_sid_t *sid, uint32_t offset)
 {
 	return sid != NULL && sid->base != 0U && sid->size >= SID_RDKEY_OFFSET + sizeof(uint32_t) &&
 	       (offset & (sizeof(uint32_t) - 1U)) == 0U && offset <= SID_OFFSET_MASK;
 }
 
+/**
+ * @brief Read a 32-bit value from the eFuse SRAM window.
+ *
+ * Programs the SID controller to fetch the word at the given offset and
+ * returns it once the read operation completes.
+ *
+ * @param[in] sid SID controller description.
+ * @param[in] offset Word-aligned eFuse byte offset.
+ * @return The 32-bit value read from eFuse, or 0 on invalid offset or
+ *         operation timeout.
+ */
 uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
 {
 	uintptr_t prctl;
@@ -57,6 +87,18 @@ uint32_t sunxi_efuse_read(const sunxi_sid_t *sid, uint32_t offset)
 	return read32(sid->base + SID_RDKEY_OFFSET);
 }
 
+/**
+ * @brief Write a 32-bit value to an eFuse word.
+ *
+ * Powers up the eFuse high-voltage switch, programs the write key and data,
+ * and waits for the write operation to finish before powering the switch
+ * down again.
+ *
+ * @param[in] sid SID controller description.
+ * @param[in] offset Word-aligned eFuse byte offset.
+ * @param[in] value 32-bit value to program into the eFuse.
+ * @return 0 on success, or -1 on invalid arguments or operation timeout.
+ */
 int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value)
 {
 	uintptr_t prctl;
@@ -89,6 +131,11 @@ int sunxi_efuse_write(const sunxi_sid_t *sid, uint32_t offset, uint32_t value)
 	return 0;
 }
 
+/**
+ * @brief eFuse section layout for the Sun252iw2 SoC.
+ *
+ * Each entry names an eFuse region, its byte offset and its size in bits.
+ */
 const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "chipid", 0x0000, 128 },
 	{ "brom_conf", 0x0010, 32 },
@@ -100,4 +147,7 @@ const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "ft_zone", 0x003c, 32 },
 };
 
+/**
+ * @brief Number of entries in #sunxi_sid_sections.
+ */
 const size_t sunxi_sid_section_count = sizeof(sunxi_sid_sections) / sizeof(sunxi_sid_sections[0]);

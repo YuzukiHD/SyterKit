@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clic-reg.h
+ * @brief RISC-V CLIC (Core Local Interrupt Controller) register map.
+ *
+ * Provides the register offsets and bit-field masks used to program the
+ * RISC-V CLIC interrupt controller on supported Allwinner SoCs.
+ */
+
 #ifndef __SUNXI_CLIC_REG_H__
 #define __SUNXI_CLIC_REG_H__
 

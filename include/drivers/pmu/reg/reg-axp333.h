@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp333.h
+ * @brief Register map for the AXP333 PMIC.
+ */
+
 #ifndef __REG_AXP333_H__
 #define __REG_AXP333_H__
 

@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file memcpy.S
+ * @brief RISC-V assembly implementation of memcpy().
+ *
+ * Optimised word-wise copy routine with an unrolled tail path for small
+ * or unaligned transfers.
+ */
 #include <linkage.h>
 
 	.global memcpy

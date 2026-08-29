@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg.h
+ * @brief Register map for the Allwinner DMA controller.
+ */
+
 #ifndef __DMA_REG_H__
 #define __DMA_REG_H__
 

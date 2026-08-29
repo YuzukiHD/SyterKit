@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the Longan Pi 3H (sun50iw9).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,6 +27,14 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
+/**
+ * @brief Power down a secondary CPU core.
+ *
+ * Clears the debug and reset control bits, then sets the cluster power-off
+ * gating bit for the given CPU core.
+ *
+ * @param[in] cpu Core number to power down.
+ */
 void set_cpu_down(unsigned int cpu)
 {
 	clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_DBG_REG1, 1 << cpu);
@@ -37,6 +49,12 @@ void set_cpu_down(unsigned int cpu)
 	printk_debug("CPU: Power-down cpu-%d ok.\n", cpu);
 }
 
+/**
+ * @brief Power off the secondary CPU cores when enabled by the eFuses.
+ *
+ * Reads a SID eFuse flag and, if set, powers down CPU2 and CPU3 to reduce
+ * power consumption before OS handoff.
+ */
 void set_cpu_poweroff(void)
 {
 	sunxi_sid_t sid;
@@ -51,6 +69,9 @@ void set_cpu_poweroff(void)
 	}
 }
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -64,6 +85,12 @@ void clean_syterkit_data(void)
 	printk_info("free interrupt ok...\n");
 }
 
+/**
+ * @brief Reset the system using the watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);

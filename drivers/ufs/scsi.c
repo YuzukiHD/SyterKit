@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file scsi.c
+ * @brief SCSI command layer for a UFS logical unit.
+ *
+ * Builds SCSI CDBs for inquiry, capacity, and block I/O, executes them through
+ * the single-slot host transport, and tracks the last command response state
+ * on the device descriptor.  Requests are serialized by the one-slot host
+ * controller transport.
+ */
+
 /* SCSI command layer for a UFS logical unit. */
 /* Requests are serialized by the one-slot host-controller transport. */
 #include <stdbool.h>
@@ -18,11 +28,23 @@
 #define UFS_SCSI_CAPACITY16_LENGTH     32U
 #define UFS_SCSI_SENSE_TRANSFER_LENGTH 20U
 
+/**
+ * @brief Read a big-endian 32-bit value.
+ *
+ * @param[in] data Pointer to the big-endian bytes.
+ * @return The decoded value in host byte order.
+ */
 static uint32_t scsi_be32(const uint8_t *data)
 {
 	return ((uint32_t)data[0] << 24) | ((uint32_t)data[1] << 16) | ((uint32_t)data[2] << 8) | data[3];
 }
 
+/**
+ * @brief Read a big-endian 64-bit value.
+ *
+ * @param[in] data Pointer to the big-endian bytes.
+ * @return The decoded value in host byte order.
+ */
 static uint64_t scsi_be64(const uint8_t *data)
 {
 	uint64_t value = 0;
@@ -33,6 +55,12 @@ static uint64_t scsi_be64(const uint8_t *data)
 	return value;
 }
 
+/**
+ * @brief Store a value as big-endian 32-bit bytes.
+ *
+ * @param[out] data Destination buffer.
+ * @param[in] value Value to store.
+ */
 static void scsi_set_be32(uint8_t *data, uint32_t value)
 {
 	data[0] = (uint8_t)(value >> 24);
@@ -41,6 +69,12 @@ static void scsi_set_be32(uint8_t *data, uint32_t value)
 	data[3] = (uint8_t)value;
 }
 
+/**
+ * @brief Store a value as big-endian 64-bit bytes.
+ *
+ * @param[out] data Destination buffer.
+ * @param[in] value Value to store.
+ */
 static void scsi_set_be64(uint8_t *data, uint64_t value)
 {
 	unsigned int i;
@@ -49,6 +83,13 @@ static void scsi_set_be64(uint8_t *data, uint64_t value)
 		data[7U - i] = (uint8_t)(value >> (i * 8U));
 }
 
+/**
+ * @brief Decide whether a block command must use the 16-byte LBA format.
+ *
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to transfer.
+ * @return true when the command should use READ/WRITE(16).
+ */
 static bool scsi_lba_needs_16(uint64_t lba, uint16_t blocks)
 {
 	/* Match the native UFS scan path, which switches to READ/WRITE(16)
@@ -57,6 +98,22 @@ static bool scsi_lba_needs_16(uint64_t lba, uint16_t blocks)
 	return lba > UFS_SCSI_READ16_THRESHOLD || (uint64_t)(blocks - 1U) > UINT32_MAX - lba;
 }
 
+/**
+ * @brief Execute a SCSI command on a UFS logical unit.
+ *
+ * Builds a host request from the CDB and data parameters, runs it through the
+ * host transport, and captures the response state on the device descriptor.
+ * On a CHECK CONDITION the traditional REQUEST SENSE sequence is completed so
+ * valid sense data is available to the caller.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @param[in] cdb SCSI command descriptor block.
+ * @param[in] cdb_len Length of @p cdb in bytes.
+ * @param[in,out] data Transfer buffer, or NULL for a zero-length command.
+ * @param[in] data_len Size of @p data in bytes.
+ * @param[in] write true for a write (device to buffer), false for a read.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_exec(
 	struct ufs_scsi_device *device, const uint8_t *cdb, uint8_t cdb_len, void *data, size_t data_len, bool write)
 {
@@ -112,6 +169,12 @@ int ufs_scsi_exec(
 	return ret;
 }
 
+/**
+ * @brief Query the device model string through an INQUIRY command.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 static int ufs_scsi_inquiry(struct ufs_scsi_device *device)
 {
 	uint8_t cdb[6] = { UFS_SCSI_INQUIRY, (uint8_t)(device->lun << 5), 0, 0, UFS_SCSI_INQUIRY_DATA_LENGTH, 0 };
@@ -137,6 +200,12 @@ static int ufs_scsi_inquiry(struct ufs_scsi_device *device)
 	return 0;
 }
 
+/**
+ * @brief Check whether the logical unit is ready.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @return 0 when ready, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_test_unit_ready(struct ufs_scsi_device *device)
 {
 	uint8_t cdb[6] = { UFS_SCSI_TEST_UNIT_READY, 0, 0, 0, 0, 0 };
@@ -148,6 +217,12 @@ int ufs_scsi_test_unit_ready(struct ufs_scsi_device *device)
 	return ufs_scsi_exec(device, cdb, sizeof(cdb), NULL, 0, false);
 }
 
+/**
+ * @brief Fetch sense data from the logical unit.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_request_sense(struct ufs_scsi_device *device)
 {
 	uint8_t cdb[6] = { UFS_SCSI_REQUEST_SENSE, 0, 0, 0, UFS_SCSI_SENSE_TRANSFER_LENGTH, 0 };
@@ -177,6 +252,12 @@ int ufs_scsi_request_sense(struct ufs_scsi_device *device)
 	return 0;
 }
 
+/**
+ * @brief Start the logical unit and return immediately.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 static int ufs_scsi_start_stop(struct ufs_scsi_device *device)
 {
 	/* Start the logical unit and request immediate return, as in the native
@@ -188,6 +269,15 @@ static int ufs_scsi_start_stop(struct ufs_scsi_device *device)
 	return ufs_scsi_exec(device, cdb, sizeof(cdb), NULL, 0, false);
 }
 
+/**
+ * @brief Read the logical unit block count and size.
+ *
+ * Issues a READ CAPACITY(10) command and falls back to READ CAPACITY(16) when
+ * the device reports a saturated 32-bit LBA count.
+ *
+ * @param[in,out] device UFS logical unit descriptor.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 static int ufs_scsi_read_capacity(struct ufs_scsi_device *device)
 {
 	uint8_t cdb[16] = { 0 };
@@ -226,6 +316,17 @@ static int ufs_scsi_read_capacity(struct ufs_scsi_device *device)
 	return 0;
 }
 
+/**
+ * @brief Initialize a UFS logical unit descriptor.
+ *
+ * Zeroes the descriptor, attaches the host and LUN, probes the device with
+ * INQUIRY, waits for it to become ready, and reads its capacity.
+ *
+ * @param[out] device UFS logical unit descriptor to initialize.
+ * @param[in] host Host controller the logical unit belongs to.
+ * @param[in] lun Logical unit number.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_init(struct ufs_scsi_device *device, struct ufshc_host *host, uint8_t lun)
 {
 	unsigned int retry;
@@ -277,6 +378,18 @@ not_ready:
 	return UFS_SCSI_ERR;
 }
 
+/**
+ * @brief Read blocks from the logical unit.
+ *
+ * Splits the request into READ(10)/READ(16) commands sized to the maximum
+ * transfer count and copies the data into @p buffer.
+ *
+ * @param[in] device UFS logical unit descriptor.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to read.
+ * @param[out] buffer Destination buffer.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_read(struct ufs_scsi_device *device, uint64_t lba, uint32_t blocks, void *buffer)
 {
 	uint8_t cdb[16];
@@ -316,6 +429,18 @@ int ufs_scsi_read(struct ufs_scsi_device *device, uint64_t lba, uint32_t blocks,
 	return 0;
 }
 
+/**
+ * @brief Write blocks to the logical unit.
+ *
+ * Splits the request into WRITE(10)/WRITE(16) commands sized to the maximum
+ * transfer count and copies the data from @p buffer.
+ *
+ * @param[in] device UFS logical unit descriptor.
+ * @param[in] lba Starting logical block address.
+ * @param[in] blocks Number of blocks to write.
+ * @param[in] buffer Source buffer.
+ * @return 0 on success, UFS_SCSI_ERR on failure.
+ */
 int ufs_scsi_write(struct ufs_scsi_device *device, uint64_t lba, uint32_t blocks, const void *buffer)
 {
 	uint8_t cdb[16];
