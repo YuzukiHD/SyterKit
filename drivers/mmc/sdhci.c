@@ -28,6 +28,9 @@
 #include <dt2c/driver.h>
 #include <string.h>
 
+/* Keep tuning probes (128/512 bytes) on the bounded CPU FIFO path. */
+#define SUNXI_SDHCI_CPU_TRANSFER_MAX 512U
+
 static void sunxi_sdhci_sync_all_cache(void)
 {
 	flush_dcache_all();
@@ -686,12 +689,14 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci)
  * 
  * @param sdhci Pointer to the SDHC controller structure.
  * @param data Pointer to the MMC data structure containing transfer information.
+ * @param timeout_us CPU FIFO polling timeout in microseconds.
  * @return 0 on success, -1 on failure.
  */
-static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data)
+static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data,
+					    uint32_t timeout_us)
 {
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
-	uint64_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + timeout_us;
 	uint32_t byte_cnt;
 	uint32_t *buff;
 
@@ -705,30 +710,30 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	if (data->flags & MMC_DATA_READ) {
 		buff = (uint32_t *)data->b.dest; // Destination buffer for read operation
 		for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
-			while (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY && (time_us() < timeout)) {
-			}
-			if (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) {
+			while (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) {
+				if (mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT)
+					return -1;
 				if (time_us() >= timeout) {
 					pr_debug("read by CPU failed, timeout, index %u\n", i);
+					return -1;
 				}
-				return -1;
 			}
 			buff[i] = mmc_host->reg->fifo;
-			timeout = time_us() + SMHC_TIMEOUT; // Update timeout for next iteration
+			timeout = time_us() + timeout_us; // Update timeout for next iteration
 		}
 	} else {
 		buff = (uint32_t *)data->b.src; // Source buffer for write operation
 		for (size_t i = 0; i < ((data->blocksize * data->blocks) >> 2); i++) {
-			while (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL && (time_us() < timeout)) {
-			}
-			if (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL) {
+			while (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL) {
+				if (mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT)
+					return -1;
 				if (time_us() >= timeout) {
 					pr_debug("write by CPU failed, timeout, index %u\n", i);
+					return -1;
 				}
-				return -1;
 			}
 			mmc_host->reg->fifo = buff[i];
-			timeout = time_us() + SMHC_TIMEOUT;
+			timeout = time_us() + timeout_us;
 		}
 	}
 
@@ -967,15 +972,19 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci)
  * @param sdhci Pointer to the SDHC controller structure.
  * @param cmd Pointer to the MMC command structure.
  * @param data Pointer to the MMC data structure.
+ * @param timeout_us Command and CPU data polling timeout in microseconds.
+ * @param dma_timeout_us DMA completion polling timeout in microseconds.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
+static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
+					  mmc_data_t *data, uint32_t timeout_us,
+					  uint32_t dma_timeout_us)
 {
-	if (sdhci == NULL || cmd == NULL)
+	if (sdhci == NULL || cmd == NULL || timeout_us == 0U || dma_timeout_us == 0U)
 		return -1;
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint32_t cmdval = SMHC_CMD_START;
-	uint64_t timeout = time_us() + SMHC_TIMEOUT;
+	uint64_t timeout = time_us() + timeout_us;
 	uint32_t status;
 	int ret = 0, error_code = 0;
 	uint8_t use_dma_status = false;
@@ -1079,17 +1088,18 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 	data_sync_barrier();
 
 	if (data) {
+		use_dma_status = data->blocksize * data->blocks > SUNXI_SDHCI_CPU_TRANSFER_MAX &&
+				 mmc_host->sdhci_desc != NULL;
 		pr_trace("transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
-			     (((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) ? "DMA" : "CPU"));
-		if ((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) {
-			use_dma_status = true;
+			     use_dma_status ? "DMA" : "CPU");
+		if (use_dma_status) {
 			mmc_host->reg->gctrl &= ~SMHC_GCTRL_ACCESS_BY_AHB;
 			ret = sunxi_sunxi_sdhci_trans_data_dma(sdhci, data);
 			mmc_host->reg->cmd = (cmdval | cmd->cmdidx);
 		} else {
 			mmc_host->reg->gctrl |= SMHC_GCTRL_ACCESS_BY_AHB;
 			mmc_host->reg->cmd = (cmdval | cmd->cmdidx);
-			ret = sunxi_sunxi_sdhci_trans_data_cpu(sdhci, data);
+			ret = sunxi_sunxi_sdhci_trans_data_cpu(sdhci, data, timeout_us);
 		}
 
 		if (ret) {
@@ -1102,7 +1112,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 		}
 	}
 
-	timeout = time_us() + SMHC_TIMEOUT;
+	timeout = time_us() + timeout_us;
 	do {
 		status = mmc_host->reg->rint;
 		if ((time_us() > timeout) || (status & SMHC_RINT_INTERRUPT_ERROR_BIT)) {
@@ -1120,7 +1130,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 
 	if (data) {
 		uint32_t done = false;
-		timeout = time_us() + (use_dma_status ? SMHC_DMA_TIMEOUT : SMHC_TIMEOUT);
+		timeout = time_us() + (use_dma_status ? dma_timeout_us : timeout_us);
 		do {
 			status = mmc_host->reg->rint;
 			if ((time_us() > timeout) || (status & SMHC_RINT_INTERRUPT_ERROR_BIT)) {
@@ -1143,7 +1153,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 		} while (!done);
 
 		if ((data->flags & MMC_DATA_READ) && use_dma_status) {
-			timeout = time_us() + SMHC_DMA_TIMEOUT;
+			timeout = time_us() + dma_timeout_us;
 			done = 0;
 			status = 0;
 			do {
@@ -1228,6 +1238,18 @@ out:
 	}
 
 	return 0;
+}
+
+int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
+			     mmc_data_t *data, uint32_t timeout_us)
+{
+	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data, timeout_us, timeout_us);
+}
+
+int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
+{
+	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data,
+					       SMHC_TIMEOUT, SMHC_DMA_TIMEOUT);
 }
 
 /**

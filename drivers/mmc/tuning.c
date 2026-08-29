@@ -14,6 +14,8 @@
 #define SUNXI_MMC_TUNING_MIN_WINDOW 12U
 #define SUNXI_MMC_TUNING_INVALID 0xffffffffU
 #define SUNXI_MMC_TUNING_BLOCK_SIZE 512U
+/* A tuning probe at 50 MHz or above completes well within this interval. */
+#define SUNXI_MMC_TUNING_TIMEOUT_US 10000U
 
 /* JESD84-B51 CMD21 patterns for 4-bit and 8-bit eMMC buses. */
 static const uint8_t sunxi_mmc_tuning_pattern_4bit[64] = {
@@ -123,7 +125,8 @@ static int sunxi_mmc_send_tuning(sunxi_sdhci_t *sdhci, const uint8_t *pattern, u
 	data.blocks = 1;
 	data.blocksize = size;
 
-	if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
+	if (sunxi_sdhci_xfer_timeout(sdhci, &cmd, &data,
+				      SUNXI_MMC_TUNING_TIMEOUT_US)) {
 		/* A bad delay can reset the controller. Reapply the active timing
 		 * configuration before trying the next sample point. */
 		sunxi_sdhci_set_ios(sdhci);
@@ -142,7 +145,8 @@ static int sunxi_mmc_send_hs400_command_test(sunxi_sdhci_t *sdhci)
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = sdhci->mmc.rca << 16;
 
-	if (sunxi_sdhci_xfer(sdhci, &cmd, NULL)) {
+	if (sunxi_sdhci_xfer_timeout(sdhci, &cmd, NULL,
+				      SUNXI_MMC_TUNING_TIMEOUT_US)) {
 		/* Reapply the last committed delay after a bad command point. */
 		sunxi_sdhci_set_ios(sdhci);
 		return -1;
@@ -169,8 +173,9 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 		return -1;
 
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
-	sunxi_mmc_tuning_set_fifo_bypass(sdhci, true);
 	for (uint32_t delay = 0; delay < SUNXI_MMC_TUNING_POINTS; ++delay) {
+		/* Error recovery resets SFC, so restore the tuning mode per point. */
+		sunxi_mmc_tuning_set_fifo_bypass(sdhci, true);
 		sunxi_mmc_tuning_set_sample(sdhci, delay);
 		pass[delay] = sunxi_mmc_send_hs400_command_test(sdhci) == 0;
 	}
@@ -194,7 +199,7 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 		mmc->tune_sdly.tm4_smx_fx[index] = value;
 	}
 
-	pr_debug("HS400 command delay %u selected from %uHz window\n", selected, mmc->clock);
+	pr_info("HS400 command delay %u selected at %uHz\n", selected, mmc->clock);
 	return 0;
 }
 
@@ -215,7 +220,8 @@ int sunxi_mmc_capture_hs400_reference(sunxi_sdhci_t *sdhci, uint8_t *reference)
 	data.blocks = 1;
 	data.blocksize = SUNXI_MMC_TUNING_BLOCK_SIZE;
 
-	if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
+	if (sunxi_sdhci_xfer_timeout(sdhci, &cmd, &data,
+				      SUNXI_MMC_TUNING_TIMEOUT_US)) {
 		sunxi_sdhci_set_ios(sdhci);
 		return -1;
 	}
@@ -237,7 +243,8 @@ static int sunxi_mmc_read_hs400_tuning_block(sunxi_sdhci_t *sdhci, uint8_t *buff
 	data.blocks = 1;
 	data.blocksize = SUNXI_MMC_TUNING_BLOCK_SIZE;
 
-	if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
+	if (sunxi_sdhci_xfer_timeout(sdhci, &cmd, &data,
+				      SUNXI_MMC_TUNING_TIMEOUT_US)) {
 		sunxi_sdhci_set_ios(sdhci);
 		return -1;
 	}
@@ -299,8 +306,9 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 	}
 
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
-	sunxi_mmc_tuning_set_fifo_bypass(sdhci, true);
 	for (uint32_t delay = 0; delay < SUNXI_MMC_TUNING_POINTS; ++delay) {
+		/* Error recovery resets SFC, so restore the tuning mode per point. */
+		sunxi_mmc_tuning_set_fifo_bypass(sdhci, true);
 		sunxi_mmc_tuning_set_sample(sdhci, delay);
 		pass[delay] = sunxi_mmc_send_tuning(sdhci, pattern, pattern_size) == 0;
 	}
@@ -324,7 +332,7 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 		mmc->tune_sdly.tm4_smx_fx[index] = value;
 	}
 
-	pr_debug("sample delay %u selected from %uHz window\n", selected, mmc->clock);
+	pr_info("HS200 sample delay %u selected at %uHz\n", selected, mmc->clock);
 	return 0;
 }
 
@@ -347,9 +355,10 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci, const uint8_t *referenc
 		return -1;
 
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
-	sunxi_mmc_tuning_set_fifo_bypass(sdhci, true);
+	/* The vendor TM4 flow only bypasses the sample FIFO for command tuning. */
 	/* Scan all points against data captured from the tuned HS200 link. */
 	for (uint32_t delay = 0; delay < SUNXI_MMC_TUNING_POINTS; ++delay) {
+		sunxi_mmc_tuning_set_fifo_bypass(sdhci, false);
 		sunxi_mmc_tuning_set_data_strobe(sdhci, delay);
 		if (!sunxi_mmc_read_hs400_tuning_block(sdhci, received) &&
 		    memcmp(received, reference, SUNXI_MMC_TUNING_BLOCK_SIZE) == 0)
@@ -366,7 +375,7 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci, const uint8_t *referenc
 	sunxi_mmc_tuning_set_data_strobe(sdhci, selected);
 	sunxi_mmc_tuning_set_fifo_bypass(sdhci, false);
 	mmc->tune_sdly.tm4_dsdly[freq_id] = selected;
-	pr_debug("data-strobe delay %u selected from %uHz window\n", selected, mmc->clock);
+	pr_info("HS400 data-strobe delay %u selected at %uHz\n", selected, mmc->clock);
 
 	return 0;
 }
