@@ -170,7 +170,7 @@ while IFS= read -r defconfig; do
 	build_mode_count="$(sed -n -E \
 		'/^CONFIG_BUILD_(RELEASE|DEBUG|TRACE)=y$/p' \
 		"${defconfig}" | wc -l)"
-	gpio_count="$(sed -n -E '/^CONFIG_DRIVER_GPIO_V[1-4]=y$/p' \
+	gpio_count="$(sed -n -E '/^CONFIG_DRIVER_GPIO_V(1|2(_POW)?|3|4)=y$/p' \
 		"${defconfig}" | wc -l)"
 	board_count="$(sed -n -E '/^CONFIG_BOARD_[A-Z0-9_]+=y$/p' \
 		"${defconfig}" | wc -l)"
