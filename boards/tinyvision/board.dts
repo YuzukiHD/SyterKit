@@ -39,6 +39,7 @@
 
 	dram0: dram-controller {
 		compatible = "allwinner,sunxi-dram";
+		allwinner,dram-base = <0x40000000>;
 		allwinner,dram-parameters =
 			<0x00000210>,
 			<SUNXI_DRAM_DDR2>,
