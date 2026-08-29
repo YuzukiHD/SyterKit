@@ -26,7 +26,7 @@
 #include <drivers/rtc/rtc.h>
 #include <drivers/pmu/axp.h>
 
-static axp_pmu_t *dram_pmu_axp8191;
+static axp_pmu_t *dram_ddr_pmu;
 
 extern int init_DRAM(int type, void *buff);
 
@@ -55,7 +55,7 @@ void sunxi_smc_en_with_glitch_workaround(void)
 int set_ddr_voltage_ext(char *name, int set_vol, int on)
 {
 	pr_debug("%s set vol %d, onoff %d\n", name, set_vol, on);
-	pmu_axp8191_set_vol(dram_pmu_axp8191, name, set_vol, on);
+	pmu_axp8191_set_vol(dram_ddr_pmu, name, set_vol, on);
 	return 0;
 }
 
@@ -73,7 +73,7 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
 	if (dram == NULL || dram->parameter_count == 0U)
 		return 0U;
-	dram_pmu_axp8191 = dram->pmu;
+	dram_ddr_pmu = dram->power.ddr;
 	dram->size = init_DRAM(0, dram->parameters);
 	return dram->size;
 }

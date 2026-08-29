@@ -8,12 +8,19 @@
 void test_case_main(const char *case_dir)
 {
 	sunxi_dram_t dram = { 0 };
+	axp_pmu_t vdd_sys_pmu = { 0 };
+	axp_pmu_t ddr_pmu = { 0 };
 
 	(void)case_dir;
 
 	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_dram_dt_read_alias(&dram, "dram24"));
 
+	/* Device-tree loading must retain board-supplied power handles. */
+	dram.power.vdd_sys = &vdd_sys_pmu;
+	dram.power.ddr = &ddr_pmu;
 	TEST_EQ(DRIVER_OK, sunxi_dram_dt_read_alias(&dram, "dram32"));
+	TEST_ASSERT(dram.power.vdd_sys == &vdd_sys_pmu);
+	TEST_ASSERT(dram.power.ddr == &ddr_pmu);
 	TEST_EQ(32U, dram.parameter_count);
 	TEST_EQ(0x200U, dram.parameters[0]);
 	TEST_EQ(0x21fU, dram.parameters[31]);

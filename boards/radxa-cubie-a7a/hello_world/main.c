@@ -176,7 +176,7 @@ int main(void)
 
 	pmu_axp8191_dump(&pmu);
 
-	dram.pmu = &pmu;
+	dram.power.ddr = &pmu;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
 		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
