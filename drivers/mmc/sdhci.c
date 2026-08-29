@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "sdhci: " fmt
 
 #include <barrier.h>
 #include <io.h>
@@ -56,7 +57,7 @@ static int sunxi_sdhci_clk_enable(sunxi_sdhci_t *sdhci)
 	/* Enable module clock */
 	setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
 
-	pr_trace("SMHC: sdhci%d clk enable, mclk: 0x%08x\n", sdhci->id, readl(sdhci->sdhci_clk.reg_base));
+	pr_trace("sdhci%d clk enable, mclk: 0x%08x\n", sdhci->id, readl(sdhci->sdhci_clk.reg_base));
 
 	return 0;
 }
@@ -83,7 +84,7 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci)
 
 	/* Check status */
 	if (mmc_host->reg->cmd & SMHC_CMD_START) {
-		pr_debug("SMHC: mmc %d update clk failed\n", sdhci->id);
+		pr_debug("mmc %d update clk failed\n", sdhci->id);
 		return -1;
 	}
 
@@ -110,11 +111,11 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	uint32_t spd_md_sdly = 0, dly = 0;
 	int ret = 0;
 
-	pr_trace("SMHC: sdhci timing config timing 4\n");
+	pr_trace("sdhci timing config timing 4\n");
 
 	/* Check if the controller ID is MMC_CONTROLLER_2 and if timing mode and frequency ID are valid */
 	if ((sdhci->id != MMC_CONTROLLER_2) || (spd_md_id > MMC_HS400) || (freq_id > MMC_MAX_SPD_MD_NUM)) {
-		pr_debug("SMHC: timing 4 not supported for this configuration\n");
+		pr_debug("timing 4 not supported for this configuration\n");
 		return -1;
 	}
 
@@ -127,7 +128,7 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 			if (freq_id <= MMC_CLK_25M) {
 				dly = 0;
 			} else {
-				pr_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
 		} else if (spd_md_id == MMC_HSSDR52_SDR25) {
@@ -136,18 +137,18 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 			} else if (freq_id == MMC_CLK_50M) {
 				dly = 15;
 			} else {
-				pr_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
 		} else if (spd_md_id == MMC_HSDDR52_DDR50) {
 			if (freq_id <= MMC_CLK_25M) {
 				dly = 0;
 			} else {
-				pr_debug("SMHC: wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
 		} else {
-			pr_debug("SMHC: wrong speed mode %d\n", spd_md_id);
+			pr_debug("wrong speed mode %d\n", spd_md_id);
 			ret = -1;
 		}
 	}
@@ -162,7 +163,7 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	/* Set the calculated delay */
 	timing_data->sdly = dly;
 
-	pr_trace("SMHC: TM4 Timing odly = %u, sdly = %u, spd_md_id = %u, freq_id = %u\n", timing_data->odly, timing_data->sdly, spd_md_id, freq_id);
+	pr_trace("TM4 Timing odly = %u, sdly = %u, spd_md_id = %u, freq_id = %u\n", timing_data->odly, timing_data->sdly, spd_md_id, freq_id);
 
 	return ret;
 }
@@ -190,7 +191,7 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
 		/* When using eMMC and SMHC2, configure it as timing 4 */
 		ret = sunxi_sdhci_get_timing_config_timing_4(sdhci, spd_md_id, freq_id);
 		if (ret) {
-			pr_debug("SMHC: Configuring timing TM4 failed\n");
+			pr_debug("Configuring timing TM4 failed\n");
 		}
 	} else if ((sdhci->id == 0) && (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1)) {
 		// Check timing data and adjust configuration if necessary
@@ -200,11 +201,11 @@ static int sunxi_sdhci_get_timing_config(sunxi_sdhci_t *sdhci, uint32_t spd_md_i
 			timing_data->sdly = 0;
 			ret = 0;
 		} else {
-			pr_warn("SMHC: SMHC0 does not support input speed mode %d\n", spd_md_id);
+			pr_warn("does not support input speed mode %d\n", spd_md_id);
 			ret = -1;
 		}
 	} else {
-		pr_debug("SMHC: Timing setting failed due to parameter error\n");
+		pr_debug("Timing setting failed due to parameter error\n");
 		ret = -1;
 	}
 
@@ -233,7 +234,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
 		timing_data->odly = 0;
 		timing_data->sdly = 0;
-		pr_trace("SMHC: SUNXI_MMC_TIMING_MODE_1, odly %d, sldy %d\n", timing_data->odly, timing_data->sdly);
+		pr_trace("SUNXI_MMC_TIMING_MODE_1, odly %d, sldy %d\n", timing_data->odly, timing_data->sdly);
 
 		reg_val = mmc_host->reg->drv_dl;
 		reg_val &= (~(0x3 << 16));
@@ -249,7 +250,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 	} else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3) {
 		timing_data->odly = 0;
 		timing_data->sdly = 0;
-		pr_trace("SMHC: SUNXI_MMC_TIMING_MODE_3, odly %d, sldy %d\n", timing_data->odly, timing_data->sdly);
+		pr_trace("SUNXI_MMC_TIMING_MODE_3, odly %d, sldy %d\n", timing_data->odly, timing_data->sdly);
 
 		reg_val = mmc_host->reg->drv_dl;
 		reg_val &= (~(0x3 << 16));
@@ -265,7 +266,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 	} else if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
 		uint32_t spd_md_orig = spd_md_id;
 
-		pr_trace("SMHC: SUNXI_MMC_TIMING_MODE_4, setup freq id: %d, spd_md_id: %d\n", freq_id, spd_md_id);
+		pr_trace("SUNXI_MMC_TIMING_MODE_4, setup freq id: %d, spd_md_id: %d\n", freq_id, spd_md_id);
 
 		if (spd_md_id == MMC_HS400)
 			spd_md_id = MMC_HS200_SDR104;
@@ -274,12 +275,12 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 		timing_data->sdly = 0xff;
 
 		if ((ret = sunxi_sdhci_get_timing_config(sdhci, spd_md_id, freq_id)) != 0) {
-			pr_debug("SMHC: getting timing param error %d\n", ret);
+			pr_debug("getting timing param error %d\n", ret);
 			return -1;
 		}
 
 		if ((timing_data->odly == 0xff) || (timing_data->sdly == 0xff)) {
-			pr_debug("SMHC: getting timing config error\n");
+			pr_debug("getting timing config error\n");
 			return -1;
 		}
 
@@ -301,12 +302,12 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 			timing_data->odly = 0xff;
 			timing_data->sdly = 0xff;
 			if ((ret = sunxi_sdhci_get_timing_config(sdhci, spd_md_id, freq_id)) != 0) {
-				pr_debug("SMHC: getting timing param error %d\n", ret);
+				pr_debug("getting timing param error %d\n", ret);
 				return -1;
 			}
 
 			if ((timing_data->odly == 0xff) || (timing_data->sdly == 0xff)) {
-				pr_debug("SMHC: getting timing config error\n");
+				pr_debug("getting timing config error\n");
 				return -1;
 			}
 
@@ -315,7 +316,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 			reg_val |= ((timing_data->sdly & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY);
 			mmc_host->reg->ds_dl = reg_val;
 		}
-		pr_trace("SMHC: config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_id);
+		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_id);
 	}
 	return ret;
 }
@@ -343,7 +344,7 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk)
 	/* Setting mclk timing */
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
 		mmc_host->reg->ntsr |= BIT(31);
-		pr_trace("SMHC: rntsr 0x%x\n", mmc_host->reg->ntsr);
+		pr_trace("rntsr 0x%x\n", mmc_host->reg->ntsr);
 	} else {
 		mmc_host->reg->ntsr = 0x0;
 	}
@@ -366,7 +367,7 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk)
 
 	/* Now set mclk */
 	if (sunxi_sdhci_set_mclk(sdhci, module_clk)) {
-		pr_warn("SMHC: failed to set module clock to %luHz\n", module_clk);
+		pr_warn("failed to set module clock to %luHz\n", module_clk);
 		return -1;
 	}
 
@@ -386,11 +387,11 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk)
 		}
 	}
 	/* Set host clock */
-	pr_trace("SMHC: get round clk %luHz, mod_clk %luHz\n", mmc->clock, module_clk);
+	pr_trace("get round clk %luHz, mod_clk %luHz\n", mmc->clock, module_clk);
 
 	/* enable mclk */
 	setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
-	pr_trace("SMHC: mclkbase 0x%x\n", readl(sdhci->sdhci_clk.reg_base));
+	pr_trace("mclkbase 0x%x\n", readl(sdhci->sdhci_clk.reg_base));
 
 	/* Configure SMHC_CLKDIV to open clock for devices */
 	reg_val = mmc_host->reg->clkcr;
@@ -438,7 +439,7 @@ int sunxi_sdhci_clock_mode(sunxi_sdhci_t *sdhci, uint32_t clk)
 	}
 
 	if (sunxi_sdhci_config_delay(sdhci, mmc->speed_mode, freq_id) != 0) {
-		pr_debug("SMHC: failed to configure sampling delay\n");
+		pr_debug("failed to configure sampling delay\n");
 		return -1;
 	}
 
@@ -470,18 +471,18 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk)
 
 	// Update clock settings
 	if (sunxi_sdhci_update_clk(sdhci)) {
-		pr_debug("SMHC: Failed to update clock settings\n");
+		pr_debug("Failed to update clock settings\n");
 		return -1;
 	}
 
 	// Configure clock mode based on timing mode
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
 		if (sunxi_sdhci_clock_mode(sdhci, clk)) {
-			pr_debug("SMHC: Failed to configure clock mode\n");
+			pr_debug("Failed to configure clock mode\n");
 			return -1;
 		}
 	} else {
-		pr_debug("SMHC: Timing mode not supported\n");
+		pr_debug("Timing mode not supported\n");
 		return -1;
 	}
 
@@ -490,7 +491,7 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk)
 
 	// Check if clock update after configuration fails
 	if (sunxi_sdhci_update_clk(sdhci)) {
-		pr_debug("SMHC: Failed to update clock settings after configuration\n");
+		pr_debug("Failed to update clock settings after configuration\n");
 		return -1;
 	}
 
@@ -530,7 +531,7 @@ static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status)
 	setbits_le32(sdhci->sdhci_clk.reg_base, BIT(31));
 
 	// Log DDR mode status
-	pr_trace("SMHC: DDR mode %s\n", status ? "enabled" : "disabled");
+	pr_trace("mode %s\n", status ? "enabled" : "disabled");
 }
 
 /**
@@ -575,7 +576,7 @@ static void sunxi_sdhci_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
 	mmc_host->reg->csdc = reg_csdc_val;
 
 	// Log HS400 mode status
-	pr_trace("SMHC: HS400 mode %s\n", status ? "enabled" : "disabled");
+	pr_trace("HS400 mode %s\n", status ? "enabled" : "disabled");
 }
 
 /**
@@ -669,7 +670,7 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 			}
 			if (mmc_host->reg->status & SMHC_STATUS_FIFO_EMPTY) {
 				if (time_us() >= timeout) {
-					pr_debug("SMHC: read by CPU failed, timeout, index %u\n", i);
+					pr_debug("read by CPU failed, timeout, index %u\n", i);
 				}
 				return -1;
 			}
@@ -683,7 +684,7 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 			}
 			if (mmc_host->reg->status & SMHC_STATUS_FIFO_FULL) {
 				if (time_us() >= timeout) {
-					pr_debug("SMHC: write by CPU failed, timeout, index %u\n", i);
+					pr_debug("write by CPU failed, timeout, index %u\n", i);
 				}
 				return -1;
 			}
@@ -723,7 +724,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		remain = SMHC_DES_BUFFER_MAX_LEN;
 	}
 	if (buff_frag_num > sdhci->dma_des_size / sizeof(*pdes)) {
-		pr_debug("SMHC: DMA descriptor region is too small\n");
+		pr_debug("descriptor region is too small\n");
 		return -1;
 	}
 
@@ -756,7 +757,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 		}
 
 #ifndef SMHC_DMA_TRACE
-		pr_trace("SMHC: frag %d, remain %d, des[%d] = 0x%08x:"
+		pr_trace("frag %d, remain %d, des[%d] = 0x%08x:"
 			     "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
 			     i, remain, des_idx, (uint32_t)(uintptr_t)&pdes[des_idx], (uint32_t)((uint32_t *)&pdes[des_idx])[0], (uint32_t)((uint32_t *)&pdes[des_idx])[1],
 			     (uint32_t)((uint32_t *)&pdes[des_idx])[2], (uint32_t)((uint32_t *)&pdes[des_idx])[3]);
@@ -785,7 +786,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	timeout = time_us() + SMHC_TIMEOUT;
 	while (mmc_host->reg->gctrl & SMHC_GCTRL_DMA_RESET) {
 		if (time_us() > timeout) {
-			pr_debug("SMHC: wait for dma rst timeout\n");
+			pr_debug("wait for dma rst timeout\n");
 			return -1;
 		}
 	}
@@ -795,7 +796,7 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	timeout = time_us() + SMHC_TIMEOUT;
 	while (mmc_host->reg->dmac & SMHC_IDMAC_SOFT_RESET) {
 		if (time_us() > timeout) {
-			pr_debug("SMHC: wait for dma soft rst timeout\n");
+			pr_debug("wait for dma soft rst timeout\n");
 			return -1;
 		}
 	}
@@ -831,11 +832,11 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci)
 {
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	mmc_t *mmc = &sdhci->mmc;
-	pr_trace("SMHC: ios setting bus:%u, speed %u\n", mmc->bus_width, mmc->clock);
+	pr_trace("ios setting bus:%u, speed %u\n", mmc->bus_width, mmc->clock);
 
 	// Configure clock and handle errors
 	if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
-		pr_debug("SMHC: update clock failed\n");
+		pr_debug("update clock failed\n");
 		mmc_host->fatal_err = 1;
 		return;
 	}
@@ -876,7 +877,7 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci)
 	mmc_host->reg->gctrl = 0x7;
 	while (mmc_host->reg->gctrl & 0x7) {
 		if (time_us() > timeout) {
-			pr_debug("SMHC: controller reset timeout\n");
+			pr_debug("controller reset timeout\n");
 			return -1;
 		}
 	}
@@ -934,13 +935,13 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 
 	/* Check if have fatal error */
 	if (mmc_host->fatal_err) {
-		pr_debug("SMHC: SMHC into error, cmd send failed\n");
+		pr_debug("into error, cmd send failed\n");
 		return -1;
 	}
 
 	/* check card busy*/
 	if (cmd->resp_type & MMC_RSP_BUSY) {
-		pr_trace("SMHC: cmd %u check Card busy\n", cmd->cmdidx);
+		pr_trace("cmd %u check Card busy\n", cmd->cmdidx);
 	}
 
 	/* Check if stop or manual */
@@ -980,20 +981,20 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 		 * could program CMD.WRITE one way while selecting the buffer the other
 		 * way. */
 		if ((data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == 0U || (data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == (MMC_DATA_READ | MMC_DATA_WRITE)) {
-			pr_debug("SMHC: invalid data direction flags 0x%x\n", data->flags);
+			pr_debug("invalid data direction flags 0x%x\n", data->flags);
 			error_code = -1;
 			goto out;
 		}
 		if (data->blocks == 0U || data->blocksize == 0U || data->blocksize > 0xffffffffU / data->blocks || ((data->flags & MMC_DATA_READ) && data->b.dest == NULL) ||
 		    ((data->flags & MMC_DATA_WRITE) && data->b.src == NULL)) {
-			pr_debug("SMHC: invalid data length\n");
+			pr_debug("invalid data length\n");
 			error_code = -1;
 			goto out;
 		}
 		/* Check data desc align */
 		const void *buffer = (data->flags & MMC_DATA_READ) ? data->b.dest : data->b.src;
 		if ((uintptr_t)buffer & 0x3U) {
-			pr_debug("SMHC: data buffer is not 4 byte align\n");
+			pr_debug("data buffer is not 4 byte align\n");
 			error_code = -1;
 			goto out;
 		}
@@ -1014,7 +1015,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 		}
 	}
 
-	pr_trace("SMHC: CMD: %u(0x%08x), arg: 0x%x, dlen:%u\n", cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg, data ? data->blocks * data->blocksize : 0);
+	pr_trace("CMD: %u(0x%08x), arg: 0x%x, dlen:%u\n", cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg, data ? data->blocks * data->blocksize : 0);
 
 	mmc_host->reg->arg = cmd->cmdarg;
 
@@ -1031,7 +1032,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 	data_sync_barrier();
 
 	if (data) {
-		pr_trace("SMHC: transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
+		pr_trace("transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
 			     (((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) ? "DMA" : "CPU"));
 		if ((data->blocksize * data->blocks > 512) && (mmc_host->sdhci_desc)) {
 			use_dma_status = true;
@@ -1046,7 +1047,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 
 		if (ret) {
 			error_code = mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT;
-			pr_debug("SMHC: error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
+			pr_debug("error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
 			if (!error_code) {
 				error_code = 0xffffffff;
 			}
@@ -1063,9 +1064,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 				error_code = 0xffffffff;
 			}
 			if (time_us() > timeout)
-				pr_debug("SMHC: stage 1 data timeout, error %08x\n", error_code);
+				pr_debug("stage 1 data timeout, error %08x\n", error_code);
 			else
-				pr_debug("SMHC: stage 1 status get interrupt, error 0x%08x\n", error_code);
+				pr_debug("stage 1 status get interrupt, error 0x%08x\n", error_code);
 			goto out;
 		}
 	} while (!(status & SMHC_RINT_COMMAND_DONE));
@@ -1081,9 +1082,9 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 					error_code = 0xffffffff;
 				}
 				if (time_us() > timeout)
-					pr_debug("SMHC: stage 2 data timeout, error %08x\n", error_code);
+					pr_debug("stage 2 data timeout, error %08x\n", error_code);
 				else
-					pr_debug("SMHC: stage 2 status get interrupt, error 0x%08x\n", error_code);
+					pr_debug("stage 2 status get interrupt, error 0x%08x\n", error_code);
 				goto out;
 			}
 
@@ -1105,7 +1106,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 					if (!error_code) {
 						error_code = 0xffffffff;
 					}
-					pr_debug("SMHC: wait dma timeout, error %08x\n", error_code);
+					pr_debug("wait dma timeout, error %08x\n", error_code);
 					goto out;
 				}
 				done = status & BIT(1);
@@ -1123,7 +1124,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 				if (!error_code) {
 					error_code = 0xffffffff;
 				}
-				pr_debug("SMHC: busy timeout, status %08x\n", status);
+				pr_debug("busy timeout, status %08x\n", status);
 				goto out;
 			}
 		} while (status & SMHC_STATUS_CARD_DATA_BUSY);
@@ -1134,10 +1135,10 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 		cmd->response[1] = mmc_host->reg->resp2;
 		cmd->response[2] = mmc_host->reg->resp1;
 		cmd->response[3] = mmc_host->reg->resp0;
-		pr_trace("SMHC: resp 0x%08x 0x%08x 0x%08x 0x%08x\n", cmd->response[3], cmd->response[2], cmd->response[1], cmd->response[0]);
+		pr_trace("resp 0x%08x 0x%08x 0x%08x 0x%08x\n", cmd->response[3], cmd->response[2], cmd->response[1], cmd->response[0]);
 	} else {
 		cmd->response[0] = mmc_host->reg->resp0;
-		pr_trace("SMHC: resp 0x%08x\n", cmd->response[0]);
+		pr_trace("resp 0x%08x\n", cmd->response[0]);
 	}
 
 out:
@@ -1165,12 +1166,12 @@ out:
 		timeout = time_us() + SMHC_TIMEOUT;
 		while (mmc_host->reg->gctrl & SMHC_GCTRL_HARDWARE_RESET) {
 			if (time_us() > timeout) {
-				pr_debug("SMHC: controller error reset timeout\n");
+				pr_debug("controller error reset timeout\n");
 				return -1;
 			}
 		}
 		sunxi_sdhci_update_clk(sdhci);
-		pr_debug("SMHC: CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
+		pr_debug("CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
 	}
 
 	mmc_host->reg->rint = 0xffffffff;
@@ -1196,7 +1197,7 @@ int sunxi_sdhci_update_phase(sunxi_sdhci_t *sdhci)
 
 	// Check if timing mode is mode 1
 	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1) {
-		pr_trace("SMHC: mmc update phase.\n");
+		pr_trace("mmc update phase.\n");
 		// Call function to update clock
 		return sunxi_sdhci_update_clk(sdhci);
 	}
@@ -1223,7 +1224,7 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 
 	/* Check if controller ID is correct */
 	if (sdhci->id > MMC_CONTROLLER_2) {
-		pr_debug("SMHC: Unsupported MAX Controller reached\n");
+		pr_debug("Unsupported MAX Controller reached\n");
 		return -1;
 	}
 

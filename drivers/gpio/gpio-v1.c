@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "gpio-v1: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -87,7 +88,7 @@ void sunxi_gpio_init(const gpio_mux_t *gpio)
 	val |= ((cfg & GPIO_CFG_MASK) << ((pin_num & 0x7) << 2));
 	write32(addr, val);
 
-	pr_trace("GPIO: MUX pin = %d, num in bank = %d, addr = 0x%08x, val = 0x%08x, set cfg = %d\n", pin, pin_num, addr, read32(addr), cfg);
+	pr_trace("MUX pin = %d, num in bank = %d, addr = 0x%08x, val = 0x%08x, set cfg = %d\n", pin, pin_num, addr, read32(addr), cfg);
 }
 
 /**
@@ -182,7 +183,7 @@ void sunxi_gpio_set_pull(const gpio_mux_t *gpio, enum gpio_pull_t pull)
 	val |= (v << ((pin_num & 0xf) << 1));
 	write32(addr, val);
 
-	pr_trace("GPIO: PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n", gpio->pin, (uint32_t)addr, read32(addr), v);
+	pr_trace("PULL pin = %d, addr = 0x%08x, val = 0x%08x, set pull = %d\n", gpio->pin, (uint32_t)addr, read32(addr), v);
 }
 
 /**
@@ -211,7 +212,7 @@ void sunxi_gpio_set_drv(const gpio_mux_t *gpio, gpio_drv_t drv)
 	val |= (drv << ((pin_num & 0xf) << 1));
 	write32(addr, val);
 
-	pr_trace("GPIO: DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n", gpio->pin, (uint32_t)addr, read32(addr), drv);
+	pr_trace("DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n", gpio->pin, (uint32_t)addr, read32(addr), drv);
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-pinctrl");

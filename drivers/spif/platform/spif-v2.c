@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "spif-v2: " fmt
 
 /**
  * @file spif-v2.c

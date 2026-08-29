@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "rproc-sun55iw3: " fmt
 
 /**
  * @file rproc-sun55iw3.c
@@ -97,7 +98,7 @@ static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc)
 	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
 	factor_m = (value & 0x1fU) + 1U;
 	factor_n = ((value >> 8) & 0x3U) + 1U;
-	pr_debug("CLK: RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m, factor_n);
+	pr_debug("RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m, factor_n);
 }
 
 /**

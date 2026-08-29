@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "dram-sun65iw1: " fmt
 
 /**
  * @file dram-sun65iw1.c
@@ -63,7 +64,7 @@ void get_vdd_sys_pmu_id(void)
 		return;
 	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
 		if (pmu->fallback_address == 0U || sunxi_i2c_read(pmu->i2c, pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
-			pr_warn("PMU: AXP2202 PMU Read error\n");
+			pr_warn("AXP2202 PMU Read error\n");
 			return;
 		}
 		pmu->address = pmu->fallback_address;

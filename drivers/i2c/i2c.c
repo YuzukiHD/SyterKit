@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "i2c: " fmt
 
 /**
  * @file
@@ -757,7 +758,7 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev)
 	sunxi_gpio_init(&i2c_dev->gpio.gpio_sda);
 	sunxi_gpio_set_pull(&i2c_dev->gpio.gpio_sda, GPIO_PULL_UP);
 
-	pr_debug("I2C: base = %p, id = %d\n", (void *)i2c_dev->base, i2c_dev->id);
+	pr_debug("base = %p, id = %d\n", (void *)i2c_dev->base, i2c_dev->id);
 
 	sunxi_i2c_bus_clk_open(i2c_dev);
 
@@ -769,7 +770,7 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev)
 
 	sunxi_i2c_bus_en(i2c_dev);
 
-	pr_debug("I2C: Bus open done.\n");
+	pr_debug("Bus open done.\n");
 
 #ifdef I2C_DEBUG
 	i2c_debug(i2c_dev);

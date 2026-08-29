@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "clk-sun65iw1: " fmt
 
 /**
  * @file clk-sun65iw1.c

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "mmc-sun55iw6: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -80,12 +81,12 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	default:
 		clk.factor_n = (sdhci->id == 2) ? 1 : 0;
 		clk.factor_m = 2;
-		pr_debug("SMHC: requested frequency does not match: freq=%d, default to 52000000\n", clk_hz);
+		pr_debug("requested frequency does not match: freq=%d, default to 52000000\n", clk_hz);
 		break;
 	}
 	parent_rate = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (parent_rate == 0U) {
-		pr_debug("SMHC: unsupported clock source %u\n", source);
+		pr_debug("unsupported clock source %u\n", source);
 		return -1;
 	}
 
@@ -124,7 +125,7 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 
 	clk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (clk_hz == 0U) {
-		pr_debug("SMHC: unsupported clock source %u\n", source);
+		pr_debug("unsupported clock source %u\n", source);
 		return 0U;
 	}
 

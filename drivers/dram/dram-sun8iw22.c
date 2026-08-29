@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "dram-sun8iw22: " fmt
 
 /**
  * @file dram-sun8iw22.c

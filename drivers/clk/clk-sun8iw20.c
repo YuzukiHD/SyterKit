@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "clk-sun8iw20: " fmt
 
 /**
  * @file clk-sun8iw20.c
@@ -329,7 +330,7 @@ void sunxi_clk_dump(void)
 		p1 = 1;
 	}
 
-	pr_debug("CLK: CPU PLL=%s FREQ=%luMHz\r\n", clock_str, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
+	pr_debug("CPU PLL=%s FREQ=%luMHz\r\n", clock_str, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERIx */
 	reg32 = read32(CCU_BASE + CCU_PLL_PERI0_CTRL_REG);
@@ -339,9 +340,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("CLK: PLL_peri (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_peri (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		pr_debug("CLK: PLL_peri disabled\r\n");
+		pr_debug("PLL_peri disabled\r\n");
 	}
 
 	/* PLL DDR */
@@ -353,9 +354,9 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		pr_debug("CLK: PLL_ddr=%luMHz\r\n", (24 * plln) / (p0 * p1));
+		pr_debug("PLL_ddr=%luMHz\r\n", (24 * plln) / (p0 * p1));
 
 	} else {
-		pr_debug("CLK: PLL_ddr disabled\r\n");
+		pr_debug("PLL_ddr disabled\r\n");
 	}
 }

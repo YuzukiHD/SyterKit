@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "spif-nor: " fmt
 
 #include <io.h>
 #include <stdarg.h>
@@ -343,7 +344,7 @@ static int spif_nor_wait_for_busy(spif_nor_t *nor)
 			return DRIVER_OK;
 		timeout--;
 		if (!timeout) {
-			pr_warn("SPIF NOR wait busy timeout\n");
+			pr_warn("wait busy timeout\n");
 			return DRIVER_ERROR_INVALID;
 		}
 	}
@@ -1116,26 +1117,26 @@ static void spif_nor_print_training_chart(
 	char selected[SPIF_NOR_TRAINING_DELAYS + 1U];
 	uint32_t mode;
 
-	pr_info("SPIF NOR: training diagram (O=OK, -=FAIL)\n");
-	pr_info("SPIF NOR: vertical axis: sample mode; horizontal axis: delay\n");
-	pr_info("SPIF NOR: delay    0         1         2         3         4         5         6\n");
-	pr_info("SPIF NOR:          0123456789012345678901234567890123456789012345678901234567890123\n");
-	pr_info("SPIF NOR:         +----------------------------------------------------------------+\n");
+	pr_info("training diagram (O=OK, -=FAIL)\n");
+	pr_info("vertical axis: sample mode; horizontal axis: delay\n");
+	pr_info("delay    0         1         2         3         4         5         6\n");
+	pr_info("0123456789012345678901234567890123456789012345678901234567890123\n");
+	pr_info("+----------------------------------------------------------------+\n");
 	for (mode = 0U; mode < SPIF_NOR_TRAINING_MODES; ++mode) {
 		if (windows[mode].length == 0U)
-			pr_info("SPIF NOR: mode=%u  |%s| window=none\n", mode, samples[mode]);
+			pr_info("mode=%u  |%s| window=none\n", mode, samples[mode]);
 		else
-			pr_info("SPIF NOR: mode=%u  |%s| window=%u-%u (%u)\n", mode, samples[mode],
+			pr_info("mode=%u  |%s| window=%u-%u (%u)\n", mode, samples[mode],
 				windows[mode].start, windows[mode].start + windows[mode].length - 1U,
 				windows[mode].length);
 	}
-	pr_info("SPIF NOR:         +----------------------------------------------------------------+\n");
+	pr_info("+----------------------------------------------------------------+\n");
 	if (best_length == 0U)
 		return;
 	memset(selected, ' ', SPIF_NOR_TRAINING_DELAYS);
 	selected[best_delay] = '^';
 	selected[SPIF_NOR_TRAINING_DELAYS] = '\0';
-	pr_info("SPIF NOR: select  |%s| mode=%u delay=%u\n", selected, best_mode, best_delay);
+	pr_info("select  |%s| mode=%u delay=%u\n", selected, best_mode, best_delay);
 }
 #endif
 
@@ -1256,7 +1257,7 @@ restore:
 		goto fallback;
 	if (spif_nor_apply_training_config(nor, nor->max_frequency, dtr, best_mode, best_delay) != 0)
 		goto cleanup_error;
-	pr_info("SPIF NOR: sample training mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
+	pr_info("sample training mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
 	ret = DRIVER_OK;
 	goto cleanup;
 
@@ -1264,7 +1265,7 @@ fallback:
 	if (spif_nor_apply_training_config(nor, safe_frequency, dtr, SUNXI_SPIF_SAMPLE_DEFAULT,
 		    SUNXI_SPIF_SAMPLE_DEFAULT) != 0)
 		goto cleanup_error;
-	pr_warn("SPIF NOR: sample training failed, using %uHz default timing\n", safe_frequency);
+	pr_warn("sample training failed, using %uHz default timing\n", safe_frequency);
 	ret = DRIVER_OK;
 
 cleanup:
@@ -1337,14 +1338,14 @@ int spif_nor_detect(spif_nor_t *nor)
 		return -1;
 
 	if (!spif_nor_get_info(nor)) {
-		pr_warn("SPIF NOR Can not find any supported SPI NOR\n");
+		pr_warn("Can not find any supported SPI NOR\n");
 		return -1;
 	}
 
 	info = &nor->info;
 	if (spi_nor_get_protocol_data_nbits(info->read_proto) == 4U) {
 		if (spif_nor_enable_quad(nor) != 0) {
-			pr_warn("SPIF NOR quad enable failed, using single-bit reads\n");
+			pr_warn("quad enable failed, using single-bit reads\n");
 			info->read_proto = SNOR_PROTO_1_1_1;
 			info->read_dummy = 0U;
 			info->opcode_read = info->address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
@@ -1353,8 +1354,8 @@ int spif_nor_detect(spif_nor_t *nor)
 	if (spif_nor_train_sampling(nor) != DRIVER_OK)
 		return -1;
 
-	pr_info("SPIF NOR detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
-	pr_info("SPIF NOR read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read,
+	pr_info("detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
+	pr_info("read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read,
 		info->read_dummy);
 
 	return 0;

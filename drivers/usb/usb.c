@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "usb: " fmt
 /* Based on https://github.com/allwinner-zh/bootloader */
 
 /**
@@ -160,12 +161,12 @@ void sunxi_usb_irq(void *data)
 
 	usb_controller_int_clear_misc_pending(usb->base, detect_irq);
 	if (detect_irq & USBC_INTUSB_DISCONNECT) {
-		pr_trace("USB: IRQ: disconnect\n");
+		pr_trace("IRQ: disconnect\n");
 		usb->detected = false;
 	}
 
 	if (detect_irq & USBC_INTUSB_RESET) {
-		pr_trace("USB: IRQ: reset\n");
+		pr_trace("IRQ: reset\n");
 		usb->detected = true;
 	}
 }
@@ -191,7 +192,7 @@ void sunxi_usb_attach(sunxi_usb_t *usb)
 	while (!usb->detected && time_us() < deadline)
 		;
 	if (!usb->detected)
-		pr_warn("USB: host detection timeout\n");
+		pr_warn("host detection timeout\n");
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-musb");

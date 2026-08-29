@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "axp8191: " fmt
 
 /**
  * @file axp8191.c
@@ -166,19 +167,19 @@ int pmu_axp8191_init(axp_pmu_t *pmu)
 	int ret;
 
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP8191) || !pmu->i2c->status) {
-		pr_warn("PMU: I2C not init\n");
+		pr_warn("not init\n");
 		return -1;
 	}
 
 	if ((ret = sunxi_i2c_read(pmu->i2c, pmu->address, AXP8191_CHIP_ID, &axp_val))) {
-		pr_warn("PMU: Probe target device AXP8191 failed. ret = %d\n", ret);
+		pr_warn("Probe target device AXP8191 failed. ret = %d\n", ret);
 		return -1;
 	}
 
 	if (axp_val == AXP8191_IC_TYPE) {
-		pr_info("PMU: Found AXP318W PMU, Addr 0x%02x\n", pmu->address);
+		pr_info("Found AXP318W PMU, Addr 0x%02x\n", pmu->address);
 	} else {
-		pr_warn("PMU: AXP PMU Check error\n");
+		pr_warn("AXP PMU Check error\n");
 		return -1;
 	}
 
@@ -234,6 +235,6 @@ int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp8191_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("PMU: axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name));
+		pr_debug("axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }

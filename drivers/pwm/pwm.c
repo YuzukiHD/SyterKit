@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "pwm: " fmt
 
 /**
  * @file
@@ -354,10 +355,10 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 	if (sunxi_pwm_validate_channel(pwm, channel) || sunxi_pwm_validate_config(config))
 		return -1;
 
-	pr_debug("PWM: period_ns = %ld\n", config->period_ns);
-	pr_debug("PWM: duty_ns = %ld\n", config->duty_ns);
-	pr_debug("PWM: polarity = %d\n", config->polarity);
-	pr_debug("PWM: channel = %d\n", channel);
+	pr_debug("period_ns = %ld\n", config->period_ns);
+	pr_debug("duty_ns = %ld\n", config->duty_ns);
+	pr_debug("polarity = %d\n", config->polarity);
+	pr_debug("channel = %d\n", channel);
 
 	sunxi_pwm_set_porality(pwm, channel, config->polarity);
 
@@ -668,7 +669,7 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel)
 void sunxi_pwm_init(sunxi_pwm_t *pwm)
 {
 	if (pwm == NULL) {
-		pr_err("PWM: cannot initialize NULL controller\n");
+		pr_err("cannot initialize NULL controller\n");
 		return;
 	}
 	sunxi_pwm_clk_init(pwm);
@@ -687,7 +688,7 @@ void sunxi_pwm_init(sunxi_pwm_t *pwm)
 void sunxi_pwm_deinit(sunxi_pwm_t *pwm)
 {
 	if (pwm == NULL) {
-		pr_err("PWM: cannot deinitialize NULL controller\n");
+		pr_err("cannot deinitialize NULL controller\n");
 		return;
 	}
 	sunxi_pwm_clk_deinit(pwm);
@@ -712,19 +713,19 @@ int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *conf
 	int ret;
 
 	if (pwm == NULL) {
-		pr_err("PWM: controller is NULL\n");
+		pr_err("controller is NULL\n");
 		return -1;
 	}
 	if (!pwm->status) {
-		pr_err("PWM: controller is not initialized\n");
+		pr_err("controller is not initialized\n");
 		return -1;
 	}
 	if (sunxi_pwm_validate_config(config)) {
-		pr_err("PWM: invalid configuration\n");
+		pr_err("invalid configuration\n");
 		return -1;
 	}
 	if (sunxi_pwm_validate_channel(pwm, channel)) {
-		pr_err("PWM: invalid channel %d\n", channel);
+		pr_err("invalid channel %d\n", channel);
 		return -1;
 	}
 
@@ -734,7 +735,7 @@ int sunxi_pwm_set_config(sunxi_pwm_t *pwm, int channel, sunxi_pwm_config_t *conf
 		ret = sunxi_pwm_set_config_single(pwm, channel, config);
 	}
 	if (ret)
-		pr_err("PWM: failed to configure channel %d\n", channel);
+		pr_err("failed to configure channel %d\n", channel);
 	return ret;
 }
 
@@ -755,15 +756,15 @@ int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel)
 	int ret;
 
 	if (pwm == NULL) {
-		pr_err("PWM: controller is NULL\n");
+		pr_err("controller is NULL\n");
 		return -1;
 	}
 	if (!pwm->status) {
-		pr_err("PWM: controller is not initialized\n");
+		pr_err("controller is not initialized\n");
 		return -1;
 	}
 	if (sunxi_pwm_validate_channel(pwm, channel)) {
-		pr_err("PWM: invalid channel %d\n", channel);
+		pr_err("invalid channel %d\n", channel);
 		return -1;
 	}
 
@@ -773,7 +774,7 @@ int sunxi_pwm_release(sunxi_pwm_t *pwm, int channel)
 		ret = sunxi_pwm_release_single(pwm, channel);
 	}
 	if (ret)
-		pr_err("PWM: failed to release channel %d\n", channel);
+		pr_err("failed to release channel %d\n", channel);
 	return ret;
 }
 
