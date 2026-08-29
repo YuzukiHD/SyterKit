@@ -18,15 +18,16 @@ the SoC.
 
 | Board | SoC / platform | SyterKit CPU | Configuration |
 | --- | --- | --- | --- |
-| [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 (`sun8iw21`) | Cortex-A7 | `tinyvision_defconfig` |
-| [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 (`sun50iw9`) | Cortex-A53 | `longanpi-3h_defconfig` |
-| Avaota A1 | T527/A527 (`sun55iw3`) | Cortex-A55 | `avaota-a1_defconfig` |
-| Radxa Cubie A7A | A733 (`sun60iw2`) | ARMv8.2 core | `radxa-cubie-a7a_defconfig` |
-| Avaota F1 | `sun300iw1` | E907 RV32 | `avaota-f1_defconfig` |
-| Avaota F2 | `sun252iw1` | E907 RV32 | `avaota-f2_defconfig` |
-| Avaota M1 | `sun65iw1` | ARMv8 core | `avaota-m1_defconfig` |
-| TLT153 MiniEVM | `sun8iw22` | Cortex-A7 | `tlt153-minievm_defconfig` |
-| TLT536 EVM | T536 (`sun55iw6`) | Cortex-A55 | `tlt536-evm_defconfig` |
+| [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 | 1 * Cortex-A7 | `tinyvision_defconfig` |
+| [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 | 4 * Cortex-A53 | `longanpi-3h_defconfig` |
+| Avaota A1 | T527/A527 | 8 * Cortex-A55 | `avaota-a1_defconfig` |
+| Radxa Cubie A7A | A733 | 6 * Cortex-A55 + 2* Cortex-A76 | `radxa-cubie-a7a_defconfig` |
+| Avaota F1 | V821 | Xuantie E907 + Andes A27L2 | `avaota-f1_defconfig` |
+| Avaota F2 | V861 | Xuantie E907 + 2 * Xuantie C907 | `avaota-f2_defconfig` |
+| Avaota M1 | A537 | 6 * Cortex-A53 + 2* Cortex-A73 | `avaota-m1_defconfig` |
+| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_defconfig`<br/>`yuzukineko_rv64_defconfig` |
+| TLT153 MiniEVM | T153 | 4 * Cortex-A7 | `tlt153-minievm_defconfig` |
+| TLT536 EVM | T536 | 4 * Cortex-A55 | `tlt536-evm_defconfig` |
 
 Run `make list-defconfigs` for the authoritative list available in the current
 checkout. Board-specific applications and hardware notes are kept below
