@@ -20,6 +20,11 @@
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
+
+#if CONFIG_DRIVER_MMC_TUNING
+#include <drivers/mmc/hs-timing.h>
+#endif
+
 #include <dt2c/driver.h>
 #include <string.h>
 
@@ -114,50 +119,96 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	pr_trace("sdhci timing config timing 4\n");
 
 	/* Check if the controller ID is MMC_CONTROLLER_2 and if timing mode and frequency ID are valid */
-	if ((sdhci->id != MMC_CONTROLLER_2) || (spd_md_id > MMC_HS400) || (freq_id > MMC_MAX_SPD_MD_NUM)) {
+	if ((sdhci->id != MMC_CONTROLLER_2) || (spd_md_id >= MMC_MAX_SPD_MD_NUM) || (freq_id >= MMC_MAX_CLK_FREQ_NUM)) {
 		pr_debug("timing 4 not supported for this configuration\n");
 		return -1;
 	}
 
-	/* Calculate delay based on speed mode and frequency */
+	/* Calculate the command/sample delay from the speed-mode table. The
+	 * HS400 data-strobe delay is programmed separately below. */
 	spd_md_sdly = sdhci->mmc.tune_sdly.tm4_smx_fx[spd_md_id * 2 + freq_id / 4];
 	dly = ((spd_md_sdly >> ((freq_id % 4) * 8)) & 0xff);
 
-	if ((dly == 0xff) || (dly == 0)) {
+	if (dly == 0xff) {
 		if (spd_md_id == MMC_DS26_SDR12) {
-			if (freq_id <= MMC_CLK_25M) {
+			if (freq_id <= MMC_CLK_25M)
 				dly = 0;
-			} else {
+			else {
 				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
 		} else if (spd_md_id == MMC_HSSDR52_SDR25) {
-			if (freq_id <= MMC_CLK_25M) {
+			if (freq_id <= MMC_CLK_25M)
 				dly = 0;
-			} else if (freq_id == MMC_CLK_50M) {
+			else if (freq_id == MMC_CLK_50M)
 				dly = 15;
-			} else {
+			else {
 				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
 		} else if (spd_md_id == MMC_HSDDR52_DDR50) {
-			if (freq_id <= MMC_CLK_25M) {
-				dly = 0;
-			} else {
+			if (freq_id <= MMC_CLK_50M)
+				dly = 0x0e;
+			else {
 				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
 				ret = -1;
 			}
+#if CONFIG_DRIVER_MMC_TUNING
+		} else if (spd_md_id == MMC_HS200_SDR104) {
+			if (freq_id <= MMC_CLK_25M)
+				dly = 0;
+			else if (freq_id == MMC_CLK_50M)
+				dly = 0x11;
+			else if (freq_id == MMC_CLK_100M)
+				dly = 0x12;
+			else if (freq_id == MMC_CLK_150M)
+				dly = 0x13;
+			else if (freq_id == MMC_CLK_200M)
+				dly = 0x06;
+			else {
+				pr_debug("wrong frequency %d at speed mode %d\n", freq_id, spd_md_id);
+				ret = -1;
+			}
+		} else if (spd_md_id == MMC_HS400) {
+			/* HS400 command/sample delay defaults match the vendor TM4 table. */
+			switch (freq_id) {
+			case MMC_CLK_400K:
+			case MMC_CLK_25M:
+				dly = 0x00;
+				break;
+			case MMC_CLK_50M:
+				dly = 0x11;
+				break;
+			case MMC_CLK_100M:
+				dly = 0x12;
+				break;
+			case MMC_CLK_150M:
+				dly = 0x13;
+				break;
+			case MMC_CLK_200M:
+				dly = 0x06;
+				break;
+			default:
+				ret = -1;
+				break;
+			}
+#endif
 		} else {
 			pr_debug("wrong speed mode %d\n", spd_md_id);
 			ret = -1;
 		}
 	}
 
-	/* Set output delay based on speed mode */
+	/* TM4 output phase follows the vendor defaults. HS200 and HS400 use
+	 * PH180 at the identification clock, then PH90 at data rates. */
 	if (spd_md_id == MMC_HSDDR52_DDR50) {
-		timing_data->odly = 1;
+		timing_data->odly = sdhci->width == SMHC_WIDTH_8BIT ?
+			TM4_OUT_PH180 : TM4_OUT_PH90;
+	} else if ((spd_md_id == MMC_HS200_SDR104 || spd_md_id == MMC_HS400) &&
+		   freq_id != MMC_CLK_400K) {
+		timing_data->odly = TM4_OUT_PH90;
 	} else {
-		timing_data->odly = 0;
+		timing_data->odly = TM4_OUT_PH180;
 	}
 
 	/* Set the calculated delay */
@@ -267,10 +318,6 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 		uint32_t spd_md_orig = spd_md_id;
 
 		pr_trace("SUNXI_MMC_TIMING_MODE_4, setup freq id: %d, spd_md_id: %d\n", freq_id, spd_md_id);
-
-		if (spd_md_id == MMC_HS400)
-			spd_md_id = MMC_HS200_SDR104;
-
 		timing_data->odly = 0xff;
 		timing_data->sdly = 0xff;
 
@@ -296,27 +343,57 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 		reg_val |= ((timing_data->sdly & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY);
 		mmc_host->reg->samp_dl = reg_val;
 
-		/* Reset to orig md id */
-		spd_md_id = spd_md_orig;
-		if (spd_md_id == MMC_HS400) {
-			timing_data->odly = 0xff;
-			timing_data->sdly = 0xff;
-			if ((ret = sunxi_sdhci_get_timing_config(sdhci, spd_md_id, freq_id)) != 0) {
-				pr_debug("getting timing param error %d\n", ret);
-				return -1;
-			}
+		/* HS400 uses an independent data-strobe delay chain. */
+#if CONFIG_DRIVER_MMC_TUNING
+		if (spd_md_orig == MMC_HS400) {
+			uint32_t ds_dly = sdhci->mmc.tune_sdly.tm4_dsdly[freq_id];
 
-			if ((timing_data->odly == 0xff) || (timing_data->sdly == 0xff)) {
-				pr_debug("getting timing config error\n");
-				return -1;
+			if (ds_dly == 0xff) {
+				switch (freq_id) {
+				case MMC_CLK_400K:
+				case MMC_CLK_25M:
+					ds_dly = 0x00;
+					break;
+				case MMC_CLK_50M:
+					ds_dly = 0x18;
+					break;
+				case MMC_CLK_100M:
+					ds_dly = 0x0d;
+					break;
+				case MMC_CLK_150M:
+					ds_dly = 0x06;
+					break;
+				case MMC_CLK_200M:
+					ds_dly = 0x03;
+					break;
+				default:
+					pr_debug("wrong frequency %d for HS400 data strobe\n", freq_id);
+					return -1;
+				}
 			}
 
 			reg_val = mmc_host->reg->ds_dl;
 			reg_val &= (~SDXC_NTDC_CFG_DLY);
-			reg_val |= ((timing_data->sdly & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY);
+			reg_val |= ((ds_dly & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY);
 			mmc_host->reg->ds_dl = reg_val;
 		}
-		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_id);
+#endif
+
+#if defined(CONFIG_SOC_SUN55IW6)
+		/* MMC2 on SUN55IW6 has a fixed data-line skew. */
+		if (sdhci->id == MMC_CONTROLLER_2) {
+			mmc_host->reg->skew_dat0_dl = 0x8f;
+			mmc_host->reg->skew_dat1_dl = 0x8f;
+			mmc_host->reg->skew_dat2_dl = 0x8f;
+			mmc_host->reg->skew_dat3_dl = 0x8f;
+			mmc_host->reg->skew_dat4_dl = 0x8f;
+			mmc_host->reg->skew_dat5_dl = 0x8f;
+			mmc_host->reg->skew_dat6_dl = 0x8f;
+			mmc_host->reg->skew_dat7_dl = 0x8f;
+			mmc_host->reg->skew_ctrl = 0xc;
+		}
+#endif
+		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_orig);
 	}
 	return ret;
 }
@@ -462,7 +539,11 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk)
 	mmc_t *mmc = &sdhci->mmc;
 
 	// Adjust clock frequency if it exceeds the maximum supported frequency for certain speed modes
-	if ((mmc->speed_mode == MMC_HSDDR52_DDR50 || mmc->speed_mode == MMC_HS400) && clk > mmc->f_max_ddr) {
+	if ((mmc->speed_mode == MMC_HSDDR52_DDR50
+#if CONFIG_DRIVER_MMC_TUNING
+	    || mmc->speed_mode == MMC_HS400
+#endif
+	    ) && clk > mmc->f_max_ddr) {
 		clk = mmc->f_max_ddr;
 	}
 
@@ -532,51 +613,6 @@ static void sunxi_sdhci_ddr_mode_set(sunxi_sdhci_t *sdhci, bool status)
 
 	// Log DDR mode status
 	pr_trace("mode %s\n", status ? "enabled" : "disabled");
-}
-
-/**
- * @brief Set HS400 mode for the SDHC controller.
- * 
- * This function sets the HS400 mode for the SDHC controller based on the specified status.
- * 
- * @param sdhci Pointer to the SDHC controller structure.
- * @param status Boolean indicating whether to enable (true) or disable (false) HS400 mode.
- */
-static void sunxi_sdhci_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
-{
-	uint32_t reg_dsbd_val = 0x0, reg_csdc_val = 0x0;
-	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
-
-	// Check if the SDHC controller ID is 2
-	if (sdhci->id != 2) {
-		// HS400 mode setting is not applicable, return
-		return;
-	}
-
-	// Read current values of dsbd and csdc registers
-	reg_dsbd_val = mmc_host->reg->dsbd;
-	reg_csdc_val = mmc_host->reg->csdc;
-
-	// Clear existing bits related to HS400 mode
-	reg_dsbd_val &= ~(0x1 << 31); // Clear HS400EN bit
-	reg_csdc_val &= ~0xf; // Clear HSSDR bit and HS400DS bit
-
-	// Configure HS400 mode based on status
-	if (status) {
-		// Set HS400EN bit and configure HS400DS to 6 (HS400 mode)
-		reg_dsbd_val |= (0x1 << 31);
-		reg_csdc_val |= 0x6;
-	} else {
-		// Configure HS400DS to 3 (backward compatibility mode)
-		reg_csdc_val |= 0x3;
-	}
-
-	// Write updated values back to dsbd and csdc registers
-	mmc_host->reg->dsbd = reg_dsbd_val;
-	mmc_host->reg->csdc = reg_csdc_val;
-
-	// Log HS400 mode status
-	pr_trace("HS400 mode %s\n", status ? "enabled" : "disabled");
 }
 
 /**
@@ -847,13 +883,21 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci)
 	/* Set DDR mode */
 	if (mmc->speed_mode == MMC_HSDDR52_DDR50) {
 		sunxi_sdhci_ddr_mode_set(sdhci, true);
-		sunxi_sdhci_hs400_mode_set(sdhci, false);
-	} else if (mmc->speed_mode == MMC_HS400) {
+#if CONFIG_DRIVER_MMC_TUNING
+		sunxi_mmc_hs400_mode_set(sdhci, false);
+#endif
+	}
+#if CONFIG_DRIVER_MMC_TUNING
+	else if (mmc->speed_mode == MMC_HS400) {
 		sunxi_sdhci_ddr_mode_set(sdhci, false);
-		sunxi_sdhci_hs400_mode_set(sdhci, true);
-	} else {
+		sunxi_mmc_hs400_mode_set(sdhci, true);
+	}
+#endif
+	else {
 		sunxi_sdhci_ddr_mode_set(sdhci, false);
-		sunxi_sdhci_hs400_mode_set(sdhci, false);
+#if CONFIG_DRIVER_MMC_TUNING
+		sunxi_mmc_hs400_mode_set(sdhci, false);
+#endif
 	}
 }
 
@@ -1234,6 +1278,7 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 
 	memset(&sdhci->mmc, 0, sizeof(sdhci->mmc));
 	mmc_t *mmc = &sdhci->mmc;
+	memset(&mmc->tune_sdly, 0xff, sizeof(mmc->tune_sdly));
 
 	memset(&sdhci->timing_data, 0, sizeof(sdhci->timing_data));
 
@@ -1247,6 +1292,15 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 	/* Set supported voltages and host capabilities */
 	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
 	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
+#if CONFIG_DRIVER_MMC_TUNING
+	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_is_1v8)
+		mmc->host_caps |= MMC_MODE_HS200;
+	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->width == SMHC_WIDTH_8BIT) {
+		mmc->host_caps |= MMC_MODE_DDR_52MHz;
+		if (sdhci->io_is_1v8)
+			mmc->host_caps |= MMC_MODE_HS400;
+	}
+#endif
 
 	/* Set host capabilities for bus width */
 	if (sdhci->width >= SMHC_WIDTH_4BIT) {

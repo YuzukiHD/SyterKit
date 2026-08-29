@@ -5,6 +5,14 @@ menu "MMC driver"
 config DRIVER_MMC
 	bool "MMC controller support"
 
+config DRIVER_MMC_TUNING
+	bool "eMMC HS200/HS400 tuning"
+	depends on DRIVER_MMC
+	help
+	  Enable eMMC HS200 and HS400 mode selection and sampling-point tuning.
+	  This adds code and runtime initialization time, so leave it disabled
+	  when only legacy, HS or DDR52 operation is required.
+
 choice
 	prompt "MMC driver log level"
 	default DRIVER_MMC_LOG_TRACE if BUILD_TRACE

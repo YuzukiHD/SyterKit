@@ -124,6 +124,8 @@ typedef struct sunxi_sdhci {
 	uint32_t dma_des_addr;
 	uint32_t dma_des_size;
 	sunxi_sdhci_type_t sdhci_mmc_type;
+	/* The board keeps the MMC I/O rail at 1.8 V for HS200/HS400. */
+	bool io_is_1v8;
 
 	/* Pinctrl info */
 	sunxi_sdhci_pinctrl_t pinctrl;

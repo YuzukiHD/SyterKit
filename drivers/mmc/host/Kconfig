@@ -1,4 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# The selected SoC chooses its MMC host implementation in this directory's
-# Makefile. DRIVER_MMC controls the parent directory.
+# mmc-generic.c provides the default clock implementation. A selected SoC can
+# override it with its own host implementation in this directory's Makefile.
