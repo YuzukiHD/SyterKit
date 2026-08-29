@@ -60,10 +60,10 @@ int cmd_ufs_info(int argc, const char **argv)
 	(void)argc;
 	(void)argv;
 	if (!ufs_ready) {
-		printk_error("UFS: device is not initialized\n");
+		pr_err("UFS: device is not initialized\n");
 		return -1;
 	}
-	printk_info("UFS: LUN %u, %s, %llu blocks x %u bytes, manufacturer 0x%04x\n", ufs0->lun,
+	pr_info("UFS: LUN %u, %s, %llu blocks x %u bytes, manufacturer 0x%04x\n", ufs0->lun,
 		ufs0->scsi.model[0] ? ufs0->scsi.model : "unknown", (unsigned long long)ufs_capacity(ufs0),
 		ufs_block_size(ufs0), ufs_manufacturer_id(ufs0));
 	return 0;
@@ -79,12 +79,12 @@ int cmd_ufs_read(int argc, const char **argv)
 
 	if (argc != 3 || !ufs_ready || !ufs_parse_u64(argv[1], &lba) || !ufs_parse_u64(argv[2], &blocks) ||
 		blocks == 0U || blocks > 0xffffffffULL) {
-		printk_error("Usage: ufs_read <lba> <blocks>\n");
+		pr_err("Usage: ufs_read <lba> <blocks>\n");
 		return -1;
 	}
 	block_size = ufs_block_size(ufs0);
 	if (!block_size || blocks > UFS_IO_BUFFER_SIZE / block_size) {
-		printk_error("UFS: transfer does not fit the DRAM buffer\n");
+		pr_err("UFS: transfer does not fit the DRAM buffer\n");
 		return -1;
 	}
 	if (ufs_blk_read(ufs0, ufs_io_buffer, lba, (uint32_t)blocks) != blocks)
@@ -104,12 +104,12 @@ int cmd_ufs_write(int argc, const char **argv)
 
 	if (argc != 4 || !ufs_ready || !ufs_parse_u64(argv[1], &lba) || !ufs_parse_u64(argv[2], &blocks) ||
 		!ufs_parse_u64(argv[3], &pattern) || blocks == 0U || blocks > 0xffffffffULL || pattern > 0xffU) {
-		printk_error("Usage: ufs_write <lba> <blocks> <byte>\n");
+		pr_err("Usage: ufs_write <lba> <blocks> <byte>\n");
 		return -1;
 	}
 	block_size = ufs_block_size(ufs0);
 	if (!block_size || blocks > UFS_IO_BUFFER_SIZE / block_size) {
-		printk_error("UFS: transfer does not fit the DRAM buffer\n");
+		pr_err("UFS: transfer does not fit the DRAM buffer\n");
 		return -1;
 	}
 	memset(ufs_io_buffer, (int)pattern, (size_t)blocks * block_size);
@@ -160,7 +160,7 @@ int main(void)
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp8191_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -178,7 +178,7 @@ int main(void)
 
 	dram.pmu = &pmu;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -191,14 +191,14 @@ int main(void)
 	struct ufshc_config ufs_config;
 
 	if (!dram.memory_base || !dram.memory_size || malloc_init(dram.memory_base, dram.memory_size) != 0) {
-		printk_error("UFS: unable to initialize the DRAM heap\n");
+		pr_err("UFS: unable to initialize the DRAM heap\n");
 	} else if (sunxi_ufs_dt_read_alias(&ufs_config, "ufs0") != DRIVER_OK) {
-		printk_error("UFS: invalid devicetree configuration\n");
+		pr_err("UFS: invalid devicetree configuration\n");
 	} else {
 		ufs0 = malloc(sizeof(*ufs0));
 		ufs_io_buffer = malloc(UFS_IO_BUFFER_SIZE);
 		if (!ufs0 || !ufs_io_buffer) {
-			printk_error("UFS: unable to allocate DRAM state or transfer buffer\n");
+			pr_err("UFS: unable to allocate DRAM state or transfer buffer\n");
 			free(ufs0);
 			free(ufs_io_buffer);
 			ufs0 = NULL;
@@ -220,7 +220,7 @@ int main(void)
 	}
 #endif
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	syterkit_shell_attach(commands);
 

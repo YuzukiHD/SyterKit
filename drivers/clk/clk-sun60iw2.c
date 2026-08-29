@@ -128,7 +128,7 @@ static inline void set_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1,
 	/* delay for pll */
 	udelay(20);
 
-	printk_trace("CLK: PLL CPU 0x%08x: 0x%08x, m0 = %d, n = %d, m1 = %d, p = %d\n", addr, read32(addr), m0, n, m1, p);
+	pr_trace("CLK: PLL CPU 0x%08x: 0x%08x, m0 = %d, n = %d, m1 = %d, p = %d\n", addr, read32(addr), m0, n, m1, p);
 
 	/* lock enable */
 	setbits_le32(addr, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
@@ -148,7 +148,7 @@ static inline void set_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1,
 
 	/* enable pll output */
 	setbits_le32(addr, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
-	printk_trace("CLK: PLL CPU 0x%08x: 0x%08x\n", addr, read32(addr));
+	pr_trace("CLK: PLL CPU 0x%08x: 0x%08x\n", addr, read32(addr));
 	udelay(20);
 }
 
@@ -189,9 +189,9 @@ static inline void set_pll_cpux_axi(void)
 		enable_pll(SUNXI_CPU_PLL_CFG_BASE + 0x3000U, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
 		set_pll(SUNXI_CPU_PLL_CFG_BASE + 0x3000U, 0x0, CPU_PLL_FACTOR_N_26M(780), 0x0, 0x0);
 	}
-	printk_debug("CLK: PLL CPU_L: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x1000U));
-	printk_debug("CLK: PLL CPU_B: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x2000U));
-	printk_debug("CLK: PLL CPU_DSU: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x3000U));
+	pr_debug("CLK: PLL CPU_L: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x1000U));
+	pr_debug("CLK: PLL CPU_B: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x2000U));
+	pr_debug("CLK: PLL CPU_DSU: 0x%08x\n", read32(SUNXI_CPU_PLL_CFG_BASE + 0x3000U));
 	udelay(20);
 	clrsetbits_le32(SUNXI_CPU_PLL_CFG_BASE + 0x101cU, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
 	udelay(20);
@@ -330,7 +330,7 @@ static inline void sunxi_cpu_clk_dump(uintptr_t pll_addr, uintptr_t ctl_addr, ch
 		clock_str = "HOSC";
 		break;
 	}
-	printk_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
+	pr_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
 }
 
 /**
@@ -375,7 +375,7 @@ static inline void sunxi_peri_clk_dump(uintptr_t addr, char *name, uint8_t pll_d
 	}
 
 	clock = clock / div_m;
-	printk_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
+	pr_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
 }
 
 /**
@@ -391,7 +391,7 @@ void sunxi_clk_dump(void)
 	uint32_t clk_hosc;
 
 	clk_hosc = sun60iw2_clk_get_hosc_rate() * 1000000;
-	printk_debug("CLK: PLL HOSC Type = %dMHz\n", clk_hosc / 1000000);
+	pr_debug("CLK: PLL HOSC Type = %dMHz\n", clk_hosc / 1000000);
 
 	sunxi_cpu_clk_dump(SUNXI_CPU_PLL_CFG_BASE + 0x101cU, SUNXI_CPU_PLL_CFG_BASE + 0x1000U, "CPUL", clk_hosc);
 	sunxi_cpu_clk_dump(SUNXI_CPU_PLL_CFG_BASE + 0x201cU, SUNXI_CPU_PLL_CFG_BASE + 0x2000U, "CPUB", clk_hosc);
@@ -400,9 +400,9 @@ void sunxi_clk_dump(void)
 	factor_n = ((reg_val >> 8) & 0xff) + 1;
 	div_m = ((reg_val >> 1) & 0x01) + 1;
 	div_m1 = ((reg_val >> 0) & 0x01) + 1;
-	printk_debug("CLK: PLL DDR  FREQ=%luMHz\r\n", 24 * factor_n / div_m / div_m1);
+	pr_debug("CLK: PLL DDR  FREQ=%luMHz\r\n", 24 * factor_n / div_m / div_m1);
 
-	printk_debug("CLK: PLL PERI FREQ=%luMHz\r\n", sun60iw2_clk_get_peri1x_rate() / 1000000);
+	pr_debug("CLK: PLL PERI FREQ=%luMHz\r\n", sun60iw2_clk_get_peri1x_rate() / 1000000);
 
 	sunxi_peri_clk_dump(SUNXI_CCU_BASE + AHB_CLK_REG, "AHB ", 2);
 	sunxi_peri_clk_dump(SUNXI_CCU_BASE + APB0_CLK_REG, "APB0", 2);

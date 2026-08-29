@@ -87,7 +87,7 @@ static inline void set_pll_periph0(void)
 
 	if ((1U << 31) & readl(SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG)) {
 		/*fel has enable pll_periph0*/
-		printk_debug("periph0 has been enabled\n");
+		pr_debug("periph0 has been enabled\n");
 		return;
 	}
 
@@ -288,7 +288,7 @@ static inline void set_modules_clock(void)
  */
 void sunxi_clk_init(void)
 {
-	printk_debug("Set SoC 1855 (A133/R818) CLK Start.\n");
+	pr_debug("Set SoC 1855 (A133/R818) CLK Start.\n");
 	set_platform_config();
 	set_pll_cpux_axi();
 	set_pll_periph0();
@@ -297,7 +297,7 @@ void sunxi_clk_init(void)
 	set_pll_dma();
 	set_pll_mbus();
 	set_modules_clock();
-	printk_debug("set pll end\n");
+	pr_debug("set pll end\n");
 	return;
 }
 
@@ -357,7 +357,7 @@ void sunxi_clk_dump(void)
 		p1 = 1;
 	}
 
-	printk_debug("CLK: CPU PLL=%s FREQ=%luMHz\r\n", clock_str, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
+	pr_debug("CLK: CPU PLL=%s FREQ=%luMHz\r\n", clock_str, ((((reg32 >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERIx */
 	reg32 = read32(SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG);
@@ -367,9 +367,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk_debug("CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		printk_debug("CLK: PLL_PERI0 disabled\r\n");
+		pr_debug("CLK: PLL_PERI0 disabled\r\n");
 	}
 
 	/* PLL PERIx */
@@ -380,9 +380,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk_debug("CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		printk_debug("CLK: PLL_PERI1 disabled\r\n");
+		pr_debug("CLK: PLL_PERI1 disabled\r\n");
 	}
 
 	/* PLL DDR0 */
@@ -394,10 +394,10 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk_debug("CLK: PLL_DDR0=%luMHz\r\n", (24 * plln) / (p0 * p1));
+		pr_debug("CLK: PLL_DDR0=%luMHz\r\n", (24 * plln) / (p0 * p1));
 
 	} else {
-		printk_debug("CLK: PLL_DDR0 disabled\r\n");
+		pr_debug("CLK: PLL_DDR0 disabled\r\n");
 	}
 
 	/* PLL DDR1 */
@@ -409,10 +409,10 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk_debug("CLK: PLL_DDR1=%luMHz\r\n", (24 * plln) / (p0 * p1));
+		pr_debug("CLK: PLL_DDR1=%luMHz\r\n", (24 * plln) / (p0 * p1));
 
 	} else {
-		printk_debug("CLK: PLL_DDR1 disabled\r\n");
+		pr_debug("CLK: PLL_DDR1 disabled\r\n");
 	}
 
 	/* PLL HSIC */
@@ -424,9 +424,9 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk_debug("CLK: HSIC=%luMHz\r\n", (24 * plln) / (p0 * p1));
+		pr_debug("CLK: HSIC=%luMHz\r\n", (24 * plln) / (p0 * p1));
 
 	} else {
-		printk_debug("CLK: HSIC disabled\r\n");
+		pr_debug("CLK: HSIC disabled\r\n");
 	}
 }

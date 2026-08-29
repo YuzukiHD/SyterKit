@@ -106,7 +106,7 @@ static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc)
 
 	value = read32(ccu + CCU_PLL_PERI_CTRL_REG);
 	if ((value & (1U << 31)) == 0U) {
-		printk_info("CLK: PLL_peri disabled\n");
+		pr_info("CLK: PLL_peri disabled\n");
 		return;
 	}
 	plln = ((value >> 8) & 0xffU) + 1U;
@@ -118,8 +118,8 @@ static void sun8iw21_e907_dump(const sunxi_remoteproc_t *remoteproc)
 	factor_m = (value & 0x1fU) + 1U;
 	factor_n = ((value >> 8) & 0x3U) + 1U;
 	pll_riscv = pll_peripheral / factor_m;
-	printk_info("CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
-	printk_info("CLK: RISC-V AXI FREQ=%uMHz\n", pll_riscv / factor_n);
+	pr_info("CLK: RISC-V PLL FREQ=%uMHz\n", pll_riscv);
+	pr_info("CLK: RISC-V AXI FREQ=%uMHz\n", pll_riscv / factor_n);
 }
 
 /**

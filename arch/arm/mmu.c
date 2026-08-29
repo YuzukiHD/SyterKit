@@ -204,7 +204,7 @@ void arm32_mmu_enable(uint32_t dram_base, uint32_t dram_size)
 #endif
 
 	reg = arm32_read_p15_c1();
-	printk_trace("MMU: table=0x%08x dram=0x%08x size=%uMiB CR=0x%08x\n", (uint32_t)table_address, dram_base, dram_size, reg);
+	pr_trace("MMU: table=0x%08x dram=0x%08x size=%uMiB CR=0x%08x\n", (uint32_t)table_address, dram_base, dram_size, reg);
 }
 
 /**

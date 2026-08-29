@@ -51,16 +51,16 @@ int cmd_read(int argc, const char **argv)
 	uint32_t start;
 	uint32_t test_time;
 
-	printk_debug("Clear Buffer data\n");
+	pr_debug("Clear Buffer data\n");
 	memset((void *)dram.memory_base, 0x00, 0x2000);
 	dump_hex(dram.memory_base, 0x100);
 
-	printk_debug("Read data to buffer data\n");
+	pr_debug("Read data to buffer data\n");
 
 	start = time_ms();
 	sdmmc_blk_read(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
@@ -72,14 +72,14 @@ int cmd_write(int argc, const char **argv)
 	uint32_t start;
 	uint32_t test_time;
 
-	printk_debug("Set Buffer data\n");
+	pr_debug("Set Buffer data\n");
 	memset((void *)dram.memory_base, 0x5A, 0x2000);
 	memcpy((void *)dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
 	sdmmc_blk_write(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
@@ -88,16 +88,16 @@ msh_define_help(load, "load SMHC", "Usage: load\n");
 int cmd_load(int argc, const char **argv)
 {
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&sd_card, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 	} else {
-		printk_debug("Card OK!\n");
+		pr_debug("Card OK!\n");
 	}
 	return 0;
 }
@@ -176,7 +176,7 @@ msh_define_help(fault, "trigger an exception for backtrace testing", "Usage: fau
 int cmd_fault(int argc, const char **argv)
 {
 	if (argc != 2) {
-		printk_error("Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+		pr_err("Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
 		return -1;
 	}
 
@@ -195,7 +195,7 @@ int cmd_fault(int argc, const char **argv)
 	else if (strcmp(argv[1], "breakpoint") == 0)
 		cmd_fault_breakpoint();
 	else {
-		printk_error("fault: unknown type '%s'\n", argv[1]);
+		pr_err("fault: unknown type '%s'\n", argv[1]);
 		return -1;
 	}
 
@@ -220,29 +220,29 @@ int main(void)
 
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
 	    spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
-		printk_error("SPI: invalid devicetree configuration\n");
+		pr_err("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	sunxi_clk_init();
 
-	printk_info("CLK init finish\n");
+	pr_info("CLK init finish\n");
 
 	sunxi_clk_dump();
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_dram_init(&dram) == 0U) {
-		printk_error("DRAM: initialization failed\n");
+		pr_err("DRAM: initialization failed\n");
 		return -1;
 	}
 
@@ -256,7 +256,7 @@ int main(void)
 	spi_nor_read(&nor, (void *)0x81000000, 0x0, 1024 * 1024 * 4);
 	uint32_t time_end = time_ms();
 
-	printk_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));
+	pr_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));
 
 	syterkit_shell_attach(commands);
 

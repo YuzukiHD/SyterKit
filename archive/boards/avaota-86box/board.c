@@ -22,13 +22,13 @@ void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 }
 
 void sys_reset(void)

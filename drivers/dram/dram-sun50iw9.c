@@ -44,12 +44,12 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 	size_t image_size;
 
 	if (dram == NULL || dram->parameter_count == 0U || dram->rtc.data_base == 0U || dram->init_code_base == 0U || dram->init_code_size == 0U || image_end <= image_start) {
-		printk_error("DRAM: please provide DRAM para\n");
+		pr_err("DRAM: please provide DRAM para\n");
 		return 0U;
 	}
 	image_size = (size_t)(image_end - image_start);
 	if (image_size > dram->init_code_size || dram->init_code_base + dram->init_code_size < dram->init_code_base) {
-		printk_error("DRAM: init code region is too small\n");
+		pr_err("DRAM: init code region is too small\n");
 		return 0U;
 	}
 	src = (const uint8_t *)image_start;
@@ -62,13 +62,13 @@ uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 		rtc_set_dram_para(&dram->rtc, (uint32_t)(uintptr_t)para_data);
 	}
 
-	printk_debug("DRAM: load dram init from 0x%08lx -> 0x%08lx size: %08lx\n", (unsigned long)image_start, (unsigned long)dram->init_code_base, (unsigned long)image_size);
+	pr_debug("DRAM: load dram init from 0x%08lx -> 0x%08lx size: %08lx\n", (unsigned long)image_start, (unsigned long)dram->init_code_base, (unsigned long)image_size);
 	memcpy(dst, src, image_size);
 
 	/* Set RTC data to current time_ms(), Save in RTC_FEL_INDEX */
 	rtc_set_start_time_ms(&dram->rtc);
 
-	printk_debug("DRAM: Now jump to 0x%08lx run DRAMINIT\n", (unsigned long)dram->init_code_base);
+	pr_debug("DRAM: Now jump to 0x%08lx run DRAMINIT\n", (unsigned long)dram->init_code_base);
 
 	__asm__ __volatile__("isb sy" : : : "memory");
 	__asm__ __volatile__("dsb sy" : : : "memory");

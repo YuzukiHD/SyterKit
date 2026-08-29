@@ -19,7 +19,7 @@ int main(void)
 	sunxi_sid_t sid;
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -32,7 +32,7 @@ int main(void)
 	id[2] = sunxi_efuse_sram_read(&sid, 0x8U);
 	id[3] = sunxi_efuse_sram_read(&sid, 0xcU);
 
-	printk_info("Chip ID is: %08x%08x%08x%08x\n", id[0], id[1], id[2], id[3]);
+	pr_info("Chip ID is: %08x%08x%08x%08x\n", id[0], id[1], id[2], id[3]);
 
 	return 0;
 }

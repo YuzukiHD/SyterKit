@@ -217,6 +217,6 @@ void sunxi_clk_dump(void)
 
 	plln = (readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_N_CLEAR_MASK) >> PLL_CPU_CTRL_REG_PLL_N_OFFSET;
 
-	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
-	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, 24 * plln);
+	pr_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
+	pr_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, 24 * plln);
 }

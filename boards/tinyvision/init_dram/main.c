@@ -29,7 +29,7 @@ int main(void)
 	sunxi_clk_init();
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);

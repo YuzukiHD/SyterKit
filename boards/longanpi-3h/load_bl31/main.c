@@ -107,7 +107,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -124,7 +124,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -133,7 +133,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -150,7 +150,7 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -158,28 +158,28 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
 	if (ret)
 		return ret;
 
-	// printk_info("FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
+	// pr_info("FATFS: read %s addr=%x\n", image->uboot_filename, (uint32_t) image->uboot_dest);
 	// ret = fatfs_loadimage(image->uboot_filename, image->uboot_dest);
 	// if (ret)
 	//     return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t)image->kernel_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t)image->kernel_dest);
 	ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
 	if (ret)
 		return ret;
@@ -187,12 +187,12 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -246,15 +246,15 @@ int main(void)
 	show_banner();
 
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_sdhci_dt_read_alias(&boot_mmc, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK) {
-		printk_error("RTC: invalid devicetree configuration\n");
+		pr_err("RTC: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -272,7 +272,7 @@ int main(void)
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
@@ -297,22 +297,22 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&boot_mmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", boot_mmc.name);
+		pr_err("SMHC: %s controller init failed\n", boot_mmc.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", boot_mmc.name);
+		pr_info("SMHC: %s controller initialized\n", boot_mmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 		goto _shell;
 	}
 	disk_set_device(0, &boot_card);
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image, &boot_card) != 0) {
-		printk_warning("SMHC: loading failed\n");
+		pr_warn("SMHC: loading failed\n");
 		goto _shell;
 	}
 
@@ -321,16 +321,16 @@ int main(void)
 	atf_head->next_boot_base = CONFIG_UBOOT_LOAD_ADDR;
 	atf_head->dtb_base = CONFIG_DTB_LOAD_ADDR;
 
-	printk_info("ATF: jump_instruction: 0x%08x\n", atf_head->jump_instruction);
-	printk_info("ATF: magic: %s\n", atf_head->magic);
-	printk_info("ATF: scp_base: 0x%08x\n", atf_head->scp_base);
-	printk_info("ATF: next_boot_base: 0x%08x\n", atf_head->next_boot_base);
+	pr_info("ATF: jump_instruction: 0x%08x\n", atf_head->jump_instruction);
+	pr_info("ATF: magic: %s\n", atf_head->magic);
+	pr_info("ATF: scp_base: 0x%08x\n", atf_head->scp_base);
+	pr_info("ATF: next_boot_base: 0x%08x\n", atf_head->next_boot_base);
 
 	clean_syterkit_data();
 
 	jmp_to_arm64(&rtc, CONFIG_BL31_LOAD_ADDR);
 
-	printk_info("Back to SyterKit\n");
+	pr_info("Back to SyterKit\n");
 
 _shell:
 	abort();

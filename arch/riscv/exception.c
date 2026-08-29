@@ -300,23 +300,23 @@ static void show_regs(struct pt_regs_t *regs)
 	if (regs->cause & RISCV_CAUSE_INTERRUPT) {
 		cause = regs->cause & ~RISCV_CAUSE_INTERRUPT;
 		if (cause < ARRAY_SIZE(interrupt_names))
-			printk_error("Interrupt:          %s\r\n", interrupt_names[cause]);
+			pr_err("Interrupt:          %s\r\n", interrupt_names[cause]);
 		else
-			printk_error("Trap:               Unknown cause %p\r\n", (void *)regs->cause);
+			pr_err("Trap:               Unknown cause %p\r\n", (void *)regs->cause);
 	} else {
 		cause = regs->cause & 0xfff;
 		if (cause < ARRAY_SIZE(exception_names))
-			printk_error("Exception:          %s\r\n", exception_names[cause]);
+			pr_err("Exception:          %s\r\n", exception_names[cause]);
 		else
-			printk_error("Trap:               Unknown cause %p\r\n", (void *)regs->cause);
+			pr_err("Trap:               Unknown cause %p\r\n", (void *)regs->cause);
 	}
-	printk_error("Previous mode:      %s%s\r\n", mstatus_to_previous_mode(csr_read(mstatus)), (regs->status & (1 << 17)) ? " (MPRV)" : "");
-	printk_error("Bad instruction pc: %p\r\n", (void *)regs->epc);
-	printk_error("Bad address:        %p\r\n", (void *)regs->badvaddr);
-	printk_error("Stored ra:          %p\r\n", (void *)regs->x[1]);
-	printk_error("Stored sp:          %p\r\n", (void *)regs->x[2]);
+	pr_err("Previous mode:      %s%s\r\n", mstatus_to_previous_mode(csr_read(mstatus)), (regs->status & (1 << 17)) ? " (MPRV)" : "");
+	pr_err("Bad instruction pc: %p\r\n", (void *)regs->epc);
+	pr_err("Bad address:        %p\r\n", (void *)regs->badvaddr);
+	pr_err("Stored ra:          %p\r\n", (void *)regs->x[1]);
+	pr_err("Stored sp:          %p\r\n", (void *)regs->x[2]);
 #if defined(CONFIG_BACKTRACE)
-	printk_error("========== backtrace ==========\n");
+	pr_err("========== backtrace ==========\n");
 	dump_stack();
 	backtrace((char *)regs->epc, (long *)regs->x[2], (char *)regs->x[1]);
 #endif

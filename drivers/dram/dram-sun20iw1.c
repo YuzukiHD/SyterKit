@@ -771,48 +771,48 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 		return;
 
 	fuse = (readl(dram->registers.sid.base + SYS_EFUSE_REG) & 0xf00) >> 8;
-	printk_debug("DDR efuse: 0x%x\n", fuse);
+	pr_debug("DDR efuse: 0x%x\n", fuse);
 
 	if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
 		/* if fuse is 0xa then D1s -> no remap*/
 		if (fuse == 0x0a) {
-			printk_debug("D1s no REMAP!!\n");
+			pr_debug("D1s no REMAP!!\n");
 			return;
 		}
 		if (fuse == 15)
 			return;
-		printk_debug("DDR Using MAP: 6 \n");
+		pr_debug("DDR Using MAP: 6 \n");
 		cfg = ac_remapping_tables[6];
 	} else {
 		if (para->dram_tpr13 & 0xc0000) {
-			printk_debug("DDR Using MAP: 7 \n");
+			pr_debug("DDR Using MAP: 7 \n");
 			cfg = ac_remapping_tables[7];
 		} else {
 			switch (fuse) {
 			case 8:
-				printk_debug("DDR Using MAP: 2 \n");
+				pr_debug("DDR Using MAP: 2 \n");
 				cfg = ac_remapping_tables[2];
 				break;
 			case 9:
-				printk_debug("DDR Using MAP: 3 \n");
+				pr_debug("DDR Using MAP: 3 \n");
 				cfg = ac_remapping_tables[3];
 				break;
 			case 10:
-				printk_debug("DDR Using MAP: 5 \n");
+				pr_debug("DDR Using MAP: 5 \n");
 				cfg = ac_remapping_tables[5];
 				break;
 			case 11:
-				printk_debug("DDR Using MAP: 4 \n");
+				pr_debug("DDR Using MAP: 4 \n");
 				cfg = ac_remapping_tables[4];
 				break;
 			default:
 			case 12:
-				printk_debug("DDR Using MAP: 1 \n");
+				pr_debug("DDR Using MAP: 1 \n");
 				cfg = ac_remapping_tables[1];
 				break;
 			case 13:
 			case 14:
-				printk_debug("DDR Using MAP: 0 \n");
+				pr_debug("DDR Using MAP: 0 \n");
 				cfg = ac_remapping_tables[0];
 				break;
 			}
@@ -828,10 +828,10 @@ static void mctl_phy_ac_remapping(const sunxi_dram_t *dram, dram_para_t *para)
 	val = (cfg[18] << 10) | (32 * cfg[17]) | cfg[16] | (cfg[19] << 15) | (cfg[20] << 20) | (cfg[21] << 25);
 	writel(val, (dram->registers.mctl_com.base + MCTL_COM_REMAP3));
 
-	printk_trace("MCTL_COM_REMAP0 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP0)));
-	printk_trace("MCTL_COM_REMAP1 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP1)));
-	printk_trace("MCTL_COM_REMAP2 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP2)));
-	printk_trace("MCTL_COM_REMAP3 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP3)));
+	pr_trace("MCTL_COM_REMAP0 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP0)));
+	pr_trace("MCTL_COM_REMAP1 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP1)));
+	pr_trace("MCTL_COM_REMAP2 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP2)));
+	pr_trace("MCTL_COM_REMAP3 = 0x%x\n", readl((dram->registers.mctl_com.base + MCTL_COM_REMAP3)));
 }
 
 // Init the controller channel. The key part is placing commands in the main
@@ -985,7 +985,7 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 
 	// Check for training error
 	if (readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & (1 << 20)) {
-		printk_error("ZQ calibration error, check external 240 ohm resistor\n");
+		pr_err("ZQ calibration error, check external 240 ohm resistor\n");
 		return 0;
 	}
 
@@ -1086,7 +1086,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 
 	if ((readl(dram->registers.mctl_phy.base + MCTL_PHY_PGSR0) & BIT(22)) == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | BIT(12);
-		printk_debug("dual rank and full DQ\n");
+		pr_debug("dual rank and full DQ\n");
 
 		return 1;
 	}
@@ -1094,7 +1094,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 	dx0 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(0)) & (BIT(24) | BIT(25))) >> 24;
 	if (dx0 == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
-		printk_debug("dual rank and half DQ\n");
+		pr_debug("dual rank and half DQ\n");
 
 		return 1;
 	}
@@ -1103,10 +1103,10 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 		dx1 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(1)) & (BIT(24) | BIT(25))) >> 24;
 		if (dx1 == 2) {
 			para->dram_para2 = para->dram_para2 & ~0xf00f;
-			printk_debug("single rank and full DQ\n");
+			pr_debug("single rank and full DQ\n");
 		} else {
 			para->dram_para2 = (para->dram_para2 & ~0xf00f) | BIT(0);
-			printk_debug("single rank and half DQ\n");
+			pr_debug("single rank and half DQ\n");
 		}
 
 		return 1;
@@ -1115,8 +1115,8 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 	if ((para->dram_tpr13 & BIT(29)) == 0)
 		return 0;
 
-	printk_debug("DX0 state: %lu\n", dx0);
-	printk_debug("DX1 state: %lu\n", dx1);
+	pr_debug("DX0 state: %lu\n", dx0);
+	pr_debug("DX1 state: %lu\n", dx1);
 
 	return 0;
 }
@@ -1151,20 +1151,20 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, i
 		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			printk_error("DRAM: simple test FAIL\n");
-			printk_error("%x != %x at address %p\n", v1, v2, addr + i);
+			pr_err("DRAM: simple test FAIL\n");
+			pr_err("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			printk_error("DRAM: simple test FAIL\n");
-			printk_error("%x != %x at address %p\n", v1, v2, addr + offs + i);
+			pr_err("DRAM: simple test FAIL\n");
+			pr_err("%x != %x at address %p\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
 
-	printk_debug("DRAM: simple test OK\n");
+	pr_debug("DRAM: simple test OK\n");
 	return 0;
 }
 
@@ -1257,7 +1257,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 
 	// init core
 	if (mctl_core_init(dram, para) == 0) {
-		printk_debug("DRAM initial error : 0!\n");
+		pr_debug("DRAM initial error : 0!\n");
 		return 0;
 	}
 
@@ -1302,7 +1302,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 			i = 16;
 		addr_line += i;
 
-		printk_debug("rank %lu row = %lu \n", current_rank, i);
+		pr_debug("rank %lu row = %lu \n", current_rank, i);
 
 		/* Store rows in para 1 */
 		para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
@@ -1333,7 +1333,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 		}
 
 		addr_line += i + 2;
-		printk_debug("rank %lu bank = %lu \n", current_rank, (4 + i * 4));
+		pr_debug("rank %lu bank = %lu \n", current_rank, (4 + i * 4));
 
 		/* Store bank in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
@@ -1378,7 +1378,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 			i = (0x1U << (i - 10));
 		}
 
-		printk_debug("rank %lu page size = %lu KB \n", current_rank, i);
+		pr_debug("rank %lu page size = %lu KB \n", current_rank, i);
 
 		/* Store page in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank));
@@ -1389,10 +1389,10 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 	if (rank_count == 2) {
 		para->dram_para2 &= 0xfffff0ff;
 		if ((para->dram_para1 & 0xffff) == (para->dram_para1 >> 16)) {
-			printk_debug("rank1 config same as rank0\n");
+			pr_debug("rank1 config same as rank0\n");
 		} else {
 			para->dram_para2 |= 0x1 << 8;
-			printk_debug("rank1 config different from rank0\n");
+			pr_debug("rank1 config different from rank0\n");
 		}
 	}
 	return 1;
@@ -1460,12 +1460,12 @@ static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para
 static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(dram, para) == 0)) {
-		printk_error("ERROR: auto scan dram rank & width failed\n");
+		pr_err("ERROR: auto scan dram rank & width failed\n");
 		return 0;
 	}
 
 	if (((para->dram_tpr13 & BIT(0)) == 0) && (auto_scan_dram_size(dram, para) == 0)) {
-		printk_error("ERROR: auto scan dram size failed\n");
+		pr_err("ERROR: auto scan dram size failed\n");
 		return 0;
 	}
 
@@ -1493,17 +1493,17 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 {
 	uint32_t rc, mem_size_mb;
 
-	printk_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
-	printk_debug("DRAM CLK = %d MHz\n", para->dram_clk);
-	printk_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	pr_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
+	pr_debug("DRAM CLK = %d MHz\n", para->dram_clk);
+	pr_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
-		printk_debug("DRAMC read ODT off\n");
+		pr_debug("DRAMC read ODT off\n");
 	else
-		printk_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		pr_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
-		printk_debug("DRAM only have internal ZQ\n");
+		pr_debug("DRAM only have internal ZQ\n");
 		setbits_le32((dram->registers.sysctrl.base + ZQ_CAL_CTRL_REG), (1 << 8));
 		writel(0, (dram->registers.sysctrl.base + ZQ_RES_CTRL_REG));
 		udelay(10);
@@ -1515,7 +1515,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		udelay(10);
 		setbits_le32((dram->registers.sysctrl.base + ZQ_CAL_CTRL_REG), (1 << 0));
 		udelay(20);
-		printk_debug("ZQ value = 0x%08x\n", readl((dram->registers.sysctrl.base + ZQ_RES_STATUS_REG)));
+		pr_debug("ZQ value = 0x%08x\n", readl((dram->registers.sysctrl.base + ZQ_RES_STATUS_REG)));
 	}
 
 	dram_voltage_set(dram, para);
@@ -1523,7 +1523,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	/* Set SDRAM controller auto config */
 	if ((para->dram_tpr13 & (1 << 0)) == 0) {
 		if (auto_scan_dram_config(dram, para) == 0) {
-			printk_error("auto_scan_dram_config() FAILED\n");
+			pr_err("auto_scan_dram_config() FAILED\n");
 			return 0;
 		}
 	}
@@ -1531,13 +1531,13 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	/* report ODT */
 	rc = para->dram_mr1;
 	if ((rc & 0x44) == 0)
-		printk_debug("DRAM ODT off\n");
+		pr_debug("DRAM ODT off\n");
 	else
-		printk_debug("DRAM ODT value: 0x%08x\n", rc);
+		pr_debug("DRAM ODT value: 0x%08x\n", rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(dram, para) == 0) {
-		printk_debug("DRAM initialisation error: 1\n");
+		pr_debug("DRAM initialisation error: 1\n");
 		return 0;
 	}
 
@@ -1549,7 +1549,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		rc = (rc >> 16) & ~(1 << 15);
 	} else {
 		rc = DRAMC_get_dram_size(dram);
-		printk_info("DRAM: size = %uMB\n", rc);
+		pr_info("DRAM: size = %uMB\n", rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;
@@ -1562,7 +1562,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		writel(rc, (dram->registers.mctl_phy.base + MCTL_PHY_ASRTC));
 		writel(0x40a, (dram->registers.mctl_phy.base + MCTL_PHY_ASRC));
 		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), (1 << 0));
-		printk_debug("Enable Auto SR\n");
+		pr_debug("Enable Auto SR\n");
 	} else {
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ASRTC), 0xffff);
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), 0x1);

@@ -39,7 +39,7 @@ extern int init_DRAM(int type, void *buff);
  */
 int set_ddr_voltage(int set_vol)
 {
-	printk_info("Set DRAM Voltage to %dmv\n", set_vol);
+	pr_info("Set DRAM Voltage to %dmv\n", set_vol);
 	if (dram_pmu_axp2202 != NULL)
 		pmu_axp2202_set_vol(dram_pmu_axp2202, "dcdc3", set_vol, 1);
 	return 0;
@@ -57,7 +57,7 @@ int set_ddr_voltage(int set_vol)
  */
 int set_ddr4_2v5_voltage(int set_vol)
 {
-	printk_info("Set DDR4 25 DRAM Voltage to %dmv\n", set_vol);
+	pr_info("Set DDR4 25 DRAM Voltage to %dmv\n", set_vol);
 	return 0;
 }
 

@@ -25,17 +25,17 @@ int main(void)
 
 	sunxi_clk_init();
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	sunxi_efuse_dump(&sid);
 

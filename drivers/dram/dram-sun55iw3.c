@@ -39,7 +39,7 @@ extern int init_DRAM(int type, void *buff);
 int set_ddr_voltage(unsigned int vol_val)
 {
 	/* ddr voltage already set in main */
-	printk_info("set_ddr_voltage: %d\n", vol_val);
+	pr_info("set_ddr_voltage: %d\n", vol_val);
 	return 0;
 }
 

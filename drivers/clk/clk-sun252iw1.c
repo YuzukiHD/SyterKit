@@ -82,7 +82,7 @@ static inline void sunxi_set_pll_periph0(void)
 {
 	if (readl(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG) & BIT(PLL_PERI_CTRL_REG_PLL_EN_OFFSET)) {
 		/* fel has enabled pll_periph0 */
-		printk_info("pll periph0 has been enabled, skip enable\n");
+		pr_info("pll periph0 has been enabled, skip enable\n");
 		return;
 	}
 
@@ -276,7 +276,7 @@ void sunxi_clk_dump(void)
 	/* PLL CPU */
 	reg_val = readl(SUNXI_CCU_BASE + CPU_CLK_REG);
 	cpu_clk_src = (reg_val & CPU_CLK_REG_CPU_CLK_SEL_CLEAR_MASK) >> CPU_CLK_REG_CPU_CLK_SEL_OFFSET;
-	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
+	pr_debug("CLK: CPU CLK_reg=0x%08x\n", reg_val);
 
 	switch (cpu_clk_src) {
 	case CPU_CLK_REG_CPU_CLK_SEL_HOSC:
@@ -322,5 +322,5 @@ void sunxi_clk_dump(void)
 	pllm = (readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_M1_CLEAR_MASK) >> PLL_CPU_CTRL_REG_PLL_M1_OFFSET;
 	clk_freq = 24 * (pllm + 1) * plln / p1;
 
-	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
+	pr_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
 }

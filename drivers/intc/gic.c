@@ -116,7 +116,7 @@ static inline bool interrupts_are_enabled(void)
  */
 static void default_isr(void *data)
 {
-	printk_debug("default_isr(): called from IRQ %u\n", (uint32_t)(uintptr_t)data);
+	pr_debug("default_isr(): called from IRQ %u\n", (uint32_t)(uintptr_t)data);
 	for (;;)
 		;
 }
@@ -142,7 +142,7 @@ static int gic_distributor_init(const sunxi_gic_t *gic)
 	if (hardware_irq_count > 1020U)
 		hardware_irq_count = 1020U;
 	if (hardware_irq_count < gic->irq_count) {
-		printk_error("GIC: hardware has %u IRQs, devicetree requests %u\n", hardware_irq_count, gic->irq_count);
+		pr_err("GIC: hardware has %u IRQs, devicetree requests %u\n", hardware_irq_count, gic->irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 
@@ -241,7 +241,7 @@ int sunxi_gic_exit(sunxi_gic_t *gic)
  */
 static void gic_sgi_handler(uint32_t irq)
 {
-	printk_debug("GIC: SGI IRQ %u\n", irq);
+	pr_debug("GIC: SGI IRQ %u\n", irq);
 }
 
 /**
@@ -251,7 +251,7 @@ static void gic_sgi_handler(uint32_t irq)
  */
 static void gic_ppi_handler(uint32_t irq)
 {
-	printk_debug("GIC: PPI IRQ %u\n", irq);
+	pr_debug("GIC: PPI IRQ %u\n", irq);
 }
 
 /**
@@ -351,7 +351,7 @@ void do_irq(struct arm_regs_t *regs)
 	if (irq >= GIC_SPURIOUS_IRQ_MIN)
 		return;
 	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, (int)irq)) {
-		printk_debug("GIC: invalid IRQ %u (source count %u)\n", irq, sunxi_gic_controller.irq_count);
+		pr_debug("GIC: invalid IRQ %u (source count %u)\n", irq, sunxi_gic_controller.irq_count);
 	} else if (irq < 16U) {
 		gic_sgi_handler(irq);
 	} else if (irq < 32U) {
@@ -395,7 +395,7 @@ void irq_free_handler(int irq)
 int irq_enable(int irq)
 {
 	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
-		printk_error("GIC: invalid IRQ %d (source count %u)\n", irq, sunxi_gic_controller.irq_count);
+		pr_err("GIC: invalid IRQ %d (source count %u)\n", irq, sunxi_gic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 
@@ -412,7 +412,7 @@ int irq_enable(int irq)
 int irq_disable(int irq)
 {
 	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
-		printk_error("GIC: invalid IRQ %d (source count %u)\n", irq, sunxi_gic_controller.irq_count);
+		pr_err("GIC: invalid IRQ %d (source count %u)\n", irq, sunxi_gic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 

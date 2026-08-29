@@ -376,7 +376,7 @@ int fdt_find_or_add_subnode(void *fdt, int parent_offset, const char *name)
 		offset = fdt_add_subnode(fdt, parent_offset, name);
 
 	if (offset < 0)
-		printk_warning("FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
+		pr_warn("FDT: find or add subnode %s: %s\n", name, fdt_strerror(offset));
 
 	return offset;
 }
@@ -398,10 +398,10 @@ int fdt_overlay_apply_verbose(void *fdt, void *fdto)
 
 	err = fdt_overlay_apply(fdt, fdto);
 	if (err < 0) {
-		printk_warning("failed on fdt_overlay_apply(): %s\n", fdt_strerror(err));
+		pr_warn("failed on fdt_overlay_apply(): %s\n", fdt_strerror(err));
 		if (!has_symbols) {
-			printk_warning("base fdt does not have a /__symbols__ node\n");
-			printk_warning("make sure you've compiled with -@\n");
+			pr_warn("base fdt does not have a /__symbols__ node\n");
+			pr_warn("make sure you've compiled with -@\n");
 		}
 	}
 	return err;

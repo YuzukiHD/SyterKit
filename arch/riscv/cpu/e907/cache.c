@@ -248,7 +248,7 @@ void sysmap_dump_region_info(void)
 	char mem_attr_buff_str[3] = { 0 }; // Buffer for "B" or "NB"
 	uint32_t len;
 
-	printk_debug("E907 SYSMAP INFO:\n");
+	pr_debug("E907 SYSMAP INFO:\n");
 	for (i = 0; i < SYSMAP_REGION_NUM; i++) {
 		mem_attr = get_mem_region_attr(i);
 
@@ -270,7 +270,7 @@ void sysmap_dump_region_info(void)
 			memcpy(mem_attr_buff_str, "NB", 2);
 		}
 
-		printk_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i, get_mem_region_start_addr(i), get_mem_region_end_addr(i),
+		pr_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i, get_mem_region_start_addr(i), get_mem_region_end_addr(i),
 			     get_mem_region_len(i), mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
 	}
 #endif

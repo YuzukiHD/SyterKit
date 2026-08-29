@@ -239,7 +239,7 @@ int pcie_rc_start(struct pcie *pcie, uint32_t timeout_us)
 	ret = pcie_controller_wait_link(&pcie->controller, timeout_us);
 	if (ret) {
 		pcie_controller_ltssm(&pcie->controller, false);
-		printk_error("PCIe: link training timeout\n");
+		pr_err("PCIe: link training timeout\n");
 		return ret;
 	}
 	if (pcie->controller.config.link_gen > 1U) {

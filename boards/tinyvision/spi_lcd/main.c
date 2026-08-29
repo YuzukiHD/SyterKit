@@ -54,14 +54,14 @@ static void LCD_Write_Bus(uint8_t dat)
 	tx[0] = dat;
 	r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
 	if (r < 0)
-		printk_error("SPI: SPI Xfer error!\n");
+		pr_err("SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len)
 {
 	int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
 	if (r < 0)
-		printk_error("SPI: SPI Xfer error!\n");
+		pr_err("SPI: SPI Xfer error!\n");
 }
 
 void LCD_WR_DATA(uint16_t dat)
@@ -193,27 +193,27 @@ int main(void)
 	spi_node = syterkit_dt_alias_node("spi0", SUNXI_SPI_COMPATIBLE);
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_node, &dma) != DRIVER_OK ||
 	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_node, "allwinner,lcd-dc-gpio") || !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_node, "allwinner,lcd-reset-gpio")) {
-		printk_error("SPI LCD: invalid devicetree configuration\n");
+		pr_err("SPI LCD: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	sunxi_clk_init();
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(dram.memory_base, dram_size);
 
-	printk_debug("enable mmu ok\n");
+	pr_debug("enable mmu ok\n");
 
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
-		printk_error("SPI: init failed\n");
+		pr_err("SPI: init failed\n");
 	}
 	sunxi_gpio_init(&lcd_dc_pins);
 	sunxi_gpio_init(&lcd_res_pins);

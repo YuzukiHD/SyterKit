@@ -279,7 +279,7 @@ int main(void) {
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
 	    pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -313,7 +313,7 @@ int main(void) {
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);

@@ -26,13 +26,13 @@ void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 }
 
 void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc)
@@ -51,7 +51,7 @@ void sys_ldo_check(void)
 	uint32_t roughtrim_val = 0, finetrim_val = 0;
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return;
 	}
 
@@ -76,7 +76,7 @@ void sys_ldo_check(void)
 	writel(reg_val, ANA_PWR_RST_REG);
 
 	/* read efuse */
-	printk_debug("Audio: avcc calibration\n");
+	pr_debug("Audio: avcc calibration\n");
 	reg_val = sunxi_efuse_sram_read(&sid, 0x28U);
 	roughtrim_val = (reg_val >> 0) & 0xF;
 	reg_val = sunxi_efuse_sram_read(&sid, 0x24U);
@@ -86,11 +86,11 @@ void sys_ldo_check(void)
 		reg_val = readl(SUNXI_VER_REG);
 		reg_val = (reg_val >> 0) & 0x7;
 		if (reg_val) {
-			printk_debug("Audio: chip not version A\n");
+			pr_debug("Audio: chip not version A\n");
 		} else {
 			roughtrim_val = 0x5;
 			finetrim_val = 0x19;
-			printk_debug("Audio: chip version A\n");
+			pr_debug("Audio: chip version A\n");
 		}
 	}
 	reg_val = readl(AUDIO_POWER_REG);

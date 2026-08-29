@@ -88,7 +88,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -105,7 +105,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -114,7 +114,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -131,26 +131,26 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
 	/* load DTB */
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
 	/* load Kernel */
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t)image->dest);
+	pr_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -158,12 +158,12 @@ static int load_sdcard(image_info_t *image)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_info("FATFS: done in %ums\n", time_ms() - start);
+	pr_info("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -205,24 +205,24 @@ static int update_dtb_for_linux(uint32_t dram_size)
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
-		printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
+		pr_err("Invalid device tree blob: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	/* Get the total size of DTB */
 	uint32_t size = fdt_totalsize(image.of_dest);
 
-	printk_debug("FDT dtb size = %d\n", size);
+	pr_debug("FDT dtb size = %d\n", size);
 
 	if ((ret = fdt_increase_size(image.of_dest, 512)) != 0) {
-		printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
+		pr_err("FDT: device tree increase error: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	int memory_node = fdt_find_or_add_subnode(image.of_dest, 0, "memory");
 
 	if ((ret = fdt_setprop_string(image.of_dest, memory_node, "device_type", "memory")) != 0) {
-		printk_error("Can't change memory size node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change memory size node: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
@@ -232,7 +232,7 @@ static int update_dtb_for_linux(uint32_t dram_size)
 	int len = fdt_pack_reg(image.of_dest, tmp_buf, dram.memory_base, (dram_size * 1024 * 1024));
 
 	if ((ret = fdt_setprop(image.of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
-		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change memory base node: %s\n", fdt_strerror(ret));
 		free(tmp_buf);
 		goto _error;
 	}
@@ -252,30 +252,30 @@ static int update_dtb_for_linux(uint32_t dram_size)
 
 	strcat(bootargs_str, CONFIG_CMDLINE);
 
-	printk_info("Kernel cmdline = [%s]\n", bootargs_str);
+	pr_info("Kernel cmdline = [%s]\n", bootargs_str);
 
 _add_dts_size:
 	/* Modify bootargs string */
 	ret = fdt_setprop_string(image.of_dest, chosen_node, "bootargs", skip_spaces(bootargs_str));
 	if (ret == -FDT_ERR_NOSPACE) {
-		printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+		pr_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
 		ret = fdt_increase_size(image.of_dest, 512);
 		if (!ret) {
 			goto _add_dts_size;
 		} else {
-			printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+			pr_err("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
 			goto _error;
 		}
 	} else if (ret < 0) {
-		printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change bootargs node: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	/* Get the total size of DTB */
-	printk_debug("Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+	pr_debug("Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
 
 	if (ret < 0) {
-		printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+		pr_err("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
@@ -290,7 +290,7 @@ static int abortboot_single_key(int bootdelay)
 	int abort = 0;
 	unsigned long ts;
 
-	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
+	pr_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
 	if (tstc()) { /* we got a key press */
@@ -326,7 +326,7 @@ int cmd_boot(int argc, const char **argv)
 
 	/* Set up boot parameters for the kernel. */
 	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
-		printk_error("boot setup failed\n");
+		pr_err("boot setup failed\n");
 		abort();
 	}
 
@@ -334,10 +334,10 @@ int cmd_boot(int argc, const char **argv)
 	clean_syterkit_data();
 
 	enable_kernel_smp();
-	printk_info("enable kernel smp ok...\n");
+	pr_info("enable kernel smp ok...\n");
 
 	/* Debug message to indicate the kernel address that the system is jumping to. */
-	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
+	pr_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
 	kernel_entry = (void (*)(int, int, uint32_t))entry_point;
@@ -364,7 +364,7 @@ int main(void)
 	/* Display the bootloader banner. */
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -374,7 +374,7 @@ int main(void)
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
@@ -399,15 +399,15 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed, retry...\n");
+		pr_warn("SMHC: init failed, retry...\n");
 		if (sdmmc_init(&card0, &sdhci0) != 0) {
 			goto _shell;
 		}
@@ -416,7 +416,7 @@ int main(void)
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image) != 0) {
-		printk_warning("SMHC: loading failed\n");
+		pr_warn("SMHC: loading failed\n");
 		goto _shell;
 	}
 

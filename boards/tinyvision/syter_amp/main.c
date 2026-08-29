@@ -77,7 +77,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -94,7 +94,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -103,7 +103,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -121,24 +121,24 @@ static int load_sdcard(image_info_t *image, sunxi_remoteproc_t *remoteproc)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int)image->of_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->of_filename, (unsigned int)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
+	pr_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -146,7 +146,7 @@ static int load_sdcard(image_info_t *image, sunxi_remoteproc_t *remoteproc)
 	for (index = 0U; index < remoteproc->firmware_count; ++index) {
 		const sunxi_remoteproc_firmware_t *firmware = &remoteproc->firmware[index];
 
-		printk_info("FATFS: read %s addr=%x\n", firmware->name, (unsigned int)firmware->load_address);
+		pr_info("FATFS: read %s addr=%x\n", firmware->name, (unsigned int)firmware->load_address);
 		ret = fatfs_loadimage(firmware->name, (BYTE *)firmware->load_address);
 		if (ret)
 			return ret;
@@ -155,12 +155,12 @@ static int load_sdcard(image_info_t *image, sunxi_remoteproc_t *remoteproc)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -171,11 +171,11 @@ int main(void)
 	sunxi_serial_t uart_e907;
 
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_serial_dt_read_alias(&uart_e907, "uart-e907") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -189,7 +189,7 @@ int main(void)
 	sunxi_clk_init();
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
@@ -208,53 +208,53 @@ int main(void)
 	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
 
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed, back to FEL\n");
+		pr_warn("SMHC: init failed, back to FEL\n");
 	}
 	disk_set_device(0, &card0);
 
 	if (load_sdcard(&image, &e907) != 0) {
-		printk_warning("SMHC: loading failed, back to FEL\n");
+		pr_warn("SMHC: loading failed, back to FEL\n");
 		goto _fel;
 	}
 
 	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK || sunxi_remoteproc_prepare(&e907) != DRIVER_OK || sunxi_remoteproc_load(&e907) != DRIVER_OK) {
-		printk_error("RISC-V E907: prepare or load failed\n");
+		pr_err("RISC-V E907: prepare or load failed\n");
 		goto _fel;
 	}
-	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t)e907.entry);
+	pr_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t)e907.entry);
 
 	if (sunxi_remoteproc_start(&e907) != DRIVER_OK) {
-		printk_error("RISC-V E907: start failed\n");
+		pr_err("RISC-V E907: start failed\n");
 		goto _fel;
 	}
 	sunxi_remoteproc_dump(&e907);
 
-	printk_info("RISC-V E907 Core now Running... \n");
+	pr_info("RISC-V E907 Core now Running... \n");
 
 	if (zImage_loader((unsigned char *)image.dest, &entry_point)) {
-		printk_error("boot setup failed\n");
+		pr_err("boot setup failed\n");
 		goto _fel;
 	}
 
-	printk_info("booting linux...\n");
+	pr_info("booting linux...\n");
 
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 	enable_kernel_smp();
-	printk_info("enable kernel smp ok...\n");
+	pr_info("enable kernel smp ok...\n");
 
-	printk_info("jump to kernel address: 0x%x\n", image.dest);
+	pr_info("jump to kernel address: 0x%x\n", image.dest);
 
 	kernel_entry = (void (*)(int, int, unsigned int))entry_point;
 	kernel_entry(0, ~0, (unsigned int)image.of_dest);

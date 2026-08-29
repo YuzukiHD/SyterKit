@@ -248,7 +248,7 @@ void OLED_Set_Pos(uint8_t x, uint8_t y)
 int OLED_Init(void)
 {
 	if (sunxi_i2c_dt_read_alias(&i2c_0, "i2c0") != DRIVER_OK) {
-		printk_error("I2C: invalid devicetree configuration\n");
+		pr_err("I2C: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_i2c_init(&i2c_0); // Init I2C

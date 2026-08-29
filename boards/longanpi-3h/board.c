@@ -46,7 +46,7 @@ void set_cpu_down(unsigned int cpu)
 	clrbits_le32(SUNXI_CPUXCFG_BASE + SUNXI_CPU_RST_CTRL, 1 << cpu);
 	udelay(10);
 
-	printk_debug("CPU: Power-down cpu-%d ok.\n", cpu);
+	pr_debug("CPU: Power-down cpu-%d ok.\n", cpu);
 }
 
 /**
@@ -60,7 +60,7 @@ void set_cpu_poweroff(void)
 	sunxi_sid_t sid;
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return;
 	}
 	if (((sunxi_efuse_sram_read(&sid, 0x48U) >> 29) & 0x1U) == 1U) {
@@ -76,13 +76,13 @@ void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 }
 
 /**

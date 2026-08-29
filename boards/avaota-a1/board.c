@@ -49,13 +49,13 @@ void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 }
 
 /**
@@ -70,15 +70,15 @@ void set_rpio_power_mode(void)
 	uint32_t reg_val;
 
 	if (sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
-		printk_error("GPIO: invalid R_PIO devicetree configuration\n");
+		pr_err("GPIO: invalid R_PIO devicetree configuration\n");
 		return;
 	}
 	reg_val = read32(r_pio.base + 0x348);
 	if (reg_val & 0x1) {
-		printk_debug("PL gpio voltage : 1.8V \n");
+		pr_debug("PL gpio voltage : 1.8V \n");
 		write32(r_pio.base + 0x340, 0x1);
 	} else {
-		printk_debug("PL gpio voltage : 3.3V \n");
+		pr_debug("PL gpio voltage : 3.3V \n");
 	}
 }
 
@@ -136,7 +136,7 @@ void show_chip()
 	uint32_t chip_sid[4];
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return;
 	}
 	chip_sid[0] = sunxi_efuse_sram_read(&sid, 0x0U);
@@ -144,30 +144,30 @@ void show_chip()
 	chip_sid[2] = sunxi_efuse_sram_read(&sid, 0x8U);
 	chip_sid[3] = sunxi_efuse_sram_read(&sid, 0xcU);
 
-	printk_info("Model: AvaotaSBC Avaota A1 board.\n");
-	printk_info("Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");
-	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+	pr_info("Model: AvaotaSBC Avaota A1 board.\n");
+	pr_info("Core: Arm Octa-Core Cortex-A55 v65 r2p0\n");
+	pr_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
 	case 0x5200:
-		printk_info("Chip type = A523M00X0000");
+		pr_info("Chip type = A523M00X0000");
 		break;
 	case 0x5f10:
-		printk_info("Chip type = T527M02X0DCH");
+		pr_info("Chip type = T527M02X0DCH");
 		break;
 	case 0x5f30:
-		printk_info("Chip type = T527M00X0DCH");
+		pr_info("Chip type = T527M00X0DCH");
 		break;
 	case 0x5500:
-		printk_info("Chip type = MR527M02X0D00");
+		pr_info("Chip type = MR527M02X0D00");
 		break;
 	case 0xff10:
-		printk_info("Chip type = A527M000000H");
+		pr_info("Chip type = A527M000000H");
 		break;
 	default:
-		printk_info("Chip type = UNKNOW");
+		pr_info("Chip type = UNKNOW");
 		break;
 	}
 

@@ -85,7 +85,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -102,7 +102,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -111,7 +111,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -129,22 +129,22 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
 	for (index = 0U; index < remoteproc->firmware_count; ++index) {
 		const sunxi_remoteproc_firmware_t *firmware = &remoteproc->firmware[index];
 
-		printk_info("FATFS: read %s addr=%x\n", firmware->name, (uint32_t)firmware->load_address);
+		pr_info("FATFS: read %s addr=%x\n", firmware->name, (uint32_t)firmware->load_address);
 		ret = fatfs_loadimage(firmware->name, (BYTE *)firmware->load_address);
 		if (ret)
 			return ret;
@@ -153,12 +153,12 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -178,7 +178,7 @@ int main(void)
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -208,7 +208,7 @@ int main(void)
 	pmu_axp1530_dump(&axp1530);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
@@ -216,7 +216,7 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
@@ -232,18 +232,18 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdmmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdmmc.name);
+		pr_err("SMHC: %s controller init failed\n", sdmmc.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdmmc.name);
+		pr_info("SMHC: %s controller initialized\n", sdmmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&card, &sdmmc) != 0) {
-		printk_warning("SMHC: init failed, Retrying...\n");
+		pr_warn("SMHC: init failed, Retrying...\n");
 		mdelay(30);
 		if (sdmmc_init(&card, &sdmmc) != 0) {
-			printk_warning("SMHC: init failed\n");
+			pr_warn("SMHC: init failed\n");
 			goto _shell;
 		}
 	}
@@ -251,23 +251,23 @@ int main(void)
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&e906, &card) != 0) {
-		printk_warning("SMHC: loading failed\n");
+		pr_warn("SMHC: loading failed\n");
 		goto _shell;
 	}
 
 	if (sunxi_remoteproc_prepare(&e906) != DRIVER_OK || sunxi_remoteproc_load(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: prepare or load failed\n");
+		pr_err("RISC-V E906: prepare or load failed\n");
 		goto _shell;
 	}
-	printk_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t)e906.entry);
+	pr_info("RISC-V ELF run addr: 0x%08x\n", (uint32_t)e906.entry);
 
 	if (sunxi_remoteproc_start(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: start failed\n");
+		pr_err("RISC-V E906: start failed\n");
 		goto _shell;
 	}
 	sunxi_remoteproc_dump(&e906);
 
-	printk_info("RISC-V E906 Core now Running... \n");
+	pr_info("RISC-V E906 Core now Running... \n");
 
 	abort();
 

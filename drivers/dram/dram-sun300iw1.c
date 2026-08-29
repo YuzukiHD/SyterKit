@@ -591,7 +591,7 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 		pll_clk = (para->dram_tpr9 << 1);
 
 	hosc_freq = (para->dram_tpr10 >> 16) & 0xff;
-	printk_debug("DRAM set hosc_freq = 0x%x\n", hosc_freq);
+	pr_debug("DRAM set hosc_freq = 0x%x\n", hosc_freq);
 	n = pll_clk * m0 * m1 / hosc_freq;
 	if (n < 12) {
 		n = n * 4;
@@ -715,7 +715,7 @@ static void mctl_sys_init(const sunxi_dram_t *dram, dram_para_t *para)
 
 	/* Set PLL for DDR clock */
 	reg_val = ccu_set_pll_ddr_clk(dram, 0, para);
-	printk_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
+	pr_debug("CLK: DRAM FREQ = %dMHz\n", reg_val);
 	para->dram_clk = reg_val / 2; // Store the actual DRAM clock frequency
 
 	/* Disable all DRAM masters (if any) */
@@ -1010,7 +1010,7 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 
 	// Check for training error
 	if (readl((dram->registers.mctl_phy.base + MCTL_PHY_PGSR0)) & (1 << 20)) {
-		printk_error("ZQ calibration error, check external 240 ohm resistor\n");
+		pr_err("ZQ calibration error, check external 240 ohm resistor\n");
 		return 0;
 	}
 
@@ -1129,7 +1129,7 @@ static unsigned int get_dram_size(const sunxi_dram_t *dram)
  * 
  * @note This function assumes that the register addresses (`dram->registers.mctl_phy.base`, `MCTL_PHY_PGSR0`, etc.) are correctly
  *       mapped and accessible in the memory space. It also relies on the presence of specific debug logging 
- *       mechanisms (`printk_debug`).
+ *       mechanisms (`pr_debug`).
  */
 static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 {
@@ -1137,7 +1137,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 
 	if ((readl(dram->registers.mctl_phy.base + MCTL_PHY_PGSR0) & BIT(22)) == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | BIT(12);
-		printk_debug("dual rank and full DQ\n");
+		pr_debug("dual rank and full DQ\n");
 
 		return 1;
 	}
@@ -1145,7 +1145,7 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 	dx0 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(0)) & (BIT(24) | BIT(25))) >> 24;
 	if (dx0 == 0) {
 		para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
-		printk_debug("dual rank and half DQ\n");
+		pr_debug("dual rank and half DQ\n");
 
 		return 1;
 	}
@@ -1154,17 +1154,17 @@ static int dqs_gate_detect(const sunxi_dram_t *dram, dram_para_t *para)
 		dx1 = (readl(dram->registers.mctl_phy.base + MCTL_PHY_DXnGSR0(1)) & (BIT(24) | BIT(25))) >> 24;
 		if (dx1 == 2) {
 			para->dram_para2 = para->dram_para2 & ~0xf00f;
-			printk_debug("single rank and full DQ\n");
+			pr_debug("single rank and full DQ\n");
 		} else {
 			para->dram_para2 = (para->dram_para2 & ~0xf00f) | BIT(0);
-			printk_debug("single rank and half DQ\n");
+			pr_debug("single rank and half DQ\n");
 		}
 
 		return 1;
 	}
 
-	printk_debug("DQS GATE DX0 state: %lu\n", dx0);
-	printk_debug("DQS GATE DX1 state: %lu\n", dx1);
+	pr_debug("DQS GATE DX0 state: %lu\n", dx0);
+	pr_debug("DQS GATE DX1 state: %lu\n", dx1);
 
 	if ((para->dram_tpr13 & BIT(29)) == 0) {
 		return 0;
@@ -1218,20 +1218,20 @@ static int dramc_simple_wr_test(const sunxi_dram_t *dram, unsigned int mem_mb, i
 		v1 = readl((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			printk_error("DRAM: simple test FAIL\n");
-			printk_error("%x != %x at address %p\n", v1, v2, addr + i);
+			pr_err("DRAM: simple test FAIL\n");
+			pr_err("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = readl((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			printk_error("DRAM: simple test FAIL\n");
-			printk_error("%x != %x at address %p\n", v1, v2, addr + offs + i);
+			pr_err("DRAM: simple test FAIL\n");
+			pr_err("%x != %x at address %p\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
 
-	printk_debug("DRAM: simple test OK\n");
+	pr_debug("DRAM: simple test OK\n");
 	return 0;
 }
 
@@ -1347,7 +1347,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 
 	// init core
 	if (mctl_core_init(dram, para) == 0) {
-		printk_debug("DRAM initial error : 0!\n");
+		pr_debug("DRAM initial error : 0!\n");
 		return 0;
 	}
 
@@ -1395,7 +1395,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 			i = 16;
 		addr_line += i;
 
-		printk_debug("rank %lu row = %lu \n", current_rank, i);
+		pr_debug("rank %lu row = %lu \n", current_rank, i);
 
 		/* Store rows in para 1 */
 		para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
@@ -1426,7 +1426,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 		}
 
 		addr_line += i + 2;
-		printk_debug("rank %lu bank = %lu \n", current_rank, (4 + i * 4));
+		pr_debug("rank %lu bank = %lu \n", current_rank, (4 + i * 4));
 
 		/* Store bank in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
@@ -1471,7 +1471,7 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 			i = (0x1U << (i - 10));
 		}
 
-		printk_debug("rank %lu page size = %lu KB \n", current_rank, i);
+		pr_debug("rank %lu page size = %lu KB \n", current_rank, i);
 
 		/* Store page in para 1 */
 		para->dram_para1 &= ~(0xfU << (16 * current_rank));
@@ -1482,10 +1482,10 @@ static int auto_scan_dram_size(const sunxi_dram_t *dram, dram_para_t *para)
 	if (rank_count == 2) {
 		para->dram_para2 &= 0xfffff0ff;
 		if ((para->dram_para1 & 0xffff) == (para->dram_para1 >> 16)) {
-			printk_debug("rank1 config same as rank0\n");
+			pr_debug("rank1 config same as rank0\n");
 		} else {
 			para->dram_para2 |= 0x1 << 8;
-			printk_debug("rank1 config different from rank0\n");
+			pr_debug("rank1 config different from rank0\n");
 		}
 	}
 	return 1;
@@ -1578,12 +1578,12 @@ static int auto_scan_dram_rank_width(const sunxi_dram_t *dram, dram_para_t *para
 static int auto_scan_dram_config(const sunxi_dram_t *dram, dram_para_t *para)
 {
 	if (((para->dram_tpr13 & BIT(14)) == 0) && (auto_scan_dram_rank_width(dram, para) == 0)) {
-		printk_error("ERROR: auto scan dram rank & width failed\n");
+		pr_err("ERROR: auto scan dram rank & width failed\n");
 		return 0;
 	}
 
 	if (((para->dram_tpr13 & BIT(0)) == 0) && (auto_scan_dram_size(dram, para) == 0)) {
-		printk_error("ERROR: auto scan dram size failed\n");
+		pr_err("ERROR: auto scan dram size failed\n");
 		return 0;
 	}
 
@@ -1633,17 +1633,17 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 {
 	uint32_t rc, mem_size_mb;
 
-	printk_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.1");
-	printk_debug("DRAM CLK = %d MHz\n", para->dram_clk);
-	printk_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	pr_debug("DRAM BOOT DRIVE INFO: %s\n", "V0.1");
+	pr_debug("DRAM CLK = %d MHz\n", para->dram_clk);
+	pr_debug("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
-		printk_debug("DRAMC read ODT off\n");
+		pr_debug("DRAMC read ODT off\n");
 	else
-		printk_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		pr_debug("DRAMC ZQ value: 0x%x\n", para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & (1 << 16)) {
-		printk_debug("DRAM only have internal ZQ\n");
+		pr_debug("DRAM only have internal ZQ\n");
 		setbits_le32((dram->registers.sysctrl.base + 0x160U), (1 << 8));
 		writel(0, (dram->registers.sysctrl.base + 0x168U));
 		udelay(10);
@@ -1655,13 +1655,13 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		udelay(10);
 		setbits_le32((dram->registers.sysctrl.base + 0x160U), BIT(0));
 		udelay(20);
-		printk_debug("ZQ value = 0x%08x\n", readl((dram->registers.sysctrl.base + 0x16cU)));
+		pr_debug("ZQ value = 0x%08x\n", readl((dram->registers.sysctrl.base + 0x16cU)));
 	}
 
 	/* Set SDRAM controller auto config */
 	if ((para->dram_tpr13 & (1 << 0)) == 0) {
 		if (auto_scan_dram_config(dram, para) == 0) {
-			printk_error("auto_scan_dram_config() FAILED\n");
+			pr_err("auto_scan_dram_config() FAILED\n");
 			return 0;
 		}
 	}
@@ -1669,13 +1669,13 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 	/* report ODT */
 	rc = para->dram_mr1;
 	if ((rc & 0x44) == 0)
-		printk_debug("DRAM ODT off\n");
+		pr_debug("DRAM ODT off\n");
 	else
-		printk_debug("DRAM ODT value: 0x%08x\n", rc);
+		pr_debug("DRAM ODT value: 0x%08x\n", rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(dram, para) == 0) {
-		printk_debug("DRAM initialisation error: 1\n");
+		pr_debug("DRAM initialisation error: 1\n");
 		return 0;
 	}
 
@@ -1687,7 +1687,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		rc = (rc >> 16) & ~(1 << 15);
 	} else {
 		rc = get_dram_size(dram);
-		printk_info("DRAM: size = %uMB\n", rc);
+		pr_info("DRAM: size = %uMB\n", rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;
@@ -1700,7 +1700,7 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 		writel(rc, (dram->registers.mctl_phy.base + MCTL_PHY_ASRTC));
 		writel(0x40a, (dram->registers.mctl_phy.base + MCTL_PHY_ASRC));
 		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), (1 << 0));
-		printk_debug("Enable Auto SR\n");
+		pr_debug("Enable Auto SR\n");
 	} else {
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ASRTC), 0xffff);
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PWRCTL), 0x1);

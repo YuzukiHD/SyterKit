@@ -34,17 +34,17 @@ void __attribute__((weak)) show_chip(void)
 void show_banner(void)
 {
 	printk(LOG_LEVEL_MUTE, "\n");
-	printk_info(" _____     _           _____ _ _   \n");
-	printk_info("|   __|_ _| |_ ___ ___|  |  |_| |_ \n");
-	printk_info("|__   | | |  _| -_|  _|    -| | _| \n");
-	printk_info("|_____|_  |_| |___|_| |__|__|_|_|  \n");
-	printk_info("      |___|                        \n");
-	printk_info("***********************************\n");
-	printk_info(" %s v%s Commit: %s\n", PROJECT_NAME, PROJECT_VERSION, PROJECT_GIT_HASH);
-	printk_info(" github.com/YuzukiHD/SyterKit      \n");
-	printk_info("***********************************\n");
-	printk_info(" Built by: %s %s\n", PROJECT_C_COMPILER, PROJECT_C_COMPILER_VERSION);
-	printk_info("\n");
+	pr_info(" _____     _           _____ _ _   \n");
+	pr_info("|   __|_ _| |_ ___ ___|  |  |_| |_ \n");
+	pr_info("|__   | | |  _| -_|  _|    -| | _| \n");
+	pr_info("|_____|_  |_| |___|_| |__|__|_|_|  \n");
+	pr_info("      |___|                        \n");
+	pr_info("***********************************\n");
+	pr_info(" %s v%s Commit: %s\n", PROJECT_NAME, PROJECT_VERSION, PROJECT_GIT_HASH);
+	pr_info(" github.com/YuzukiHD/SyterKit      \n");
+	pr_info("***********************************\n");
+	pr_info(" Built by: %s %s\n", PROJECT_C_COMPILER, PROJECT_C_COMPILER_VERSION);
+	pr_info("\n");
 
 	show_chip();
 }

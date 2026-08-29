@@ -373,7 +373,7 @@ static int sunxi_spif_program_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 	}
 	spif->actual_speed_hz = best_rate;
 #if DEBUG_SPIF_CLK == 1
-	printk_trace("SPIF: requested=%u actual=%u parent=%u n=%u m=%u\n", speed_hz, best_rate, spif->clock_parent_hz,
+	pr_trace("SPIF: requested=%u actual=%u parent=%u n=%u m=%u\n", speed_hz, best_rate, spif->clock_parent_hz,
 		best_n, best_m);
 #endif
 	return 0;
@@ -934,7 +934,7 @@ int sunxi_spif_init(sunxi_spif_t *spif)
 	}
 	spif->speed_hz = default_speed;
 	spif->initialized = 1U;
-	printk_info("SPIF: initialized version=0x%x base=%p clock=%uHz\n", version, (void *)spif->base,
+	pr_info("SPIF: initialized version=0x%x base=%p clock=%uHz\n", version, (void *)spif->base,
 		spif->actual_speed_hz);
 	return 0;
 }

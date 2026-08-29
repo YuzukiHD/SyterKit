@@ -47,7 +47,7 @@ static int ufs_nop_retry(struct ufshc_host *host)
 			break;
 	}
 	if (ret)
-		printk_error("UFS: NOP handshake failed after %u attempts ret=%d\n", attempts, ret);
+		pr_err("UFS: NOP handshake failed after %u attempts ret=%d\n", attempts, ret);
 	return ret;
 }
 
@@ -189,7 +189,7 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 		mode.hs_rate = (uint8_t)hs_rate;
 	}
 	*selected = mode;
-	printk_info("UFS: selected mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode.pwr_tx, mode.pwr_rx,
+	pr_info("UFS: selected mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode.pwr_tx, mode.pwr_rx,
 		mode.gear_tx, mode.gear_rx, mode.lane_tx, mode.lane_rx, mode.hs_rate);
 	return 0;
 }
@@ -217,11 +217,11 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 
 	if (!device || !config || lun > UFS_SCSI_MAX_LUN)
 		return -1;
-	printk_info("UFS: initialize LUN %u\n", lun);
+	pr_info("UFS: initialize LUN %u\n", lun);
 	memset(device, 0, sizeof(*device));
 	ret = ufshc_init(&device->host, config);
 	if (ret) {
-		printk_error("UFS: UFSHCI initialization failed ret=%d\n", ret);
+		pr_err("UFS: UFSHCI initialization failed ret=%d\n", ret);
 		return ret;
 	}
 	/* Complete the mandatory device-management handshake before issuing any
@@ -233,7 +233,7 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 	ret = ufs_query_flag_retry(&device->host, true, NULL);
 	if (ret)
 		goto exit_host;
-	printk_info("UFS: fDeviceInit set, waiting for device\n");
+	pr_info("UFS: fDeviceInit set, waiting for device\n");
 	timeout_us = device->host.timeout_us ? device->host.timeout_us : UFSHC_TIMEOUT_US;
 	start = time_us();
 	for (;;) {
@@ -248,7 +248,7 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 	}
 	if (ret)
 		goto exit_host;
-	printk_info("UFS: device initialization complete\n");
+	pr_info("UFS: device initialization complete\n");
 	/* Read the device descriptor at the same point as the native startup
 	 * flow, before the SCSI scan.  Descriptor support is optional, so a
 	 * failed read does not prevent block access. */
@@ -274,7 +274,7 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 	 * the device reference-clock attribute has been synchronized. */
 	ret = ufs_select_power_mode(&device->host, &power_mode);
 	if (ret) {
-		printk_error("UFS: unable to determine power mode ret=%d\n", ret);
+		pr_err("UFS: unable to determine power mode ret=%d\n", ret);
 		goto exit_host;
 	}
 	/* The device attribute must match the clock selected by the Sunxi host
@@ -284,17 +284,17 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 	if (ret)
 		/* Some devices expose the attribute only after their internal
 		 * initialization has settled; keep the native best-effort behavior. */
-		printk_warning("UFS: unable to synchronize bRefClkFreq (%d)\n", ret);
+		pr_warn("UFS: unable to synchronize bRefClkFreq (%d)\n", ret);
 	ret = ufshc_change_power_mode(&device->host, &power_mode);
 	if (ret) {
-		printk_error("UFS: power mode transition failed ret=%d\n", ret);
+		pr_err("UFS: power mode transition failed ret=%d\n", ret);
 		goto exit_host;
 	}
-	printk_info("UFS: power mode transition complete\n");
+	pr_info("UFS: power mode transition complete\n");
 
 	ret = ufs_scsi_init(&device->scsi, &device->host, lun);
 	if (ret) {
-		printk_error("UFS: SCSI LUN initialization failed ret=%d\n", ret);
+		pr_err("UFS: SCSI LUN initialization failed ret=%d\n", ret);
 		goto exit_host;
 	}
 	device->scsi.manufacturer_id = manufacturer_id;
@@ -303,7 +303,7 @@ int ufs_init_lun(struct ufs_device *device, const struct ufshc_config *config, u
 	return 0;
 
 exit_host:
-	printk_error("UFS: initialization of LUN %u aborted ret=%d\n", lun, ret);
+	pr_err("UFS: initialization of LUN %u aborted ret=%d\n", lun, ret);
 	ufshc_exit(&device->host);
 	return ret;
 }
