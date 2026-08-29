@@ -17,9 +17,10 @@ properties:
     type: uint32
   non-removable:
     type: boolean
-  allwinner,io-1v8:
-    type: boolean
-    description: The MMC I/O rail is fixed at 1.8 V and needs no runtime switch.
+  allwinner,io-voltage:
+    type: uint32
+    enum: [1800, 3300, 1800000, 3300000]
+    description: MMC GPIO withstand voltage, in microvolts (1800000 or 3300000; mV aliases are accepted).
   memory-region:
     type: phandle
   allwinner,clock-gate:

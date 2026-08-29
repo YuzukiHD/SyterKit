@@ -123,7 +123,7 @@ int main(void)
 
 	pmu_axp2202_set_vol(&axp2202, "bldo3", 1800, 1);
 	pmu_axp2202_set_vol(&axp2202, "bldo1", 1800, 1);
-	pmu_axp2202_set_vol(&axp2202, "cldo1", 2100, 1);
+	pmu_axp2202_set_vol(&axp2202, "cldo1", 1800, 1);
 
 	pmu_axp2202_dump(&axp2202);
 	pmu_axp1530_dump(&axp1530);

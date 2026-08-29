@@ -674,6 +674,9 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci)
 		sunxi_gpio_init(&sdhci_pins.gpio_cd);
 		sunxi_gpio_set_pull(&sdhci_pins.gpio_cd, GPIO_PULL_UP);
 	}
+
+	/* The host programs the bank I/O withstand voltage from io_voltage_uv. */
+	sunxi_sdhci_set_io_voltage(sdhci, &sdhci_pins.gpio_clk, sdhci->io_voltage_uv);
 }
 
 /**
@@ -1293,11 +1296,11 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
 	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
 #if CONFIG_DRIVER_MMC_TUNING
-	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_is_1v8)
+	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8)
 		mmc->host_caps |= MMC_MODE_HS200;
 	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->width == SMHC_WIDTH_8BIT) {
 		mmc->host_caps |= MMC_MODE_DDR_52MHz;
-		if (sdhci->io_is_1v8)
+		if (sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8)
 			mmc->host_caps |= MMC_MODE_HS400;
 	}
 #endif

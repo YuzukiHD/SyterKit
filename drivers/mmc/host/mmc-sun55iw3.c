@@ -132,3 +132,39 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 	// Calculate the actual clock frequency based on the divider values
 	return clk_hz / (clk.factor_n + 1) / (clk.factor_m + 1);
 }
+
+#if defined(CONFIG_DRIVER_GPIO_V2_POW)
+/**
+ * @brief Program the MMC I/O bank withstand voltage via the Sun55 v2-pow
+ * power-mode selector.
+ *
+ * Sun55iw3 GPIO keeps the V2 pin layout but adds a bank-level
+ * withstand-voltage selector.  The MMC DT property is parsed into
+ * io_voltage_uv, so apply it after the PMU rail has been programmed and
+ * before the controller starts issuing commands.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param gpio GPIO pin identifying the physical I/O bank.
+ * @param voltage_uv Requested withstand voltage in microvolts.
+ * @return 0 on success, or a negative value for an unsupported bank/value.
+ */
+int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio, uint32_t voltage_uv)
+{
+	int detected_voltage;
+
+	if (sdhci == NULL || gpio == NULL)
+		return -1;
+	if (voltage_uv != GPIO_IO_VOLTAGE_1V8 && voltage_uv != GPIO_IO_VOLTAGE_3V3)
+		return -1;
+
+	detected_voltage = sunxi_gpio_get_io_voltage(gpio);
+	if (detected_voltage >= 0 && (uint32_t)detected_voltage != voltage_uv)
+		pr_warn("GPIO bank voltage detector reports %u mV, requesting %u mV\n",
+			detected_voltage / 1000U, voltage_uv / 1000U);
+	if (sunxi_gpio_set_io_voltage(gpio, voltage_uv) != 0) {
+		pr_warn("GPIO bank withstand-voltage mode is unavailable\n");
+		return -1;
+	}
+	return 0;
+}
+#endif

@@ -772,9 +772,9 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci)
 
 	/* Advertise optional high-speed modes only when they are compiled in. */
 #if CONFIG_DRIVER_MMC_TUNING
-	if (sdhci->io_is_1v8 && (cardtype & EXT_CSD_CARD_TYPE_HS200_1_8V))
+	if (sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8 && (cardtype & EXT_CSD_CARD_TYPE_HS200_1_8V))
 		mmc->card_caps |= MMC_MODE_HS200;
-	if (sdhci->io_is_1v8 && (cardtype & EXT_CSD_CARD_TYPE_HS400_1_8V))
+	if (sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8 && (cardtype & EXT_CSD_CARD_TYPE_HS400_1_8V))
 		mmc->card_caps |= MMC_MODE_HS400;
 #endif
 
