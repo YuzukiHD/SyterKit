@@ -170,6 +170,8 @@ timing mode
 #define MMC_CLK_SAMPLE_POINIT_MODE_4 64U
 #define MMC_CLK_SAMPLE_POINIT_MODE_5 64U
 
+#define TM4_OUT_PH90 (0)
+#define TM4_OUT_PH180 (1)
 #define TM5_OUT_PH90 (0)
 #define TM5_OUT_PH180 (1)
 #define TM5_IN_PH90 (0)
@@ -184,6 +186,8 @@ timing mode
 #define SDXC_NTDC_ENABLE_DLY (1 << 7)
 #define SDXC_NTDC_CFG_DLY (0x3F << 0)
 #define SDXC_NTDC_CFG_NEW_DLY (0xF << 0)
+
+#define SMHC_SFC_SAMPLE_FIFO_BYPASS BIT(0)
 
 #define DTO_MAX 200
 #define SUNXI_MMC_NTSR_MODE_SEL_NEW (0x1 << 31)

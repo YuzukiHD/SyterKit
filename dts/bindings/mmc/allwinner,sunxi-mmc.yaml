@@ -17,6 +17,9 @@ properties:
     type: uint32
   non-removable:
     type: boolean
+  allwinner,io-1v8:
+    type: boolean
+    description: The MMC I/O rail is fixed at 1.8 V and needs no runtime switch.
   memory-region:
     type: phandle
   allwinner,clock-gate:

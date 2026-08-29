@@ -17,6 +17,8 @@
 
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/sdhci.h>
+#include <drivers/mmc/hs-timing.h>
+#include <drivers/mmc/tuning.h>
 #include <string.h>
 
 /**
@@ -233,7 +235,11 @@ static inline int sunxi_mmc_set_block_len(sunxi_sdhci_t *sdhci, uint32_t len)
 	mmc_t *mmc = &sdhci->mmc;
 	mmc_cmd_t cmd;
 	/* Don't set block length in DDR mode */
-	if ((mmc->speed_mode == MMC_HSDDR52_DDR50) || (mmc->speed_mode == MMC_HS400)) {
+	if (mmc->speed_mode == MMC_HSDDR52_DDR50
+#if CONFIG_DRIVER_MMC_TUNING
+	    || mmc->speed_mode == MMC_HS400
+#endif
+	    ) {
 		return 0;
 	}
 	cmd.cmdidx = MMC_CMD_SET_BLOCKLEN;
@@ -649,7 +655,8 @@ static int sunxi_mmc_send_ext_csd(sunxi_sdhci_t *sdhci, char *ext_csd)
  *                      - Negative value: indicates a communication error with the MMC/SD card.
  *                      - Positive value: indicates an internal error within the function.
  */
-static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, uint8_t value)
+static int sunxi_mmc_switch_internal(sunxi_sdhci_t *sdhci, uint8_t set,
+					 uint8_t index, uint8_t value, bool wait_status)
 {
 	mmc_cmd_t cmd; ///< Command structure for the SWITCH command.
 	int timeout = 1000; ///< Timeout value for waiting for the card to become ready.
@@ -665,7 +672,11 @@ static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, ui
 	ret = sunxi_sdhci_xfer(sdhci, &cmd, NULL);
 	if (ret) {
 		pr_warn("switch failed\n");
+		return ret;
 	}
+
+	if (!wait_status)
+		return 0;
 
 	/* for re-update sample phase */
 	// Update clock phase after sending command 6
@@ -677,9 +688,17 @@ static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set, uint8_t index, ui
 
 	/* Waiting for the ready status */
 	// Wait for the card to become ready
-	sunxi_mmc_send_status(sdhci, timeout);
+	ret = sunxi_mmc_send_status(sdhci, timeout);
+	if (ret)
+		return ret;
 
-	return ret; // Return the error code (0 if successful)
+	return 0;
+}
+
+static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set,
+				    uint8_t index, uint8_t value)
+{
+	return sunxi_mmc_switch_internal(sdhci, set, index, value, true);
 }
 
 /**
@@ -700,7 +719,7 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci)
 {
 	mmc_t *mmc = &sdhci->mmc; ///< Pointer to the MMC structure.
 	char ext_csd[512]; ///< Buffer to hold the extended CSD data.
-	char cardtype; ///< Type of the MMC/SD card.
+	uint8_t cardtype; ///< Type of the MMC/SD card.
 	int err; ///< Error code for indicating success or failure.
 	int retry = 5; ///< Number of retries for certain operations.
 
@@ -750,6 +769,14 @@ static int sunxi_mmc_mmc_change_freq(sunxi_sdhci_t *sdhci)
 	// Check if high-speed mode is supported
 	if (!ext_csd[EXT_CSD_HS_TIMING])
 		return 0;
+
+	/* Advertise optional high-speed modes only when they are compiled in. */
+#if CONFIG_DRIVER_MMC_TUNING
+	if (sdhci->io_is_1v8 && (cardtype & EXT_CSD_CARD_TYPE_HS200_1_8V))
+		mmc->card_caps |= MMC_MODE_HS200;
+	if (sdhci->io_is_1v8 && (cardtype & EXT_CSD_CARD_TYPE_HS400_1_8V))
+		mmc->card_caps |= MMC_MODE_HS400;
+#endif
 
 	// Determine the type of high-speed mode and update card capabilities
 	if (cardtype & EXT_CSD_CARD_TYPE_HS) {
@@ -1006,6 +1033,30 @@ static void sunxi_mmc_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width)
 	sunxi_sdhci_set_ios(sdhci);
 }
 
+#if CONFIG_DRIVER_MMC_TUNING
+/* Keep the common MMC helpers local to core.c when high-speed timing is off. */
+int sunxi_mmc_hs_switch_card(sunxi_sdhci_t *sdhci, uint8_t set,
+				      uint8_t index, uint8_t value)
+{
+	return sunxi_mmc_switch_internal(sdhci, set, index, value, false);
+}
+
+int sunxi_mmc_hs_wait_status(sunxi_sdhci_t *sdhci)
+{
+	return sunxi_mmc_send_status(sdhci, 1000);
+}
+
+void sunxi_mmc_hs_set_clock(sunxi_sdhci_t *sdhci, uint32_t clock)
+{
+	sunxi_mmc_set_clock(sdhci, clock);
+}
+
+void sunxi_mmc_hs_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width)
+{
+	sunxi_mmc_set_bus_width(sdhci, width);
+}
+#endif
+
 /**
  * @brief Switch the Sunxi SDHCI controller to Double Speed (DS) mode.
  * 
@@ -1057,9 +1108,11 @@ static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci)
 	mmc_t *mmc = &sdhci->mmc;
 	int err;
 
-	// Check if already in SDR25 mode
-	if (mmc->speed_mode == MMC_HSSDR52_SDR25) {
-		pr_trace("set in SDR25 mode\n");
+	// The DDR mode already uses the card's HS timing value.
+	if (mmc->speed_mode == MMC_HSSDR52_SDR25 ||
+	    mmc->speed_mode == MMC_HSDDR52_DDR50) {
+		pr_trace("HS timing already selected\n");
+		return 0;
 	}
 
 	// Check if card supports HS mode
@@ -1069,7 +1122,8 @@ static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci)
 	}
 
 	// Switch to HS mode
-	err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+	err = sunxi_mmc_switch_internal(sdhci, EXT_CSD_CMD_SET_NORMAL,
+					 EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS, false);
 
 	if (err) {
 		pr_warn("Failed to change to HS mode\n");
@@ -1078,82 +1132,13 @@ static int sunxi_mmc_mmc_switch_hs(sunxi_sdhci_t *sdhci)
 
 	// Update speed mode to SDR25
 	mmc->speed_mode = MMC_HSSDR52_SDR25;
-
-	return 0;
-}
-
-/**
- * @brief Switch the Sunxi SDHCI controller to High Speed 200 (HS200) mode.
- * 
- * This function switches the Secure Digital Host Controller Interface (SDHCI) in a Sunxi system-on-a-chip (SoC) environment to High Speed 200 (HS200) mode.
- * 
- * @param sdhci A pointer to the Sunxi SDHCI controller structure.
- * @return Returns 0 on success, or a negative error code on failure.
- */
-static int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci)
-{
-	mmc_t *mmc = &sdhci->mmc;
-	int err;
-
-	// Check if already in SDR104 mode
-	if (mmc->speed_mode == MMC_HS200_SDR104) {
-		pr_trace("set in SDR104 mode\n");
-	}
-
-	// Check if card supports HS200 mode
-	if (!(mmc->card_caps & MMC_MODE_HS200)) {
-		pr_warn("Card does not support HS200 mode\n");
+	sunxi_mmc_set_clock(sdhci, mmc->clock);
+	if (sdhci->mmc_host.fatal_err)
 		return -1;
-	}
 
-	// Switch to HS200 mode
-	err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS200);
-
-	if (err) {
-		pr_warn("Failed to change to HS200 mode\n");
+	err = sunxi_mmc_send_status(sdhci, 1000);
+	if (err)
 		return err;
-	}
-
-	// Update speed mode to SDR104
-	mmc->speed_mode = MMC_HS200_SDR104;
-
-	return 0;
-}
-
-/**
- * @brief Switch the Sunxi SDHCI controller to High Speed 400 (HS400) mode.
- * 
- * This function switches the Secure Digital Host Controller Interface (SDHCI) in a Sunxi system-on-a-chip (SoC) environment to High Speed 400 (HS400) mode.
- * 
- * @param sdhci A pointer to the Sunxi SDHCI controller structure.
- * @return Returns 0 on success, or a negative error code on failure.
- */
-static int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
-{
-	mmc_t *mmc = &sdhci->mmc;
-	int err;
-
-	// Check if already in HS400 mode
-	if (mmc->speed_mode == MMC_HS400) {
-		pr_trace("set in HS400 mode\n");
-	}
-
-	// Check if card supports HS400 mode
-	if (!(mmc->card_caps & MMC_MODE_HS400)) {
-		pr_warn("Card does not support HS400 mode\n");
-		return -1;
-	}
-
-	// Switch to HS400 mode
-	err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
-
-	if (err) {
-		pr_warn("Failed to change to HS400 mode\n");
-		return err;
-	}
-
-	// Update speed mode to HS400
-	mmc->speed_mode = MMC_HS400;
 
 	return 0;
 }
@@ -1183,12 +1168,14 @@ static int sunxi_mmc_mmc_switch_speed_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mo
 	case MMC_HSSDR52_SDR25:
 		ret = sunxi_mmc_mmc_switch_hs(sdhci);
 		break;
+#if CONFIG_DRIVER_MMC_TUNING
 	case MMC_HS200_SDR104:
 		ret = sunxi_mmc_mmc_switch_hs200(sdhci);
 		break;
 	case MMC_HS400:
 		ret = sunxi_mmc_mmc_switch_hs400(sdhci);
 		break;
+#endif
 	default:
 		ret = -1;
 		pr_debug("error speed mode %d\n", spd_mode);
@@ -1216,8 +1203,12 @@ static int sunxi_mmc_check_bus_width(sunxi_sdhci_t *sdhci, uint32_t emmc_hs_ddr,
 		/* don't consider SD3.0. tSD/fSD is SD2.0, 1-bit can be support */
 
 		if ((emmc_hs_ddr && (!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSSDR52_SDR25)) ||
-		    ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50)) || ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104)) ||
-		    ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))) {
+		    ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HSDDR52_DDR50))
+#if CONFIG_DRIVER_MMC_TUNING
+		    || ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS200_SDR104))
+		    || ((!sunxi_mmc_device_is_sd(mmc)) && (mmc->speed_mode == MMC_HS400))
+#endif
+		    ) {
 			ret = -1;
 		}
 	} else if (bus_width == SMHC_WIDTH_4BIT) {
@@ -1254,9 +1245,11 @@ static int sunxi_mmc_mmc_switch_bus_width(sunxi_sdhci_t *sdhci, uint32_t spd_mod
 	uint32_t emmc_hs_ddr = 0;
 	uint32_t val = 0;
 
+#if CONFIG_DRIVER_MMC_TUNING
 	if (spd_mode == MMC_HS400) {
 		return 0;
 	}
+#endif
 
 	if (spd_mode == MMC_DS26_SDR12) {
 		emmc_hs_ddr = 1;
@@ -1283,17 +1276,21 @@ static int sunxi_mmc_mmc_switch_bus_width(sunxi_sdhci_t *sdhci, uint32_t spd_mod
 	else
 		val = EXT_CSD_BUS_WIDTH_1;
 
-	err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, val);
+	/* CMD6 changes the card's bus immediately after its busy period. Change
+	 * the host before CMD13, which is the first command sent on the new bus. */
+	err = sunxi_mmc_switch_internal(sdhci, EXT_CSD_CMD_SET_NORMAL,
+					 EXT_CSD_BUS_WIDTH, val, false);
 
 	if (err) {
 		pr_warn("set bus witdh error.\n");
 		return -1;
 	}
-	if (spd_mode == MMC_HSDDR52_DDR50) {
+	if (spd_mode == MMC_HSDDR52_DDR50)
 		mmc->speed_mode = MMC_HSDDR52_DDR50;
-	}
-
 	sunxi_mmc_set_bus_width(sdhci, width);
+	if (sdhci->mmc_host.fatal_err)
+		return -1;
+	err = sunxi_mmc_send_status(sdhci, 1000);
 
 	return err;
 }
@@ -1345,6 +1342,14 @@ static inline int sunxi_mmc_mmc_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t s
 
 	return err;
 }
+
+#if CONFIG_DRIVER_MMC_TUNING
+int sunxi_mmc_hs_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode,
+				  uint32_t width)
+{
+	return sunxi_mmc_mmc_switch_bus_mode(sdhci, spd_mode, width);
+}
+#endif
 
 /**
  * @brief Sends the SD CMD8 (SEND_IF_COND) command to the MMC controller.
@@ -1424,6 +1429,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 	int timeout = 1000;
 	uint64_t capacity = 0, cmult = 0, csize = 0;
 	const char *strver = "unknown";
+	bool advanced_mode = false;
 
 	mmc_cmd_t cmd;
 	char ext_csd[512];
@@ -1718,17 +1724,45 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 			mmc->tran_speed = 25000000;
 	} else {
 		/* EMMC */
-		if (mmc->card_caps & MMC_MODE_8BIT) {
+#if CONFIG_DRIVER_MMC_TUNING
+		uint32_t bus_width = (mmc->card_caps & MMC_MODE_8BIT) ? SMHC_WIDTH_8BIT : SMHC_WIDTH_4BIT;
+#endif
+
+#if CONFIG_DRIVER_MMC_TUNING
+		/* HS400 is entered through a tuned HS200 link. If either the mode
+		 * switch or tuning fails, continue with the existing safe modes. */
+		if (mmc->f_max >= 50000000U && (mmc->card_caps & MMC_MODE_HS200) &&
+		    (mmc->card_caps & (MMC_MODE_8BIT | MMC_MODE_4BIT))) {
+			if ((mmc->card_caps & (MMC_MODE_HS400 | MMC_MODE_8BIT)) == (MMC_MODE_HS400 | MMC_MODE_8BIT))
+				err = sunxi_mmc_mmc_prepare_hs400(sdhci, bus_width);
+			else
+				err = sunxi_mmc_mmc_prepare_hs200(sdhci, bus_width);
+
+			if (!err) {
+				advanced_mode = true;
+				pr_trace("eMMC high-speed mode %s selected\n", mmc->speed_mode == MMC_HS400 ? "HS400" : "HS200");
+			} else {
+				pr_warn("eMMC high-speed tuning failed, falling back\n");
+				mmc->card_caps &= ~(MMC_MODE_HS200 | MMC_MODE_HS400);
+				err = sunxi_mmc_mmc_downgrade_high_speed(sdhci);
+				if (err) {
+					pr_warn("eMMC high-speed downgrade failed\n");
+					return err;
+				}
+			}
+		}
+#endif
+
+		if (!advanced_mode && (mmc->card_caps & MMC_MODE_8BIT)) {
 			pr_trace("set mmc bus width 8: %s\n", (mmc->card_caps & MMC_MODE_DDR_52MHz) ? "DDR" : "SDR");
 			/* Set the card to use 8 bit */
 			if ((mmc->card_caps & MMC_MODE_DDR_52MHz)) {
-				/* Set the card to use 8 bit ddr */
-				err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_DDR_8);
+				/* Set the card and host to 8-bit DDR. */
+				err = sunxi_mmc_mmc_switch_bus_mode(sdhci, MMC_HSDDR52_DDR50, SMHC_WIDTH_8BIT);
 				if (err) {
 					pr_warn("switch bus width failed\n");
 					return err;
 				}
-				sunxi_mmc_set_bus_width(sdhci, SMHC_WIDTH_8BIT);
 			} else {
 				/* Set the card to use 8 bit */
 				err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_8);
@@ -1738,16 +1772,15 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 				}
 				sunxi_mmc_set_bus_width(sdhci, SMHC_WIDTH_8BIT);
 			}
-		} else if (mmc->card_caps & MMC_MODE_4BIT) {
+		} else if (!advanced_mode && (mmc->card_caps & MMC_MODE_4BIT)) {
 			pr_trace("set mmc bus width 4: %s\n", (mmc->card_caps & MMC_MODE_DDR_52MHz) ? "DDR" : "SDR");
 			if ((mmc->card_caps & MMC_MODE_DDR_52MHz)) {
-				/* Set the card to use 4 bit ddr */
-				err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_DDR_4);
+				/* Set the card and host to 4-bit DDR. */
+				err = sunxi_mmc_mmc_switch_bus_mode(sdhci, MMC_HSDDR52_DDR50, SMHC_WIDTH_4BIT);
 				if (err) {
 					pr_warn("switch bus width failed\n");
 					return err;
 				}
-				sunxi_mmc_set_bus_width(sdhci, SMHC_WIDTH_4BIT);
 			} else {
 				/* Set the card to use 4 bit */
 				err = sunxi_mmc_switch(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_4);
@@ -1759,12 +1792,9 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 			}
 		}
 
-		if (mmc->card_caps & MMC_MODE_HS400) {
-			pr_trace("speed set to max clk: %dHz\n", sdhci->max_clk);
-			mmc->tran_speed = sdhci->max_clk;
-		}
-
-		if (mmc->card_caps & MMC_MODE_DDR_52MHz) {
+		if (advanced_mode) {
+			mmc->tran_speed = mmc->clock;
+		} else if (mmc->card_caps & MMC_MODE_DDR_52MHz) {
 			mmc->tran_speed = 52000000;
 		} else if (mmc->card_caps & MMC_MODE_HS) {
 			if (mmc->card_caps & MMC_MODE_HS_52MHz) {

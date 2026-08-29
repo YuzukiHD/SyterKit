@@ -140,8 +140,9 @@
 			label = "sdhci2";
 			allwinner,mmc-id = <2>;
 			bus-width = <8>;
-			max-frequency = <5200000>;
+			max-frequency = <200000000>;
 			non-removable;
+			allwinner,io-1v8;
 			memory-region = <&mmc2_dma>;
 			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xd2c) 2>;
 			allwinner,reset = <(SUNXI_CCU_BASE + 0xd2c) 18>;

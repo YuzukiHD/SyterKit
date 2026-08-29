@@ -74,6 +74,7 @@ enum {
 #define MMC_CMD_SET_BLOCKLEN 16
 #define MMC_CMD_READ_SINGLE_BLOCK 17
 #define MMC_CMD_READ_MULTIPLE_BLOCK 18
+#define MMC_CMD_SEND_TUNING_BLOCK 21
 #define MMC_CMD_WRITE_SINGLE_BLOCK 24
 #define MMC_CMD_WRITE_MULTIPLE_BLOCK 25
 #define MMC_CMD_ERASE_GROUP_START 35
@@ -310,6 +311,9 @@ typedef enum {
 
 typedef struct tune_sdly {
 	uint32_t tm4_smx_fx[12];
+#if CONFIG_DRIVER_MMC_TUNING
+	uint8_t tm4_dsdly[MMC_MAX_CLK_FREQ_NUM];
+#endif
 } tune_sdly_t;
 
 typedef struct mmc_cmd {
