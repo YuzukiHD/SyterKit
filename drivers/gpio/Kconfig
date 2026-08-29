@@ -12,6 +12,9 @@ config DRIVER_GPIO_V1
 config DRIVER_GPIO_V2
 	bool "GPIO controller v2"
 
+config DRIVER_GPIO_V2_POW
+	bool "GPIO controller v2-pow (withstand-voltage mode)"
+
 config DRIVER_GPIO_V3
 	bool "GPIO controller v3"
 
@@ -25,7 +28,7 @@ choice
 	default DRIVER_GPIO_LOG_TRACE if BUILD_TRACE
 	default DRIVER_GPIO_LOG_DEBUG if BUILD_DEBUG
 	default DRIVER_GPIO_LOG_GLOBAL
-	depends on DRIVER_GPIO_V1 || DRIVER_GPIO_V2 || DRIVER_GPIO_V3 || DRIVER_GPIO_V4
+	depends on DRIVER_GPIO_V1 || DRIVER_GPIO_V2 || DRIVER_GPIO_V2_POW || DRIVER_GPIO_V3 || DRIVER_GPIO_V4
 
 config DRIVER_GPIO_LOG_GLOBAL
 	bool "Inherit global log level"

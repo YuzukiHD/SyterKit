@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
-#define pr_fmt(fmt) "gpio-v2: " fmt
+#define pr_fmt(fmt) "GPIO: " fmt
 
 #include <io.h>
 #include <stdarg.h>

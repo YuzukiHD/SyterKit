@@ -60,6 +60,10 @@ enum gpio_pull_t {
 typedef uint32_t gpio_drv_t;
 typedef uint32_t gpio_t;
 
+/* Sun55 GPIO power-mode detector and withstand-voltage selector values. */
+#define GPIO_IO_VOLTAGE_1V8 1800000U
+#define GPIO_IO_VOLTAGE_3V3 3300000U
+
 #define PIO_NUM_IO_BITS 5
 
 #define GPIO_PIN(x, y) (((uint32_t)(x << PIO_NUM_IO_BITS)) | y)
@@ -118,6 +122,31 @@ void sunxi_gpio_set_pull(const gpio_mux_t *gpio, enum gpio_pull_t pull);
  * @param drv The drive strength value to set (GPIO_DRV_LOW, GPIO_DRV_MEDIUM, or GPIO_DRV_HIGH).
  */
 void sunxi_gpio_set_drv(const gpio_mux_t *gpio, gpio_drv_t drv);
+
+#ifdef CONFIG_DRIVER_GPIO_V2_POW
+
+/**
+ * @brief Read the detected I/O voltage for a GPIO bank.
+ *
+ * This API is implemented by GPIO controller v2-pow.  It returns
+ * GPIO_IO_VOLTAGE_1V8 or GPIO_IO_VOLTAGE_3V3, or a negative value when the
+ * controller does not expose a power-mode detector for the requested bank.
+ */
+int sunxi_gpio_get_io_voltage(const gpio_mux_t *gpio);
+
+/**
+ * @brief Configure the I/O withstand-voltage mode for a GPIO bank.
+ *
+ * The requested voltage is programmed into the Sun55 power-mode selector and
+ * adaptive mode is disabled, matching the vendor SPL pinmux flow.
+ *
+ * @param gpio GPIO pin identifying the physical bank.
+ * @param voltage_uv Requested withstand voltage in microvolts.
+ * @return 0 on success, or a negative value for an unsupported bank/value.
+ */
+int sunxi_gpio_set_io_voltage(const gpio_mux_t *gpio, uint32_t voltage_uv);
+
+#endif /* CONFIG_DRIVER_GPIO_V2_POW */
 
 #ifdef __cplusplus
 }
