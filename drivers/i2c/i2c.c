@@ -206,8 +206,8 @@ static int32_t sunxi_i2c_send_start(sunxi_i2c_t *i2c_dev)
 	int32_t time = 0xffff;
 
 	i2c->eft = 0;
+	i2c->srst = 1;
 	i2c->ctl |= TWI_CTL_STA;
-	i2c->ctl |= TWI_CTL_INTFLG; /* clear a stale completion flag */
 
 	while ((time--) && (!(i2c->ctl & TWI_CTL_INTFLG)))
 		;
@@ -262,7 +262,6 @@ static int32_t sunxi_i2c_send_restart(sunxi_i2c_t *i2c_dev)
 
 	tmp_val |= 0x20;
 	i2c->ctl = tmp_val;
-	i2c->ctl |= TWI_CTL_INTFLG; /* clear a stale completion flag */
 
 	while ((time--) && (!(i2c->ctl & 0x08)))
 		;
