@@ -165,46 +165,46 @@ static int spi_nor_write_reg(spi_nor_t *nor, uint8_t opcode, const uint8_t *buf,
 __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 {
 	if (sfdp == NULL) {
-		printk_trace("SFDP data is NULL.\n");
+		pr_trace("SFDP data is NULL.\n");
 		return;
 	}
 
-	printk_trace("SFDP Header:\n");
-	printk_trace("  Signature: %c%c%c%c\n", sfdp->header.sign[0], sfdp->header.sign[1], sfdp->header.sign[2],
+	pr_trace("SFDP Header:\n");
+	pr_trace("  Signature: %c%c%c%c\n", sfdp->header.sign[0], sfdp->header.sign[1], sfdp->header.sign[2],
 		sfdp->header.sign[3]);
-	printk_trace("  Minor version: %u\n", sfdp->header.minor);
-	printk_trace("  Major version: %u\n", sfdp->header.major);
-	printk_trace(
+	pr_trace("  Minor version: %u\n", sfdp->header.minor);
+	pr_trace("  Major version: %u\n", sfdp->header.major);
+	pr_trace(
 		"  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
-	printk_trace("  Unused: 0x%02X\n", sfdp->header.unused);
+	pr_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
-	printk_trace("SFDP Parameter Headers:\n");
+	pr_trace("SFDP Parameter Headers:\n");
 	for (int i = 0; i < sfdp->parameter_header_count; i++) {
 		const sfdp_parameter_header_t *header = &sfdp->parameter_header[i];
 		bool unused = header->idlsb == 0xff && header->minor == 0xff && header->major == 0xff &&
 			      header->length == 0xff && header->ptp[0] == 0xff && header->ptp[1] == 0xff &&
 			      header->ptp[2] == 0xff && header->idmsb == 0xff;
 
-		printk_trace("  Parameter Header #%d:\n", i + 1);
+		pr_trace("  Parameter Header #%d:\n", i + 1);
 		if (unused) {
-			printk_trace("    unused\n");
+			pr_trace("    unused\n");
 			continue;
 		}
-		printk_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
-		printk_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
-		printk_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
-		printk_trace("    Length: %u\n", sfdp->parameter_header[i].length);
-		printk_trace("    PTP: 0x%02X 0x%02X 0x%02X\n", sfdp->parameter_header[i].ptp[0],
+		pr_trace("    IDLSB: 0x%02X\n", sfdp->parameter_header[i].idlsb);
+		pr_trace("    Minor version: %u\n", sfdp->parameter_header[i].minor);
+		pr_trace("    Major version: %u\n", sfdp->parameter_header[i].major);
+		pr_trace("    Length: %u\n", sfdp->parameter_header[i].length);
+		pr_trace("    PTP: 0x%02X 0x%02X 0x%02X\n", sfdp->parameter_header[i].ptp[0],
 			sfdp->parameter_header[i].ptp[1], sfdp->parameter_header[i].ptp[2]);
-		printk_trace("    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
+		pr_trace("    IDMSB: 0x%02X\n", sfdp->parameter_header[i].idmsb);
 	}
 
-	printk_trace("SFDP Basic Table:\n");
-	printk_trace("  Minor version: %u\n", sfdp->basic_table.minor);
-	printk_trace("  Major version: %u\n", sfdp->basic_table.major);
-	printk_trace("  Table (%u x 4 bytes):\n", sfdp->basic_table.length);
+	pr_trace("SFDP Basic Table:\n");
+	pr_trace("  Minor version: %u\n", sfdp->basic_table.minor);
+	pr_trace("  Major version: %u\n", sfdp->basic_table.major);
+	pr_trace("  Table (%u x 4 bytes):\n", sfdp->basic_table.length);
 	for (int i = 0; i < sfdp->basic_table.length; i++) {
-		printk_trace("    ");
+		pr_trace("    ");
 		for (int j = 0; j < 4; j++) {
 			printk(LOG_LEVEL_MUTE, "0x%02X ", sfdp->basic_table.table[i * 4 + j]);
 		}
@@ -367,7 +367,7 @@ static int spi_nor_wait_for_busy(spi_nor_t *nor)
 			return DRIVER_OK;
 		timeout--;
 		if (!timeout) {
-			printk_warning("SPI NOR: wait busy timeout\n");
+			pr_warn("SPI NOR: wait busy timeout\n");
 			return DRIVER_ERROR_INVALID;
 		}
 	}
@@ -792,7 +792,7 @@ static inline int spi_nor_get_info(spi_nor_t *nor)
 				return 1;
 			}
 		}
-		printk_error("The spi nor flash '0x%x' is not yet supported\r\n", id);
+		pr_err("The spi nor flash '0x%x' is not yet supported\r\n", id);
 	}
 	return 0;
 }
@@ -919,22 +919,22 @@ int spi_nor_detect(spi_nor_t *nor)
 		return -1;
 
 	if (!spi_nor_get_info(nor)) {
-		printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
+		pr_warn("SPI NOR: Can not find any supported SPI NOR\n");
 		return -1;
 	}
 
 	info = &nor->info;
 	if (spi_nor_get_protocol_data_nbits(info->read_proto) == 4U) {
 		if (spi_nor_enable_quad(nor) != 0) {
-			printk_warning("SPI NOR: quad enable failed, using single-bit reads\n");
+			pr_warn("SPI NOR: quad enable failed, using single-bit reads\n");
 			info->read_proto = SNOR_PROTO_1_1_1;
 			info->read_dummy = 0U;
 			info->opcode_read = info->address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
 		}
 	}
 
-	printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
-	printk_info("SPI NOR: read_proto=%d read_dummy=%d opcode_read=0x%02x\n", info->read_proto, info->read_dummy,
+	pr_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
+	pr_info("SPI NOR: read_proto=%d read_dummy=%d opcode_read=0x%02x\n", info->read_proto, info->read_dummy,
 		    info->opcode_read);
 
 	return 0;

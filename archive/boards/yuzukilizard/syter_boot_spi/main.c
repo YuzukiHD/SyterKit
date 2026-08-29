@@ -81,30 +81,30 @@ static int load_spi_nand(spi_nand_t *nand, image_info_t *image)
 	/* get dtb size and read */
 	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t)sizeof(struct fdt_header));
 	if (fdt_check_header(image->of_dest)) {
-		printk_error("SPI-NAND: DTB verification failed\n");
+		pr_err("SPI-NAND: DTB verification failed\n");
 		return -1;
 	}
 
 	size = fdt_totalsize(image->of_dest);
-	printk_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t)image->of_dest, size);
+	pr_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t)image->of_dest, size);
 	start = time_us();
 	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t)size);
 	time = time_us() - start;
-	printk_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32)(size / time));
+	pr_info("SPI-NAND: read dt blob of size %u at %.2fMB/S\n", size, (f32)(size / time));
 
 	/* get kernel size and read */
 	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)sizeof(linux_zimage_header_t));
 	hdr = (linux_zimage_header_t *)image->dest;
 	if (hdr->magic != LINUX_ZIMAGE_MAGIC) {
-		printk_debug("SPI-NAND: zImage verification failed\n");
+		pr_debug("SPI-NAND: zImage verification failed\n");
 		return -1;
 	}
 	size = hdr->end - hdr->start;
-	printk_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)image->dest, size);
+	pr_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)image->dest, size);
 	start = time_us();
 	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)size);
 	time = time_us() - start;
-	printk_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32)(size / time));
+	pr_info("SPI-NAND: read Image of size %u at %.2fMB/S\n", size, (f32)(size / time));
 
 	return 0;
 }
@@ -118,11 +118,11 @@ static int load_from_spi(image_info_t *image)
 
 	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
 	    spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
-		printk_error("SPI: invalid devicetree configuration\n");
+		pr_err("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_spi_init(&spi) != 0) {
-		printk_error("SPI: init failed\n");
+		pr_err("SPI: init failed\n");
 		return -1;
 	}
 	result = load_spi_nand(&nand, image);
@@ -135,7 +135,7 @@ static int abortboot_single_key(int bootdelay)
 	int abort = 0;
 	unsigned long ts;
 
-	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
+	pr_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
 	if (tstc()) { /* we got a key press */
@@ -166,7 +166,7 @@ msh_define_help(reload, "rescan SPI NAND and reload DTB, Kernel zImage", "Usage:
 int cmd_reload(int argc, const char **argv)
 {
 	if (load_from_spi(&image) != 0) {
-		printk_error("SPI-NAND: loading failed\n");
+		pr_err("SPI-NAND: loading failed\n");
 		return 0;
 	}
 	return 0;
@@ -182,7 +182,7 @@ int cmd_boot(int argc, const char **argv)
 
 	/* Set up boot parameters for the kernel. */
 	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
-		printk_error("boot setup failed\n");
+		pr_err("boot setup failed\n");
 		abort();
 	}
 
@@ -190,10 +190,10 @@ int cmd_boot(int argc, const char **argv)
 	clean_syterkit_data();
 
 	enable_kernel_smp();
-	printk_info("enable kernel smp ok...\n");
+	pr_info("enable kernel smp ok...\n");
 
 	/* Debug message to indicate the kernel address that the system is jumping to. */
-	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
+	pr_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
 	kernel_entry = (void (*)(int, int, uint32_t))entry_point;
@@ -219,7 +219,7 @@ int main(void)
 	/* Display the bootloader banner. */
 	show_banner();
 	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK) {
-		printk_error("RTC: invalid devicetree configuration\n");
+		pr_err("RTC: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -229,7 +229,7 @@ int main(void)
 
 	/* Check rtc fel flag. if set flag, goto fel */
 	if (rtc_probe_fel_flag(&rtc)) {
-		printk_info("RTC: get fel flag, jump to fel mode.\n");
+		pr_info("RTC: get fel flag, jump to fel mode.\n");
 		clean_syterkit_data();
 		rtc_clear_fel_flag(&rtc);
 		sunxi_clk_reset();
@@ -239,14 +239,14 @@ int main(void)
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
-	printk_debug("enable mmu ok\n");
+	pr_debug("enable mmu ok\n");
 
 	/* Set up Real-Time Clock (RTC) hardware. */
 	rtc_set_vccio_det_spare(&rtc);
@@ -272,7 +272,7 @@ int main(void)
 
 	/* Load the DTB, kernel image from the SPI NAND. */
 	if (load_from_spi(&image) != 0) {
-		printk_error("SPI-NAND: loading failed\n");
+		pr_err("SPI-NAND: loading failed\n");
 		goto _shell;
 	}
 

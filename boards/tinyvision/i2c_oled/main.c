@@ -20,7 +20,7 @@ int main(void)
 {
 	sunxi_clk_init();
 
-	printk_info("Hello World\n");
+	pr_info("Hello World\n");
 
 	if (OLED_Init() != 0)
 		return -1;

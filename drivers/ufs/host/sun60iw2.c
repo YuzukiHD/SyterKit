@@ -47,12 +47,12 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
 	int ret;
 
 	if (!cal || !variant) {
-		printk_error("UFS PHY: invalid calibration request\n");
+		pr_err("UFS PHY: invalid calibration request\n");
 		return UFSHC_ERR_INVALID;
 	}
 	ret = sunxi_sid_dt_read_alias(&sid, "sid0");
 	if (ret != DRIVER_OK) {
-		printk_error("UFS PHY: SID configuration failed ret=%d\n", ret);
+		pr_err("UFS PHY: SID configuration failed ret=%d\n", ret);
 		return UFSHC_ERR_INVALID;
 	}
 	low = sunxi_efuse_sram_read(&sid, variant->cal_low_offset);
@@ -60,7 +60,7 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
 	ufs_debug("UFS PHY: calibration words low=0x%08x high=0x%08x\n", low, high);
 	ret = sunxi_decode_cal_words(cal, low, high);
 	if (ret)
-		printk_error("UFS PHY: calibration decode failed ret=%d\n", ret);
+		pr_err("UFS PHY: calibration decode failed ret=%d\n", ret);
 	else
 		ufs_debug("UFS PHY: calibration PLL(A/B)=0x%02x/0x%02x AFE0(att/ctle)=0x%02x/0x%02x "
 			"AFE1(att/ctle)=0x%02x/0x%02x\n", cal->pll_rate_a, cal->pll_rate_b,

@@ -51,12 +51,12 @@ int cmd_speedtest(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_write(&test_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_info("SDMMC: Write speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_info("SDMMC: Write speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 	sdmmc_blk_read(&test_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_info("SDMMC: Read speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_info("SDMMC: Read speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	return 0;
 }
@@ -90,12 +90,12 @@ int main(void)
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&test_mmc, "mmc2") != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -131,7 +131,7 @@ int main(void)
 	sun55iw3_clk_set_cpu_pll(1416);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
@@ -139,12 +139,12 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 
-	printk_debug("DRAM Size = %dM\n", dram_size);
+	pr_debug("DRAM Size = %dM\n", dram_size);
 
 	sunxi_clk_dump();
 
@@ -154,16 +154,16 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&test_mmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", test_mmc.name);
+		pr_err("SMHC: %s controller init failed\n", test_mmc.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", test_mmc.name);
+		pr_info("SMHC: %s controller initialized\n", test_mmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&test_card, &test_mmc) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 	} else {
-		printk_debug("Card OK!\n");
+		pr_debug("Card OK!\n");
 	}
 
 	syterkit_shell_attach(commands);

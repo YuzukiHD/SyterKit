@@ -161,7 +161,7 @@ static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
 {
 	if (!host || !host->base)
 		return;
-	printk_info("UFSHCI: diag %s: hcs=%08x hce=%08x is=%08x ie=%08x utrl=%08x:%08x/%08x "
+	pr_info("UFSHCI: diag %s: hcs=%08x hce=%08x is=%08x ie=%08x utrl=%08x:%08x/%08x "
 		    "utmr=%08x:%08x/%08x uic=%08x err=%08x/%08x/%08x/%08x/%08x\n",
 		stage, ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS), ufshc_read(host, UFSHC_REG_CONTROLLER_ENABLE),
 		ufshc_read(host, UFSHC_REG_INTERRUPT_STATUS), ufshc_read(host, UFSHC_REG_INTERRUPT_ENABLE),
@@ -186,7 +186,7 @@ static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
  */
 static int ufshc_fail(struct ufshc_host *host, const char *stage, int ret)
 {
-	printk_error("UFSHCI: %s failed ret=%d\n", stage, ret);
+	pr_err("UFSHCI: %s failed ret=%d\n", stage, ret);
 	ufshc_log_state(host, stage);
 	return ret;
 }
@@ -498,7 +498,7 @@ int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *
 					break;
 				continue;
 			}
-			printk_error("UFSHCI: UIC command 0x%02x failed\n", args->command);
+			pr_err("UFSHCI: UIC command 0x%02x failed\n", args->command);
 			ufs_debug("UFSHCI: UIC error is=%08x err=%08x/%08x/%08x/%08x/%08x\n",
 				status, phy_error, dl_error, nl_error, tl_error, dme_error);
 			return UFS_ERR_IO;
@@ -513,7 +513,7 @@ int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *
 		*result = ufshc_read(host, UFSHC_REG_UIC_ARG2) & UFSHC_UIC_RESULT_MASK;
 	command_result = ufshc_read(host, UFSHC_REG_UIC_ARG2) & UFSHC_UIC_RESULT_MASK;
 	if (command_result) {
-		printk_error("UFSHCI: UIC command 0x%02x returned 0x%02x\n", args->command, command_result);
+		pr_err("UFSHCI: UIC command 0x%02x returned 0x%02x\n", args->command, command_result);
 		ufshc_log_state(host, "UIC result error");
 		return UFS_ERR_IO;
 	}
@@ -774,7 +774,7 @@ int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mo
 	};
 	ret = ufshc_uic_command(host, &args, &status);
 	if (ret) {
-		printk_error("UFSHCI: request power mode change failed ret=%d\n", ret);
+		pr_err("UFSHCI: request power mode change failed ret=%d\n", ret);
 		return ret;
 	}
 	start = time_us();
@@ -807,32 +807,32 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	int ret;
 
 	if (!host || !config || !config->base) {
-		printk_error("UFSHCI: invalid host configuration\n");
+		pr_err("UFSHCI: invalid host configuration\n");
 		return UFS_ERR_INVALID;
 	}
-	printk_info("UFSHCI: init base=%p timeout_us=%u\n", (void *)config->base,
+	pr_info("UFSHCI: init base=%p timeout_us=%u\n", (void *)config->base,
 		config->timeout_us ? config->timeout_us : UFSHC_TIMEOUT_US);
 	memset(host, 0, sizeof(*host));
 	memset(ufshc_dma_pool, 0, sizeof(ufshc_dma_pool));
 	ufshc_devman_ocs_reported = false;
-	printk_info("UFSHCI: descriptor SRAM utrd=%p ucd=%p utmrd=%p\n", (void *)ufshc_utrd(), (void *)ufshc_ucd(),
+	pr_info("UFSHCI: descriptor SRAM utrd=%p ucd=%p utmrd=%p\n", (void *)ufshc_utrd(), (void *)ufshc_ucd(),
 		(void *)ufshc_utmrd());
 	host->base = config->base;
 	host->timeout_us = config->timeout_us ? config->timeout_us : UFSHC_TIMEOUT_US;
 	ret = sunxi_ufs_enable();
 	if (ret) {
-		printk_error("UFSHCI: host enable failed ret=%d\n", ret);
+		pr_err("UFSHCI: host enable failed ret=%d\n", ret);
 		goto disable_host;
 	}
 	ret = sunxi_ufs_prepare();
 	if (ret) {
-		printk_error("UFSHCI: host prepare failed ret=%d\n", ret);
+		pr_err("UFSHCI: host prepare failed ret=%d\n", ret);
 		goto disable_host;
 	}
 
 	host->capabilities = ufshc_read(host, UFSHC_REG_CAP);
 	host->version = ufshc_read(host, UFSHC_REG_VERSION);
-	printk_info("UFSHCI: CAP=0x%08x VERSION=0x%08x\n", host->capabilities, host->version);
+	pr_info("UFSHCI: CAP=0x%08x VERSION=0x%08x\n", host->capabilities, host->version);
 	ufshc_clear_interrupts(host);
 	/* Keep all interrupt sources masked across HCE initialization.  The
 	 * native flow enables only UIC completion/error reporting before link
@@ -851,7 +851,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	host->controller_enabled = true;
 	ret = ufshc_enable_controller(host);
 	if (ret) {
-		printk_error("UFSHCI: HCE enable failed ret=%d\n", ret);
+		pr_err("UFSHCI: HCE enable failed ret=%d\n", ret);
 		goto disable_host;
 	}
 	ufshc_write(host, UFSHC_REG_INTERRUPT_ENABLE, UFSHC_INT_UIC_COMPLETE_MASK | UFSHC_INT_UIC_POWER_MODE);
@@ -869,7 +869,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 		if (!retry_without_phy) {
 			ret = sunxi_ufs_link_startup(host);
 			if (ret) {
-				printk_error("UFSHCI: host PHY link setup failed attempt=%u ret=%d\n",
+				pr_err("UFSHCI: host PHY link setup failed attempt=%u ret=%d\n",
 					retry + 1U, ret);
 				if (retry < UFSHC_LINK_STARTUP_RETRIES) {
 					ret = ufshc_reinitialize_controller(host);
@@ -889,7 +889,7 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 
 			if (controller_status & UFSHC_HCS_DEVICE_PRESENT)
 				break;
-			printk_warning("UFSHCI: link is up but device is not present\n");
+			pr_warn("UFSHCI: link is up but device is not present\n");
 
 			/* Match SUPPORT_PEER_INITED_BOOT from the reference driver.  The
 			 * peer's ULSS event is cleared and the host retries LINK STARTUP
@@ -925,13 +925,13 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 
 	if (!(ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS) & UFSHC_HCS_DEVICE_PRESENT)) {
 		ret = UFS_ERR_IO;
-		printk_error("UFSHCI: device absent after link startup\n");
+		pr_err("UFSHCI: device absent after link startup\n");
 		goto disable_host;
 	}
 
 	ret = sunxi_ufs_link_up(host);
 	if (ret) {
-		printk_error("UFSHCI: host link-up configuration failed ret=%d\n", ret);
+		pr_err("UFSHCI: host link-up configuration failed ret=%d\n", ret);
 		goto disable_host;
 	}
 	/* Early-boot polling expects one completion interrupt per request. */
@@ -942,17 +942,17 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 	ufshc_configure_slot(host);
 	ret = ufshc_wait_operational(host);
 	if (ret) {
-		printk_error("UFSHCI: controller not operational ret=%d\n", ret);
+		pr_err("UFSHCI: controller not operational ret=%d\n", ret);
 		goto disable_host;
 	}
 
 	ufshc_write(host, UFSHC_REG_UTMRL_RUN_STOP, 1U);
 	ufshc_write(host, UFSHC_REG_UTRL_RUN_STOP, 1U);
-	printk_info("UFSHCI: init complete\n");
+	pr_info("UFSHCI: init complete\n");
 	return 0;
 
 disable_host:
-	printk_error("UFSHCI: init aborted ret=%d\n", ret);
+	pr_err("UFSHCI: init aborted ret=%d\n", ret);
 	ufshc_log_state(host, "init abort");
 	if (host->controller_enabled) {
 		ufshc_write(host, UFSHC_REG_UTMRL_RUN_STOP, 0U);
@@ -1015,7 +1015,7 @@ static int ufshc_exec_devman(struct ufshc_host *host)
 	if (status)
 		ufshc_write(host, UFSHC_REG_INTERRUPT_STATUS, status);
 	if (ret) {
-		printk_error("UFSHCI: device-management request failed ret=%d status=0x%08x\n", ret, status);
+		pr_err("UFSHCI: device-management request failed ret=%d status=0x%08x\n", ret, status);
 		ufshc_log_state(host, "device-management error");
 		ufshc_abort_transfer(host);
 		ufshc_sync_for_cpu(host, NULL, 0);
@@ -1025,7 +1025,7 @@ static int ufshc_exec_devman(struct ufshc_host *host)
 
 	if (utrd->header[2] & UFSHC_OCS_MASK) {
 		if (!ufshc_devman_ocs_reported) {
-			printk_error("UFSHCI: device-management OCS=0x%x\n", utrd->header[2] & UFSHC_OCS_MASK);
+			pr_err("UFSHCI: device-management OCS=0x%x\n", utrd->header[2] & UFSHC_OCS_MASK);
 			ufs_debug(
 				"UFSHCI: devman utrd=%p ucd=%p hdr=%08x/%08x/%08x/%08x rsp=%u@%u prdt=%u@%u req=%08x\n",
 				(void *)utrd, (void *)ucd, utrd->header[0],
@@ -1064,7 +1064,7 @@ int ufshc_nop(struct ufshc_host *host)
 	if (ret)
 		return ret;
 	if (response[0] != UFSHC_UPIU_NOP_IN) {
-		printk_error("UFSHCI: invalid NOP response type=0x%02x\n", response[0]);
+		pr_err("UFSHCI: invalid NOP response type=0x%02x\n", response[0]);
 		return UFS_ERR_IO;
 	}
 	return 0;
@@ -1112,12 +1112,12 @@ int ufshc_query_flag_op(struct ufshc_host *host, uint8_t idn, uint8_t opcode, bo
 	if (ret)
 		return ret;
 	if (response[0] != UFSHC_UPIU_QUERY_RSP) {
-		printk_error("UFSHCI: invalid Query Flag response type=0x%02x idn=0x%02x\n", response[0], idn);
+		pr_err("UFSHCI: invalid Query Flag response type=0x%02x idn=0x%02x\n", response[0], idn);
 		return UFS_ERR_IO;
 	}
 	result = ufs_be32(ufs_load32(&response[4])) & 0xffffU;
 	if ((result >> 8) != 0U) {
-		printk_error("UFSHCI: Query Flag failed idn=0x%02x opcode=0x%02x result=0x%04x\n", idn, opcode, result);
+		pr_err("UFSHCI: Query Flag failed idn=0x%02x opcode=0x%02x result=0x%04x\n", idn, opcode, result);
 		return UFS_ERR_IO;
 	}
 	if (opcode == UFSHC_QUERY_OPCODE_READ_FLAG)
@@ -1179,12 +1179,12 @@ int ufshc_query_attribute(
 	if (ret)
 		return ret;
 	if (response[0] != UFSHC_UPIU_QUERY_RSP) {
-		printk_error("UFSHCI: invalid Query Attribute response type=0x%02x idn=0x%02x\n", response[0], idn);
+		pr_err("UFSHCI: invalid Query Attribute response type=0x%02x idn=0x%02x\n", response[0], idn);
 		return UFS_ERR_IO;
 	}
 	result = ufs_be32(ufs_load32(&response[4])) & 0xffffU;
 	if ((result >> 8) != 0U) {
-		printk_error("UFSHCI: Query Attribute failed idn=0x%02x result=0x%04x\n", idn, result);
+		pr_err("UFSHCI: Query Attribute failed idn=0x%02x result=0x%04x\n", idn, result);
 		return UFS_ERR_IO;
 	}
 	if (!write)

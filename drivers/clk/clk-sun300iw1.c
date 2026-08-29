@@ -374,7 +374,7 @@ void sunxi_clk_dump(void)
 	uint32_t reg_val = 0;
 	uint32_t n, m, clock_src, clock, pll_cpu_reg;
 
-	printk_debug("SoC HOSC Type = %d MHz\n", sun300iw1_clk_get_hosc_rate());
+	pr_debug("SoC HOSC Type = %d MHz\n", sun300iw1_clk_get_hosc_rate());
 
 	reg_val = readl(SUNXI_CCU_AON_BASE + E907_CLK_REG);
 	clock_src = ((reg_val & E907_CLK_REG_E907_CLK_SEL_CLEAR_MASK) >> E907_CLK_REG_E907_CLK_SEL_OFFSET);
@@ -411,12 +411,12 @@ void sunxi_clk_dump(void)
 	reg_val = readl(SUNXI_CCU_AON_BASE + E907_CLK_REG);
 	m = reg_val & E907_CLK_REG_E907_CLK_DIV_CLEAR_MASK;
 
-	printk_debug("CLK: CPU FREQ = %d MHz\n", clock / (m + 1));
+	pr_debug("CLK: CPU FREQ = %d MHz\n", clock / (m + 1));
 
 	reg_val = read32(SUNXI_CCU_AON_BASE + PLL_PERI_CTRL0_REG);
 	n = (reg_val & PLL_PERI_CTRL0_REG_PLL_N_CLEAR_MASK) >> PLL_PERI_CTRL0_REG_PLL_N_OFFSET;
 	m = reg_val & PLL_PERI_CTRL0_REG_PLL_INPUT_DIV_CLEAR_MASK;
-	printk_debug("CLK: PERI FREQ = %lu MHz\r\n", (sun300iw1_clk_get_hosc_rate() * 2 * (n + 1)) / (m + 1));
+	pr_debug("CLK: PERI FREQ = %lu MHz\r\n", (sun300iw1_clk_get_hosc_rate() * 2 * (n + 1)) / (m + 1));
 }
 
 /* we got hosc freq in arch/timer.c */

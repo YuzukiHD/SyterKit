@@ -64,7 +64,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -81,7 +81,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -90,7 +90,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -107,19 +107,19 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
+	pr_info("FATFS: read %s addr=%x\n", image->filename, (unsigned int)image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
@@ -127,12 +127,12 @@ static int load_sdcard(image_info_t *image)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -146,7 +146,7 @@ int main(void)
 		return -1;
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -156,7 +156,7 @@ int main(void)
 
 	/* Initialize DRAM */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
@@ -175,22 +175,22 @@ int main(void)
 
 	/* Initialize SD card controller */
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 		return 0;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize SD card */
 	if (sdmmc_init(&card0, &sdhci0) != 0) {
-		printk_error("SMHC: init failed\n");
+		pr_err("SMHC: init failed\n");
 		return 0;
 	}
 	disk_set_device(0, &card0);
 
 	/* Load DTB file from SD card */
 	if (load_sdcard(&image) != 0) {
-		printk_error("SMHC: loading failed\n");
+		pr_err("SMHC: loading failed\n");
 		return 0;
 	}
 
@@ -201,13 +201,13 @@ int main(void)
 
 	/* Check if DTB header is valid */
 	if ((err = fdt_check_header(dtb_header)) != 0) {
-		printk_error("Invalid device tree blob: %s\n", fdt_strerror(err));
+		pr_err("Invalid device tree blob: %s\n", fdt_strerror(err));
 		return -1;
 	}
 
 	/* Get the total size of DTB */
 	uint32_t size = fdt_totalsize(image.dest);
-	printk_info("DTB FDT Size = 0x%x\n", size);
+	pr_info("DTB FDT Size = 0x%x\n", size);
 
 	/* Print all device tree nodes */
 	fdt_print(image.dest, "/", NULL, MAX_LEVEL);
@@ -218,23 +218,23 @@ int main(void)
 
 	/* Get bootargs string */
 	char *bootargs_str = (void *)fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
-	printk_info("DTB OLD bootargs = \"%s\"\n", bootargs_str);
+	pr_info("DTB OLD bootargs = \"%s\"\n", bootargs_str);
 
 	/* New bootargs string */
 	char *new_bootargs_str = "earlyprintk=sunxi-uart,0x02500C00 root=/dev/mmcblk0p3 rootwait loglevel=8 initcall_debug=0 console=ttyS0 init=/init";
-	printk_info("Now set bootargs to \"%s\"\n", new_bootargs_str);
+	pr_info("Now set bootargs to \"%s\"\n", new_bootargs_str);
 
 	/* Modify bootargs string */
 	err = fdt_setprop(image.dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 
 	if (err < 0) {
-		printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(err));
+		pr_err("libfdt fdt_setprop() error: %s\n", fdt_strerror(err));
 		abort();
 	}
 
 	/* Get updated bootargs string */
 	char *updated_bootargs_str = (void *)fdt_getprop(image.dest, bootargs_node, "bootargs", &len);
-	printk_info("DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
+	pr_info("DTB NEW bootargs = \"%s\"\n", updated_bootargs_str);
 
 	/* Terminate program execution */
 	abort();

@@ -51,33 +51,33 @@ extern "C" {
 	} while (0)
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
-#define printk_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#define pr_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
 #else
-#define printk_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#define pr_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
-#define printk_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define pr_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
 #else
-#define printk_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define pr_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_INFO
-#define printk_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
+#define pr_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
 #else
-#define printk_info(fmt, ...) no_printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
+#define pr_info(fmt, ...) no_printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_WARNING
-#define printk_warning(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
+#define pr_warn(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 #else
-#define printk_warning(fmt, ...) no_printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
+#define pr_warn(fmt, ...) no_printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_ERROR
-#define printk_error(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 #else
-#define printk_error(fmt, ...) no_printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) no_printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 #endif
 
 /**

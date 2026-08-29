@@ -197,7 +197,7 @@ int main(void)
 	sunxi_sid_t sid;
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_res_ctrl_init(&sid);
@@ -207,7 +207,7 @@ int main(void)
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -216,7 +216,7 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);

@@ -47,7 +47,7 @@ int main(void)
 
 	sunxi_clk_init();
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	sunxi_clk_dump();
 
@@ -55,17 +55,17 @@ int main(void)
 	sunxi_psram_t psram = { 0 };
 
 	if (sunxi_psram_dt_read_alias(&psram, "psram0") != DRIVER_OK) {
-		printk_error("PSRAM: invalid devicetree configuration\n");
+		pr_err("PSRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	sunxi_psram_init(&psram);
 
-	printk_info("LPSRAM Size = %d MB\n", sunxi_get_psram_size(&psram));
+	pr_info("LPSRAM Size = %d MB\n", sunxi_get_psram_size(&psram));
 #endif
 
 	if (malloc_init(YUZUKINEKO_HEAP_BASE, YUZUKINEKO_HEAP_SIZE) != 0) {
-		printk_error("Heap: PSRAM heap initialization failed\n");
+		pr_err("Heap: PSRAM heap initialization failed\n");
 		return -1;
 	}
 
@@ -73,22 +73,22 @@ int main(void)
 	spif_nor_t nor = { 0 };
 
 	if (sunxi_spif_dt_read_alias(&spif, "spif0") != DRIVER_OK) {
-		printk_error("SPIF: invalid devicetree configuration\n");
+		pr_err("SPIF: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	if (spif_nor_dt_read_alias(&nor, "spif-nor0", &spif) != DRIVER_OK) {
-		printk_error("SPIF NOR: invalid devicetree configuration\n");
+		pr_err("SPIF NOR: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	if (sunxi_spif_init(&spif) != 0) {
-		printk_error("SPIF: controller init failed\n");
+		pr_err("SPIF: controller init failed\n");
 		return -1;
 	}
 
 	if (spif_nor_detect(&nor) != 0) {
-		printk_error("SPI NOR: no supported flash detected\n");
+		pr_err("SPI NOR: no supported flash detected\n");
 		return -1;
 	}
 
@@ -100,7 +100,7 @@ int main(void)
 	uint32_t delta = (time_end - time_start);
 	if (delta == 0U)
 		delta = 1U;
-	printk_info("SPI NOR: read %uKiB in %ums, %uKiB/s\n", nor_read_done / 1024, delta,
+	pr_info("SPI NOR: read %uKiB in %ums, %uKiB/s\n", nor_read_done / 1024, delta,
 		(uint32_t)(((uint64_t)nor_read_done * 1000U) / ((uint64_t)delta * 1024U)));
 	dump_hex(SUNXI_PSRAM_BASE, 0x40);
 

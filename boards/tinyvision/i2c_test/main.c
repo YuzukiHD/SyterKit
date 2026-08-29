@@ -21,7 +21,7 @@ int main(void)
 	sunxi_i2c_t i2c;
 
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK) {
-		printk_error("I2C: invalid devicetree configuration\n");
+		pr_err("I2C: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -29,15 +29,15 @@ int main(void)
 
 	sunxi_i2c_init(&i2c);
 
-	printk_info("Hello World\n");
+	pr_info("Hello World\n");
 
 	int ret = 0;
 
 	while (1) {
-		printk_info("sunxi_i2c_write\n");
+		pr_info("sunxi_i2c_write\n");
 		ret = sunxi_i2c_write(&i2c, 0x32, 0x11, 0x11);
 		mdelay(100);
-		printk_info("sunxi_i2c_write done, ret = %08x\n", ret);
+		pr_info("sunxi_i2c_write done, ret = %08x\n", ret);
 	}
 
 	return 0;

@@ -34,7 +34,7 @@ int main(void)
 {
 	sunxi_clk_init();
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	syterkit_shell_attach(commands);
 

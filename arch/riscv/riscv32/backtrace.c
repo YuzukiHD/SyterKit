@@ -243,7 +243,7 @@ int riscv_ins32_get_push_lr_framesize(uint32_t inst, int *offset)
 {
 	int ret = -1;
 
-	printk_trace("BT: inst:0x%x\n", inst);
+	pr_trace("BT: inst:0x%x\n", inst);
 
 	// Check for 'sw ra, (offset)sp' instruction
 	if ((inst & 0x01FFF07F) == 0x00112023) {
@@ -306,7 +306,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 {
 	int ret = -1;
 
-	printk_trace("BT: inst:0x%x: \n", inst);
+	pr_trace("BT: inst:0x%x: \n", inst);
 
 	// Check for 'c.sdsp ra, (offset)sp' instruction
 	if ((inst & 0xE07E) == 0xE006) {
@@ -315,7 +315,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 		int immed_3_5 = (inst >> 10) & 0x07;
 		int immed = immed_6_8 << 6 | immed_3_5 << 3;
 		*offset = immed / sizeof(long);
-		printk_trace("BT: \tc.sdsp ra, (offset%p)sp, #immed=%d \n", offset, immed);
+		pr_trace("BT: \tc.sdsp ra, (offset%p)sp, #immed=%d \n", offset, immed);
 		ret = -1;
 	}
 	// Check for 'c.swsp ra, (offset)sp' instruction
@@ -325,7 +325,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 		int immed_2_5 = (inst >> 9) & 0x0f;
 		int immed = immed_6_7 << 6 | immed_2_5 << 2;
 		*offset = immed / sizeof(long);
-		printk_trace("BT: \tc.swsp ra, (offset%p)sp, #immed=%d \n", offset, immed);
+		pr_trace("BT: \tc.swsp ra, (offset%p)sp, #immed=%d \n", offset, immed);
 		ret = -1;
 	}
 	// Check for 'c.addi16sp #imm' instruction
@@ -338,7 +338,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 		int immed_9 = (inst >> 12) & 0x1;
 		int immed = immed_5 << 5 | immed_7_8 << 7 | immed_6 << 6 | immed_4 << 4 | immed_9 << 9;
 
-		printk_trace("BT: \tc.addi16sp #immed=%d \n", immed);
+		pr_trace("BT: \tc.addi16sp #immed=%d \n", immed);
 
 		if ((immed >> 9) != 0) {
 			immed = 0x3FF - immed + 1;
@@ -354,7 +354,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 		int immed_5 = (inst >> 12) & 0x1;
 		int immed = immed_5 << 5 | immed_0_4;
 
-		printk_trace("BT: \tc.addi sp, sp, #immed=%d \n", immed);
+		pr_trace("BT: \tc.addi sp, sp, #immed=%d \n", immed);
 
 		if ((immed >> 5) != 0) {
 			immed = 0x3F - immed + 1;
@@ -371,7 +371,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 		int immed_5 = (inst >> 12) & 0x1;
 		int immed = immed_5 << 5 | immed_0_4;
 
-		printk_trace("BT: \tc.addiw sp, #immed=%d \n", immed);
+		pr_trace("BT: \tc.addiw sp, #immed=%d \n", immed);
 
 		if ((immed >> 5) != 0) {
 			immed = 0x3F - immed + 1;
@@ -382,7 +382,7 @@ static int riscv_ins16_get_push_lr_framesize(uint16_t inst, int *offset)
 	}
 #endif
 
-	printk_trace("BT: \tret = %d\n", ret);
+	pr_trace("BT: \tret = %d\n", ret);
 	return ret;
 }
 
@@ -444,7 +444,7 @@ int riscv_ins32_backtrace_stask_push(uint32_t inst)
 		}
 	}
 #endif
-	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret);
+	pr_trace("BT: inst:0x%x, ret = %d\n", inst, ret);
 
 	return ret;
 }
@@ -519,7 +519,7 @@ static int riscv_ins16_backtrace_stask_push(uint32_t inst)
 	}
 #endif
 
-	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret);
+	pr_trace("BT: inst:0x%x, ret = %d\n", inst, ret);
 
 	return ret;
 }
@@ -580,12 +580,12 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
 		ins16_l = *(uint16_t *)(parse_addr - 2);
 
 		if (insn_length(ins16_l) == 4) {
-			printk_trace("BT: insn len == 4, parse_addr = %p:\n", parse_addr);
+			pr_trace("BT: insn len == 4, parse_addr = %p:\n", parse_addr);
 			ins32 = (ins16_h << 16) | ins16_l;
 			result = riscv_ins32_get_push_lr_framesize(ins32, &offset);
 			i += 2;
 		} else {
-			printk_trace("BT: insn len == 2, parse_addr = %p:\n", parse_addr);
+			pr_trace("BT: insn len == 2, parse_addr = %p:\n", parse_addr);
 			ins16 = ins16_h;
 			result = riscv_ins16_get_push_lr_framesize(ins16, &offset);
 		}
@@ -597,7 +597,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
 
 	parse_addr = PC - i;
 
-	printk_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d\n", i, parse_addr, PC, offset);
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d\n", i, parse_addr, PC, offset);
 
 	if (i >= BT_SCAN_MAX_LIMIT) {
 		printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. scope overflow\n");
@@ -630,7 +630,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
 		}
 	}
 
-	printk_trace("BT: i = %d, framesize = %d, SP = %p\n", i, framesize, SP);
+	pr_trace("BT: i = %d, framesize = %d, SP = %p\n", i, framesize, SP);
 
 	if (!offset) {
 		return -1;
@@ -650,7 +650,7 @@ static int riscv_backtrace_from_stack(long **pSP, char **pPC, char **pLR)
 	offset = riscv_backtrace_find_lr_offset(LR, true);
 	*pPC = LR - offset;
 
-	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p\n", *pSP, offset, *pPC);
+	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p\n", *pSP, offset, *pPC);
 
 	return offset == 0 ? 1 : 0;
 }
@@ -699,7 +699,7 @@ static int riscv_ins32_backtrace_return_pop(uint32_t inst)
 		ret = 0; /**< Set return value to 0 if it matches. */
 	}
 
-	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
+	pr_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
 	return ret; /**< Return the result. */
 }
 
@@ -720,7 +720,7 @@ static int riscv_ins16_backtrace_return_pop(uint16_t inst)
 		ret = 0; /**< Set return value to 0 if it matches. */
 	}
 
-	printk_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
+	pr_trace("BT: inst:0x%x, ret = %d\n", inst, ret); /**< Log the instruction and return value. */
 	return ret; /**< Return the result. */
 }
 
@@ -750,7 +750,7 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst)
 			immed = 0xFFF - immed + 1; /**< Calculate adjusted immediate. */
 			ret = immed / stack_width; /**< Convert to stack adjustment. */
 		}
-		printk_trace("BT: \t addi sp, sp, #immed=%d \n", immed); /**< Log instruction and immediate value. */
+		pr_trace("BT: \t addi sp, sp, #immed=%d \n", immed); /**< Log instruction and immediate value. */
 	}
 #if !defined(CONFIG_ARCH_RISCV32) /* RISCV32 does not support "addiw sp, sp, #imm" instruction */
 	else if ((inst & 0x000FFFFF) == 0x1011B) {
@@ -764,11 +764,11 @@ static int riscv_ins32_backtrace_stack_pop(unsigned int inst)
 			immed = 0xFFF - immed + 1; /**< Calculate adjusted immediate. */
 			ret = immed / stack_width; /**< Convert to stack adjustment. */
 		}
-		printk_trace("BT: \t addiw sp, sp, #immed=%d \n", immed); /**< Log instruction and immediate value. */
+		pr_trace("BT: \t addiw sp, sp, #immed=%d \n", immed); /**< Log instruction and immediate value. */
 	}
 #endif
 
-	printk_trace("BT: inst:0x%x, ret:%d\n", inst, ret); /**< Log instruction and return value. */
+	pr_trace("BT: inst:0x%x, ret:%d\n", inst, ret); /**< Log instruction and return value. */
 	return ret; /**< Return the result. */
 }
 
@@ -800,7 +800,7 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst)
 			immed = 0x3FF - immed + 1; /**< Adjust the immediate for negative values. */
 		}
 
-		printk_trace("BT: \tc.addi16sp #immed=%d \n", immed); /**< Log the immediate value. */
+		pr_trace("BT: \tc.addi16sp #immed=%d \n", immed); /**< Log the immediate value. */
 		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 	/*  Check for "c.addi sp, sp, #imm" instruction. */
@@ -815,7 +815,7 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst)
 			immed = 0x3F - immed + 1; /**< Adjust the immediate value for negative values. */
 		}
 
-		printk_trace("BT: \tc.addi sp, sp, #immed=%d \n", immed); /**< Log the immediate value. */
+		pr_trace("BT: \tc.addi sp, sp, #immed=%d \n", immed); /**< Log the immediate value. */
 		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 #if !defined(CONFIG_ARCH_RISCV32) /* RISCV32 does not support "c.addiw sp, #imm" instruction */
@@ -831,12 +831,12 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst)
 			immed = 0x3F - immed + 1; /**< Adjust the immediate value for negative values. */
 		}
 
-		printk_trace("BT: \tc.addiw sp, #immed=%d \n", immed); /**< Log the immediate value. */
+		pr_trace("BT: \tc.addiw sp, #immed=%d \n", immed); /**< Log the immediate value. */
 		ret = immed / stack_width; /**< Calculate the stack pop based on the immediate value. */
 	}
 #endif
 
-	printk_trace("BT: inst:0x%x\n", inst); /**< Log the instruction. */
+	pr_trace("BT: inst:0x%x\n", inst); /**< Log the instruction. */
 	return ret; /**< Return the result. */
 }
 
@@ -912,7 +912,7 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 		}
 	}
 
-	printk_trace("BT: i = %d, parse_addr = %p, PC = %p, framesize = %d\n", i, parse_addr, PC, framesize); /**< Log backtrace progress. */
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, framesize = %d\n", i, parse_addr, PC, framesize); /**< Log backtrace progress. */
 
 	framesize = result; /**< Set the frame size from the result. */
 
@@ -951,12 +951,12 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 
 		/* If stack pop is valid, add the frame size. */
 		if (temp >= 0) {
-			printk_trace("BT: framesize add %d\n", temp); /**< Log the frame size addition. */
+			pr_trace("BT: framesize add %d\n", temp); /**< Log the frame size addition. */
 			framesize += temp; /**< Add to the total frame size. */
 		}
 	}
 
-	printk_trace("BT: i = %d, parse_addr = %p, PC = %p, SP = %p, framesize = %d\n", i, parse_addr, PC, SP, framesize); /**< Log final backtrace details. */
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, SP = %p, framesize = %d\n", i, parse_addr, PC, SP, framesize); /**< Log final backtrace details. */
 
 	/* Check if the LR is valid again before updating SP and PC. */
 	if (backtrace_check_address(LR) == 0) {
@@ -967,7 +967,7 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 	offset = riscv_backtrace_find_lr_offset(LR, true); /**< Find the LR offset again. */
 	*pPC = LR - offset; /**< Update program counter based on the LR and offset. */
 
-	printk_trace("BT: *pSP = %p, offset = %d, *pPC = %p\n", *pSP, offset, *pPC); /**< Log the updated SP and PC. */
+	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p\n", *pSP, offset, *pPC); /**< Log the updated SP and PC. */
 
 	return offset == 0 ? 1 : 0; /**< Return success if offset is 0, otherwise return 0. */
 }

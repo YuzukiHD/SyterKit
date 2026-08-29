@@ -369,12 +369,12 @@ int ufs_scsi_init(struct ufs_scsi_device *device, struct ufshc_host *host, uint8
 	}
 	ret = ufs_scsi_read_capacity(device);
 	device->present = true;
-	printk_info("UFS: LUN %u, %s, %llu blocks x %u bytes\n", lun, device->model[0] ? device->model : "unknown",
+	pr_info("UFS: LUN %u, %s, %llu blocks x %u bytes\n", lun, device->model[0] ? device->model : "unknown",
 		(unsigned long long)device->block_count, device->block_size);
 	return 0;
 
 not_ready:
-	printk_error("UFS SCSI: logical unit %u is not ready ret=%d\n", lun, ret);
+	pr_err("UFS SCSI: logical unit %u is not ready ret=%d\n", lun, ret);
 	return UFS_SCSI_ERR;
 }
 

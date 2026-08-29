@@ -20,20 +20,20 @@ int main(void)
 
 	show_banner();
 	if (sunxi_usb_dt_read_alias(&usb, "usb0") != DRIVER_OK) {
-		printk_error("USB: invalid devicetree configuration\n");
+		pr_err("USB: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	sunxi_clk_init();
 
 	if (sunxi_usb_init(&usb)) {
-		printk_error("USB: init failed\n");
+		pr_err("USB: init failed\n");
 		return -1;
 	}
 
-	printk_info("USB: waiting for host\n");
+	pr_info("USB: waiting for host\n");
 	sunxi_usb_attach(&usb);
-	printk_info("USB: host detected\n");
+	pr_info("USB: host detected\n");
 
 	abort();
 

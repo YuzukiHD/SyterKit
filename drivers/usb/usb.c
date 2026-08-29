@@ -160,12 +160,12 @@ void sunxi_usb_irq(void *data)
 
 	usb_controller_int_clear_misc_pending(usb->base, detect_irq);
 	if (detect_irq & USBC_INTUSB_DISCONNECT) {
-		printk_trace("USB: IRQ: disconnect\n");
+		pr_trace("USB: IRQ: disconnect\n");
 		usb->detected = false;
 	}
 
 	if (detect_irq & USBC_INTUSB_RESET) {
-		printk_trace("USB: IRQ: reset\n");
+		pr_trace("USB: IRQ: reset\n");
 		usb->detected = true;
 	}
 }
@@ -191,7 +191,7 @@ void sunxi_usb_attach(sunxi_usb_t *usb)
 	while (!usb->detected && time_us() < deadline)
 		;
 	if (!usb->detected)
-		printk_warning("USB: host detection timeout\n");
+		pr_warn("USB: host detection timeout\n");
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-musb");

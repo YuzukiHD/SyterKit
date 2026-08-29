@@ -26,7 +26,7 @@
 
 #include "ruapu.h"
 
-#define PRINT_ISA_SUPPORT(isa) printk_info("%s = %d\n", #isa, ruapu_supports(#isa));
+#define PRINT_ISA_SUPPORT(isa) pr_info("%s = %d\n", #isa, ruapu_supports(#isa));
 
 extern sunxi_serial_t uart_dbg;
 
@@ -39,7 +39,7 @@ int main(void)
 
 	sunxi_clk_init();
 
-	printk_info("Hello World! Now Running RUAPU Test!\n");
+	pr_info("Hello World! Now Running RUAPU Test!\n");
 
 	ruapu_init();
 
@@ -48,14 +48,14 @@ int main(void)
 	PRINT_ISA_SUPPORT(vfpv4)
 	PRINT_ISA_SUPPORT(idiv)
 
-	printk_info("Ruapu Supported:\n");
+	pr_info("Ruapu Supported:\n");
 	const char *const *supported = ruapu_rua();
 	while (*supported) {
-		printk_info("%s\n", *supported);
+		pr_info("%s\n", *supported);
 		supported++;
 	}
 
-	printk_info("RUAPU Test done!\n");
+	pr_info("RUAPU Test done!\n");
 
 	return 0;
 }

@@ -119,7 +119,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -136,7 +136,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -145,7 +145,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -162,34 +162,34 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t)image->kernel_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->kernel_filename, (uint32_t)image->kernel_dest);
 	ret = fatfs_loadimage(image->kernel_filename, image->kernel_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl33_filename, (uint32_t)image->bl33_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->bl33_filename, (uint32_t)image->bl33_dest);
 	ret = fatfs_loadimage(image->bl33_filename, image->bl33_dest);
 	if (ret)
 		return ret;
@@ -197,12 +197,12 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -232,7 +232,7 @@ static int abortboot_single_key(int bootdelay)
 	int abort = 0;
 	unsigned long ts;
 
-	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
+	pr_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
 	if (tstc()) { /* we got a key press */
@@ -276,8 +276,8 @@ int cmd_boot(int argc, const char **argv)
 	atf_head->platform[6] = 0x00;
 	atf_head->platform[7] = 0x00;
 
-	printk_info("ATF: Kernel addr: 0x%08x\n", atf_head->next_boot_base);
-	printk_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+	pr_info("ATF: Kernel addr: 0x%08x\n", atf_head->next_boot_base);
+	pr_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
 	clean_syterkit_data();
 
@@ -285,7 +285,7 @@ int cmd_boot(int argc, const char **argv)
 
 	jmp_to_arm64(&rtc, CONFIG_BL31_LOAD_ADDR);
 
-	printk_info("Back to SyterKit\n");
+	pr_info("Back to SyterKit\n");
 
 	// if kernel boot not success, jump to fel.
 	jmp_to_fel();
@@ -297,13 +297,13 @@ msh_define_help(reload, "rescan TF Card and reload DTB", "Usage: reload\n");
 int cmd_reload(int argc, const char **argv)
 {
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-		printk_error("SMHC: init failed\n");
+		pr_err("SMHC: init failed\n");
 		return 0;
 	}
 	disk_set_device(0, &boot_card);
 
 	if (load_sdcard(&image, &boot_card) != 0) {
-		printk_error("SMHC: loading failed\n");
+		pr_err("SMHC: loading failed\n");
 		return 0;
 	}
 	return 0;
@@ -327,12 +327,12 @@ int main(void)
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
 	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK || sunxi_sdhci_dt_read_alias(&boot_mmc, "mmc0") != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -362,7 +362,7 @@ int main(void)
 	pmu_axp1530_dump(&axp1530);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
@@ -370,7 +370,7 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
@@ -399,18 +399,18 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&boot_mmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", boot_mmc.name);
+		pr_err("SMHC: %s controller init failed\n", boot_mmc.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", boot_mmc.name);
+		pr_info("SMHC: %s controller initialized\n", boot_mmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-		printk_warning("SMHC: init failed, Retrying...\n");
+		pr_warn("SMHC: init failed, Retrying...\n");
 		mdelay(30);
 		if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-			printk_warning("SMHC: init failed\n");
+			pr_warn("SMHC: init failed\n");
 			goto _shell;
 		}
 	}
@@ -418,7 +418,7 @@ int main(void)
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image, &boot_card) != 0) {
-		printk_warning("SMHC: loading failed\n");
+		pr_warn("SMHC: loading failed\n");
 		goto _shell;
 	}
 

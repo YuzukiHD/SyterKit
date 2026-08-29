@@ -153,16 +153,16 @@ static int32_t sunxi_i2c_wait_status(sunxi_i2c_t *i2c_dev, uint32_t expected)
 __attribute__((unused)) static void i2c_debug(sunxi_i2c_t *i2c_dev)
 {
 	struct sunxi_twi_reg *i2c = (struct sunxi_twi_reg *)i2c_dev->base;
-	printk_debug("i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
-	printk_debug("i2c->xaddr :\t0x%x:0x%x\n", &i2c->xaddr, i2c->xaddr);
-	printk_debug("i2c->data  :\t0x%x:0x%x\n", &i2c->data, i2c->data);
-	printk_debug("i2c->ctl   :\t0x%x:0x%x\n", &i2c->ctl, i2c->ctl);
-	printk_debug("i2c->status:\t0x%x:0x%x\n", &i2c->status, i2c->status);
-	printk_debug("i2c->clk   :\t0x%x:0x%x\n", &i2c->clk, i2c->clk);
-	printk_debug("i2c->srst  :\t0x%x:0x%x\n", &i2c->srst, i2c->srst);
-	printk_debug("i2c->eft   :\t0x%x:0x%x\n", &i2c->eft, i2c->eft);
-	printk_debug("i2c->lcr   :\t0x%x:0x%x\n", &i2c->lcr, i2c->lcr);
-	printk_debug("i2c->dvfs  :\t0x%x:0x%x\n", &i2c->dvfs, i2c->dvfs);
+	pr_debug("i2c->addr  :\t0x%x:0x%x\n", &i2c->addr, i2c->addr);
+	pr_debug("i2c->xaddr :\t0x%x:0x%x\n", &i2c->xaddr, i2c->xaddr);
+	pr_debug("i2c->data  :\t0x%x:0x%x\n", &i2c->data, i2c->data);
+	pr_debug("i2c->ctl   :\t0x%x:0x%x\n", &i2c->ctl, i2c->ctl);
+	pr_debug("i2c->status:\t0x%x:0x%x\n", &i2c->status, i2c->status);
+	pr_debug("i2c->clk   :\t0x%x:0x%x\n", &i2c->clk, i2c->clk);
+	pr_debug("i2c->srst  :\t0x%x:0x%x\n", &i2c->srst, i2c->srst);
+	pr_debug("i2c->eft   :\t0x%x:0x%x\n", &i2c->eft, i2c->eft);
+	pr_debug("i2c->lcr   :\t0x%x:0x%x\n", &i2c->lcr, i2c->lcr);
+	pr_debug("i2c->dvfs  :\t0x%x:0x%x\n", &i2c->dvfs, i2c->dvfs);
 }
 #endif
 
@@ -757,7 +757,7 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev)
 	sunxi_gpio_init(&i2c_dev->gpio.gpio_sda);
 	sunxi_gpio_set_pull(&i2c_dev->gpio.gpio_sda, GPIO_PULL_UP);
 
-	printk_debug("I2C: base = %p, id = %d\n", (void *)i2c_dev->base, i2c_dev->id);
+	pr_debug("I2C: base = %p, id = %d\n", (void *)i2c_dev->base, i2c_dev->id);
 
 	sunxi_i2c_bus_clk_open(i2c_dev);
 
@@ -769,7 +769,7 @@ void sunxi_i2c_init(sunxi_i2c_t *i2c_dev)
 
 	sunxi_i2c_bus_en(i2c_dev);
 
-	printk_debug("I2C: Bus open done.\n");
+	pr_debug("I2C: Bus open done.\n");
 
 #ifdef I2C_DEBUG
 	i2c_debug(i2c_dev);

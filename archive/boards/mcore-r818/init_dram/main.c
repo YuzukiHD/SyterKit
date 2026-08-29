@@ -41,7 +41,7 @@ int main(void)
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -62,10 +62,10 @@ int main(void)
 
 	dram.pmu = &pmu;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
-	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
+	pr_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
 
 	sunxi_clk_dump();
 
@@ -73,7 +73,7 @@ int main(void)
 
 	while (1) {
 		i++;
-		printk_info("Count: %d\n", i);
+		pr_info("Count: %d\n", i);
 		mdelay(1000);
 	}
 

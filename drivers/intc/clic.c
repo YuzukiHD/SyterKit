@@ -142,7 +142,7 @@ static int sunxi_clic_irq_disable(const sunxi_clic_t *clic, uint32_t irq)
  */
 static void default_isr(void *data)
 {
-	printk_debug("default_isr(): called from IRQ %u\n", (uint32_t)(uintptr_t)data);
+	pr_debug("default_isr(): called from IRQ %u\n", (uint32_t)(uintptr_t)data);
 	for (;;)
 		;
 }
@@ -168,7 +168,7 @@ int sunxi_clic_init(sunxi_clic_t *clic)
 	clic->initialized = false;
 	info = readl(clic->base + CLIC_INFO_REG_OFF);
 	hardware_irq_count = (info & IRQ_CNT_MASK) >> IRQ_CNT_SHIFT;
-	printk_trace("CLIC: hardware sources %u, devicetree sources %u\n", hardware_irq_count, clic->irq_count);
+	pr_trace("CLIC: hardware sources %u, devicetree sources %u\n", hardware_irq_count, clic->irq_count);
 	if (hardware_irq_count != clic->irq_count)
 		return DRIVER_ERROR_INVALID;
 
@@ -252,7 +252,7 @@ void irq_free_handler(int irq)
 int irq_enable(int irq)
 {
 	if (!sunxi_clic_irq_valid(&sunxi_clic_controller, irq)) {
-		printk_error("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
+		pr_err("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 
@@ -268,7 +268,7 @@ int irq_enable(int irq)
 int irq_disable(int irq)
 {
 	if (!sunxi_clic_irq_valid(&sunxi_clic_controller, irq)) {
-		printk_error("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
+		pr_err("CLIC: invalid IRQ %d (source count %u)\n", irq, sunxi_clic_controller.irq_count);
 		return DRIVER_ERROR_INVALID;
 	}
 

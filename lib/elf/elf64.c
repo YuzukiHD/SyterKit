@@ -22,24 +22,24 @@
 
 void print_elf64_ehdr(Elf64_Ehdr *header)
 {
-	printk_info("e_ident: ");
+	pr_info("e_ident: ");
 	for (int i = 0; i < EI_NIDENT; i++) {
 		printk(LOG_LEVEL_MUTE, "%02x ", header->e_ident[i]);
 	}
 	printk(LOG_LEVEL_MUTE, "\n");
-	printk_debug("e_type: 0x%08x\n", header->e_type);
-	printk_debug("e_machine: 0x%08x\n", header->e_machine);
-	printk_debug("e_version: 0x%08x\n", header->e_version);
-	printk_debug("e_entry: 0x%08x\n", header->e_entry);
-	printk_debug("e_phoff: 0x%08x\n", header->e_phoff);
-	printk_debug("e_shoff: 0x%08x\n", header->e_shoff);
-	printk_debug("e_flags: 0x%08x\n", header->e_flags);
-	printk_debug("e_ehsize: 0x%08x\n", header->e_ehsize);
-	printk_debug("e_phentsize: 0x%08x\n", header->e_phentsize);
-	printk_debug("e_phnum: 0x%08x\n", header->e_phnum);
-	printk_debug("e_shentsize: 0x%08x\n", header->e_shentsize);
-	printk_debug("e_shnum: 0x%08x\n", header->e_shnum);
-	printk_debug("e_shstrndx: 0x%08x\n", header->e_shstrndx);
+	pr_debug("e_type: 0x%08x\n", header->e_type);
+	pr_debug("e_machine: 0x%08x\n", header->e_machine);
+	pr_debug("e_version: 0x%08x\n", header->e_version);
+	pr_debug("e_entry: 0x%08x\n", header->e_entry);
+	pr_debug("e_phoff: 0x%08x\n", header->e_phoff);
+	pr_debug("e_shoff: 0x%08x\n", header->e_shoff);
+	pr_debug("e_flags: 0x%08x\n", header->e_flags);
+	pr_debug("e_ehsize: 0x%08x\n", header->e_ehsize);
+	pr_debug("e_phentsize: 0x%08x\n", header->e_phentsize);
+	pr_debug("e_phnum: 0x%08x\n", header->e_phnum);
+	pr_debug("e_shentsize: 0x%08x\n", header->e_shentsize);
+	pr_debug("e_shnum: 0x%08x\n", header->e_shnum);
+	pr_debug("e_shstrndx: 0x%08x\n", header->e_shstrndx);
 }
 
 phys_addr_t elf64_get_entry_addr(phys_addr_t base)

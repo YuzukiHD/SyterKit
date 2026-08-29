@@ -53,7 +53,7 @@ void sunxi_smc_en_with_glitch_workaround(void)
  */
 int set_ddr_voltage_ext(char *name, int set_vol, int on)
 {
-	printk_debug("PMU: %s set vol %d, onoff %d\n", name, set_vol, on);
+	pr_debug("PMU: %s set vol %d, onoff %d\n", name, set_vol, on);
 	pmu_axp8191_set_vol(dram_pmu_axp8191, name, set_vol, on);
 	return 0;
 }

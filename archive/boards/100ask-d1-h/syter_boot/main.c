@@ -102,7 +102,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -119,7 +119,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -128,7 +128,7 @@ static int fatfs_loadimage(char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -145,35 +145,35 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&boot_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
 	/* load DTB */
-	printk_info("FATFS: read %s addr=%p\n", image->of_filename, image->of_dest);
+	pr_info("FATFS: read %s addr=%p\n", image->of_filename, image->of_dest);
 	ret = fatfs_loadimage(image->of_filename, image->of_dest);
 	if (ret)
 		return ret;
 
 	/* load Kernel */
-	printk_info("FATFS: read %s addr=%p\n", image->filename, image->dest);
+	pr_info("FATFS: read %s addr=%p\n", image->filename, image->dest);
 	ret = fatfs_loadimage(image->filename, image->dest);
 	if (ret)
 		return ret;
 
 	/* load config */
-	printk_info("FATFS: read %s addr=%p\n", image->config_filename, image->config_dest);
+	pr_info("FATFS: read %s addr=%p\n", image->config_filename, image->config_dest);
 	ret = fatfs_loadimage(image->config_filename, (BYTE *)image->config_dest);
 	if (ret) {
-		printk_info("CONFIG: Cannot find config file, Using default config.\n");
+		pr_info("CONFIG: Cannot find config file, Using default config.\n");
 		image->is_config = 0;
 	} else {
 		image->is_config = 1;
@@ -182,12 +182,12 @@ static int load_sdcard(image_info_t *image)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_info("FATFS: done in %ums\n", time_ms() - start);
+	pr_info("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -252,7 +252,7 @@ static int parse_ini_data(const char *data, size_t size, IniEntry *entries, int 
 
 				if (strlen(current_section) > 0 && strlen(key_start) > 0 && strlen(value_start) > 0) {
 					if (entry_count >= max_entries) {
-						printk_error("INI: Too many entries!\n");
+						pr_err("INI: Too many entries!\n");
 						break;
 					}
 					strncpy(entries[entry_count].section, current_section, MAX_SECTION_LEN - 1);
@@ -289,7 +289,7 @@ static int update_bootargs_from_config(uint32_t dram_size)
 		int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
 		for (int i = 0; i < entry_count; ++i) {
 			/* Print parsed INI entries */
-			printk_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
+			pr_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
 		}
 		bootargs_str_config = find_entry_value(entries, entry_count, "configs", "bootargs");
 		mac_addr = find_entry_value(entries, entry_count, "configs", "mac_addr");
@@ -300,13 +300,13 @@ static int update_bootargs_from_config(uint32_t dram_size)
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
-		printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
+		pr_err("Invalid device tree blob: %s\n", fdt_strerror(ret));
 		return -1;
 	}
 
 	/* Get the total size of DTB */
 	uint32_t size = fdt_totalsize(image.of_dest);
-	printk_debug("%s: FDT Size = %d\n", image.of_filename, size);
+	pr_debug("%s: FDT Size = %d\n", image.of_filename, size);
 
 	int len = 0;
 	/* Get the offset of "/chosen" node */
@@ -317,7 +317,7 @@ static int update_bootargs_from_config(uint32_t dram_size)
 
 	/* If config file read fail or not using */
 	if (bootargs_str_config == NULL) {
-		printk_warning("INI: Cannot parse bootargs, using default bootargs in DTB.\n");
+		pr_warn("INI: Cannot parse bootargs, using default bootargs in DTB.\n");
 		bootargs_str_config = bootargs_str;
 	}
 
@@ -334,34 +334,34 @@ static int update_bootargs_from_config(uint32_t dram_size)
 	strcat(bootargs_str_config, "M");
 
 	/* Set bootargs based on the configuration file */
-	printk_debug("INI: Set bootargs to %s\n", bootargs_str_config);
+	pr_debug("INI: Set bootargs to %s\n", bootargs_str_config);
 
 _add_dts_size:
 	/* Modify bootargs string */
 	ret = fdt_setprop(image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
 	if (ret == -FDT_ERR_NOSPACE) {
-		printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+		pr_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
 		ret = fdt_increase_size(image.of_dest, 512);
 		if (!ret)
 			goto _add_dts_size;
 		else
 			goto _err_size;
 	} else if (ret < 0) {
-		printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change bootargs node: %s\n", fdt_strerror(ret));
 		return -1;
 	}
 
 	/* Get the total size of DTB */
-	printk_debug("Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
+	pr_debug("Modify FDT Size = %d\n", fdt_totalsize(image.of_dest));
 
 	if (ret < 0) {
-		printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+		pr_err("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
 		return -1;
 	}
 
 	return 0;
 _err_size:
-	printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+	pr_err("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
 	return -1;
 }
 
@@ -370,7 +370,7 @@ static int abortboot_single_key(int bootdelay)
 	int abort = 0;
 	unsigned long ts;
 
-	printk_info("Hit any key to stop autoboot: %2d ", bootdelay);
+	pr_info("Hit any key to stop autoboot: %2d ", bootdelay);
 
 	/* Check if key already pressed */
 	if (tstc()) { /* we got a key press */
@@ -419,7 +419,7 @@ int cmd_bootargs(int argc, const char **argv)
 
 		/* Check if DTB header is valid */
 		if ((err = fdt_check_header(dtb_header)) != 0) {
-			printk_error("Invalid device tree blob: %s\n", fdt_strerror(err));
+			pr_err("Invalid device tree blob: %s\n", fdt_strerror(err));
 			return 0;
 		}
 
@@ -439,14 +439,14 @@ _add_dts_size:
 		/* Modify bootargs string */
 		err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 		if (err == -FDT_ERR_NOSPACE) {
-			printk_debug("FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
+			pr_debug("FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
 			err = fdt_increase_size(image.of_dest, 512);
 			if (!err)
 				goto _add_dts_size;
 			else
 				goto _err_size;
 		} else if (err < 0) {
-			printk_error("Can't change bootargs node: %s\n", fdt_strerror(err));
+			pr_err("Can't change bootargs node: %s\n", fdt_strerror(err));
 			abort();
 		}
 
@@ -461,7 +461,7 @@ _add_dts_size:
 
 		/* Check if DTB header is valid */
 		if ((err = fdt_check_header(dtb_header)) != 0) {
-			printk_error("Invalid device tree blob: %s\n", fdt_strerror(err));
+			pr_err("Invalid device tree blob: %s\n", fdt_strerror(err));
 			return 0;
 		}
 
@@ -478,7 +478,7 @@ _add_dts_size:
 	return 0;
 
 _err_size:
-	printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(err));
+	pr_err("DTB: Can't increase blob size: %s\n", fdt_strerror(err));
 	abort();
 	return -1;
 }
@@ -488,13 +488,13 @@ msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: 
 int cmd_reload(int argc, const char **argv)
 {
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-		printk_error("SMHC: init failed\n");
+		pr_err("SMHC: init failed\n");
 		return 0;
 	}
 	disk_set_device(0, &boot_card);
 
 	if (load_sdcard(&image) != 0) {
-		printk_error("SMHC: loading failed\n");
+		pr_err("SMHC: loading failed\n");
 		return 0;
 	}
 	return 0;
@@ -512,7 +512,7 @@ int cmd_print(int argc, const char **argv)
 			printk(LOG_LEVEL_MUTE, "ENV: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
 		}
 	} else {
-		printk_warning("ENV: Can not find env file\n");
+		pr_warn("ENV: Can not find env file\n");
 	}
 	return 0;
 }
@@ -527,17 +527,17 @@ int cmd_boot(int argc, const char **argv)
 
 	/* Set up boot parameters for the kernel. */
 	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
-		printk_error("boot setup failed\n");
+		pr_err("boot setup failed\n");
 		abort();
 	}
 
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	clean_syterkit_data();
 
-	printk_info("enable kernel smp ok...\n");
+	pr_info("enable kernel smp ok...\n");
 
 	/* Debug message to indicate the kernel address that the system is jumping to. */
-	printk_info("jump to kernel address: 0x%x\n\n", image.dest);
+	pr_info("jump to kernel address: 0x%x\n\n", image.dest);
 
 	/* Jump to the kernel entry point. */
 	kernel_entry = (void (*)(int, int, uint32_t))(uintptr_t)entry_point;
@@ -562,7 +562,7 @@ int main(void)
 	/* Display the bootloader banner. */
 	show_banner();
 	if (sunxi_sdhci_dt_read_alias(&boot_mmc, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		goto _shell;
 	}
 
@@ -572,13 +572,13 @@ int main(void)
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 
 	/* Debug message to indicate that MMU is enabled. */
-	printk_debug("enable mmu ok\n");
+	pr_debug("enable mmu ok\n");
 
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
@@ -602,22 +602,22 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&boot_mmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", boot_mmc.name);
+		pr_err("SMHC: %s controller init failed\n", boot_mmc.name);
 		goto _shell;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", boot_mmc.name);
+		pr_info("SMHC: %s controller initialized\n", boot_mmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&boot_card, &boot_mmc) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 		goto _shell;
 	}
 	disk_set_device(0, &boot_card);
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image) != 0) {
-		printk_warning("SMHC: loading failed\n");
+		pr_warn("SMHC: loading failed\n");
 		goto _shell;
 	}
 
@@ -633,7 +633,7 @@ int main(void)
 		int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
 		for (int i = 0; i < entry_count; ++i) {
 			/* Print parsed INI entries */
-			printk_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
+			pr_debug("INI: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
 		}
 		char *bootdelay_str = find_entry_value(entries, entry_count, "configs", "bootdelay");
 		if (bootdelay_str != NULL) {

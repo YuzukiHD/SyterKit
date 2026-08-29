@@ -74,11 +74,11 @@ int bImage_loader(uint8_t *addr, uint32_t *entry)
 	linux_bimage_header_t *image_header = (linux_bimage_header_t *)addr;
 
 	if (!memcmp(image_header->magic, ANDR_BOOT_MAGIC, 8)) {
-		printk_debug("[IMG] kernel magic is ok\n");
-		printk_debug("[IMG] kernel_size = 0x%x\n", image_header->kernel_size);
-		printk_debug("[IMG] ramdisk_size = 0x%x\n", image_header->ramdisk_size);
+		pr_debug("[IMG] kernel magic is ok\n");
+		pr_debug("[IMG] kernel_size = 0x%x\n", image_header->kernel_size);
+		pr_debug("[IMG] ramdisk_size = 0x%x\n", image_header->ramdisk_size);
 	} else {
-		printk_error("[IMG] kernel 0x%08x magic is error\n", addr);
+		pr_err("[IMG] kernel 0x%08x magic is error\n", addr);
 		return -1;
 	}
 

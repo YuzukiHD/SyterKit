@@ -51,14 +51,14 @@ int main(void)
 
 	/* Initialize the DRAM and enable memory management unit (MMU). */
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(dram.memory_base, dram_size);
 
 	/* Debug message to indicate that MMU is enabled. */
-	printk_debug("enable mmu ok\n");
+	pr_debug("enable mmu ok\n");
 
 	/* Dump information about the system clocks. */
 	sunxi_clk_dump();

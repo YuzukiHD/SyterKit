@@ -52,7 +52,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_error("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -69,7 +69,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -78,7 +78,7 @@ static int fatfs_loadimage(const char *filename, BYTE *dest)
 read_fail:
 	fret = f_close(&file);
 
-	printk_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_debug("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -96,22 +96,22 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
 	for (index = 0U; index < remoteproc->firmware_count; ++index) {
 		const sunxi_remoteproc_firmware_t *firmware = &remoteproc->firmware[index];
 
-		printk_info("FATFS: read %s addr=%x\n", firmware->name, (unsigned int)firmware->load_address);
+		pr_info("FATFS: read %s addr=%x\n", firmware->name, (unsigned int)firmware->load_address);
 		ret = fatfs_loadimage(firmware->name, (BYTE *)firmware->load_address);
 		if (ret)
 			return ret;
@@ -120,12 +120,12 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -135,7 +135,7 @@ msh_define_help(boot, "boot to linux", "Usage: boot\n");
 int cmd_boot(int argc, const char **argv)
 {
 	if (sunxi_remoteproc_start(&hifi4) != DRIVER_OK) {
-		printk_error("HIFI4: start failed\n");
+		pr_err("HIFI4: start failed\n");
 		return -1;
 	}
 
@@ -154,7 +154,7 @@ int main(void)
 	sunxi_sdhci_t sdhci0;
 
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&hifi4, "hifi4", NULL) != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -163,7 +163,7 @@ int main(void)
 	sunxi_clk_init(); // Initialize clock configurations
 
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	sunxi_dram_init(&dram);
@@ -172,32 +172,32 @@ int main(void)
 
 	// Initialize SDHCI controller
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 		return 0;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	// Initialize SD/MMC card
 	if (sdmmc_init(&card, &sdhci0) != 0) {
-		printk_error("SMHC: init failed\n");
+		pr_err("SMHC: init failed\n");
 		return 0;
 	}
 	disk_set_device(0, &card);
 
 	// Load image from SD card
 	if (load_sdcard(&hifi4, &card) != 0) {
-		printk_error("SMHC: loading failed\n");
+		pr_err("SMHC: loading failed\n");
 		return 0;
 	}
 
 	if (sunxi_remoteproc_reset(&hifi4) != DRIVER_OK || sunxi_remoteproc_prepare(&hifi4) != DRIVER_OK || sunxi_remoteproc_load(&hifi4) != DRIVER_OK) {
-		printk_error("HIFI4: prepare or load failed\n");
+		pr_err("HIFI4: prepare or load failed\n");
 		return 0;
 	}
-	printk_info("HIFI4 ELF run addr: 0x%08x\n", (uint32_t)hifi4.entry);
+	pr_info("HIFI4 ELF run addr: 0x%08x\n", (uint32_t)hifi4.entry);
 
-	printk_info("HIFI4 Core now Running... \n");
+	pr_info("HIFI4 Core now Running... \n");
 
 	cmd_boot(0, NULL);
 

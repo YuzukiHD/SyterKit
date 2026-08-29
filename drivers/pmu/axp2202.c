@@ -104,23 +104,23 @@ int pmu_axp2202_init(axp_pmu_t *pmu)
 {
 	uint8_t axp_val;
 	if (!axp_pmu_matches(pmu, AXP_PMU_AXP2202) || !pmu->i2c->status) {
-		printk_warning("PMU: I2C not init\n");
+		pr_warn("PMU: I2C not init\n");
 		return -1;
 	}
 
 	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
 		if (pmu->fallback_address == 0U || sunxi_i2c_read(pmu->i2c, pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
-			printk_warning("PMU: AXP2202 PMU Read error\n");
+			pr_warn("PMU: AXP2202 PMU Read error\n");
 			return -1;
 		}
 		pmu->address = pmu->fallback_address;
 	}
 
 	if (axp_val != 0x02) {
-		printk_warning("PMU: AXP PMU Check error\n");
+		pr_warn("PMU: AXP PMU Check error\n");
 		return -1;
 	} else {
-		printk_info("PMU: Found AXP717 PMU, Addr 0x%02x\n", pmu->address);
+		pr_info("PMU: Found AXP717 PMU, Addr 0x%02x\n", pmu->address);
 	}
 
 	/* limit run current to 2A */
@@ -203,6 +203,6 @@ int pmu_axp2202_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp2202_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		printk_debug("PMU: AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp_ctrl_tbl[i].name));
+		pr_debug("PMU: AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp_ctrl_tbl[i].name));
 	}
 }

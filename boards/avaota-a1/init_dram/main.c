@@ -46,11 +46,11 @@ int main(void)
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -85,19 +85,19 @@ int main(void)
 	sun55iw3_clk_set_cpu_pll(1800);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 	arm32_mmu_enable(dram.memory_base, dram_size);
-	printk_info("DRAM: DRAM Size = %dMB", dram_size);
+	pr_info("DRAM: DRAM Size = %dMB", dram_size);
 
 	/* PLL DDR0 */
 	uint32_t reg32 = read32(SUNXI_CCMU_BASE + CCU_PLL_DDR0_CTRL_REG);

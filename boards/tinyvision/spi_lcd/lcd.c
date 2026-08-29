@@ -232,7 +232,7 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
  */
 void LCD_ShowString(uint16_t x, uint16_t y, const char *str, uint16_t fc, uint16_t bc, uint8_t sizey, uint8_t mode)
 {
-	printk_info("LCD: Show String: \"%s\"\n", str);
+	pr_info("LCD: Show String: \"%s\"\n", str);
 	while (*str != '\0') {
 		LCD_ShowChar(x, y, (uint8_t)*str, fc, bc, sizey, mode);
 		x += sizey / 2;
@@ -268,7 +268,7 @@ u32 mypow(uint8_t m, uint8_t n)
  */
 void LCD_ShowIntNum(uint16_t x, uint16_t y, uint16_t num, uint8_t len, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
-	printk_info("LCD: Show Number: \"%d\"\n", num);
+	pr_info("LCD: Show Number: \"%d\"\n", num);
 	uint8_t t, temp;
 	uint8_t enshow = 0;
 	uint8_t sizex = sizey / 2;

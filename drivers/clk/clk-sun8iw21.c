@@ -80,7 +80,7 @@ void sunxi_clk_init(void)
 
 	/* Periph0 has been enabled */
 	if (read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG) & (1 << 31))
-		printk_debug("periph0 has been enabled\n");
+		pr_debug("periph0 has been enabled\n");
 
 	/* AHB_Clock = CLK_SRC/M/N, PERIPH_600M / N(1) / M(3) = 200MHz */
 	write32(CCU_BASE + CCU_AHB_CLK_REG, (0x3 << 24) | 0x2);
@@ -108,8 +108,8 @@ void sunxi_clk_init(void)
 	write32(CCU_BASE + CCU_MBUS_CLK_REG, val);
 	sdelay(1);
 
-	printk_debug("sunxi clock init end\n");
-	printk_debug("cpu clk reg (#0x%x): 0x%08x\n", CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
+	pr_debug("sunxi clock init end\n");
+	pr_debug("cpu clk reg (#0x%x): 0x%08x\n", CCU_CPU_CLK_REG, read32(CCU_BASE + CCU_CPU_CLK_REG));
 
 	return;
 }
@@ -154,7 +154,7 @@ void sunxi_clk_dump(void)
 	/* PLL CPU */
 	reg32 = read32(CCU_BASE + CCU_CPU_CLK_REG);
 	cpu_clk_src = (reg32 >> 24) & 0x7;
-	printk_debug("CLK: CPU CLK_reg=0x%08x\n", reg32);
+	pr_debug("CLK: CPU CLK_reg=0x%08x\n", reg32);
 
 	switch (cpu_clk_src) {
 	case 0x0:
@@ -196,7 +196,7 @@ void sunxi_clk_dump(void)
 		p1 = 1;
 	}
 
-	printk_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
+	pr_debug("CLK: CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERI */
 	reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
@@ -206,9 +206,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk_debug("CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("CLK: PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		printk_debug("CLK: PLL_peri disabled\n");
+		pr_debug("CLK: PLL_peri disabled\n");
 	}
 
 	/* PLL DDR */
@@ -220,8 +220,8 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk_debug("CLK: PLL_ddr=%uMHz\n", (24 * plln) / (p0 * p1));
+		pr_debug("CLK: PLL_ddr=%uMHz\n", (24 * plln) / (p0 * p1));
 	} else {
-		printk_debug("CLK: PLL_ddr disabled\n");
+		pr_debug("CLK: PLL_ddr disabled\n");
 	}
 }

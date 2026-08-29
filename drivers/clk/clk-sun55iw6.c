@@ -151,7 +151,7 @@ static void set_pll_nsi(void)
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("nsi clk gating update failed!\n"); ///< Debug message on failure
+			pr_debug("nsi clk gating update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -175,7 +175,7 @@ static void set_pll_nsi(void)
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("nsi clk update failed!\n"); ///< Debug message on failure
+			pr_debug("nsi clk update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -212,7 +212,7 @@ static void set_pll_mbus(void)
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("mbus clk gating update failed!\n"); ///< Debug message on failure
+			pr_debug("mbus clk gating update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -237,7 +237,7 @@ static void set_pll_mbus(void)
 		udelay(1);
 
 		if (reg_val && (++time_cnt >= 100000)) {
-			printk_debug("mbus clk update failed!\n"); ///< Debug message on failure
+			pr_debug("mbus clk update failed!\n"); ///< Debug message on failure
 			break;
 		}
 	} while (reg_val);
@@ -264,7 +264,7 @@ static void set_pll_mbus(void)
  */
 void sunxi_clk_init(void)
 {
-	printk_debug("Set pll start\n");
+	pr_debug("Set pll start\n");
 
 	// Set the CPU and AXI clock via the set_pll_cpux_axi function
 	set_pll_cpux_axi();
@@ -278,7 +278,7 @@ void sunxi_clk_init(void)
 	// Set the MBUS clock (Memory Bus) using the set_pll_mbus function
 	set_pll_mbus();
 
-	printk_debug("Set pll end\n");
+	pr_debug("Set pll end\n");
 }
 
 void sunxi_clk_dump(void)
@@ -296,9 +296,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk_debug("CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("CLK: PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		printk_debug("CLK: PLL_PERI0 disabled\r\n");
+		pr_debug("CLK: PLL_PERI0 disabled\r\n");
 	}
 
 	/* PLL PERIx */
@@ -309,9 +309,9 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		printk_debug("CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("CLK: PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
-		printk_debug("CLK: PLL_PERI1 disabled\r\n");
+		pr_debug("CLK: PLL_PERI1 disabled\r\n");
 	}
 
 	/* PLL DDR */
@@ -323,9 +323,9 @@ void sunxi_clk_dump(void)
 		p1 = ((reg32 >> 1) & 0x1) + 1;
 		p0 = (reg32 & 0x01) + 1;
 
-		printk_debug("CLK: PLL_DDR1=%luMHz\r\n", (24 * plln) / (p0 * p1));
+		pr_debug("CLK: PLL_DDR1=%luMHz\r\n", (24 * plln) / (p0 * p1));
 
 	} else {
-		printk_debug("CLK: PLL_DDR1 disabled\r\n");
+		pr_debug("CLK: PLL_DDR1 disabled\r\n");
 	}
 }

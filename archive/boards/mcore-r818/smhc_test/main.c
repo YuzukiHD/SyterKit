@@ -52,11 +52,11 @@ int main(void)
 
 	show_banner();
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_sdhci_dt_read_alias(&sdhci2, "mmc2") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -75,26 +75,26 @@ int main(void)
 
 	dram.pmu = &pmu;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
-	printk_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
+	pr_info("DRAM: DRAM Size = %dMB\n", sunxi_dram_init(&dram));
 
 	sunxi_clk_dump();
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci2) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci2.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci2.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci2.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci2.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&mmc_card, &sdhci2) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 	}
 
-	printk_debug("Card OK!\n");
+	pr_debug("Card OK!\n");
 
 	abort();
 

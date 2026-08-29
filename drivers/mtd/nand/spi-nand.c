@@ -183,7 +183,7 @@ static int spi_nand_info(spi_nand_t *nand)
 	if (r < 0)
 		return r;
 
-	printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
+	pr_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
 	/* Check if the first byte of the received data is 0xff */
 	if (rx[0] == 0xff) {
@@ -222,7 +222,7 @@ static int spi_nand_info(spi_nand_t *nand)
 	if (r < 0)
 		return r;
 
-	printk_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
+	pr_debug("rx: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", rx[0], rx[1], rx[2], rx[3], rx[4]);
 
 	/* Check if the first byte of the received data is 0xff */
 	if (rx[0] == 0xff) {
@@ -255,7 +255,7 @@ static int spi_nand_info(spi_nand_t *nand)
 		}
 	}
 
-	printk_error("SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
+	pr_err("SPI-NAND: unknown mfr:0x%02x dev:0x%04x\n", id.mfr, id.dev);
 
 	return -1; /* Return failure */
 }
@@ -348,7 +348,7 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi)
 			break;
 		timeout--;
 		if (!timeout) {
-			printk_warning("SPI NAND: wait busy timeout\n");
+			pr_warn("SPI NAND: wait busy timeout\n");
 			return false;
 		}
 	} while ((rx[0] & 0x1) == 0x1); /* Check SR3 Busy bit */
@@ -405,19 +405,19 @@ int spi_nand_detect(spi_nand_t *nand)
 		if (info->id.mfr == (uint8_t)SPI_NAND_MFR_GIGADEVICE || info->id.mfr == (uint8_t)SPI_NAND_MFR_FORESEE ||
 			info->id.mfr == (uint8_t)SPI_NAND_MFR_XTX) {
 			if ((spi_nand_get_config(spi, CONFIG_ADDR_OTP, &val) == 0) && !(val & 0x01)) {
-				printk_debug("SPI-NAND: enable Quad mode\n");
+				pr_debug("SPI-NAND: enable Quad mode\n");
 				val |= (1 << 0);
 				spi_nand_set_config(spi, CONFIG_ADDR_OTP, val);
 				spi_nand_wait_while_busy(spi);
 			}
 		}
 
-		printk_info("SPI-NAND: %s detected\n", info->name);
+		pr_info("SPI-NAND: %s detected\n", info->name);
 
 		return 0; /* Return success */
 	}
 
-	printk_error("SPI-NAND: flash not found\n");
+	pr_err("SPI-NAND: flash not found\n");
 	return -1; /* Return failure */
 }
 
@@ -490,12 +490,12 @@ uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf, uint32_t addr, uint32_t r
 		txlen = 5; /* Quad IO has 2 dummy bytes */
 		break;
 	default:
-		printk_error("spi_nand: invalid mode\n");
+		pr_err("spi_nand: invalid mode\n");
 		return -1;
 	};
 
 	if (addr % info->page_size) {
-		printk_error("spi_nand: address is not page-aligned\n");
+		pr_err("spi_nand: address is not page-aligned\n");
 		return -1;
 	}
 

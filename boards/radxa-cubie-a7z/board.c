@@ -83,7 +83,7 @@ void board_common_init(void)
 
 	if (version == SUNXI_SOC_VER_B) {
 		if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK) {
-			printk_error("GPIO: invalid PIO devicetree configuration\n");
+			pr_err("GPIO: invalid PIO devicetree configuration\n");
 			return;
 		}
 		writel(0x01155550, pio.base + GPIO_POW_MODE_REG);
@@ -99,13 +99,13 @@ void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
 	arm32_mmu_disable();
-	printk_info("disable mmu ok...\n");
+	pr_info("disable mmu ok...\n");
 	arm32_dcache_disable();
-	printk_info("disable dcache ok...\n");
+	pr_info("disable dcache ok...\n");
 	arm32_icache_disable();
-	printk_info("disable icache ok...\n");
+	pr_info("disable icache ok...\n");
 	arm32_interrupt_disable();
-	printk_info("free interrupt ok...\n");
+	pr_info("free interrupt ok...\n");
 }
 
 /**
@@ -121,7 +121,7 @@ void show_chip()
 	uint32_t chip_sid[4];
 
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return;
 	}
 	chip_sid[0] = sunxi_efuse_sram_read(&sid, 0x0U);
@@ -129,21 +129,21 @@ void show_chip()
 	chip_sid[2] = sunxi_efuse_sram_read(&sid, 0x8U);
 	chip_sid[3] = sunxi_efuse_sram_read(&sid, 0xcU);
 
-	printk_info("Model: Radxa Cubie A7A board.\n");
-	printk_info("Core: Arm Dual-Core Cortex-A76 + Arm Hexa-Core Cortex-A55\n");
-	printk_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+	pr_info("Model: Radxa Cubie A7A board.\n");
+	pr_info("Core: Arm Dual-Core Cortex-A76 + Arm Hexa-Core Cortex-A55\n");
+	pr_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 
 	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
 
 	switch (chip_markid_sid) {
 	case 0x5100:
-		printk_info("Chip type = A733MX-HN3");
+		pr_info("Chip type = A733MX-HN3");
 		break;
 	case 0x5f00:
-		printk_info("Chip type = A733MX-N3X");
+		pr_info("Chip type = A733MX-N3X");
 		break;
 	default:
-		printk_info("Chip type = UNKNOW");
+		pr_info("Chip type = UNKNOW");
 		break;
 	}
 

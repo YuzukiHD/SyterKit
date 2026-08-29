@@ -75,14 +75,14 @@ static void LCD_Write_Bus(uint8_t dat)
 	tx[0] = dat;
 	int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, tx, 1, 0, 0); /* Perform SPI transfer */
 	if (r < 0)
-		printk_error("SPI: SPI Xfer error!\n");
+		pr_err("SPI: SPI Xfer error!\n");
 }
 
 void LCD_Write_Data_Bus(void *dat, uint32_t len)
 {
 	int r = sunxi_spi_transfer(&sunxi_spi0_lcd, SPI_IO_SINGLE, dat, len, 0, 0); /* Perform SPI transfer */
 	if (r < 0)
-		printk_error("SPI: SPI Xfer error!\n");
+		pr_err("SPI: SPI Xfer error!\n");
 }
 
 void LCD_WR_DATA(uint16_t dat)
@@ -229,7 +229,7 @@ int main(void)
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
 	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
@@ -238,7 +238,7 @@ int main(void)
 	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node, "allwinner,lcd-dc-gpio") ||
 	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node, "allwinner,lcd-reset-gpio") ||
 	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node, "allwinner,lcd-backlight-gpio")) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -268,7 +268,7 @@ int main(void)
 	pmu_axp1530_dump(&axp1530);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
@@ -276,7 +276,7 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
@@ -297,13 +297,13 @@ int main(void)
 	sunxi_gpio_init(&lcd_blk_pins);
 
 	if (sunxi_spi_init(&sunxi_spi0_lcd) != 0) {
-		printk_error("SPI: init failed\n");
+		pr_err("SPI: init failed\n");
 		return -1;
 	}
 
 	LCD_Init();
 
-	printk_error("SPI LCD done\n");
+	pr_err("SPI LCD done\n");
 
 	LCD_Fill_All(0xFFFF);
 
@@ -312,7 +312,7 @@ int main(void)
 	mdelay(100);
 
 	while (1) {
-		printk_error("SPI LCD done\n");
+		pr_err("SPI LCD done\n");
 		mdelay(10000);
 	}
 

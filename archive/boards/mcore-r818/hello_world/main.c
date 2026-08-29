@@ -22,7 +22,7 @@ int main(void)
 
 	sunxi_clk_dump();
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	abort();
 

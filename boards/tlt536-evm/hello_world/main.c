@@ -39,7 +39,7 @@ msh_define_help(reload, "rescan TF Card and reload DTB, Kernel zImage", "Usage: 
 int cmd_reload(int argc, const char **argv)
 {
 	if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
-		printk_error("SMHC: init failed\n");
+		pr_err("SMHC: init failed\n");
 		return 0;
 	}
 	return 0;
@@ -52,16 +52,16 @@ int cmd_read(int argc, const char **argv)
 	uint32_t start;
 	uint32_t test_time;
 
-	printk_debug("Clear Buffer data\n");
+	pr_debug("Clear Buffer data\n");
 	memset((void *)dram.memory_base, 0x00, 0x2000);
 	dump_hex(dram.memory_base, 0x100);
 
-	printk_debug("Read data to buffer data\n");
+	pr_debug("Read data to buffer data\n");
 
 	start = time_ms();
 	sdmmc_blk_read(&mmc_card, (uint8_t *)dram.memory_base, 0, 1024);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
@@ -73,14 +73,14 @@ int cmd_write(int argc, const char **argv)
 	uint32_t start;
 	uint32_t test_time;
 
-	printk_debug("Set Buffer data\n");
+	pr_debug("Set Buffer data\n");
 	memset((void *)dram.memory_base, 0x00, 0x2000);
 	memcpy((void *)dram.memory_base, argv[1], strlen(argv[1]));
 
 	start = time_ms();
 	sdmmc_blk_write(&mmc_card, (uint8_t *)dram.memory_base, 0, 1024);
 	test_time = time_ms() - start;
-	printk_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
@@ -102,17 +102,17 @@ int main(void)
 	show_banner();
 
 	if (syterkit_dt_read_reg_alias("memory0", &dram.memory_base, &dram.memory_size) != 0) {
-		printk_error("DRAM: invalid devicetree memory window\n");
+		pr_err("DRAM: invalid devicetree memory window\n");
 		return -1;
 	}
 
 	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
-		printk_error("SMHC: invalid devicetree configuration\n");
+		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
 
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
-		printk_error("PMU: invalid devicetree configuration\n");
+		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -132,20 +132,20 @@ int main(void)
 
 	sunxi_clk_dump();
 
-	printk_info("Hello World!\n");
+	pr_info("Hello World!\n");
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdhci0) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdhci0.name);
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdhci0.name);
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&mmc_card, &sdhci0) != 0) {
-		printk_warning("SMHC: init failed\n");
+		pr_warn("SMHC: init failed\n");
 	} else {
-		printk_debug("Card OK!\n");
+		pr_debug("Card OK!\n");
 	}
 
 	syterkit_shell_attach(commands);

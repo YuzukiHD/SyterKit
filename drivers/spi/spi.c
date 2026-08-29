@@ -447,7 +447,7 @@ static void sunxi_spi_write_tx_fifo(sunxi_spi_t *spi, uint8_t *buf, uint32_t len
  *       handler must be initialized before calling this function.
  * 
  * @warning If the DMA transfer fails, a warning message will be printed using
- *          `printk_warning`.
+ *          `pr_warn`.
  */
 static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len)
 {
@@ -468,7 +468,7 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len)
 	// Start the DMA transfer
 	ret = sunxi_dma_start(spi->dma_handler, (uintptr_t)&spi_reg->rxdata, (uintptr_t)buf, len);
 	if (ret) {
-		printk_warning("SPI: DMA transfer failed\n");
+		pr_warn("SPI: DMA transfer failed\n");
 	}
 
 	// Wait for the DMA transfer to complete
@@ -502,7 +502,7 @@ static void sunxi_spi_read_by_dma(sunxi_spi_t *spi, uint8_t *buf, uint32_t len)
  *       desired SPI clock frequency.
  * 
  * @note The function prints debug messages regarding the clock divider settings 
- *       and the resulting actual SPI clock frequency using `printk_debug`.
+ *       and the resulting actual SPI clock frequency using `pr_debug`.
  */
 static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t mclk, uint32_t cdr_mode)
 {
@@ -518,7 +518,7 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t m
 		div = mclk / (spi_clk * 2) - 1; ///< Calculate divider for CDR2 mode
 		reg &= ~SPI_CLK_CTL_CDR2;
 		reg |= (div | SPI_CLK_CTL_DRS);
-		printk_debug("SPI: CDR2 - n = %lu\n", div);
+		pr_debug("SPI: CDR2 - n = %lu\n", div);
 		freq = mclk / (2 * (div + 1)); ///< Calculate actual SPI frequency
 	} else if (cdr_mode == SPI_CDR1_MODE) { /* CDR1 mode: divide the source clock by powers of 2 */
 		while (src_clk > spi_clk) {
@@ -527,7 +527,7 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t m
 		}
 		reg &= ~(SPI_CLK_CTL_CDR1 | SPI_CLK_CTL_DRS);
 		reg |= (div << 8); ///< Set CDR1 mode with the calculated divider
-		printk_debug("SPI: CDR1 - n = %lu\n", div);
+		pr_debug("SPI: CDR1 - n = %lu\n", div);
 		freq = src_clk; ///< Calculate actual SPI frequency
 	} else { ///< cdr_mode none
 		freq = src_clk;
@@ -539,8 +539,8 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t m
 
 clk_out:
 	// Print debug information about clock divider and actual SPI frequency
-	printk_debug("SPI: clock div=%u \n", div);
-	printk_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000,
+	pr_debug("SPI: clock div=%u \n", div);
+	pr_debug("SPI: set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000,
 		mclk / 1000000);
 
 	return freq;
@@ -561,7 +561,7 @@ clk_out:
  * 
  * @note The DMA handler must be available and correctly initialized before calling this function.
  * 
- * @warning If the DMA channel cannot be requested, an error message is printed using `printk_error`.
+ * @warning If the DMA channel cannot be requested, an error message is printed using `pr_err`.
  */
 static int sunxi_spi_dma_init(sunxi_spi_t *spi)
 {
@@ -572,7 +572,7 @@ static int sunxi_spi_dma_init(sunxi_spi_t *spi)
 	spi->dma_handler = sunxi_dma_request(spi->dma_handle, DMAC_DMATYPE_NORMAL);
 
 	if (spi->dma_handler == 0) {
-		printk_error("SPI: DMA channel request failed\n");
+		pr_err("SPI: DMA channel request failed\n");
 		return -1;
 	}
 
@@ -669,7 +669,7 @@ static int sunxi_spi_get_clk(sunxi_spi_t *spi)
 	sclk_freq = spi->parent_clk_reg.parent_clk / (1U << n) / m;
 
 	// Print trace message with SPI clock frequency and register values for debugging.
-	printk_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
+	pr_debug("SPI: sclk_freq= %d Hz, reg_val: 0x%08x , n=%d, m=%d\n", sclk_freq, reg_val, n, m);
 
 	return sclk_freq; // Return the calculated SPI clock frequency in Hz.
 }
@@ -713,7 +713,7 @@ void __attribute__((weak)) sunxi_spi_clk_init(sunxi_spi_t *spi)
 		m = div;
 	}
 
-	printk_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n", spi->id, source_clk,
+	pr_debug("SPI: SPI%d clk parent %uHz, mclk=0x%08x, n=%u, m=%u\n", spi->id, source_clk,
 		readl(spi->spi_clk.spi_clock_cfg_base), n, m);
 
 	/* set m factor, factor_m = m -1 */
@@ -1011,7 +1011,7 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 	sunxi_spi_reg_t *spi_reg = (sunxi_spi_reg_t *)spi->base;
 	uint32_t stxlen;
 
-	printk_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
+	pr_trace("SPI: tsfr mode=%u tx=%u rx=%u\n", mode, txlen, rxlen);
 
 	sunxi_spi_disable_irq(spi, SPI_INT_STA_PENDING_BIT); /**< Disable interrupt for pending status */
 	sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
@@ -1049,7 +1049,7 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 	}
 
 	if (sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_ERR) {
-		printk_warning("SPI: int sta err\n"); /**< Check for error interrupt */
+		pr_warn("SPI: int sta err\n"); /**< Check for error interrupt */
 	}
 
 	while (!(sunxi_spi_query_irq_pending(spi) & SPI_INT_STA_TC))
@@ -1059,15 +1059,15 @@ int sunxi_spi_transfer(sunxi_spi_t *spi, spi_io_mode_t mode, void *txbuf, uint32
 
 	if (spi_reg->burst_cnt == 0) {
 		if (spi_reg->tc & SPI_TC_XCH) {
-			printk_warning("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */
+			pr_warn("SPI: XCH Control failed\n"); /**< Warn if exchange control fails */
 		}
 	} else {
-		printk_warning("SPI: MBC error\n"); /**< Warn if there is an MBC error (memory-to-bus control) */
+		pr_warn("SPI: MBC error\n"); /**< Warn if there is an MBC error (memory-to-bus control) */
 	}
 
 	sunxi_spi_clr_irq_pending(spi, SPI_INT_STA_PENDING_BIT); /**< Clear any pending interrupt */
 
-	printk_trace("SPI: ISR=0x%x\n", spi_reg->int_sta); /**< Log the current interrupt status register */
+	pr_trace("SPI: ISR=0x%x\n", spi_reg->int_sta); /**< Log the current interrupt status register */
 
 	return rxlen + txlen; /**< Return the total number of transferred bytes (TX + RX) */
 }

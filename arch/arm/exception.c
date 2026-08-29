@@ -58,11 +58,11 @@ static void show_regs(struct arm_regs_t *regs)
 {
 	int i = 0;
 
-	printk_error("pc : [<0x%08lx>] lr : [<0x%08lx>] cpsr: 0x%08lx\n", regs->pc, regs->lr, regs->cpsr);
-	printk_error("sp : 0x%08lx esp : 0x%08lx\n", regs->sp, regs->esp);
+	pr_err("pc : [<0x%08lx>] lr : [<0x%08lx>] cpsr: 0x%08lx\n", regs->pc, regs->lr, regs->cpsr);
+	pr_err("sp : 0x%08lx esp : 0x%08lx\n", regs->sp, regs->esp);
 	for (i = 12; i >= 0; i--)
-		printk_error("r%-2d: 0x%08lx\n", i, regs->r[i]);
-	printk_error("\n");
+		pr_err("r%-2d: 0x%08lx\n", i, regs->r[i]);
+	pr_err("\n");
 
 #if defined(CONFIG_BACKTRACE)
 	char *pc = (char *)regs->pc;
@@ -82,7 +82,7 @@ static void show_regs(struct arm_regs_t *regs)
  */
 void __attribute__((weak)) arm32_do_undefined_instruction(struct arm_regs_t *regs)
 {
-	printk_error("undefined_instruction\n");
+	pr_err("undefined_instruction\n");
 	show_regs(regs);
 	regs->pc += 4;
 	abort();
@@ -95,7 +95,7 @@ void __attribute__((weak)) arm32_do_undefined_instruction(struct arm_regs_t *reg
  */
 void __attribute__((weak)) arm32_do_software_interrupt(struct arm_regs_t *regs)
 {
-	printk_error("software_interrupt\n");
+	pr_err("software_interrupt\n");
 	show_regs(regs);
 	regs->pc += 4;
 	abort();
@@ -108,7 +108,7 @@ void __attribute__((weak)) arm32_do_software_interrupt(struct arm_regs_t *regs)
  */
 void __attribute__((weak)) arm32_do_prefetch_abort(struct arm_regs_t *regs)
 {
-	printk_error("prefetch_abort\n");
+	pr_err("prefetch_abort\n");
 	show_regs(regs);
 	regs->pc += 4;
 	abort();
@@ -121,7 +121,7 @@ void __attribute__((weak)) arm32_do_prefetch_abort(struct arm_regs_t *regs)
  */
 void __attribute__((weak)) arm32_do_data_abort(struct arm_regs_t *regs)
 {
-	printk_error("data_abort\n");
+	pr_err("data_abort\n");
 	show_regs(regs);
 	regs->pc += 4;
 	abort();
@@ -134,7 +134,7 @@ void __attribute__((weak)) arm32_do_data_abort(struct arm_regs_t *regs)
  */
 void __attribute__((weak)) arm32_do_irq(struct arm_regs_t *regs)
 {
-	printk_error("undefined IRQ\n");
+	pr_err("undefined IRQ\n");
 	show_regs(regs);
 	abort();
 }
@@ -146,7 +146,7 @@ void __attribute__((weak)) arm32_do_irq(struct arm_regs_t *regs)
  */
 void __attribute__((weak)) arm32_do_fiq(struct arm_regs_t *regs)
 {
-	printk_error("undefined FIQ\n");
+	pr_err("undefined FIQ\n");
 	show_regs(regs);
 	abort();
 }

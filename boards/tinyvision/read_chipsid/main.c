@@ -21,7 +21,7 @@ int main(void)
 
 	sunxi_clk_init();
 	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("SID: invalid devicetree configuration\n");
+		pr_err("SID: invalid devicetree configuration\n");
 		return -1;
 	}
 

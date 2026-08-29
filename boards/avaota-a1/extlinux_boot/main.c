@@ -158,7 +158,7 @@ static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size)
 
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
-		printk_warning("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		pr_warn("FATFS: open, filename: [%s]: error %d\n", filename, fret);
 		ret = -1;
 		goto open_fail;
 	}
@@ -175,7 +175,7 @@ static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size)
 	time = time_ms() - start + 1;
 
 	if (fret != FR_OK) {
-		printk_error("FATFS: read: error %d\n", fret);
+		pr_err("FATFS: read: error %d\n", fret);
 		ret = -1;
 		goto read_fail;
 	}
@@ -186,7 +186,7 @@ static int fatfs_loadimage_size(char *filename, void *dest, uint32_t *file_size)
 read_fail:
 	fret = f_close(&file);
 
-	printk_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
 
 open_fail:
 	return ret;
@@ -206,43 +206,43 @@ static int load_sdcard(image_info_t *image)
 
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->bl31_filename, (uint32_t)image->bl31_dest);
 	ret = fatfs_loadimage(image->bl31_filename, image->bl31_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t)image->scp_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->scp_filename, (uint32_t)image->scp_dest);
 	ret = fatfs_loadimage(image->scp_filename, image->scp_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t)image->extlinux_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->extlinux_filename, (uint32_t)image->extlinux_dest);
 	ret = fatfs_loadimage(image->extlinux_filename, image->extlinux_dest);
 	if (ret)
 		return ret;
 
-	printk_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t)image->splash_dest);
+	pr_info("FATFS: read %s addr=%x\n", image->splash_filename, (uint32_t)image->splash_dest);
 	ret = fatfs_loadimage(image->splash_filename, image->splash_dest);
 	if (ret)
-		printk_info("FATFS: Splash load fail, Leave Black Screen.\n");
+		pr_info("FATFS: Splash load fail, Leave Black Screen.\n");
 	else
 		LCD_Show_Splash(image->splash_dest);
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		return -1;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	return 0;
 }
@@ -358,28 +358,28 @@ static int update_pmu_ext_info_dtb(image_info_t *image)
 	/* get used pmu_ext node */
 	nodeoffset = fdt_path_offset(image->of_dest, "reg-axp1530");
 	if (nodeoffset < 0) {
-		printk_error("FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
+		pr_err("FDT: Could not find nodeoffset for used ext pmu:%s\n", "reg-axp1530");
 		return -1;
 	}
 	/* get used pmu_ext phandle */
 	phandle = fdt_get_phandle(image->of_dest, nodeoffset);
 	if (!phandle) {
-		printk_error("FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
+		pr_err("FDT: Could not find phandle for used ext pmu:%s\n", "reg-axp1530");
 		return -1;
 	}
-	printk_debug("get ext power phandle %d\n", phandle);
+	pr_debug("get ext power phandle %d\n", phandle);
 
 	/* get cpu@4 node */
 	nodeoffset = fdt_path_offset(image->of_dest, "cpu-ext");
 	if (nodeoffset < 0) {
-		printk_error("FDT: cannot get cpu@4 node\n");
+		pr_err("FDT: cannot get cpu@4 node\n");
 		return -1;
 	}
 
 	/* Change cpu-supply to ext dcdc*/
 	err = fdt_setprop_u32(image->of_dest, nodeoffset, "cpu-supply", phandle);
 	if (err < 0) {
-		printk_warning("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
+		pr_warn("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
 		return -1;
 	}
 
@@ -436,28 +436,28 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 
 	parse_extlinux_data(image->extlinux_dest, &data);
 
-	printk_debug("os: %s\n", data.os);
-	printk_debug("%s: kernel -> %s\n", data.os, data.kernel);
-	printk_debug("%s: initrd -> %s\n", data.os, data.initrd);
-	printk_debug("%s: fdt -> %s\n", data.os, data.fdt);
-	printk_debug("%s: dtbo -> %s\n", data.os, data.dtbo);
-	printk_debug("%s: append -> %s\n", data.os, data.append);
+	pr_debug("os: %s\n", data.os);
+	pr_debug("%s: kernel -> %s\n", data.os, data.kernel);
+	pr_debug("%s: initrd -> %s\n", data.os, data.initrd);
+	pr_debug("%s: fdt -> %s\n", data.os, data.fdt);
+	pr_debug("%s: dtbo -> %s\n", data.os, data.dtbo);
+	pr_debug("%s: append -> %s\n", data.os, data.append);
 
 	start = time_ms();
 	fret = f_mount(&fs, "", 1);
 	if (fret != FR_OK) {
-		printk_error("FATFS: mount error: %d\n", fret);
+		pr_err("FATFS: mount error: %d\n", fret);
 		goto _error;
 	} else {
-		printk_debug("FATFS: mount OK\n");
+		pr_debug("FATFS: mount OK\n");
 	}
 
-	printk_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t)image->kernel_dest);
+	pr_info("FATFS: read %s addr=%x\n", data.kernel, (uint32_t)image->kernel_dest);
 	ret = fatfs_loadimage(data.kernel, image->kernel_dest);
 	if (ret)
 		goto _error;
 
-	printk_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t)image->of_dest);
+	pr_info("FATFS: read %s addr=%x\n", data.fdt, (uint32_t)image->of_dest);
 	ret = fatfs_loadimage(data.fdt, image->of_dest);
 	if (ret)
 		goto _error;
@@ -465,53 +465,53 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 	/* Check and load ramdisk */
 	uint32_t ramdisk_size = 0;
 	if (data.initrd != NULL) {
-		printk_info("FATFS: read %s addr=%x\n", data.initrd, (uint32_t)image->ramdisk_dest);
+		pr_info("FATFS: read %s addr=%x\n", data.initrd, (uint32_t)image->ramdisk_dest);
 		ret = fatfs_loadimage_size(data.initrd, image->ramdisk_dest, &ramdisk_size);
 		if (ret) {
-			printk_warning("Initrd not find, ramdisk not load.\n");
+			pr_warn("Initrd not find, ramdisk not load.\n");
 			ramdisk_size = 0;
 		} else {
-			printk_info("Initrd load 0x%08x, Size 0x%08x\n", image->ramdisk_dest, ramdisk_size);
+			pr_info("Initrd load 0x%08x, Size 0x%08x\n", image->ramdisk_dest, ramdisk_size);
 		}
 	}
 
 	/* umount fs */
 	fret = f_mount(0, "", 0);
 	if (fret != FR_OK) {
-		printk_error("FATFS: unmount error %d\n", fret);
+		pr_err("FATFS: unmount error %d\n", fret);
 		goto _error;
 	} else {
-		printk_debug("FATFS: unmount OK\n");
+		pr_debug("FATFS: unmount OK\n");
 	}
-	printk_debug("FATFS: done in %ums\n", time_ms() - start);
+	pr_debug("FATFS: done in %ums\n", time_ms() - start);
 
 	/* Force image.of_dest to be a pointer to fdt_header structure */
 	struct fdt_header *dtb_header = (struct fdt_header *)image->of_dest;
 
 	/* Check if DTB header is valid */
 	if ((ret = fdt_check_header(dtb_header)) != 0) {
-		printk_error("Invalid device tree blob: %s\n", fdt_strerror(ret));
+		pr_err("Invalid device tree blob: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	/* Get the total size of DTB */
 	uint32_t size = fdt_totalsize(image->of_dest);
 
-	printk_debug("FDT dtb size = %d\n", size);
+	pr_debug("FDT dtb size = %d\n", size);
 
 	if ((ret = fdt_increase_size(image->of_dest, 512)) != 0) {
-		printk_error("FDT: device tree increase error: %s\n", fdt_strerror(ret));
+		pr_err("FDT: device tree increase error: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	update_pmu_ext_info_dtb(image);
 
-	printk_debug("FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
+	pr_debug("FDT dtb size = %d\n", fdt_totalsize(image->of_dest));
 
 	int memory_node = fdt_find_or_add_subnode(image->of_dest, 0, "memory");
 
 	if ((ret = fdt_setprop_string(image->of_dest, memory_node, "device_type", "memory")) != 0) {
-		printk_error("Can't change memory size node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change memory size node: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
@@ -521,7 +521,7 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 	int len = fdt_pack_reg(image->of_dest, tmp_buf, dram->memory_base, (uint64_t)dram->size * 1024 * 1024);
 
 	if ((ret = fdt_setprop(image->of_dest, memory_node, "reg", tmp_buf, len)) != 0) {
-		printk_error("Can't change memory base node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change memory base node: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
@@ -540,11 +540,11 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 			ramdisk_start += 0x40;
 		}
 
-		printk_debug("initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
+		pr_debug("initrd_start = 0x%08x, initrd_end = 0x%08x\n", ramdisk_start, ramdisk_end);
 
 		int total = fdt_num_mem_rsv(image->of_dest);
 
-		printk_debug("Look for an existing entry %d\n", total);
+		pr_debug("Look for an existing entry %d\n", total);
 
 		/* Look for an existing entry and update it.  If we don't find the entry, we will add a available slot. */
 		for (int j = 0; j < total; j++) {
@@ -557,19 +557,19 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 
 		ret = fdt_add_mem_rsv(image->of_dest, ramdisk_start, ramdisk_end - ramdisk_start);
 		if (ret < 0) {
-			printk_debug("fdt_initrd: %s\n", fdt_strerror(ret));
+			pr_debug("fdt_initrd: %s\n", fdt_strerror(ret));
 			goto _error;
 		}
 
 		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-start", (uint64_t)ramdisk_start);
 		if (ret < 0) {
-			printk_debug("WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
+			pr_debug("WARNING: could not set linux,initrd-start %s.\n", fdt_strerror(ret));
 			goto _error;
 		}
 
 		ret = fdt_setprop_u64(image->of_dest, chosen_node, "linux,initrd-end", (uint64_t)ramdisk_end);
 		if (ret < 0) {
-			printk_debug("WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
+			pr_debug("WARNING: could not set linux,initrd-end %s.\n", fdt_strerror(ret));
 			goto _error;
 		}
 	}
@@ -579,7 +579,7 @@ static int load_extlinux(image_info_t *image, const sunxi_dram_t *dram, const su
 	memset(bootargs, 0, 4096);
 	char *bootargs_str = (void *)fdt_getprop(image->of_dest, chosen_node, "bootargs", &len);
 	if (bootargs_str == NULL) {
-		printk_warning("FDT: bootargs is null, using extlinux.conf append.\n");
+		pr_warn("FDT: bootargs is null, using extlinux.conf append.\n");
 	} else {
 		strcat(bootargs, " ");
 		strcat(bootargs, bootargs_str);
@@ -613,45 +613,45 @@ _add_dts_size:
 	/* Modify bootargs string */
 	ret = fdt_setprop_string(image->of_dest, chosen_node, "bootargs", skip_spaces(bootargs));
 	if (ret == -FDT_ERR_NOSPACE) {
-		printk_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
+		pr_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
 		ret = fdt_increase_size(image->of_dest, 512);
 		if (!ret) {
 			goto _add_dts_size;
 		} else {
-			printk_error("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
+			pr_err("DTB: Can't increase blob size: %s\n", fdt_strerror(ret));
 			goto _error;
 		}
 	} else if (ret < 0) {
-		printk_error("Can't change bootargs node: %s\n", fdt_strerror(ret));
+		pr_err("Can't change bootargs node: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	/* Get the total size of DTB */
-	printk_debug("Modify FDT Size = %d\n", fdt_totalsize(image->of_dest));
+	pr_debug("Modify FDT Size = %d\n", fdt_totalsize(image->of_dest));
 
 	if (ret < 0) {
-		printk_error("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
+		pr_err("libfdt fdt_setprop() error: %s\n", fdt_strerror(ret));
 		goto _error;
 	}
 
 	/* Check and load dtbo */
 	if (data.dtbo != NULL) {
-		printk_info("FATFS: read %s addr=%x\n", data.dtbo, (uint32_t)image->of_overlay_dest);
+		pr_info("FATFS: read %s addr=%x\n", data.dtbo, (uint32_t)image->of_overlay_dest);
 		ret = fatfs_loadimage(data.dtbo, image->of_overlay_dest);
 		if (ret) {
-			printk_warning("dtb overlay not find, overlay not applied.\n");
+			pr_warn("dtb overlay not find, overlay not applied.\n");
 			goto _error;
 		} else {
-			printk_info("dtbo load 0x%08x\n", image->of_overlay_dest);
+			pr_info("dtbo load 0x%08x\n", image->of_overlay_dest);
 		}
 
 		if (!fdt_check_header(image->of_overlay_dest)) {
-			printk_warning("dtb overlay not valid, error = %s, overlay not applyed.\n", fdt_strerror(err));
+			pr_warn("dtb overlay not valid, error = %s, overlay not applyed.\n", fdt_strerror(err));
 			goto _error;
 		} else {
 			ret = fdt_overlay_apply_verbose(image->of_dest, image->of_overlay_dest);
 			if (ret) {
-				printk_warning("dtb overlay not success applied, overlay not applied.\n");
+				pr_warn("dtb overlay not success applied, overlay not applied.\n");
 			}
 		}
 	}
@@ -684,13 +684,13 @@ int main(void)
 
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK) {
-		printk_error("RISC-V E906: invalid devicetree configuration\n");
+		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
 	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK || sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
 	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
-		printk_error("Board: invalid devicetree configuration\n");
+		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
 
@@ -726,7 +726,7 @@ int main(void)
 	sun55iw3_clk_set_cpu_pll(1416);
 
 	if (sunxi_remoteproc_reset(&e906) != DRIVER_OK) {
-		printk_error("RISC-V E906: reset failed\n");
+		pr_err("RISC-V E906: reset failed\n");
 		return -1;
 	}
 
@@ -734,12 +734,12 @@ int main(void)
 	dram.pmu = &axp2202;
 	dram.pmu_aux = &axp1530;
 	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
-		printk_error("DRAM: invalid devicetree configuration\n");
+		pr_err("DRAM: invalid devicetree configuration\n");
 		return -1;
 	}
 	uint32_t dram_size = sunxi_dram_init(&dram);
 
-	printk_debug("DRAM Size = %dM\n", dram_size);
+	pr_debug("DRAM Size = %dM\n", dram_size);
 
 	sunxi_clk_dump();
 
@@ -772,27 +772,27 @@ int main(void)
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdmmc) != 0) {
-		printk_error("SMHC: %s controller init failed\n", sdmmc.name);
+		pr_err("SMHC: %s controller init failed\n", sdmmc.name);
 		LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 		goto _fail;
 	} else {
-		printk_info("SMHC: %s controller initialized\n", sdmmc.name);
+		pr_info("SMHC: %s controller initialized\n", sdmmc.name);
 	}
 
 	/* Initialize the SD card and check if initialization is successful. */
 	if (sdmmc_init(&sd_card, &sdmmc) != 0) {
-		printk_warning("SMHC: SDC0 init failed, init SDC2...\n");
+		pr_warn("SMHC: SDC0 init failed, init SDC2...\n");
 		/* Initialize the SD host controller. */
 		if (sunxi_sdhci_init(&emmc) != 0) {
-			printk_error("SMHC: %s controller init failed\n", emmc.name);
+			pr_err("SMHC: %s controller init failed\n", emmc.name);
 			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
-			printk_info("SMHC: %s controller initialized\n", emmc.name);
+			pr_info("SMHC: %s controller initialized\n", emmc.name);
 		}
 
 		if (sdmmc_init(&emmc_card, &emmc) != 0) {
-			printk_warning("SMHC: SDC2 init failed.\n");
+			pr_warn("SMHC: SDC2 init failed.\n");
 			goto _fail;
 		}
 		boot_card = &emmc_card;
@@ -803,25 +803,25 @@ int main(void)
 
 	/* Load the DTB, kernel image, and configuration data from the SD card. */
 	if (load_sdcard(&image) != 0) {
-		printk_warning("SMHC: loading failed, try to boot from SDC2\n");
+		pr_warn("SMHC: loading failed, try to boot from SDC2\n");
 
 		if (boot_card == &emmc_card) {
-			printk_error("SMHC: loading boot info failed, check your boot media.\n");
+			pr_err("SMHC: loading boot info failed, check your boot media.\n");
 			goto _fail;
 		}
 		if (sunxi_sdhci_init(&emmc) != 0) {
-			printk_error("SMHC: %s controller init failed\n", emmc.name);
+			pr_err("SMHC: %s controller init failed\n", emmc.name);
 			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
 			if (sdmmc_init(&emmc_card, &emmc) != 0) {
-				printk_warning("SMHC: SDC2 init failed.\n");
+				pr_warn("SMHC: SDC2 init failed.\n");
 				goto _fail;
 			} else {
-				printk_info("SMHC: %s controller initialized\n", emmc.name);
+				pr_info("SMHC: %s controller initialized\n", emmc.name);
 				disk_set_device(0, &emmc_card);
 				if (load_sdcard(&image) != 0) {
-					printk_error("SMHC: loading boot info failed, check your boot media.\n");
+					pr_err("SMHC: loading boot info failed, check your boot media.\n");
 					goto _fail;
 				}
 			}
@@ -831,12 +831,12 @@ int main(void)
 	LCD_Open_BLK();
 
 	if (load_extlinux(&image, &dram, &sid) != 0) {
-		printk_error("EXTLINUX: load extlinux failed\n");
+		pr_err("EXTLINUX: load extlinux failed\n");
 		LCD_ShowString(0, 92, "EXTLINUX: load extlinux failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 		goto _fail;
 	}
 
-	printk_info("EXTLINUX: load extlinux done, now booting...\n");
+	pr_info("EXTLINUX: load extlinux done, now booting...\n");
 
 	atf_head_t *atf_head = (atf_head_t *)image.bl31_dest;
 
@@ -846,8 +846,8 @@ int main(void)
 	/* Fill platform magic */
 	memcpy(atf_head->platform, CONFIG_PLATFORM_MAGIC, 8);
 
-	printk_info("ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
-	printk_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
+	pr_info("ATF: Kernel addr: 0x%08x\n", atf_head->nos_base);
+	pr_info("ATF: Kernel DTB addr: 0x%08x\n", atf_head->dtb_base);
 
 	/* flush buffer */
 	LCD_ShowString(0, 0, "SyterKit Now Booting Linux", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
@@ -860,7 +860,7 @@ int main(void)
 
 	jmp_to_arm64(&rtc, CONFIG_BL31_LOAD_ADDR);
 
-	printk_info("Back to SyterKit\n");
+	pr_info("Back to SyterKit\n");
 
 	// if kernel boot not success, jump to fel.
 	jmp_to_fel();
@@ -871,7 +871,7 @@ _fail:
 	LCD_ShowString(0, 24, "Error Info:", SPI_LCD_COLOR_RED, SPI_LCD_COLOR_BLACK, 12);
 	LCD_Open_BLK();
 
-	printk_error("SyterKit Boot Failed, System into software_interrupt panic. Please reset your board.\n");
+	pr_err("SyterKit Boot Failed, System into software_interrupt panic. Please reset your board.\n");
 
 	panic();
 

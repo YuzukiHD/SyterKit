@@ -38,7 +38,7 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	source = clk_hz <= 4000000U ? 0U : clk.default_clk_sel;
 	sclk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (sclk_hz == 0U) {
-		printk_debug("SMHC: unsupported clock source %u\n", source);
+		pr_debug("SMHC: unsupported clock source %u\n", source);
 		return -1;
 	}
 
@@ -53,14 +53,14 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 			}
 		}
 	}
-	printk_warning("SMHC: Illegal frequency division parameters %d\n", div);
+	pr_warn("SMHC: Illegal frequency division parameters %d\n", div);
 
 set_mclk:
 	reg_val = BIT(31) | (source << 24) | ((clk.factor_n - 1) << clk.reg_factor_n_offset) | ((clk.factor_m - 1) << clk.reg_factor_m_offset);
 
 	writel(reg_val, clk.reg_base);
 
-	printk_trace("SMHC: sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base),
+	pr_trace("SMHC: sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base),
 		     source, div, clk.factor_n, clk.factor_m);
 	return 0;
 }
@@ -93,11 +93,11 @@ uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 	source = (reg_val >> 24) & 0x3U;
 	clk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
 	if (clk_hz == 0U) {
-		printk_debug("SMHC: unsupported clock source %u\n", source);
+		pr_debug("SMHC: unsupported clock source %u\n", source);
 		return 0U;
 	}
 
-	printk_trace("SMHC: sdhci%d clk parent %uHz, mclk=0x%08x clk_sel=%u, n=%u, m=%u\n", sdhci->id, clk_hz, readl(sdhci->sdhci_clk.reg_base), source, clk.factor_n + 1,
+	pr_trace("SMHC: sdhci%d clk parent %uHz, mclk=0x%08x clk_sel=%u, n=%u, m=%u\n", sdhci->id, clk_hz, readl(sdhci->sdhci_clk.reg_base), source, clk.factor_n + 1,
 		     clk.factor_m + 1);
 
 	// Calculate the actual clock frequency based on the divider values
