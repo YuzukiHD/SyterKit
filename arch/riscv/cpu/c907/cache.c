@@ -74,11 +74,8 @@ void mmu_enable(void)
 	icache_enable();
 }
 
-/**
- * @brief Clean a C907 L1 cache range.
- * @param[in] start Inclusive start address.
- * @param[in] end Exclusive end address.
- */
+/* Clean a C907 L1 cache range. The range is inclusive start / exclusive end.
+ * Doxygen documentation lives on the declaration in arch/riscv/include/cache.h. */
 void flush_dcache_range(uint64_t start, uint64_t end)
 {
 	uintptr_t address = (uintptr_t)start & ~(L1_CACHE_BYTES - 1U);
@@ -89,11 +86,8 @@ void flush_dcache_range(uint64_t start, uint64_t end)
 	data_sync_barrier();
 }
 
-/**
- * @brief Invalidate a C907 L1 cache range.
- * @param[in] start Inclusive start address.
- * @param[in] end Exclusive end address.
- */
+/* Invalidate a C907 L1 cache range. The range is inclusive start / exclusive end.
+ * Doxygen documentation lives on the declaration in arch/riscv/include/cache.h. */
 void invalidate_dcache_range(uint64_t start, uint64_t end)
 {
 	uintptr_t address = (uintptr_t)start & ~(L1_CACHE_BYTES - 1U);

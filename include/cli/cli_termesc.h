@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file cli_termesc.h
+ * @brief ANSI terminal escape sequences used by the CLI.
+ *
+ * Defines escape strings for clearing and resetting the terminal as well as
+ * for selecting font styles, font colors and background colors.
+ */
+
 #ifndef __CLI_TERMESC_H__
 #define __CLI_TERMESC_H__
 

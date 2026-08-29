@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file gic.c
+ * @brief ARM Generic Interrupt Controller (GIC-400) driver.
+ *
+ * Programs the GIC distributor and CPU interface, installs default handlers,
+ * and provides the arch-level interrupt entry points for the ARM interrupt
+ * framework.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -13,6 +22,7 @@
 #include <dt-compatible/gic-dt.h>
 #include <dt2c/driver.h>
 
+/** @brief GIC distributor and CPU interface register offsets. */
 enum {
 	GICD_CTLR = 0x0000,
 	GICD_TYPER = 0x0004,
@@ -36,27 +46,59 @@ enum {
 static irq_handler_t sunxi_int_handlers[SUNXI_GIC_MAX_IRQS];
 static sunxi_gic_t sunxi_gic_controller;
 
+/**
+ * @brief Compute a GIC distributor register address.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @param[in] offset Register offset within the distributor.
+ * @return The absolute distributor register address.
+ */
 static inline uintptr_t gicd_reg(const sunxi_gic_t *gic, uint32_t offset)
 {
 	return gic->distributor_base + offset;
 }
 
+/**
+ * @brief Compute a GIC CPU interface register address.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @param[in] offset Register offset within the CPU interface.
+ * @return The absolute CPU interface register address.
+ */
 static inline uintptr_t gicc_reg(const sunxi_gic_t *gic, uint32_t offset)
 {
 	return gic->cpu_interface_base + offset;
 }
 
+/**
+ * @brief Check the GIC controller configuration.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @return true when the distributor, CPU interface, and IRQ count are valid.
+ */
 static bool sunxi_gic_config_valid(const sunxi_gic_t *gic)
 {
 	return gic != NULL && gic->distributor_base != 0U && gic->distributor_size >= 0x1000U && gic->cpu_interface_base != 0U && gic->cpu_interface_size >= 0x1004U &&
 	       gic->irq_count >= 32U && gic->irq_count <= SUNXI_GIC_MAX_IRQS;
 }
 
+/**
+ * @brief Check that an IRQ number is within the initialized GIC range.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @param[in] irq IRQ number to validate.
+ * @return true when the controller is valid and @p irq is in range.
+ */
 static bool sunxi_gic_irq_valid(const sunxi_gic_t *gic, int irq)
 {
 	return sunxi_gic_config_valid(gic) && gic->initialized && irq >= 0 && (uint32_t)irq < gic->irq_count;
 }
 
+/**
+ * @brief Query whether interrupts are currently enabled on this CPU.
+ *
+ * @return true when the CPSR interrupt mask is clear.
+ */
 static inline bool interrupts_are_enabled(void)
 {
 	uint32_t cpsr;
@@ -65,6 +107,13 @@ static inline bool interrupts_are_enabled(void)
 	return (cpsr & BIT(7)) == 0U;
 }
 
+/**
+ * @brief Default interrupt handler for uninstalled IRQ slots.
+ *
+ * Logs the triggering IRQ and spins forever so a stray interrupt is noticed.
+ *
+ * @param[in] data Opaque data carrying the IRQ number.
+ */
 static void default_isr(void *data)
 {
 	printk_debug("default_isr(): called from IRQ %u\n", (uint32_t)(uintptr_t)data);
@@ -72,6 +121,17 @@ static void default_isr(void *data)
 		;
 }
 
+/**
+ * @brief Initialize the GIC distributor.
+ *
+ * Queries the hardware IRQ count, configures SPIs as level-triggered and
+ * routed to CPU 0, disables and deactivates all SPIs, then enables the
+ * distributor.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when the hardware has
+ *         fewer IRQs than the devicetree requests.
+ */
 static int gic_distributor_init(const sunxi_gic_t *gic)
 {
 	uint32_t hardware_irq_count;
@@ -102,6 +162,14 @@ static int gic_distributor_init(const sunxi_gic_t *gic)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Initialize the GIC CPU interface.
+ *
+ * Configures SGI/PPI priorities and enable state, sets the binary point, and
+ * enables the CPU interface.
+ *
+ * @param[in] gic GIC controller descriptor.
+ */
 static void gic_cpu_interface_init(const sunxi_gic_t *gic)
 {
 	uint32_t irq;
@@ -115,6 +183,15 @@ static void gic_cpu_interface_init(const sunxi_gic_t *gic)
 	writel(1U, gicc_reg(gic, GICC_CTLR));
 }
 
+/**
+ * @brief Initialize the GIC controller.
+ *
+ * Validates the configuration, installs the default handler for every source,
+ * and initializes both the distributor and the CPU interface.
+ *
+ * @param[in,out] gic GIC controller descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on bad configuration.
+ */
 int sunxi_gic_init(sunxi_gic_t *gic)
 {
 	int result;
@@ -137,6 +214,15 @@ int sunxi_gic_init(sunxi_gic_t *gic)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Tear down the GIC controller.
+ *
+ * Disables the CPU interface and distributor and marks the controller as
+ * uninitialized.
+ *
+ * @param[in,out] gic GIC controller descriptor.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when not initialized.
+ */
 int sunxi_gic_exit(sunxi_gic_t *gic)
 {
 	if (!sunxi_gic_config_valid(gic) || !gic->initialized)
@@ -148,16 +234,31 @@ int sunxi_gic_exit(sunxi_gic_t *gic)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Handle a software-generated interrupt.
+ *
+ * @param[in] irq SGI IRQ number.
+ */
 static void gic_sgi_handler(uint32_t irq)
 {
 	printk_debug("GIC: SGI IRQ %u\n", irq);
 }
 
+/**
+ * @brief Handle a private peripheral interrupt.
+ *
+ * @param[in] irq PPI IRQ number.
+ */
 static void gic_ppi_handler(uint32_t irq)
 {
 	printk_debug("GIC: PPI IRQ %u\n", irq);
 }
 
+/**
+ * @brief Dispatch a shared peripheral interrupt to its installed handler.
+ *
+ * @param[in] irq SPI IRQ number.
+ */
 static void gic_spi_handler(uint32_t irq)
 {
 	irq_handler_t *handler = &sunxi_int_handlers[irq];
@@ -166,21 +267,43 @@ static void gic_spi_handler(uint32_t irq)
 		handler->func(handler->data);
 }
 
+/**
+ * @brief Clear the pending state of an IRQ at the distributor.
+ *
+ * @param[in] gic GIC controller descriptor.
+ * @param[in] irq IRQ number to clear.
+ */
 static void gic_clear_pending(const sunxi_gic_t *gic, uint32_t irq)
 {
 	writel(BIT(irq & 0x1fU), gicd_reg(gic, GICD_ICPENDR + (irq / 32U) * 4U));
 }
 
+/**
+ * @brief Initialize the arch interrupt subsystem.
+ *
+ * @return DRIVER_OK on success, otherwise the GIC init error.
+ */
 int arch_interrupt_init(void)
 {
 	return sunxi_gic_init(&sunxi_gic_controller);
 }
 
+/**
+ * @brief Tear down the arch interrupt subsystem.
+ *
+ * @return DRIVER_OK on success, otherwise the GIC exit error.
+ */
 int arch_interrupt_exit(void)
 {
 	return sunxi_gic_exit(&sunxi_gic_controller);
 }
 
+/**
+ * @brief Initialize the GIC CPU interface for a specific CPU.
+ *
+ * @param[in] cpu CPU number (currently ignored, the boot CPU is used).
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when not initialized.
+ */
 int sunxi_gic_cpu_interface_init(int cpu)
 {
 	(void)cpu;
@@ -191,6 +314,11 @@ int sunxi_gic_cpu_interface_init(int cpu)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Disable the GIC CPU interface.
+ *
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID when not initialized.
+ */
 int sunxi_gic_cpu_interface_exit(void)
 {
 	if (!sunxi_gic_config_valid(&sunxi_gic_controller) || !sunxi_gic_controller.initialized)
@@ -200,6 +328,15 @@ int sunxi_gic_cpu_interface_exit(void)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief GIC interrupt entry point.
+ *
+ * Acknowledges the highest-priority pending IRQ, dispatches it to the SGI,
+ * PPI, or SPI handler, and completes the interrupt with EOIR and deactivate
+ * writes.
+ *
+ * @param[in] regs Saved register context at interrupt entry (unused).
+ */
 void do_irq(struct arm_regs_t *regs)
 {
 	uint32_t acknowledge;
@@ -229,6 +366,11 @@ void do_irq(struct arm_regs_t *regs)
 		gic_clear_pending(&sunxi_gic_controller, irq);
 }
 
+/**
+ * @brief Uninstall an interrupt handler, restoring the default handler.
+ *
+ * @param[in] irq IRQ number whose handler should be freed.
+ */
 void irq_free_handler(int irq)
 {
 	bool restore_interrupts;
@@ -244,6 +386,12 @@ void irq_free_handler(int irq)
 		arm32_interrupt_enable();
 }
 
+/**
+ * @brief Enable an interrupt at the GIC.
+ *
+ * @param[in] irq IRQ number to enable.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID for an out-of-range IRQ.
+ */
 int irq_enable(int irq)
 {
 	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
@@ -255,6 +403,12 @@ int irq_enable(int irq)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Disable an interrupt at the GIC.
+ *
+ * @param[in] irq IRQ number to disable.
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID for an out-of-range IRQ.
+ */
 int irq_disable(int irq)
 {
 	if (!sunxi_gic_irq_valid(&sunxi_gic_controller, irq)) {
@@ -266,6 +420,13 @@ int irq_disable(int irq)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Install an interrupt handler for an IRQ.
+ *
+ * @param[in] irq IRQ number to install the handler for.
+ * @param[in] handler Handler function to invoke.
+ * @param[in] data Opaque argument passed to @p handler.
+ */
 void irq_install_handler(int irq, interrupt_handler_t handler, void *data)
 {
 	bool restore_interrupts;
@@ -281,6 +442,11 @@ void irq_install_handler(int irq, interrupt_handler_t handler, void *data)
 		arm32_interrupt_enable();
 }
 
+/**
+ * @brief GIC startup entry: read the DT alias and initialize the controller.
+ *
+ * @return DRIVER_OK on success, otherwise the DT read or init error.
+ */
 int sunxi_gic_startup(void)
 {
 	int result;

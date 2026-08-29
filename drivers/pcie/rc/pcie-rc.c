@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-rc.c
+ * @brief PCIe root-complex configuration and operation.
+ *
+ * Programs the root-port configuration space and outbound ATU windows, resets
+ * the endpoint, and drives link training for the root complex.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -9,6 +17,11 @@
 #include <drivers/pcie/rc/pcie-rc.h>
 #include <dt-compatible/pcie-dt.h>
 
+/**
+ * @brief Fill a root-complex config with default bus and command settings.
+ *
+ * @param[out] config Root-complex configuration to populate.
+ */
 void pcie_rc_config_default(struct pcie_rc_config *config)
 {
 	if (config == NULL)
@@ -23,6 +36,16 @@ void pcie_rc_config_default(struct pcie_rc_config *config)
 	};
 }
 
+/**
+ * @brief Set up the root-port configuration space and ATU windows.
+ *
+ * Programs the BARs, interrupt line, bus numbers, command register, and the
+ * outbound memory and IO address translation windows.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in RC mode.
+ * @param[in] config Root-complex configuration, or NULL for defaults.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_setup(struct pcie *pcie, const struct pcie_rc_config *config)
 {
 	struct pcie_rc_config defaults;
@@ -124,6 +147,13 @@ int pcie_rc_setup(struct pcie *pcie, const struct pcie_rc_config *config)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Toggle the endpoint reset GPIO.
+ *
+ * @param[in] pcie PCIe instance with an optional reset GPIO.
+ * @return PCIE_OK on success, PCIE_ERR_UNSUPPORTED when no GPIO driver is
+ *         available.
+ */
 static int pcie_rc_reset_endpoint(struct pcie *pcie)
 {
 	if (!pcie->has_reset_gpio)
@@ -140,6 +170,14 @@ static int pcie_rc_reset_endpoint(struct pcie *pcie)
 #endif
 }
 
+/**
+ * @brief Initialize the PCIe instance and set up the root port.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] config PCIe controller configuration.
+ * @param[in] rc_config Root-complex configuration, or NULL for defaults.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config,
 		const struct pcie_rc_config *rc_config)
 {
@@ -154,6 +192,14 @@ int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config,
 	return ret;
 }
 
+/**
+ * @brief Initialize the root port from a devicetree node.
+ *
+ * @param[out] pcie PCIe instance to initialize.
+ * @param[in] node Devicetree node offset.
+ * @param[in] rc_config Root-complex configuration, or NULL for defaults.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_init_dt(struct pcie *pcie, int node,
 		const struct pcie_rc_config *rc_config)
 {
@@ -165,6 +211,16 @@ int pcie_rc_init_dt(struct pcie *pcie, int node,
 	return pcie_rc_init(pcie, &config, rc_config);
 }
 
+/**
+ * @brief Start link training and wait for the link to come up.
+ *
+ * Resets the endpoint, starts the link training state machine, waits for the
+ * link, and optionally negotiates a higher link generation.
+ *
+ * @param[in,out] pcie Initialized PCIe instance in RC mode.
+ * @param[in] timeout_us Link-up timeout in microseconds.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_start(struct pcie *pcie, uint32_t timeout_us)
 {
 	int ret;
@@ -197,6 +253,12 @@ int pcie_rc_start(struct pcie *pcie, uint32_t timeout_us)
 	return PCIE_OK;
 }
 
+/**
+ * @brief Stop the root-port link training state machine.
+ *
+ * @param[in] pcie Initialized PCIe instance in RC mode.
+ * @return PCIE_OK on success, PCIE_ERR_INVALID when not in RC mode.
+ */
 int pcie_rc_stop(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_RC)
@@ -204,6 +266,12 @@ int pcie_rc_stop(struct pcie *pcie)
 	return pcie_controller_ltssm(&pcie->controller, false);
 }
 
+/**
+ * @brief Report whether the root-port link is up.
+ *
+ * @param[in] pcie Initialized PCIe instance in RC mode.
+ * @return true when the link is up.
+ */
 bool pcie_rc_link_up(struct pcie *pcie)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_RC)
@@ -211,6 +279,16 @@ bool pcie_rc_link_up(struct pcie *pcie)
 	return pcie_controller_link_up(&pcie->controller);
 }
 
+/**
+ * @brief Read a root-port configuration-space field.
+ *
+ * @param[in] pcie Initialized PCIe instance in RC mode.
+ * @param[in] bdf Bus/device/function of the target.
+ * @param[in] offset Register offset within the configuration space.
+ * @param[in] size Access width in bytes (1, 2, or 4).
+ * @param[out] value Receives the read value.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
 		uint8_t size, uint32_t *value)
 {
@@ -219,6 +297,16 @@ int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
 	return pcie_controller_cfg_read(&pcie->controller, bdf, offset, size, value);
 }
 
+/**
+ * @brief Write a root-port configuration-space field.
+ *
+ * @param[in] pcie Initialized PCIe instance in RC mode.
+ * @param[in] bdf Bus/device/function of the target.
+ * @param[in] offset Register offset within the configuration space.
+ * @param[in] size Access width in bytes (1, 2, or 4).
+ * @param[in] value Value to write.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
 		uint8_t size, uint32_t value)
 {
@@ -227,6 +315,17 @@ int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
 	return pcie_controller_cfg_write(&pcie->controller, bdf, offset, size, value);
 }
 
+/**
+ * @brief Program an outbound address translation window.
+ *
+ * @param[in] pcie Initialized PCIe instance in RC mode.
+ * @param[in] index ATU window index.
+ * @param[in] type Window type (memory, IO, or config).
+ * @param[in] cpu_addr CPU-side base address.
+ * @param[in] pci_addr PCI-side base address.
+ * @param[in] size Window size in bytes.
+ * @return PCIE_OK on success, otherwise an error code.
+ */
 int pcie_rc_program_outbound(struct pcie *pcie, uint8_t index,
 		enum pcie_atu_type type, uint64_t cpu_addr, uint64_t pci_addr,
 		uint64_t size)

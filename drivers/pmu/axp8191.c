@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file axp8191.c
+ * @brief X-Powers AXP8191 PMU driver.
+ *
+ * Implements the AXP8191 PMU probe, voltage read/write and debug dump
+ * operations used by the common PMU framework.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,6 +22,9 @@
 #include "axp-config.h"
 
 /* clang-format off */
+/**
+ * @brief Voltage regulator control table for the AXP8191 PMU.
+ */
 static axp_contrl_info axp_ctrl_tbl[] = {
 	{ "dcdc1", 1000, 3800, AXP8191_DC1OUT_VOL, 0x1f, AXP8191_DCDC_POWER_ON_OFF_CTL1, 0, 0,
 	{ {1000, 3800, 100}, } },
@@ -128,11 +139,27 @@ static axp_contrl_info axp_ctrl_tbl[] = {
 };
 /* clang-format on */
 
+/**
+ * @brief Configure the AXP8191 PMU identity and I2C address.
+ *
+ * @param[in] pmu PMU descriptor to fill in.
+ * @param[in] i2c Initialized I2C bus used to reach the PMU.
+ * @return DRIVER_OK on success, or DRIVER_ERROR_INVALID on bad arguments.
+ */
 int pmu_axp8191_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c)
 {
 	return sunxi_pmu_config(pmu, i2c, AXP_PMU_AXP8191, AXP8191_RUNTIME_ADDR, 0U);
 }
 
+/**
+ * @brief Probe and initialize the AXP8191 PMU.
+ *
+ * Verifies the chip ID over I2C and enables the DVM feature on the DCDC
+ * regulators.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @return AXP8191_CHIP_ID on success, or -1 on probe or register failure.
+ */
 int pmu_axp8191_init(axp_pmu_t *pmu)
 {
 	uint8_t axp_val;
@@ -173,16 +200,37 @@ int pmu_axp8191_init(axp_pmu_t *pmu)
 	return AXP8191_CHIP_ID;
 }
 
+/**
+ * @brief Set the output voltage of a named AXP8191 regulator.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @param[in] name Name of the regulator rail to configure.
+ * @param[in] set_vol Desired voltage in millivolts.
+ * @param[in] onoff Non-zero to enable the rail, zero to disable it.
+ * @return 0 on success, or -1 on error.
+ */
 int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
 {
 	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
+/**
+ * @brief Read the current output voltage of a named AXP8191 regulator.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ * @param[in] name Name of the regulator rail to read.
+ * @return The voltage in millivolts, or a negative value on error.
+ */
 int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
 {
 	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
 }
 
+/**
+ * @brief Dump all AXP8191 regulator voltages to the debug log.
+ *
+ * @param[in] pmu PMU descriptor with the I2C bus and address configured.
+ */
 void pmu_axp8191_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {

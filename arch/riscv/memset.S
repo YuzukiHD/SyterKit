@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file memset.S
+ * @brief RISC-V assembly implementation of memset().
+ *
+ * Optimised word-wise fill routine with a byte-wise path for short or
+ * unaligned buffers.
+ */
 #include <linkage.h>
 
 	.global memset

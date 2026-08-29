@@ -1,6 +1,15 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 /* Based on https://github.com/allwinner-zh/bootloader */
 
+/**
+ * @file usb.c
+ * @brief Allwinner USB (MUSB) controller initialization and detection.
+ *
+ * Brings up the USB device controller clock, forces device mode with valid
+ * VBUS, enables the ID and DPDM pull-ups, and detects a host-issued bus reset
+ * through the misc interrupt path.
+ */
+
 #include <io.h>
 #include <stdint.h>
 
@@ -19,6 +28,11 @@
 
 #define SUNXI_USB_DETECT_TIMEOUT_US 5000000ULL
 
+/**
+ * @brief Disable the USB controller and PHY clocks.
+ *
+ * @param[in] usb USB controller descriptor.
+ */
 static void sunxi_usb_clock_deinit(const sunxi_usb_t *usb)
 {
 	clrbits_le32(usb->clock_gate_reg_base, BIT(usb->reset_offset));
@@ -27,6 +41,11 @@ static void sunxi_usb_clock_deinit(const sunxi_usb_t *usb)
 	mdelay(1);
 }
 
+/**
+ * @brief Enable the USB controller and PHY clocks.
+ *
+ * @param[in] usb USB controller descriptor.
+ */
 static void sunxi_usb_clock_init(const sunxi_usb_t *usb)
 {
 	setbits_le32(usb->phy_clock_reg_base, BIT(usb->phy_clock_gate_offset));
@@ -39,6 +58,16 @@ static void sunxi_usb_clock_init(const sunxi_usb_t *usb)
 	mdelay(1);
 }
 
+/**
+ * @brief Initialize the USB controller for device-mode operation.
+ *
+ * Validates the descriptor, restarts the clocks, forces device mode and valid
+ * VBUS, configures the PHY for high-speed detection, installs the interrupt
+ * handler for bus reset and disconnect, and soft-connects to the bus.
+ *
+ * @param[in,out] usb USB controller descriptor.
+ * @return 0 on success, -1 on invalid configuration or setup failure.
+ */
 int sunxi_usb_init(sunxi_usb_t *usb)
 {
 	uint32_t reg_val = 0;
@@ -108,6 +137,13 @@ int sunxi_usb_init(sunxi_usb_t *usb)
 	return 0;
 }
 
+/**
+ * @brief USB misc interrupt handler.
+ *
+ * Updates the host-detection state from bus reset and disconnect events.
+ *
+ * @param[in,out] data USB controller descriptor.
+ */
 void sunxi_usb_irq(void *data)
 {
 	sunxi_usb_t *usb = data;
@@ -134,6 +170,14 @@ void sunxi_usb_irq(void *data)
 	}
 }
 
+/**
+ * @brief Wait for a host to enumerate the device.
+ *
+ * Enables interrupts and polls the detection flag set by the reset interrupt
+ * until a host bus reset is observed or the timeout expires.
+ *
+ * @param[in,out] usb USB controller descriptor.
+ */
 void sunxi_usb_attach(sunxi_usb_t *usb)
 {
 	uint64_t deadline;

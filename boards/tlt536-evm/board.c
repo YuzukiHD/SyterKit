@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the TLT536 EVM (sun55iw6).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -24,6 +28,9 @@
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -40,6 +47,12 @@ void clean_syterkit_data(void)
 #define GPIO_POW_MOD_SEL_MASK (0x033ffff3)
 #define R_GPIO_POW_MOD_SEL_MASK (0xf)
 
+/**
+ * @brief Configure the PIO and R_PIO GPIO power mode select registers.
+ *
+ * Programs the power mode selection for the main PIO bank and the R_PIO bank
+ * using the fixed board voltage configuration.
+ */
 void sunxi_gpio_power_mode_init(void)
 {
 	sunxi_gpio_t pio;
@@ -61,6 +74,12 @@ void sunxi_gpio_power_mode_init(void)
 	writel(reg_val, r_pio.base + 0x340);
 }
 
+/**
+ * @brief Print the SoC identification banner for the TLT536 EVM board.
+ *
+ * Reads the 128-bit chip SID from the eFuses through the devicetree SID
+ * alias and prints the chip SID, chip type, and chip version to the console.
+ */
 void show_chip()
 {
 	sunxi_sid_t sid;
@@ -93,6 +112,12 @@ void show_chip()
 	printk(LOG_LEVEL_MUTE, " Chip Version = 0x%04x \n", version);
 }
 
+/**
+ * @brief Reset the system using the watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDG_BASE + 0x08, 0x16aa0001U);

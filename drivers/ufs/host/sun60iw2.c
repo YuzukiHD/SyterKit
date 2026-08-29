@@ -1,11 +1,20 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sun60iw2.c
+ * @brief sun60iw2 UFS host variant.
+ *
+ * Provides the sun60iw2 UFS PHY and clock variant configuration and reads the
+ * PHY calibration words from the SID eFuse SRAM.
+ */
+
 #include <drivers/clk/sun60iw2/reg.h>
 #include <log.h>
 #include <drivers/sid/sid.h>
 #include <drivers/ufs/host/sunxi.h>
 #include <dt-compatible/sid-dt.h>
 
+/** @brief sun60iw2 UFS PHY and clock variant configuration. */
 static const struct sunxi_ufs_variant sun60iw2_ufs_variant = {
 	.cal_low_offset = 0x60U,
 	.cal_high_offset = 0x64U,
@@ -14,11 +23,21 @@ static const struct sunxi_ufs_variant sun60iw2_ufs_variant = {
 	.has_ext_res_cal = true,
 };
 
+/**
+ * @brief Return the board-selected Sunxi UFS variant configuration.
+ * @return A constant variant descriptor, or a weak default when no
+ *         SoC-specific implementation overrides it.
+ */
 const struct sunxi_ufs_variant *sunxi_ufs_get_variant(void)
 {
 	return &sun60iw2_ufs_variant;
 }
 
+/**
+ * @brief Read and decode the UFS PHY calibration words from eFuse SRAM.
+ * @param[out] cal Receives the decoded PLL and lane calibration values.
+ * @return Zero on success, otherwise a UFS host-controller error code.
+ */
 int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
 {
 	const struct sunxi_ufs_variant *variant = sunxi_ufs_get_variant();

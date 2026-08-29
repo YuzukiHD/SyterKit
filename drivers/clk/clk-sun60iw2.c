@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun60iw2.c
+ * @brief Clock driver for the Allwinner sun60iw2 SoC.
+ *
+ * Programs the CPU, DDR, PERI and NSI PLLs together with the AHB/APB
+ * dividers during early boot, and provides a clock dump helper.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -19,15 +27,25 @@
 #define CPU_PLL_FACTOR_N_24M(x) (((x) + (24) - 1) / (24))
 #define CPU_PLL_FACTOR_N_26M(x) (((x) + (26) - 1) / (26))
 
+/**
+ * @struct pll_reg_config
+ * @brief Describes a PLL control register used for the parent clock select.
+ */
 const struct pll_reg_config {
-	uint32_t reg_addr;
-	uint32_t ref_sel_offset;
+	uint32_t reg_addr;       /**< PLL control register offset. */
+	uint32_t ref_sel_offset; /**< Reference clock select bit offset. */
 } pll_ctrl_regs[] = {
 	PLL_REG_CONF(PLL_DDR_CTRL_REG),	   PLL_REG_CONF(PLL_PERI0_CTRL_REG),  PLL_REG_CONF(PLL_PERI1_CTRL_REG), PLL_REG_CONF(PLL_GPU0_CTRL_REG), PLL_REG_CONF(PLL_VIDEO0_CTRL_REG),
 	PLL_REG_CONF(PLL_VIDEO1_CTRL_REG), PLL_REG_CONF(PLL_VIDEO2_CTRL_REG), PLL_REG_CONF(PLL_VE0_CTRL_REG),	PLL_REG_CONF(PLL_VE1_CTRL_REG),	 PLL_REG_CONF(PLL_AUDIO0_CTRL_REG),
 	PLL_REG_CONF(PLL_AUDIO1_CTRL_REG), PLL_REG_CONF(PLL_NPU_CTRL_REG),    PLL_REG_CONF(PLL_DE_CTRL_REG),
 };
 
+/**
+ * @brief Select the 24 MHz reference clock for all PLLs.
+ *
+ * Sets the reference clock select bit of every PLL control register in
+ * @p pll_ctrl_regs.
+ */
 static inline void set_pll_parent(void)
 {
 	for (size_t i = 0; i < sizeof(pll_ctrl_regs) / sizeof(pll_ctrl_regs[0]); i++) {
@@ -35,6 +53,18 @@ static inline void set_pll_parent(void)
 	}
 }
 
+/**
+ * @brief Enable a PLL with the given divider factors.
+ *
+ * Programs the M0/N/M1/P factors, then enables the LDO, output gate and PLL
+ * and waits for the PLL to lock.
+ *
+ * @param[in] addr PLL control register address.
+ * @param[in] m0   M0 divider factor.
+ * @param[in] n    N divider factor.
+ * @param[in] m1   M1 divider factor.
+ * @param[in] p    P divider factor.
+ */
 static inline void enable_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 {
 	uint32_t reg_val;
@@ -70,6 +100,18 @@ static inline void enable_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t 
 	udelay(20);
 }
 
+/**
+ * @brief Re-tune an already running PLL to the given divider factors.
+ *
+ * Switches the PLL source to 24 MHz, clears the lock/output gates, programs
+ * the M0/N/M1/P factors, then re-locks the PLL and enables its output.
+ *
+ * @param[in] addr PLL control register address.
+ * @param[in] m0   M0 divider factor.
+ * @param[in] n    N divider factor.
+ * @param[in] m1   M1 divider factor.
+ * @param[in] p    P divider factor.
+ */
 static inline void set_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 {
 	uint32_t reg_val;
@@ -110,11 +152,24 @@ static inline void set_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1,
 	udelay(20);
 }
 
+/**
+ * @brief Get the high-speed oscillator (HOSC) frequency.
+ *
+ * Reads the RTC register that records the crystal frequency.
+ *
+ * @return HOSC frequency in MHz: 26 if a 26 MHz crystal is fitted, else 24.
+ */
 static uint32_t sun60iw2_clk_get_hosc_rate(void)
 {
 	return read32(SUNXI_RTC_BASE + 0x160U) & BIT(15) ? 26U : 24U;
 }
 
+/**
+ * @brief Configure the CPU_L, CPU_B and DSU PLLs.
+ *
+ * Enables and tunes the A76, A55 and DSU PLLs according to the detected HOSC
+ * rate, then switches the CPU clock source to the CPU PLL.
+ */
 static inline void set_pll_cpux_axi(void)
 {
 	if (sun60iw2_clk_get_hosc_rate() == 24U) {
@@ -145,12 +200,24 @@ static inline void set_pll_cpux_axi(void)
 	clrsetbits_le32(SUNXI_CPU_PLL_CFG_BASE + 0x301cU, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
 }
 
+/**
+ * @brief Configure the APB1 bus clock.
+ *
+ * Selects the 24 MHz system clock as the APB1 source with a divide factor of
+ * 1.
+ */
 static inline void set_apb1(void)
 {
 	clrsetbits_le32(SUNXI_CCU_BASE + APB1_CLK_REG, APB1_CLK_REG_CLK_SRC_SEL_CLEAR_MASK | APB1_CLK_REG_FACTOR_M_CLEAR_MASK,
 			APB1_CLK_REG_CLK_SRC_SEL_SYS_CLK24M << APB1_CLK_REG_CLK_SRC_SEL_OFFSET | 0 << APB1_CLK_REG_FACTOR_M_OFFSET);
 }
 
+/**
+ * @brief Configure the NSI bus clock.
+ *
+ * Programs the NSI divider, selects PERI0 600 MHz as the source and waits for
+ * the clock update to complete.
+ */
 static inline void set_pll_nsi(void)
 {
 	clrsetbits_le32(SUNXI_CCU_BASE + NSI_CLK_REG, BIT(NSI_CLK_REG_NSI_CLK_GATING_OFFSET) | NSI_CLK_REG_NSI_DIV1_CLEAR_MASK,
@@ -163,6 +230,12 @@ static inline void set_pll_nsi(void)
 		;
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Selects the PLL reference clock, programs the CPU PLLs, then configures the
+ * APB1 and NSI bus clocks.
+ */
 void sunxi_clk_init(void)
 {
 	set_pll_parent();
@@ -171,10 +244,22 @@ void sunxi_clk_init(void)
 	set_pll_nsi();
 }
 
+/**
+ * @brief Reset the SoC clocks to their default state.
+ *
+ * No clock reset is required on sun60iw2, so this is an empty stub.
+ */
 void sunxi_clk_reset(void)
 {
 }
 
+/**
+ * @brief Get the PLL_PERI0 1x output frequency.
+ *
+ * Reads the PLL_PERI0 control register and computes the 1x output rate.
+ *
+ * @return The PERI0 1x frequency in Hz, or 0 if the PLL is disabled.
+ */
 static uint32_t sun60iw2_clk_get_peri1x_rate(void)
 {
 	uint32_t reg32;
@@ -193,6 +278,17 @@ static uint32_t sun60iw2_clk_get_peri1x_rate(void)
 	return 0;
 }
 
+/**
+ * @brief Dump the frequency of one CPU clock domain.
+ *
+ * Resolves the clock source, computes the current frequency and prints it
+ * together with the domain name.
+ *
+ * @param[in] pll_addr  PLL control register address.
+ * @param[in] ctl_addr  CPU clock config register address.
+ * @param[in] name      Human readable name of the CPU domain.
+ * @param[in] clk_hosc  HOSC frequency in Hz.
+ */
 static inline void sunxi_cpu_clk_dump(uintptr_t pll_addr, uintptr_t ctl_addr, char *name, uint32_t clk_hosc)
 {
 	uint32_t reg_val;
@@ -237,6 +333,16 @@ static inline void sunxi_cpu_clk_dump(uintptr_t pll_addr, uintptr_t ctl_addr, ch
 	printk_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
 }
 
+/**
+ * @brief Dump the frequency of one peripheral clock domain.
+ *
+ * Resolves the clock source, applies the divider and PLL divisor and prints
+ * the resulting frequency.
+ *
+ * @param[in] addr     Clock config register address.
+ * @param[in] name     Human readable name of the peripheral domain.
+ * @param[in] pll_div  Divider applied to the PLL_PERI0 1x clock.
+ */
 static inline void sunxi_peri_clk_dump(uintptr_t addr, char *name, uint8_t pll_div)
 {
 	uint32_t reg_val;
@@ -272,6 +378,12 @@ static inline void sunxi_peri_clk_dump(uintptr_t addr, char *name, uint8_t pll_d
 	printk_debug("CLK: PLL %s SRC=%s FREQ=%luMHz\r\n", name, clock_str, clock / 1000000);
 }
 
+/**
+ * @brief Dump the current SoC clock configuration.
+ *
+ * Prints the HOSC type, the CPU_L/CPU_B, DDR, PERI, AHB and APB0/APB1
+ * frequencies.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg_val;

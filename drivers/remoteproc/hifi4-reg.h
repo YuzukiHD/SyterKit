@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file hifi4-reg.h
+ * @brief HiFi4 DSP control register and bit definitions.
+ *
+ * Defines the default reset vector, DSP control register offsets and the
+ * SRAM remap control bits shared by the Allwinner HiFi4 remoteproc drivers.
+ */
+
 #ifndef __SUNXI_HIFI4_REG_H__
 #define __SUNXI_HIFI4_REG_H__
 

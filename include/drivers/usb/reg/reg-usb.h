@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-usb.h
+ * @brief Register map for the USB host-presence detector.
+ */
+
 #ifndef __REG_USB_H__
 #define __REG_USB_H__
 

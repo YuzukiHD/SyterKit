@@ -1,3 +1,9 @@
+/**
+ * @file elf.h
+ * @brief ELF object file format definitions.
+ * @details Vendored from the Linux kernel UAPI ELF headers.
+ */
+
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 

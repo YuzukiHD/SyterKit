@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file fprw.S
+ * @brief RISC-V floating-point register read/write helpers.
+ *
+ * Provides jump-table based access to individual FPU registers so the
+ * firmware can save and restore floating-point state.
+ */
 #if defined(__riscv_flen)
 #if __riscv_flen >= 32
 #define fread32(which)	.Lr32_##which: fsw which, 0(a1); ret

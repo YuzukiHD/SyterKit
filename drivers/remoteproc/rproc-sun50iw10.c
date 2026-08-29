@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file rproc-sun50iw10.c
+ * @brief Sun50iw10 AR100 remote processor load helper.
+ *
+ * Implements the remoteproc load callback that copies firmware into the
+ * AR100 memory map and starts the core, guarding against re-flashing on
+ * warm boots through RTC-backed cold-start tracking.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,16 +22,37 @@
 
 #define SUN50IW10_RTC_DATA_COLD_START 7
 
+/**
+ * @brief Register resource indices used by the AR100 remote processor.
+ */
 enum sun50iw10_ar100_register {
 	SUN50IW10_AR100_SYSCTRL,
 	SUN50IW10_AR100_RCPU_CFG,
 };
 
+/**
+ * @brief Test whether an SoC chip ID is affected by the cold-start quirk.
+ *
+ * @param[in] id SoC ID read from the system controller.
+ * @return True if the chip ID requires the cold-start handling, false otherwise.
+ */
 static bool sun50iw10_ar100_affected(uint32_t id)
 {
 	return id == 0U || id == 3U || id == 4U || id == 5U;
 }
 
+/**
+ * @brief Copy firmware into the AR100 address map.
+ *
+ * Walks the remote processor address map and copies the firmware ranges
+ * into their physical destinations, validating each range before writing.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the address map.
+ * @param[in] firmware Pointer to the firmware image to load.
+ * @param[in] size Size of the firmware image in bytes.
+ * @return DRIVER_OK when the whole image was copied, DRIVER_ERROR_INVALID on
+ *         any range error.
+ */
 static int sun50iw10_ar100_copy(const sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
 {
 	const uint8_t *source = firmware;
@@ -48,6 +78,19 @@ static int sun50iw10_ar100_copy(const sunxi_remoteproc_t *remoteproc, const void
 	return copied == size ? DRIVER_OK : DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Load a firmware buffer into the AR100 and start it.
+ *
+ * On a cold start the firmware is copied into the AR100 memory map and the
+ * core is released; on a warm start the copy is skipped and the already
+ * loaded firmware is reused. The function then parks the primary core.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the address map.
+ * @param[in] firmware Pointer to the firmware image to load.
+ * @param[in] size Size of the firmware image in bytes.
+ * @return DRIVER_OK on success, or DRIVER_ERROR_INVALID on failure.
+ */
 static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
 {
 	uint32_t cold_start;
@@ -86,6 +129,9 @@ static int sun50iw10_ar100_load_buffer(sunxi_remoteproc_t *remoteproc, const voi
 		asm volatile("wfi");
 }
 
+/**
+ * @brief AR100 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.load_buffer = sun50iw10_ar100_load_buffer,
 };

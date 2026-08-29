@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file ufshc.c
+ * @brief UFS host-controller layer.
+ *
+ * This file deliberately knows nothing about SCSI commands.  It owns the
+ * UFSHCI register programming, UIC command path and one-slot UTP transport;
+ * the SCSI layer builds protocol requests on top of ufshc_exec().
+ */
+
 /*
  * UFS host-controller layer.
  *
@@ -36,16 +45,31 @@
 static uint8_t ufshc_dma_pool[UFSHC_DMA_POOL_SIZE] __attribute__((aligned(1024)));
 static bool ufshc_devman_ocs_reported;
 
+/**
+ * @brief Return the UTP transfer-request descriptor slot.
+ *
+ * @return Pointer to the UTRD in the SRAM descriptor pool.
+ */
 static inline struct ufshc_request_desc *ufshc_utrd(void)
 {
 	return (struct ufshc_request_desc *)(void *)(ufshc_dma_pool + UFSHC_DMA_UTRD_OFFSET);
 }
 
+/**
+ * @brief Return the UTP command-descriptor slot.
+ *
+ * @return Pointer to the UCD in the SRAM descriptor pool.
+ */
 static inline struct ufshc_command_desc *ufshc_ucd(void)
 {
 	return (struct ufshc_command_desc *)(void *)(ufshc_dma_pool + UFSHC_DMA_UCD_OFFSET);
 }
 
+/**
+ * @brief Return the UTP task-management request-descriptor slot.
+ *
+ * @return Pointer to the UTMRD in the SRAM descriptor pool.
+ */
 static inline struct ufshc_task_request_desc *ufshc_utmrd(void)
 {
 	return (struct ufshc_task_request_desc *)(void *)(ufshc_dma_pool + UFSHC_DMA_UTMRD_OFFSET);
@@ -55,11 +79,23 @@ static inline struct ufshc_task_request_desc *ufshc_utmrd(void)
 #define UPIU_FLAG_READ	0x40U
 #define UPIU_FLAG_WRITE 0x20U
 
+/**
+ * @brief Convert a 32-bit value between host and big-endian byte order.
+ *
+ * @param[in] value Value to byte-swap.
+ * @return The byte-swapped value.
+ */
 static inline uint32_t ufs_be32(uint32_t value)
 {
 	return __builtin_bswap32(value);
 }
 
+/**
+ * @brief Load an unaligned 32-bit value.
+ *
+ * @param[in] address Source address.
+ * @return The loaded value.
+ */
 static uint32_t ufs_load32(const void *address)
 {
 	uint32_t value;
@@ -68,27 +104,59 @@ static uint32_t ufs_load32(const void *address)
 	return value;
 }
 
+/**
+ * @brief Store a 32-bit value at an unaligned address.
+ *
+ * @param[out] address Destination address.
+ * @param[in] value Value to store.
+ */
 static void ufs_store32(void *address, uint32_t value)
 {
 	memcpy(address, &value, sizeof(value));
 }
 
+/**
+ * @brief Read a UFSHCI register.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] offset Register offset.
+ * @return The register value.
+ */
 static inline uint32_t ufshc_read(const struct ufshc_host *host, uint32_t offset)
 {
 	return readl(host->base + offset);
 }
 
+/**
+ * @brief Write a UFSHCI register.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] offset Register offset.
+ * @param[in] value Value to write.
+ */
 static inline void ufshc_write(const struct ufshc_host *host, uint32_t offset, uint32_t value)
 {
 	writel(value, host->base + offset);
 }
 
+/**
+ * @brief Return the configured timeout, falling back to the default.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return Timeout value in microseconds.
+ */
 static uint32_t ufshc_timeout(const struct ufshc_host *host)
 {
 	return host->timeout_us ? host->timeout_us : UFSHC_TIMEOUT_US;
 }
 
 #ifdef CONFIG_DRIVER_UFS_DEBUG
+/**
+ * @brief Dump the UFSHCI diagnostic register state.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] stage Label describing the point at which the state is logged.
+ */
 static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
 {
 	if (!host || !host->base)
@@ -108,6 +176,14 @@ static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
 #define ufshc_log_state(host, stage) do { } while (0)
 #endif
 
+/**
+ * @brief Log a UFSHCI failure and return its error code.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] stage Label describing the failed operation.
+ * @param[in] ret Error code to log and return.
+ * @return The value of @p ret.
+ */
 static int ufshc_fail(struct ufshc_host *host, const char *stage, int ret)
 {
 	printk_error("UFSHCI: %s failed ret=%d\n", stage, ret);
@@ -115,6 +191,12 @@ static int ufshc_fail(struct ufshc_host *host, const char *stage, int ret)
 	return ret;
 }
 
+/**
+ * @brief Normalize the HCI version register into a comparable value.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return The version expressed as a comparable value such as 0x110.
+ */
 static uint32_t ufshc_hci_version(const struct ufshc_host *host)
 {
 	uint32_t version = host->version;
@@ -125,11 +207,27 @@ static uint32_t ufshc_hci_version(const struct ufshc_host *host)
 	return version;
 }
 
+/**
+ * @brief Select the UTP command type for the controller version.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] legacy_type Command type to use for legacy HCI versions.
+ * @return The command type encoding to program.
+ */
 static uint32_t ufshc_cmd_type(const struct ufshc_host *host, uint32_t legacy_type)
 {
 	return ufshc_hci_version(host) <= 0x110U ? legacy_type : UFSHC_REQ_CMD_TYPE_UFS_STORAGE;
 }
 
+/**
+ * @brief Wait until a register field equals a value.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] offset Register offset to poll.
+ * @param[in] mask Mask of bits to compare.
+ * @param[in] value Expected masked value.
+ * @return 0 when the condition is met, UFS_ERR_TIMEOUT on timeout.
+ */
 static int ufshc_wait_mask(const struct ufshc_host *host, uint32_t offset, uint32_t mask, uint32_t value)
 {
 	uint64_t start = time_us();
@@ -141,6 +239,11 @@ static int ufshc_wait_mask(const struct ufshc_host *host, uint32_t offset, uint3
 	return 0;
 }
 
+/**
+ * @brief Clear all asserted UFSHCI interrupts.
+ *
+ * @param[in] host Host controller descriptor.
+ */
 static void ufshc_clear_interrupts(struct ufshc_host *host)
 {
 	uint32_t status = ufshc_read(host, UFSHC_REG_INTERRUPT_STATUS);
@@ -149,6 +252,11 @@ static void ufshc_clear_interrupts(struct ufshc_host *host)
 		ufshc_write(host, UFSHC_REG_INTERRUPT_STATUS, status);
 }
 
+/**
+ * @brief Abort a transfer queued in slot 0.
+ *
+ * @param[in] host Host controller descriptor.
+ */
 static void ufshc_abort_transfer(struct ufshc_host *host)
 {
 	/* UTRLCLR is a write-one-to-clear slot bitmap.  This implementation owns
@@ -157,6 +265,13 @@ static void ufshc_abort_transfer(struct ufshc_host *host)
 	ufshc_wait_mask(host, UFSHC_REG_UTRL_DOOR_BELL, 1U, 0U);
 }
 
+/**
+ * @brief Flush descriptors and data to memory for the controller.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] data Optional transfer buffer to clean.
+ * @param[in] data_len Size of @p data in bytes.
+ */
 static void ufshc_sync_for_device(struct ufshc_host *host, const void *data, size_t data_len)
 {
 	struct ufshc_request_desc *utrd = ufshc_utrd();
@@ -171,6 +286,13 @@ static void ufshc_sync_for_device(struct ufshc_host *host, const void *data, siz
 	data_sync_barrier();
 }
 
+/**
+ * @brief Invalidate descriptors and data after the controller has written them.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] data Optional transfer buffer to invalidate.
+ * @param[in] data_len Size of @p data in bytes.
+ */
 static void ufshc_sync_for_cpu(struct ufshc_host *host, const void *data, size_t data_len)
 {
 	struct ufshc_request_desc *utrd = ufshc_utrd();
@@ -185,6 +307,13 @@ static void ufshc_sync_for_cpu(struct ufshc_host *host, const void *data, size_t
 	data_sync_barrier();
 }
 
+/**
+ * @brief Request and wait for controller initialization (HCE).
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @return 0 on success, UFS_ERR_TIMEOUT when the controller does not become
+ *         enabled.
+ */
 static int ufshc_enable_controller(struct ufshc_host *host)
 {
 	uint64_t start;
@@ -202,6 +331,15 @@ static int ufshc_enable_controller(struct ufshc_host *host)
 
 static void ufshc_configure_slot(struct ufshc_host *host);
 
+/**
+ * @brief Re-initialize the controller after a failed link startup.
+ *
+ * Drives HCE low and high again, clears interrupts, and enables only UIC
+ * completion and power-mode reporting during the M-PHY bring-up phase.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @return 0 on success, otherwise an error code.
+ */
 static int ufshc_reinitialize_controller(struct ufshc_host *host)
 {
 	int ret;
@@ -223,11 +361,23 @@ static int ufshc_reinitialize_controller(struct ufshc_host *host)
 	return 0;
 }
 
+/**
+ * @brief Wait for the controller to report itself operational.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return 0 when operational, UFS_ERR_TIMEOUT otherwise.
+ */
 static int ufshc_wait_operational(struct ufshc_host *host)
 {
 	return ufshc_wait_mask(host, UFSHC_REG_CONTROLLER_STATUS, UFSHC_HCS_READY, UFSHC_HCS_READY);
 }
 
+/**
+ * @brief Wait for a peer-initiated link startup indication.
+ *
+ * @param[in] host Host controller descriptor.
+ * @return 0 when the ULSS event is seen, UFS_ERR_TIMEOUT otherwise.
+ */
 static int ufshc_wait_peer_link_startup(struct ufshc_host *host)
 {
 	uint64_t start = time_us();
@@ -241,6 +391,12 @@ static int ufshc_wait_peer_link_startup(struct ufshc_host *host)
 	return 0;
 }
 
+/**
+ * @brief Prepare the UTRD for a new transfer.
+ *
+ * Zeroes the descriptor, links it to the UCD, and sets the response and PRDT
+ * offsets plus the default overall command status.
+ */
 static void ufshc_prepare_utrd(void)
 {
 	struct ufshc_request_desc *utrd = ufshc_utrd();
@@ -258,6 +414,11 @@ static void ufshc_prepare_utrd(void)
 	data_sync_barrier();
 }
 
+/**
+ * @brief Program the transfer and task-management list base addresses.
+ *
+ * @param[in,out] host Host controller descriptor.
+ */
 static void ufshc_configure_slot(struct ufshc_host *host)
 {
 	uintptr_t utrd = (uintptr_t)ufshc_utrd();
@@ -272,6 +433,18 @@ static void ufshc_configure_slot(struct ufshc_host *host)
 	ufshc_write(host, UFSHC_REG_UTMRL_BASE_H, (uint32_t)((uint64_t)utmrd >> 32));
 }
 
+/**
+ * @brief Issue a UIC command and wait for its completion.
+ *
+ * Waits for the UIC command-ready state, clears stale completions, writes the
+ * command arguments, and polls for the completion or error interrupt, treating
+ * a transient PHY error during link startup as a non-fatal condition.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] args UIC command arguments.
+ * @param[out] result Optional storage for the command result in UIC_ARG2.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *args, uint32_t *result)
 {
 	uint64_t start;
@@ -347,12 +520,29 @@ int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *
 	return 0;
 }
 
+/**
+ * @brief Encode a DME attribute and selector into a UIC argument.
+ *
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @return The encoded UIC argument value.
+ */
 static uint32_t ufshc_uic_attribute(uint32_t attribute, uint16_t selector)
 {
 	/* UIC_ARG_MIB_SEL(attr, sel): attr in bits 31:16, selector in 15:0. */
 	return ((attribute & 0xffffU) << 16) | selector;
 }
 
+/**
+ * @brief Read a DME attribute with an explicit selector.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[out] value Receives the attribute value on success.
+ * @param[in] peer true for a DME_PEER_GET, false for a local DME_GET.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_dme_get_sel(struct ufshc_host *host, uint32_t attribute, uint16_t selector, uint32_t *value, bool peer)
 {
 	struct ufshc_uic_cmd_args args = {
@@ -375,6 +565,16 @@ int ufshc_dme_get_sel(struct ufshc_host *host, uint32_t attribute, uint16_t sele
 	return ret;
 }
 
+/**
+ * @brief Write a DME attribute with an explicit selector.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] selector Attribute selector.
+ * @param[in] value Value to write.
+ * @param[in] peer true for a DME_PEER_SET, false for a local DME_SET.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_dme_set_sel(struct ufshc_host *host, uint32_t attribute, uint16_t selector, uint32_t value, bool peer)
 {
 	struct ufshc_uic_cmd_args args = {
@@ -393,16 +593,44 @@ int ufshc_dme_set_sel(struct ufshc_host *host, uint32_t attribute, uint16_t sele
 	return ret;
 }
 
+/**
+ * @brief Read a DME attribute with selector zero.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] attribute DME attribute identifier.
+ * @param[out] value Receives the attribute value on success.
+ * @param[in] peer true for a DME_PEER_GET, false for a local DME_GET.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_dme_get(struct ufshc_host *host, uint32_t attribute, uint32_t *value, bool peer)
 {
 	return ufshc_dme_get_sel(host, attribute, 0, value, peer);
 }
 
+/**
+ * @brief Write a DME attribute with selector zero.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[in] attribute DME attribute identifier.
+ * @param[in] value Value to write.
+ * @param[in] peer true for a DME_PEER_SET, false for a local DME_SET.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_dme_set(struct ufshc_host *host, uint32_t attribute, uint32_t value, bool peer)
 {
 	return ufshc_dme_set_sel(host, attribute, 0, value, peer);
 }
 
+/**
+ * @brief Read the maximum power mode supported by host and device.
+ *
+ * Queries the connected lane counts and the local and peer HS/PWM gear
+ * capabilities and reports the negotiated maximums.
+ *
+ * @param[in] host Host controller descriptor.
+ * @param[out] mode Receives the maximum power mode.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *mode)
 {
 	uint32_t value;
@@ -468,6 +696,17 @@ int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *m
 	return 0;
 }
 
+/**
+ * @brief Transition the link to a selected power mode.
+ *
+ * Configures adaptation, gear, active lanes, and termination through DME SET
+ * commands, requests the power-mode change, and waits for the local state to
+ * match the selected mode.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] mode Power mode to activate.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mode *mode)
 {
 	struct ufshc_uic_cmd_args args;
@@ -551,6 +790,17 @@ int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mo
 	}
 }
 
+/**
+ * @brief Initialize the UFS host controller.
+ *
+ * Enables and prepares the platform, reads the controller capabilities,
+ * brings the controller out of reset, runs link startup with retries, configures
+ * the slot descriptors, and starts the transfer and task lists.
+ *
+ * @param[out] host Host controller descriptor to initialize.
+ * @param[in] config Host controller configuration.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 {
 	bool skip_phy_setup = false;
@@ -716,6 +966,16 @@ disable_host:
 	return ret;
 }
 
+/**
+ * @brief Execute a device-management UTP request.
+ *
+ * Rings the transfer doorbell, waits for the transfer-complete interrupt, and
+ * reports the overall command status.  A dedicated, longer timeout is used for
+ * NOP and Query requests.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @return 0 on success, otherwise an error code.
+ */
 static int ufshc_exec_devman(struct ufshc_host *host)
 {
 	struct ufshc_request_desc *utrd = ufshc_utrd();
@@ -779,6 +1039,12 @@ static int ufshc_exec_devman(struct ufshc_host *host)
 	return 0;
 }
 
+/**
+ * @brief Send a NOP OUT command and check for a NOP IN response.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_nop(struct ufshc_host *host)
 {
 	struct ufshc_command_desc *ucd = ufshc_ucd();
@@ -804,6 +1070,15 @@ int ufshc_nop(struct ufshc_host *host)
 	return 0;
 }
 
+/**
+ * @brief Execute a Query Flag operation.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] idn Query flag identifier.
+ * @param[in] opcode Read, set, clear, or toggle flag opcode.
+ * @param[out] value Receives the flag value for a read operation.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_query_flag_op(struct ufshc_host *host, uint8_t idn, uint8_t opcode, bool *value)
 {
 	struct ufshc_command_desc *ucd = ufshc_ucd();
@@ -850,11 +1125,31 @@ int ufshc_query_flag_op(struct ufshc_host *host, uint8_t idn, uint8_t opcode, bo
 	return 0;
 }
 
+/**
+ * @brief Set or read a Query Flag.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] idn Query flag identifier.
+ * @param[in] set true to set the flag, false to read it.
+ * @param[out] value Receives the flag value when reading.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_query_flag(struct ufshc_host *host, uint8_t idn, bool set, bool *value)
 {
 	return ufshc_query_flag_op(host, idn, set ? UFSHC_QUERY_OPCODE_SET_FLAG : UFSHC_QUERY_OPCODE_READ_FLAG, value);
 }
 
+/**
+ * @brief Read or write a Query Attribute.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] idn Query attribute identifier.
+ * @param[in] index Attribute index.
+ * @param[in] selector Attribute selector.
+ * @param[in,out] value Attribute value to write, or storage for the read.
+ * @param[in] write true to write the attribute, false to read it.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_query_attribute(
 	struct ufshc_host *host, uint8_t idn, uint8_t index, uint8_t selector, uint32_t *value, bool write)
 {
@@ -897,6 +1192,19 @@ int ufshc_query_attribute(
 	return 0;
 }
 
+/**
+ * @brief Execute a Query Descriptor read or write.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] opcode Read or write descriptor opcode.
+ * @param[in] idn Query descriptor identifier.
+ * @param[in] index Descriptor index.
+ * @param[in] selector Descriptor selector.
+ * @param[in,out] buffer Descriptor data to write, or storage for the read.
+ * @param[in] buffer_len Size of @p buffer in bytes.
+ * @param[out] actual_len Receives the descriptor length actually transferred.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_query_descriptor_op(struct ufshc_host *host, uint8_t opcode, uint8_t idn, uint8_t index, uint8_t selector,
 	void *buffer, size_t buffer_len, size_t *actual_len)
 {
@@ -961,6 +1269,18 @@ int ufshc_query_descriptor_op(struct ufshc_host *host, uint8_t opcode, uint8_t i
 	return 0;
 }
 
+/**
+ * @brief Read a Query Descriptor.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] idn Query descriptor identifier.
+ * @param[in] index Descriptor index.
+ * @param[in] selector Descriptor selector.
+ * @param[out] buffer Storage for the descriptor data.
+ * @param[in] buffer_len Size of @p buffer in bytes.
+ * @param[out] actual_len Receives the descriptor length actually transferred.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_query_descriptor(struct ufshc_host *host, uint8_t idn, uint8_t index, uint8_t selector, void *buffer,
 	size_t buffer_len, size_t *actual_len)
 {
@@ -968,6 +1288,16 @@ int ufshc_query_descriptor(struct ufshc_host *host, uint8_t idn, uint8_t index, 
 		host, UFSHC_QUERY_OPCODE_READ_DESC, idn, index, selector, buffer, buffer_len, actual_len);
 }
 
+/**
+ * @brief Send a task-management request.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in] lun Logical unit number.
+ * @param[in] function Task-management function.
+ * @param[in] task_id Task tag for the request.
+ * @param[out] service_response Receives the task response code on success.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_task_request(
 	struct ufshc_host *host, uint8_t lun, uint8_t function, uint16_t task_id, uint8_t *service_response)
 {
@@ -1030,6 +1360,18 @@ int ufshc_task_request(
 	return 0;
 }
 
+/**
+ * @brief Execute a SCSI UTP transfer request.
+ *
+ * Validates the request, builds the command UPIU and PRDT, rings the transfer
+ * doorbell, and waits for the transfer-complete interrupt.  On success the
+ * response type, status, sense data, and residual transfer count are captured
+ * in @p request.
+ *
+ * @param[in,out] host Host controller descriptor.
+ * @param[in,out] request Transfer request to execute.
+ * @return 0 on success, otherwise an error code.
+ */
 int ufshc_exec(struct ufshc_host *host, struct ufshc_request *request)
 {
 	struct ufshc_request_desc *utrd = ufshc_utrd();
@@ -1149,6 +1491,14 @@ int ufshc_exec(struct ufshc_host *host, struct ufshc_request *request)
 	return 0;
 }
 
+/**
+ * @brief Tear down the UFS host controller.
+ *
+ * Stops the transfer and task lists, disables the controller, and releases the
+ * platform resources.
+ *
+ * @param[in,out] host Host controller descriptor to deinitialize.
+ */
 void ufshc_exit(struct ufshc_host *host)
 {
 	if (!host)

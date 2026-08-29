@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file pcie-controller.h
+ * @brief PCIe controller core, register access and ATU programming.
+ *
+ * Defines the PCIe controller configuration, ATU region description, the
+ * controller operations table and the register-level helpers shared by the
+ * RC and EP layers.
+ */
+
 #ifndef __DRIVERS_PCIE_CONTROLLER_H__
 #define __DRIVERS_PCIE_CONTROLLER_H__
 
@@ -13,21 +22,33 @@
 #define PCIE_ERR_NO_DEVICE              (-4)
 #define PCIE_ERR_IO                     (-5)
 
+/**
+ * @enum pcie_mode
+ * @brief PCIe controller operating mode.
+ */
 enum pcie_mode {
-	PCIE_MODE_RC = 0,
-	PCIE_MODE_EP = 1,
+	PCIE_MODE_RC = 0, /**< Root Complex mode. */
+	PCIE_MODE_EP = 1, /**< Endpoint mode. */
 };
 
+/**
+ * @enum pcie_atu_direction
+ * @brief Address translation unit (ATU) window direction.
+ */
 enum pcie_atu_direction {
-	PCIE_ATU_OUTBOUND = 0,
-	PCIE_ATU_INBOUND = 1,
+	PCIE_ATU_OUTBOUND = 0, /**< Outbound (CPU to PCI) translation. */
+	PCIE_ATU_INBOUND = 1, /**< Inbound (PCI to CPU) translation. */
 };
 
+/**
+ * @enum pcie_atu_type
+ * @brief Address translation unit (ATU) window type.
+ */
 enum pcie_atu_type {
-	PCIE_ATU_TYPE_MEM = 0x0,
-	PCIE_ATU_TYPE_IO = 0x2,
-	PCIE_ATU_TYPE_CFG0 = 0x4,
-	PCIE_ATU_TYPE_CFG1 = 0x5,
+	PCIE_ATU_TYPE_MEM = 0x0, /**< Memory window. */
+	PCIE_ATU_TYPE_IO = 0x2, /**< IO window. */
+	PCIE_ATU_TYPE_CFG0 = 0x4, /**< Type 0 configuration window. */
+	PCIE_ATU_TYPE_CFG1 = 0x5, /**< Type 1 configuration window. */
 };
 
 /* PCI configuration space offsets used by the core and the RC/EP layers. */
@@ -122,120 +143,217 @@ enum pcie_atu_type {
 
 struct pcie_controller;
 
+/**
+ * @struct pcie_controller_config
+ * @brief Hardware configuration for the PCIe controller core.
+ */
 struct pcie_controller_config {
-	uintptr_t dbi_base;
-	uintptr_t app_base;
-	uint32_t dbi_size;
-	uint32_t app_size;
+	uintptr_t dbi_base; /**< Base address of the DBI register block. */
+	uintptr_t app_base; /**< Base address of the application register block. */
+	uint32_t dbi_size; /**< Size of the DBI register block, in bytes. */
+	uint32_t app_size; /**< Size of the application register block, in bytes. */
 
-	uintptr_t cfg_cpu_addr;
+	uintptr_t cfg_cpu_addr; /**< CPU address of the configuration window. */
 	/* Config requests use a BDF-encoded iATU target, not this base. */
-	uint64_t cfg_pci_addr;
-	uint32_t cfg_size;
-	uintptr_t mem_cpu_addr;
-	uint64_t mem_pci_addr;
-	uint32_t mem_size;
-	uintptr_t io_cpu_addr;
-	uint64_t io_pci_addr;
-	uint32_t io_size;
+	uint64_t cfg_pci_addr; /**< PCI address of the configuration window. */
+	uint32_t cfg_size; /**< Size of the configuration window, in bytes. */
+	uintptr_t mem_cpu_addr; /**< CPU address of the memory window. */
+	uint64_t mem_pci_addr; /**< PCI address of the memory window. */
+	uint32_t mem_size; /**< Size of the memory window, in bytes. */
+	uintptr_t io_cpu_addr; /**< CPU address of the IO window. */
+	uint64_t io_pci_addr; /**< PCI address of the IO window. */
+	uint32_t io_size; /**< Size of the IO window, in bytes. */
 
-	enum pcie_mode mode;
-	uint8_t lanes;
-	uint8_t link_gen;
-	uint8_t max_lanes;
-	uint8_t max_link_gen;
-	uint8_t num_ob_windows;
-	uint8_t num_ib_windows;
+	enum pcie_mode mode; /**< Controller operating mode, RC or EP. */
+	uint8_t lanes; /**< Number of active lanes. */
+	uint8_t link_gen; /**< Active link generation. */
+	uint8_t max_lanes; /**< Maximum number of supported lanes. */
+	uint8_t max_link_gen; /**< Maximum supported link generation. */
+	uint8_t num_ob_windows; /**< Number of outbound ATU windows. */
+	uint8_t num_ib_windows; /**< Number of inbound ATU windows. */
 	/* Endpoint function configuration-space stride in the controller DBI. */
-	uint32_t ep_function_stride;
-	uint32_t timeout_us;
+	uint32_t ep_function_stride; /**< Endpoint function configuration-space stride. */
+	uint32_t timeout_us; /**< Timeout for controller operations, in microseconds. */
 };
 
+/**
+ * @struct pcie_atu_region
+ * @brief Description of one address translation unit (ATU) window.
+ */
 struct pcie_atu_region {
-	enum pcie_atu_direction direction;
-	enum pcie_atu_type type;
-	uint8_t index;
-	uint8_t function;
-	uint8_t bar;
-	bool function_match;
-	bool bar_match;
-	uint64_t cpu_addr;
-	uint64_t pci_addr;
-	uint64_t size;
+	enum pcie_atu_direction direction; /**< Window direction (outbound/inbound). */
+	enum pcie_atu_type type; /**< Window type (memory, IO or config). */
+	uint8_t index; /**< ATU window index. */
+	uint8_t function; /**< Endpoint function for function-matched windows. */
+	uint8_t bar; /**< BAR for bar-matched windows. */
+	bool function_match; /**< Whether the window matches by function. */
+	bool bar_match; /**< Whether the window matches by BAR. */
+	uint64_t cpu_addr; /**< CPU-side start address. */
+	uint64_t pci_addr; /**< PCI-side start address. */
+	uint64_t size; /**< Size of the window, in bytes. */
 };
 
+/**
+ * @struct pcie_controller_ops
+ * @brief Operations implemented by the SoC-specific PCIe controller driver.
+ */
 struct pcie_controller_ops {
-	int (*init)(struct pcie_controller *controller);
-	void (*exit)(struct pcie_controller *controller);
+	int (*init)(struct pcie_controller *controller); /**< Initialize the controller hardware. */
+	void (*exit)(struct pcie_controller *controller); /**< Shut down the controller hardware. */
 	int (*read_dbi)(struct pcie_controller *controller, uint32_t offset,
-			uint8_t size, uint32_t *value);
+			uint8_t size, uint32_t *value); /**< Read from DBI space. */
 	int (*write_dbi)(struct pcie_controller *controller, uint32_t offset,
-			uint8_t size, uint32_t value);
+			uint8_t size, uint32_t value); /**< Write to DBI space. */
 	int (*dbi_ro_write_enable)(struct pcie_controller *controller,
-			bool enable);
+			bool enable); /**< Enable or disable DBI read-only register writes. */
 	int (*set_ep_bar)(struct pcie_controller *controller, uint8_t function,
-			uint8_t bar, bool enable, bool bar_64bit);
+			uint8_t bar, bool enable, bool bar_64bit); /**< Configure an endpoint BAR. */
 	int (*read_app)(struct pcie_controller *controller, uint32_t offset,
-			uint32_t *value);
+			uint32_t *value); /**< Read from application registers. */
 	int (*write_app)(struct pcie_controller *controller, uint32_t offset,
-			uint32_t value);
-	int (*set_mode)(struct pcie_controller *controller, enum pcie_mode mode);
-	int (*set_link)(struct pcie_controller *controller);
-	int (*change_speed)(struct pcie_controller *controller, uint8_t link_gen);
-	int (*ltssm)(struct pcie_controller *controller, bool enable);
-	bool (*link_up)(struct pcie_controller *controller);
-	int (*wait_link)(struct pcie_controller *controller, uint32_t timeout_us);
+			uint32_t value); /**< Write to application registers. */
+	int (*set_mode)(struct pcie_controller *controller, enum pcie_mode mode); /**< Set the controller operating mode. */
+	int (*set_link)(struct pcie_controller *controller); /**< Configure the link width and speed. */
+	int (*change_speed)(struct pcie_controller *controller, uint8_t link_gen); /**< Change the link speed. */
+	int (*ltssm)(struct pcie_controller *controller, bool enable); /**< Enable or disable the LTSSM. */
+	bool (*link_up)(struct pcie_controller *controller); /**< Report whether the link is up. */
+	int (*wait_link)(struct pcie_controller *controller, uint32_t timeout_us); /**< Wait for the link to come up. */
 	int (*program_atu)(struct pcie_controller *controller,
-			const struct pcie_atu_region *region);
+			const struct pcie_atu_region *region); /**< Program an ATU window. */
 	int (*disable_atu)(struct pcie_controller *controller,
-			enum pcie_atu_direction direction, uint8_t index);
+			enum pcie_atu_direction direction, uint8_t index); /**< Disable an ATU window. */
 };
 
+/**
+ * @struct pcie_controller
+ * @brief Runtime PCIe controller instance.
+ */
 struct pcie_controller {
-	struct pcie_controller_config config;
-	const struct pcie_controller_ops *ops;
-	bool initialized;
+	struct pcie_controller_config config; /**< Controller hardware configuration. */
+	const struct pcie_controller_ops *ops; /**< SoC-specific controller operations. */
+	bool initialized; /**< Whether the controller has been initialized. */
 };
 
+/**
+ * @brief Initialize the PCIe controller using the built-in operations.
+ */
 int pcie_controller_init(struct pcie_controller *controller,
 		const struct pcie_controller_config *config);
+
+/**
+ * @brief Initialize the PCIe controller with a caller-supplied operations table.
+ */
 int pcie_controller_init_with_ops(struct pcie_controller *controller,
 		const struct pcie_controller_config *config,
 		const struct pcie_controller_ops *ops);
+
+/**
+ * @brief Shut down the PCIe controller.
+ */
 void pcie_controller_exit(struct pcie_controller *controller);
 
+/**
+ * @brief Read a value from DBI register space.
+ */
 int pcie_controller_dbi_read(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t *value);
+
+/**
+ * @brief Write a value to DBI register space.
+ */
 int pcie_controller_dbi_write(struct pcie_controller *controller,
 		uint32_t offset, uint8_t size, uint32_t value);
+
+/**
+ * @brief Read a value from application register space.
+ */
 int pcie_controller_app_read(struct pcie_controller *controller,
 		uint32_t offset, uint32_t *value);
+
+/**
+ * @brief Write a value to application register space.
+ */
 int pcie_controller_app_write(struct pcie_controller *controller,
 		uint32_t offset, uint32_t value);
+
+/**
+ * @brief Enable or disable writes to DBI read-only registers.
+ */
 int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller,
 		bool enable);
+
+/**
+ * @brief Configure an endpoint BAR in the controller.
+ */
 int pcie_controller_set_ep_bar(struct pcie_controller *controller,
 		uint8_t function, uint8_t bar, bool enable, bool bar_64bit);
+
+/**
+ * @brief Set the controller operating mode.
+ */
 int pcie_controller_set_mode(struct pcie_controller *controller,
 		enum pcie_mode mode);
+
+/**
+ * @brief Configure the link width and speed.
+ */
 int pcie_controller_set_link(struct pcie_controller *controller);
+
+/**
+ * @brief Change the PCIe link speed.
+ */
 int pcie_controller_change_speed(struct pcie_controller *controller,
 		uint8_t link_gen);
+
+/**
+ * @brief Enable or disable the LTSSM.
+ */
 int pcie_controller_ltssm(struct pcie_controller *controller, bool enable);
+
+/**
+ * @brief Check whether the PCIe link is up.
+ */
 bool pcie_controller_link_up(struct pcie_controller *controller);
+
+/**
+ * @brief Wait for the PCIe link to come up.
+ */
 int pcie_controller_wait_link(struct pcie_controller *controller,
 		uint32_t timeout_us);
+
+/**
+ * @brief Program an ATU translation window.
+ */
 int pcie_controller_program_atu(struct pcie_controller *controller,
 		const struct pcie_atu_region *region);
+
+/**
+ * @brief Disable an ATU translation window.
+ */
 int pcie_controller_disable_atu(struct pcie_controller *controller,
 		enum pcie_atu_direction direction, uint8_t index);
 
+/**
+ * @brief Read a value from PCI configuration space.
+ */
 int pcie_controller_cfg_read(struct pcie_controller *controller,
 		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value);
+
+/**
+ * @brief Write a value to PCI configuration space.
+ */
 int pcie_controller_cfg_write(struct pcie_controller *controller,
 		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value);
+
+/**
+ * @brief Find a PCI capability in configuration space.
+ */
 int pcie_controller_find_capability(struct pcie_controller *controller,
 		uint32_t function_offset, uint8_t capability);
+
+/**
+ * @brief Find a PCIe extended capability in configuration space.
+ */
 int pcie_controller_find_ext_capability(struct pcie_controller *controller,
 		uint32_t function_offset, uint16_t capability);
 

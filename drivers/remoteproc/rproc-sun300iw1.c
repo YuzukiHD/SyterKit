@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file rproc-sun300iw1.c
+ * @brief Sun300iw1 A27L2 remote processor bring-up.
+ *
+ * Implements the remoteproc start callback that powers on, clocks and
+ * releases the secondary A27L2 (Cortex-A7) core from reset.
+ */
+
 #include <stdint.h>
 
 #include <driver.h>
@@ -16,6 +24,9 @@
 #define A27L_WAKEUP_CTRL_REG 0x64U
 #define A27L_WAKEUP_EN (1U << 8)
 
+/**
+ * @brief Register resource indices used by the A27L2 remote processor.
+ */
 enum sun300iw1_a27l2_register {
 	SUN300IW1_A27L2_PMU_AON,
 	SUN300IW1_A27L2_CCU_AON,
@@ -23,6 +34,18 @@ enum sun300iw1_a27l2_register {
 	SUN300IW1_A27L2_CFG,
 };
 
+/**
+ * @brief Start the secondary A27L2 (Cortex-A7) core.
+ *
+ * Enables the A27L2 wake-up control, configures the module clock and reset
+ * controls, clears the T-Head MHCR cache flags and releases the core from
+ * reset at the configured entry address.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success, or DRIVER_ERROR_INVALID if no entry point
+ *         is configured.
+ */
 static int sun300iw1_a27l2_start(sunxi_remoteproc_t *remoteproc)
 {
 	uint32_t cache_flags = 0x103fU;
@@ -54,6 +77,9 @@ static int sun300iw1_a27l2_start(sunxi_remoteproc_t *remoteproc)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief A27L2 remote processor operations exposed to the remoteproc core.
+ */
 const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
 	.start = sun300iw1_a27l2_start,
 };

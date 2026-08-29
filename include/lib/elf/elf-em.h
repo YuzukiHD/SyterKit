@@ -1,3 +1,9 @@
+/**
+ * @file elf-em.h
+ * @brief ELF machine architecture IDs.
+ * @details Vendored from the Linux kernel UAPI ELF headers.
+ */
+
 #ifndef _LINUX_ELF_EM_H
 #define _LINUX_ELF_EM_H
 

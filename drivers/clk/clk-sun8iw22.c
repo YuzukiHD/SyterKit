@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun8iw22.c
+ * @brief Clock driver for the Allwinner sun8iw22 SoC.
+ *
+ * During early boot this driver programs the CPU PLL to 1008 MHz and selects
+ * it as the CPUX clock source.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -18,6 +26,12 @@
 #define CPU_LOCK_OFFSET (28)
 #define CPU_LOCK_ENABLE_OFFSET (29)
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Configures the CPU PLL to 1008 MHz (n = 0x2a, m0 = m1 = 1, p = 1), updates
+ * and locks the PLL, then sets the CPUX divider and clock source.
+ */
 void sunxi_clk_init(void)
 {
 	uint32_t reg_val;
@@ -61,6 +75,11 @@ void sunxi_clk_init(void)
 	udelay(10);
 }
 
+/**
+ * @brief Dump the SoC clock configuration.
+ *
+ * No clock dump is implemented on sun8iw22, so this is an empty stub.
+ */
 void sunxi_clk_dump(void)
 {
 }

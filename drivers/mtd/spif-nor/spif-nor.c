@@ -1356,7 +1356,7 @@ int spif_nor_detect(spif_nor_t *nor)
  * read granularity and performs the necessary address calculations to handle 
  * multiple blocks.
  *
- * @param[in] spi Pointer to the SPI interface structure.
+ * @param[in] nor Pointer to the SPI NOR flash instance.
  * @param[out] buf Pointer to the buffer where the read data will be stored.
  * @param[in] blk_no The starting block number from which to read data.
  * @param[in] blk_cnt The number of blocks to read from the SPI NAND.
@@ -1415,7 +1415,7 @@ uint32_t spif_nor_read_block(spif_nor_t *nor, uint8_t *buf, uint32_t blk_no, uin
  * blocks, and it handles cases where the read address is not aligned to
  * the block size.
  *
- * @param[in] spi Pointer to the SPI interface structure.
+ * @param[in] nor Pointer to the SPI NOR flash instance.
  * @param[out] buf Pointer to the buffer where the read data will be stored.
  * @param[in] addr The starting address from which to read data in the SPI NOR.
  * @param[in] rxlen The number of bytes to read from the SPI NOR.

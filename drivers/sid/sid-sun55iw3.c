@@ -1,7 +1,19 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file sid-sun55iw3.c
+ * @brief Sun55iw3 eFuse SID section layout.
+ *
+ * Defines the named eFuse storage sections available on this SoC.
+ */
+
 #include "sid-internal.h"
 
+/**
+ * @brief eFuse section layout for the Sun55iw3 SoC.
+ *
+ * Each entry names an eFuse region, its byte offset and its size in bits.
+ */
 const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "chipid", 0x0000, 128 },
 	{ "brom-config", 0x0010, 32 },
@@ -26,4 +38,7 @@ const sunxi_sid_section_t sunxi_sid_sections[] = {
 	{ "backup-key2", 0x01a4, 72 },
 };
 
+/**
+ * @brief Number of entries in #sunxi_sid_sections.
+ */
 const size_t sunxi_sid_section_count = sizeof(sunxi_sid_sections) / sizeof(sunxi_sid_sections[0]);

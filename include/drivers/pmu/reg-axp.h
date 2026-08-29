@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp.h
+ * @brief Register map for the X-Powers AXP PMIC.
+ */
+
 #ifndef __G_REG_AXP_H__
 #define __G_REG_AXP_H__
 

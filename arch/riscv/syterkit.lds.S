@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file syterkit.lds.S
+ * @brief RISC-V linker script for the SyterKit firmware image.
+ *
+ * Lays out the SPL output sections in RAM for both RV32 and RV64 targets,
+ * selected at preprocess time by CONFIG_ARCH_RISCV64.
+ */
 #ifdef CONFIG_ARCH_RISCV64
 OUTPUT_FORMAT("elf64-littleriscv", "elf64-littleriscv", "elf64-littleriscv")
 #else

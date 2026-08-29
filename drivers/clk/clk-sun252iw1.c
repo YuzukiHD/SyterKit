@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun252iw1.c
+ * @brief Clock driver for the Allwinner sun252iw1 SoC.
+ *
+ * Programs the CPU PLL, the PERIPH0 PLL and the E907/C907 core clock sources
+ * together with the AHB/APB dividers during early boot.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -16,6 +24,12 @@
 
 #define SUNXI_C907_CLK (1008)
 
+/**
+ * @brief Set the CPUX PLL to 1008 MHz.
+ *
+ * Disables the output gate, programs the PLL factors for 1008 MHz, then
+ * enables and locks the PLL and re-enables its output.
+ */
 static inline void sunxi_set_cpux_pll(void)
 {
 	uint32_t reg_val = 0;
@@ -57,6 +71,13 @@ static inline void sunxi_set_cpux_pll(void)
 	udelay(1);
 }
 
+/**
+ * @brief Enable the PERIPH0 PLL.
+ *
+ * Enables the LDO, lock and PLL, waits for the PLL to lock, then disables the
+ * lock action and enables the PLL output. If FEL has already enabled the PLL
+ * this is a no-op.
+ */
 static inline void sunxi_set_pll_periph0(void)
 {
 	if (readl(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG) & BIT(PLL_PERI_CTRL_REG_PLL_EN_OFFSET)) {
@@ -86,6 +107,12 @@ static inline void sunxi_set_pll_periph0(void)
 	setbits_le32(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG, BIT(PLL_PERI_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
 }
 
+/**
+ * @brief Select the clock source for the E907 RISC-V core.
+ *
+ * Switches the E907 core clock to the PERI 600 MHz PLL with a divide factor
+ * of 1.
+ */
 static inline void sunxi_set_e907_sel(void)
 {
 	uint32_t reg_val;
@@ -102,6 +129,11 @@ static inline void sunxi_set_e907_sel(void)
 	udelay(1);
 }
 
+/**
+ * @brief Select the clock source for the C907 RISC-V core.
+ *
+ * Switches the C907 core clock to the CPU PLL.
+ */
 static inline void sunxi_set_c907_sel(void)
 {
 	uint32_t reg_val;
@@ -115,6 +147,11 @@ static inline void sunxi_set_c907_sel(void)
 	udelay(1);
 }
 
+/**
+ * @brief Configure the AHB bus clock.
+ *
+ * Sets the AHB divider to derive 200 MHz from the 600 MHz PERI PLL.
+ */
 static inline void sunxi_set_ahb_sel(void)
 {
 	/* PLL = 600M, (M - 1) = 2, N = 1, PLL_AHB = PLL / (M + 1) / N */
@@ -125,6 +162,12 @@ static inline void sunxi_set_ahb_sel(void)
 	udelay(1);
 }
 
+/**
+ * @brief Configure the APB0 bus clock.
+ *
+ * Sets the APB0 divider to derive 100 MHz from the 600 MHz PERI PLL while
+ * APB1 keeps its default 24 MHz OSC source.
+ */
 static inline void sunxi_set_apb_sel(void)
 {
 	/* PLL = 600M, (M - 1) = 2, N = 1, PLL_AHB = PLL / (M + 1) / N */
@@ -135,6 +178,12 @@ static inline void sunxi_set_apb_sel(void)
 	udelay(1);
 }
 
+/**
+ * @brief Deassert the DMA reset and open the DMA clock gate.
+ *
+ * Releases the DMA from reset and enables the gating clock so the DMA engine
+ * can be used by the boot loader.
+ */
 static inline void sunxi_set_dma_clk(void)
 {
 	/* DMA deassert */
@@ -144,6 +193,11 @@ static inline void sunxi_set_dma_clk(void)
 	udelay(1);
 }
 
+/**
+ * @brief Assert the MBUS domain reset.
+ *
+ * Puts the MBUS clock domain into reset so it can be configured later.
+ */
 static inline void sunxi_reset_mbus_domain(void)
 {
 	setbits_le32(SUNXI_CCU_BASE + MBUS_CLK_REG, MBUS_CLK_REG_MBUS_RST_DE_ASSERT << MBUS_CLK_REG_MBUS_RST_OFFSET);
@@ -155,6 +209,14 @@ static inline void sunxi_reset_mbus_domain(void)
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_LOCK_ENABLE_OFFSET (29)
 #define SUNXI_MODULE_PLL_CTRL_REG_PLL_LOCK_OFFSET (29)
 
+/**
+ * @brief Enable a module PLL.
+ *
+ * Enables the PLL, LDO and lock action for the PLL at the given register
+ * offset and waits for it to lock. PLLs that are already enabled are skipped.
+ *
+ * @param[in] reg_offset Offset of the module PLL control register.
+ */
 static inline void sunxi_set_module_pll(uint32_t reg_offset)
 {
 	uint32_t reg_val = readl(SUNXI_CCU_BASE + reg_offset);
@@ -177,6 +239,13 @@ static inline void sunxi_set_module_pll(uint32_t reg_offset)
 	}
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Programs the CPUX and PERIPH0 PLLs, selects the E907/C907 core clocks,
+ * configures the AHB/APB dividers, DMA and MBUS clocks, and enables the
+ * module PLLs.
+ */
 void sunxi_clk_init(void)
 {
 	sunxi_set_cpux_pll();
@@ -192,6 +261,11 @@ void sunxi_clk_init(void)
 	sunxi_set_module_pll(PLL_AUDIO_CTRL_REG);
 }
 
+/**
+ * @brief Dump the current CPU clock configuration.
+ *
+ * Prints the CPU clock source and the computed CPU frequency.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg_val;

@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file board.c
+ * @brief Board support for the TinyVision (sun8iw21).
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -22,6 +26,9 @@
 #include <drivers/serial/serial.h>
 #include <drivers/rtc/rtc.h>
 
+/**
+ * @brief Disable the MMU, caches, and interrupts before OS handoff.
+ */
 void clean_syterkit_data(void)
 {
 	/* Disable MMU, data cache, instruction cache, interrupts */
@@ -35,6 +42,14 @@ void clean_syterkit_data(void)
 	printk_info("free interrupt ok...\n");
 }
 
+/**
+ * @brief Configure the RTC VCCIO detect spare register.
+ *
+ * Sets the VCCIO detection threshold, forces the detector output, and
+ * disables the bypass for the spare VCCIO detect register.
+ *
+ * @param[in] rtc Pointer to the RTC device used for read/write access.
+ */
 void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc)
 {
 	uint32_t val = rtc_read_data(rtc, 0x3d);
@@ -44,6 +59,13 @@ void rtc_set_vccio_det_spare(const sunxi_rtc_t *rtc)
 	rtc_write_data(rtc, 0x3d, val);
 }
 
+/**
+ * @brief Calibrate the audio AVCC LDO using eFuse trim values.
+ *
+ * Resets and enables the audio codec BGR and gating, reads the rough and
+ * fine trim values from the eFuses, falls back to defaults for version-A
+ * chips, and writes the calibration to the audio power register.
+ */
 void sys_ldo_check(void)
 {
 	sunxi_sid_t sid;
@@ -99,6 +121,12 @@ void sys_ldo_check(void)
 	writel(reg_val, AUDIO_POWER_REG);
 }
 
+/**
+ * @brief Reset the system using the watchdog.
+ *
+ * Programs the watchdog with the reset key and then spins forever while the
+ * SoC performs the reset.
+ */
 void sys_reset(void)
 {
 	write32(SUNXI_WDOG_BASE + 0x08, 0x16aa0001U);

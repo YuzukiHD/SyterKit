@@ -1,5 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file start.S
+ * @brief ARM firmware start-up assembly.
+ *
+ * Performs the early CPU initialisation, exception-mode setup, and stack
+ * preparation before branching to the main firmware entry point.
+ */
 #include <linkage.h>
 
 .macro save_regs

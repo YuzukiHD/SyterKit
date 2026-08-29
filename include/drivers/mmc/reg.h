@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg.h
+ * @brief Register map for the MMC/SMHC host controller.
+ */
+
 #ifndef __MMC_REG_H__
 #define __MMC_REG_H__
 

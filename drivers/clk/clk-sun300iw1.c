@@ -1,5 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file clk-sun300iw1.c
+ * @brief Clock driver for the Allwinner sun300iw1 SoC.
+ *
+ * Programs the CPU, PERI, CSI and VIDEO PLLs together with the AHB/APB
+ * dividers during early boot, and provides a clock dump helper.
+ */
+
 #include <io.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -15,6 +23,20 @@
 #include <drivers/clk/sun300iw1/clk.h>
 #include <drivers/clk/sun300iw1/reg.h>
 
+/**
+ * @brief General purpose PLL configuration helper.
+ *
+ * Programs the D and N divider factors, then enables or disables the PLL,
+ * LDO, lock action and output gate as requested, waiting for the PLL to lock
+ * when it is enabled.
+ *
+ * @param[in] pll_addr        PLL control register address.
+ * @param[in] en              1 to enable the PLL, 0 to disable it.
+ * @param[in] output_gate_en  1 to enable the output gate, 0 to disable it.
+ * @param[in] pll_d           D divider value.
+ * @param[in] pll_d_off       Bit offset of the D divider field.
+ * @param[in] pll_n           N divider factor value.
+ */
 static void set_pll_general(uintptr_t pll_addr, uint32_t en, uint32_t output_gate_en, uint32_t pll_d, uint32_t pll_d_off, uint32_t pll_n)
 {
 	uint32_t pll_en;
@@ -48,6 +70,12 @@ static void set_pll_general(uintptr_t pll_addr, uint32_t en, uint32_t output_gat
 	return;
 }
 
+/**
+ * @brief Configure the E907 RISC-V core clock.
+ *
+ * Sets the E907 divider to 1 and selects the PERI PLL 614 MHz clock as the
+ * core clock source.
+ */
 static void set_pll_e90x(void)
 {
 	clrsetbits_le32(SUNXI_CCU_AON_BASE + E907_CLK_REG, E907_CLK_REG_E907_CLK_DIV_CLEAR_MASK, CCU_E90X_CLK_CPU_M_1 << E907_CLK_REG_E907_CLK_DIV_OFFSET);
@@ -55,6 +83,12 @@ static void set_pll_e90x(void)
 	return;
 }
 
+/**
+ * @brief Configure the A27L2 core clock.
+ *
+ * Sets the A27L2 divider to 1, selects the CPU PLL as the clock source and
+ * enables the A27L2 clock.
+ */
 static void set_pll_a27l2(void)
 {
 	clrsetbits_le32(SUNXI_CCU_AON_BASE + A27L2_CLK_REG, A27L2_CLK_REG_A27L2_CLK_DIV_CLEAR_MASK, CCU_A27_CLK_CPU_M_1 << A27L2_CLK_REG_A27L2_CLK_DIV_OFFSET);
@@ -63,6 +97,17 @@ static void set_pll_a27l2(void)
 	return;
 }
 
+/**
+ * @brief Configure the PERI PLL control0 register.
+ *
+ * Programs the N factor and input divider, enables or disables the PLL, LDO,
+ * lock action and output gate as requested, and waits for the PLL to lock.
+ *
+ * @param[in] en              1 to enable the PLL, 0 to disable it.
+ * @param[in] output_gate_en  1 to enable the output gate, 0 to disable it.
+ * @param[in] pll_n           N divider factor value.
+ * @param[in] pll_m           Input divider value.
+ */
 static void set_pll_peri_ctrl0(uint32_t en, uint32_t output_gate_en, uint32_t pll_n, uint32_t pll_m)
 {
 	uint32_t pll_en;
@@ -101,6 +146,12 @@ static void set_pll_peri_ctrl0(uint32_t en, uint32_t output_gate_en, uint32_t pl
 	}
 }
 
+/**
+ * @brief Configure the PERI PLL control1 register.
+ *
+ * Programs the PERI PLL control1 register to enable the peripheral output
+ * dividers.
+ */
 static void set_pll_peri_ctrl1(void)
 {
 	uint32_t reg;
@@ -113,6 +164,13 @@ static void set_pll_peri_ctrl1(void)
 }
 
 /* pll peri hosc*2N/M = 3072M  hardware * 2 */
+/**
+ * @brief Configure the PERI PLL.
+ *
+ * Enables the PERI PLL at 3072 MHz when it is not already running, choosing
+ * the N/M factors according to the HOSC rate, and configures the control1
+ * register.
+ */
 static void set_pll_peri(void)
 {
 	if (!(readl(SUNXI_CCU_AON_BASE + PLL_PERI_CTRL0_REG) & PLL_PERI_CTRL0_REG_PLL_EN_CLEAR_MASK)) {
@@ -127,6 +185,13 @@ static void set_pll_peri(void)
 }
 
 /* pll csi rate = 675M = hosc / 4 * N , N = N(INT) + N(FRAC) */
+/**
+ * @brief Configure the CSI PLL.
+ *
+ * Programs the N factor and input divider for 675 MHz, enables the PLL, LDO
+ * and SDM, applies the sigma-delta pattern settings and waits for the PLL to
+ * lock before enabling the output.
+ */
 static void set_pll_csi(void)
 {
 	uint32_t n, input_div, wave_bot;
@@ -172,6 +237,12 @@ static void set_pll_csi(void)
 }
 
 /* pll video = 1200M = hosc * N */
+/**
+ * @brief Configure the VIDEO PLL.
+ *
+ * Programs the N factor and input divider for 1200 MHz, enables the lock
+ * action, waits for the PLL to lock and enables the output gate.
+ */
 static void set_pll_video(void)
 {
 	/* Close Lock_en and Output_gate */
@@ -203,6 +274,12 @@ static void set_pll_video(void)
 }
 
 // ahb = 768/4 = 192M
+/**
+ * @brief Configure the AHB bus clock.
+ *
+ * Sets the AHB divider to derive 192 MHz and selects the PERI 768 MHz clock
+ * as the source.
+ */
 static void set_ahb(void)
 {
 	clrsetbits_le32(SUNXI_CCU_AON_BASE + AHB_CLK_REG, AHB_CLK_REG_AHB_CLK_DIV_CLEAR_MASK, CCU_AON_PLL_CPU_M_4 << AHB_CLK_REG_AHB_CLK_DIV_OFFSET);
@@ -213,6 +290,12 @@ static void set_ahb(void)
 }
 
 // apb = 384/4 = 96M
+/**
+ * @brief Configure the APB bus clock.
+ *
+ * Sets the APB divider to derive 96 MHz and selects the PERI 384 MHz clock as
+ * the source.
+ */
 static void set_apb(void)
 {
 	clrsetbits_le32(SUNXI_CCU_AON_BASE + APB_CLK_REG, APB_CLK_REG_APB_CLK_DIV_CLEAR_MASK, CCU_AON_PLL_CPU_M_4 << APB_CLK_REG_APB_CLK_DIV_OFFSET);
@@ -223,6 +306,11 @@ static void set_apb(void)
 }
 
 // 192M
+/**
+ * @brief Configure the APB_SPEC bus clock.
+ *
+ * Selects the PERI 192 MHz clock as the APB_SPEC clock source.
+ */
 static void set_apb_spec(void)
 {
 	clrsetbits_le32(SUNXI_CCU_AON_BASE + APB_SPEC_CLK_REG, APB_SPEC_CLK_REG_APB_SPEC_SEL_CLEAR_MASK | APB_SPEC_CLK_REG_APB_SPEC_CLK_DIV_CLEAR_MASK,
@@ -230,6 +318,13 @@ static void set_apb_spec(void)
 	return;
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ *
+ * Programs the CPU and VIDEO PLLs according to the detected HOSC rate, then
+ * configures the E907/A27L2 core clocks and the AHB/APB, VIDEO and CSI
+ * clocks.
+ */
 void sunxi_clk_init(void)
 {
 	/* detect hosc */
@@ -257,12 +352,23 @@ void sunxi_clk_init(void)
 	set_pll_csi();
 }
 
+/**
+ * @brief Pre-initialize the SoC clocks.
+ *
+ * Configures the APB_SPEC clock and the PERI PLL before the main clock init
+ * runs.
+ */
 void sunxi_clk_preinit(void)
 {
 	set_apb_spec();
 	set_pll_peri();
 }
 
+/**
+ * @brief Dump the current SoC clock configuration.
+ *
+ * Prints the HOSC type, the E907 CPU frequency and the PERI PLL frequency.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg_val = 0;
@@ -316,6 +422,11 @@ void sunxi_clk_dump(void)
 /* we got hosc freq in arch/timer.c */
 extern uint32_t current_hosc_freq;
 
+/**
+ * @brief Get the high-speed oscillator (HOSC) frequency.
+ *
+ * @return HOSC frequency in MHz as recorded by the timer code.
+ */
 uint32_t sun300iw1_clk_get_hosc_rate(void)
 {
 	return current_hosc_freq;

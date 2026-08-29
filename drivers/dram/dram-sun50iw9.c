@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file dram-sun50iw9.c
+ * @brief DRAM controller driver for the Allwinner sun50iw9 SoC.
+ *
+ * Copies the packed DRAM initialization blob into a scratch region, records
+ * the DRAM parameters and start time in the RTC, executes the blob and reads
+ * back the detected DRAM size.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,6 +22,18 @@
 extern uint8_t __ddr_bin_start[];
 extern uint8_t __ddr_bin_end[];
 
+/**
+ * @brief Initialize the DRAM controller.
+ *
+ * Validates the DRAM configuration, copies the packed DRAM init blob into the
+ * configured scratch region, records the parameters and start time in the
+ * RTC, then jumps into the blob. The detected size is read back from the RTC
+ * afterwards.
+ *
+ * @param[in] dram DRAM configuration block.
+ *
+ * @return Detected DRAM size in bytes, or 0 on failure.
+ */
 uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
 	uintptr_t image_start = (uintptr_t)__ddr_bin_start;

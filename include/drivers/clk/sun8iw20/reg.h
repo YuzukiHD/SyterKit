@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg.h
+ * @brief Register map for the sun8iw20 clock controller.
+ */
+
 #ifndef __SUN8IW20_CLK_REG_H__
 #define __SUN8IW20_CLK_REG_H__
 
