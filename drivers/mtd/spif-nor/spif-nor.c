@@ -343,7 +343,7 @@ static int spif_nor_wait_for_busy(spif_nor_t *nor)
 			return DRIVER_OK;
 		timeout--;
 		if (!timeout) {
-			printk_warning("SPI NOR: wait busy timeout\n");
+			printk_warning("SPIF NOR wait busy timeout\n");
 			return DRIVER_ERROR_INVALID;
 		}
 	}
@@ -1337,14 +1337,14 @@ int spif_nor_detect(spif_nor_t *nor)
 		return -1;
 
 	if (!spif_nor_get_info(nor)) {
-		printk_warning("SPI NOR: Can not find any supported SPI NOR\n");
+		printk_warning("SPIF NOR Can not find any supported SPI NOR\n");
 		return -1;
 	}
 
 	info = &nor->info;
 	if (spi_nor_get_protocol_data_nbits(info->read_proto) == 4U) {
 		if (spif_nor_enable_quad(nor) != 0) {
-			printk_warning("SPI NOR: quad enable failed, using single-bit reads\n");
+			printk_warning("SPIF NOR quad enable failed, using single-bit reads\n");
 			info->read_proto = SNOR_PROTO_1_1_1;
 			info->read_dummy = 0U;
 			info->opcode_read = info->address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
@@ -1353,8 +1353,8 @@ int spif_nor_detect(spif_nor_t *nor)
 	if (spif_nor_train_sampling(nor) != DRIVER_OK)
 		return -1;
 
-	printk_info("SPI NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
-	printk_info("SPI NOR: read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read,
+	printk_info("SPIF NOR detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
+	printk_info("SPIF NOR read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read,
 		info->read_dummy);
 
 	return 0;
