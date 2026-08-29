@@ -69,39 +69,3 @@ freq_out:
 
 	return 0;
 }
-
-/**
- * @brief Get the current clock frequency of the SDHC controller.
- * 
- * This function retrieves the current clock frequency of the specified SDHC controller.
- * 
- * @param sdhci Pointer to the SDHC controller structure.
- * @return Current clock frequency in Hertz.
- */
-uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
-{
-	uint32_t clk_hz = 0;
-	uint32_t reg_val = 0x0;
-	uint32_t source;
-
-	if (sdhci == NULL)
-		return 0U;
-	sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
-
-	// Read the clock register value
-	reg_val = readl(clk.reg_base);
-
-	// Extract the divider values and clock source from the register value
-	clk.factor_m = (reg_val >> clk.reg_factor_m_offset) & 0xfU;
-	clk.factor_n = (reg_val >> clk.reg_factor_n_offset) & 0x3U;
-	source = (reg_val >> 24) & 0x3U;
-
-	clk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
-	if (clk_hz == 0U) {
-		pr_debug("unsupported clock source %u\n", source);
-		return 0U;
-	}
-
-	// Calculate the actual clock frequency based on the divider values
-	return clk_hz / (clk.factor_n + 1) / (clk.factor_m + 1);
-}
