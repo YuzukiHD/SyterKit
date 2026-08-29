@@ -128,59 +128,59 @@ static void set_pll_cpux_axi(void)
 	uint32_t reg_val;
 	core_pll_freq_fact cpu_pll;
 
-	writel(0x0305, SUNXI_CPU_SYS_CFG_BASE + 0x60U);
-	writel(0x0305, SUNXI_CPU_SYS_CFG_BASE + 0x64U);
+	writel(0x0305, CCU_PLL_CPUA_CLK_REG);
+	writel(0x0305, CCU_PLL_CPUB_CLK_REG);
 	sdelay(20);
-	writel(0, SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	writel(0, CCU_PLL_DSU_CLK_REG);
 	sdelay(20);
 
 	cpu_pll.FactorM0 = 0;
 	cpu_pll.FactorN = 0x2a; /*1008M*/
 	cpu_pll.FactorM1 = 0;
 	cpu_pll.FactorP = 0;
-	enable_pll(SUNXI_CPU_SYS_CFG_BASE + 0x04U, &cpu_pll, 0x48801400);
+	enable_pll(CCU_PLL_CPU1_CTRL_REG, &cpu_pll, 0x48801400);
 
 	cpu_pll.FactorM0 = 0;
 	cpu_pll.FactorN = 0x2a; /*1008M*/
 	cpu_pll.FactorM1 = 0;
 	cpu_pll.FactorP = 0;
-	enable_pll(SUNXI_CPU_SYS_CFG_BASE + 0x0cU, &cpu_pll, 0x48801400);
+	enable_pll(CCU_PLL_CPU3_CTRL_REG, &cpu_pll, 0x48801400);
 
 	cpu_pll.FactorM0 = 0;
 	cpu_pll.FactorN = 0x1d; /*696M*/
 	cpu_pll.FactorM1 = 0;
 	cpu_pll.FactorP = 0;
-	enable_pll(SUNXI_CPU_SYS_CFG_BASE + 0x08U, &cpu_pll, 0x48801400);
+	enable_pll(CCU_PLL_CPU2_CTRL_REG, &cpu_pll, 0x48801400);
 
 	/* PLL_CPU1 is core0~core3 clock,  select PLL_CPU1  clock src:
 	 * PLL_CPU1/P ,P = 1,  */
 	/*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	reg_val = readl(CCU_PLL_CPUA_CLK_REG);
 	reg_val &= ~(0x03 << 24);
 	reg_val |= (0x03 << 24);
 	reg_val &= ~(0x01 << 16); // P = 1
 	reg_val |= (0x00 << 16);
-	writel(reg_val, SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	writel(reg_val, CCU_PLL_CPUA_CLK_REG);
 	sdelay(20);
 
 	/* PLL_CPU3 is core4~core7 clock,  select PLL_CPU3  clock src:
 	 * PLL_CPU3/P ,P = 1,  */
 	/*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x64U);
+	reg_val = readl(CCU_PLL_CPUB_CLK_REG);
 	reg_val &= ~(0x03 << 24);
 	reg_val |= (0x03 << 24);
 	reg_val &= ~(0x01 << 16); // P = 1
 	reg_val |= (0x00 << 16);
-	writel(reg_val, SUNXI_CPU_SYS_CFG_BASE + 0x64U);
+	writel(reg_val, CCU_PLL_CPUB_CLK_REG);
 	sdelay(20);
 
 	/*dsu clk src to PLL_CPU2,  PLL_CPU2/P*/
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	reg_val = readl(CCU_PLL_DSU_CLK_REG);
 	reg_val &= ~(0x03 << 24);
 	reg_val |= (0x03 << 24);
 	reg_val &= ~(0x01 << 16); // P = 1
 	reg_val |= (0x00 << 16);
-	writel(reg_val, SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	writel(reg_val, CCU_PLL_DSU_CLK_REG);
 	sdelay(20);
 }
 
@@ -464,7 +464,7 @@ void sunxi_clk_reset(void)
 	writel(reg_val, SUNXI_CCMU_BASE + CCU_APB0_CFG_REG);
 
 	/*set cpux pll to default,use OSC24M*/
-	writel(0x0305, SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	writel(0x0305, CCU_PLL_CPUA_CLK_REG);
 	return;
 }
 
@@ -483,41 +483,41 @@ void sun55iw3_clk_set_cpu_pll(uint32_t freq)
 	core_pll_freq_fact cpu_pll;
 
 	/* switch to 24M*/
-	writel(0x0305, SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	writel(0x0305, CCU_PLL_CPUA_CLK_REG);
 	udelay(20);
-	writel(0, SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	writel(0, CCU_PLL_DSU_CLK_REG);
 	udelay(20);
 
 	cpu_pll.FactorM0 = 0;
 	cpu_pll.FactorN = freq / 24;
 	cpu_pll.FactorM1 = 0;
 	cpu_pll.FactorP = 0;
-	enable_pll(SUNXI_CPU_SYS_CFG_BASE + 0x04U, &cpu_pll, 0x48801400);
+	enable_pll(CCU_PLL_CPU1_CTRL_REG, &cpu_pll, 0x48801400);
 
 	cpu_pll.FactorM0 = 0;
 	cpu_pll.FactorN = 0x27; /*936M*/
 	cpu_pll.FactorM1 = 0;
 	cpu_pll.FactorP = 0;
-	enable_pll(SUNXI_CPU_SYS_CFG_BASE + 0x08U, &cpu_pll, 0x48801400);
+	enable_pll(CCU_PLL_CPU2_CTRL_REG, &cpu_pll, 0x48801400);
 
 	/* PLL_CPU1 is core0~core3 clock,  select PLL_CPU1  clock src:
 	 * PLL_CPU1/P ,P = 1,  */
 	/*set and change cpu clk src to PLL_CPU1,  PLL_CPU1/P*/
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	reg_val = readl(CCU_PLL_CPUA_CLK_REG);
 	reg_val &= ~(0x03 << 24);
 	reg_val |= (0x03 << 24);
 	reg_val &= ~(0x01 << 16); // P = 1
 	reg_val |= (0x00 << 16);
-	writel(reg_val, SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	writel(reg_val, CCU_PLL_CPUA_CLK_REG);
 	sdelay(20);
 
 	/*dsu clk src to PLL_CPU2,  PLL_CPU2/P*/
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	reg_val = readl(CCU_PLL_DSU_CLK_REG);
 	reg_val &= ~(0x03 << 24);
 	reg_val |= (0x03 << 24);
 	reg_val &= ~(0x01 << 16); // P = 1
 	reg_val |= (0x00 << 16);
-	writel(reg_val, SUNXI_CPU_SYS_CFG_BASE + 0x6cU);
+	writel(reg_val, CCU_PLL_DSU_CLK_REG);
 	sdelay(20);
 }
 
@@ -537,7 +537,7 @@ static void sunxi_cpux_clk_dump(uint8_t cpuid, uintptr_t cpu_reg)
 	uint32_t factor_n, factor_p;
 	uint32_t clock, clock_src;
 
-	reg_val = readl(SUNXI_CPU_SYS_CFG_BASE + 0x60U);
+	reg_val = readl(CCU_PLL_CPUA_CLK_REG);
 	clock_src = (reg_val >> 24) & 0x03;
 	factor_p = 1 << ((reg_val >> 16) & 0x3);
 
@@ -579,10 +579,10 @@ void sunxi_clk_dump(void)
 	uint8_t p0;
 	uint8_t p1;
 
-	sunxi_cpux_clk_dump(0, SUNXI_CPU_SYS_CFG_BASE + 0x00U);
-	sunxi_cpux_clk_dump(1, SUNXI_CPU_SYS_CFG_BASE + 0x04U);
-	sunxi_cpux_clk_dump(2, SUNXI_CPU_SYS_CFG_BASE + 0x08U);
-	sunxi_cpux_clk_dump(3, SUNXI_CPU_SYS_CFG_BASE + 0x0cU);
+	sunxi_cpux_clk_dump(0, CCU_PLL_CPU0_CTRL_REG);
+	sunxi_cpux_clk_dump(1, CCU_PLL_CPU1_CTRL_REG);
+	sunxi_cpux_clk_dump(2, CCU_PLL_CPU2_CTRL_REG);
+	sunxi_cpux_clk_dump(3, CCU_PLL_CPU3_CTRL_REG);
 
 	/* PLL PERIx */
 	reg32 = read32(SUNXI_CCMU_BASE + CCU_PLL_PERI0_CTRL_REG);
