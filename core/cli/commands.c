@@ -125,8 +125,13 @@ static int cmd_write32(int argc, const char **argv)
  */
 static int cmd_history(int argc, const char **argv)
 {
-	for (int i = get_history_count(); i >= 0; i--) {
-		uart_puts(history_get(i));
+	int count = get_history_count();
+
+	for (int i = 0; i < count; i++) {
+		const char *line = history_get(i);
+
+		if (line != NULL)
+			uart_puts(line);
 		uart_putchar('\n');
 	}
 	return 0;

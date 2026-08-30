@@ -13,6 +13,7 @@
 #include <drivers/dma/dma.h>
 #include <drivers/dram/dram.h>
 #include <drivers/mmc/sdcard.h>
+#include <malloc.h>
 #include <string.h>
 
 static sdmmc_pdata_t *disk_devices[FF_VOLUMES];
@@ -23,9 +24,10 @@ static sdmmc_pdata_t *disk_devices[FF_VOLUMES];
 #define FATFS_CACHE_SECTORS (CONFIG_FATFS_CACHE_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_SECTORS_PER_BIT (FATFS_CACHE_CHUNK_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_CHUNKS (FATFS_CACHE_SECTORS / FATFS_CACHE_SECTORS_PER_BIT)
+#define FATFS_CACHE_BITMAP_SIZE ((FATFS_CACHE_CHUNKS + 7U) / 8U)
 
 static uint8_t *const cache_data = (uint8_t *) CONFIG_FATFS_CACHE_ADDR; /* in CONFIG_FATFS_CACHE_ADDR */
-static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];					/* in SRAM */
+static uint8_t *cache_bitmap;
 static BYTE cache_pdrv = -1;
 static int current_cache_sdhci_id = -1;
 
@@ -42,6 +44,18 @@ static int current_cache_sdhci_id = -1;
 		__typeof(ss) _ss = (ss);                                                      \
 		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] |= (1 << CACHE_SECTOR_TO_BIT(_ss)); \
 	} while (0)
+
+static int cache_prepare(void)
+{
+	if (cache_bitmap)
+		return 1;
+
+	cache_bitmap = malloc(FATFS_CACHE_BITMAP_SIZE);
+	if (!cache_bitmap)
+		return 0;
+	memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
+	return 1;
+}
 #endif
 
 /*-----------------------------------------------------------------------*/
@@ -74,7 +88,8 @@ DRESULT disk_set_device(BYTE pdrv, struct sdmmc_pdata *device) {
 	disk_devices[pdrv] = device;
 #ifdef CONFIG_FATFS_CACHE_SIZE
 	if (cache_pdrv == pdrv) {
-		memset(cache_bitmap, 0, sizeof(cache_bitmap));
+		if (cache_bitmap)
+			memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
 		cache_pdrv = (BYTE) -1;
 		current_cache_sdhci_id = -1;
 	}
@@ -102,10 +117,13 @@ DRESULT disk_read(BYTE pdrv,	/* Physical drive nmuber to identify the drive */
 	pr_trace("FATFS: read %u sectors at %u\r\n", count, (uint32_t) sector);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
+	if (!cache_prepare())
+		return (sdmmc_blk_read(device, buff, sector, count) == count ? RES_OK : RES_ERROR);
+
 	if (pdrv != cache_pdrv || current_cache_sdhci_id != device->hci->id) {
 		pr_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
 		if (cache_pdrv != -1)
-			memset(cache_bitmap, 0, sizeof(cache_bitmap));
+			memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
 		cache_pdrv = pdrv;
 	}
 

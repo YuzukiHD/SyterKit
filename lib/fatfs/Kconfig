@@ -1,5 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+config FATFS_LFN_HEAP
+	bool "Allocate FatFs long-name buffers from the heap"
+	help
+	  Use FatFs' dynamic LFN and exFAT directory buffers. This removes about
+	  1.1 KiB of permanent SRAM usage, but requires malloc_init() before the
+	  first filesystem operation. Leave disabled for early-boot users without
+	  an initialized heap.
+
 config FATFS_CACHE
 	bool "Enable the FatFs cache"
 

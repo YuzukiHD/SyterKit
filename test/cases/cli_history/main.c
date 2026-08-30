@@ -38,4 +38,5 @@ void test_case_main(const char *case_dir)
 	for (int age = 0; age < MSH_CMD_HISTORY_MAX; age++)
 		TEST_STREQ(entries[entry_count - age - 1], history_get(age));
 	TEST_ASSERT(history_get(MSH_CMD_HISTORY_MAX) == NULL);
+	TEST_ASSERT(history_get(-1) == NULL);
 }
