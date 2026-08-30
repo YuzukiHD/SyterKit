@@ -155,17 +155,25 @@ while IFS= read -r board_dir; do
 	[[ -f "${board_dir}/Kconfig" ]] || fail "${relative_dir} has no Kconfig"
 	[[ -f "${board_dir}/Makefile" ]] || fail "${relative_dir} has no Makefile"
 	[[ -f "${board_dir}/board.dts" ]] || fail "${relative_dir} has no board.dts"
-	[[ -f "${srctree}/configs/$(basename -- "${board_dir}")_defconfig" ]] || \
+	board_name="$(basename -- "${board_dir}")"
+	if [[ ! -d "${srctree}/configs/${board_name}" ]] ||
+	   ! find "${srctree}/configs/${board_name}" -maxdepth 1 -type f \
+		\( -name '*_sram_defconfig' -o -name 'sram_defconfig' \) \
+		-print -quit | grep -q .; then
 		fail "${relative_dir} has no matching defconfig"
+	fi
 done < <(find "${srctree}/boards" -mindepth 1 -maxdepth 1 -type d | sort)
 
 while IFS= read -r defconfig; do
-	name="${defconfig##*/}"
-	board="${name%_defconfig}"
+	name="${defconfig#${srctree}/configs/}"
+	board="$(basename -- "$(dirname -- "${defconfig}")")"
+	variant="${defconfig##*/}"
+	variant="${variant%_defconfig}"
+	mode="${variant##*_}"
 	arch_count="$(sed -n -E '/^CONFIG_ARCH_(ARM32|RISCV32|RISCV64)=y$/p' \
 		"${defconfig}" | wc -l)"
 	core_count="$(sed -n -E \
-		'/^CONFIG_(CPU_(CORTEX_A7|ARMV8|ARMV8_2)|ARCH_RISCV(32_CORE_(E907|C907)|64_CORE_C906))=y$/p' \
+		'/^CONFIG_(CPU_(CORTEX_A7|ARMV8|ARMV8_2)|ARCH_CPU_(E907|C907|C906))=y$/p' \
 		"${defconfig}" | wc -l)"
 	build_mode_count="$(sed -n -E \
 		'/^CONFIG_BUILD_(RELEASE|DEBUG|TRACE)=y$/p' \
@@ -177,8 +185,12 @@ while IFS= read -r defconfig; do
 	value_count="$(sed -n -E \
 		'/^CONFIG_(SYS_BOARD|SPL_BIN_TEXT_BASE|SPL_BIN_MAX_SIZE|SPL_FEL_TEXT_BASE|SPL_FEL_MAX_SIZE)=/p' \
 		"${defconfig}" | wc -l)"
+	app_mode_count="$(sed -n -E '/^CONFIG_(APP_SRAM|APP_DRAM|EFEX)=y$/p' \
+		"${defconfig}" | wc -l)"
 	configured_board="$(sed -n -E 's/^CONFIG_SYS_BOARD="([^"]+)"$/\1/p' \
 		"${defconfig}")"
+	configured_mode="$(sed -n -E \
+		's/^CONFIG_(APP_SRAM|APP_DRAM|EFEX)=y$/\1/p' "${defconfig}")"
 
 	[[ "${arch_count}" -eq 1 ]] || fail "${name} must select exactly one architecture"
 	[[ "${core_count}" -eq 1 ]] || fail "${name} must select exactly one processor core"
@@ -186,6 +198,21 @@ while IFS= read -r defconfig; do
 	[[ "${gpio_count}" -eq 1 ]] || fail "${name} must select exactly one GPIO controller"
 	[[ "${board_count}" -eq 1 ]] || fail "${name} must select exactly one board"
 	[[ "${value_count}" -eq 5 ]] || fail "${name} must define all board image parameters"
+	[[ "${app_mode_count}" -eq 1 ]] || fail "${name} must select exactly one application mode"
+	case "${mode}" in
+		sram) expected_mode="APP_SRAM" ;;
+		dram) expected_mode="APP_DRAM" ;;
+		efex) expected_mode="EFEX" ;;
+		*) expected_mode=""; fail "${name} has unknown application mode ${mode}" ;;
+	esac
+	[[ "${configured_mode}" == "${expected_mode}" ]] || \
+		fail "${name} must select CONFIG_${expected_mode}"
+	if grep -q '^CONFIG_APP_DRAM=y$' "${defconfig}"; then
+		dram_value_count="$(sed -n -E \
+			'/^CONFIG_APP_DRAM_(TEXT_BASE|MAX_SIZE)=/p' "${defconfig}" | wc -l)"
+		[[ "${dram_value_count}" -eq 2 ]] || \
+			fail "${name} must define the DRAM application window"
+	fi
 	[[ "${configured_board}" == "${board}" ]] || \
 		fail "${name} CONFIG_SYS_BOARD must be \"${board}\""
 done < <(find "${srctree}/configs" -type f -name '*_defconfig' | sort)

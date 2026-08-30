@@ -62,10 +62,8 @@ jobs:
           mkdir -p "${RELEASE_ROOT}/assets"
           built=0
 
-          for defconfig in configs/*_defconfig; do
-            test -f "${defconfig}"
+          while IFS= read -r config; do
             built=1
-            config="${defconfig##*/}"
             config_name="${config%_defconfig}"
             output="${RELEASE_ROOT}/build/${config_name}"
 
@@ -86,7 +84,7 @@ jobs:
             tar --create --gzip \
               --file="${RELEASE_ROOT}/assets/${config_name}.tar.gz" \
               --directory="${image_dir}" .
-          done
+          done < <(make list-defconfigs)
 
           test "${built}" -eq 1
           printf 'Release assets:\n'

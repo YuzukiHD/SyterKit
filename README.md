@@ -34,6 +34,11 @@ checkout. Board-specific applications and hardware notes are kept below
 [`boards/`](boards/). Retired board sources and defconfigs are preserved under
 [`archive/`](archive/).
 
+Active configurations are grouped under `configs/<board>/`. Most boards have
+`sram_defconfig`, `efex_defconfig`, and `dram_defconfig`; architecture-specific
+variants include the architecture in the filename. The public Make targets
+remain flat, for example `make avaota-a1_efex_defconfig`.
+
 The archived boards are not included in the active configuration or build
 matrix.
 

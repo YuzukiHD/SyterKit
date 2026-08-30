@@ -55,6 +55,9 @@ make tinyvision_defconfig
 The defconfig selects the board, architecture, drivers, and the applications
 that are built by default. Use `make menuconfig` to inspect or change those
 options. `make list-apps` prints the applications selected for the active board.
+Configuration files are grouped by board in `configs/<board>/`; Make translates
+those paths into flat targets such as `avaota-a1_defconfig` and
+`avaota-a1_efex_defconfig`.
 
 ### Build
 

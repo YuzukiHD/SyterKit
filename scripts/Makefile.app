@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-src := $(srctree)/boards/$(board)/$(app)
-out := $(objtree)/.obj/apps/$(board)/$(app)
+src := $(srctree)/boards/$(board)/$(mode)/$(app)
+out := $(objtree)/.obj/apps/$(board)/$(mode)/$(app)
 
 include $(objtree)/include/config/auto.conf
 include $(srctree)/boards/$(board)/Makefile

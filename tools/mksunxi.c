@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define __ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
 #define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x))(a) - 1)
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 
 	h = (struct boot_head_t *)buffer;
 	p = (uint32_t *)h;
-	l = (h->length);
+	l = filelen;
 	printf("len: %u\n", l);
 	l = ALIGN(l, padding);
 	h->length = (l);
@@ -81,8 +82,14 @@ int main(int argc, char *argv[])
 	h->checksum = (sum);
 
 	fseek(fp, 0L, SEEK_SET);
-	if (fwrite(buffer, 1, buflen, fp) != buflen) {
+	if (fwrite(buffer, 1, l, fp) != (size_t)l) {
 		printf("Write bootloader error\n");
+		free(buffer);
+		fclose(fp);
+		return -1;
+	}
+	if (ftruncate(fileno(fp), l) != 0) {
+		printf("Can't resize bootloader\n");
 		free(buffer);
 		fclose(fp);
 		return -1;

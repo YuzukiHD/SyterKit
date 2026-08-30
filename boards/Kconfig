@@ -3,6 +3,22 @@
 menu "Board selection"
 
 choice
+	prompt "Application runtime mode"
+	default APP_SRAM
+
+config APP_SRAM
+	bool "SRAM application"
+
+config EFEX
+	bool "Returning eFEX application"
+	depends on !ARCH_RISCV64
+
+config APP_DRAM
+	bool "DRAM application"
+
+endchoice
+
+choice
 	prompt "Target board"
 	optional
 
@@ -24,5 +40,16 @@ config SPL_FEL_TEXT_BASE
 
 config SPL_FEL_MAX_SIZE
 	hex "FEL image maximum size"
+
+config APP_DRAM_TEXT_BASE
+	hex "DRAM application load address"
+	depends on APP_DRAM
+	default 0x82000000 if BOARD_AVAOTA_F1
+	default 0x42000000
+
+config APP_DRAM_MAX_SIZE
+	hex "DRAM application maximum size"
+	depends on APP_DRAM
+	default 0x01000000
 
 endmenu
