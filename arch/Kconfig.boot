@@ -7,20 +7,12 @@ config ARCH_BOOT
 	  Boot the core through a small standalone payload instead of jumping
 	  straight to _start.
 
-	  Some RISC-V cores boot from the BROM in a reduced ISA mode and latch
-	  their ISA at core reset, so the real entry point cannot be reached in
-	  a single step.  The Xuantie C907, for example, starts in RV32 and only
-	  becomes RV64 after a reset.  When enabled, the board embeds a payload
-	  right after the boot0 head (in .boot0_head); the BROM's jump
-	  instruction falls into it, the payload programs the post-reset start
-	  address, switches the core mode, and resets the core into _start.
+	  A board can use this when the BROM starts a helper core before the
+	  target core, or when a core starts in a reduced ISA mode and latches
+	  its final ISA at reset.  The board embeds arch_boot_payload directly
+	  after the boot0 head; that payload prepares the target core and sends
+	  it to the real _start entry point.
 
-	  The payload is built independently of this Kbuild tree by the board's
-	  arch_boot/payloads directory with the RV32 toolchain and emitted as
-	  arch_boot_payload.inc:
-
-	    make -C boards/<board>/arch_boot/payloads
-
-	  Boards that need this mode switch should enable this option and
-	  provide arch_boot/payloads/{arch_boot.S, arch_boot.lds, Makefile,
-	  gen_payload.py}.
+	  The payload may be a normal board assembly object when it uses the
+	  configured ISA, or a byte array generated independently with the
+	  helper core's toolchain.

@@ -3,10 +3,15 @@
 obj-y += cache.o
 
 ifeq ($(CONFIG_ARCH_RISCV64),y)
-KBUILD_CFLAGS += -mcpu=c907fdv -mabi=lp64d \
+ifeq ($(CONFIG_ARCH_RISCV64_ABI_LP64),y)
+c907_abi := lp64
+else
+c907_abi := lp64d
+endif
+KBUILD_CFLAGS += -mcpu=c907fdv -mabi=$(c907_abi) \
 	-mcmodel=medlow -mstrict-align -mtune=c907 \
 	$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
-KBUILD_AFLAGS += -mcpu=c907fdv -mabi=lp64d \
+KBUILD_AFLAGS += -mcpu=c907fdv -mabi=$(c907_abi) \
 	-mcmodel=medlow -mstrict-align -mtune=c907 \
 	$(call unquote,$(CONFIG_ARCH_EXTRA_CFLAG))
 KBUILD_LDFLAGS += -m elf64lriscv

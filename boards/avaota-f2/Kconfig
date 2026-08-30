@@ -2,5 +2,5 @@
 
 config BOARD_AVAOTA_F2
 	bool "Avaota F2"
-	depends on ARCH_RISCV32 && ARCH_CPU_E907
+	depends on ARCH_CPU_E907 || ARCH_CPU_C907
 	select SOC_SUN252IW1
