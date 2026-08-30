@@ -333,7 +333,7 @@ static uint32_t rescali_calibrate(uint32_t adc_value, uint32_t mode)
 		range_min += step;
 	}
 
-	pr_info("MODE %d CODE_B = 0x%x\n", mode, code);
+	pr_debug("MODE %d CODE_B = 0x%x\n", mode, code);
 
 	return code;
 }
@@ -378,7 +378,7 @@ static uint32_t rescali_gpadc_test(void)
 
 		rescali_select_source(mode);
 		adc_value = gpadc_read_channel(channel);
-		pr_info("GPADC DATA = %d\n", adc_value);
+		pr_debug("GPADC DATA = %d\n", adc_value);
 
 		code = rescali_calibrate(adc_value, mode);
 		rescali_write_result(code, mode);
