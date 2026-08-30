@@ -8,8 +8,7 @@
 #if CONFIG_DRIVER_MMC_TUNING
 int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci);
 int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci);
-int sunxi_mmc_capture_hs400_reference(sunxi_sdhci_t *sdhci, uint8_t *reference);
-int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci, const uint8_t *reference);
+int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci);
 #endif
 
 #endif /* _SYS_MMC_TUNING_H_ */
