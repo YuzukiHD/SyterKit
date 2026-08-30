@@ -99,6 +99,7 @@
 			bus-width = <8>;
 			max-frequency = <5200000>;
 			non-removable;
+			allwinner,io-voltage = <1800>;
 			memory-region = <&mmc2_dma>;
 			allwinner,clock-gate = <0x0200184c 2>;
 			allwinner,reset = <0x0200184c 18>;
