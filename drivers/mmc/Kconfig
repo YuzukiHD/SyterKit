@@ -10,8 +10,9 @@ config DRIVER_MMC_TUNING
 	depends on DRIVER_MMC
 	help
 	  Enable eMMC HS200 and HS400 mode selection and sampling-point tuning.
-	  This adds code and runtime initialization time, so leave it disabled
-	  when only legacy, HS or DDR52 operation is required.
+	  Tuning allocates a roughly 6 KiB (4-bit) or 10 KiB (8-bit) workspace,
+	  so initialize the heap before probing the eMMC. Leave it disabled when
+	  only legacy, HS or DDR52 operation is required.
 
 config DRIVER_MMC_SHOW_TRAINING
 	bool "Show MMC sampling training chart"
