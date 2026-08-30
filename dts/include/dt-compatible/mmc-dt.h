@@ -93,6 +93,7 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 	const dt2c_fdt32_t *width_cells;
 	const dt2c_fdt32_t *io_voltage;
 	const void *non_removable;
+	const void *sample_fifo_bypass;
 	sunxi_gpio_t gpio_controller;
 	sunxi_sdhci_t config = { 0 };
 	uint32_t bus_width;
@@ -100,6 +101,7 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 	uint32_t pin_count;
 	int non_removable_length;
 	int io_voltage_length;
+	int sample_fifo_bypass_length;
 	uint32_t io_voltage_uv = GPIO_IO_VOLTAGE_3V3;
 
 	if (sdhci == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_MMC_COMPATIBLE) != 0)
@@ -143,9 +145,13 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 		return DRIVER_ERROR_INVALID;
 
 	non_removable = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "non-removable", &non_removable_length);
+	sample_fifo_bypass = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,sample-fifo-bypass", &sample_fifo_bypass_length);
 	io_voltage = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,io-voltage", &io_voltage_length);
 	if ((non_removable != NULL && non_removable_length != 0) || (non_removable == NULL && non_removable_length != -DT2C_FDT_ERR_NOTFOUND) ||
 	    (non_removable != NULL && config.pinctrl.has_card_detect) || (non_removable == NULL && bus_width == 8U))
+		return DRIVER_ERROR_INVALID;
+	if ((sample_fifo_bypass != NULL && sample_fifo_bypass_length != 0) ||
+	    (sample_fifo_bypass == NULL && sample_fifo_bypass_length != -DT2C_FDT_ERR_NOTFOUND))
 		return DRIVER_ERROR_INVALID;
 	if (io_voltage != NULL && io_voltage_length != (int)sizeof(*io_voltage))
 		return DRIVER_ERROR_INVALID;
@@ -175,6 +181,7 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 	config.max_clk = dt2c_fdt32_to_cpu(max_frequency[0]);
 	config.sdhci_mmc_type = non_removable != NULL ? MMC_TYPE_EMMC : MMC_TYPE_SD;
 	config.io_voltage_uv = io_voltage_uv;
+	config.sample_fifo_bypass = sample_fifo_bypass != NULL;
 	config.clk_ctrl.gate_reg_base = (uintptr_t)dt2c_fdt32_to_cpu(clock_gate[0]);
 	config.clk_ctrl.gate_reg_offset = dt2c_fdt32_to_cpu(clock_gate[1]);
 	config.clk_ctrl.rst_reg_base = (uintptr_t)dt2c_fdt32_to_cpu(reset[0]);

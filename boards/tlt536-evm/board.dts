@@ -143,6 +143,7 @@
 			max-frequency = <200000000>;
 			non-removable;
 			allwinner,io-voltage = <1800000>;
+			allwinner,sample-fifo-bypass;
 			memory-region = <&mmc2_dma>;
 			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xd2c) 2>;
 			allwinner,reset = <(SUNXI_CCU_BASE + 0xd2c) 18>;

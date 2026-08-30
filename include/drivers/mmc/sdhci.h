@@ -126,6 +126,8 @@ typedef struct sunxi_sdhci {
 	sunxi_sdhci_type_t sdhci_mmc_type;
 	/* Requested GPIO withstand voltage for the MMC I/O bank, in microvolts. */
 	uint32_t io_voltage_uv;
+	/* Quirk: apply sample FIFO bypass during HS200/HS400 tuning. */
+	bool sample_fifo_bypass;
 	/* Pinctrl info */
 	sunxi_sdhci_pinctrl_t pinctrl;
 

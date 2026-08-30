@@ -21,6 +21,9 @@ properties:
     type: uint32
     enum: [1800, 3300, 1800000, 3300000]
     description: MMC GPIO withstand voltage, in microvolts (1800000 or 3300000; mV aliases are accepted).
+  allwinner,sample-fifo-bypass:
+    type: boolean
+    description: Apply sample FIFO bypass on MMC2 during HS200/HS400 tuning (timing mode 4).
   memory-region:
     type: phandle
   allwinner,clock-gate:

@@ -48,6 +48,7 @@ void test_case_main(const char *case_dir)
 	TEST_EQ(SMHC_WIDTH_4BIT, mmc0.width);
 	TEST_EQ(50000000U, mmc0.max_clk);
 	TEST_EQ(GPIO_IO_VOLTAGE_3V3, mmc0.io_voltage_uv);
+	TEST_ASSERT(!mmc0.sample_fifo_bypass);
 	TEST_EQ(0x70080000U, mmc0.dma_des_addr);
 	TEST_EQ(0x100000U, mmc0.dma_des_size);
 	TEST_EQ(GPIO_PIN(GPIO_PORTF, 2), mmc0.pinctrl.gpio_clk.pin);
@@ -83,6 +84,7 @@ void test_case_main(const char *case_dir)
 	TEST_EQ(SMHC_WIDTH_8BIT, mmc2.width);
 	TEST_EQ(5200000U, mmc2.max_clk);
 	TEST_EQ(GPIO_IO_VOLTAGE_1V8, mmc2.io_voltage_uv);
+	TEST_ASSERT(mmc2.sample_fifo_bypass);
 	TEST_EQ(0x70880000U, mmc2.dma_des_addr);
 	TEST_EQ(0x100000U, mmc2.dma_des_size);
 	TEST_EQ(GPIO_PIN(GPIO_PORTC, 5), mmc2.pinctrl.gpio_clk.pin);

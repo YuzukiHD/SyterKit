@@ -684,12 +684,10 @@ static uint32_t sunxi_mmc_tuning_freq_id(uint32_t clock)
 
 static void sunxi_mmc_tuning_set_fifo_bypass(sunxi_sdhci_t *sdhci, bool bypass)
 {
-#if defined(CONFIG_SOC_SUN55IW3) || defined(CONFIG_SOC_SUN60IW2) || defined(CONFIG_SOC_SUN55IW6) || \
-	defined(CONFIG_SOC_SUN65IW1) || defined(CONFIG_SOC_SUN8IW22)
 	uint32_t value;
 
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4 ||
-		sdhci->mmc_host.reg == NULL)
+	if (sdhci == NULL || !sdhci->sample_fifo_bypass || sdhci->id != MMC_CONTROLLER_2 ||
+		sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4 || sdhci->mmc_host.reg == NULL)
 		return;
 
 	value = sdhci->mmc_host.reg->sfc;
@@ -698,10 +696,6 @@ static void sunxi_mmc_tuning_set_fifo_bypass(sunxi_sdhci_t *sdhci, bool bypass)
 	else
 		value &= ~SMHC_SFC_SAMPLE_FIFO_BYPASS;
 	sdhci->mmc_host.reg->sfc = value;
-#else
-	(void)sdhci;
-	(void)bypass;
-#endif
 }
 
 static void sunxi_mmc_tuning_set_sample(sunxi_sdhci_t *sdhci, uint32_t delay)
@@ -715,7 +709,9 @@ static void sunxi_mmc_tuning_set_sample(sunxi_sdhci_t *sdhci, uint32_t delay)
 }
 
 static uint32_t sunxi_mmc_tuning_select(const uint8_t *pass);
+#ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
 static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, uint32_t selected);
+#endif
 
 typedef enum {
 	SUNXI_MMC_TUNING_HS200,
@@ -817,6 +813,7 @@ out:
 	return ret;
 }
 
+#ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
 static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, uint32_t selected)
 {
 	char samples[SUNXI_MMC_TUNING_POINTS + 1U];
@@ -826,10 +823,10 @@ static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, u
 		samples[point] = pass[point] ? 'O' : '-';
 	samples[SUNXI_MMC_TUNING_POINTS] = '\0';
 
-	pr_info("%s: training chart (O=pass, -=fail)\n", name);
-	pr_info("delay   0         1         2         3         4         5         6\n");
-	pr_info("        0123456789012345678901234567890123456789012345678901234567890123\n");
-	pr_info("result  |%s|\n", samples);
+	pr_debug("%s: training chart (O=pass, -=fail)\n", name);
+	pr_debug("delay   0         1         2         3         4         5         6\n");
+	pr_debug("        0123456789012345678901234567890123456789012345678901234567890123\n");
+	pr_debug("result  |%s|\n", samples);
 
 	if (selected >= SUNXI_MMC_TUNING_POINTS)
 		return;
@@ -837,8 +834,9 @@ static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, u
 	memset(selected_line, ' ', SUNXI_MMC_TUNING_POINTS);
 	selected_line[selected] = '^';
 	selected_line[SUNXI_MMC_TUNING_POINTS] = '\0';
-	pr_info("select  |%s| delay=%u\n", selected_line, selected);
+	pr_debug("select  |%s| delay=%u\n", selected_line, selected);
 }
+#endif
 
 static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode, sunxi_sdhci_t *sdhci, const uint8_t *pass,
 	uint32_t selected, uint32_t pattern_blocks)
@@ -865,7 +863,9 @@ static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode, sunxi_sd
 	else
 		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=%u\n", name, freq_id, mmc->clock,
 			mmc->bus_width == SMHC_WIDTH_8BIT ? 8U : 4U, SUNXI_MMC_TUNING_POINTS, selected);
+#ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
 	sunxi_mmc_tuning_dump_chart(name, pass, selected);
+#endif
 
 	if (mode == SUNXI_MMC_TUNING_HS200) {
 		pr_info("%s: pattern_lba=%u blocks=%u smx_fx=0x%08x 0x%08x\n", name, SUNXI_MMC_TUNING_LBA,
