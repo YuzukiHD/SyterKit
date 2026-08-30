@@ -85,7 +85,7 @@ int sunxi_gpio_set_io_voltage(const gpio_mux_t *gpio, uint32_t voltage_uv)
 	ctl |= BIT(ctl_bit);
 	write32(gpio->base + GPIO_POW_MODE_CTL_REG, ctl);
 
-	pr_info("bank %u: voltage=%u mV, POW_VAL=0x%08x, MODE_SEL=0x%08x, MODE_CTL=0x%08x\n",
+	pr_debug("bank %u: voltage=%u mV, POW_VAL=0x%08x, MODE_SEL=0x%08x, MODE_CTL=0x%08x\n",
 		gpio->pin >> PIO_NUM_IO_BITS, voltage_uv / 1000U, read32(gpio->base + GPIO_POW_MODE_VAL_REG),
 		read32(gpio->base + GPIO_POW_MODE_SEL_REG), read32(gpio->base + GPIO_POW_MODE_CTL_REG));
 	return 0;
