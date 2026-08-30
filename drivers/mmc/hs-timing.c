@@ -156,6 +156,10 @@ int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 		last_err = sunxi_mmc_execute_tuning(sdhci);
 		if (!last_err) {
 			mmc->tran_speed = mmc->clock;
+			pr_info("speed mode: HS200/SDR104\n");
+			pr_info("HS200/SDR104: 0x%08x 0x%08x\n",
+				mmc->tune_sdly.tm4_smx_fx[MMC_HS200_SDR104 * 2U],
+				mmc->tune_sdly.tm4_smx_fx[MMC_HS200_SDR104 * 2U + 1U]);
 			return 0;
 		}
 	}
@@ -184,12 +188,6 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	if (clock > 200000000U)
 		clock = 200000000U;
 
-	uint8_t reference[512] __attribute__((aligned(4)));
-
-	err = sunxi_mmc_capture_hs400_reference(sdhci, reference);
-	if (err)
-		return err;
-
 	/* Return to a safe HS clock before switching the card to 8-bit DDR. */
 	sunxi_mmc_hs_set_clock(sdhci, 52000000U);
 	if (sdhci->mmc_host.fatal_err)
@@ -215,6 +213,7 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	if (err)
 		return err;
 
+	pr_info("================== HS400...\n");
 	err = sunxi_mmc_mmc_switch_hs400(sdhci);
 	if (err)
 		return err;
@@ -228,7 +227,25 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	if (err)
 		return err;
 
-	return sunxi_mmc_execute_hs400_tuning(sdhci, reference);
+	pr_info("speed mode: HS400\n");
+	err = sunxi_mmc_execute_hs400_tuning(sdhci);
+	if (err)
+		return err;
+
+	pr_info("HS400: 0x%08x 0x%08x\n",
+		(uint32_t)mmc->tune_sdly.tm4_dsdly[0] |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[1] << 8) |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[2] << 16) |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[3] << 24),
+		(uint32_t)mmc->tune_sdly.tm4_dsdly[4] |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[5] << 8) |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[6] << 16) |
+		((uint32_t)mmc->tune_sdly.tm4_dsdly[7] << 24));
+	pr_info("HS400: 0x%08x 0x%08x\n",
+		mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U],
+		mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U + 1U]);
+
+	return 0;
 }
 
 int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)

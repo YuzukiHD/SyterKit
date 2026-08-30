@@ -1661,6 +1661,9 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 		}
 	}
 
+	/* Tuning performs block I/O before the final device description below. */
+	mmc->lba = mmc->capacity >> 9;
+
 	if (sunxi_mmc_device_is_sd(mmc)) {
 		err = sunxi_mmc_sd_change_freq(sdhci);
 	} else {
@@ -1841,6 +1844,10 @@ int sunxi_mmc_init(void *sdhci_hdl)
 
 	mmc_t *mmc = &sdhci->mmc;
 	int err = 0;
+
+#if CONFIG_DRIVER_MMC_TUNING
+	sunxi_mmc_tuning_reset();
+#endif
 
 	pr_trace("init mmc device\n");
 
