@@ -21,11 +21,13 @@ static unsigned int parse_value(char **cursor)
 void test_case_main(const char *case_dir)
 {
 	static unsigned char heap[2048];
+	static unsigned char second_heap[2048];
 	char data[TEST_DATA_MAX];
 	char *cursor;
 	unsigned char *first;
 	unsigned char *second;
 	unsigned char *resized;
+	unsigned char *second_region;
 	unsigned int first_size;
 	unsigned int second_size;
 	unsigned int resize_size;
@@ -55,4 +57,9 @@ void test_case_main(const char *case_dir)
 	free(second);
 	free(resized);
 	TEST_ASSERT(malloc(second_size) != NULL);
+	TEST_EQ(0, malloc_add_region((uintptr_t)second_heap, sizeof(second_heap)));
+	second_region = malloc(second_size);
+	TEST_ASSERT((uintptr_t)second_region >= (uintptr_t)second_heap &&
+		(uintptr_t)second_region < (uintptr_t)second_heap + sizeof(second_heap));
+	free(second_region);
 }

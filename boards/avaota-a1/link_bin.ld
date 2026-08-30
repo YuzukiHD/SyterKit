@@ -93,6 +93,7 @@ SECTIONS
 
     . = ALIGN(4);
     _end = . ;
+    PROVIDE(__sram_end = ORIGIN(ram_a1) + LENGTH(ram_a1));
     ASSERT(_start == __spl_start + 0x40,
            "Boot0 entry must be 0x40 bytes from the image start")
 }
