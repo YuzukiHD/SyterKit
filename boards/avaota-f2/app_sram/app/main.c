@@ -33,7 +33,7 @@
 
 #include <e907/sysmap.h>
 
-void sunxi_pmc_config(void)
+static void sunxi_pmc_config(void)
 {
 	if (!(readl(SUNXI_RTC_PMC_BYPASS_STATUS) & BIT(0))) {
 		/* if PMC bypass, restore all IO to GPIO */
