@@ -1824,7 +1824,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 	mmc->blksz = mmc->read_bl_len;
 	mmc->lba = mmc->capacity >> 9;
 
-	pr_debug("card at the '%s' host controller:\r\n", sdhci->name);
+	pr_info("card at the '%s' host controller:\r\n", sdhci->name);
 	pr_info("  Attached is a %s%s card\r\n", mmc->version & SD_VERSION_SD ? "SD" : "MMC", mmc->version & SD_VERSION_SD ? "" : strver);
 	uint64_t capacity_hundredths = (mmc->lba >> 11) * 100 / 1024;
 	pr_info("  Capacity: %llu.%02lluGB\n", capacity_hundredths / 100, capacity_hundredths % 100);
