@@ -36,7 +36,6 @@
 #include <drivers/pmu/axp.h>
 #include <dt-compatible/i2c-dt.h>
 #include <dt-compatible/remoteproc-dt.h>
-#include <dt-compatible/dma-dt.h>
 #include <dt-compatible/spi-dt.h>
 
 #include <fdt_wrapper.h>
@@ -54,9 +53,25 @@ extern sunxi_serial_t uart_dbg;
 extern void set_rpio_power_mode(void);
 
 static sunxi_spi_t sunxi_spi0_lcd;
-static gpio_mux_t lcd_dc_pins;
-static gpio_mux_t lcd_res_pins;
-static gpio_mux_t lcd_blk_pins;
+/* A1 LCD wiring is fixed; only the SPI controller is read from DT. */
+static gpio_mux_t lcd_dc_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 13),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
+static gpio_mux_t lcd_res_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 9),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
+static gpio_mux_t lcd_blk_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 8),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
 
 static void LCD_Set_DC(uint8_t val)
 {
@@ -219,10 +234,8 @@ int main(void)
 {
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
-	sunxi_dma_t dma;
 	sunxi_i2c_t i2c;
 	sunxi_remoteproc_t e906;
-	int spi_lcd_node;
 
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
@@ -232,12 +245,8 @@ int main(void)
 		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK || spi_lcd_node < 0 || sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, &dma) != DRIVER_OK ||
-	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node, "allwinner,lcd-dc-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node, "allwinner,lcd-reset-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node, "allwinner,lcd-backlight-gpio")) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK || sunxi_spi_dt_read_alias(&sunxi_spi0_lcd, "spi-lcd", NULL) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}

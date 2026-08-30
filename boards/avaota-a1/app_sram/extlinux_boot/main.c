@@ -35,7 +35,6 @@
 #include <dt-compatible/mmc-dt.h>
 #include <dt-compatible/remoteproc-dt.h>
 #include <dt-compatible/sid-dt.h>
-#include <dt-compatible/dma-dt.h>
 
 #include <fdt_wrapper.h>
 #include <lib/fatfs/ff.h>
@@ -668,7 +667,6 @@ int main(void)
 	sdmmc_pdata_t emmc_card = { 0 };
 	sdmmc_pdata_t sd_card = { 0 };
 	sdmmc_pdata_t *boot_card;
-	sunxi_dma_t dma;
 	sunxi_i2c_t i2c;
 	sunxi_remoteproc_t e906;
 	sunxi_rtc_t rtc;
@@ -687,7 +685,7 @@ int main(void)
 		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK || sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK ||
 	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
 	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
@@ -746,7 +744,7 @@ int main(void)
 	/* Initialize the small memory allocator. */
 	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
 
-	if (LCD_Init(&dma) != 0)
+	if (LCD_Init() != 0)
 		return -1;
 
 	sunxi_nsi_init();
