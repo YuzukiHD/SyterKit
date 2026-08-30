@@ -272,14 +272,6 @@
 				<(SUNXI_RPRCM_BASE + 0x150) 1 8 300000000 0>;
 			allwinner,clock-gate = <(SUNXI_RPRCM_BASE + 0x15c) 0>;
 			allwinner,reset = <(SUNXI_RPRCM_BASE + 0x15c) 16>;
-			dmas = <&dma0 22>;
-			dma-names = "rx";
-			allwinner,lcd-dc-gpio =
-				<&r_pio SUNXI_GPIO_PORT_L 13 1>;
-			allwinner,lcd-reset-gpio =
-				<&r_pio SUNXI_GPIO_PORT_L 9 1>;
-			allwinner,lcd-backlight-gpio =
-				<&r_pio SUNXI_GPIO_PORT_L 8 1>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&spi_lcd_pins>;
 			status = "okay";

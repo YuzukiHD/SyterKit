@@ -50,9 +50,25 @@
 #define SPI_LCD_COLOR_YELLOW 0xFFE0
 
 static sunxi_spi_t sunxi_spi0_lcd;
-static gpio_mux_t lcd_dc_pins;
-static gpio_mux_t lcd_res_pins;
-static gpio_mux_t lcd_blk_pins;
+/* A1 LCD wiring is fixed; only the SPI controller is read from DT. */
+static gpio_mux_t lcd_dc_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 13),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
+static gpio_mux_t lcd_res_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 9),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
+static gpio_mux_t lcd_blk_pins = {
+	.base = SUNXI_R_GPIO_BASE,
+	.pin = GPIO_PIN(GPIO_PORTL, 8),
+	.bank = 0,
+	.mux = GPIO_OUTPUT,
+};
 
 static void LCD_Set_DC(uint8_t val)
 {
@@ -130,15 +146,9 @@ static void LCD_Fill_All(uint16_t color)
 	free(video_mem);
 }
 
-static int LCD_Init(sunxi_dma_t *dma)
+static int LCD_Init(void)
 {
-	int spi_lcd_node;
-
-	spi_lcd_node = syterkit_dt_alias_node("spi-lcd", SUNXI_SPI_COMPATIBLE);
-	if (spi_lcd_node < 0 || sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_lcd_node, dma) != DRIVER_OK ||
-	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_lcd_node, "allwinner,lcd-dc-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_lcd_node, "allwinner,lcd-reset-gpio") ||
-	    !sunxi_gpio_dt_read_property(&lcd_blk_pins, spi_lcd_node, "allwinner,lcd-backlight-gpio")) {
+	if (sunxi_spi_dt_read_alias(&sunxi_spi0_lcd, "spi-lcd", NULL) != DRIVER_OK) {
 		pr_err("LCD: invalid devicetree configuration\n");
 		return -1;
 	}
