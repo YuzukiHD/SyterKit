@@ -1119,9 +1119,8 @@ static void spif_nor_print_training_chart(
 
 	pr_info("training diagram (O=OK, -=FAIL)\n");
 	pr_info("vertical axis: sample mode; horizontal axis: delay\n");
-	pr_info("delay    0         1         2         3         4         5         6\n");
-	pr_info("0123456789012345678901234567890123456789012345678901234567890123\n");
-	pr_info("+----------------------------------------------------------------+\n");
+	pr_info("        delay    0         1         2         3         4         5         6\n");
+	pr_info("        0123456789012345678901234567890123456789012345678901234567890123\n");
 	for (mode = 0U; mode < SPIF_NOR_TRAINING_MODES; ++mode) {
 		if (windows[mode].length == 0U)
 			pr_info("mode=%u  |%s| window=none\n", mode, samples[mode]);
@@ -1130,7 +1129,6 @@ static void spif_nor_print_training_chart(
 				windows[mode].start, windows[mode].start + windows[mode].length - 1U,
 				windows[mode].length);
 	}
-	pr_info("+----------------------------------------------------------------+\n");
 	if (best_length == 0U)
 		return;
 	memset(selected, ' ', SPIF_NOR_TRAINING_DELAYS);
