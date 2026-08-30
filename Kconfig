@@ -22,7 +22,6 @@ config BUILD_DEBUG
 
 config BUILD_TRACE
 	bool "Trace"
-	select UART_EARLY_LOG
 
 endchoice
 
