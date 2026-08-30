@@ -50,7 +50,15 @@ void show_chip()
 	chip_sid[3] = sunxi_efuse_sram_read(&sid, 0xcU);
 
 	pr_info("Model: AvaotaSBC Avaota F2 board.\n");
+#ifdef CONFIG_ARCH_CPU_C907
+#ifdef CONFIG_ARCH_RISCV32
+	pr_info("Core: XuanTie C907 RV32 RISC-V Core.\n");
+#else
+	pr_info("Core: XuanTie C907 RV64 RISC-V Core.\n");
+#endif
+#else
 	pr_info("Core: XuanTie E907 RISC-V Core.\n");
+#endif
 	pr_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
 }
 

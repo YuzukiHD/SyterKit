@@ -35,7 +35,9 @@
 #include <cli/cli_shell.h>
 #include <cli/cli_termesc.h>
 
+#ifdef CONFIG_ARCH_CPU_E907
 #include <e907/sysmap.h>
+#endif
 
 #define AVAOTA_F2_HEAP_BASE	  0x40800000U
 #define AVAOTA_F2_HEAP_SIZE	  (16U * 1024U * 1024U)
@@ -103,7 +105,9 @@ int main(void)
 		return -1;
 	}
 
+#ifdef CONFIG_ARCH_CPU_E907
 	sysmap_dump_region_info();
+#endif
 
 	sunxi_clk_dump();
 

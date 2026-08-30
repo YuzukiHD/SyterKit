@@ -30,3 +30,11 @@ config ARCH_EXTRA_CFLAG
 	default "-mcpu=e907f" if ARCH_CPU_E907
 	default "-mtune=c907" if ARCH_CPU_C907
 	default "-mtune=c906" if ARCH_CPU_C906
+
+config ARCH_RISCV64_ABI_LP64
+	bool "Use the integer-only LP64 ABI"
+	depends on ARCH_RISCV64 && ARCH_CPU_C907
+	help
+	  Build C907 RV64 firmware with the soft-float LP64 calling convention.
+	  Enable this when linking vendor objects that use the LP64 ABI rather
+	  than LP64D.

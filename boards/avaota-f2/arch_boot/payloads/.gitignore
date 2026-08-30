@@ -1,0 +1,4 @@
+/build/
+/rv32/
+/rv64/
+__pycache__/
