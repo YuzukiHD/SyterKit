@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
-#define pr_fmt(fmt) "sdcard: " fmt
+#define pr_fmt(fmt) "SMHC: " fmt
 
 #include <barrier.h>
 #include <io.h>
