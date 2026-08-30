@@ -30,6 +30,7 @@
 #include <drivers/sid/sid.h>
 #include <drivers/spi/spi.h>
 #include <drivers/serial/serial.h>
+#include <malloc.h>
 #include <string.h>
 
 static sunxi_dram_t dram;
@@ -37,6 +38,8 @@ static sunxi_dram_t dram;
 extern sunxi_serial_t uart_dbg;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
+#define CONFIG_HEAP_BASE (0x40800000)
+#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
 
 static sdmmc_pdata_t test_card;
 static sunxi_sdhci_t test_mmc;
@@ -169,6 +172,10 @@ int main(void)
 	sunxi_clk_dump();
 
 	arm32_mmu_enable(dram.memory_base, dram_size);
+
+	/* Initialize the heap used by the interactive CLI buffers. */
+	if (malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE) != 0)
+		pr_warn("heap initialization failed\n");
 
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&test_mmc) != 0) {

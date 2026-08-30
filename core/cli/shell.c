@@ -18,6 +18,9 @@
 #include <cli/cli.h>
 #include <cli/cli_history.h>
 #include <cli/cli_termesc.h>
+#ifdef CONFIG_CLI_HEAP_STORAGE
+#include <malloc.h>
+#endif
 
 const msh_command_entry *msh_user_commands;
 
@@ -37,12 +40,23 @@ const msh_command_entry empty_commands[] = {
  */
 int syterkit_shell_attach(const msh_command_entry *cmdlist)
 {
+#ifdef CONFIG_CLI_HEAP_STORAGE
+	char *linebuf = malloc(MSH_CMDLINE_CHAR_MAX);
+	char *argbuf = malloc(MSH_CMDLINE_CHAR_MAX);
+
+	if (!linebuf || !argbuf) {
+		free(linebuf);
+		free(argbuf);
+		return -1;
+	}
+#else
 	char linebuf[MSH_CMDLINE_CHAR_MAX];
+	char argbuf[MSH_CMDLINE_CHAR_MAX];
+#endif
 
 	/* Loop for reading line (forever). */
 	int argc;
 	char *argv[MSH_CMDARGS_MAX];
-	char argbuf[MSH_CMDLINE_CHAR_MAX];
 
 	/* set msh_user_commands */
 	if (cmdlist != NULL) {

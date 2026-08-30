@@ -6,7 +6,8 @@
  *
  * The editor keeps a fixed-size command buffer, redraws only the affected
  * terminal span, and translates common ANSI cursor sequences into shell key
- * bindings.  No dynamic allocation is used.
+ * bindings. The command state can be heap-backed for applications that
+ * initialize the allocator before entering the shell.
  */
 
 #include <stdbool.h>
@@ -19,6 +20,9 @@
 
 #include <cli/cli_history.h>
 #include <cli/cli_termesc.h>
+#ifdef CONFIG_CLI_HEAP_STORAGE
+#include <malloc.h>
+#endif
 
 /** @brief Mutable command line, cursor, and cut/paste state. */
 typedef struct cmdline_struct {
@@ -27,9 +31,16 @@ typedef struct cmdline_struct {
 	int linelen; /* length of input char of line EXCLUDING trailing null */
 	/* The buffer used for Cut&Paste */
 	char clipboard[MSH_CMDLINE_CHAR_MAX];
+	/* The line saved while browsing command history. */
+	char curline[MSH_CMDLINE_CHAR_MAX];
 } cmdline_t;
 
+#ifdef CONFIG_CLI_HEAP_STORAGE
+static cmdline_t *cmdline;
+#define CmdLine (*cmdline)
+#else
 static cmdline_t CmdLine;
+#endif
 static int bCmdLineInitialized;
 
 /**
@@ -51,6 +62,7 @@ static void cmdline_init(cmdline_t *pcmdline)
 {
 	cmdline_clear(pcmdline);
 	memset(pcmdline->clipboard, '\0', MSH_CMDLINE_CHAR_MAX);
+	memset(pcmdline->curline, '\0', MSH_CMDLINE_CHAR_MAX);
 }
 
 static char *prompt_string = MSH_CMD_PROMPT;
@@ -341,8 +353,6 @@ static void cmdline_killword(cmdline_t *pcmdline)
 
 static int histnum;
 
-char curline[MSH_CMDLINE_CHAR_MAX];
-
 const char *histline;
 
 /**
@@ -449,7 +459,7 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
 	case MSH_KEYBIND_HISTPREV:
 		if (histnum == 0) {
 			/* save current line before overwrite with history */
-			strcpy(curline, pcmdline->buf);
+			strcpy(pcmdline->curline, pcmdline->buf);
 		}
 		histline = history_get(histnum);
 		if (histline != NULL) {
@@ -463,7 +473,7 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
 	case MSH_KEYBIND_HISTNEXT:
 		if (histnum == 1) {
 			histnum = 0;
-			cmdline_set(pcmdline, curline);
+			cmdline_set(pcmdline, pcmdline->curline);
 		} else if (histnum > 1) {
 			histline = history_get(histnum - 2);
 			if (histline != NULL) {
@@ -497,6 +507,12 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
  */
 int msh_get_cmdline(char *linebuf)
 {
+#ifdef CONFIG_CLI_HEAP_STORAGE
+	if (!cmdline)
+		cmdline = malloc(sizeof(*cmdline));
+	if (!cmdline)
+		return 0;
+#endif
 	if (!bCmdLineInitialized) {
 		cmdline_init(&CmdLine);
 		bCmdLineInitialized = 1; /* true */
