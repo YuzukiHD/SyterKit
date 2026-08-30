@@ -13,8 +13,7 @@ void sunxi_mmc_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
 	uint32_t dsbd;
 	uint32_t csdc;
 
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 ||
-	    sdhci->mmc_host.reg == NULL)
+	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.reg == NULL)
 		return;
 
 	dsbd = sdhci->mmc_host.reg->dsbd;
@@ -42,8 +41,7 @@ void sunxi_mmc_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
  */
 int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci)
 {
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 ||
-	    sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
+	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
 		return -1;
 
 	mmc_t *mmc = &sdhci->mmc;
@@ -59,8 +57,7 @@ int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci)
 		return -1;
 	}
 
-	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS200);
+	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS200);
 	if (err) {
 		pr_warn("Failed to change to HS200 mode\n");
 		return err;
@@ -86,8 +83,7 @@ int sunxi_mmc_mmc_switch_hs200(sunxi_sdhci_t *sdhci)
  */
 int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
 {
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 ||
-	    sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
+	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
 		return -1;
 
 	mmc_t *mmc = &sdhci->mmc;
@@ -103,8 +99,7 @@ int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
 		return -1;
 	}
 
-	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
+	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
 	if (err) {
 		pr_warn("Failed to change to HS400 mode\n");
 		return err;
@@ -124,9 +119,8 @@ int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
 
 int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 {
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 ||
-	    sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4 ||
-	    (width != SMHC_WIDTH_4BIT && width != SMHC_WIDTH_8BIT))
+	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4 ||
+		(width != SMHC_WIDTH_4BIT && width != SMHC_WIDTH_8BIT))
 		return -1;
 
 	mmc_t *mmc = &sdhci->mmc;
@@ -155,10 +149,6 @@ int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 		last_err = sunxi_mmc_execute_tuning(sdhci);
 		if (!last_err) {
 			mmc->tran_speed = mmc->clock;
-			pr_info("speed mode: HS200/SDR104\n");
-			pr_info("HS200/SDR104: 0x%08x 0x%08x\n",
-				mmc->tune_sdly.tm4_smx_fx[MMC_HS200_SDR104 * 2U],
-				mmc->tune_sdly.tm4_smx_fx[MMC_HS200_SDR104 * 2U + 1U]);
 			return 0;
 		}
 	}
@@ -168,8 +158,7 @@ int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 
 int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 {
-	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 ||
-	    sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
+	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
 		return -1;
 
 	mmc_t *mmc = &sdhci->mmc;
@@ -195,8 +184,7 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	/* The card is still in HS200. Leave HS200 while the host keeps the
 	 * HS200 protocol, then reconfigure the host for HS before switching
 	 * the card's bus width to DDR. */
-	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 	if (err)
 		return err;
 
@@ -212,7 +200,6 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	if (err)
 		return err;
 
-	pr_info("================== HS400...\n");
 	err = sunxi_mmc_mmc_switch_hs400(sdhci);
 	if (err)
 		return err;
@@ -226,23 +213,9 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	if (err)
 		return err;
 
-	pr_info("speed mode: HS400\n");
 	err = sunxi_mmc_execute_hs400_tuning(sdhci);
 	if (err)
 		return err;
-
-	pr_info("HS400: 0x%08x 0x%08x\n",
-		(uint32_t)mmc->tune_sdly.tm4_dsdly[0] |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[1] << 8) |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[2] << 16) |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[3] << 24),
-		(uint32_t)mmc->tune_sdly.tm4_dsdly[4] |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[5] << 8) |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[6] << 16) |
-		((uint32_t)mmc->tune_sdly.tm4_dsdly[7] << 24));
-	pr_info("HS400: 0x%08x 0x%08x\n",
-		mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U],
-		mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U + 1U]);
 
 	return 0;
 }
@@ -269,8 +242,7 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 	/* A stale DDR state with a one-bit bus can only be left by a failed
 	 * transition before the card-side DDR switch completed. Recover it as
 	 * the identification-time SDR state first. */
-	if (mmc->speed_mode == MMC_HSDDR52_DDR50 &&
-	    mmc->bus_width == SMHC_WIDTH_1BIT)
+	if (mmc->speed_mode == MMC_HSDDR52_DDR50 && mmc->bus_width == SMHC_WIDTH_1BIT)
 		mmc->speed_mode = MMC_HSSDR52_SDR25;
 
 	/* HS400 must be exited while the host still speaks HS400. Change the
@@ -281,8 +253,7 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 		if (sdhci->mmc_host.fatal_err)
 			return -1;
 
-		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 		if (err)
 			return err;
 
@@ -294,8 +265,7 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 		if (err)
 			return err;
 
-		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_BUS_WIDTH, bus_width);
+		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, bus_width);
 		if (err)
 			return err;
 
@@ -312,8 +282,7 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 		if (sdhci->mmc_host.fatal_err)
 			return -1;
 
-		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_BUS_WIDTH, bus_width);
+		err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH, bus_width);
 		if (err)
 			return err;
 
@@ -329,8 +298,7 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 	if (sdhci->mmc_host.fatal_err)
 		return -1;
 
-	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+	err = sunxi_mmc_hs_switch_card(sdhci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 	if (err)
 		pr_warn("failed to downgrade after tuning\n");
 	else {

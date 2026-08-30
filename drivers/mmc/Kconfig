@@ -13,6 +13,13 @@ config DRIVER_MMC_TUNING
 	  This adds code and runtime initialization time, so leave it disabled
 	  when only legacy, HS or DDR52 operation is required.
 
+config DRIVER_MMC_SHOW_TRAINING
+	bool "Show MMC sampling training chart"
+	depends on DRIVER_MMC_TUNING
+	help
+	  Print the MMC sampling training result as a delay-by-pass chart.
+	  Disable this option to remove the chart buffers and debug logging code.
+
 choice
 	prompt "MMC driver log level"
 	default DRIVER_MMC_LOG_TRACE if BUILD_TRACE
