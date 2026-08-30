@@ -13,6 +13,7 @@
 	.section .text.entry, "ax", @progbits
 	.balign 4
 	.globl _start
+	.weak malloc_init_early
 	.type _start, @function
 _start:
 	/* Boot ROM may leave machine interrupts enabled. */
@@ -29,6 +30,12 @@ _start:
 #endif
 	csrw mtvec, a0
 	jal clear_bss
+
+	/* Make the unused SRAM tail available when the allocator is linked. */
+	la t0, malloc_init_early
+	beqz t0, 1f
+	jalr ra, t0, 0
+1:
 
 	li t0, MSTATUS_FS | MSTATUS_XS
 	csrs mstatus, t0

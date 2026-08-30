@@ -64,6 +64,7 @@ SECTIONS
 	} > ram :data
 	. = ALIGN(4);
 	_end = .;
+	PROVIDE(__sram_end = ORIGIN(ram) + LENGTH(ram));
 #ifndef CONFIG_ARCH_BOOT
 	ASSERT(_start == __spl_start + 0x40,
 	       "Boot0 entry must be 0x40 bytes from the image start")
