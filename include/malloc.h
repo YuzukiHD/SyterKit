@@ -11,13 +11,29 @@ extern "C" {
 #endif
 
 /**
- * @brief Initialize the heap used by malloc(), realloc(), and free().
+ * @brief Initialize or add a memory region used by malloc(), realloc(), and free().
  *
  * @param heap_start Start address of the heap.
  * @param heap_size Size of the heap in bytes.
  * @return Zero on success, or -1 if the heap range is invalid.
  */
 int malloc_init(uintptr_t heap_start, size_t heap_size);
+
+/**
+ * @brief Add another non-overlapping region to the allocator.
+ *
+ * Existing allocations remain valid. New allocations prefer the most
+ * recently added region, which lets DRAM supersede an early SRAM region.
+ */
+int malloc_add_region(uintptr_t heap_start, size_t heap_size);
+
+/**
+ * @brief Initialize an early heap from the unused tail of linked SRAM.
+ *
+ * Returns zero when the linker supplied a usable SRAM tail, or -1 when the
+ * current image has no such region.
+ */
+int malloc_init_early(void);
 
 /**
  * @brief Allocate a block from the initialized heap.

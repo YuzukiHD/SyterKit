@@ -61,6 +61,7 @@
 	.arm
 	.section .text.entry, "ax", %progbits
 	.globl _start
+	.weak malloc_init_early
 	.type _start, %function
 _start:
 	b reset
@@ -160,6 +161,13 @@ reset:
 	ldr sp, =__stack_srv_end
 
 	bl clear_bss
+
+	/* Make the unused SRAM tail available when the allocator is linked. */
+	ldr r0, =malloc_init_early
+	cmp r0, #0
+	beq 1f
+	blx r0
+1:
 
 #ifdef CONFIG_CPU_CORTEX_A7
 	ldr r0, =24000000

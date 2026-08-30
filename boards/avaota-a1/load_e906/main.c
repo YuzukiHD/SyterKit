@@ -15,7 +15,6 @@
 #include <common.h>
 #include <jmp.h>
 #include <mmu.h>
-#include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -5,9 +5,8 @@
  * @brief Minimal fixed-region heap allocator.
  *
  * The allocator carves allocations out of a statically described memory
- * region that is registered with malloc_init() early during firmware start.
- * Each live allocation is preceded in memory by a malloc_block descriptor
- * chained on a singly linked list rooted at heap_head.
+ * regions that are registered with malloc_init(). Each live allocation is
+ * preceded in memory by a malloc_block descriptor chained in its region.
  */
 #include <malloc.h>
 #include <stddef.h>
@@ -15,6 +14,7 @@
 #include <string.h>
 
 #define MALLOC_ALIGNMENT 16U
+#define MALLOC_MAX_REGIONS 2U
 
 /** @struct malloc_block
  *  @brief Bookkeeping descriptor for a single heap allocation.
@@ -26,8 +26,15 @@ struct malloc_block {
 	struct malloc_block *next; /**< Next descriptor in the heap chain. */
 };
 
-static struct malloc_block heap_head; /**< Sentinel marking the start of the heap chain. */
-static struct malloc_block heap_tail; /**< Sentinel marking the end of the heap chain. */
+struct malloc_region {
+	uintptr_t start;
+	uintptr_t end;
+	struct malloc_block head;
+	struct malloc_block tail;
+};
+
+static struct malloc_region heap_regions[MALLOC_MAX_REGIONS];
+static size_t heap_region_count;
 
 /**
  * @brief Round a size up to the allocator alignment boundary.
@@ -47,13 +54,15 @@ static size_t align_size(size_t size)
 /**
  * @brief Compute the highest usable address before a given block.
  *
+ * @param[in] region Region containing the block.
  * @param[in] block Block whose lower neighbour is to be measured.
  * @return The address of the payload of @p block minus the descriptor
  *         overhead, or the payload address itself for the heap tail.
  */
-static uintptr_t block_limit(const struct malloc_block *block)
+static uintptr_t block_limit(const struct malloc_region *region,
+				     const struct malloc_block *block)
 {
-	if (block == &heap_tail)
+	if (block == &region->tail)
 		return block->address;
 
 	return block->address - sizeof(*block);
@@ -68,17 +77,25 @@ static uintptr_t block_limit(const struct malloc_block *block)
  * @return The descriptor matching @p ptr, or NULL if @p ptr is not a live
  *         allocation.
  */
-static struct malloc_block *find_block(const void *ptr, struct malloc_block **previous)
+static struct malloc_block *find_block(const void *ptr,
+				       struct malloc_block **previous,
+				       struct malloc_region **owner)
 {
-	struct malloc_block *block = &heap_head;
+	struct malloc_block *block;
+	size_t region_index;
 
-	while (block->next) {
-		if (block->next->address == (uintptr_t)ptr) {
-			if (previous)
-				*previous = block;
-			return block->next;
+	for (region_index = 0U; region_index < heap_region_count; region_index++) {
+		block = &heap_regions[region_index].head;
+		while (block->next) {
+			if (block->next->address == (uintptr_t)ptr) {
+				if (previous)
+					*previous = block;
+				if (owner)
+					*owner = &heap_regions[region_index];
+				return block->next;
+			}
+			block = block->next;
 		}
-		block = block->next;
 	}
 
 	return NULL;
@@ -87,20 +104,21 @@ static struct malloc_block *find_block(const void *ptr, struct malloc_block **pr
 /**
  * @brief Register the memory region used by the heap allocator.
  *
- * The region is aligned up to the allocator boundary and described by the
- * heap_head and heap_tail sentinels.  It must be called once before any
- * other allocator routine.
+ * The region is aligned up to the allocator boundary and described by a pair
+ * of sentinels. It can be called more than once to add independent regions.
  *
  * @param[in] heap_start Start address of the memory region.
  * @param[in] heap_size Size of the memory region in bytes.
  * @return 0 on success, or -1 if the region is unusable (null, wrapping,
  *         or too small to hold the descriptor).
  */
-int malloc_init(uintptr_t heap_start, size_t heap_size)
+int malloc_add_region(uintptr_t heap_start, size_t heap_size)
 {
 	uintptr_t aligned_start;
 	uintptr_t heap_end;
 	size_t adjustment;
+	size_t region_index;
+	struct malloc_region *region;
 
 	if (!heap_start || heap_start > (uintptr_t)-1 - heap_size)
 		return -1;
@@ -114,16 +132,48 @@ int malloc_init(uintptr_t heap_start, size_t heap_size)
 		return -1;
 
 	heap_end = heap_start + heap_size;
-	heap_head.address = aligned_start;
-	heap_head.size = 0;
-	heap_head.requested_size = 0;
-	heap_head.next = &heap_tail;
-	heap_tail.address = heap_end;
-	heap_tail.size = 0;
-	heap_tail.requested_size = 0;
-	heap_tail.next = NULL;
+	for (region_index = 0U; region_index < heap_region_count; region_index++) {
+		if (aligned_start < heap_regions[region_index].end &&
+			heap_end > heap_regions[region_index].start)
+			return -1;
+	}
+	if (heap_region_count >= MALLOC_MAX_REGIONS)
+		return -1;
+
+	region = &heap_regions[heap_region_count++];
+	region->start = aligned_start;
+	region->end = heap_end;
+	region->head.address = aligned_start;
+	region->head.size = 0;
+	region->head.requested_size = 0;
+	region->head.next = &region->tail;
+	region->tail.address = heap_end;
+	region->tail.size = 0;
+	region->tail.requested_size = 0;
+	region->tail.next = NULL;
 
 	return 0;
+}
+
+int malloc_init(uintptr_t heap_start, size_t heap_size)
+{
+	return malloc_add_region(heap_start, heap_size);
+}
+
+extern uint8_t _end[] __attribute__((weak));
+extern uint8_t __sram_end[] __attribute__((weak));
+
+int malloc_init_early(void)
+{
+	uintptr_t start = (uintptr_t)_end;
+	uintptr_t end = (uintptr_t)__sram_end;
+
+	if (!start || !end || end <= start)
+		return -1;
+	start = (start + MALLOC_ALIGNMENT - 1U) & ~(uintptr_t)(MALLOC_ALIGNMENT - 1U);
+	if (end <= start)
+		return -1;
+	return malloc_init(start, end - start);
 }
 
 /**
@@ -144,31 +194,36 @@ void *malloc(size_t size)
 	uintptr_t metadata_address;
 	uintptr_t limit;
 	size_t aligned_size;
+	size_t region_index;
 
-	if (!size || !heap_head.next)
+	if (!size || !heap_region_count)
 		return NULL;
 
 	aligned_size = align_size(size);
 	if (!aligned_size)
 		return NULL;
 
-	for (block = &heap_head; block->next; block = block->next) {
-		if (block->address > (uintptr_t)-1 - block->size)
-			return NULL;
+	/* Search newest regions first so DRAM is preferred over early SRAM. */
+	for (region_index = heap_region_count; region_index-- > 0U;) {
+		block = &heap_regions[region_index].head;
+		for (; block->next; block = block->next) {
+			if (block->address > (uintptr_t)-1 - block->size)
+				return NULL;
 
-		metadata_address = block->address + block->size;
-		limit = block_limit(block->next);
-		if (metadata_address > limit || limit - metadata_address < sizeof(*new_block) || limit - metadata_address - sizeof(*new_block) < aligned_size)
-			continue;
+			metadata_address = block->address + block->size;
+			limit = block_limit(&heap_regions[region_index], block->next);
+			if (metadata_address > limit || limit - metadata_address < sizeof(*new_block) || limit - metadata_address - sizeof(*new_block) < aligned_size)
+				continue;
 
-		new_block = (struct malloc_block *)metadata_address;
-		new_block->address = metadata_address + sizeof(*new_block);
-		new_block->size = aligned_size;
-		new_block->requested_size = size;
-		new_block->next = block->next;
-		block->next = new_block;
+			new_block = (struct malloc_block *)metadata_address;
+			new_block->address = metadata_address + sizeof(*new_block);
+			new_block->size = aligned_size;
+			new_block->requested_size = size;
+			new_block->next = block->next;
+			block->next = new_block;
 
-		return (void *)new_block->address;
+			return (void *)new_block->address;
+		}
 	}
 
 	return NULL;
@@ -188,6 +243,7 @@ void *malloc(size_t size)
 void *realloc(void *ptr, size_t size)
 {
 	struct malloc_block *block;
+	struct malloc_region *owner;
 	uintptr_t limit;
 	size_t aligned_size;
 	size_t copy_size;
@@ -200,15 +256,15 @@ void *realloc(void *ptr, size_t size)
 		return NULL;
 	}
 
-	block = find_block(ptr, NULL);
-	if (!block)
-		return NULL;
-
 	aligned_size = align_size(size);
 	if (!aligned_size)
 		return NULL;
 
-	limit = block_limit(block->next);
+	owner = NULL;
+	block = find_block(ptr, NULL, &owner);
+	if (!block || !owner)
+		return NULL;
+	limit = block_limit(owner, block->next);
 	if (block->address <= limit && aligned_size <= limit - block->address) {
 		block->size = aligned_size;
 		block->requested_size = size;
@@ -242,7 +298,7 @@ void free(void *ptr)
 	if (!ptr)
 		return;
 
-	block = find_block(ptr, &previous);
+	block = find_block(ptr, &previous, NULL);
 	if (block)
 		previous->next = block->next;
 }
