@@ -99,3 +99,15 @@ int __attribute__((weak, section(".text.mmc_generic_set_io_voltage"))) sunxi_sdh
 {
 	return 0;
 }
+
+/*
+ * Default data-line deskew implementation: the common Allwinner MMC host
+ * needs no fixed deskew, so this is a no-op.  SoCs that require one on some
+ * controllers (e.g. MMC2 on Sun55iw6) override this weak symbol in their
+ * host file.
+ */
+int __attribute__((weak, section(".text.mmc_generic_set_skew"))) sunxi_sdhci_set_skew(
+	sunxi_sdhci_t *sdhci)
+{
+	return 0;
+}

@@ -383,20 +383,7 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 		}
 #endif
 
-#if defined(CONFIG_SOC_SUN55IW6)
-		/* MMC2 on SUN55IW6 has a fixed data-line skew. */
-		if (sdhci->id == MMC_CONTROLLER_2) {
-			mmc_host->reg->skew_dat0_dl = 0x8f;
-			mmc_host->reg->skew_dat1_dl = 0x8f;
-			mmc_host->reg->skew_dat2_dl = 0x8f;
-			mmc_host->reg->skew_dat3_dl = 0x8f;
-			mmc_host->reg->skew_dat4_dl = 0x8f;
-			mmc_host->reg->skew_dat5_dl = 0x8f;
-			mmc_host->reg->skew_dat6_dl = 0x8f;
-			mmc_host->reg->skew_dat7_dl = 0x8f;
-			mmc_host->reg->skew_ctrl = 0xc;
-		}
-#endif
+		sunxi_sdhci_set_skew(sdhci);
 		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_orig);
 	}
 	return ret;
@@ -1333,7 +1320,6 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 	/* Set supported voltages and host capabilities */
 	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
 	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
-
 #if CONFIG_DRIVER_MMC_TUNING
 	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8)
 		mmc->host_caps |= MMC_MODE_HS200;

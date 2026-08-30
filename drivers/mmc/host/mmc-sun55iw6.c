@@ -96,3 +96,36 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 
 	return 0;
 }
+
+/**
+ * @brief Apply the fixed MMC2 data-line deskew on SUN55IW6.
+ *
+ * SUN55IW6's eMMC controller (MMC2) needs a fixed deskew delay on all
+ * eight data lines regardless of tuning, so program it once when the
+ * controller enters HS400 timing.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return 0 on success, or a negative value on failure.
+ */
+int sunxi_sdhci_set_skew(sunxi_sdhci_t *sdhci)
+{
+	sunxi_sdhci_host_t *mmc_host;
+
+	if (sdhci == NULL)
+		return -1;
+	if (sdhci->id != MMC_CONTROLLER_2)
+		return 0;
+
+	mmc_host = &sdhci->mmc_host;
+	mmc_host->reg->skew_dat0_dl = 0x8f;
+	mmc_host->reg->skew_dat1_dl = 0x8f;
+	mmc_host->reg->skew_dat2_dl = 0x8f;
+	mmc_host->reg->skew_dat3_dl = 0x8f;
+	mmc_host->reg->skew_dat4_dl = 0x8f;
+	mmc_host->reg->skew_dat5_dl = 0x8f;
+	mmc_host->reg->skew_dat6_dl = 0x8f;
+	mmc_host->reg->skew_dat7_dl = 0x8f;
+	mmc_host->reg->skew_ctrl = 0xc;
+
+	return 0;
+}
