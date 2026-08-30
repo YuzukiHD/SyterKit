@@ -26,7 +26,7 @@
 /**
  * @brief Voltage regulator control table for the AXP2202 PMU.
  */
-static axp_contrl_info axp_ctrl_tbl[] = {
+static axp_contrl_info axp2202_ctrl_tbl[] = {
 	{ "dcdc1", 500, 1540, AXP2202_DC1OUT_VOL, 0x7f, AXP2202_OUTPUT_CTL0, 0, 0,
 	{ {500, 1200, 10}, {1220, 1540, 20}, } },
 
@@ -181,7 +181,7 @@ int pmu_axp2202_init(axp_pmu_t *pmu)
  */
 int pmu_axp2202_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
 {
-	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_set_vol(pmu, name, set_vol, onoff, axp2202_ctrl_tbl, ARRAY_SIZE(axp2202_ctrl_tbl));
 }
 
 /**
@@ -193,7 +193,7 @@ int pmu_axp2202_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
  */
 int pmu_axp2202_get_vol(axp_pmu_t *pmu, char *name)
 {
-	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_get_vol(pmu, name, axp2202_ctrl_tbl, ARRAY_SIZE(axp2202_ctrl_tbl));
 }
 
 /**
@@ -203,7 +203,7 @@ int pmu_axp2202_get_vol(axp_pmu_t *pmu, char *name)
  */
 void pmu_axp2202_dump(axp_pmu_t *pmu)
 {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("AXP2202 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp_ctrl_tbl[i].name));
+	for (int i = 0; i < ARRAY_SIZE(axp2202_ctrl_tbl); i++) {
+		pr_debug("AXP2202 %s = %dmv\n", axp2202_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp2202_ctrl_tbl[i].name));
 	}
 }
