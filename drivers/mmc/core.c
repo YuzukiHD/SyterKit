@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
-#define pr_fmt(fmt) "core: " fmt
+#define pr_fmt(fmt) "SMHC: " fmt
 
 #include <barrier.h>
 #include <io.h>
@@ -199,7 +199,8 @@ static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout)
 	while (timeout != 0U) {
 		err = sunxi_sdhci_xfer(sdhci, &cmd, NULL);
 		if (err) {
-			pr_warn("%u: Send status failed\n", sdhci->id);
+			if (!MMC_IS_TRAINING(mmc))
+				pr_warn("%u: Send status failed\n", sdhci->id);
 			return err;
 		} else if (cmd.response[0] & MMC_STATUS_RDY_FOR_DATA)
 			break;
@@ -208,13 +209,15 @@ static int sunxi_mmc_send_status(sunxi_sdhci_t *sdhci, uint32_t timeout)
 			break;
 		mdelay(1);
 		if (cmd.response[0] & MMC_STATUS_MASK) {
-			pr_warn("%u: Status Error: 0x%08X\n", sdhci->id, cmd.response[0]);
+			if (!MMC_IS_TRAINING(mmc))
+				pr_warn("%u: Status Error: 0x%08X\n", sdhci->id, cmd.response[0]);
 			return COMM_ERR;
 		}
 	}
 
 	if (timeout == 0U) {
-		pr_warn("%u: Timeout waiting card ready\n", sdhci->id);
+		if (!MMC_IS_TRAINING(mmc))
+			pr_warn("%u: Timeout waiting card ready\n", sdhci->id);
 		return TIMEOUT;
 	}
 
@@ -296,7 +299,8 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 	data.flags = MMC_DATA_READ;
 
 	if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
-		pr_warn("read block failed\n");
+		if (!MMC_IS_TRAINING(mmc))
+			pr_warn("read block failed\n");
 		return 0;
 	}
 
@@ -306,7 +310,8 @@ static uint32_t sunxi_mmc_read_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t 
 		cmd.resp_type = MMC_RSP_R1b;
 		cmd.flags = 0;
 		if (sunxi_sdhci_xfer(sdhci, &cmd, NULL)) {
-			pr_warn("failed to send stop command\n");
+			if (!MMC_IS_TRAINING(mmc))
+				pr_warn("failed to send stop command\n");
 			return 0;
 		}
 
@@ -367,7 +372,8 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
 	data.flags = MMC_DATA_WRITE;
 
 	if (sunxi_sdhci_xfer(sdhci, &cmd, &data)) {
-		pr_warn("read block failed\n");
+		if (!MMC_IS_TRAINING(mmc))
+			pr_warn("read block failed\n");
 		return 0;
 	}
 
@@ -377,7 +383,8 @@ static uint32_t sunxi_mmc_write_blocks(sunxi_sdhci_t *sdhci, void *dst, uint32_t
 		cmd.resp_type = MMC_RSP_R1b;
 		cmd.flags = 0;
 		if (sunxi_sdhci_xfer(sdhci, &cmd, NULL)) {
-			pr_warn("failed to send stop command\n");
+			if (!MMC_IS_TRAINING(mmc))
+				pr_warn("failed to send stop command\n");
 			return 0;
 		}
 
@@ -1399,17 +1406,17 @@ static void sunxi_mmc_show_card_info(sunxi_sdhci_t *sdhci)
 {
 	mmc_t *mmc = &sdhci->mmc;
 	if (mmc->high_capacity)
-		pr_debug("  High capacity card\n");
-	pr_debug("  CID: %08X-%08X-%08X-%08X\n", mmc->cid[0], mmc->cid[1], mmc->cid[2], mmc->cid[3]);
-	pr_debug("  CSD: %08X-%08X-%08X-%08X\n", mmc->csd[0], mmc->csd[1], mmc->csd[2], mmc->csd[3]);
-	pr_debug("  Max transfer speed: %u HZ\n", mmc->tran_speed);
-	pr_debug("  SMHC CLK: %uHz\n", mmc->clock);
-	pr_debug("  Manufacturer ID: %02X\n", extract_mid(mmc));
-	pr_debug("  OEM/Application ID: %04X\n", extract_oid(mmc));
-	pr_debug("  Product name: '%c%c%c%c%c'\n", mmc->cid[0] & 0xff, (mmc->cid[1] >> 24), (mmc->cid[1] >> 16) & 0xff, (mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
-	pr_debug("  Product revision: %u.%u\n", extract_prv(mmc) >> 4, extract_prv(mmc) & 0xf);
-	pr_debug("  Serial no: %0u\n", extract_psn(mmc));
-	pr_debug("  Manufacturing date: %u.%u\n", extract_year(mmc), extract_month(mmc));
+		pr_info("  High capacity card\n");
+	pr_info("  CID: %08X-%08X-%08X-%08X\n", mmc->cid[0], mmc->cid[1], mmc->cid[2], mmc->cid[3]);
+	pr_info("  CSD: %08X-%08X-%08X-%08X\n", mmc->csd[0], mmc->csd[1], mmc->csd[2], mmc->csd[3]);
+	pr_info("  Max transfer speed: %u HZ\n", mmc->tran_speed);
+	pr_info("  SMHC CLK: %uHz\n", mmc->clock);
+	pr_info("  Manufacturer ID: %02X\n", extract_mid(mmc));
+	pr_info("  OEM/Application ID: %04X\n", extract_oid(mmc));
+	pr_info("  Product name: '%c%c%c%c%c'\n", mmc->cid[0] & 0xff, (mmc->cid[1] >> 24), (mmc->cid[1] >> 16) & 0xff, (mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
+	pr_info("  Product revision: %u.%u\n", extract_prv(mmc) >> 4, extract_prv(mmc) & 0xf);
+	pr_info("  Serial no: %0u\n", extract_psn(mmc));
+	pr_info("  Manufacturing date: %u.%u\n", extract_year(mmc), extract_month(mmc));
 }
 
 /**
@@ -1818,7 +1825,7 @@ static int sunxi_mmc_probe(sunxi_sdhci_t *sdhci)
 	mmc->lba = mmc->capacity >> 9;
 
 	pr_debug("card at the '%s' host controller:\r\n", sdhci->name);
-	pr_debug("  Attached is a %s%s card\r\n", mmc->version & SD_VERSION_SD ? "SD" : "MMC", mmc->version & SD_VERSION_SD ? "" : strver);
+	pr_info("  Attached is a %s%s card\r\n", mmc->version & SD_VERSION_SD ? "SD" : "MMC", mmc->version & SD_VERSION_SD ? "" : strver);
 	uint64_t capacity_hundredths = (mmc->lba >> 11) * 100 / 1024;
 	pr_info("  Capacity: %llu.%02lluGB\n", capacity_hundredths / 100, capacity_hundredths % 100);
 	sunxi_mmc_show_card_info(sdhci);

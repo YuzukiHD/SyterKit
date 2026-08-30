@@ -92,7 +92,8 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci)
 
 	/* Check status */
 	if (mmc_host->reg->cmd & SMHC_CMD_START) {
-		pr_debug("mmc %d update clk failed\n", sdhci->id);
+		if (!MMC_IS_TRAINING(&sdhci->mmc))
+			pr_debug("mmc %d update clk failed\n", sdhci->id);
 		return -1;
 	}
 
@@ -714,7 +715,8 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 				if (mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT)
 					return -1;
 				if (time_us() >= timeout) {
-					pr_debug("read by CPU failed, timeout, index %u\n", i);
+					if (!MMC_IS_TRAINING(&sdhci->mmc))
+						pr_debug("read by CPU failed, timeout, index %u\n", i);
 					return -1;
 				}
 			}
@@ -728,7 +730,8 @@ static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *da
 				if (mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT)
 					return -1;
 				if (time_us() >= timeout) {
-					pr_debug("write by CPU failed, timeout, index %u\n", i);
+					if (!MMC_IS_TRAINING(&sdhci->mmc))
+						pr_debug("write by CPU failed, timeout, index %u\n", i);
 					return -1;
 				}
 			}
@@ -830,7 +833,8 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	timeout = time_us() + SMHC_TIMEOUT;
 	while (mmc_host->reg->gctrl & SMHC_GCTRL_DMA_RESET) {
 		if (time_us() > timeout) {
-			pr_debug("wait for dma rst timeout\n");
+			if (!MMC_IS_TRAINING(&sdhci->mmc))
+				pr_debug("wait for dma rst timeout\n");
 			return -1;
 		}
 	}
@@ -840,7 +844,8 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 	timeout = time_us() + SMHC_TIMEOUT;
 	while (mmc_host->reg->dmac & SMHC_IDMAC_SOFT_RESET) {
 		if (time_us() > timeout) {
-			pr_debug("wait for dma soft rst timeout\n");
+			if (!MMC_IS_TRAINING(&sdhci->mmc))
+				pr_debug("wait for dma soft rst timeout\n");
 			return -1;
 		}
 	}
@@ -880,7 +885,8 @@ void sunxi_sdhci_set_ios(sunxi_sdhci_t *sdhci)
 
 	// Configure clock and handle errors
 	if (mmc->clock && sunxi_sdhci_config_clock(sdhci, mmc->clock)) {
-		pr_debug("update clock failed\n");
+		if (!MMC_IS_TRAINING(mmc))
+			pr_debug("update clock failed\n");
 		mmc_host->fatal_err = 1;
 		return;
 	}
@@ -991,7 +997,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 
 	/* Check if have fatal error */
 	if (mmc_host->fatal_err) {
-		pr_debug("into error, cmd send failed\n");
+		if (!MMC_IS_TRAINING(&sdhci->mmc))
+			pr_debug("into error, cmd send failed\n");
 		return -1;
 	}
 
@@ -1104,7 +1111,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 
 		if (ret) {
 			error_code = mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT;
-			pr_debug("error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
+			if (!MMC_IS_TRAINING(&sdhci->mmc))
+				pr_debug("error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
 			if (!error_code) {
 				error_code = 0xffffffff;
 			}
@@ -1120,10 +1128,12 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 			if (!error_code) {
 				error_code = 0xffffffff;
 			}
-			if (time_us() > timeout)
-				pr_debug("stage 1 data timeout, error %08x\n", error_code);
-			else
-				pr_debug("stage 1 status get interrupt, error 0x%08x\n", error_code);
+			if (!MMC_IS_TRAINING(&sdhci->mmc)) {
+				if (time_us() > timeout)
+					pr_debug("stage 1 data timeout, error %08x\n", error_code);
+				else
+					pr_debug("stage 1 status get interrupt, error 0x%08x\n", error_code);
+			}
 			goto out;
 		}
 	} while (!(status & SMHC_RINT_COMMAND_DONE));
@@ -1138,10 +1148,12 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 				if (!error_code) {
 					error_code = 0xffffffff;
 				}
-				if (time_us() > timeout)
-					pr_debug("stage 2 data timeout, error %08x\n", error_code);
-				else
-					pr_debug("stage 2 status get interrupt, error 0x%08x\n", error_code);
+				if (!MMC_IS_TRAINING(&sdhci->mmc)) {
+					if (time_us() > timeout)
+						pr_debug("stage 2 data timeout, error %08x\n", error_code);
+					else
+						pr_debug("stage 2 status get interrupt, error 0x%08x\n", error_code);
+				}
 				goto out;
 			}
 
@@ -1163,7 +1175,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 					if (!error_code) {
 						error_code = 0xffffffff;
 					}
-					pr_debug("wait dma timeout, error %08x\n", error_code);
+					if (!MMC_IS_TRAINING(&sdhci->mmc))
+						pr_debug("wait dma timeout, error %08x\n", error_code);
 					goto out;
 				}
 				done = status & BIT(1);
@@ -1181,7 +1194,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 				if (!error_code) {
 					error_code = 0xffffffff;
 				}
-				pr_debug("busy timeout, status %08x\n", status);
+				if (!MMC_IS_TRAINING(&sdhci->mmc))
+					pr_debug("busy timeout, status %08x\n", status);
 				goto out;
 			}
 		} while (status & SMHC_STATUS_CARD_DATA_BUSY);
@@ -1223,12 +1237,14 @@ out:
 		timeout = time_us() + SMHC_TIMEOUT;
 		while (mmc_host->reg->gctrl & SMHC_GCTRL_HARDWARE_RESET) {
 			if (time_us() > timeout) {
-				pr_debug("controller error reset timeout\n");
+				if (!MMC_IS_TRAINING(&sdhci->mmc))
+					pr_debug("controller error reset timeout\n");
 				return -1;
 			}
 		}
 		sunxi_sdhci_update_clk(sdhci);
-		pr_debug("CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
+		if (!MMC_IS_TRAINING(&sdhci->mmc))
+			pr_debug("CMD 0x%08x, error 0x%08x\n", cmd->cmdidx, error_code);
 	}
 
 	mmc_host->reg->rint = 0xffffffff;

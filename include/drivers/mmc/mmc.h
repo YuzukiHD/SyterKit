@@ -52,6 +52,13 @@ enum {
 #define MMC_DATA_READ (1U << 0)
 #define MMC_DATA_WRITE (1U << 1)
 
+/* Invalid sample points are expected to fail while MMC timing is trained. */
+#if CONFIG_DRIVER_MMC_TUNING
+#define MMC_IS_TRAINING(_mmc) ((_mmc) != NULL && (_mmc)->training)
+#else
+#define MMC_IS_TRAINING(_mmc) false
+#endif
+
 #define MMC_CMD_MANUAL 1 //add by sunxi.not sent stop when read/write multi block,and sent stop when sent cmd12
 
 #define NO_CARD_ERR -16 /* No SD/MMC card inserted */
@@ -363,6 +370,9 @@ typedef struct mmc {
 	uint32_t blksz; /* block size */
 	char revision[8 + 8]; /* CID:  PRV */
 	uint32_t speed_mode;
+#if CONFIG_DRIVER_MMC_TUNING
+	bool training; /* timing-training probes are in progress */
+#endif
 } mmc_t;
 
 /**

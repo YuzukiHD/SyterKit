@@ -736,6 +736,15 @@ static void sunxi_mmc_tuning_set_data_strobe(sunxi_sdhci_t *sdhci, uint32_t dela
 	value |= (delay & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY;
 	reg->ds_dl = value;
 }
+
+/* Set the training state and return the previous value for nested tuning. */
+static bool sunxi_mmc_training_set(mmc_t *mmc, bool training)
+{
+	bool previous = mmc->training;
+
+	mmc->training = training;
+	return previous;
+}
 #endif
 
 #if CONFIG_DRIVER_MMC_TUNING
@@ -764,6 +773,8 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 	uint8_t pass[SUNXI_MMC_TUNING_POINTS] = { 0 };
 	uint32_t freq_id;
 	uint32_t selected;
+	bool was_training;
+	int ret = -1;
 
 	if (sdhci == NULL)
 		return -1;
@@ -773,6 +784,7 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 		mmc->speed_mode != MMC_HS400 || mmc->bus_width != SMHC_WIDTH_8BIT)
 		return -1;
 
+	was_training = sunxi_mmc_training_set(mmc, true);
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
 	for (uint32_t delay = 0; delay < SUNXI_MMC_TUNING_POINTS; ++delay) {
 		/* Error recovery resets SFC, so restore the tuning mode per point. */
@@ -785,7 +797,7 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 	if (selected == SUNXI_MMC_TUNING_INVALID) {
 		sunxi_mmc_tuning_set_fifo_bypass(sdhci, false);
 		sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS400_COMMAND, sdhci, pass, selected, 0U);
-		return -1;
+		goto out;
 	}
 
 	sunxi_mmc_tuning_set_sample(sdhci, selected);
@@ -801,7 +813,11 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 	}
 
 	sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS400_COMMAND, sdhci, pass, selected, 0U);
-	return 0;
+	ret = 0;
+
+out:
+	sunxi_mmc_training_set(mmc, was_training);
+	return ret;
 }
 
 #endif
@@ -949,6 +965,8 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 	uint32_t freq_id;
 	uint8_t pass[SUNXI_MMC_TUNING_POINTS] = { 0 };
 	uint32_t selected;
+	bool was_training;
+	int ret = -1;
 
 	if (sdhci == NULL)
 		return -1;
@@ -959,10 +977,11 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 		(mmc->bus_width != SMHC_WIDTH_4BIT && mmc->bus_width != SMHC_WIDTH_8BIT))
 		return -1;
 
+	was_training = sunxi_mmc_training_set(mmc, true);
 	if (sunxi_mmc_tuning_card_pattern(sdhci))
-		return -1;
+		goto out;
 	if (sunxi_mmc_tuning_select_pattern(sdhci, &pattern, &pattern_blocks))
-		return -1;
+		goto out;
 
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
 	for (uint32_t delay = 0; delay < SUNXI_MMC_TUNING_POINTS; ++delay) {
@@ -976,7 +995,7 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 	if (selected == SUNXI_MMC_TUNING_INVALID) {
 		sunxi_mmc_tuning_set_fifo_bypass(sdhci, false);
 		sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS200, sdhci, pass, selected, pattern_blocks);
-		return -1;
+		goto out;
 	}
 
 	sunxi_mmc_tuning_set_sample(sdhci, selected);
@@ -992,7 +1011,11 @@ int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 	}
 
 	sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS200, sdhci, pass, selected, pattern_blocks);
-	return 0;
+	ret = 0;
+
+out:
+	sunxi_mmc_training_set(mmc, was_training);
+	return ret;
 }
 
 #if CONFIG_DRIVER_MMC_TUNING
@@ -1004,6 +1027,8 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 	uint8_t pass[SUNXI_MMC_TUNING_POINTS] = { 0 };
 	uint32_t freq_id;
 	uint32_t selected;
+	bool was_training;
+	int ret = -1;
 
 	if (sdhci == NULL)
 		return -1;
@@ -1017,6 +1042,7 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 		sunxi_mmc_tuning_select_pattern(sdhci, &pattern, &pattern_blocks))
 		return -1;
 
+	was_training = sunxi_mmc_training_set(mmc, true);
 	freq_id = sunxi_mmc_tuning_freq_id(mmc->clock);
 	/* The vendor TM4 flow only bypasses the sample FIFO for command tuning. */
 	/* Scan all points against the pattern written through the tuned HS200 link. */
@@ -1031,7 +1057,7 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 	if (selected == SUNXI_MMC_TUNING_INVALID) {
 		sunxi_mmc_tuning_set_fifo_bypass(sdhci, false);
 		sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS400_DATA, sdhci, pass, selected, pattern_blocks);
-		return -1;
+		goto out;
 	}
 
 	sunxi_mmc_tuning_set_data_strobe(sdhci, selected);
@@ -1039,6 +1065,10 @@ int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 	mmc->tune_sdly.tm4_dsdly[freq_id] = selected;
 
 	sunxi_mmc_tuning_print_result(SUNXI_MMC_TUNING_HS400_DATA, sdhci, pass, selected, pattern_blocks);
-	return 0;
+	ret = 0;
+
+out:
+	sunxi_mmc_training_set(mmc, was_training);
+	return ret;
 }
 #endif
