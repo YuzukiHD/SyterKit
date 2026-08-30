@@ -24,7 +24,7 @@ enum sunxi_dram_type {
 	SUNXI_DRAM_TYPE_LPDDR3 = 7,
 };
 
-#define SUNXI_DRAM_MAX_PARAM_WORDS 128U
+#define SUNXI_DRAM_MAX_PARAM_WORDS 32U
 
 typedef struct {
 	uintptr_t base;
