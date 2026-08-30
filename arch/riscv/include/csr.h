@@ -32,7 +32,14 @@ extern "C" {
 
 /** @brief Machine Extra Status Bit Definitions */
 #define MXSTATUS_MM (1 << 15)
+#define MXSTATUS_UCME (1 << 16)
+#define MXSTATUS_CLINTEE (1 << 17)
+#define MXSTATUS_MAEE (1 << 21)
 #define MXSTATUS_THEADISAEE (1 << 22)
+
+/* C9xx DRAM/cache code expects all of the machine extensions enabled. */
+#define MXSTATUS_C9XX (MXSTATUS_MM | MXSTATUS_UCME | MXSTATUS_CLINTEE | \
+			   MXSTATUS_MAEE | MXSTATUS_THEADISAEE)
 
 /** @brief Machine Hardware Config Bit Definitions */
 #define MHCR_IE (1 << 0)

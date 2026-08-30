@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 /**
- * @file
+ * @file efex.S
  * @brief Returning RV32 eFEX entry using the Boot ROM stack.
  */
 

@@ -2,10 +2,10 @@
 
 /**
  * @file start.S
- * @brief RISC-V 32-bit firmware start-up assembly.
+ * @brief Xuantie C907 firmware start-up assembly.
  *
- * Disables machine interrupts, sets up the stack, and performs the early
- * initialisation required before the main firmware entry point runs.
+ * C907 code may use T-Head memory instructions in the early allocator, so
+ * the complete extension state is enabled before any C code is called.
  */
 #include <asm/trap.h>
 #include <csr.h>
@@ -16,6 +16,14 @@
 	.weak malloc_init_early
 	.type _start, @function
 _start:
+	/* Clear L1 cache & BTB & BHT ... */
+	li t0, 0x70013
+	csrw mcor, t0
+
+	/* Enable cache coherency */
+	li t0, 0x1
+	csrw msmpr, t0
+
 	/* Boot ROM may leave machine interrupts enabled. */
 	csrc mstatus, MSTATUS_MIE
 	csrw mie, zero
@@ -29,6 +37,15 @@ _start:
 	ori a0, a0, 3
 #endif
 	csrw mtvec, a0
+
+	li t0, MSTATUS_FS | MSTATUS_XS
+	csrs mstatus, t0
+
+	/* C907 DRAM/cache code uses the complete T-Head extension state. */
+	li t0, MXSTATUS_C9XX
+	csrs mxstatus, t0
+	fence.i
+
 	jal clear_bss
 
 	/* Make the unused SRAM tail available when the allocator is linked. */
@@ -36,14 +53,6 @@ _start:
 	beqz t0, 1f
 	jalr ra, t0, 0
 1:
-
-	li t0, MSTATUS_FS | MSTATUS_XS
-	csrs mstatus, t0
-
-	/* Enable MXSTATUS.MM and the T-Head extended ISA. */
-	li t0, MXSTATUS_MM | MXSTATUS_THEADISAEE
-	csrs mxstatus, t0
-	fence.i
 
 #if defined(CONFIG_ARCH_EXCEPTION) && defined(CONFIG_ARCH_MTVT)
 	la a0, vectors
