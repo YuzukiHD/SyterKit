@@ -26,7 +26,7 @@
 /**
  * @brief Voltage regulator control table for the AXP8191 PMU.
  */
-static axp_contrl_info axp_ctrl_tbl[] = {
+static axp_contrl_info axp8191_ctrl_tbl[] = {
 	{ "dcdc1", 1000, 3800, AXP8191_DC1OUT_VOL, 0x1f, AXP8191_DCDC_POWER_ON_OFF_CTL1, 0, 0,
 	{ {1000, 3800, 100}, } },
 
@@ -212,7 +212,7 @@ int pmu_axp8191_init(axp_pmu_t *pmu)
  */
 int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
 {
-	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_set_vol(pmu, name, set_vol, onoff, axp8191_ctrl_tbl, ARRAY_SIZE(axp8191_ctrl_tbl));
 }
 
 /**
@@ -224,7 +224,7 @@ int pmu_axp8191_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
  */
 int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
 {
-	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_get_vol(pmu, name, axp8191_ctrl_tbl, ARRAY_SIZE(axp8191_ctrl_tbl));
 }
 
 /**
@@ -234,7 +234,7 @@ int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
  */
 void pmu_axp8191_dump(axp_pmu_t *pmu)
 {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("axp8191 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp_ctrl_tbl[i].name));
+	for (int i = 0; i < ARRAY_SIZE(axp8191_ctrl_tbl); i++) {
+		pr_debug("axp8191 %s = %dmv\n", axp8191_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp8191_ctrl_tbl[i].name));
 	}
 }

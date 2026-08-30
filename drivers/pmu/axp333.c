@@ -26,7 +26,7 @@
 /**
  * @brief Voltage regulator control table for the AXP333 PMU.
  */
-static axp_contrl_info axp_ctrl_tbl[] = {
+static axp_contrl_info axp333_ctrl_tbl[] = {
 	{ "dcdc1", 500, 3400, AXP333_DC1OUT_VOL, 0x7f, AXP333_DCDC_LDO_POWER_ON_OFF_CTL1, 0, 0,
 	{ {500, 1200, 10}, {1220, 1540, 20}, {1600, 3400, 100} } },
 
@@ -107,7 +107,7 @@ int pmu_axp333_init(axp_pmu_t *pmu)
  */
 int pmu_axp333_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
 {
-	return axp_set_vol(pmu, name, set_vol, onoff, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_set_vol(pmu, name, set_vol, onoff, axp333_ctrl_tbl, ARRAY_SIZE(axp333_ctrl_tbl));
 }
 
 /**
@@ -119,7 +119,7 @@ int pmu_axp333_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff)
  */
 int pmu_axp333_get_vol(axp_pmu_t *pmu, char *name)
 {
-	return axp_get_vol(pmu, name, axp_ctrl_tbl, ARRAY_SIZE(axp_ctrl_tbl));
+	return axp_get_vol(pmu, name, axp333_ctrl_tbl, ARRAY_SIZE(axp333_ctrl_tbl));
 }
 
 /**
@@ -129,7 +129,7 @@ int pmu_axp333_get_vol(axp_pmu_t *pmu, char *name)
  */
 void pmu_axp333_dump(axp_pmu_t *pmu)
 {
-	for (int i = 0; i < ARRAY_SIZE(axp_ctrl_tbl); i++) {
-		pr_debug("AXP333 %s = %dmv\n", axp_ctrl_tbl[i].name, pmu_axp333_get_vol(pmu, axp_ctrl_tbl[i].name));
+	for (int i = 0; i < ARRAY_SIZE(axp333_ctrl_tbl); i++) {
+		pr_debug("AXP333 %s = %dmv\n", axp333_ctrl_tbl[i].name, pmu_axp333_get_vol(pmu, axp333_ctrl_tbl[i].name));
 	}
 }
