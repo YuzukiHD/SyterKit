@@ -2,6 +2,7 @@
 
 obj-$(CONFIG_APP_SRAM) += start.o
 obj-$(CONFIG_APP_DRAM) += start.o
+obj-$(CONFIG_EFEX) += efex.o
 obj-y += cache.o
 
 KBUILD_CFLAGS += -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d \
