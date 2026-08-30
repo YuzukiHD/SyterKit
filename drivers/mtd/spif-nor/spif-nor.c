@@ -142,8 +142,7 @@ __attribute__((unused)) static inline void spif_nor_dump_sfdp(const sfdp_t *sfdp
 		sfdp->header.sign[3]);
 	pr_trace("  Minor version: %u\n", sfdp->header.minor);
 	pr_trace("  Major version: %u\n", sfdp->header.major);
-	pr_trace(
-		"  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
+	pr_trace("  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
 	pr_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
 	pr_trace("SFDP Parameter Headers:\n");
@@ -212,7 +211,7 @@ static inline int spif_nor_read_sfdp(spif_nor_t *nor, sfdp_t *sfdp)
 	if ((sfdp->header.sign[0] != 'S') || (sfdp->header.sign[1] != 'F') || (sfdp->header.sign[2] != 'D') ||
 		(sfdp->header.sign[3] != 'P')) {
 		pr_trace("SFDP: invalid signature 0x%02X 0x%02X 0x%02X 0x%02X.\n", sfdp->header.sign[0],
-			     sfdp->header.sign[1], sfdp->header.sign[2], sfdp->header.sign[3]);
+			sfdp->header.sign[1], sfdp->header.sign[2], sfdp->header.sign[3]);
 		return 0;
 	}
 
@@ -257,7 +256,8 @@ static inline int spif_nor_read_sfdp(spif_nor_t *nor, sfdp_t *sfdp)
 				sfdp->basic_table.length = table_length;
 				sfdp->basic_table.major = sfdp->parameter_header[i].major;
 				sfdp->basic_table.minor = sfdp->parameter_header[i].minor;
-				pr_trace("SFDP: basic table read OK (header #%u, length=%u, addr=0x%X).\n", i, table_length, addr);
+				pr_trace("SFDP: basic table read OK (header #%u, length=%u, addr=0x%X).\n", i,
+					table_length, addr);
 				return 1;
 			}
 		}
@@ -888,6 +888,7 @@ static int spif_nor_set_controller_config(spif_nor_t *nor, uint32_t valid, uint3
 
 	if (nor == NULL || nor->spif == NULL)
 		return DRIVER_ERROR_INVALID;
+
 	return sunxi_spif_set_config(nor->spif, &cfg);
 }
 
@@ -1045,17 +1046,25 @@ static int spif_nor_training_init(const spif_nor_t *nor, struct spif_nor_trainin
 {
 	if (spif_nor_get_training_erase(nor, &training->erase_size, &training->erase_opcode) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
+
 	training->test_size = SPIF_NOR_TRAINING_PAGE_SIZE * SPIF_NOR_TRAINING_DELAYS;
+
 	if (training->test_size > SPIF_NOR_TRAINING_MAX_PATTERN_SIZE)
 		return DRIVER_ERROR_INVALID;
-	training->size = ((training->test_size + training->erase_size - 1U) / training->erase_size) * training->erase_size;
+
+	training->size =
+		((training->test_size + training->erase_size - 1U) / training->erase_size) * training->erase_size;
+
 	if (training->size > SPIF_NOR_TRAINING_MAX_ERASE_SIZE || (uint64_t)training->size > nor->info.capacity)
 		return DRIVER_ERROR_INVALID;
+
 	training->backup = malloc(training->size);
 	training->pattern = malloc(SPIF_NOR_TRAINING_PAGE_SIZE);
 	training->result = malloc(SPIF_NOR_TRAINING_PAGE_SIZE);
+
 	if (training->backup == NULL || training->pattern == NULL || training->result == NULL)
 		return DRIVER_ERROR_INVALID;
+
 	return DRIVER_OK;
 }
 
@@ -1109,10 +1118,9 @@ struct spif_nor_training_window {
 	uint32_t length;
 };
 
-static void spif_nor_print_training_chart(
-	const char samples[SPIF_NOR_TRAINING_MODES][SPIF_NOR_TRAINING_DELAYS + 1U],
-	const struct spif_nor_training_window windows[SPIF_NOR_TRAINING_MODES], uint32_t best_mode,
-	uint32_t best_delay, uint32_t best_length)
+static void spif_nor_print_training_chart(const char samples[SPIF_NOR_TRAINING_MODES][SPIF_NOR_TRAINING_DELAYS + 1U],
+	const struct spif_nor_training_window windows[SPIF_NOR_TRAINING_MODES], uint32_t best_mode, uint32_t best_delay,
+	uint32_t best_length)
 {
 	char selected[SPIF_NOR_TRAINING_DELAYS + 1U];
 	uint32_t mode;
@@ -1125,9 +1133,8 @@ static void spif_nor_print_training_chart(
 		if (windows[mode].length == 0U)
 			pr_info("mode=%u  |%s| window=none\n", mode, samples[mode]);
 		else
-			pr_info("mode=%u  |%s| window=%u-%u (%u)\n", mode, samples[mode],
-				windows[mode].start, windows[mode].start + windows[mode].length - 1U,
-				windows[mode].length);
+			pr_info("mode=%u  |%s| window=%u-%u (%u)\n", mode, samples[mode], windows[mode].start,
+				windows[mode].start + windows[mode].length - 1U, windows[mode].length);
 	}
 	if (best_length == 0U)
 		return;
@@ -1149,8 +1156,11 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 	uint32_t mode;
 
 	if (spif_nor_set_controller_config(nor, SPIF_CFG_SPEED_HZ | SPIF_CFG_RX_DTR | SPIF_CFG_TX_DTR,
-		    nor->max_frequency, dtr, false, 0U, 0U) != 0)
+		    nor->max_frequency, dtr, false, 0U, 0U) != 0) {
+		pr_err("Failed to set controller config HZ for training\n");
 		return DRIVER_ERROR_INVALID;
+	}
+
 	for (mode = 0U; mode < SPIF_NOR_TRAINING_MODES; ++mode) {
 		uint32_t delay;
 		uint32_t run_start = 0U;
@@ -1160,8 +1170,10 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 			bool passed;
 
 			if (spif_nor_set_controller_config(nor, SPIF_CFG_SAMPLE_MODE | SPIF_CFG_SAMPLE_DELAY, 0U, false,
-				    false, mode, delay) != 0)
+				    false, mode, delay) != 0) {
+				pr_err("Failed to set controller config CFG for training\n");
 				return DRIVER_ERROR_INVALID;
+			}
 			passed = spif_nor_read_operation(nor, info->read_proto, info->opcode_read, info->read_dummy,
 					 delay * SPIF_NOR_TRAINING_PAGE_SIZE, training->result,
 					 SPIF_NOR_TRAINING_PAGE_SIZE) == 0 &&
@@ -1198,24 +1210,27 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 	return *best_length == 0U ? DRIVER_ERROR_INVALID : DRIVER_OK;
 }
 
-static int spif_nor_restore_training_area(spif_nor_t *nor, const struct spif_nor_training *training,
-	uint32_t frequency)
+static int spif_nor_restore_training_area(spif_nor_t *nor, const struct spif_nor_training *training, uint32_t frequency)
 {
 	if (spif_nor_set_controller_config(nor,
 		    SPIF_CFG_SPEED_HZ | SPIF_CFG_RX_DTR | SPIF_CFG_TX_DTR | SPIF_CFG_SAMPLE_MODE |
 			    SPIF_CFG_SAMPLE_DELAY,
 		    frequency, false, false, SUNXI_SPIF_SAMPLE_DEFAULT, SUNXI_SPIF_SAMPLE_DEFAULT) != 0)
 		return DRIVER_ERROR_INVALID;
-	return spif_nor_restore_training(nor, training->erase_size, training->size, training->erase_opcode,
-		training->backup, training->result);
+	return spif_nor_restore_training(
+		nor, training->erase_size, training->size, training->erase_opcode, training->backup, training->result);
 }
 
-static int spif_nor_apply_training_config(spif_nor_t *nor, uint32_t frequency, bool dtr, uint32_t mode,
-	uint32_t delay)
+static int spif_nor_apply_training_config(spif_nor_t *nor, uint32_t frequency, bool dtr, uint32_t mode, uint32_t delay)
 {
-	return spif_nor_set_controller_config(nor,
+	int ret;
+
+	ret = spif_nor_set_controller_config(nor,
 		SPIF_CFG_SPEED_HZ | SPIF_CFG_RX_DTR | SPIF_CFG_TX_DTR | SPIF_CFG_SAMPLE_MODE | SPIF_CFG_SAMPLE_DELAY,
 		frequency, dtr, false, mode, delay);
+	if (ret == 0)
+		nor->current_frequency = frequency;
+	return ret;
 }
 
 static int spif_nor_train_sampling(spif_nor_t *nor)
@@ -1232,38 +1247,73 @@ static int spif_nor_train_sampling(spif_nor_t *nor)
 	if (nor == NULL || nor->spif == NULL)
 		return DRIVER_ERROR_INVALID;
 	dtr = spi_nor_protocol_is_dtr(nor->info.read_proto);
+
 	safe_frequency = spif_nor_training_frequency(nor);
-	if (spif_nor_training_init(nor, &training) != DRIVER_OK)
+
+	pr_trace("train sampling: freq=%uHz dtr=%u safe_freq=%uHz\n", nor->max_frequency, (unsigned int)dtr,
+		safe_frequency);
+
+	if (spif_nor_training_init(nor, &training) != DRIVER_OK) {
+		pr_trace("training init failed\n");
 		goto fallback;
-	if (spif_nor_backup_training(nor, &training, safe_frequency) != DRIVER_OK)
+	}
+
+	if (spif_nor_backup_training(nor, &training, safe_frequency) != DRIVER_OK) {
+		pr_trace("training backup failed\n");
 		goto fallback;
+	}
 
 	/* Program one page per delay point, then test each point at the target timing. */
 	modified = true;
-	if (spif_nor_program_training_pattern(nor, &training) != DRIVER_OK)
+	if (spif_nor_program_training_pattern(nor, &training) != DRIVER_OK) {
+		pr_trace("training pattern program failed\n");
 		goto restore;
-	if (spif_nor_find_training_window(nor, &training, dtr, &best_mode, &best_delay, &best_length) != DRIVER_OK)
+	}
+
+	pr_trace("training window scan: %u modes x %u delays\n", SPIF_NOR_TRAINING_MODES,
+		SPIF_NOR_TRAINING_DELAYS);
+	if (spif_nor_find_training_window(nor, &training, dtr, &best_mode, &best_delay, &best_length) != DRIVER_OK) {
+		pr_trace("training window scan failed\n");
 		goto restore;
+	}
 
 restore:
 	if (modified) {
-		if (spif_nor_restore_training_area(nor, &training, safe_frequency) != DRIVER_OK)
+		if (spif_nor_restore_training_area(nor, &training, safe_frequency) != DRIVER_OK) {
+			pr_trace("training area restore failed\n");
 			goto cleanup_error;
+		}
 		modified = false;
+		pr_trace("training area restored\n");
 	}
-	if (best_length == 0U)
+
+	if (best_length == 0U) {
+		pr_trace("no training window found\n");
+		pr_warn("sample training failed, best_length = 0\n");
 		goto fallback;
+	}
+
 	if (spif_nor_apply_training_config(nor, nor->max_frequency, dtr, best_mode, best_delay) != 0)
 		goto cleanup_error;
+
+	pr_trace("training applied: mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
 	pr_info("sample training mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
 	ret = DRIVER_OK;
 	goto cleanup;
 
 fallback:
-	if (spif_nor_apply_training_config(nor, safe_frequency, dtr, SUNXI_SPIF_SAMPLE_DEFAULT,
-		    SUNXI_SPIF_SAMPLE_DEFAULT) != 0)
+	/* A failed sampling sweep must not leave a DTR/quad read path active.
+	 * The training-area restore above has already verified this basic read path
+	 * at the fallback frequency. */
+	nor->info.read_proto = SNOR_PROTO_1_1_1;
+	nor->info.read_dummy = 0U;
+	nor->info.opcode_read =
+		nor->info.address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
+	if (spif_nor_apply_training_config(
+		    nor, safe_frequency, false, SUNXI_SPIF_SAMPLE_DEFAULT, SUNXI_SPIF_SAMPLE_DEFAULT) != 0)
 		goto cleanup_error;
-	pr_warn("sample training failed, using %uHz default timing\n", safe_frequency);
+	pr_trace("training fallback applied: requested=%uHz actual=%uHz\n", safe_frequency, nor->spif->actual_speed_hz);
+	pr_warn("sample training failed, using %uHz 1-1-1 default timing\n", safe_frequency);
 	ret = DRIVER_OK;
 
 cleanup:
@@ -1305,14 +1355,18 @@ static int spif_nor_select_frequency(spif_nor_t *nor, uint32_t frequency)
 		return DRIVER_ERROR_INVALID;
 	if (nor->spif->speed_hz != frequency && sunxi_spif_update_clk(nor->spif, frequency) != 0)
 		return DRIVER_ERROR_INVALID;
+	nor->current_frequency = frequency;
 	return DRIVER_OK;
 }
 
 static int spif_nor_select(spif_nor_t *nor)
 {
+	uint32_t frequency;
+
 	if (nor == NULL || nor->max_frequency == 0U)
 		return DRIVER_ERROR_INVALID;
-	return spif_nor_select_frequency(nor, nor->max_frequency);
+	frequency = nor->current_frequency != 0U ? nor->current_frequency : nor->max_frequency;
+	return spif_nor_select_frequency(nor, frequency);
 }
 
 int spif_nor_detect(spif_nor_t *nor)
@@ -1353,8 +1407,8 @@ int spif_nor_detect(spif_nor_t *nor)
 		return -1;
 
 	pr_info("detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
-	pr_info("read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read,
-		info->read_dummy);
+	pr_info("read proto=%08x opcode=0x%02x dummy=%d\n", info->read_proto, info->opcode_read, info->read_dummy);
+	pr_info("read clock requested=%uHz actual=%uHz\n", nor->current_frequency, nor->spif->actual_speed_hz);
 
 	return 0;
 }
