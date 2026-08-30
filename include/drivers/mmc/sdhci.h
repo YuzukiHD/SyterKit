@@ -254,6 +254,18 @@ extern uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci);
 extern int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio,
 				      uint32_t voltage_uv);
 
+/**
+ * @brief Apply any fixed data-line deskew required by the host.
+ *
+ * The common Allwinner MMC host needs none, so the generic implementation
+ * is a no-op.  SoCs with a fixed deskew (e.g. MMC2 on Sun55iw6) override
+ * it in their host file.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @return 0 on success, or a negative value on failure.
+ */
+extern int sunxi_sdhci_set_skew(sunxi_sdhci_t *sdhci);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
