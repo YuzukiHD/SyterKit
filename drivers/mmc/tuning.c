@@ -715,7 +715,7 @@ static void sunxi_mmc_tuning_set_sample(sunxi_sdhci_t *sdhci, uint32_t delay)
 }
 
 static uint32_t sunxi_mmc_tuning_select(const uint8_t *pass);
-static void sunxi_mmc_tuning_dump_windows(const uint8_t *pass);
+static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, uint32_t selected);
 
 typedef enum {
 	SUNXI_MMC_TUNING_HS200,
@@ -726,7 +726,6 @@ typedef enum {
 static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode, sunxi_sdhci_t *sdhci, const uint8_t *pass,
 	uint32_t selected, uint32_t pattern_blocks);
 
-#if CONFIG_DRIVER_MMC_TUNING
 static void sunxi_mmc_tuning_set_data_strobe(sunxi_sdhci_t *sdhci, uint32_t delay)
 {
 	sdhci_reg_t *reg = sdhci->mmc_host.reg;
@@ -745,9 +744,7 @@ static bool sunxi_mmc_training_set(mmc_t *mmc, bool training)
 	mmc->training = training;
 	return previous;
 }
-#endif
 
-#if CONFIG_DRIVER_MMC_TUNING
 static int sunxi_mmc_send_hs400_command_test(sunxi_sdhci_t *sdhci)
 {
 	mmc_cmd_t cmd = { 0 };
@@ -820,73 +817,27 @@ out:
 	return ret;
 }
 
-#endif
-
-static size_t sunxi_mmc_tuning_append_char(char *line, size_t length, size_t size, char value)
+static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, uint32_t selected)
 {
-	if (length + 1U < size) {
-		line[length] = value;
-		line[length + 1U] = '\0';
-		return length + 1U;
-	}
+	char samples[SUNXI_MMC_TUNING_POINTS + 1U];
+	char selected_line[SUNXI_MMC_TUNING_POINTS + 1U];
 
-	return length;
-}
+	for (uint32_t point = 0U; point < SUNXI_MMC_TUNING_POINTS; ++point)
+		samples[point] = pass[point] ? 'O' : '-';
+	samples[SUNXI_MMC_TUNING_POINTS] = '\0';
 
-static size_t sunxi_mmc_tuning_append_uint(char *line, size_t length, size_t size, uint32_t value)
-{
-	char digits[10];
-	size_t count = 0U;
+	pr_info("%s: training chart (O=pass, -=fail)\n", name);
+	pr_info("delay   0         1         2         3         4         5         6\n");
+	pr_info("        0123456789012345678901234567890123456789012345678901234567890123\n");
+	pr_info("result  |%s|\n", samples);
 
-	do {
-		digits[count++] = (char)('0' + value % 10U);
-		value /= 10U;
-	} while (value != 0U);
+	if (selected >= SUNXI_MMC_TUNING_POINTS)
+		return;
 
-	while (count != 0U)
-		length = sunxi_mmc_tuning_append_char(line, length, size, digits[--count]);
-
-	return length;
-}
-
-static void sunxi_mmc_tuning_dump_windows(const uint8_t *pass)
-{
-	char line[512];
-	size_t length = 0U;
-	uint32_t start = 0;
-	bool in_window = false;
-	bool found = false;
-
-	/* Build one complete log record so the ranges keep the normal log prefix. */
-	line[0] = '\0';
-	for (uint32_t point = 0; point <= SUNXI_MMC_TUNING_POINTS; ++point) {
-		bool valid = point < SUNXI_MMC_TUNING_POINTS && pass[point];
-
-		if (valid && !in_window) {
-			start = point;
-			in_window = true;
-		} else if (!valid && in_window) {
-			length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), '[');
-			length = sunxi_mmc_tuning_append_uint(line, length, sizeof(line), start);
-			length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), '-');
-			length = sunxi_mmc_tuning_append_uint(line, length, sizeof(line), point - 1U);
-			length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), '|');
-			length = sunxi_mmc_tuning_append_uint(line, length, sizeof(line), point - start);
-			length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), ']');
-			length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), ' ');
-			in_window = false;
-			found = true;
-		}
-	}
-	if (!found) {
-		length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), '[');
-		length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), 'n');
-		length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), 'o');
-		length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), 'n');
-		length = sunxi_mmc_tuning_append_char(line, length, sizeof(line), 'e');
-		(void)sunxi_mmc_tuning_append_char(line, length, sizeof(line), ']');
-	}
-	pr_info("%s\n", line);
+	memset(selected_line, ' ', SUNXI_MMC_TUNING_POINTS);
+	selected_line[selected] = '^';
+	selected_line[SUNXI_MMC_TUNING_POINTS] = '\0';
+	pr_info("select  |%s| delay=%u\n", selected_line, selected);
 }
 
 static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode, sunxi_sdhci_t *sdhci, const uint8_t *pass,
@@ -914,7 +865,7 @@ static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode, sunxi_sd
 	else
 		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=%u\n", name, freq_id, mmc->clock,
 			mmc->bus_width == SMHC_WIDTH_8BIT ? 8U : 4U, SUNXI_MMC_TUNING_POINTS, selected);
-	sunxi_mmc_tuning_dump_windows(pass);
+	sunxi_mmc_tuning_dump_chart(name, pass, selected);
 
 	if (mode == SUNXI_MMC_TUNING_HS200) {
 		pr_info("%s: pattern_lba=%u blocks=%u smx_fx=0x%08x 0x%08x\n", name, SUNXI_MMC_TUNING_LBA,
@@ -1018,7 +969,6 @@ out:
 	return ret;
 }
 
-#if CONFIG_DRIVER_MMC_TUNING
 int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 {
 	mmc_t *mmc;
@@ -1071,4 +1021,3 @@ out:
 	sunxi_mmc_training_set(mmc, was_training);
 	return ret;
 }
-#endif

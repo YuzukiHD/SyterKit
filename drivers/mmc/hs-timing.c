@@ -8,7 +8,6 @@
 #include <drivers/mmc/hs-timing.h>
 #include <drivers/mmc/tuning.h>
 
-#if CONFIG_DRIVER_MMC_TUNING
 void sunxi_mmc_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
 {
 	uint32_t dsbd;
@@ -345,4 +344,3 @@ int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 	}
 	return err;
 }
-#endif

@@ -1333,6 +1333,7 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 	/* Set supported voltages and host capabilities */
 	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
 	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
+
 #if CONFIG_DRIVER_MMC_TUNING
 	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8)
 		mmc->host_caps |= MMC_MODE_HS200;
