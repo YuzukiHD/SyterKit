@@ -2,10 +2,11 @@
 
 /**
  * @file start.S
- * @brief RISC-V 64-bit firmware start-up assembly.
+ * @brief Xuantie C906 firmware start-up assembly.
  *
- * Disables machine interrupts, sets up the stack, and performs the early
- * initialisation required before the main firmware entry point runs.
+ * C906 uses the same complete C9xx extension state as C907.  It is enabled
+ * before the early allocator because compiler-generated memory operations may
+ * use T-Head instructions.
  */
 #include <asm/trap.h>
 #include <csr.h>
@@ -29,6 +30,15 @@ _start:
 	ori a0, a0, 3
 #endif
 	csrw mtvec, a0
+
+	li t0, MSTATUS_FS | MSTATUS_XS
+	csrs mstatus, t0
+
+	/* C906 DRAM/cache code uses the complete T-Head extension state. */
+	li t0, MXSTATUS_C9XX
+	csrs mxstatus, t0
+	fence.i
+
 	jal clear_bss
 
 	/* Make the unused SRAM tail available when the allocator is linked. */
@@ -36,14 +46,6 @@ _start:
 	beqz t0, 1f
 	jalr ra, t0, 0
 1:
-
-	li t0, MSTATUS_FS | MSTATUS_XS
-	csrs mstatus, t0
-
-	/* Enable MXSTATUS.MM and the T-Head extended ISA. */
-	li t0, MXSTATUS_MM | MXSTATUS_THEADISAEE
-	csrs mxstatus, t0
-	fence.i
 
 #if defined(CONFIG_ARCH_EXCEPTION) && defined(CONFIG_ARCH_MTVT)
 	la a0, vectors
