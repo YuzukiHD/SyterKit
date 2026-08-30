@@ -27,6 +27,7 @@ kconfig_sources := $(wildcard $(srctree)/scripts/kconfig/*.[ch] \
 	$(srctree)/scripts/kconfig/Makefile
 board_kconfig_list := $(kconfig_out)/boards.Kconfig
 board_kconfigs := $(sort $(wildcard $(srctree)/boards/*/Kconfig))
+defconfig_files := $(sort $(wildcard $(srctree)/configs/*/*_defconfig))
 BOARD_KCONFIG_LIST := $(board_kconfig_list)
 kconfig_env := KCONFIG_CONFIG=$(KCONFIG_CONFIG) \
 	KCONFIG_AUTOCONFIG=$(auto_conf) KCONFIG_AUTOHEADER=$(auto_header) \
@@ -122,7 +123,16 @@ endif
 -include $(dt2c_depfile)
 endif
 
-apps := $(apps-y)
+ifeq ($(CONFIG_EFEX),y)
+app_mode := app_efex
+apps := $(apps-efex-y)
+else ifeq ($(CONFIG_APP_DRAM),y)
+app_mode := app_dram
+apps := $(apps-dram-y)
+else
+app_mode := app_sram
+apps := $(apps-sram-y)
+endif
 
 export srctree objtree CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC DT2C DT2C_INCLUDE
 export KBUILD_CPPFLAGS KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_LDFLAGS
@@ -136,7 +146,7 @@ ifneq ($(wildcard $(auto_conf)),)
 all: images
 else
 all:
-	@echo "No configuration found. Run 'make <board>_defconfig' or 'make menuconfig'."
+	@echo "No configuration found. Run 'make <board>[_<variant>]_defconfig' or 'make menuconfig'."
 	@false
 endif
 
@@ -190,20 +200,34 @@ $(auto_conf) $(auto_header) &: $(KCONFIG_CONFIG) $(conf) | board-kconfig
 
 defconfig: tinyvision_defconfig
 
-%_defconfig: $(conf) | board-kconfig
-	@test -f $(srctree)/configs/$@ || { echo "Unknown defconfig: $@"; exit 1; }
+defconfig_board = $(word 1,$(subst /, ,$(patsubst $(srctree)/configs/%,%,$(1))))
+defconfig_variant = $(patsubst %_defconfig,%,$(notdir $(1)))
+defconfig_public_variant = $(if $(filter sram,$(call defconfig_variant,$(1))),,$(patsubst %_sram,%,$(call defconfig_variant,$(1))))
+defconfig_target = $(call defconfig_board,$(1))$(if $(call defconfig_public_variant,$(1)),_$(call defconfig_public_variant,$(1)))_defconfig
+defconfig_targets := $(sort $(foreach config,$(defconfig_files),$(call defconfig_target,$(config))))
+.PHONY: $(defconfig_targets)
+
+define defconfig_template
+$(call defconfig_target,$(1)): $(conf) | board-kconfig
 	@mkdir -p $(objtree)
-	@echo "  DEFCONFIG  $@"
+	@echo "  DEFCONFIG  $$@"
 	@$(kconfig_env) $(conf) \
-		--defconfig=$(srctree)/configs/$@ $(srctree)/Kconfig
+		--defconfig=$(1) $(srctree)/Kconfig
 	@$(MAKE) O=$(O) syncconfig
+endef
+
+$(foreach config,$(defconfig_files),$(eval $(call defconfig_template,$(config))))
+
+%_defconfig:
+	@echo "Unknown defconfig: $@"
+	@false
 
 savedefconfig: $(conf) | board-kconfig
 	@$(kconfig_env) $(conf) \
 		--savedefconfig=$(objtree)/defconfig $(srctree)/Kconfig
 
 list-defconfigs:
-	@cd $(srctree)/configs && printf '%s\n' *_defconfig
+	@printf '%s\n' $(defconfig_targets)
 
 list-apps:
 	@$(if $(apps),printf '%s\n' $(apps),:)
@@ -270,17 +294,19 @@ common_builtins := $(addprefix $(objtree)/.obj/,$(addsuffix /built-in.o,$(build_
 $(objtree)/.obj/%/built-in.o: prepare FORCE
 	@$(MAKE) -f $(srctree)/scripts/Makefile.build obj=$*
 
-$(objtree)/.obj/apps/$(board)/%/built-in.o: prepare FORCE
-	@$(MAKE) -f $(srctree)/scripts/Makefile.app board=$(board) app=$*
+$(objtree)/.obj/apps/$(board)/$(app_mode)/%/built-in.o: prepare FORCE
+	@$(MAKE) -f $(srctree)/scripts/Makefile.app board=$(board) mode=$(app_mode) app=$*
 
 board_libs := $(addprefix $(srctree)/boards/$(board)/,$(board-libs-y))
 
-image_root := $(objtree)/build/$(board)
-image_rel_root := build/$(board)
+image_root := $(objtree)/build/$(board)/$(app_mode)
+image_rel_root := build/$(board)/$(app_mode)
 backtrace_address_bits := $(if $(CONFIG_ARCH_RISCV64),64,32)
 fel_lds := $(image_root)/link_fel.ld
 bin_lds := $(image_root)/link_bin.ld
+efex_lds := $(image_root)/efex.lds
 
+ifeq ($(CONFIG_APP_SRAM),y)
 ifneq ($(board-fel-lds-y),)
 board_fel_lds := $(srctree)/boards/$(board)/$(board-fel-lds-y)
 board_bin_lds := $(srctree)/boards/$(board)/$(board-bin-lds-y)
@@ -304,6 +330,21 @@ $(bin_lds): $(lds_src) $(auto_header)
 	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c -DSPL_TEXT_BASE=$(CONFIG_SPL_BIN_TEXT_BASE) \
 		-DSPL_MAX_SIZE=$(CONFIG_SPL_BIN_MAX_SIZE) $< -o $@
 endif
+else ifeq ($(CONFIG_EFEX),y)
+lds_src := $(srctree)/arch/$(arch_dir)/efex.lds.S
+$(efex_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/efex.lds"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c -DSPL_TEXT_BASE=$(CONFIG_SPL_FEL_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_SPL_FEL_MAX_SIZE) $< -o $@
+else
+lds_src := $(srctree)/arch/$(arch_dir)/syterkit.lds.S
+$(bin_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/link_bin.ld"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c -DSPL_TEXT_BASE=$(CONFIG_APP_DRAM_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_APP_DRAM_MAX_SIZE) $< -o $@
+endif
 
 link_flags = $(KBUILD_CFLAGS) -nostdlib -Wl,--gc-sections \
 	-Wl,-z,noexecstack -Wl,--whole-archive $(common_builtins) $(1) $(board_libs) \
@@ -312,7 +353,7 @@ link_flags = $(KBUILD_CFLAGS) -nostdlib -Wl,--gc-sections \
 define app_template
 app_$(1)_dir := $(image_root)/$(1)
 app_$(1)_rel_dir := $(image_rel_root)/$(1)
-app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(1)/built-in.o
+app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
 app_$(1)_fel_elf := $$(app_$(1)_dir)/$(1)_fel.elf
 app_$(1)_bin_elf := $$(app_$(1)_dir)/$(1)_bin.elf
 app_$(1)_fel_bin := $$(app_$(1)_dir)/$(1)_fel.bin
@@ -418,7 +459,60 @@ $$(app_$(1)_spi_bin): $$(app_$(1)_bin_elf) $(objtree)/tools/mksunxi
 	@$(objtree)/tools/mksunxi $$@ 8192
 endef
 
+define efex_app_template
+app_$(1)_dir := $(image_root)/$(1)
+app_$(1)_rel_dir := $(image_rel_root)/$(1)
+app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
+app_$(1)_efex_elf := $$(app_$(1)_dir)/$(1)_efex.elf
+app_$(1)_efex_bin := $$(app_$(1)_dir)/$(1)_efex.bin
+
+.PHONY: $(1)
+$(1): $$(app_$(1)_efex_bin)
+	@echo "Images are in $$(app_$(1)_rel_dir)"
+
+$$(app_$(1)_efex_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(efex_lds)
+	@mkdir -p $$(dir $$@)
+	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_efex.elf"
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(efex_lds) \
+		-Wl,-Map,$$(@:.elf=.map) -o $$@
+	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_efex.elf
+
+$$(app_$(1)_efex_bin): $$(app_$(1)_efex_elf) $(objtree)/tools/mksunxi
+	@echo "  OBJCOPY $$(app_$(1)_rel_dir)/$(1)_efex.bin"
+	@$$(OBJCOPY) -O binary $$< $$@
+	@$(objtree)/tools/mksunxi $$@ 512
+endef
+
+define dram_app_template
+app_$(1)_dir := $(image_root)/$(1)
+app_$(1)_rel_dir := $(image_rel_root)/$(1)
+app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
+app_$(1)_dram_elf := $$(app_$(1)_dir)/$(1)_dram.elf
+app_$(1)_dram_bin := $$(app_$(1)_dir)/$(1)_dram.bin
+
+.PHONY: $(1)
+$(1): $$(app_$(1)_dram_bin)
+	@echo "Images are in $$(app_$(1)_rel_dir)"
+
+$$(app_$(1)_dram_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
+	@mkdir -p $$(dir $$@)
+	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_dram.elf"
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+		-Wl,-Map,$$(@:.elf=.map) -o $$@
+	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_dram.elf
+
+$$(app_$(1)_dram_bin): $$(app_$(1)_dram_elf)
+	@echo "  OBJCOPY $$(app_$(1)_rel_dir)/$(1)_dram.bin"
+	@$$(OBJCOPY) -O binary $$< $$@
+endef
+
+ifeq ($(CONFIG_EFEX),y)
+$(foreach app,$(apps),$(eval $(call efex_app_template,$(app))))
+else ifeq ($(CONFIG_APP_DRAM),y)
+$(foreach app,$(apps),$(eval $(call dram_app_template,$(app))))
+else
 $(foreach app,$(apps),$(eval $(call app_template,$(app))))
+endif
 
 host_tools := mksunxi bin2array bin2asm mkbacktrace
 tools: $(addprefix $(objtree)/tools/,$(host_tools)) dt2c-check
@@ -473,7 +567,8 @@ artifacts: images firmware utilities
 
 help:
 	@echo 'Configuration:'
-	@echo '  <board>_defconfig       Select a board and its drivers'
+	@echo '  <board>[_<variant>]_defconfig'
+	@echo '                          Select a board and application mode'
 	@echo '  menuconfig              Configure with the source-built Kconfig UI'
 	@echo '  release                 Switch build and driver logs to Release'
 	@echo '  savedefconfig           Save a minimal configuration'
@@ -481,7 +576,7 @@ help:
 	@echo 'Build:'
 	@echo '  all                     Build every application for the selected board'
 	@echo '  artifacts               Build images, companion firmware, and utilities'
-	@echo '  <app>                   Build one application and its three images'
+	@echo '  <app>                   Build one application for the selected mode'
 	@echo '  list-apps               List applications for the selected board'
 	@echo '  tools                   Build host tools'
 	@echo '  utilities               Build standalone BL33 utility images'

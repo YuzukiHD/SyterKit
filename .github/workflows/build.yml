@@ -78,8 +78,7 @@ jobs:
           O: ${{ runner.temp }}/syterkit-build
         run: |
           set -euo pipefail
-          for defconfig in configs/*_defconfig; do
-            name="${defconfig##*/}"
+          while IFS= read -r name; do
             make "O=${O}" "${name}"
             if grep -q '^CONFIG_ARCH_RISCV' "${O}/.config"; then
               cross="${RISCV_CROSS_COMPILE}"
@@ -87,4 +86,4 @@ jobs:
               cross="${ARM_CROSS_COMPILE}"
             fi
             make "O=${O}" CROSS_COMPILE="${cross}" -j"$(nproc)"
-          done
+          done < <(make list-defconfigs)
