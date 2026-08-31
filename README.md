@@ -25,7 +25,7 @@ the SoC.
 | Avaota F1 | V821 | Xuantie E907 + Andes A27L2 | `avaota-f1_defconfig` |
 | Avaota F2 | V861 | Xuantie E907 + 2 * Xuantie C907 | `avaota-f2_defconfig` |
 | Avaota M1 | A537 | 6 * Cortex-A53 + 2* Cortex-A73 | `avaota-m1_defconfig` |
-| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_defconfig`<br/>`yuzukineko_rv64_defconfig` |
+| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_defconfig`<br/>`yuzukineko_rv32_usb_defconfig`<br/>`yuzukineko_rv64_defconfig` |
 | TLT153 MiniEVM | T153 | 4 * Cortex-A7 | `tlt153-minievm_defconfig` |
 | TLT536 EVM | T536 | 4 * Cortex-A55 | `tlt536-evm_defconfig` |
 
