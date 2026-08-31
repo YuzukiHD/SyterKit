@@ -73,12 +73,25 @@ static void static_pll_switch_freq(uintptr_t reg_addr, uint32_t n_factor)
 	udelay(20);
 }
 
+/**
+ * @brief Switch the CPU PLL to 600 MHz.
+ * @details Calls static_pll_switch_freq() with the CPU PLL control register and
+ *          an N factor derived from the target 600 MHz clock (600 / 24) to
+ *          configure the CPU PLL for the C907 core.
+ */
 static inline void sunxi_set_cpux_pll(void)
 {
 	/* set cpu pll 600 Mhz */
 	static_pll_switch_freq(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, SUNXI_C907_CLK / 24);
 }
 
+/**
+ * @brief Configure the RISC-V CPU clock source and dividers.
+ * @details Clears the CPU and AXI divider factor fields of the RISC-V clock
+ *          register to set them to their default values, then selects the CPU
+ *          PLL as the RISC-V clock source. Delays are inserted between the
+ *          register updates to let them take effect.
+ */
 static inline void sunxi_set_riscv_clk_sel(void)
 {
 	uint32_t reg_val;
@@ -102,6 +115,13 @@ static inline void sunxi_set_riscv_clk_sel(void)
 	udelay(10);
 }
 
+/**
+ * @brief Enable the PLL_PERIPH0 clock if it is not already running.
+ * @details Checks the PLL enable bit and returns early when FEL/BROM has already
+ *          enabled the PLL. Otherwise enables the PLL LDO, enables lock
+ *          detection and the PLL itself, polls until the PLL locks, then
+ *          disables the lock enable and opens the PLL output gate.
+ */
 static inline void sunxi_set_pll_periph0(void)
 {
 	if (readl(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG) & BIT(PLL_PERI_CTRL_REG_PLL_EN_OFFSET)) {
@@ -130,16 +150,32 @@ static inline void sunxi_set_pll_periph0(void)
 	setbits_le32(SUNXI_CCU_BASE + PLL_PERI_CTRL_REG, BIT(PLL_PERI_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
 }
 
+/**
+ * @brief Configure the AHB clock source selection.
+ * @details Keeps the BROM default AHB configuration: BROM already sets
+ *          PSI/AHB at 200 MHz, so no register writes are performed.
+ */
 static inline void sunxi_set_ahb_sel(void)
 {
 	/* BROM default configures PSI/AHB at 200MHz, keep it. */
 }
 
+/**
+ * @brief Configure the APB clock source selection.
+ * @details Keeps the BROM default APB configuration: BROM already sets APB0
+ *          at 100 MHz and APB1 at 24 MHz, so no register writes are performed.
+ */
 static inline void sunxi_set_apb_sel(void)
 {
 	/* BROM default configures APB0 at 100MHz, APB1 at 24MHz, keep it. */
 }
 
+/**
+ * @brief Configure the MBUS clock source and divider.
+ * @details Sets the MBUS clock divider factor M to 1, then selects the DDR PLL
+ *          as the MBUS clock source. Delays are inserted after each register
+ *          write to let the configuration take effect.
+ */
 static inline void sunxi_set_pll_mbus(void)
 {
 	uint32_t reg_val;
@@ -159,6 +195,11 @@ static inline void sunxi_set_pll_mbus(void)
 	udelay(10);
 }
 
+/**
+ * @brief Enable the DMA clock and reset.
+ * @details Deasserts the SGDMA reset and opens the SGDMA clock gate in the DMA
+ *          bus gating/reset register, followed by a short delay.
+ */
 static inline void sunxi_set_dma_clk(void)
 {
 	/* DMA deassert reset */
@@ -168,6 +209,12 @@ static inline void sunxi_set_dma_clk(void)
 	udelay(1);
 }
 
+/**
+ * @brief Initialize the SoC clocks.
+ * @details Configures the CPU PLL, peripheral PLL, RISC-V clock selection, AHB
+ *          and APB clock sources, MBUS clock, and DMA clock by invoking the
+ *          corresponding setup routines in sequence.
+ */
 void sunxi_clk_init(void)
 {
 	sunxi_set_cpux_pll();
@@ -179,6 +226,12 @@ void sunxi_clk_init(void)
 	sunxi_set_dma_clk();
 }
 
+/**
+ * @brief Dump the current CPU clock configuration.
+ * @details Reads the RISC-V clock register to determine the clock source and
+ *          translates the source field to a descriptive string, then reads the
+ *          CPU PLL N factor to compute and log the current CPU clock frequency.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg_val;

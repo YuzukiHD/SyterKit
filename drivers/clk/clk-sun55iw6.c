@@ -282,6 +282,13 @@ void sunxi_clk_init(void)
 	pr_debug("Set pll end\n");
 }
 
+/**
+ * @brief Dump the current PLL clock configuration.
+ * @details Reads the PLL_PERI0, PLL_PERI1 and PLL_DDR control registers and
+ *          computes their multiplier/divider factors to report the derived
+ *          clock frequencies via debug log messages. Disabled PLLs are
+ *          reported as such.
+ */
 void sunxi_clk_dump(void)
 {
 	uint32_t reg32;
