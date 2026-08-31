@@ -373,6 +373,14 @@ static int spi_nand_select(spi_nand_t *nand)
 	return 0;
 }
 
+/**
+ * @brief Detect and initialize the SPI NAND flash chip.
+ * @details Selects the chip, resets it, waits until it is not busy, and reads its
+ *          identification. If recognized, clears write protection, disables Winbond
+ *          buffer mode, and enables quad mode on GigaDevice/FORESEE/XTX devices.
+ * @param nand SPI NAND flash device
+ * @return 0 on success, -1 if no flash was found
+ */
 int spi_nand_detect(spi_nand_t *nand)
 {
 	spi_nand_info_t *info;
