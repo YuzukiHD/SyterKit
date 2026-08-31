@@ -34,7 +34,9 @@ _start:
 	la a0, unhandled_exception
 #else
 	la a0, irq_handler
+#if defined(CONFIG_ARCH_MTVT)
 	ori a0, a0, 3
+#endif
 #endif
 	csrw mtvec, a0
 

@@ -2,20 +2,36 @@
 
 menu "Interrupt controller driver"
 
+config DRIVER_INTC
+	bool
+
+choice
+	prompt "RISC-V interrupt controller"
+	depends on ARCH_RISCV
+	optional
+
 config DRIVER_CLIC
 	bool "Core-local interrupt controller support"
-	depends on ARCH_RISCV
+	select DRIVER_INTC
+
+config DRIVER_PLIC
+	bool "Platform-level interrupt controller support"
+	depends on !ARCH_CPU_E907
+	select DRIVER_INTC
+
+endchoice
 
 config DRIVER_GIC
 	bool "Generic interrupt controller support"
 	depends on ARCH_ARM32
+	select DRIVER_INTC
 
 choice
 	prompt "Interrupt controller driver log level"
 	default DRIVER_INTC_LOG_TRACE if BUILD_TRACE
 	default DRIVER_INTC_LOG_DEBUG if BUILD_DEBUG
 	default DRIVER_INTC_LOG_GLOBAL
-	depends on DRIVER_CLIC || DRIVER_GIC
+	depends on DRIVER_CLIC || DRIVER_PLIC || DRIVER_GIC
 
 config DRIVER_INTC_LOG_GLOBAL
 	bool "Inherit global log level"

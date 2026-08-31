@@ -17,7 +17,6 @@
 #define PT_REGS_SIZE (40 * REGSZ)
 
 .macro SAVE_ALL
-	csrw mscratch, sp
 	addi sp, sp, -PT_REGS_SIZE
 	SREG zero, 0 * REGSZ(sp)
 	SREG x1, 1 * REGSZ(sp)
@@ -50,59 +49,57 @@
 	SREG x29, 29 * REGSZ(sp)
 	SREG x30, 30 * REGSZ(sp)
 	SREG x31, 31 * REGSZ(sp)
-	csrrw t0, mscratch, zero
-	csrr s0, mstatus
-	csrr t1, mepc
-	csrr t2, mtval
-	csrr t3, mcause
+	addi t0, sp, PT_REGS_SIZE
 	SREG t0, 2 * REGSZ(sp)
-	SREG s0, 32 * REGSZ(sp)
-	SREG t1, 33 * REGSZ(sp)
-	SREG t2, 34 * REGSZ(sp)
-	SREG t3, 35 * REGSZ(sp)
+	csrr t0, mstatus
+	SREG t0, 32 * REGSZ(sp)
+	csrr t0, mepc
+	SREG t0, 33 * REGSZ(sp)
+	csrr t0, mtval
+	SREG t0, 34 * REGSZ(sp)
+	csrr t0, mcause
+	SREG t0, 35 * REGSZ(sp)
 	li t0, -1
 	SREG t0, 36 * REGSZ(sp)
 	mv a0, sp
 .endm
 
 .macro RESTORE_ALL
-	csrr a0, mscratch
-	LREG t0, 32 * REGSZ(a0)
+	LREG t0, 32 * REGSZ(sp)
 	csrw mstatus, t0
-	LREG t0, 33 * REGSZ(a0)
+	LREG t0, 33 * REGSZ(sp)
 	csrw mepc, t0
-	LREG x1, 1 * REGSZ(a0)
-	LREG x2, 2 * REGSZ(a0)
-	LREG x3, 3 * REGSZ(a0)
-	LREG x4, 4 * REGSZ(a0)
-	LREG x5, 5 * REGSZ(a0)
-	LREG x6, 6 * REGSZ(a0)
-	LREG x7, 7 * REGSZ(a0)
-	LREG x8, 8 * REGSZ(a0)
-	LREG x9, 9 * REGSZ(a0)
-	LREG x11, 11 * REGSZ(a0)
-	LREG x12, 12 * REGSZ(a0)
-	LREG x13, 13 * REGSZ(a0)
-	LREG x14, 14 * REGSZ(a0)
-	LREG x15, 15 * REGSZ(a0)
-	LREG x16, 16 * REGSZ(a0)
-	LREG x17, 17 * REGSZ(a0)
-	LREG x18, 18 * REGSZ(a0)
-	LREG x19, 19 * REGSZ(a0)
-	LREG x20, 20 * REGSZ(a0)
-	LREG x21, 21 * REGSZ(a0)
-	LREG x22, 22 * REGSZ(a0)
-	LREG x23, 23 * REGSZ(a0)
-	LREG x24, 24 * REGSZ(a0)
-	LREG x25, 25 * REGSZ(a0)
-	LREG x26, 26 * REGSZ(a0)
-	LREG x27, 27 * REGSZ(a0)
-	LREG x28, 28 * REGSZ(a0)
-	LREG x29, 29 * REGSZ(a0)
-	LREG x30, 30 * REGSZ(a0)
-	LREG x31, 31 * REGSZ(a0)
-	csrw mscratch, zero
-	LREG x10, 10 * REGSZ(a0)
+	LREG x1, 1 * REGSZ(sp)
+	LREG x3, 3 * REGSZ(sp)
+	LREG x4, 4 * REGSZ(sp)
+	LREG x5, 5 * REGSZ(sp)
+	LREG x6, 6 * REGSZ(sp)
+	LREG x7, 7 * REGSZ(sp)
+	LREG x8, 8 * REGSZ(sp)
+	LREG x9, 9 * REGSZ(sp)
+	LREG x10, 10 * REGSZ(sp)
+	LREG x11, 11 * REGSZ(sp)
+	LREG x12, 12 * REGSZ(sp)
+	LREG x13, 13 * REGSZ(sp)
+	LREG x14, 14 * REGSZ(sp)
+	LREG x15, 15 * REGSZ(sp)
+	LREG x16, 16 * REGSZ(sp)
+	LREG x17, 17 * REGSZ(sp)
+	LREG x18, 18 * REGSZ(sp)
+	LREG x19, 19 * REGSZ(sp)
+	LREG x20, 20 * REGSZ(sp)
+	LREG x21, 21 * REGSZ(sp)
+	LREG x22, 22 * REGSZ(sp)
+	LREG x23, 23 * REGSZ(sp)
+	LREG x24, 24 * REGSZ(sp)
+	LREG x25, 25 * REGSZ(sp)
+	LREG x26, 26 * REGSZ(sp)
+	LREG x27, 27 * REGSZ(sp)
+	LREG x28, 28 * REGSZ(sp)
+	LREG x29, 29 * REGSZ(sp)
+	LREG x30, 30 * REGSZ(sp)
+	LREG x31, 31 * REGSZ(sp)
+	addi sp, sp, PT_REGS_SIZE
 	mret
 .endm
 
