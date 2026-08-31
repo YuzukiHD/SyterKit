@@ -8,6 +8,13 @@
 #include <drivers/mmc/hs-timing.h>
 #include <drivers/mmc/tuning.h>
 
+/**
+ * @brief Enable or disable HS400 mode on the controller
+ * @details Programs the data-strobe bypass and command/data control registers
+ *          to switch the SMHC2 controller between HS400 and normal modes.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param status True to enable HS400 mode, false to disable it
+ */
 void sunxi_mmc_hs400_mode_set(sunxi_sdhci_t *sdhci, bool status)
 {
 	uint32_t dsbd;
@@ -117,6 +124,15 @@ int sunxi_mmc_mmc_switch_hs400(sunxi_sdhci_t *sdhci)
 	return 0;
 }
 
+/**
+ * @brief Prepare the eMMC card for HS200 mode
+ * @details Switches the card to HS200 mode and the requested bus width, then
+ *          runs sampling tuning at progressively lower standard clock points
+ *          until a usable timing window is found.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param width Bus width to configure (4-bit or 8-bit)
+ * @return 0 on success, or a negative error code on failure
+ */
 int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 {
 	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4 ||
@@ -156,6 +172,15 @@ int sunxi_mmc_mmc_prepare_hs200(sunxi_sdhci_t *sdhci, uint32_t width)
 	return last_err;
 }
 
+/**
+ * @brief Prepare the eMMC card for HS400 mode
+ * @details Enters HS200 mode first, switches the card back to HS, configures
+ *          the 8-bit DDR bus, switches to HS400, and runs both command and
+ *          data tuning.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param width Bus width to configure (must be 8-bit)
+ * @return 0 on success, or a negative error code on failure
+ */
 int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 {
 	if (sdhci == NULL || sdhci->id != MMC_CONTROLLER_2 || sdhci->mmc_host.timing_mode != SUNXI_MMC_TIMING_MODE_4)
@@ -220,6 +245,14 @@ int sunxi_mmc_mmc_prepare_hs400(sunxi_sdhci_t *sdhci, uint32_t width)
 	return 0;
 }
 
+/**
+ * @brief Downgrade the eMMC card from high-speed tuning modes
+ * @details Moves the card from HS400 or DDR back to the normal SDR HS state at
+ *          a safe 52 MHz clock, restoring the SDR bus width, after high-speed
+ *          tuning has failed.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, or a negative error code on failure
+ */
 int sunxi_mmc_mmc_downgrade_high_speed(sunxi_sdhci_t *sdhci)
 {
 	if (sdhci == NULL)

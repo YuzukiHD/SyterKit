@@ -702,6 +702,17 @@ static int sunxi_mmc_switch_internal(sunxi_sdhci_t *sdhci, uint8_t set,
 	return 0;
 }
 
+/**
+ * @brief Send the SWITCH command and wait for the card to become ready
+ * @details Wrapper around sunxi_mmc_switch_internal that sends the SWITCH
+ *          command to change a card setting and then waits for the card
+ *          to become ready before returning.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param set The command set to switch within
+ * @param index Index of the setting to change
+ * @param value New value for the specified setting
+ * @return 0 on success, or an error code on failure
+ */
 static int sunxi_mmc_switch(sunxi_sdhci_t *sdhci, uint8_t set,
 				    uint8_t index, uint8_t value)
 {
@@ -1042,22 +1053,54 @@ static void sunxi_mmc_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width)
 
 #if CONFIG_DRIVER_MMC_TUNING
 /* Keep the common MMC helpers local to core.c when high-speed timing is off. */
+/**
+ * @brief Send the SWITCH command without waiting for card ready
+ * @details Wrapper around sunxi_mmc_switch_internal that sends the SWITCH
+ *          command to change a card setting without waiting for the card
+ *          to become ready. Used by the high-speed timing helpers.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param set The command set to switch within
+ * @param index Index of the setting to change
+ * @param value New value for the specified setting
+ * @return 0 on success, or an error code on failure
+ */
 int sunxi_mmc_hs_switch_card(sunxi_sdhci_t *sdhci, uint8_t set,
 				      uint8_t index, uint8_t value)
 {
 	return sunxi_mmc_switch_internal(sdhci, set, index, value, false);
 }
 
+/**
+ * @brief Wait for the card to become ready with a fixed timeout
+ * @details Wrapper around sunxi_mmc_send_status that polls the card status
+ *          until it is ready for data, using a 1000 ms timeout.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, or an error code on failure
+ */
 int sunxi_mmc_hs_wait_status(sunxi_sdhci_t *sdhci)
 {
 	return sunxi_mmc_send_status(sdhci, 1000);
 }
 
+/**
+ * @brief Set the card clock frequency
+ * @details Wrapper around sunxi_mmc_set_clock that updates the MMC clock
+ *          frequency and applies the new settings to the SDHCI controller.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param clock Desired clock frequency in Hz
+ */
 void sunxi_mmc_hs_set_clock(sunxi_sdhci_t *sdhci, uint32_t clock)
 {
 	sunxi_mmc_set_clock(sdhci, clock);
 }
 
+/**
+ * @brief Set the card bus width
+ * @details Wrapper around sunxi_mmc_set_bus_width that updates the MMC bus
+ *          width and applies the new settings to the SDHCI controller.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param width Bus width to set (in bits)
+ */
 void sunxi_mmc_hs_set_bus_width(sunxi_sdhci_t *sdhci, uint32_t width)
 {
 	sunxi_mmc_set_bus_width(sdhci, width);
@@ -1351,6 +1394,16 @@ static inline int sunxi_mmc_mmc_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t s
 }
 
 #if CONFIG_DRIVER_MMC_TUNING
+/**
+ * @brief Switch the eMMC bus speed mode and width
+ * @details Wrapper around sunxi_mmc_mmc_switch_bus_mode that switches the
+ *          eMMC card to the requested speed mode and bus width. Used by the
+ *          high-speed timing helpers.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param spd_mode Speed mode to switch to
+ * @param width Bus width to set
+ * @return 0 on success, or an error code on failure
+ */
 int sunxi_mmc_hs_switch_bus_mode(sunxi_sdhci_t *sdhci, uint32_t spd_mode,
 				  uint32_t width)
 {
