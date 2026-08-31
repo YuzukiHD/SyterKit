@@ -13,6 +13,16 @@
  * SoCs with a different divider or DDR clock relationship override these
  * weak symbols in their host file.
  */
+/**
+ * @brief Set the SDHC controller clock frequency using the generic divider
+ * @details Computes the nearest clock divider between the selected parent
+ *          clock and the requested frequency, encodes it as factor n/m
+ *          register fields, and writes the clock register.  Selects the
+ *          low-frequency source for <= 4 MHz and the default source otherwise.
+ * @param sdhci Pointer to the SDHC controller structure
+ * @param clk_hz Desired clock frequency in Hertz
+ * @return 0 on success, -1 on invalid arguments or an unsupported clock source
+ */
 int __attribute__((weak, section(".text.mmc_generic_set_mclk"))) sunxi_sdhci_set_mclk(
 	sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 {
@@ -63,6 +73,15 @@ int __attribute__((weak, section(".text.mmc_generic_set_mclk"))) sunxi_sdhci_set
 	return 0;
 }
 
+/**
+ * @brief Read back the current SDHC controller clock frequency
+ * @details Reads the clock register and decodes the clock source and factor
+ *          n/m fields, then derives the resulting frequency as the parent
+ *          rate divided by (n+1) and (m+1).
+ * @param sdhci Pointer to the SDHC controller structure
+ * @return The current clock frequency in Hertz, or 0 on invalid arguments or
+ *         an unsupported clock source
+ */
 uint32_t __attribute__((weak, section(".text.mmc_generic_get_mclk"))) sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci)
 {
 	uint32_t reg_val;
@@ -94,6 +113,17 @@ uint32_t __attribute__((weak, section(".text.mmc_generic_get_mclk"))) sunxi_sdhc
  * selector (e.g. Sun55 GPIO v2-pow) override this weak symbol in their
  * host file.
  */
+/**
+ * @brief Set the MMC I/O voltage using the generic no-op implementation
+ * @details Default weak implementation for the common Allwinner MMC host,
+ *          which has no programmable I/O rail, so it performs no action and
+ *          always reports success.  SoCs with a power-mode selector override
+ *          this symbol in their host file.
+ * @param sdhci Pointer to the SDHC controller structure
+ * @param gpio GPIO pin identifying the physical I/O bank
+ * @param voltage_uv Requested I/O voltage in microvolts
+ * @return Always 0
+ */
 int __attribute__((weak, section(".text.mmc_generic_set_io_voltage"))) sunxi_sdhci_set_io_voltage(
 	sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio, uint32_t voltage_uv)
 {
@@ -105,6 +135,14 @@ int __attribute__((weak, section(".text.mmc_generic_set_io_voltage"))) sunxi_sdh
  * needs no fixed deskew, so this is a no-op.  SoCs that require one on some
  * controllers (e.g. MMC2 on Sun55iw6) override this weak symbol in their
  * host file.
+ */
+/**
+ * @brief Set the MMC data-line deskew using the generic no-op implementation
+ * @details Default weak implementation that performs no deskew programming
+ *          and always reports success.  SoCs that require a fixed data-line
+ *          deskew on some controllers override this symbol in their host file.
+ * @param sdhci Pointer to the SDHC controller structure
+ * @return Always 0
  */
 int __attribute__((weak, section(".text.mmc_generic_set_skew"))) sunxi_sdhci_set_skew(
 	sunxi_sdhci_t *sdhci)

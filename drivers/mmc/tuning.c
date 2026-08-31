@@ -76,6 +76,14 @@ struct sunxi_mmc_tuning_scan {
 
 static struct sunxi_mmc_tuning_pattern_cache sunxi_mmc_tuning_patterns;
 
+/**
+ * @brief Map a clock frequency to a tuning frequency ID
+ * @details Converts a clock frequency in Hz to the corresponding MMC clock
+ *          frequency ID used to index tuning tables. Frequencies above
+ *          150 MHz map to MMC_CLK_200M.
+ * @param clock Clock frequency in Hz
+ * @return The matching MMC clock frequency ID
+ */
 static uint32_t sunxi_mmc_tuning_freq_id(uint32_t clock)
 {
 	if (clock <= 400000U)
@@ -91,12 +99,27 @@ static uint32_t sunxi_mmc_tuning_freq_id(uint32_t clock)
 	return MMC_CLK_200M;
 }
 
+/**
+ * @brief Reset the cached tuning pattern state
+ * @details Clears the cached host and bus width associated with a prepared
+ *          tuning pattern, forcing the next tuning run to prepare the card
+ *          again.
+ */
 void sunxi_mmc_tuning_reset(void)
 {
 	sunxi_mmc_tuning_patterns.host = NULL;
 	sunxi_mmc_tuning_patterns.bus_width = 0U;
 }
 
+/**
+ * @brief Fill a buffer with a PRBS-16 pattern
+ * @details Generates a pseudo-random bit sequence using the PRBS-16
+ *          polynomial x^16 + x^14 + x^13 + x^11 + 1 and stores one byte per
+ *          generated bit into the destination buffer.
+ * @param data Pointer to the buffer to fill
+ * @param size Number of bytes to generate
+ * @param seed Initial state for the shift register
+ */
 static void sunxi_mmc_tuning_fill_prbs(uint8_t *data, uint32_t size, uint16_t seed)
 {
 	uint16_t state = seed;
@@ -117,6 +140,15 @@ static void sunxi_mmc_tuning_fill_prbs(uint8_t *data, uint32_t size, uint16_t se
 	}
 }
 
+/**
+ * @brief Rotate a value within a limited bit width
+ * @details Rotates the lower bits of value left by count positions, wrapping
+ *          the shifted-out bits around, and masks the result to width bits.
+ * @param value The value to rotate
+ * @param width Number of significant bits in the value
+ * @param count Number of positions to rotate left
+ * @return The rotated and masked value
+ */
 static uint8_t sunxi_mmc_tuning_rotate(uint8_t value, uint32_t width, uint32_t count)
 {
 	uint32_t mask = (1U << width) - 1U;
@@ -126,6 +158,16 @@ static uint8_t sunxi_mmc_tuning_rotate(uint8_t value, uint32_t width, uint32_t c
 	return (uint8_t)(((value << count) | (value >> (width - count))) & mask);
 }
 
+/**
+ * @brief Fill a data line with rotated tuning patterns
+ * @details Writes the four seed byte pairs, rotated according to the data
+ *          line index and bus width, repeatedly across the line. The 4-bit
+ *          bus uses an asymmetric rotation while 8-bit uses a plain rotation.
+ * @param data Pointer to the start of the line to fill
+ * @param bit Data line index used to rotate the patterns
+ * @param size Length of the line in bytes
+ * @param bus8 True for 8-bit bus patterns, false for 4-bit
+ */
 static void sunxi_mmc_tuning_fill_line(uint8_t *data, uint32_t bit, uint32_t size, bool bus8)
 {
 	uint32_t repeat = size / 2U;
@@ -153,6 +195,15 @@ static void sunxi_mmc_tuning_fill_line(uint8_t *data, uint32_t bit, uint32_t siz
 	}
 }
 
+/**
+ * @brief Fill the complete tuning pattern block layout
+ * @details Composes the tuning block from a PRBS section, eight rotated
+ *          per-line patterns, and a final tail block combining PRBS and
+ *          alternating 00/ff and ff/00 sections.
+ * @param data Pointer to the destination buffer for the block layout
+ * @param bus8 True for 8-bit bus patterns, false for 4-bit
+ * @return The number of 512-byte blocks written
+ */
 static uint32_t sunxi_mmc_tuning_fill_block(uint8_t *data, bool bus8)
 {
 	uint32_t block_count = 1U;
@@ -187,6 +238,12 @@ static uint32_t sunxi_mmc_tuning_fill_block(uint8_t *data, bool bus8)
 	return block_count + 1U;
 }
 
+/**
+ * @brief Release a tuning pattern's allocation
+ * @details Frees the workspace allocated for a tuning pattern and zeroes the
+ *          pattern structure. Does nothing if the pattern is NULL.
+ * @param pattern Pointer to the tuning pattern to release
+ */
 static void sunxi_mmc_tuning_release_pattern(struct sunxi_mmc_tuning_pattern *pattern)
 {
 	if (pattern == NULL)
@@ -196,6 +253,15 @@ static void sunxi_mmc_tuning_release_pattern(struct sunxi_mmc_tuning_pattern *pa
 	memset(pattern, 0, sizeof(*pattern));
 }
 
+/**
+ * @brief Allocate and fill a tuning pattern for the card
+ * @details Determines the pattern size from the card bus width, allocates an
+ *          aligned workspace for the write and readback buffers, and fills it
+ *          with the tuning block layout.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param pattern Pointer to the tuning pattern structure to populate
+ * @return 0 on success, -1 on failure
+ */
 static int sunxi_mmc_tuning_get_pattern(sunxi_sdhci_t *sdhci, struct sunxi_mmc_tuning_pattern *pattern)
 {
 	uint32_t blocks;
@@ -239,6 +305,13 @@ static int sunxi_mmc_tuning_get_pattern(sunxi_sdhci_t *sdhci, struct sunxi_mmc_t
 	return 0;
 }
 
+/**
+ * @brief Send a manual stop transmission command
+ * @details Issues MMC_CMD_STOP_TRANSMISSION with the manual flag set so the
+ *          command is sent immediately, using the tuning timeout.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, -1 on failure
+ */
 static int sunxi_mmc_tuning_send_manual_stop(sunxi_sdhci_t *sdhci)
 {
 	mmc_cmd_t cmd = { 0 };
@@ -249,6 +322,12 @@ static int sunxi_mmc_tuning_send_manual_stop(sunxi_sdhci_t *sdhci)
 	return sunxi_sdhci_xfer_timeout(sdhci, &cmd, NULL, SUNXI_MMC_TUNING_TIMEOUT_US);
 }
 
+/**
+ * @brief Restore the host link state after a failed transfer
+ * @details Re-applies the host I/O settings because a failed transfer resets
+ *          controller state, including the sample FIFO bypass flag.
+ * @param sdhci Pointer to the SDHCI controller structure
+ */
 static void sunxi_mmc_tuning_restore_link(sunxi_sdhci_t *sdhci)
 {
 	/* A failed transfer resets controller state, including SFC. */
@@ -256,12 +335,25 @@ static void sunxi_mmc_tuning_restore_link(sunxi_sdhci_t *sdhci)
 		sunxi_sdhci_set_ios(sdhci);
 }
 
+/**
+ * @brief Recover from a failed tuning data transfer
+ * @details Sends a manual stop transmission command to abort any stuck data
+ *          transfer and then restores the host link state.
+ * @param sdhci Pointer to the SDHCI controller structure
+ */
 static void sunxi_mmc_tuning_recover_data_transfer(sunxi_sdhci_t *sdhci)
 {
 	sunxi_mmc_tuning_send_manual_stop(sdhci);
 	sunxi_mmc_tuning_restore_link(sdhci);
 }
 
+/**
+ * @brief Set the sample FIFO bypass flag
+ * @details Enables or disables the sample FIFO bypass bit in the SFC register
+ *          on the supported SMHC2 timing-mode-4 controllers.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param bypass True to enable FIFO bypass, false to disable it
+ */
 static void sunxi_mmc_tuning_set_fifo_bypass(sunxi_sdhci_t *sdhci, bool bypass)
 {
 	uint32_t value;
@@ -278,6 +370,13 @@ static void sunxi_mmc_tuning_set_fifo_bypass(sunxi_sdhci_t *sdhci, bool bypass)
 	sdhci->mmc_host.reg->sfc = value;
 }
 
+/**
+ * @brief Set the sampling delay
+ * @details Programs the delay value into the sampling delay register while
+ *          keeping the delay-chain enable bit set.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param delay Delay value to program
+ */
 static void sunxi_mmc_tuning_set_sample(sunxi_sdhci_t *sdhci, uint32_t delay)
 {
 	sdhci_reg_t *reg;
@@ -290,6 +389,13 @@ static void sunxi_mmc_tuning_set_sample(sunxi_sdhci_t *sdhci, uint32_t delay)
 	reg->samp_dl = value | (delay & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY;
 }
 
+/**
+ * @brief Set the HS400 data-strobe delay
+ * @details Programs the delay value into the data-strobe delay register while
+ *          keeping the delay-chain enable bit set.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param delay Delay value to program
+ */
 static void sunxi_mmc_tuning_set_data_strobe(sunxi_sdhci_t *sdhci, uint32_t delay)
 {
 	sdhci_reg_t *reg;
@@ -302,6 +408,14 @@ static void sunxi_mmc_tuning_set_data_strobe(sunxi_sdhci_t *sdhci, uint32_t dela
 	reg->ds_dl = value | (delay & SDXC_NTDC_CFG_DLY) | SDXC_NTDC_ENABLE_DLY;
 }
 
+/**
+ * @brief Set the training flag on the MMC structure
+ * @details Updates the mmc->training flag used to suppress non-training log
+ *          messages and returns the previous value.
+ * @param mmc Pointer to the MMC structure
+ * @param training New value for the training flag
+ * @return The previous training flag value
+ */
 static bool sunxi_mmc_tuning_set_training(mmc_t *mmc, bool training)
 {
 	bool previous;
@@ -313,6 +427,14 @@ static bool sunxi_mmc_tuning_set_training(mmc_t *mmc, bool training)
 	return previous;
 }
 
+/**
+ * @brief Begin a tuning run
+ * @details Initializes the tuning run structure, records the host and MMC
+ *          pointers, enables the training flag, and marks the run as active.
+ * @param run Pointer to the tuning run structure to initialize
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return True on success, false if either pointer is NULL
+ */
 static bool sunxi_mmc_tuning_begin(struct sunxi_mmc_tuning_run *run, sunxi_sdhci_t *sdhci)
 {
 	if (run == NULL || sdhci == NULL)
@@ -327,6 +449,12 @@ static bool sunxi_mmc_tuning_begin(struct sunxi_mmc_tuning_run *run, sunxi_sdhci
 	return true;
 }
 
+/**
+ * @brief End a tuning run
+ * @details Disables the sample FIFO bypass, restores the previous training
+ *          flag, and marks the run as inactive.
+ * @param run Pointer to the tuning run structure
+ */
 static void sunxi_mmc_tuning_end(struct sunxi_mmc_tuning_run *run)
 {
 	if (run == NULL || !run->active)
@@ -337,6 +465,14 @@ static void sunxi_mmc_tuning_end(struct sunxi_mmc_tuning_run *run)
 	run->active = false;
 }
 
+/**
+ * @brief Scan all delay points for the tuning run
+ * @details For each delay point, applies the FIFO bypass setting, programs
+ *          the delay, and records whether the probe succeeded in the run's
+ *          pass array.
+ * @param run Pointer to the tuning run structure
+ * @param scan Pointer to the scan configuration with delay and probe callbacks
+ */
 static void sunxi_mmc_tuning_scan(struct sunxi_mmc_tuning_run *run, const struct sunxi_mmc_tuning_scan *scan)
 {
 	memset(run->pass, 0, sizeof(run->pass));
@@ -348,6 +484,15 @@ static void sunxi_mmc_tuning_scan(struct sunxi_mmc_tuning_run *run, const struct
 	}
 }
 
+/**
+ * @brief Probe a delay point by reading back the tuning pattern
+ * @details Reads the tuning pattern from the reserved card LBA and compares
+ *          it with the expected data to determine whether the current delay
+ *          setting yields a valid transfer.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param arg Pointer to the tuning pattern structure
+ * @return 0 if the pattern matches, -1 otherwise
+ */
 static int sunxi_mmc_tuning_probe_pattern(sunxi_sdhci_t *sdhci, const void *arg)
 {
 	const struct sunxi_mmc_tuning_pattern *pattern = arg;
@@ -367,6 +512,14 @@ static int sunxi_mmc_tuning_probe_pattern(sunxi_sdhci_t *sdhci, const void *arg)
 		pattern->blocks * SUNXI_MMC_TUNING_BLOCK_SIZE) == 0 ? 0 : -1;
 }
 
+/**
+ * @brief Probe a delay point using the HS400 command path
+ * @details Sends the SEND_STATUS command and checks that the card is ready
+ *          for data without any error status bits set.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param arg Unused probe argument
+ * @return 0 if the command succeeds and the card is ready, -1 otherwise
+ */
 static int sunxi_mmc_tuning_probe_hs400_command(sunxi_sdhci_t *sdhci, const void *arg)
 {
 	mmc_cmd_t cmd = { 0 };
@@ -387,6 +540,14 @@ static int sunxi_mmc_tuning_probe_hs400_command(sunxi_sdhci_t *sdhci, const void
 	return (!(cmd.response[0] & MMC_STATUS_RDY_FOR_DATA) || (cmd.response[0] & MMC_STATUS_MASK)) ? -1 : 0;
 }
 
+/**
+ * @brief Select the best delay from the pass results
+ * @details Finds the longest contiguous run of passing delay points and
+ *          returns the midpoint of that window. Returns an invalid marker if
+ *          no window is at least as large as the minimum required size.
+ * @param pass Array of pass/fail results for each delay point
+ * @return The selected delay value, or SUNXI_MMC_TUNING_INVALID
+ */
 static uint32_t sunxi_mmc_tuning_select(const uint8_t *pass)
 {
 	uint32_t best_start = 0U;
@@ -413,6 +574,15 @@ static uint32_t sunxi_mmc_tuning_select(const uint8_t *pass)
 	return best_start + (best_length - 1U) / 2U;
 }
 
+/**
+ * @brief Store the selected sample delay in the tuning table
+ * @details Writes the selected delay into the speed-mode/frequency entry of
+ *          the tune_sdly sample table, preserving other entries.
+ * @param mmc Pointer to the MMC structure
+ * @param speed_mode Speed mode the sample was tuned for
+ * @param freq_id Frequency ID the sample was tuned for
+ * @param selected Selected delay value
+ */
 static void sunxi_mmc_tuning_store_sample(mmc_t *mmc, uint32_t speed_mode, uint32_t freq_id, uint32_t selected)
 {
 	uint32_t index;
@@ -430,6 +600,16 @@ static void sunxi_mmc_tuning_store_sample(mmc_t *mmc, uint32_t speed_mode, uint3
 	mmc->tune_sdly.tm4_smx_fx[index] = value | (selected << shift);
 }
 
+/**
+ * @brief Prepare the card for tuning by writing and verifying the pattern
+ * @details At a safe clock, writes the tuning pattern to the reserved card
+ *          LBA, reads it back, and verifies it matches. Skips the operation
+ *          when the card was already prepared for this host and bus width,
+ *          and caches the prepared state on success.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param pattern Pointer to the tuning pattern structure
+ * @return 0 on success, -1 on failure
+ */
 static int sunxi_mmc_tuning_prepare_card(sunxi_sdhci_t *sdhci, const struct sunxi_mmc_tuning_pattern *pattern)
 {
 	mmc_t *mmc;
@@ -487,6 +667,13 @@ restore:
 	return result;
 }
 
+/**
+ * @brief Check whether the card is already prepared for tuning
+ * @details Returns true when the cached prepared state matches the given host
+ *          and its current bus width.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return True if the card is prepared for this host and bus width
+ */
 static bool sunxi_mmc_tuning_card_ready(const sunxi_sdhci_t *sdhci)
 {
 	return sdhci != NULL && sunxi_mmc_tuning_patterns.host == sdhci &&
@@ -494,6 +681,15 @@ static bool sunxi_mmc_tuning_card_ready(const sunxi_sdhci_t *sdhci)
 }
 
 #ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
+/**
+ * @brief Dump a text chart of the tuning pass results
+ * @details Prints an ASCII chart showing pass/fail results for each delay
+ *          point and marks the selected delay. Debug helper compiled only
+ *          when CONFIG_DRIVER_MMC_SHOW_TRAINING is enabled.
+ * @param name Name of the tuning mode for the chart title
+ * @param pass Array of pass/fail results for each delay point
+ * @param selected The selected delay to mark
+ */
 static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, uint32_t selected)
 {
 	char samples[SUNXI_MMC_TUNING_POINTS + 1U];
@@ -517,6 +713,12 @@ static void sunxi_mmc_tuning_dump_chart(const char *name, const uint8_t *pass, u
 }
 #endif
 
+/**
+ * @brief Return the display name of a tuning mode
+ * @details Maps a tuning mode enum value to a human-readable string.
+ * @param mode The tuning mode
+ * @return The mode name string
+ */
 static const char *sunxi_mmc_tuning_mode_name(sunxi_mmc_tuning_mode_t mode)
 {
 	switch (mode) {
@@ -529,6 +731,12 @@ static const char *sunxi_mmc_tuning_mode_name(sunxi_mmc_tuning_mode_t mode)
 	}
 }
 
+/**
+ * @brief Return the MMC bus width in bits
+ * @details Converts the stored bus width to a bit count, returning 8, 4, or 1.
+ * @param mmc Pointer to the MMC structure
+ * @return The bus width in bits
+ */
 static uint32_t sunxi_mmc_tuning_bus_width(const mmc_t *mmc)
 {
 	if (mmc == NULL)
@@ -540,6 +748,15 @@ static uint32_t sunxi_mmc_tuning_bus_width(const mmc_t *mmc)
 	return 1U;
 }
 
+/**
+ * @brief Print the tuning run result
+ * @details Logs the frequency, clock, bus width, number of points, and the
+ *          selected delay, optionally dumping the pass chart and the stored
+ *          sample/delay values for the tuning mode.
+ * @param mode The tuning mode that was executed
+ * @param run Pointer to the completed tuning run
+ * @param pattern_blocks Number of pattern blocks used (HS200 data tuning)
+ */
 static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode,
 	const struct sunxi_mmc_tuning_run *run, uint32_t pattern_blocks)
 {
@@ -576,6 +793,15 @@ static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode,
 	}
 }
 
+/**
+ * @brief Check whether the host is valid for the given tuning mode
+ * @details Verifies the host is SMHC2 with timing mode 4 and that its current
+ *          speed mode and bus width match the requested tuning parameters.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param speed_mode Expected speed mode
+ * @param width Expected bus width
+ * @return True if the host matches, false otherwise
+ */
 static bool sunxi_mmc_tuning_host_valid(const sunxi_sdhci_t *sdhci, uint32_t speed_mode, uint32_t width)
 {
 	return sdhci != NULL && sdhci->id == MMC_CONTROLLER_2 &&
@@ -583,6 +809,15 @@ static bool sunxi_mmc_tuning_host_valid(const sunxi_sdhci_t *sdhci, uint32_t spe
 		sdhci->mmc.bus_width == width;
 }
 
+/**
+ * @brief Execute HS400 command tuning
+ * @details Scans the sampling delay points using the HS400 command path,
+ *          selects the best delay, programs it, and stores it in the tuning
+ *          table. Restricted to SMHC2 in timing mode 4 with an 8-bit HS400
+ *          bus.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, -1 on failure
+ */
 int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 {
 	struct sunxi_mmc_tuning_run run;
@@ -610,6 +845,14 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 	return result;
 }
 
+/**
+ * @brief Execute HS200/SDR104 data tuning
+ * @details Builds a tuning pattern, prepares the card, scans the sampling
+ *          delay points by reading back the pattern, selects the best delay,
+ *          and stores it in the tuning table.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, -1 on failure
+ */
 int sunxi_mmc_execute_tuning(sunxi_sdhci_t *sdhci)
 {
 	struct sunxi_mmc_tuning_run run;
@@ -646,6 +889,14 @@ out:
 	return result;
 }
 
+/**
+ * @brief Execute HS400 data tuning
+ * @details Scans the data-strobe delay points by reading back the tuning
+ *          pattern, selects the best delay, and stores it in the HS400
+ *          data-strobe delay table.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @return 0 on success, -1 on failure
+ */
 int sunxi_mmc_execute_hs400_tuning(sunxi_sdhci_t *sdhci)
 {
 	struct sunxi_mmc_tuning_run run;

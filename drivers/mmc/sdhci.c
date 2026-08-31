@@ -31,6 +31,12 @@
 /* Keep tuning probes (128/512 bytes) on the bounded CPU FIFO path. */
 #define SUNXI_SDHCI_CPU_TRANSFER_MAX 512U
 
+/**
+ * @brief Synchronize all CPU caches with memory
+ * @details Flushes and invalidates the entire data cache and then issues
+ *          data synchronization and write memory barriers so that DMA
+ *          transfers observe consistent data.
+ */
 static void sunxi_sdhci_sync_all_cache(void)
 {
 	flush_dcache_all();
@@ -1243,12 +1249,32 @@ out:
 	return 0;
 }
 
+/**
+ * @brief Perform an SDHCI transfer with a caller-specified timeout
+ * @details Wrapper around sunxi_sdhci_xfer_with_timeouts that uses the given
+ *          timeout for both the command/CPU data transfer and the DMA
+ *          completion polling.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param cmd Pointer to the MMC command structure
+ * @param data Pointer to the MMC data structure, or NULL for command-only transfers
+ * @param timeout_us Timeout in microseconds for the transfer
+ * @return 0 on success, -1 on failure
+ */
 int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 			     mmc_data_t *data, uint32_t timeout_us)
 {
 	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data, timeout_us, timeout_us);
 }
 
+/**
+ * @brief Perform an SDHCI transfer with the default timeouts
+ * @details Wrapper around sunxi_sdhci_xfer_with_timeouts that uses the
+ *          driver's default command/data timeout and DMA completion timeout.
+ * @param sdhci Pointer to the SDHCI controller structure
+ * @param cmd Pointer to the MMC command structure
+ * @param data Pointer to the MMC data structure, or NULL for command-only transfers
+ * @return 0 on success, -1 on failure
+ */
 int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 {
 	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data,
