@@ -63,12 +63,8 @@ config ARCH_EXCEPTION
 	depends on ARCH_ARM || ARCH_RISCV
 	default y
 	help
-	  Keep the full exception handling flow: on ARM, the vector table with
-	  per-mode (UND/ABT/IRQ/FIQ) exception stacks and individual handlers;
-	  on RISC-V, the trap entry path with misaligned load/store emulation.
-	  Disable to save SRAM.  When disabled, exceptions are not handled at
-	  all: every trap falls into a no-stack halt loop (WFI on RISC-V,
-	  WFI-equivalent halt on ARM) and the image never resumes.
+	  Install the architecture trap entry and dispatch interrupts through the
+	  configured interrupt controller.  Other traps halt the system.
 
 source "arch/Kconfig.soc"
 

@@ -24,7 +24,57 @@
 #include <dt-compatible/clic-dt.h>
 #include <dt2c/driver.h>
 
-#include "clic-reg.h"
+/* RISC-V CLIC register offset */
+#define CLIC_CFG_REG_OFF  0x00
+#define CLIC_INFO_REG_OFF 0x04
+
+#define CLIC_MINTTHRESH_REG_OFF 0x08
+
+#define CLIC_INT_IP_REG_OFF   0x1000
+#define CLIC_INT_IE_REG_OFF   0x1001
+#define CLIC_INT_ATTR_REG_OFF 0x1002
+#define CLIC_INT_CTRL_REG_OFF 0x1003
+
+#define CLIC_INT_REG_ADDR_INTERVAL 0x4
+
+#define CLIC_INT_X_IP_REG_OFF(id)   (0x1000 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_IE_REG_OFF(id)   (0x1001 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_ATTR_REG_OFF(id) (0x1002 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+#define CLIC_INT_X_CTRL_REG_OFF(id) (0x1003 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+
+#define CLIC_INX_X_32BIT_REG_OFF(id) (0x1000 + ((id) * CLIC_INT_REG_ADDR_INTERVAL))
+
+/* CLIC_CFG_REG */
+#define PREEMPTION_PRIORITY_BITS_SHIFT 1
+#define PREEMPTION_PRIORITY_BITS_MASK  (0xF << PREEMPTION_PRIORITY_BITS_SHIFT)
+
+/* CLIC_INFO_REG */
+#define IRQ_CNT_SHIFT 0
+#define IRQ_CNT_MASK  (0x1FFF << IRQ_CNT_SHIFT)
+
+#define HW_VERSION_SHIFT 13
+#define HW_VERSION_MASK	 (0xF << HW_VERSION_SHIFT)
+
+#define HW_IMPL_VERSION_SHIFT 17
+#define HW_IMPL_VERSION_MASK  (0xF << HW_IMPL_VERSION_SHIFT)
+
+#define CTRL_REG_BITS_SHIFT 21
+#define CTRL_REG_BITS_MASK  (0xF << CTRL_REG_BITS_SHIFT)
+
+/* CLIC_INT_IP_REG */
+#define IP_SHIFT    0
+#define IP_BIT_MASK (0x1 << IP_SHIFT)
+
+/* CLIC_INT_IE_REG */
+#define IE_SHIFT    0
+#define IE_BIT_MASK (0x1 << IE_SHIFT)
+
+/* CLIC_INT_ATTR_REG */
+#define HW_VECTOR_IRQ_SHIFT    0
+#define HW_VECTOR_IRQ_BIT_MASK (0x1 << HW_VECTOR_IRQ_SHIFT)
+
+#define TRIGGER_TYPE_SHIFT    1
+#define TRIGGER_TYPE_BIT_MASK (0x3 << TRIGGER_TYPE_SHIFT)
 
 static sunxi_clic_t sunxi_clic_controller;
 
@@ -36,7 +86,8 @@ static sunxi_clic_t sunxi_clic_controller;
  */
 static bool sunxi_clic_config_valid(const sunxi_clic_t *clic)
 {
-	return clic != NULL && clic->base != 0U && clic->irq_count != 0U && clic->irq_count <= SUNXI_CLIC_MAX_IRQS && clic->size >= 0x1000U + clic->irq_count * 4U;
+	return clic != NULL && clic->base != 0U && clic->irq_count != 0U && clic->irq_count <= SUNXI_CLIC_MAX_IRQS &&
+	       clic->size >= 0x1000U + clic->irq_count * 4U;
 }
 
 /**
@@ -300,7 +351,7 @@ void irq_install_handler(int irq, interrupt_handler_t handler, void *data)
  *
  * @param[in] cause Value of the machine cause register at interrupt entry.
  */
-void do_irq(uint64_t cause)
+bool intc_handle_irq(unsigned long cause)
 {
 	uint32_t irq = (uint32_t)(cause & 0xfffU);
 
@@ -310,6 +361,7 @@ void do_irq(uint64_t cause)
 		(void)sunxi_clic_irq_enable(&sunxi_clic_controller, irq);
 	}
 	csr_set(mie, MIE_MSIE);
+	return true;
 }
 
 /**

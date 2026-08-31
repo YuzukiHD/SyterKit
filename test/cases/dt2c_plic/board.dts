@@ -1,0 +1,70 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		intc0 = &plic0;
+		intc-disabled = &plic_disabled;
+		intc-short = &plic_short;
+		intc-too-many-irqs = &plic_too_many_irqs;
+		intc-wrong-compatible = &plic_wrong_compatible;
+	};
+
+	disabled-bus {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "disabled";
+
+		plic_disabled: interrupt-controller@30000000 {
+			compatible = "allwinner,sunxi-plic";
+			reg = <0x30000000 0x201000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <145>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		plic0: interrupt-controller@10000000 {
+			compatible = "allwinner,sunxi-plic";
+			reg = <0x10000000 0x201000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <145>;
+			status = "okay";
+		};
+
+		plic_short: interrupt-controller@11000000 {
+			compatible = "allwinner,sunxi-plic";
+			reg = <0x11000000 0x200004>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <145>;
+			status = "okay";
+		};
+
+		plic_too_many_irqs: interrupt-controller@12000000 {
+			compatible = "allwinner,sunxi-plic";
+			reg = <0x12000000 0x201000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <257>;
+			status = "okay";
+		};
+
+		plic_wrong_compatible: interrupt-controller@13000000 {
+			compatible = "vendor,other-plic";
+			reg = <0x13000000 0x201000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <145>;
+			status = "okay";
+		};
+	};
+};

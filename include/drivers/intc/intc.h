@@ -67,6 +67,14 @@ int irq_enable(int irq_no);
  */
 int irq_disable(int irq_no);
 
+/**
+ * @brief Dispatch a RISC-V machine interrupt reported by the trap entry.
+ *
+ * @param cause Interrupt cause with the interrupt flag bit removed.
+ * @return true when the configured interrupt controller accepted the cause.
+ */
+bool intc_handle_irq(unsigned long cause);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

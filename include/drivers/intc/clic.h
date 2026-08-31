@@ -28,12 +28,6 @@ typedef struct sunxi_clic {
 } sunxi_clic_t;
 
 /**
- * @brief Handles the IRQ
- * 
- */
-void do_irq(uint64_t cause);
-
-/**
  * @brief Initializes a CLIC instance.
  *
  * @param clic CLIC instance populated from the static devicetree.

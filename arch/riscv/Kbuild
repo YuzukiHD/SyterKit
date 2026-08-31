@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 obj-y += timer.o memcpy.o memset.o memcmp.o
-obj-$(CONFIG_ARCH_EXCEPTION) += exception.o fprw.o
+obj-$(CONFIG_ARCH_EXCEPTION) += exception.o
 
 obj-$(CONFIG_ARCH_RISCV32) += riscv32/
 obj-$(CONFIG_ARCH_RISCV64) += riscv64/
