@@ -36,6 +36,21 @@ static axp_contrl_info *get_ctrl_info_from_tbl(char *name, axp_contrl_info *axp_
 	return (axp_ctrl_tbl + i);
 }
 
+/**
+ * @brief Set the voltage and on/off state of an AXP rail
+ * @details Looks up the control item for the named rail, clamps the requested
+ *          voltage to the valid range, and computes the configuration register
+ *          value from the rail's step table. If set_vol is positive the voltage
+ *          register is written; if onoff is not negative the rail's enable bit
+ *          is also programmed in the control register.
+ * @param pmu AXP PMIC device handle
+ * @param name Name of the rail to configure
+ * @param set_vol Requested voltage in millivolts, or 0 to skip voltage programming
+ * @param onoff Enable (1), disable (0), or leave power state unchanged (-1)
+ * @param axp_ctrl_tbl Table of AXP control items describing the rail registers
+ * @param axp_ctrl_tbl_size Number of entries in axp_ctrl_tbl
+ * @return 0 on success, -1 if the rail is unknown or an I2C access fails
+ */
 int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size)
 {
 	uint8_t reg_value, i;
@@ -103,6 +118,17 @@ int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_i
 	return 0;
 }
 
+/**
+ * @brief Read the current voltage of an AXP rail
+ * @details Looks up the control item for the named rail, checks the rail's enable
+ *          bit, reads the configuration register, and converts the raw register
+ *          value back to millivolts using the rail's step table.
+ * @param pmu AXP PMIC device handle
+ * @param name Name of the rail to query
+ * @param axp_ctrl_tbl Table of AXP control items describing the rail registers
+ * @param axp_ctrl_tbl_size Number of entries in axp_ctrl_tbl
+ * @return Current rail voltage in millivolts, 0 if the rail is disabled, or -1 on error
+ */
 int axp_get_vol(axp_pmu_t *pmu, char *name, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size)
 {
 	uint8_t reg_value, i;
