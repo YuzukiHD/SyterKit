@@ -33,7 +33,7 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	phy_reset = syterkit_dt_cells(node, "allwinner,phy-reset", 2);
 	clock_gate = syterkit_dt_cells(node, "allwinner,clock-gate", 2);
 	reset = syterkit_dt_cells(node, "allwinner,reset", 2);
-	if (reg == NULL || id == NULL || interrupt == NULL || phy_clock == NULL || phy_reset == NULL || clock_gate == NULL || reset == NULL)
+	if (reg == NULL || id == NULL || phy_clock == NULL || phy_reset == NULL || clock_gate == NULL || reset == NULL)
 		return DRIVER_ERROR_INVALID;
 
 	usb_id = dt2c_fdt32_to_cpu(id[0]);
@@ -47,7 +47,8 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	config.dt_node = node;
 	config.base = (uintptr_t)dt2c_fdt32_to_cpu(reg[0]);
 	config.id = (uint8_t)usb_id;
-	config.irq = dt2c_fdt32_to_cpu(interrupt[0]);
+	if (interrupt != NULL)
+		config.irq = dt2c_fdt32_to_cpu(interrupt[0]);
 	config.phy_clock_reg_base = (uintptr_t)dt2c_fdt32_to_cpu(phy_clock[0]);
 	config.phy_clock_gate_offset = (uint8_t)phy_clock_gate_offset;
 	config.phy_reset_offset = (uint8_t)phy_reset_offset;
@@ -55,7 +56,7 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	config.clock_gate_offset = (uint8_t)clock_gate_offset;
 	config.reset_offset = (uint8_t)reset_offset;
 
-	if (config.base == 0U || config.irq == 0U || config.phy_clock_reg_base == 0U || config.clock_gate_reg_base == 0U ||
+	if (config.base == 0U || config.phy_clock_reg_base == 0U || config.clock_gate_reg_base == 0U ||
 	    dt2c_fdt32_to_cpu(phy_reset[0]) != config.phy_clock_reg_base || dt2c_fdt32_to_cpu(reset[0]) != config.clock_gate_reg_base)
 		return DRIVER_ERROR_INVALID;
 

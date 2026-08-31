@@ -3,8 +3,8 @@
 menu "USB driver"
 
 config DRIVER_USB
-	bool "USB host detection support"
-	depends on DRIVER_GIC || DRIVER_CLIC
+	bool "Allwinner USB device controller support"
+	depends on DRIVER_INTC
 
 choice
 	prompt "USB driver log level"

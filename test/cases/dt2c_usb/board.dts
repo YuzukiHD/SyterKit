@@ -11,6 +11,7 @@
 		usb-invalid-id = &usb_invalid_id;
 		usb-invalid-offset = &usb_invalid_offset;
 		usb-invalid-reset = &usb_invalid_reset;
+		usb-polling = &usb_polling;
 		usb-wrong-compatible = &usb_wrong_compatible;
 	};
 
@@ -20,7 +21,7 @@
 		status = "disabled";
 
 		usb_disabled: usb@3000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0x3000 0x1000>;
 			interrupts = <63>;
 			allwinner,usb-id = <2>;
@@ -38,7 +39,7 @@
 		ranges;
 
 		usb0: usb@1000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0x1000 0x1000>;
 			interrupts = <61>;
 			allwinner,usb-id = <0>;
@@ -50,7 +51,7 @@
 		};
 
 		usb1: usb@2000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0x2000 0x1000>;
 			interrupts = <62>;
 			allwinner,usb-id = <1>;
@@ -62,7 +63,7 @@
 		};
 
 		usb_invalid_id: usb@6000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0x6000 0x1000>;
 			interrupts = <64>;
 			allwinner,usb-id = <256>;
@@ -74,7 +75,7 @@
 		};
 
 		usb_invalid_offset: usb@8000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0x8000 0x1000>;
 			interrupts = <65>;
 			allwinner,usb-id = <2>;
@@ -86,7 +87,7 @@
 		};
 
 		usb_invalid_reset: usb@a000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <0xa000 0x1000>;
 			interrupts = <66>;
 			allwinner,usb-id = <2>;
@@ -94,6 +95,17 @@
 			allwinner,phy-reset = <0xb100 2>;
 			allwinner,clock-gate = <0xb200 3>;
 			allwinner,reset = <0xb200 4>;
+			status = "okay";
+		};
+
+		usb_polling: usb@b000 {
+			compatible = "allwinner,sunxi-usb";
+			reg = <0xb000 0x1000>;
+			allwinner,usb-id = <2>;
+			allwinner,phy-clock = <0xc000 1>;
+			allwinner,phy-reset = <0xc000 2>;
+			allwinner,clock-gate = <0xc100 3>;
+			allwinner,reset = <0xc100 4>;
 			status = "okay";
 		};
 

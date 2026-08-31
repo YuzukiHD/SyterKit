@@ -163,7 +163,7 @@
 		};
 
 		usb0: usb@4100000 {
-			compatible = "allwinner,sunxi-musb";
+			compatible = "allwinner,sunxi-usb";
 			reg = <SUNXI_USB0_BASE 0x1000>;
 			interrupts = <61>;
 			allwinner,usb-id = <0>;
