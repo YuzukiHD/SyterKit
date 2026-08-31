@@ -17,6 +17,18 @@
 #define GPIO_POW_VCCIO_CTL_BIT 12U
 #define GPIO_POW_VCCIO_VAL_BIT 16U
 
+/**
+ * @brief Resolve power-mode register bits for a GPIO port
+ * @details Determines the bit positions in the Sun55iw3 power mode selector,
+ *          control, and value registers that correspond to the given GPIO port.
+ *          The shared B/H VCCIO detector uses fixed bits, ordinary banks use
+ *          their own bank index, and R_PIO ports are rejected.
+ * @param gpio GPIO pin descriptor whose port is being resolved
+ * @param sel_bit Output: bit in the mode-select register for this port
+ * @param ctl_bit Output: bit in the mode-control register for this port
+ * @param val_bit Output: bit in the mode-value register for this port
+ * @return 0 on success, -1 if gpio is invalid or the port has no power mode
+ */
 static int sunxi_gpio_v2_pow_power_bits(const gpio_mux_t *gpio, uint32_t *sel_bit, uint32_t *ctl_bit, uint32_t *val_bit)
 {
 	uint32_t port;
@@ -45,6 +57,13 @@ static int sunxi_gpio_v2_pow_power_bits(const gpio_mux_t *gpio, uint32_t *sel_bi
 	return 0;
 }
 
+/**
+ * @brief Read the I/O voltage level of a GPIO port
+ * @details Resolves the port's bit in the Sun55iw3 power mode value register and
+ *          reads it to determine whether the port is operating at 1.8 V or 3.3 V.
+ * @param gpio GPIO pin descriptor whose port voltage is queried
+ * @return GPIO_IO_VOLTAGE_1V8 or GPIO_IO_VOLTAGE_3V3 on success, -1 on error
+ */
 int sunxi_gpio_get_io_voltage(const gpio_mux_t *gpio)
 {
 	uint32_t val_bit;
@@ -58,6 +77,16 @@ int sunxi_gpio_get_io_voltage(const gpio_mux_t *gpio)
 										   (int)GPIO_IO_VOLTAGE_3V3;
 }
 
+/**
+ * @brief Set the I/O voltage level of a GPIO port
+ * @details Validates the requested voltage, programs the withstand-voltage
+ *          selector register (Sun55iw3 selector polarity is inverted: 0 selects
+ *          1.8 V), then sets the control bit to disable self-adaptation for the
+ *          port.
+ * @param gpio GPIO pin descriptor whose port voltage is configured
+ * @param voltage_uv Requested I/O voltage in microvolts (1.8 V or 3.3 V)
+ * @return 0 on success, -1 on invalid voltage or unsupported port
+ */
 int sunxi_gpio_set_io_voltage(const gpio_mux_t *gpio, uint32_t voltage_uv)
 {
 	uint32_t sel_bit;
