@@ -13,10 +13,11 @@
 	aliases {
 		sid0 = &sid0;
 		psram0 = &psram0;
-		intc0 = &clic0;
+		intc0 = &plic0;
 		uart1 = &uart1;
 		spif0 = &spif0;
 		spif-nor0 = &spif_nor0;
+		usb0 = &usb0;
 	};
 
 	chosen {
@@ -72,12 +73,24 @@
 			status = "okay";
 		};
 
-		clic0: interrupt-controller@14000000 {
-			compatible = "thead,c900-clic";
-			reg = <SUNXI_RISCV_CLIC_BASE 0x2000>;
+		plic0: interrupt-controller@10000000 {
+			compatible = "allwinner,sunxi-plic";
+			reg = <SUNXI_RISCV_PLIC_BASE 0x201000>;
 			interrupt-controller;
 			#interrupt-cells = <1>;
-			riscv,num-sources = <208>;
+			riscv,num-sources = <145>;
+			status = "okay";
+		};
+
+		usb0: usb@4100000 {
+			compatible = "allwinner,sunxi-usb";
+			reg = <SUNXI_USB0_BASE 0x1000>;
+			interrupts = <29>;
+			allwinner,usb-id = <0>;
+			allwinner,phy-clock = <(SUNXI_CCU_BASE + 0xa70) 31>;
+			allwinner,phy-reset = <(SUNXI_CCU_BASE + 0xa70) 30>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xa8c) 8>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xa8c) 24>;
 			status = "okay";
 		};
 

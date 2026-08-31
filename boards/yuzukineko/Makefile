@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 include $(srctree)/boards/Makefile.common
 apps-sram-y := app
+apps-sram-$(CONFIG_DRIVER_PLIC) += intc_test
+apps-sram-$(CONFIG_DRIVER_USB) += usb_test
 apps-efex-y := hello_world
 
 board-libs-$(CONFIG_DRIVER_PSRAM) := lib/libpsram.a
