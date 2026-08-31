@@ -9,6 +9,7 @@ void test_case_main(const char *case_dir)
 {
 	sunxi_usb_t usb0 = { 0 };
 	sunxi_usb_t usb1 = { 0 };
+	sunxi_usb_t polling = { 0 };
 	sunxi_usb_t rejected = { .base = 0xdeadbeefU };
 
 	(void)case_dir;
@@ -35,6 +36,10 @@ void test_case_main(const char *case_dir)
 	TEST_EQ(6U, usb1.clock_gate_offset);
 	TEST_EQ(7U, usb1.reset_offset);
 	TEST_ASSERT(usb0.dt_node != usb1.dt_node);
+
+	TEST_EQ(DRIVER_OK, sunxi_usb_dt_read_alias(&polling, "usb-polling"));
+	TEST_EQ(0xb000U, polling.base);
+	TEST_EQ(0U, polling.irq);
 
 	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-disabled"));
 	TEST_EQ(DRIVER_ERROR_INVALID, sunxi_usb_dt_read_alias(&rejected, "usb-invalid-id"));
