@@ -24,6 +24,14 @@
 /* The generic DRAM DT binding carries timing data only.  Keep the
  * sun300iw1 register map and scratch-memory window in the SoC driver so a
  * zero-initialized board instance cannot silently skip DRAM training. */
+/**
+ * @brief Fill in default DRAM memory and register block addresses.
+ * @details For a zero-initialized board instance, assigns the default DRAM
+ *          memory window (0x80000000, 2 GiB) and the SoC base addresses and
+ *          sizes for the CCU, AON CCU, MCTL COM/PHY, system control, PRCM and
+ *          PMU/RTC register blocks when their base addresses are zero.
+ * @param dram Pointer to the DRAM instance whose fields are defaulted.
+ */
 static void sun300iw1_dram_set_defaults(sunxi_dram_t *dram)
 {
 	if (dram->memory_base == 0U)
