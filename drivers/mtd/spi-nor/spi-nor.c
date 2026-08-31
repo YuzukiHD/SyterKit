@@ -31,6 +31,15 @@ static const spi_nor_info_t spi_nor_info_table[] = {
 		NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0, SNOR_PROTO_1_1_1, 0, 0 },
 };
 
+/**
+ * @brief Execute a SPI memory operation on the NOR flash.
+ * @details Builds a transmit buffer containing the command opcode, address bytes,
+ *          mode byte, dummy bytes, and outgoing data, then selects the SPI I/O mode
+ *          based on the operation's bus widths and hands it to the SPI controller.
+ * @param nor SPI NOR flash device
+ * @param op SPI memory operation to execute
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spi_nor_exec_op(spi_nor_t *nor, const struct spi_mem_op *op)
 {
 	uint8_t tx[SPI_NOR_MAX_HEADER];
@@ -82,6 +91,19 @@ static int spi_nor_exec_op(spi_nor_t *nor, const struct spi_mem_op *op)
 }
 
 /* Encode the legacy command-plus-buffer calls as one memory operation. */
+/**
+ * @brief Encode a legacy command-plus-buffer SPI call as a memory operation.
+ * @details Converts a raw transmit buffer (opcode, optional address, optional data)
+ *          and receive length into a struct spi_mem_op, supporting command-only,
+ *          command-with-write-data, and command-address-read transfers, with SFDP
+ *          reads getting 8 dummy cycles. Executes the result via spi_nor_exec_op.
+ * @param nor SPI NOR flash device
+ * @param txbuf Transmit buffer whose first byte is the command opcode
+ * @param txlen Length in bytes of the transmit buffer
+ * @param rxbuf Buffer to receive data, or NULL when no data is expected
+ * @param rxlen Number of bytes to receive
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spi_nor_transfer(spi_nor_t *nor, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen)
 {
 	const uint8_t *tx = (const uint8_t *)txbuf;
@@ -133,11 +155,29 @@ static int spi_nor_transfer(spi_nor_t *nor, void *txbuf, uint32_t txlen, void *r
 	return spi_nor_exec_op(nor, &op);
 }
 
+/**
+ * @brief Read a register from the SPI NOR flash.
+ * @details Sends the one-byte register read opcode and reads len bytes into buf.
+ * @param nor SPI NOR flash device
+ * @param opcode Register read opcode (e.g. RDSR)
+ * @param buf Buffer to store the read data
+ * @param len Number of bytes to read
+ * @return Result of the underlying SPI transfer
+ */
 static int spi_nor_read_reg(spi_nor_t *nor, uint8_t opcode, uint8_t *buf, uint32_t len)
 {
 	return spi_nor_transfer(nor, &opcode, 1U, buf, len);
 }
 
+/**
+ * @brief Write a register on the SPI NOR flash.
+ * @details Sends the register write opcode followed by up to two bytes of data.
+ * @param nor SPI NOR flash device
+ * @param opcode Register write opcode (e.g. WRSR)
+ * @param buf Data to write after the opcode
+ * @param len Number of data bytes (0-2)
+ * @return Result of the underlying SPI transfer, or DRIVER_ERROR_INVALID for a bad length
+ */
 static int spi_nor_write_reg(spi_nor_t *nor, uint8_t opcode, const uint8_t *buf, uint32_t len)
 {
 	uint8_t tx[1U + 2U];
@@ -417,6 +457,14 @@ static int spi_nor_set_write_enable(spi_nor_t *nor)
 	return (status & BIT(1)) != 0U ? DRIVER_OK : DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Read a little-endian dword from the SFDP basic table.
+ * @details Converts the 1-based dword index into a byte offset into the basic table
+ *          and assembles the 32-bit value from four bytes.
+ * @param sfdp Parsed SFDP structure containing the basic table
+ * @param number 1-based index of the dword to read
+ * @return The dword value, or 0 if the index is out of range
+ */
 static uint32_t spi_nor_sfdp_dword(const sfdp_t *sfdp, uint32_t number)
 {
 	const uint8_t *table;
@@ -429,6 +477,13 @@ static uint32_t spi_nor_sfdp_dword(const sfdp_t *sfdp, uint32_t number)
 	return ((uint32_t)table[3] << 24) | ((uint32_t)table[2] << 16) | ((uint32_t)table[1] << 8) | (uint32_t)table[0];
 }
 
+/**
+ * @brief Check whether the SPI controller exposes quad-capable IO pins.
+ * @details Verifies that the WP and HOLD GPIOs are configured to a peripheral mux,
+ *          which indicates the IO2/IO3 lines are wired for quad operations.
+ * @param nor SPI NOR flash device
+ * @return true if quad mode is available, false otherwise
+ */
 static bool spi_nor_quad_capable(const spi_nor_t *nor)
 {
 	const sunxi_spi_t *spi;
@@ -441,12 +496,29 @@ static bool spi_nor_quad_capable(const spi_nor_t *nor)
 	       spi->gpio.gpio_hold.mux >= GPIO_PERIPH_MUX2 && spi->gpio.gpio_hold.mux < GPIO_DISABLED;
 }
 
+/**
+ * @brief Report whether the SPI NOR supports DTR (double transfer rate).
+ * @details Always returns false; DTR is not supported by this SPI controller.
+ * @param nor SPI NOR flash device
+ * @return false
+ */
 static bool spi_nor_dtr_capable(const spi_nor_t *nor)
 {
 	(void)nor;
 	return false;
 }
 
+/**
+ * @brief Extract a read instruction (opcode and dummy cycles) from an SFDP dword.
+ * @details Shifts the selected dword and decodes the opcode and dummy-cycle count
+ *          fields, rejecting opcodes of 0 or 0xff as invalid.
+ * @param sfdp Parsed SFDP structure
+ * @param dword 1-based index of the SFDP dword to read
+ * @param shift Bit shift selecting the upper or lower instruction word (0 or 16)
+ * @param opcode Output for the decoded read opcode
+ * @param dummy Output for the decoded dummy-cycle count
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID if the opcode is unusable
+ */
 static int spi_nor_read_setting(const sfdp_t *sfdp, uint32_t dword, uint32_t shift, uint8_t *opcode, uint8_t *dummy)
 {
 	uint32_t setting;
@@ -461,6 +533,13 @@ static int spi_nor_read_setting(const sfdp_t *sfdp, uint32_t dword, uint32_t shi
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Select the read opcode appropriate for the chip's address length.
+ * @details For 4-byte address chips, maps each protocol's read opcode to its 4-byte
+ *          counterpart; otherwise returns the chip's standard read opcode.
+ * @param info SPI NOR information structure
+ * @return The read opcode to use
+ */
 static uint8_t spi_nor_read_opcode_for_address(const spi_nor_info_t *info)
 {
 	if (info == NULL || info->address_length != 4U)
@@ -487,6 +566,13 @@ static uint8_t spi_nor_read_opcode_for_address(const spi_nor_info_t *info)
 	}
 }
 
+/**
+ * @brief Enable quad reads on the SPI NOR flash.
+ * @details Depending on the chip's QE method, sets the quad-enable bit in the status
+ *          register (via write-enable, write, and busy-wait) and verifies it took effect.
+ * @param nor SPI NOR flash device
+ * @return DRIVER_OK on success or if quad is not required, otherwise a negative driver error code
+ */
 static int spi_nor_enable_quad(spi_nor_t *nor)
 {
 	spi_nor_info_t *info;
@@ -907,6 +993,14 @@ static int spi_nor_select(spi_nor_t *nor)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Detect and initialize the SPI NOR flash chip.
+ * @details Selects the chip at the configured frequency, resets it, waits until it is
+ *          not busy, and reads its information. If the read protocol uses four data
+ *          lines, quad mode is enabled; on any failure -1 is returned.
+ * @param nor SPI NOR flash device
+ * @return 0 on success, -1 if the chip could not be detected
+ */
 int spi_nor_detect(spi_nor_t *nor)
 {
 	spi_nor_info_t *info;

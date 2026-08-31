@@ -40,6 +40,14 @@ static const spi_nor_info_t spif_nor_info_table[] = {
 		NOR_OPCODE_E4K, NOR_OPCODE_E32K, NOR_OPCODE_E64K, 0, SNOR_PROTO_1_1_1, 0, 0 },
 };
 
+/**
+ * @brief Execute a SPI memory operation through the SPIF controller.
+ * @details Validates the device and controller state, then forwards the operation
+ *          to sunxi_spif_exec_op for transmission.
+ * @param nor SPIF NOR flash device
+ * @param op SPI memory operation to execute
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_exec_op(spif_nor_t *nor, const struct spi_mem_op *op)
 {
 	if (nor == NULL || nor->spif == NULL || op == NULL || !nor->spif->initialized)
@@ -48,6 +56,18 @@ static int spif_nor_exec_op(spif_nor_t *nor, const struct spi_mem_op *op)
 }
 
 /* Encode the legacy command-plus-buffer calls as one memory operation. */
+/**
+ * @brief Encode a legacy command-plus-buffer SPI call as a memory operation.
+ * @details Converts a raw transmit buffer (opcode, optional address, optional data)
+ *          and receive length into a struct spi_mem_op. SFDP reads use 8 dummy cycles
+ *          since the SPIF dummy field is counted in clock cycles.
+ * @param nor SPIF NOR flash device
+ * @param txbuf Transmit buffer whose first byte is the command opcode
+ * @param txlen Length in bytes of the transmit buffer
+ * @param rxbuf Buffer to receive data, or NULL when no data is expected
+ * @param rxlen Number of bytes to receive
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_transfer(spif_nor_t *nor, void *txbuf, uint32_t txlen, void *rxbuf, uint32_t rxlen)
 {
 	const uint8_t *tx = (const uint8_t *)txbuf;
@@ -100,11 +120,29 @@ static int spif_nor_transfer(spif_nor_t *nor, void *txbuf, uint32_t txlen, void 
 	return spif_nor_exec_op(nor, &op);
 }
 
+/**
+ * @brief Read a register from the SPIF NOR flash.
+ * @details Sends the one-byte register read opcode and reads len bytes into buf.
+ * @param nor SPIF NOR flash device
+ * @param opcode Register read opcode (e.g. RDSR)
+ * @param buf Buffer to store the read data
+ * @param len Number of bytes to read
+ * @return Result of the underlying SPI transfer
+ */
 static int spif_nor_read_reg(spif_nor_t *nor, uint8_t opcode, uint8_t *buf, uint32_t len)
 {
 	return spif_nor_transfer(nor, &opcode, 1U, buf, len);
 }
 
+/**
+ * @brief Write a register on the SPIF NOR flash.
+ * @details Sends the register write opcode followed by up to two bytes of data.
+ * @param nor SPIF NOR flash device
+ * @param opcode Register write opcode (e.g. WRSR)
+ * @param buf Data to write after the opcode
+ * @param len Number of data bytes (0-2)
+ * @return Result of the underlying SPI transfer, or DRIVER_ERROR_INVALID for a bad length
+ */
 static int spif_nor_write_reg(spif_nor_t *nor, uint8_t opcode, const uint8_t *buf, uint32_t len)
 {
 	uint8_t tx[1U + 2U];
@@ -393,6 +431,14 @@ static int spif_nor_set_write_enable(spif_nor_t *nor)
 	return (status & BIT(1)) != 0U ? DRIVER_OK : DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Read a little-endian dword from the SFDP basic table.
+ * @details Converts the 1-based dword index into a byte offset into the basic table
+ *          and assembles the 32-bit value from four bytes.
+ * @param sfdp Parsed SFDP structure containing the basic table
+ * @param number 1-based index of the dword to read
+ * @return The dword value, or 0 if the index is out of range
+ */
 static uint32_t spif_nor_sfdp_dword(const sfdp_t *sfdp, uint32_t number)
 {
 	const uint8_t *table;
@@ -405,26 +451,61 @@ static uint32_t spif_nor_sfdp_dword(const sfdp_t *sfdp, uint32_t number)
 	return ((uint32_t)table[3] << 24) | ((uint32_t)table[2] << 16) | ((uint32_t)table[1] << 8) | (uint32_t)table[0];
 }
 
+/**
+ * @brief Check whether the SPIF controller supports quad receive.
+ * @details Returns true when the controller mode advertises SPIF_RX_QUAD.
+ * @param nor SPIF NOR flash device
+ * @return true if quad RX is available, false otherwise
+ */
 static bool spif_nor_rx_quad_capable(const spif_nor_t *nor)
 {
 	return nor != NULL && nor->spif != NULL && (nor->spif->mode & SPIF_RX_QUAD) != 0U;
 }
 
+/**
+ * @brief Report whether quad mode is available on the SPIF controller.
+ * @details Delegates to spif_nor_rx_quad_capable.
+ * @param nor SPIF NOR flash device
+ * @return true if quad mode is available, false otherwise
+ */
 static bool spif_nor_quad_capable(const spif_nor_t *nor)
 {
 	return spif_nor_rx_quad_capable(nor);
 }
 
+/**
+ * @brief Check whether the SPIF controller supports quad transmit.
+ * @details Returns true when the controller mode advertises SPIF_TX_QUAD.
+ * @param nor SPIF NOR flash device
+ * @return true if quad TX is available, false otherwise
+ */
 static bool spif_nor_tx_quad_capable(const spif_nor_t *nor)
 {
 	return nor != NULL && nor->spif != NULL && (nor->spif->mode & SPIF_TX_QUAD) != 0U;
 }
 
+/**
+ * @brief Check whether the SPIF controller supports DTR mode.
+ * @details Returns true when the controller mode advertises SPIF_DTR_MODE.
+ * @param nor SPIF NOR flash device
+ * @return true if DTR is available, false otherwise
+ */
 static bool spif_nor_dtr_capable(const spif_nor_t *nor)
 {
 	return nor != NULL && nor->spif != NULL && (nor->spif->mode & SPIF_DTR_MODE) != 0U;
 }
 
+/**
+ * @brief Extract a read instruction (opcode and dummy cycles) from an SFDP dword.
+ * @details Shifts the selected dword and decodes the opcode and dummy-cycle count
+ *          fields, rejecting opcodes of 0 or 0xff as invalid.
+ * @param sfdp Parsed SFDP structure
+ * @param dword 1-based index of the SFDP dword to read
+ * @param shift Bit shift selecting the upper or lower instruction word (0 or 16)
+ * @param opcode Output for the decoded read opcode
+ * @param dummy Output for the decoded dummy-cycle count
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID if the opcode is unusable
+ */
 static int spif_nor_read_setting(const sfdp_t *sfdp, uint32_t dword, uint32_t shift, uint8_t *opcode, uint8_t *dummy)
 {
 	uint32_t setting;
@@ -439,6 +520,13 @@ static int spif_nor_read_setting(const sfdp_t *sfdp, uint32_t dword, uint32_t sh
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Select the read opcode appropriate for the chip's address length.
+ * @details For 4-byte address chips, maps each protocol's read opcode to its 4-byte
+ *          counterpart; otherwise returns the chip's standard read opcode.
+ * @param info SPI NOR information structure
+ * @return The read opcode to use
+ */
 static uint8_t spif_nor_read_opcode_for_address(const spi_nor_info_t *info)
 {
 	if (info == NULL || info->address_length != 4U)
@@ -465,6 +553,13 @@ static uint8_t spif_nor_read_opcode_for_address(const spi_nor_info_t *info)
 	}
 }
 
+/**
+ * @brief Enable quad reads on the SPIF NOR flash.
+ * @details Depending on the chip's QE method, sets the quad-enable bit in the status
+ *          register (via write-enable, write, and busy-wait) and verifies it took effect.
+ * @param nor SPIF NOR flash device
+ * @return DRIVER_OK on success or if quad is not required, otherwise a negative driver error code
+ */
 static int spif_nor_enable_quad(spif_nor_t *nor)
 {
 	spi_nor_info_t *info;
@@ -854,6 +949,16 @@ static int spif_nor_read_operation(spif_nor_t *nor, enum spi_nor_protocol proto,
 	return spif_nor_exec_op(nor, &op);
 }
 
+/**
+ * @brief Perform a single-bit (1-1-1) read from the SPIF NOR flash.
+ * @details Uses the plain 3- or 4-byte address read opcode with no dummy cycles,
+ *          independent of the configured read protocol.
+ * @param nor SPIF NOR flash device
+ * @param addr Starting address to read from
+ * @param buf Buffer to store the read data
+ * @param count Number of bytes to read
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_read_single(spif_nor_t *nor, uint32_t addr, uint8_t *buf, uint32_t count)
 {
 	uint8_t opcode;
@@ -864,6 +969,16 @@ static int spif_nor_read_single(spif_nor_t *nor, uint32_t addr, uint8_t *buf, ui
 	return spif_nor_read_operation(nor, SNOR_PROTO_1_1_1, opcode, 0U, addr, buf, count);
 }
 
+/**
+ * @brief Read bytes from the SPIF NOR flash using the configured protocol.
+ * @details Issues a read operation with the chip's selected read opcode, dummy count,
+ *          and protocol from the info structure.
+ * @param nor SPIF NOR flash device
+ * @param addr Starting address to read from
+ * @param buf Buffer to store the read data
+ * @param count Number of bytes to read
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_read_bytes(spif_nor_t *nor, uint32_t addr, uint8_t *buf, uint32_t count)
 {
 	const spi_nor_info_t *info;
@@ -874,6 +989,19 @@ static int spif_nor_read_bytes(spif_nor_t *nor, uint32_t addr, uint8_t *buf, uin
 	return spif_nor_read_operation(nor, info->read_proto, info->opcode_read, info->read_dummy, addr, buf, count);
 }
 
+/**
+ * @brief Apply timing and DTR settings to the SPIF controller.
+ * @details Builds a spif_cfg from the valid-flag mask, frequency, RX/TX DTR enables,
+ *          and sample mode/delay, then passes it to sunxi_spif_set_config.
+ * @param nor SPIF NOR flash device
+ * @param valid Bitmask of the spif_cfg fields to update
+ * @param speed_hz Clock frequency to configure
+ * @param rx_dtr Enable DTR on the receive path
+ * @param tx_dtr Enable DTR on the transmit path
+ * @param sample_mode Sample mode for the controller
+ * @param sample_delay Sample delay for the controller
+ * @return Result of the controller configuration call
+ */
 static int spif_nor_set_controller_config(spif_nor_t *nor, uint32_t valid, uint32_t speed_hz, bool rx_dtr, bool tx_dtr,
 	uint32_t sample_mode, uint32_t sample_delay)
 {
@@ -892,6 +1020,13 @@ static int spif_nor_set_controller_config(spif_nor_t *nor, uint32_t valid, uint3
 	return sunxi_spif_set_config(nor->spif, &cfg);
 }
 
+/**
+ * @brief Select the program (page write) opcode for the chip's address length.
+ * @details Returns the 4-byte program opcode when the chip uses 4-byte addresses and
+ *          the write opcode is the standard page program; otherwise returns it unchanged.
+ * @param info SPI NOR information structure
+ * @return The program opcode to use
+ */
 static uint8_t spif_nor_program_opcode(const spi_nor_info_t *info)
 {
 	if (info != NULL && info->address_length == 4U && info->opcode_write == NOR_OPCODE_PROG)
@@ -899,6 +1034,14 @@ static uint8_t spif_nor_program_opcode(const spi_nor_info_t *info)
 	return info != NULL ? info->opcode_write : NOR_OPCODE_PROG;
 }
 
+/**
+ * @brief Map a 3-byte erase opcode to its 4-byte counterpart if needed.
+ * @details When the chip uses 4-byte addresses, converts 4K/32K/64K erase opcodes to
+ *          their 4-byte variants; otherwise returns the opcode unchanged.
+ * @param info SPI NOR information structure
+ * @param opcode The erase opcode to map
+ * @return The erase opcode to use
+ */
 static uint8_t spif_nor_erase_opcode(const spi_nor_info_t *info, uint8_t opcode)
 {
 	if (info == NULL || info->address_length != 4U)
@@ -915,6 +1058,17 @@ static uint8_t spif_nor_erase_opcode(const spi_nor_info_t *info, uint8_t opcode)
 	}
 }
 
+/**
+ * @brief Write up to one page of data to the SPIF NOR flash.
+ * @details Sends write-enable, then a page-program command for the address and data,
+ *          and waits for the operation to complete. The transfer must not cross a
+ *          256-byte page boundary.
+ * @param nor SPIF NOR flash device
+ * @param addr Starting address to program
+ * @param buf Data to write
+ * @param count Number of bytes to write (1-256)
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_write_page(spif_nor_t *nor, uint32_t addr, const uint8_t *buf, uint32_t count)
 {
 	struct spi_mem_op op = { 0 };
@@ -942,6 +1096,16 @@ static int spif_nor_write_page(spif_nor_t *nor, uint32_t addr, const uint8_t *bu
 	return spif_nor_wait_for_busy(nor);
 }
 
+/**
+ * @brief Erase a block of the SPIF NOR flash.
+ * @details Sends write-enable followed by the (possibly 4-byte mapped) erase command
+ *          for the given address, then waits until the erase completes.
+ * @param nor SPIF NOR flash device
+ * @param addr Address of the block to erase
+ * @param size Size of the block in bytes
+ * @param opcode Erase opcode (e.g. E4K, E32K, E64K)
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_erase_block(spif_nor_t *nor, uint32_t addr, uint32_t size, uint8_t opcode)
 {
 	struct spi_mem_op op = { 0 };
@@ -964,6 +1128,15 @@ static int spif_nor_erase_block(spif_nor_t *nor, uint32_t addr, uint32_t size, u
 	return spif_nor_wait_for_busy(nor);
 }
 
+/**
+ * @brief Choose the largest erase size and opcode usable for training.
+ * @details Selects 64K, 32K, or 4K erases, in that order, based on which erase opcodes
+ *          the chip defines and its capacity.
+ * @param nor SPIF NOR flash device
+ * @param size Output for the chosen erase block size
+ * @param opcode Output for the chosen erase opcode
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID if no erase size is usable
+ */
 static int spif_nor_get_training_erase(const spif_nor_t *nor, uint32_t *size, uint8_t *opcode)
 {
 	const spi_nor_info_t *info;
@@ -989,6 +1162,18 @@ static int spif_nor_get_training_erase(const spif_nor_t *nor, uint32_t *size, ui
 	return DRIVER_ERROR_INVALID;
 }
 
+/**
+ * @brief Restore the original data over a previously written training area.
+ * @details Erases every block in the training area, rewrites the saved backup data in
+ *          page-size chunks, and verifies the restore by reading each chunk back.
+ * @param nor SPIF NOR flash device
+ * @param erase_size Erase block size used for the area
+ * @param training_size Total size of the training area in bytes
+ * @param erase_opcode Erase opcode for the area
+ * @param backup Buffer holding the original data
+ * @param result Scratch buffer used to verify the restored data
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_restore_training(spif_nor_t *nor, uint32_t erase_size, uint32_t training_size, uint8_t erase_opcode,
 	const uint8_t *backup, uint8_t *result)
 {
@@ -1031,6 +1216,13 @@ struct spif_nor_training {
 	uint8_t *result;
 };
 
+/**
+ * @brief Compute the safe fallback frequency for sampling training.
+ * @details Caps the device's maximum frequency at the fallback limit and raises it to
+ *          the controller's minimum speed if it is too low.
+ * @param nor SPIF NOR flash device
+ * @return The safe training frequency in Hz
+ */
 static uint32_t spif_nor_training_frequency(const spif_nor_t *nor)
 {
 	uint32_t frequency = nor->max_frequency;
@@ -1042,6 +1234,14 @@ static uint32_t spif_nor_training_frequency(const spif_nor_t *nor)
 	return frequency;
 }
 
+/**
+ * @brief Initialize the sampling-training bookkeeping and buffers.
+ * @details Determines the erase geometry, computes the training area size, and allocates
+ *          the backup, pattern, and result buffers, validating that the area fits the chip.
+ * @param nor SPIF NOR flash device
+ * @param training Training structure to initialize
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID on failure
+ */
 static int spif_nor_training_init(const spif_nor_t *nor, struct spif_nor_training *training)
 {
 	if (spif_nor_get_training_erase(nor, &training->erase_size, &training->erase_opcode) != DRIVER_OK)
@@ -1068,6 +1268,11 @@ static int spif_nor_training_init(const spif_nor_t *nor, struct spif_nor_trainin
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Free the buffers allocated for sampling training.
+ * @details Releases the result, pattern, and backup buffers in reverse allocation order.
+ * @param training Training structure whose buffers should be freed
+ */
 static void spif_nor_training_cleanup(struct spif_nor_training *training)
 {
 	free(training->result);
@@ -1075,6 +1280,15 @@ static void spif_nor_training_cleanup(struct spif_nor_training *training)
 	free(training->backup);
 }
 
+/**
+ * @brief Save the training area contents before it is overwritten.
+ * @details Configures the controller for safe single-bit reads at the given frequency
+ *          and reads the training area into the backup buffer.
+ * @param nor SPIF NOR flash device
+ * @param training Training structure with the backup buffer
+ * @param frequency Safe frequency to use for the backup read
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_backup_training(spif_nor_t *nor, const struct spif_nor_training *training, uint32_t frequency)
 {
 	int ret;
@@ -1087,6 +1301,14 @@ static int spif_nor_backup_training(spif_nor_t *nor, const struct spif_nor_train
 	return spif_nor_read_single(nor, 0U, training->backup, training->size);
 }
 
+/**
+ * @brief Write and verify the training pattern into the training area.
+ * @details Erases the training area, fills a page with a deterministic pattern, writes
+ *          it at each test offset, and confirms a read-back matches before proceeding.
+ * @param nor SPIF NOR flash device
+ * @param training Training structure holding the pattern and result buffers
+ * @return DRIVER_OK on success, DRIVER_ERROR_INVALID if the write or verify fails
+ */
 static int spif_nor_program_training_pattern(spif_nor_t *nor, struct spif_nor_training *training)
 {
 	uint32_t offset;
@@ -1118,6 +1340,16 @@ struct spif_nor_training_window {
 	uint32_t length;
 };
 
+/**
+ * @brief Print an ASCII diagram of the sampling-training results.
+ * @details Logs the pass/fail result per sample mode and delay, the contiguous passing
+ *          window for each mode, and the best mode/delay selected.
+ * @param samples Per-mode strings of 'O' (pass) and '-' (fail) for each delay
+ * @param windows Per-mode passing-window start and length
+ * @param best_mode Index of the best sample mode
+ * @param best_delay Index of the best sample delay
+ * @param best_length Length of the best passing window
+ */
 static void spif_nor_print_training_chart(const char samples[SPIF_NOR_TRAINING_MODES][SPIF_NOR_TRAINING_DELAYS + 1U],
 	const struct spif_nor_training_window windows[SPIF_NOR_TRAINING_MODES], uint32_t best_mode, uint32_t best_delay,
 	uint32_t best_length)
@@ -1145,6 +1377,19 @@ static void spif_nor_print_training_chart(const char samples[SPIF_NOR_TRAINING_M
 }
 #endif
 
+/**
+ * @brief Sweep sample modes and delays to find the best read timing window.
+ * @details At the target frequency, configures each sample mode and delay, reads the
+ *          training pattern, and records the longest run of passing delays as the best
+ *          window, reporting the mode, delay, and window length.
+ * @param nor SPIF NOR flash device
+ * @param training Training structure with the pattern and result buffers
+ * @param dtr Whether to test with DTR enabled
+ * @param best_mode Output for the best sample mode
+ * @param best_delay Output for the best sample delay
+ * @param best_length Output for the longest passing window length
+ * @return DRIVER_OK if a window was found, DRIVER_ERROR_INVALID otherwise
+ */
 static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_training *training, bool dtr,
 	uint32_t *best_mode, uint32_t *best_delay, uint32_t *best_length)
 {
@@ -1210,6 +1455,15 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 	return *best_length == 0U ? DRIVER_ERROR_INVALID : DRIVER_OK;
 }
 
+/**
+ * @brief Restore the training area after a training session.
+ * @details Reconfigures the controller for safe single-bit reads at the given frequency
+ *          and restores the original data over the training area.
+ * @param nor SPIF NOR flash device
+ * @param training Training structure holding the backup and area geometry
+ * @param frequency Safe frequency to use during the restore
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_restore_training_area(spif_nor_t *nor, const struct spif_nor_training *training, uint32_t frequency)
 {
 	if (spif_nor_set_controller_config(nor,
@@ -1221,6 +1475,17 @@ static int spif_nor_restore_training_area(spif_nor_t *nor, const struct spif_nor
 		nor, training->erase_size, training->size, training->erase_opcode, training->backup, training->result);
 }
 
+/**
+ * @brief Apply the selected training timing to the SPIF controller.
+ * @details Configures frequency, DTR, sample mode, and delay, and records the new
+ *          frequency in the device on success.
+ * @param nor SPIF NOR flash device
+ * @param frequency Clock frequency to configure
+ * @param dtr Enable DTR
+ * @param mode Sample mode to configure
+ * @param delay Sample delay to configure
+ * @return Result of the controller configuration call
+ */
 static int spif_nor_apply_training_config(spif_nor_t *nor, uint32_t frequency, bool dtr, uint32_t mode, uint32_t delay)
 {
 	int ret;
@@ -1233,6 +1498,14 @@ static int spif_nor_apply_training_config(spif_nor_t *nor, uint32_t frequency, b
 	return ret;
 }
 
+/**
+ * @brief Train the SPI controller sampling timing for reliable reads.
+ * @details Backs up the training area, programs a test pattern, sweeps sample modes and
+ *          delays to find the best window, restores the area, and applies the chosen
+ *          timing. On failure, falls back to 1-1-1 single-bit reads at a safe frequency.
+ * @param nor SPIF NOR flash device
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_train_sampling(spif_nor_t *nor)
 {
 	struct spif_nor_training training = { 0 };
@@ -1359,6 +1632,13 @@ static int spif_nor_select_frequency(spif_nor_t *nor, uint32_t frequency)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Select the SPIF NOR flash chip at the active frequency.
+ * @details Chooses the current frequency when set, otherwise the maximum frequency, and
+ *          selects the chip at that frequency.
+ * @param nor SPIF NOR flash device
+ * @return DRIVER_OK on success, otherwise a negative driver error code
+ */
 static int spif_nor_select(spif_nor_t *nor)
 {
 	uint32_t frequency;
@@ -1369,6 +1649,14 @@ static int spif_nor_select(spif_nor_t *nor)
 	return spif_nor_select_frequency(nor, frequency);
 }
 
+/**
+ * @brief Detect and initialize the SPIF NOR flash chip.
+ * @details Selects the chip at a safe frequency, resets it, waits until it is not busy,
+ *          reads its information, enables quad mode when required, and runs sampling
+ *          training. Returns -1 if any step fails.
+ * @param nor SPIF NOR flash device
+ * @return 0 on success, -1 if the chip could not be detected
+ */
 int spif_nor_detect(spif_nor_t *nor)
 {
 	spi_nor_info_t *info;
