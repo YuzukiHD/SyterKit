@@ -12,6 +12,7 @@
 
 	aliases {
 		sid0 = &sid0;
+		soc0 = &soc0;
 		psram0 = &psram0;
 		intc0 = &plic0;
 		uart1 = &uart1;
@@ -70,6 +71,12 @@
 			compatible = "allwinner,sunxi-sid";
 			reg = <SUNXI_SID_BASE 0x400>;
 			allwinner,efuse-hv-switch = <(SUNXI_RTC_BASE + 0x204)>;
+			status = "okay";
+		};
+
+		soc0: sysctrl@3000000 {
+			compatible = "allwinner,soc";
+			reg = <SUNXI_SYSCTRL_BASE 0x184>;
 			status = "okay";
 		};
 
