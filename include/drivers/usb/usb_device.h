@@ -404,13 +404,8 @@ static inline void usb_device_tx_clear_ep_dma(uint32_t addr)
  */
 static inline uint32_t usb_device_tx_get_write_data_ready(uint32_t addr)
 {
-	uint32_t temp = 0;
-
-	temp = readw(USBC_REG_TXCSR(addr));
-	/* TXPKTRDY is cleared by hardware after the packet is sent.  FIFO_NOT_EMPTY
-	 * is intentionally excluded here: it can remain asserted for a double
-	 * buffered endpoint after TXPKTRDY has cleared. */
-	temp &= (1 << USBC_BP_TXCSR_D_TX_READY);
+	uint32_t temp = readw(USBC_REG_TXCSR(addr));
+	temp &= (1 << USBC_BP_TXCSR_D_TX_READY) | (1 << USBC_BP_TXCSR_D_FIFO_NOT_EMPTY);
 
 	return temp;
 }
