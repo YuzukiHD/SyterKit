@@ -14,7 +14,7 @@
 #include <drivers/usb/function/usb_fel.h>
 #include <drivers/usb/function/usb_function.h>
 #include <drivers/usb/usb_manager.h>
-#include <dt-compatible/sid-dt.h>
+#include <drivers/soc/soc.h>
 
 #define SUNXI_USB_FEL_MAX_TRANSFER	(64U * 1024U)
 #define SUNXI_USB_FEL_PIO_TRANSFER_MAX	512U
@@ -148,7 +148,7 @@ static void sunxi_usb_fel_prepare_verify_response(void)
 	memset(&sunxi_usb_fel_device_response, 0, sizeof(sunxi_usb_fel_device_response));
 	memcpy(sunxi_usb_fel_device_response.magic, SUNXI_VERIFY_RSP_MAGIC,
 		sizeof(sunxi_usb_fel_device_response.magic));
-	sunxi_usb_fel_device_response.id = 0x00193700U;
+	sunxi_usb_fel_device_response.id = sunxi_soc_platform_id() >> 8;
 	sunxi_usb_fel_device_response.firmware = 1U;
 	sunxi_usb_fel_device_response.mode = DEVICE_MODE_FEL;
 	sunxi_usb_fel_device_response.data_flag = 'D';
