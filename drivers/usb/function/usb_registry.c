@@ -8,6 +8,9 @@ static const sunxi_usb_function_t *const sunxi_usb_functions[] = {
 #if defined(CONFIG_DRIVER_USB_FUNCTION_WINUSB)
 	&sunxi_usb_function_winusb,
 #endif
+#if defined(CONFIG_DRIVER_USB_FUNCTION_FEL)
+	&sunxi_usb_function_fel,
+#endif
 	NULL,
 };
 

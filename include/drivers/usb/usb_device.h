@@ -17,7 +17,8 @@
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_type_default(uint32_t addr) {
+static inline void usb_device_transfer_type_default(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_ISO_UPDATE_EN, USBC_REG_PCTL(addr));
 }
 
@@ -26,7 +27,8 @@ static inline void usb_device_transfer_type_default(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_type_ctrl(uint32_t addr) {
+static inline void usb_device_transfer_type_ctrl(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_ISO_UPDATE_EN, USBC_REG_PCTL(addr));
 }
 
@@ -35,7 +37,8 @@ static inline void usb_device_transfer_type_ctrl(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_type_iso(uint32_t addr) {
+static inline void usb_device_transfer_type_iso(uint32_t addr)
+{
 	usb_set_bit8(USBC_BP_POWER_D_ISO_UPDATE_EN, USBC_REG_PCTL(addr));
 }
 
@@ -44,7 +47,8 @@ static inline void usb_device_transfer_type_iso(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_type_int(uint32_t addr) {
+static inline void usb_device_transfer_type_int(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_ISO_UPDATE_EN, USBC_REG_PCTL(addr));
 }
 
@@ -53,7 +57,8 @@ static inline void usb_device_transfer_type_int(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_type_bulk(uint32_t addr) {
+static inline void usb_device_transfer_type_bulk(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_ISO_UPDATE_EN, USBC_REG_PCTL(addr));
 }
 
@@ -62,7 +67,8 @@ static inline void usb_device_transfer_type_bulk(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_mode_default(uint32_t addr) {
+static inline void usb_device_transfer_mode_default(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_HIGH_SPEED_EN, USBC_REG_PCTL(addr));
 }
 
@@ -71,7 +77,8 @@ static inline void usb_device_transfer_mode_default(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_mode_hs(uint32_t addr) {
+static inline void usb_device_transfer_mode_hs(uint32_t addr)
+{
 	usb_set_bit8(USBC_BP_POWER_D_HIGH_SPEED_EN, USBC_REG_PCTL(addr));
 }
 
@@ -80,7 +87,8 @@ static inline void usb_device_transfer_mode_hs(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_mode_fs(uint32_t addr) {
+static inline void usb_device_transfer_mode_fs(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_HIGH_SPEED_EN, USBC_REG_PCTL(addr));
 }
 
@@ -91,17 +99,18 @@ static inline void usb_device_transfer_mode_fs(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_transfer_mode_ls(uint32_t addr) {
+static inline void usb_device_transfer_mode_ls(uint32_t addr)
+{
 	usb_clear_bit8(USBC_BP_POWER_D_HIGH_SPEED_EN, USBC_REG_PCTL(addr));
 }
-
 
 /**
  * Configure Endpoint 0 (EP0) in default mode for the USB device.
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_config_ep0_default(uint32_t addr) {
+static inline void usb_device_ep0_config_ep0_default(uint32_t addr)
+{
 	writew(1 << USBC_BP_CSR0_D_FLUSH_FIFO, USBC_REG_CSR0(addr));
 }
 
@@ -110,7 +119,8 @@ static inline void usb_device_ep0_config_ep0_default(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_config_ep0(uint32_t addr) {
+static inline void usb_device_ep0_config_ep0(uint32_t addr)
+{
 	writew(1 << USBC_BP_CSR0_D_FLUSH_FIFO, USBC_REG_CSR0(addr));
 }
 
@@ -120,7 +130,8 @@ static inline void usb_device_ep0_config_ep0(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static inline uint32_t usb_device_ep0_get_read_data_ready(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_read_data_ready(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_CSR0_D_RX_PKT_READY, USBC_REG_CSR0(addr));
 }
 
@@ -130,7 +141,8 @@ static inline uint32_t usb_device_ep0_get_read_data_ready(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static inline uint32_t usb_device_ep0_get_write_data_ready(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_write_data_ready(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_CSR0_D_TX_PKT_READY, USBC_REG_CSR0(addr));
 }
 
@@ -139,7 +151,8 @@ static inline uint32_t usb_device_ep0_get_write_data_ready(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_read_data_half(uint32_t addr) {
+static inline void usb_device_ep0_read_data_half(uint32_t addr)
+{
 	writew(1 << USBC_BP_CSR0_D_SERVICED_RX_PKT_READY, USBC_REG_CSR0(addr));
 }
 
@@ -148,7 +161,8 @@ static inline void usb_device_ep0_read_data_half(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_read_data_complete(uint32_t addr) {
+static inline void usb_device_ep0_read_data_complete(uint32_t addr)
+{
 	writew((1 << USBC_BP_CSR0_D_SERVICED_RX_PKT_READY) | (1 << USBC_BP_CSR0_D_DATA_END), USBC_REG_CSR0(addr));
 }
 
@@ -157,7 +171,8 @@ static inline void usb_device_ep0_read_data_complete(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_write_data_half(uint32_t addr) {
+static inline void usb_device_ep0_write_data_half(uint32_t addr)
+{
 	writew(1 << USBC_BP_CSR0_D_TX_PKT_READY, USBC_REG_CSR0(addr));
 }
 
@@ -166,7 +181,8 @@ static inline void usb_device_ep0_write_data_half(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_write_data_complete(uint32_t addr) {
+static inline void usb_device_ep0_write_data_complete(uint32_t addr)
+{
 	writew((1 << USBC_BP_CSR0_D_TX_PKT_READY) | (1 << USBC_BP_CSR0_D_DATA_END), USBC_REG_CSR0(addr));
 }
 
@@ -176,7 +192,8 @@ static inline void usb_device_ep0_write_data_complete(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static inline uint32_t usb_device_ep0_get_stall(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_stall(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(addr));
 }
 
@@ -185,7 +202,8 @@ static inline uint32_t usb_device_ep0_get_stall(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_send_stall(uint32_t addr) {
+static inline void usb_device_ep0_send_stall(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_CSR0_D_SEND_STALL, USBC_REG_CSR0(addr));
 }
 
@@ -194,7 +212,8 @@ static inline void usb_device_ep0_send_stall(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_clear_stall(uint32_t addr) {
+static inline void usb_device_ep0_clear_stall(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_CSR0_D_SEND_STALL, USBC_REG_CSR0(addr));
 	usb_clear_bit16(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(addr));
 }
@@ -205,7 +224,8 @@ static inline void usb_device_ep0_clear_stall(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static inline uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_setup_end(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_CSR0_D_SETUP_END, USBC_REG_CSR0(addr));
 }
 
@@ -214,7 +234,8 @@ static inline uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_ep0_clear_setup_end(uint32_t addr) {
+static inline void usb_device_ep0_clear_setup_end(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_CSR0_D_SERVICED_SETUP_END, USBC_REG_CSR0(addr));
 }
 
@@ -223,7 +244,8 @@ static inline void usb_device_ep0_clear_setup_end(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_iso_ep_enable(uint32_t addr) {
+static inline void usb_device_tx_iso_ep_enable(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_TXCSR_D_ISO, USBC_REG_TXCSR(addr));
 }
 
@@ -232,7 +254,8 @@ static inline void usb_device_tx_iso_ep_enable(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_int_ep_enable(uint32_t addr) {
+static inline void usb_device_tx_int_ep_enable(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_TXCSR_D_ISO, USBC_REG_TXCSR(addr));
 }
 
@@ -241,7 +264,8 @@ static inline void usb_device_tx_int_ep_enable(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_bulk_ep_enable(uint32_t addr) {
+static inline void usb_device_tx_bulk_ep_enable(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_TXCSR_D_ISO, USBC_REG_TXCSR(addr));
 }
 
@@ -250,7 +274,8 @@ static inline void usb_device_tx_bulk_ep_enable(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_config_ep_default(uint32_t addr) {
+static inline void usb_device_tx_config_ep_default(uint32_t addr)
+{
 	/* Clear transmit control and status register (TXCSR) */
 	writew(0x00, USBC_REG_TXCSR(addr));
 	/* Clear transmit endpoint maximum packet size (TXMAXP) */
@@ -262,7 +287,8 @@ static inline void usb_device_tx_config_ep_default(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_clear_dma_trans(uint32_t addr) {
+static inline void usb_device_clear_dma_trans(uint32_t addr)
+{
 	uint32_t reg_val;
 
 	reg_val = readl(addr + USBC_REG_o_PCTL);
@@ -275,7 +301,8 @@ static inline void usb_device_clear_dma_trans(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_config_dma_trans(uint32_t addr) {
+static inline void usb_device_config_dma_trans(uint32_t addr)
+{
 	uint32_t reg_val;
 
 	reg_val = readl(addr + USBC_REG_o_PCTL);
@@ -291,7 +318,8 @@ static inline void usb_device_config_dma_trans(uint32_t addr) {
  * @param is_double_fifo Indicates if the EP has double buffer FIFO.
  * @param ep_maxpkt The maximum packet size of the EP.
  */
-static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint32_t is_double_fifo, uint32_t ep_maxpkt) {
+static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint32_t is_double_fifo, uint32_t ep_maxpkt)
+{
 	uint16_t reg_val = 0;
 	uint16_t temp = 0;
 
@@ -314,18 +342,18 @@ static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint
 
 	/* configure EP transfer type */
 	switch (ts_type) {
-		case USBC_TS_TYPE_ISO:
-			usb_device_tx_iso_ep_enable(addr);
-			break;
-		case USBC_TS_TYPE_INT:
-			usb_device_tx_int_ep_enable(addr);
-			break;
-		case USBC_TS_TYPE_BULK:
-			usb_device_tx_bulk_ep_enable(addr);
-			break;
-		default:
-			usb_device_tx_bulk_ep_enable(addr);
-			break;
+	case USBC_TS_TYPE_ISO:
+		usb_device_tx_iso_ep_enable(addr);
+		break;
+	case USBC_TS_TYPE_INT:
+		usb_device_tx_int_ep_enable(addr);
+		break;
+	case USBC_TS_TYPE_BULK:
+		usb_device_tx_bulk_ep_enable(addr);
+		break;
+	default:
+		usb_device_tx_bulk_ep_enable(addr);
+		break;
 	}
 }
 
@@ -334,7 +362,8 @@ static inline void usb_device_tx_config_ep(uint32_t addr, uint32_t ts_type, uint
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_config_ep_dma(uint32_t addr) {
+static inline void usb_device_tx_config_ep_dma(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	/* set auto_set, tx_mode, dma_tx_en, and mode1 bits in TX CSR register */
@@ -351,7 +380,8 @@ static inline void usb_device_tx_config_ep_dma(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_clear_ep_dma(uint32_t addr) {
+static inline void usb_device_tx_clear_ep_dma(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	/* clear auto_set, dma_tx_en, and mode1 bits in TX CSR register */
@@ -372,11 +402,15 @@ static inline void usb_device_tx_clear_ep_dma(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the write data ready flag.
  */
-static inline uint32_t usb_device_tx_get_write_data_ready(uint32_t addr) {
+static inline uint32_t usb_device_tx_get_write_data_ready(uint32_t addr)
+{
 	uint32_t temp = 0;
 
 	temp = readw(USBC_REG_TXCSR(addr));
-	temp &= (1 << USBC_BP_TXCSR_D_TX_READY) | (1 << USBC_BP_TXCSR_D_FIFO_NOT_EMPTY);
+	/* TXPKTRDY is cleared by hardware after the packet is sent.  FIFO_NOT_EMPTY
+	 * is intentionally excluded here: it can remain asserted for a double
+	 * buffered endpoint after TXPKTRDY has cleared. */
+	temp &= (1 << USBC_BP_TXCSR_D_TX_READY);
 
 	return temp;
 }
@@ -387,7 +421,8 @@ static inline uint32_t usb_device_tx_get_write_data_ready(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the FIFO empty flag.
  */
-static inline uint32_t usb_device_tx_get_write_data_ready_fifo_empty(uint32_t addr) {
+static inline uint32_t usb_device_tx_get_write_data_ready_fifo_empty(uint32_t addr)
+{
 	uint32_t temp = 0;
 
 	temp = readw(USBC_REG_TXCSR(addr));
@@ -401,7 +436,8 @@ static inline uint32_t usb_device_tx_get_write_data_ready_fifo_empty(uint32_t ad
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_write_data_half(uint32_t addr) {
+static inline void usb_device_tx_write_data_half(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	ep_csr = readw(USBC_REG_TXCSR(addr));
@@ -415,7 +451,8 @@ static inline void usb_device_tx_write_data_half(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_write_data_complete(uint32_t addr) {
+static inline void usb_device_tx_write_data_complete(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	ep_csr = readw(USBC_REG_TXCSR(addr));
@@ -429,7 +466,8 @@ static inline void usb_device_tx_write_data_complete(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_send_stall(uint32_t addr) {
+static inline void usb_device_tx_send_stall(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_TXCSR_D_SEND_STALL, USBC_REG_TXCSR(addr));
 }
 
@@ -439,7 +477,8 @@ static inline void usb_device_tx_send_stall(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the stall flag.
  */
-static inline uint32_t usb_device_tx_get_ep_stall(uint32_t addr) {
+static inline uint32_t usb_device_tx_get_ep_stall(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_TXCSR_D_SENT_STALL, USBC_REG_TXCSR(addr));
 }
 
@@ -448,7 +487,8 @@ static inline uint32_t usb_device_tx_get_ep_stall(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_tx_clear_stall(uint32_t addr) {
+static inline void usb_device_tx_clear_stall(uint32_t addr)
+{
 	uint32_t reg_val;
 
 	reg_val = readw(USBC_REG_TXCSR(addr));
@@ -461,7 +501,8 @@ static inline void usb_device_tx_clear_stall(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_rx_enable_iso_ep(uint32_t addr) {
+static inline void usb_device_rx_enable_iso_ep(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_RXCSR_D_ISO, USBC_REG_RXCSR(addr));
 }
 
@@ -470,7 +511,8 @@ static inline void usb_device_rx_enable_iso_ep(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_rx_enable_int_ep(uint32_t addr) {
+static inline void usb_device_rx_enable_int_ep(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_RXCSR_D_ISO, USBC_REG_RXCSR(addr));
 }
 
@@ -479,7 +521,8 @@ static inline void usb_device_rx_enable_int_ep(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_rx_enable_bulk_ep(uint32_t addr) {
+static inline void usb_device_rx_enable_bulk_ep(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_RXCSR_D_ISO, USBC_REG_RXCSR(addr));
 }
 
@@ -488,7 +531,8 @@ static inline void usb_device_rx_enable_bulk_ep(uint32_t addr) {
  *
  * @param addr The address of the USB device.
  */
-static inline void usb_device_rx_config_ep_default(uint32_t addr) {
+static inline void usb_device_rx_config_ep_default(uint32_t addr)
+{
 	/* clear tx csr */
 	writew(0x00, USBC_REG_RXCSR(addr));
 
@@ -504,7 +548,8 @@ static inline void usb_device_rx_config_ep_default(uint32_t addr) {
  * @param is_double_fifo Flag indicating whether the endpoint has a double FIFO.
  * @param ep_maxpkt The maximum packet size of the endpoint.
  */
-static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint32_t is_double_fifo, uint32_t ep_maxpkt) {
+static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint32_t is_double_fifo, uint32_t ep_maxpkt)
+{
 	uint16_t reg_val = 0;
 	uint16_t temp = 0;
 
@@ -512,7 +557,8 @@ static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint
 	writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr));
 
 	if (is_double_fifo) {
-		writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr));
+		writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO),
+			USBC_REG_RXCSR(addr));
 	}
 
 	/* config tx ep max packet */
@@ -524,18 +570,18 @@ static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint
 
 	/* config ep transfer type */
 	switch (ts_type) {
-		case USBC_TS_TYPE_ISO:
-			usb_device_rx_enable_iso_ep(addr);
-			break;
-		case USBC_TS_TYPE_INT:
-			usb_device_rx_enable_int_ep(addr);
-			break;
-		case USBC_TS_TYPE_BULK:
-			usb_device_rx_enable_bulk_ep(addr);
-			break;
-		default:
-			usb_device_rx_enable_bulk_ep(addr);
-			break;
+	case USBC_TS_TYPE_ISO:
+		usb_device_rx_enable_iso_ep(addr);
+		break;
+	case USBC_TS_TYPE_INT:
+		usb_device_rx_enable_int_ep(addr);
+		break;
+	case USBC_TS_TYPE_BULK:
+		usb_device_rx_enable_bulk_ep(addr);
+		break;
+	default:
+		usb_device_rx_enable_bulk_ep(addr);
+		break;
 	}
 }
 
@@ -544,7 +590,8 @@ static inline void usb_device_rx_config_ep(uint32_t addr, uint32_t ts_type, uint
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_config_ep_dma(uint32_t addr) {
+static inline void usb_device_rx_config_ep_dma(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	/* auto_clear, dma_rx_en, mode0 */
@@ -560,7 +607,8 @@ static inline void usb_device_rx_config_ep_dma(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_clear_ep_dma(uint32_t addr) {
+static inline void usb_device_rx_clear_ep_dma(uint32_t addr)
+{
 	uint16_t ep_csr = 0;
 
 	/*auto_clear, dma_rx_en, mode0*/
@@ -577,7 +625,8 @@ static inline void usb_device_rx_clear_ep_dma(uint32_t addr) {
  * @param addr The address of the usb device.
  * @return Returns 1 if data is ready, 0 otherwise.
  */
-static inline uint32_t usb_device_rx_get_read_data_ready(uint32_t addr) {
+static inline uint32_t usb_device_rx_get_read_data_ready(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_RXCSR_D_RX_PKT_READY, USBC_REG_RXCSR(addr));
 }
 
@@ -586,7 +635,8 @@ static inline uint32_t usb_device_rx_get_read_data_ready(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_read_data_half(uint32_t addr) {
+static inline void usb_device_rx_read_data_half(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/*overrun, dataerr is used in iso transfer*/
@@ -602,7 +652,8 @@ static inline void usb_device_rx_read_data_half(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_read_data_complete(uint32_t addr) {
+static inline void usb_device_rx_read_data_complete(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/*overrun, dataerr is used in iso transfer*/
@@ -620,18 +671,19 @@ static inline void usb_device_rx_read_data_complete(uint32_t addr) {
  * @param ep_type The type of endpoint to write to.
  * @return Returns 0 if successful, -1 otherwise.
  */
-static inline int usb_device_write_data_half(uint32_t addr, uint32_t ep_type) {
+static inline int usb_device_write_data_half(uint32_t addr, uint32_t ep_type)
+{
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			usb_device_ep0_write_data_half(addr);
-			break;
-		case USBC_EP_TYPE_TX:
-			usb_device_tx_write_data_half(addr);
-			break;
-		case USBC_EP_TYPE_RX:
-			return -1;
-		default:
-			return -1;
+	case USBC_EP_TYPE_EP0:
+		usb_device_ep0_write_data_half(addr);
+		break;
+	case USBC_EP_TYPE_TX:
+		usb_device_tx_write_data_half(addr);
+		break;
+	case USBC_EP_TYPE_RX:
+		return -1;
+	default:
+		return -1;
 	}
 
 	return 0;
@@ -644,21 +696,22 @@ static inline int usb_device_write_data_half(uint32_t addr, uint32_t ep_type) {
  * @param ep_type The type of endpoint to write to.
  * @return Returns 0 if successful, -1 otherwise.
  */
-static inline int usb_device_write_data_complete(uint32_t addr, uint32_t ep_type) {
+static inline int usb_device_write_data_complete(uint32_t addr, uint32_t ep_type)
+{
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			usb_device_ep0_write_data_complete(addr);
-			break;
+	case USBC_EP_TYPE_EP0:
+		usb_device_ep0_write_data_complete(addr);
+		break;
 
-		case USBC_EP_TYPE_TX:
-			usb_device_tx_write_data_complete(addr);
-			break;
+	case USBC_EP_TYPE_TX:
+		usb_device_tx_write_data_complete(addr);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			return -1;
+	case USBC_EP_TYPE_RX:
+		return -1;
 
-		default:
-			return -1;
+	default:
+		return -1;
 	}
 
 	return 0;
@@ -671,21 +724,22 @@ static inline int usb_device_write_data_complete(uint32_t addr, uint32_t ep_type
  * @param ep_type The type of endpoint to read from.
  * @return Returns 0 if successful, -1 otherwise.
  */
-static inline int usb_device_read_data_half(uint32_t addr, uint32_t ep_type) {
+static inline int usb_device_read_data_half(uint32_t addr, uint32_t ep_type)
+{
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			usb_device_ep0_read_data_half(addr);
-			break;
+	case USBC_EP_TYPE_EP0:
+		usb_device_ep0_read_data_half(addr);
+		break;
 
-		case USBC_EP_TYPE_TX:
-			return -1;
+	case USBC_EP_TYPE_TX:
+		return -1;
 
-		case USBC_EP_TYPE_RX:
-			usb_device_rx_read_data_half(addr);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_device_rx_read_data_half(addr);
+		break;
 
-		default:
-			return -1;
+	default:
+		return -1;
 	}
 
 	return 0;
@@ -698,21 +752,22 @@ static inline int usb_device_read_data_half(uint32_t addr, uint32_t ep_type) {
  * @param ep_type The type of endpoint to read from.
  * @return Returns 0 if successful, -1 otherwise.
  */
-static inline int usb_device_read_data_complete(uint32_t addr, uint32_t ep_type) {
+static inline int usb_device_read_data_complete(uint32_t addr, uint32_t ep_type)
+{
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			usb_device_ep0_read_data_complete(addr);
-			break;
+	case USBC_EP_TYPE_EP0:
+		usb_device_ep0_read_data_complete(addr);
+		break;
 
-		case USBC_EP_TYPE_TX:
-			return -1;
+	case USBC_EP_TYPE_TX:
+		return -1;
 
-		case USBC_EP_TYPE_RX:
-			usb_device_rx_read_data_complete(addr);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_device_rx_read_data_complete(addr);
+		break;
 
-		default:
-			return -1;
+	default:
+		return -1;
 	}
 
 	return 0;
@@ -723,7 +778,8 @@ static inline int usb_device_read_data_complete(uint32_t addr, uint32_t ep_type)
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_send_stall(uint32_t addr) {
+static inline void usb_device_rx_send_stall(uint32_t addr)
+{
 	usb_set_bit16(USBC_BP_RXCSR_D_SEND_STALL, USBC_REG_RXCSR(addr));
 }
 
@@ -733,7 +789,8 @@ static inline void usb_device_rx_send_stall(uint32_t addr) {
  * @param addr The address of the usb device.
  * @return Returns 1 if stalled, 0 otherwise.
  */
-static inline uint32_t usb_device_rx_get_ep_stall(uint32_t addr) {
+static inline uint32_t usb_device_rx_get_ep_stall(uint32_t addr)
+{
 	return usb_get_bit16(USBC_BP_RXCSR_D_SENT_STALL, USBC_REG_RXCSR(addr));
 }
 
@@ -742,7 +799,8 @@ static inline uint32_t usb_device_rx_get_ep_stall(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_clear_stall(uint32_t addr) {
+static inline void usb_device_rx_clear_stall(uint32_t addr)
+{
 	usb_clear_bit16(USBC_BP_RXCSR_D_SEND_STALL, USBC_REG_RXCSR(addr));
 	usb_clear_bit16(USBC_BP_RXCSR_D_SENT_STALL, USBC_REG_RXCSR(addr));
 }
@@ -752,7 +810,8 @@ static inline void usb_device_rx_clear_stall(uint32_t addr) {
  *
  * @param addr The address of the device.
  */
-static inline void usb_device_ep0_flush_fifo(uint32_t addr) {
+static inline void usb_device_ep0_flush_fifo(uint32_t addr)
+{
 	writew(1 << USBC_BP_CSR0_D_FLUSH_FIFO, USBC_REG_CSR0(addr));
 }
 
@@ -761,7 +820,8 @@ static inline void usb_device_ep0_flush_fifo(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_tx_flush_fifo(uint32_t addr) {
+static inline void usb_device_tx_flush_fifo(uint32_t addr)
+{
 	writew((1 << USBC_BP_TXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_TXCSR_D_FLUSH_FIFO), USBC_REG_TXCSR(addr));
 }
 
@@ -770,7 +830,8 @@ static inline void usb_device_tx_flush_fifo(uint32_t addr) {
  *
  * @param addr The address of the usb device.
  */
-static inline void usb_device_rx_flush_fifo(uint32_t addr) {
+static inline void usb_device_rx_flush_fifo(uint32_t addr)
+{
 	writew((1 << USBC_BP_RXCSR_D_CLEAR_DATA_TOGGLE) | (1 << USBC_BP_RXCSR_D_FLUSH_FIFO), USBC_REG_RXCSR(addr));
 }
 
@@ -832,7 +893,8 @@ uint32_t usb_device_query_power_status(uintptr_t husb);
  * @param ep_maxpkt The maximum packet size of the endpoint.
  * @return 0 on success, -1 on failure.
  */
-int usb_device_config_ep(uintptr_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
+int usb_device_config_ep(
+	uintptr_t husb, uint32_t ts_type, uint32_t ep_type, uint32_t is_double_fifo, uint32_t ep_maxpkt);
 
 /**
  * Configure a default endpoint of the USB device.
@@ -965,6 +1027,5 @@ int usb_device_iso_update_enable(uintptr_t husb);
  * @param ep_type The endpoint type.
  */
 void usb_device_flush_fifo(uintptr_t husb, uint32_t ep_type);
-
 
 #endif /* __DRIVERS_USB_DEVICE_H__ */

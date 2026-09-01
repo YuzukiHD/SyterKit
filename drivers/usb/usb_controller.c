@@ -19,7 +19,8 @@ static uint32_t usbc_base_address[USBC_MAX_CTL_NUM];
 static usb_controller_otg_t usbc_otg_array[USBC_MAX_OPEN_NUM];
 static fifo_info_t usbc_info_g;
 
-int usb_controller_set_base(uint32_t otg_no, uint32_t base) {
+int usb_controller_set_base(uint32_t otg_no, uint32_t base)
+{
 	if (otg_no >= USBC_MAX_CTL_NUM || base == 0U)
 		return -1;
 
@@ -27,7 +28,8 @@ int usb_controller_set_base(uint32_t otg_no, uint32_t base) {
 	return 0;
 }
 
-uintptr_t usb_controller_open_otg(uint32_t otg_no) {
+uintptr_t usb_controller_open_otg(uint32_t otg_no)
+{
 	usb_controller_otg_t *usbc_otg = usbc_otg_array;
 
 	if (otg_no >= USBC_MAX_CTL_NUM) {
@@ -39,11 +41,12 @@ uintptr_t usb_controller_open_otg(uint32_t otg_no) {
 	usbc_otg[otg_no].port_num = otg_no;
 	usbc_otg[otg_no].base_addr = usbc_base_address[otg_no];
 
-	return (uintptr_t) (&(usbc_otg[otg_no]));
+	return (uintptr_t)(&(usbc_otg[otg_no]));
 }
 
-int usb_controller_close_otg(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+int usb_controller_close_otg(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	if (usbc_otg == NULL) {
 		return -1;
 	}
@@ -51,7 +54,8 @@ int usb_controller_close_otg(uintptr_t husb) {
 	return 0;
 }
 
-static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val) {
+static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val)
+{
 	uint32_t temp = reg_val;
 	temp &= ~(1 << USBC_BP_ISCR_VBUS_CHANGE_DETECT);
 	temp &= ~(1 << USBC_BP_ISCR_ID_CHANGE_DETECT);
@@ -59,7 +63,8 @@ static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val) {
 	return temp;
 }
 
-static void usb_controller_force_id_low(uint32_t addr) {
+static void usb_controller_force_id_low(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -70,7 +75,8 @@ static void usb_controller_force_id_low(uint32_t addr) {
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
-static void usb_controller_force_id_high(uint32_t addr) {
+static void usb_controller_force_id_high(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/* Write 00 first, then 10 */
@@ -80,7 +86,8 @@ static void usb_controller_force_id_high(uint32_t addr) {
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
-static void usb_controller_force_id_disable(uint32_t addr) {
+static void usb_controller_force_id_disable(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -90,23 +97,25 @@ static void usb_controller_force_id_disable(uint32_t addr) {
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
-void usb_controller_force_id_status(uintptr_t husb, uint32_t id_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_force_id_status(uintptr_t husb, uint32_t id_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	switch (id_type) {
-		case USBC_ID_TYPE_HOST:
-			usb_controller_force_id_low(usbc_otg->base_addr);
-			break;
-		case USBC_ID_TYPE_DEVICE:
-			usb_controller_force_id_high(usbc_otg->base_addr);
-			break;
-		default:
-			usb_controller_force_id_disable(usbc_otg->base_addr);
-			break;
+	case USBC_ID_TYPE_HOST:
+		usb_controller_force_id_low(usbc_otg->base_addr);
+		break;
+	case USBC_ID_TYPE_DEVICE:
+		usb_controller_force_id_high(usbc_otg->base_addr);
+		break;
+	default:
+		usb_controller_force_id_disable(usbc_otg->base_addr);
+		break;
 	}
 }
 
-static void usb_controller_force_vbus_valid_disable(uint32_t addr) {
+static void usb_controller_force_vbus_valid_disable(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/* Write 00 first, then 10 */
@@ -116,7 +125,8 @@ static void usb_controller_force_vbus_valid_disable(uint32_t addr) {
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
-static void usb_controller_force_vbus_valid_low(uint32_t addr) {
+static void usb_controller_force_vbus_valid_low(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	/* Write 00 first, then 10 */
@@ -127,7 +137,8 @@ static void usb_controller_force_vbus_valid_low(uint32_t addr) {
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
-static void usb_controller_force_vbus_valid_high(uint32_t addr) {
+static void usb_controller_force_vbus_valid_high(uint32_t addr)
+{
 	uint32_t reg_val = 0;
 
 	reg_val = read32(USBC_REG_ISCR(addr));
@@ -137,24 +148,26 @@ static void usb_controller_force_vbus_valid_high(uint32_t addr) {
 }
 
 /* force vbus valid to (vbus_type) */
-void usb_controller_force_vbus_valid(uintptr_t husb, uint32_t vbus_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_force_vbus_valid(uintptr_t husb, uint32_t vbus_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	switch (vbus_type) {
-		case USBC_VBUS_TYPE_LOW:
-			usb_controller_force_vbus_valid_low(usbc_otg->base_addr);
-			break;
-		case USBC_VBUS_TYPE_HIGH:
-			usb_controller_force_vbus_valid_high(usbc_otg->base_addr);
-			break;
-		default:
-			usb_controller_force_vbus_valid_disable(usbc_otg->base_addr);
-			break;
+	case USBC_VBUS_TYPE_LOW:
+		usb_controller_force_vbus_valid_low(usbc_otg->base_addr);
+		break;
+	case USBC_VBUS_TYPE_HIGH:
+		usb_controller_force_vbus_valid_high(usbc_otg->base_addr);
+		break;
+	default:
+		usb_controller_force_vbus_valid_disable(usbc_otg->base_addr);
+		break;
 	}
 }
 
-void usb_controller_id_pull_enable(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_id_pull_enable(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -164,8 +177,9 @@ void usb_controller_id_pull_enable(uintptr_t husb) {
 	writel(reg_val, USBC_REG_ISCR(usbc_otg->base_addr));
 }
 
-void usb_controller_id_pull_disable(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_id_pull_disable(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -175,8 +189,9 @@ void usb_controller_id_pull_disable(uintptr_t husb) {
 	writel(reg_val, USBC_REG_ISCR(usbc_otg->base_addr));
 }
 
-void usb_controller_dpdm_pull_enable(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_dpdm_pull_enable(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -186,8 +201,9 @@ void usb_controller_dpdm_pull_enable(uintptr_t husb) {
 	writel(reg_val, USBC_REG_ISCR(usbc_otg->base_addr));
 }
 
-void usb_controller_dpdm_pull_disable(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_dpdm_pull_disable(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
@@ -197,8 +213,9 @@ void usb_controller_dpdm_pull_disable(uintptr_t husb) {
 	writel(reg_val, USBC_REG_ISCR(usbc_otg->base_addr));
 }
 
-void usb_controller_select_bus(uintptr_t husb, uint32_t io_type, uint32_t ep_type, uint32_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_select_bus(uintptr_t husb, uint32_t io_type, uint32_t ep_type, uint32_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 	if (usbc_otg == NULL) {
 		return;
@@ -207,7 +224,7 @@ void usb_controller_select_bus(uintptr_t husb, uint32_t io_type, uint32_t ep_typ
 	if (io_type == USBC_IO_TYPE_DMA) {
 		if (ep_type == USBC_EP_TYPE_TX) {
 			reg_val |= ((ep_index - 0x01) << 1) << USBC_BP_VEND0_DRQ_SEL; /*drq_sel*/
-			reg_val |= 0x1 << USBC_BP_VEND0_BUS_SEL;					  /*io_dma*/
+			reg_val |= 0x1 << USBC_BP_VEND0_BUS_SEL; /*io_dma*/
 		} else {
 			reg_val |= ((ep_index << 1) - 0x01) << USBC_BP_VEND0_DRQ_SEL;
 			reg_val |= 0x1 << USBC_BP_VEND0_BUS_SEL;
@@ -218,8 +235,9 @@ void usb_controller_select_bus(uintptr_t husb, uint32_t io_type, uint32_t ep_typ
 	writeb(reg_val, USBC_REG_VEND0(usbc_otg->base_addr));
 }
 
-void usb_controller_int_disable_usb_misc_all(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_disable_usb_misc_all(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
@@ -228,31 +246,33 @@ void usb_controller_int_disable_usb_misc_all(uintptr_t husb) {
 	writeb(0, USBC_REG_INTUSBE(usbc_otg->base_addr));
 }
 
-void usb_controller_int_disable_ep_all(uintptr_t husb, uint32_t ep_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_disable_ep_all(uintptr_t husb, uint32_t ep_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_TX:
-			usb_controller_int_disable_tx_all(usbc_otg->base_addr);
-			break;
+	case USBC_EP_TYPE_TX:
+		usb_controller_int_disable_tx_all(usbc_otg->base_addr);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_int_disable_rx_all(usbc_otg->base_addr);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_int_disable_rx_all(usbc_otg->base_addr);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return;
 }
 
-void usb_controller_int_enable_usb_misc_uint(uintptr_t husb, uint32_t mask) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_enable_usb_misc_uint(uintptr_t husb, uint32_t mask)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	if (usbc_otg == NULL) {
@@ -264,8 +284,9 @@ void usb_controller_int_enable_usb_misc_uint(uintptr_t husb, uint32_t mask) {
 	writeb(reg_val, USBC_REG_INTUSBE(usbc_otg->base_addr));
 }
 
-void usb_controller_int_disable_usb_misc_uint(uintptr_t husb, uint32_t mask) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_disable_usb_misc_uint(uintptr_t husb, uint32_t mask)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t reg_val = 0;
 
 	if (usbc_otg == NULL) {
@@ -277,31 +298,33 @@ void usb_controller_int_disable_usb_misc_uint(uintptr_t husb, uint32_t mask) {
 	writeb(reg_val, USBC_REG_INTUSBE(usbc_otg->base_addr));
 }
 
-void usb_controller_int_enable_ep(uintptr_t husb, uint32_t ep_type, uint32_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_enable_ep(uintptr_t husb, uint32_t ep_type, uint32_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_TX:
-			usb_controller_int_enable_tx_ep(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_TX:
+		usb_controller_int_enable_tx_ep(usbc_otg->base_addr, ep_index);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_int_enable_rx_ep(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_int_enable_rx_ep(usbc_otg->base_addr, ep_index);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return;
 }
 
-uint32_t usb_controller_get_active_ep(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_get_active_ep(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
@@ -310,8 +333,9 @@ uint32_t usb_controller_get_active_ep(uintptr_t husb) {
 	return readb(USBC_REG_EPIND(usbc_otg->base_addr));
 }
 
-void usb_controller_select_active_ep(uintptr_t husb, uint8_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_select_active_ep(uintptr_t husb, uint8_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
@@ -320,14 +344,16 @@ void usb_controller_select_active_ep(uintptr_t husb, uint8_t ep_index) {
 	writeb(ep_index, USBC_REG_EPIND(usbc_otg->base_addr));
 }
 
-void usb_controller_config_fifo_tx_ep_default(uint32_t addr) {
+void usb_controller_config_fifo_tx_ep_default(uint32_t addr)
+{
 	writew(0x00, USBC_REG_TXFIFOAD(addr));
 	writeb(0x00, USBC_REG_TXFIFOSZ(addr));
 }
 
-void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
+void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr)
+{
 	uint32_t temp = 0;
-	uint32_t size = 0;		/* fifo_size = 2^(size + 3) */
+	uint32_t size = 0; /* fifo_size = 2^(size + 3) */
 	uint32_t addr_base = 0; /*fifo_addr = addr * 8*/
 
 	/* Convert sz, aligned up to 512 bytes */
@@ -349,14 +375,16 @@ void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, ui
 	}
 }
 
-void usb_controller_config_fifo_rx_ep_default(uint32_t addr) {
+void usb_controller_config_fifo_rx_ep_default(uint32_t addr)
+{
 	writew(0x00, USBC_REG_RXFIFOAD(addr));
 	writeb(0x00, USBC_REG_RXFIFOSZ(addr));
 }
 
-void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
+void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr)
+{
 	uint32_t temp = 0;
-	uint32_t size = 0;		/* fifo_size = 2^(size + 3) */
+	uint32_t size = 0; /* fifo_size = 2^(size + 3) */
 	uint32_t addr_base = 0; /*fifo_addr = addr * 8*/
 
 	/* Convert sz, aligned up to 512 bytes */
@@ -376,104 +404,110 @@ void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, ui
 	}
 }
 
-void usb_controller_config_fifo(uintptr_t husb, uint32_t ep_type, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_config_fifo(
+	uintptr_t husb, uint32_t ep_type, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			break;
+	case USBC_EP_TYPE_EP0:
+		break;
 
-		case USBC_EP_TYPE_TX:
-			usb_controller_config_fifo_tx_ep(usbc_otg->base_addr, is_double_fifo, fifo_size, fifo_addr);
-			break;
+	case USBC_EP_TYPE_TX:
+		usb_controller_config_fifo_tx_ep(usbc_otg->base_addr, is_double_fifo, fifo_size, fifo_addr);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_config_fifo_rx_ep(usbc_otg->base_addr, is_double_fifo, fifo_size, fifo_addr);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_config_fifo_rx_ep(usbc_otg->base_addr, is_double_fifo, fifo_size, fifo_addr);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 }
 
 /* Get the EP interrupt pending flags */
-uint32_t usb_controller_int_ep_pending(uintptr_t husb, uint32_t ep_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_int_ep_pending(uintptr_t husb, uint32_t ep_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-		case USBC_EP_TYPE_TX:
-			return usb_controller_int_tx_pending(usbc_otg->base_addr);
+	case USBC_EP_TYPE_EP0:
+	case USBC_EP_TYPE_TX:
+		return usb_controller_int_tx_pending(usbc_otg->base_addr);
 
-		case USBC_EP_TYPE_RX:
-			return usb_controller_int_rx_pending(usbc_otg->base_addr);
+	case USBC_EP_TYPE_RX:
+		return usb_controller_int_rx_pending(usbc_otg->base_addr);
 
-		default:
-			return 0;
+	default:
+		return 0;
 	}
 }
 
 /* Clear the EP interrupt pending flags */
-void usb_controller_int_clear_ep_pending(uintptr_t husb, uint32_t ep_type, uint8_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_clear_ep_pending(uintptr_t husb, uint32_t ep_type, uint8_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-		case USBC_EP_TYPE_TX:
-			usb_controller_int_clear_tx_pending(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_EP0:
+	case USBC_EP_TYPE_TX:
+		usb_controller_int_clear_tx_pending(usbc_otg->base_addr, ep_index);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_int_clear_rx_pending(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_int_clear_rx_pending(usbc_otg->base_addr, ep_index);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return;
 }
 
 /* Clear the EP interrupt pending flags */
-void usb_controller_int_clear_ep_pending_all(uintptr_t husb, uint32_t ep_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_clear_ep_pending_all(uintptr_t husb, uint32_t ep_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-		case USBC_EP_TYPE_TX:
-			usb_controller_int_clear_tx_pending_all(usbc_otg->base_addr);
-			break;
+	case USBC_EP_TYPE_EP0:
+	case USBC_EP_TYPE_TX:
+		usb_controller_int_clear_tx_pending_all(usbc_otg->base_addr);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_int_clear_rx_pending_all(usbc_otg->base_addr);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_int_clear_rx_pending_all(usbc_otg->base_addr);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return;
 }
 
 /* Get the USB MISC interrupt pending flags */
-uint32_t usb_controller_int_misc_pending(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_int_misc_pending(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
@@ -483,8 +517,9 @@ uint32_t usb_controller_int_misc_pending(uintptr_t husb) {
 }
 
 /* Clear the USB MISC interrupt pending flags */
-void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
@@ -494,8 +529,9 @@ void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask) {
 }
 
 /* Clear all USB MISC interrupt pending flags */
-void usb_controller_int_clear_misc_pending_all(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_clear_misc_pending_all(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
@@ -505,31 +541,33 @@ void usb_controller_int_clear_misc_pending_all(uintptr_t husb) {
 }
 
 /* Disable a TX EP interrupt */
-void usb_controller_int_disable_ep(uintptr_t husb, uint32_t ep_type, uint8_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_int_disable_ep(uintptr_t husb, uint32_t ep_type, uint8_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_TX:
-			usb_controller_int_disable_tx_ep(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_TX:
+		usb_controller_int_disable_tx_ep(usbc_otg->base_addr, ep_index);
+		break;
 
-		case USBC_EP_TYPE_RX:
-			usb_controller_int_disable_rx_ep(usbc_otg->base_addr, ep_index);
-			break;
+	case USBC_EP_TYPE_RX:
+		usb_controller_int_disable_rx_ep(usbc_otg->base_addr, ep_index);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return;
 }
 
-uint32_t usb_controller_get_vbus_status(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_get_vbus_status(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint8_t reg_val = 0;
 
 	if (usbc_otg == NULL) {
@@ -539,47 +577,49 @@ uint32_t usb_controller_get_vbus_status(uintptr_t husb) {
 	reg_val = readb(USBC_REG_DEVCTL(usbc_otg->base_addr));
 	reg_val = reg_val >> USBC_BP_DEVCTL_VBUS;
 	switch (reg_val & 0x03) {
-		case 0x00:
-			return USBC_VBUS_STATUS_BELOW_SESSIONEND;
-		case 0x01:
-			return USBC_VBUS_STATUS_ABOVE_SESSIONEND_BELOW_AVALID;
-		case 0x02:
-			return USBC_VBUS_STATUS_ABOVE_AVALID_BELOW_VBUSVALID;
-		case 0x03:
-			return USBC_VBUS_STATUS_ABOVE_VBUSVALID;
-		default:
-			return USBC_VBUS_STATUS_BELOW_SESSIONEND;
+	case 0x00:
+		return USBC_VBUS_STATUS_BELOW_SESSIONEND;
+	case 0x01:
+		return USBC_VBUS_STATUS_ABOVE_SESSIONEND_BELOW_AVALID;
+	case 0x02:
+		return USBC_VBUS_STATUS_ABOVE_AVALID_BELOW_VBUSVALID;
+	case 0x03:
+		return USBC_VBUS_STATUS_ABOVE_VBUSVALID;
+	default:
+		return USBC_VBUS_STATUS_BELOW_SESSIONEND;
 	}
 }
 
-uint32_t usb_controller_read_len_from_fifo(uintptr_t husb, uint32_t ep_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_read_len_from_fifo(uintptr_t husb, uint32_t ep_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
 	}
 
 	switch (ep_type) {
-		case USBC_EP_TYPE_EP0:
-			return readw(USBC_REG_COUNT0(usbc_otg->base_addr));
-		case USBC_EP_TYPE_TX:
-			return 0;
-		case USBC_EP_TYPE_RX:
-			return readw(USBC_REG_RXCOUNT(usbc_otg->base_addr));
-		default:
-			return 0;
+	case USBC_EP_TYPE_EP0:
+		return readw(USBC_REG_COUNT0(usbc_otg->base_addr));
+	case USBC_EP_TYPE_TX:
+		return 0;
+	case USBC_EP_TYPE_RX:
+		return readw(USBC_REG_RXCOUNT(usbc_otg->base_addr));
+	default:
+		return 0;
 	}
 }
 
-uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	uint32_t len = 0;
 	uint32_t i32 = 0;
 	uint32_t i8 = 0;
 	uint8_t *buf8 = NULL;
 	uint32_t *buf32 = NULL;
-	uint64_t a64_fifo = (uint64_t) fifo;
+	uint64_t a64_fifo = (uint64_t)fifo;
 
 	if (usbc_otg == NULL || buff == NULL) {
 		return 0;
@@ -593,47 +633,57 @@ uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt
 	i8 = len & 0x03;
 
 	printk_trace("USB: buf addr:0x%x\n", buff);
-	while (i32--) { writel(*buf32++, a64_fifo); }
+	while (i32--) {
+		writel(*buf32++, a64_fifo);
+	}
 
 	/* Process the remaining non-4-byte part */
-	buf8 = (uint8_t *) buf32;
-	while (i8--) { writeb(*buf8++, a64_fifo); }
+	buf8 = (uint8_t *)buf32;
+	while (i8--) {
+		writeb(*buf8++, a64_fifo);
+	}
 
 	return len;
 }
 
-uint32_t usb_controller_read_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_read_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	uint32_t len = 0;
 	uint32_t i32 = 0;
 	uint32_t i8 = 0;
 	uint8_t *buf8 = NULL;
 	uint32_t *buf32 = NULL;
-	uint64_t a64_fifo = (uint64_t) fifo;
+	uint64_t a64_fifo = (uint64_t)fifo;
 
 	if (usbc_otg == NULL || buff == NULL) {
 		return 0;
 	}
 
 	/* Adjust the data */
-	buf32 = (uint32_t *) buff;
+	buf32 = (uint32_t *)buff;
 	len = cnt;
 
 	i32 = len >> 2;
 	i8 = len & 0x03;
 
 	/* Process the 4-byte part */
-	while (i32--) { *buf32++ = readl(a64_fifo); }
+	while (i32--) {
+		*buf32++ = readl(a64_fifo);
+	}
 
 	/* Process the remaining non-4-byte part */
-	buf8 = (uint8_t *) buf32;
-	while (i8--) { *buf8++ = readb(a64_fifo); }
+	buf8 = (uint8_t *)buf32;
+	while (i8--) {
+		*buf8++ = readb(a64_fifo);
+	}
 
 	return len;
 }
 
-void usb_controller_config_fifo_base(uintptr_t husb, uint32_t sram_base) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+void usb_controller_config_fifo_base(uintptr_t husb, uint32_t sram_base)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 	fifo_info_t *usbc_info = &usbc_info_g;
 	(void)sram_base;
 
@@ -648,8 +698,9 @@ void usb_controller_config_fifo_base(uintptr_t husb, uint32_t sram_base) {
 	return;
 }
 
-uint32_t usb_controller_get_port_fifo_start_addr(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_get_port_fifo_start_addr(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
@@ -666,8 +717,9 @@ uint32_t usb_controller_get_port_fifo_start_addr(uintptr_t husb) {
 	}
 }
 
-uint32_t usb_controller_get_port_fifo_size(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_get_port_fifo_size(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
@@ -684,8 +736,9 @@ uint32_t usb_controller_get_port_fifo_size(uintptr_t husb) {
 	}
 }
 
-uint32_t usb_controller_select_fifo(uintptr_t husb, uint32_t ep_index) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
+uint32_t usb_controller_select_fifo(uintptr_t husb, uint32_t ep_index)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	if (usbc_otg == NULL) {
 		return 0;
