@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
-#define pr_fmt(fmt) "sid-sun300iw1: " fmt
+#define pr_fmt(fmt) "sid-sun8iw20: " fmt
 
 /**
- * @file sid-sun300iw1.c
- * @brief Sun300iw1 eFuse SID section layout.
+ * @file sid-sun8iw20.c
+ * @brief Sun8iw20 eFuse SID section layout.
  *
  * Defines the named eFuse storage sections available on this SoC.
  */
 
-#include "sid-internal.h"
+#include "sid-platform.h"
 
 /**
- * @brief eFuse section layout for the Sun300iw1 SoC.
+ * @brief eFuse section layout for the Sun8iw20 SoC.
  *
  * Each entry names an eFuse region, its byte offset and its size in bits.
  */

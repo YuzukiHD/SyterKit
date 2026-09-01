@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
-#define pr_fmt(fmt) "sid-sun50iw9: " fmt
+#define pr_fmt(fmt) "sid-sun50iw10: " fmt
 
 /**
- * @file sid-sun50iw9.c
- * @brief Sun50iw9 eFuse SID section layout.
+ * @file sid-sun50iw10.c
+ * @brief Sun50iw10 eFuse SID section layout.
  *
  * Defines the named eFuse storage sections available on this SoC.
  */
 
-#include "sid-internal.h"
+#include "sid-platform.h"
 
 /**
- * @brief eFuse section layout for the Sun50iw9 SoC.
+ * @brief eFuse section layout for the Sun50iw10 SoC.
  *
  * Each entry names an eFuse region, its byte offset and its size in bits.
  */
