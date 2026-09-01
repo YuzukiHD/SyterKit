@@ -43,18 +43,11 @@ typedef struct sunxi_usb_function {
 	const sunxi_usb_function_ops_t *ops;
 } sunxi_usb_function_t;
 
-/**
- * @brief Find a registered USB function by its numeric type.
- *
- * @param type The function type to find.
- * @return The matching function, or NULL when it is not registered.
- */
-const sunxi_usb_function_t *sunxi_usb_function_lookup(uint32_t type);
-
 #if defined(CONFIG_DRIVER_USB_FUNCTION_WINUSB)
 /** @brief WinUSB device function implementation. */
 extern const sunxi_usb_function_t sunxi_usb_function_winusb;
 #endif
+
 #if defined(CONFIG_DRIVER_USB_FUNCTION_FEL)
 /** @brief FEL device function implementation. */
 extern const sunxi_usb_function_t sunxi_usb_function_fel;

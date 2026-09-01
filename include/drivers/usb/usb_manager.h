@@ -49,13 +49,6 @@ typedef struct sunxi_ubuf {
 void sunxi_usb_attach_function(const sunxi_usb_function_t *function);
 
 /**
- * @brief Attach a USB function selected by its legacy numeric type.
- *
- * @param device_type The legacy USB function type.
- */
-void sunxi_usb_attach_module(uint32_t device_type);
-
-/**
  * @brief Initialize the USB controller and device state.
  *
  * @return Zero on success, or a negative error code on failure.

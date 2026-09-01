@@ -733,12 +733,6 @@ void sunxi_usb_attach_function(const sunxi_usb_function_t *function)
 	printk_info("USB: selected device function %s\n", function->name);
 }
 
-/* Compatibility path for callers that still select functions by numeric type. */
-void sunxi_usb_attach_module(uint32_t device_type)
-{
-	sunxi_usb_attach_function(sunxi_usb_function_lookup(device_type));
-}
-
 int sunxi_usb_init()
 {
 	uint32_t reg_val = 0;
