@@ -43,6 +43,10 @@ static const sunxi_usb_function_ops_t *sunxi_udev_active;
 
 static uint8_t usb_dma_trans_unaliged_bytes;
 static uint8_t *usb_dma_trans_unaligned_buf;
+
+static volatile uint8_t usb_rx_deferred;
+static volatile uint8_t usb_dma_rx_active;
+
 static int dma_rec_flag;
 static uintptr_t dma_rec_addr;
 static uint32_t dma_rec_size;
@@ -118,14 +122,11 @@ static void sunxi_usb_write_complete(uintptr_t husb, uint32_t ep_type, uint32_t 
 
 	usb_device_write_data_status(husb, ep_type, complete);
 
-	/* Wait for tx packet sent out, bounded so a stalled endpoint
-	 * cannot hang the caller forever */
-	while (usb_device_get_write_data_ready(husb, ep_type) &&
-	       (time_ms() - timeout < 100))
+	while (usb_device_get_write_data_ready(husb, ep_type) && (time_ms() - timeout < 100))
 		;
 
 	if (time_ms() - timeout >= 100)
-		pr_warn("usb: ep%u write complete timed out waiting for TX ready\n", ep_type);
+		pr_warn("usb: ep%u write complete timed out waiting for TX ready\n", usb_controller_get_active_ep(husb));
 
 	if (ep_type == USBC_EP_TYPE_EP0) {
 		/* Clear data end */
@@ -162,6 +163,8 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 
 	/* Save index */
 	old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+
+	usb_dma_rx_active = 0;
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
 
 	left = buffer_size;
@@ -169,6 +172,8 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 
 	while (left) {
 		this_len = min(sunxi_udc_source.fifo_size, left);
+		printk_trace("USB: tx packet ep=%u len=0x%x buf=0x%x\n", SUNXI_USB_BULK_IN_EP_INDEX,
+			this_len, (uint32_t)(uintptr_t)(buffer + transfered));
 		this_len = usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, this_len, buffer + transfered);
 		transfered += this_len;
 		left -= this_len;
@@ -610,6 +615,16 @@ static int eprx_recv_op(void)
 	return 0;
 }
 
+/* Revisit a packet whose endpoint IRQ arrived while rx_ready_for_data was set. */
+static void sunxi_usb_process_deferred_rx(void)
+{
+	if (!usb_rx_deferred || usb_dma_rx_active || sunxi_ubuf.rx_ready_for_data)
+		return;
+
+	usb_rx_deferred = 0;
+	eprx_recv_op();
+}
+
 void sunxi_usb_attach_module(uint32_t device_type)
 {
 	const sunxi_usb_function_t *function = sunxi_usb_function_lookup(device_type);
@@ -824,8 +839,6 @@ void sunxi_usb_irq(void *data)
 	rx_irq = usb_controller_int_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
 	dma_irq = usb_dma_int_query();
 
-	pr_trace("irq\n");
-
 	/* RESET */
 	if (misc_irq & USBC_INTUSB_RESET) {
 		usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_RESET);
@@ -842,6 +855,9 @@ void sunxi_usb_irq(void *data)
 
 		usb_dma_stop(sunxi_udc_source.dma_recv_channal);
 		usb_dma_stop(sunxi_udc_source.dma_send_channal);
+
+		usb_dma_rx_active = 0;
+		usb_rx_deferred = 0;
 
 		usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
 		usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
@@ -896,7 +912,12 @@ void sunxi_usb_irq(void *data)
 		/* Clear the interrupt bit by setting it to 1 */
 		usb_controller_int_clear_ep_pending(
 			sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, SUNXI_USB_BULK_OUT_EP_INDEX);
-		eprx_recv_op();
+		if (sunxi_ubuf.rx_ready_for_data) {
+			/* A second packet arrived before the main loop consumed the first one. */
+			usb_rx_deferred = 1;
+		} else if (!usb_dma_rx_active) {
+			eprx_recv_op();
+		}
 	}
 
 	if (dma_irq & (1 << SUNXI_USB_BULK_IN_EP_INDEX)) {
@@ -923,7 +944,7 @@ void sunxi_usb_attach()
 
 	for (;;) {
 		sunxi_udev_active->state_loop(&sunxi_ubuf);
-		//__asm__ __volatile__("wfi");
+		sunxi_usb_process_deferred_rx();
 	}
 }
 
@@ -933,7 +954,9 @@ int sunxi_usb_extern_loop()
 		return -1;
 	}
 
-	return sunxi_udev_active->state_loop(&sunxi_ubuf);
+	int ret = sunxi_udev_active->state_loop(&sunxi_ubuf);
+	sunxi_usb_process_deferred_rx();
+	return ret;
 }
 
 void sunxi_usb_bulk_ep_reset()
