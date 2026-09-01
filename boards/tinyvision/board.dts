@@ -22,6 +22,7 @@
 		mmc2 = &mmc2;
 		rtc0 = &rtc0;
 		sid0 = &sid0;
+		soc0 = &soc0;
 		spi0 = &spi0;
 		spi-nand0 = &spi_nand0;
 		uart-e907 = &uart3;
@@ -168,6 +169,12 @@
 			compatible = "allwinner,sunxi-sid";
 			reg = <SUNXI_SID_BASE 0x400>;
 			allwinner,efuse-hv-switch = <(SUNXI_RTC_BASE + 0x204)>;
+			status = "okay";
+		};
+
+		soc0: sysctrl@3000000 {
+			compatible = "allwinner,soc";
+			reg = <SUNXI_SYSCRL_BASE 0x184>;
 			status = "okay";
 		};
 
