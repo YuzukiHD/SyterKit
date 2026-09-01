@@ -143,25 +143,12 @@ static void sunxi_usb_fel_clear_command(void)
 	sunxi_usb_fel_dma_done = 0U;
 }
 
-static uint32_t sunxi_usb_fel_read_chip_type(void)
-{
-	sunxi_sid_t sid;
-
-	if (sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
-		printk_error("USB FEL: failed to get SID configuration\n");
-		return 0U;
-	}
-
-	/* Allwinner BSPs define CHIPID[15:0] as the chip type. */
-	return sunxi_efuse_sram_read(&sid, 0U) & 0xffffU;
-}
-
 static void sunxi_usb_fel_prepare_verify_response(void)
 {
 	memset(&sunxi_usb_fel_device_response, 0, sizeof(sunxi_usb_fel_device_response));
 	memcpy(sunxi_usb_fel_device_response.magic, SUNXI_VERIFY_RSP_MAGIC,
 		sizeof(sunxi_usb_fel_device_response.magic));
-	sunxi_usb_fel_device_response.id = sunxi_usb_fel_read_chip_type();
+	sunxi_usb_fel_device_response.id = 0x00193700U;
 	sunxi_usb_fel_device_response.firmware = 1U;
 	sunxi_usb_fel_device_response.mode = DEVICE_MODE_FEL;
 	sunxi_usb_fel_device_response.data_flag = 'D';

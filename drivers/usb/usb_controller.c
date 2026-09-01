@@ -615,7 +615,6 @@ uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	uint32_t len = 0;
-	uint32_t i32 = 0;
 	uint32_t i8 = 0;
 	uint8_t *buf8 = NULL;
 	uint32_t *buf32 = NULL;
@@ -625,23 +624,33 @@ uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt
 		return 0;
 	}
 
-	/* Adjust the data */
+
 	buf32 = buff;
-	len = cnt;
+	len = i8 = cnt;
+
+#ifdef CONFIG_ARM
+	uint32_t i32 = 0;
 
 	i32 = len >> 2;
 	i8 = len & 0x03;
 
-	printk_trace("USB: buf addr:0x%x\n", buff);
-	while (i32--) {
-		writel(*buf32++, a64_fifo);
+	/* Unaligned ARM buffers must use byte accesses. */
+	if ((uintptr_t)buf32 & 0x03U) {
+		buf8 = (uint8_t *)buff;
+		i8 = len;
+		while (i8--)
+			writeb(*buf8++, a64_fifo);
+		return len;
 	}
+
+	while (i32--)
+		writel(*buf32++, a64_fifo);
+#endif
 
 	/* Process the remaining non-4-byte part */
 	buf8 = (uint8_t *)buf32;
-	while (i8--) {
+	while (i8--)
 		writeb(*buf8++, a64_fifo);
-	}
 
 	return len;
 }

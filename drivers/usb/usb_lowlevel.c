@@ -215,7 +215,7 @@ static int lowlevel_usb_dma_int_clear(uintptr_t husb)
  */
 static int usb_index_check(uint32_t dma_index)
 {
-	if (dma_index > SUNXI_USB_DMA_MAX) { /**< Check if the DMA index is within range */
+	if (dma_index >= SUNXI_USB_DMA_MAX) { /**< Check if the DMA index is within range */
 		printk_error("USB: dma %d is overrange\n", dma_index);
 		return -1;
 	}
