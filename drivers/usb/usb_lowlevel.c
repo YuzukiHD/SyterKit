@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <types.h>
 
 #include <common.h>
@@ -105,7 +106,8 @@ static int lowlevel_usb_dma_start(uintptr_t husb, uint32_t dma_chan, uint32_t ad
 		return -1;
 	}
 
-	if (pkt_len & 0x03) { /**< Check if the packet length is not a multiple of 4 bytes */
+	if (addr == 0U || pkt_len == 0U || (pkt_len & 0x03U)) {
+		/* The DMA engine requires a non-empty, word-sized transfer. */
 		return -1;
 	}
 
@@ -228,7 +230,11 @@ static int usb_index_check(uint32_t dma_index)
 
 int usb_dma_init(uintptr_t husb)
 {
+	if (husb == 0U)
+		return -1;
+
 	usb_hd = husb; /**< Set the USB handle */
+	memset(usb_dma_used, 0, sizeof(usb_dma_used));
 
 	return 0;
 }

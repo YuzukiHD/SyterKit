@@ -610,33 +610,30 @@ uint32_t usb_controller_read_len_from_fifo(uintptr_t husb, uint32_t ep_type)
 	}
 }
 
-uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff)
+uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, const void *buff)
 {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;
 
 	uint32_t len = 0;
+	uint32_t i32 = 0;
 	uint32_t i8 = 0;
-	uint8_t *buf8 = NULL;
-	uint32_t *buf32 = NULL;
+	const uint8_t *buf8 = NULL;
+	const uint32_t *buf32 = NULL;
 	uint64_t a64_fifo = (uint64_t)fifo;
 
 	if (usbc_otg == NULL || buff == NULL) {
 		return 0;
 	}
 
-
-	buf32 = buff;
+	buf32 = (const uint32_t *)buff;
 	len = i8 = cnt;
-
-#ifdef CONFIG_ARM
-	uint32_t i32 = 0;
 
 	i32 = len >> 2;
 	i8 = len & 0x03;
 
-	/* Unaligned ARM buffers must use byte accesses. */
+	/* Unaligned buffers must use byte accesses on strict-alignment CPUs. */
 	if ((uintptr_t)buf32 & 0x03U) {
-		buf8 = (uint8_t *)buff;
+		buf8 = (const uint8_t *)buff;
 		i8 = len;
 		while (i8--)
 			writeb(*buf8++, a64_fifo);
@@ -645,10 +642,9 @@ uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt
 
 	while (i32--)
 		writel(*buf32++, a64_fifo);
-#endif
 
 	/* Process the remaining non-4-byte part */
-	buf8 = (uint8_t *)buf32;
+	buf8 = (const uint8_t *)buf32;
 	while (i8--)
 		writeb(*buf8++, a64_fifo);
 
@@ -667,6 +663,14 @@ uint32_t usb_controller_read_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt,
 
 	if (usbc_otg == NULL || buff == NULL) {
 		return 0;
+	}
+
+	/* Strict-alignment targets cannot store FIFO words into an unaligned buffer. */
+	if ((uintptr_t)buff & 0x03U) {
+		buf8 = (uint8_t *)buff;
+		while (i8 < cnt)
+			buf8[i8++] = readb(a64_fifo);
+		return cnt;
 	}
 
 	/* Adjust the data */

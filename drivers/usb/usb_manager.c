@@ -47,10 +47,8 @@ static uint8_t *usb_dma_trans_unaligned_buf;
 
 static volatile uint8_t usb_rx_deferred;
 static volatile uint8_t usb_dma_rx_active;
+static volatile uint8_t usb_dma_rx_error;
 
-static int dma_rec_flag;
-static uintptr_t dma_rec_addr;
-static uint32_t dma_rec_size;
 static sunxi_usb_t sunxi_usb_config;
 
 static void sunxi_usb_clock_deinit(void)
@@ -79,6 +77,61 @@ static void sunxi_usb_clear_all_irq(void)
 	usb_controller_int_clear_ep_pending_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
 	usb_controller_int_clear_ep_pending_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
 	usb_controller_int_clear_misc_pending_all(sunxi_udc_source.usbc_hd);
+}
+
+/* Stop in-flight transfers before resetting software and endpoint state. */
+static void sunxi_usb_reset_transfer_state(bool notify_function)
+{
+	uint32_t old_ep_idx;
+
+	usb_dma_rx_active = 0;
+	usb_dma_rx_error = 0;
+	usb_rx_deferred = 0;
+	usb_dma_trans_unaliged_bytes = 0;
+	usb_dma_trans_unaligned_buf = NULL;
+	sunxi_ubuf.rx_req_length = 0;
+	sunxi_ubuf.rx_ready_for_data = 0;
+	sunxi_ubuf.request_size = 0;
+	sunxi_udc_source.address = 0;
+	sunxi_udc_source.speed = USB_SPEED_HIGH;
+	sunxi_udc_source.bulk_ep_max = HIGH_SPEED_EP_MAX_PACKET_SIZE;
+	sunxi_udc_source.fifo_size = BULK_FIFOSIZE;
+	sunxi_udc_source.ep0_stage = 0;
+	memset(&sunxi_udc_source.standard_reg, 0, sizeof(sunxi_udc_source.standard_reg));
+
+	if (sunxi_udc_source.usbc_hd == 0)
+		goto notify;
+
+	old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+	if (sunxi_udc_source.dma_recv_channal)
+		usb_dma_stop(sunxi_udc_source.dma_recv_channal);
+	if (sunxi_udc_source.dma_send_channal)
+		usb_dma_stop(sunxi_udc_source.dma_send_channal);
+	if (sunxi_udc_source.dma_send_channal)
+		usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, sunxi_udc_source.bulk_ep_max);
+	if (sunxi_udc_source.dma_recv_channal)
+		usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, sunxi_udc_source.bulk_ep_max);
+
+	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
+	usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
+	usb_device_flush_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
+
+	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
+	usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	usb_device_flush_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+
+	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
+	usb_device_flush_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
+	usb_device_set_address_default(sunxi_udc_source.usbc_hd);
+	if (sunxi_ubuf.rx_req_buffer != NULL && sunxi_ubuf.rx_buffer_size != 0U)
+		memset(sunxi_ubuf.rx_req_buffer, 0, sunxi_ubuf.rx_buffer_size);
+	sunxi_usb_clear_all_irq();
+	usb_dma_int_clear();
+	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
+
+notify:
+	if (notify_function && sunxi_udev_active != NULL && sunxi_udev_active->state_reset != NULL)
+		sunxi_udev_active->state_reset();
 }
 
 /**
@@ -177,7 +230,6 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 	/* Save index */
 	old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
 
-	usb_dma_rx_active = 0;
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_IN_EP_INDEX);
 
 	left = buffer_size;
@@ -185,8 +237,8 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 
 	while (left) {
 		this_len = min(sunxi_udc_source.fifo_size, left);
-		printk_trace("USB: tx packet ep=%u len=0x%x buf=0x%x\n", SUNXI_USB_BULK_IN_EP_INDEX,
-			this_len, (uint32_t)(uintptr_t)(buffer + transfered));
+		printk_trace("USB: tx packet ep=%u len=0x%x buf=0x%x\n", SUNXI_USB_BULK_IN_EP_INDEX, this_len,
+			(uint32_t)(uintptr_t)(buffer + transfered));
 		this_len = usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, this_len, buffer + transfered);
 		if (!this_len) {
 			ret = -1;
@@ -210,28 +262,42 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
  * This function reads data from endpoint 0 of the USB device and stores it in the provided buffer.
  *
  * @param buffer Pointer to the buffer where the read data will be stored.
- * @param data_type Optional parameter indicating the type of data being read.
+ * @param buffer_size Capacity of the destination buffer.
+ * @param setup_packet Whether the packet must be an 8-byte USB setup packet.
  *
  * @return Returns 0 on success, or a negative error code on failure.
  */
-static int sunxi_usb_read_ep0_data(void *buffer, uint32_t data_type)
+static int sunxi_usb_read_ep0_data(void *buffer, uint32_t buffer_size, bool setup_packet)
 {
 	uint32_t fifo_count = 0;
 	uint32_t fifo = 0;
 	int ret = 0;
 	uint32_t old_ep_index = 0;
 
+	if (buffer == NULL || buffer_size == 0U)
+		return -1;
+
 	old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
 	fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
 	fifo_count = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
-	if (!data_type) {
-		if (fifo_count != 8) {
-			printk_error("USB: ep0 fifo_count %d is not 8\n", fifo_count);
-			return -1;
-		}
+	if (setup_packet && fifo_count != sizeof(struct usb_device_request)) {
+		printk_error("USB: ep0 setup length %u is not %u\n", fifo_count,
+			(uint32_t)sizeof(struct usb_device_request));
+		ret = -1;
+		goto out;
 	}
-	usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, fifo_count, (void *)buffer);
+	if (fifo_count > buffer_size) {
+		printk_error("USB: ep0 packet length %u exceeds buffer size %u\n", fifo_count, buffer_size);
+		ret = -1;
+		goto out;
+	}
+	if (usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, fifo_count, buffer) != fifo_count) {
+		ret = -1;
+		goto out;
+	}
 	sunxi_usb_read_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+
+out:
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
 	return ret;
 }
@@ -262,8 +328,9 @@ static int sunxi_usb_perform_set_address(uint8_t address)
 	}
 	sunxi_udc_source.fifo_size = packet_size;
 	sunxi_udc_source.bulk_ep_max = packet_size;
-	usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, packet_size);
-	usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, packet_size);
+	if (usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, packet_size) != 0 ||
+		usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, packet_size) != 0)
+		return SUNXI_USB_REQ_OP_ERR;
 	return SUNXI_USB_REQ_SUCCESSED;
 }
 
@@ -281,9 +348,8 @@ static int ep0_recv_op(void)
 {
 	uint32_t old_ep_index = 0;
 	int ret = 0;
-	static uint32_t ep0_stage;
 
-	if (!ep0_stage) {
+	if (!sunxi_udc_source.ep0_stage) {
 		memset(&sunxi_udc_source.standard_reg, 0, sizeof(struct usb_device_request));
 	}
 
@@ -301,19 +367,23 @@ static int ep0_recv_op(void)
 	/* clear setup end */
 	if (usb_device_ctrl_get_setup_end(sunxi_udc_source.usbc_hd)) {
 		usb_device_ctrl_clear_setup_end(sunxi_udc_source.usbc_hd);
+		sunxi_udc_source.ep0_stage = 0;
 	}
 
 	/* Check if read data on EP0 is ready */
 	if (usb_device_get_read_data_ready(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0)) {
 		uint32_t status;
 
-		if (!ep0_stage) {
-			status = sunxi_usb_read_ep0_data(&sunxi_udc_source.standard_reg, ep0_stage);
+		if (!sunxi_udc_source.ep0_stage) {
+			status = sunxi_usb_read_ep0_data(
+				&sunxi_udc_source.standard_reg, sizeof(sunxi_udc_source.standard_reg), true);
 		} else {
-			status = sunxi_usb_read_ep0_data(sunxi_usb_ep0_buffer, ep0_stage);
+			status = sunxi_usb_read_ep0_data(sunxi_usb_ep0_buffer, sizeof(sunxi_usb_ep0_buffer), false);
 		}
 		if (status != 0) {
 			printk_error("USB: read_request failed\n");
+			sunxi_udc_source.ep0_stage = 0;
+			usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
 			ret = -1;
 			goto ep0_recv_op_err;
 		}
@@ -325,6 +395,7 @@ static int ep0_recv_op(void)
 			printk_debug("USB: set address 0x%x ok\n", sunxi_udc_source.address);
 			sunxi_udc_source.address = 0;
 		}
+		sunxi_udc_source.ep0_stage = 0;
 		goto ep0_recv_op_err;
 	}
 	/* Check data */
@@ -459,14 +530,8 @@ static int ep0_recv_op(void)
 			if (USB_DIR_IN == (sunxi_udc_source.standard_reg.request_type & USB_REQ_DIRECTION_MASK)) {
 				if (USB_RECIP_INTERFACE ==
 					(sunxi_udc_source.standard_reg.request_type & USB_REQ_RECIPIENT_MASK)) {
-					/*there is some problem*/
-					if (!ep0_stage) {
-						ep0_stage = 1;
-					} else {
-						ret = sunxi_udev_active->standard_req_op(
-							USB_REQ_SYNCH_FRAME, &sunxi_udc_source.standard_reg, NULL);
-						ep0_stage = 0;
-					}
+					ret = sunxi_udev_active->standard_req_op(
+						USB_REQ_SYNCH_FRAME, &sunxi_udc_source.standard_reg, NULL);
 				}
 			}
 
@@ -474,26 +539,27 @@ static int ep0_recv_op(void)
 		}
 		default: {
 			printk_error("USB: sunxi usb err: unknown usb out request to device\n");
-			usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
 			ret = SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
-			ep0_stage = 0;
 			break;
 		}
 		}
 	} else {
 		/* Non-Standard Req */
 		printk_trace("USB: non standard req\n");
-		ret = sunxi_udev_active->nonstandard_req_op(
-			USB_REQ_GET_STATUS, &sunxi_udc_source.standard_reg, sunxi_usb_ep0_buffer, ep0_stage);
+		ret = sunxi_udev_active->nonstandard_req_op(USB_REQ_GET_STATUS, &sunxi_udc_source.standard_reg,
+			sunxi_usb_ep0_buffer, sunxi_udc_source.ep0_stage);
 		if (ret == SUNXI_USB_REQ_DATA_HUNGRY) {
-			ep0_stage = 1;
+			sunxi_udc_source.ep0_stage = 1;
 		} else if (ret == SUNXI_USB_REQ_SUCCESSED) {
-			ep0_stage = 0;
+			sunxi_udc_source.ep0_stage = 0;
 		} else if (ret < 0) {
-			ep0_stage = 0;
+			sunxi_udc_source.ep0_stage = 0;
 			printk_error("USB: unkown request_type(%d)\n", sunxi_udc_source.standard_reg.request_type);
-			usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
 		}
+	}
+	if (ret < 0 && ret != SUNXI_USB_REQ_DATA_HUNGRY) {
+		sunxi_udc_source.ep0_stage = 0;
+		usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0);
 	}
 
 ep0_recv_op_err:
@@ -529,28 +595,49 @@ static int eptx_send_op()
 static void sunxi_usb_recv_by_dma_isr(void *p_arg)
 {
 	uint32_t old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
+	uint32_t tail_length = usb_dma_trans_unaliged_bytes;
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX); /* Select RXEP */
+	usb_dma_rx_active = 0;
 
 	/* Select IO mode for the data transfer */
 	printk_trace("USB: select io mode to transfer data\n");
-	usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	if (usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX) != 0)
+		printk_error("USB: failed to clear RX DMA mode\n");
 
-	if (usb_dma_trans_unaliged_bytes) {
-		uint32_t fifo, this_len;
-		this_len = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	if (tail_length) {
+		uint32_t fifo;
+		uint32_t fifo_count;
+		uint32_t this_len;
+
+		fifo_count = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+		if (fifo_count != tail_length) {
+			printk_error("USB: DMA tail length %u, expected %u\n", fifo_count, tail_length);
+			usb_dma_rx_error = 1;
+		}
+		this_len = min(fifo_count, tail_length);
 		fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
-		usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len, usb_dma_trans_unaligned_buf);
+		if (this_len) {
+			if (usb_dma_trans_unaligned_buf == NULL ||
+				usb_controller_read_packet(sunxi_udc_source.usbc_hd, fifo, this_len,
+					usb_dma_trans_unaligned_buf) != this_len) {
+				printk_error("USB: failed to read DMA tail\n");
+				usb_dma_rx_error = 1;
+			}
+		}
 		sunxi_usb_read_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1); /* Return status */
-		usb_dma_trans_unaliged_bytes = 0;
 	}
+	usb_dma_trans_unaliged_bytes = 0;
+	usb_dma_trans_unaligned_buf = NULL;
 
 	/* If the current DMA transfer is not a complete packet, manually clear the interrupt */
-	if (sunxi_ubuf.request_size % sunxi_udc_source.bulk_ep_max) {
+	if (sunxi_udc_source.bulk_ep_max != 0U && sunxi_ubuf.request_size % sunxi_udc_source.bulk_ep_max) {
 		usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1);
 	}
+	sunxi_ubuf.request_size = 0;
 
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
-	sunxi_udev_active->dma_rx_isr(p_arg);
+	if (sunxi_udev_active != NULL && sunxi_udev_active->dma_rx_isr != NULL)
+		sunxi_udev_active->dma_rx_isr(p_arg);
 }
 
 /*
@@ -565,7 +652,8 @@ static void sunxi_usb_recv_by_dma_isr(void *p_arg)
  */
 static void sunxi_usb_send_by_dma_isr(void *p_arg)
 {
-	sunxi_udev_active->dma_tx_isr(p_arg);
+	if (sunxi_udev_active != NULL && sunxi_udev_active->dma_tx_isr != NULL)
+		sunxi_udev_active->dma_tx_isr(p_arg);
 }
 
 /*
@@ -587,6 +675,7 @@ static int eprx_recv_op(void)
 	uint32_t old_ep_index;
 	uint32_t this_len;
 	uint32_t fifo;
+	int ret = 0;
 
 	old_ep_index = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
 
@@ -598,27 +687,25 @@ static int eprx_recv_op(void)
 	} else {
 		if (usb_device_get_read_data_ready(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX)) {
 			this_len = usb_controller_read_len_from_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
-			if (dma_rec_flag == 1) {
-				uint64_t len_left = this_len > dma_rec_size ? this_len - dma_rec_size : 0;
-				fifo = usb_controller_select_fifo(
-					sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
-				usb_controller_read_packet(
-					sunxi_udc_source.usbc_hd, fifo, dma_rec_size, (void *)dma_rec_addr);
-				if (len_left) {
-					sunxi_ubuf.rx_req_length = usb_controller_read_packet(
-						sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer);
-				}
-				printk_trace("USB: fake rx dma\n");
-				sunxi_usb_recv_by_dma_isr(NULL);
-
-				dma_rec_flag = 0;
+			if (this_len > sunxi_udc_source.bulk_ep_max || this_len > sunxi_ubuf.rx_buffer_size ||
+				sunxi_ubuf.rx_req_buffer == NULL) {
+				printk_error("USB: RX packet length %u exceeds buffer or endpoint limit\n", this_len);
+				usb_device_flush_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+				usb_device_ep_send_stall(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+				ret = -1;
+				goto out;
 			} else if (!sunxi_ubuf.rx_ready_for_data) {
 				fifo = usb_controller_select_fifo(
 					sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
 
-				memset(sunxi_ubuf.rx_req_buffer, 0, 64);
+				memset(sunxi_ubuf.rx_req_buffer, 0, sunxi_ubuf.rx_buffer_size);
 				sunxi_ubuf.rx_req_length = usb_controller_read_packet(
 					sunxi_udc_source.usbc_hd, fifo, this_len, sunxi_ubuf.rx_req_buffer);
+				if (sunxi_ubuf.rx_req_length != this_len) {
+					usb_device_flush_fifo(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+					ret = -1;
+					goto out;
+				}
 				sunxi_ubuf.rx_ready_for_data = 1;
 
 				printk_trace("USB: read ep bytes 0x%x\n", sunxi_ubuf.rx_req_length);
@@ -631,8 +718,9 @@ static int eprx_recv_op(void)
 			printk_trace("USB: sunxi usb rxdata not ready\n");
 		}
 	}
+out:
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_index);
-	return 0;
+	return ret;
 }
 
 /* Revisit a packet whose endpoint IRQ arrived while rx_ready_for_data was set. */
@@ -701,10 +789,13 @@ int sunxi_usb_init()
 
 	if (sunxi_udc_source.usbc_hd == 0) {
 		printk_error("USB: usb_controller_open_otg failed\n");
-		return -1;
+		goto sunxi_usb_init_fail;
 	}
 
-	usb_dma_init(sunxi_udc_source.usbc_hd);
+	if (usb_dma_init(sunxi_udc_source.usbc_hd) != 0) {
+		printk_error("USB: failed to initialize DMA\n");
+		goto sunxi_usb_init_fail;
+	}
 
 	usb_device_connect_switch(sunxi_udc_source.usbc_hd, USBC_DEVICE_SWITCH_OFF);
 
@@ -735,14 +826,20 @@ int sunxi_usb_init()
 
 	/* init usb buffer */
 	memset(&sunxi_ubuf, 0, sizeof(sunxi_ubuf_t));
+	usb_dma_rx_active = 0;
+	usb_dma_rx_error = 0;
+	usb_rx_deferred = 0;
+	usb_dma_trans_unaliged_bytes = 0;
+	usb_dma_trans_unaligned_buf = NULL;
 
 	/* We use static memory for this moment */
 	sunxi_ubuf.rx_base_buffer = rx_base_buffer;
 	if (!sunxi_ubuf.rx_base_buffer) {
-		printk_error("USB: %s:alloc memory fail\n");
+		printk_error("USB: RX buffer allocation failed\n");
 		goto sunxi_usb_init_fail;
 	}
 	sunxi_ubuf.rx_req_buffer = sunxi_ubuf.rx_base_buffer;
+	sunxi_ubuf.rx_buffer_size = sizeof(rx_base_buffer);
 
 	/* open usb clock */
 	sunxi_usb_clock_init();
@@ -770,21 +867,30 @@ int sunxi_usb_init()
 	usb_device_config_transfer_mode(sunxi_udc_source.usbc_hd, USBC_TS_TYPE_BULK, USBC_TS_MODE_HS);
 
 	/* config dma for send */
-	usb_dma_setting(sunxi_udc_source.dma_send_channal, USB_DMA_FROM_DRAM_TO_HOST, SUNXI_USB_BULK_IN_EP_INDEX);
-	usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
+	if (usb_dma_setting(sunxi_udc_source.dma_send_channal, USB_DMA_FROM_DRAM_TO_HOST, SUNXI_USB_BULK_IN_EP_INDEX) !=
+			0 ||
+		usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE) != 0) {
+		printk_error("USB: failed to configure TX DMA\n");
+		goto sunxi_usb_init_fail;
+	}
 
 	/* config dma for recv */
-	usb_dma_setting(sunxi_udc_source.dma_recv_channal, USB_DMA_FROM_HOST_TO_DRAM, SUNXI_USB_BULK_OUT_EP_INDEX);
-	usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
+	if (usb_dma_setting(
+		    sunxi_udc_source.dma_recv_channal, USB_DMA_FROM_HOST_TO_DRAM, SUNXI_USB_BULK_OUT_EP_INDEX) != 0 ||
+		usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE) != 0) {
+		printk_error("USB: failed to configure RX DMA\n");
+		goto sunxi_usb_init_fail;
+	}
 
 	/* disable all interrupt */
 	usb_controller_int_disable_usb_misc_all(sunxi_udc_source.usbc_hd);
 	usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
 	usb_controller_int_disable_ep_all(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
 
-	/* enable reset、resume、suspend  interrupt */
-	usb_controller_int_enable_usb_misc_uint(sunxi_udc_source.usbc_hd,
-		USBC_INTUSB_SUSPEND | USBC_INTUSB_RESUME | USBC_INTUSB_RESET | USBC_INTUSB_SOF);
+	/* enable reset, disconnect, resume, suspend interrupt */
+	usb_controller_int_enable_usb_misc_uint(sunxi_udc_source.usbc_hd, USBC_INTUSB_DISCONNECT | USBC_INTUSB_SUSPEND |
+										  USBC_INTUSB_RESUME |
+										  USBC_INTUSB_RESET | USBC_INTUSB_SOF);
 
 	/* enable ep interrupt */
 	usb_controller_int_enable_ep(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
@@ -816,7 +922,7 @@ int sunxi_usb_init()
 	return 0;
 
 sunxi_usb_init_fail:
-	(void)irq_disable((int)sunxi_usb_config.irq);
+	irq_disable((int)sunxi_usb_config.irq);
 	if (sunxi_udc_source.dma_send_channal) {
 		usb_dma_release(sunxi_udc_source.dma_send_channal);
 	}
@@ -846,6 +952,7 @@ void sunxi_usb_irq(void *data)
 	uint16_t tx_irq = 0;
 	uint16_t rx_irq = 0;
 	uint32_t dma_irq = 0;
+	int dma_status;
 	uint32_t old_ep_idx;
 
 	(void)data;
@@ -857,33 +964,18 @@ void sunxi_usb_irq(void *data)
 	misc_irq = usb_controller_int_misc_pending(sunxi_udc_source.usbc_hd);
 	tx_irq = usb_controller_int_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX);
 	rx_irq = usb_controller_int_ep_pending(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
-	dma_irq = usb_dma_int_query();
+	dma_status = usb_dma_int_query();
+	if (dma_status >= 0)
+		dma_irq = (uint32_t)dma_status;
 
 	/* RESET */
 	if (misc_irq & USBC_INTUSB_RESET) {
 		usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_RESET);
 
-		sunxi_usb_clear_all_irq();
-
 		usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, 0);
 		usb_device_set_address_default(sunxi_udc_source.usbc_hd);
-
-		sunxi_udc_source.address = 0; /*default value*/
-		sunxi_udc_source.speed = USB_SPEED_HIGH; /*default value*/
-		sunxi_udc_source.bulk_ep_max = HIGH_SPEED_EP_MAX_PACKET_SIZE;
-		sunxi_udc_source.fifo_size = BULK_FIFOSIZE;
-
-		usb_dma_stop(sunxi_udc_source.dma_recv_channal);
-		usb_dma_stop(sunxi_udc_source.dma_send_channal);
-
-		usb_dma_rx_active = 0;
-		usb_rx_deferred = 0;
-
-		usb_dma_set_pktlen(sunxi_udc_source.dma_send_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
-		usb_dma_set_pktlen(sunxi_udc_source.dma_recv_channal, HIGH_SPEED_EP_MAX_PACKET_SIZE);
-
-		sunxi_ubuf.rx_ready_for_data = 0;
-		sunxi_udev_active->state_reset();
+		sunxi_usb_reset_transfer_state(true);
+		sunxi_usb_bulk_ep_reset();
 
 		return;
 	}
@@ -903,6 +995,7 @@ void sunxi_usb_irq(void *data)
 	/* DISCONNECT */
 	if (misc_irq & USBC_INTUSB_DISCONNECT) {
 		usb_controller_int_clear_misc_pending(sunxi_udc_source.usbc_hd, USBC_INTUSB_DISCONNECT);
+		sunxi_usb_reset_transfer_state(true);
 		return;
 	}
 
@@ -940,11 +1033,11 @@ void sunxi_usb_irq(void *data)
 		}
 	}
 
-	if (dma_irq & (1 << SUNXI_USB_BULK_IN_EP_INDEX)) {
+	if (sunxi_udc_source.dma_send_channal < 32U && dma_irq & (1U << sunxi_udc_source.dma_send_channal)) {
 		sunxi_usb_send_by_dma_isr(NULL);
 	}
 
-	if (dma_irq & (1 << SUNXI_USB_BULK_OUT_EP_INDEX)) {
+	if (sunxi_udc_source.dma_recv_channal < 32U && dma_irq & (1U << sunxi_udc_source.dma_recv_channal)) {
 		sunxi_usb_recv_by_dma_isr(NULL);
 	}
 
@@ -1005,47 +1098,96 @@ void sunxi_usb_bulk_ep_reset()
 int sunxi_usb_start_recv_by_dma(void *mem_base, uint32_t length)
 {
 	uint32_t old_ep_idx;
-	uint32_t mem_buf = (uint32_t)mem_base;
-	usb_dma_trans_unaliged_bytes = length & (sizeof(int) - 1);
-	length &= ~(sizeof(int) - 1);
-	usb_dma_trans_unaligned_buf = (uint8_t *)mem_buf + length;
+	uint32_t mem_buf;
+	uint32_t dma_length;
+	uintptr_t mem_addr;
+	int ret;
+
+	if (mem_base == NULL || length == 0U || sunxi_udc_source.usbc_hd == 0U ||
+		sunxi_udc_source.dma_recv_channal == 0U || usb_dma_rx_active)
+		return -1;
+
+	mem_addr = (uintptr_t)mem_base;
+	if (mem_addr > 0xffffffffU || (uint32_t)mem_addr > 0xffffffffU - length)
+		return -1;
+
+	mem_buf = (uint32_t)mem_addr;
+	dma_length = length & ~(sizeof(uint32_t) - 1U);
+	if (dma_length == 0U)
+		return -1;
+
+	usb_dma_trans_unaliged_bytes = length - dma_length;
+	usb_dma_trans_unaligned_buf = (uint8_t *)mem_base + dma_length;
+	usb_dma_rx_error = 0;
+	usb_dma_rx_active = 1;
 
 	old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, SUNXI_USB_BULK_OUT_EP_INDEX);
 
-	usb_device_config_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	ret = usb_device_config_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	if (ret != 0)
+		goto fail;
 
-	sunxi_ubuf.request_size = length;
-	printk_trace("USB: dma start 0x%lx, length 0x%x\n", mem_buf, length);
-	usb_dma_start(sunxi_udc_source.dma_recv_channal, mem_buf, length);
+	sunxi_ubuf.request_size = dma_length;
+	printk_trace("USB: dma start 0x%x, length 0x%x\n", mem_buf, dma_length);
+	ret = usb_dma_start(sunxi_udc_source.dma_recv_channal, mem_buf, dma_length);
+	if (ret != 0)
+		goto fail;
 
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
 	return 0;
+
+fail:
+	usb_dma_stop(sunxi_udc_source.dma_recv_channal);
+	usb_device_clear_ep_dma(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX);
+	usb_dma_rx_active = 0;
+	usb_dma_trans_unaliged_bytes = 0;
+	usb_dma_trans_unaligned_buf = NULL;
+	sunxi_ubuf.request_size = 0;
+	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
+	return ret;
 }
 
-void sunxi_usb_send_setup(uint32_t length, void *buffer)
+int sunxi_usb_get_dma_rx_status(void)
+{
+	return usb_dma_rx_error ? -1 : 0;
+}
+
+int sunxi_usb_send_setup(uint32_t length, const void *buffer)
 {
 	uint32_t fifo = 0;
 
+	if (length > USBC_EP0_FIFOSIZE || (length != 0U && buffer == NULL) || sunxi_udc_source.usbc_hd == 0U)
+		return -1;
+
 	if (!length) {
 		/* sent zero packet */
-		sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
-	} else {
-		fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
-		usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, length, (void *)buffer);
-		sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+		return sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
 	}
+
+	fifo = usb_controller_select_fifo(sunxi_udc_source.usbc_hd, SUNXI_USB_CTRL_EP_INDEX);
+	if (usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, length, buffer) != length)
+		return -1;
+
+	return sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
 }
 
 int sunxi_usb_set_address(uint32_t address)
 {
+	if (address > 0x7fU)
+		return SUNXI_USB_REQ_OP_ERR;
+
 	sunxi_udc_source.address = address;
-	usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1);
+	if (usb_device_read_data_status(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_EP0, 1) != 0)
+		return SUNXI_USB_REQ_OP_ERR;
 	return SUNXI_USB_REQ_SUCCESSED;
 }
 
 int sunxi_usb_send_data(void *buffer, uint32_t buffer_size)
 {
+	if (buffer_size != 0U && buffer == NULL)
+		return -1;
+
 	sunxi_ubuf.rx_ready_for_data = 0;
 	return sunxi_usb_write_fifo((uint8_t *)buffer, buffer_size);
 }
