@@ -17,7 +17,7 @@ config DRIVER_USB_FUNCTION_WINUSB
 
 config DRIVER_USB_FUNCTION_FEL
 	bool "Sunxi FEL device function"
-	depends on DRIVER_SID
+	depends on DRIVER_SOC
 	default y
 	help
 	  Build the Sunxi FEL USB device function. It implements the AWUC/AWUS

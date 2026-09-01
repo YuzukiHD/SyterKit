@@ -148,6 +148,8 @@ static void sunxi_usb_fel_prepare_verify_response(void)
 	memset(&sunxi_usb_fel_device_response, 0, sizeof(sunxi_usb_fel_device_response));
 	memcpy(sunxi_usb_fel_device_response.magic, SUNXI_VERIFY_RSP_MAGIC,
 		sizeof(sunxi_usb_fel_device_response.magic));
+	/* FEL encodes the die id in bits 8-23 (0x00193700), the platform id
+	 * keeps the die in the upper 16 bits (0x19370000). */
 	sunxi_usb_fel_device_response.id = sunxi_soc_platform_id() >> 8;
 	sunxi_usb_fel_device_response.firmware = 1U;
 	sunxi_usb_fel_device_response.mode = DEVICE_MODE_FEL;
