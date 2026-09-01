@@ -428,7 +428,7 @@ uint32_t usb_controller_read_len_from_fifo(uintptr_t husb, uint32_t ep_type);
  * After that, it processes the remaining non-4-byte part by writing 1 byte at a time.
  * Finally, the function returns the total number of bytes written.
  */
-uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, void *buff);
+uint32_t usb_controller_write_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt, const void *buff);
 
 /*
  * Function name: usb_controller_read_packet

@@ -15,12 +15,14 @@ typedef struct sunxi_udc {
 	uint32_t bulk_out_addr;
 	uint32_t dma_send_channal;
 	uint32_t dma_recv_channal;
+	uint32_t ep0_stage;
 	struct usb_device_request standard_reg;
 } sunxi_udc_t;
 
 typedef struct sunxi_ubuf {
 	uint8_t *rx_base_buffer;
 	uint8_t *rx_req_buffer;
+	uint32_t rx_buffer_size;
 	uint32_t rx_req_length;
 	uint32_t rx_ready_for_data;
 	uint32_t request_size;
@@ -42,7 +44,8 @@ void sunxi_usb_attach(void);
 int sunxi_usb_extern_loop(void);
 void sunxi_usb_bulk_ep_reset(void);
 int sunxi_usb_start_recv_by_dma(void *mem_base, uint32_t length);
-void sunxi_usb_send_setup(uint32_t length, void *buffer);
+int sunxi_usb_get_dma_rx_status(void);
+int sunxi_usb_send_setup(uint32_t length, const void *buffer);
 int sunxi_usb_set_address(uint32_t address);
 int sunxi_usb_send_data(void *buffer, uint32_t buffer_size);
 int sunxi_usb_get_ep_max(void);
