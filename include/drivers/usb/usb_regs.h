@@ -42,7 +42,8 @@
 #define USBC_REG_o_RXTYPE 0x008E
 #define USBC_REG_o_RXINTERVAL 0x008F
 
-#define USBC_REG_o_CONFIGDATA 0x00c0 /**/
+/** @brief Offset of the USB configuration data register. */
+#define USBC_REG_o_CONFIGDATA 0x00c0
 
 #define USBC_REG_o_EPFIFO0 0x0000
 #define USBC_REG_o_EPFIFO1 0x0004
@@ -50,6 +51,12 @@
 #define USBC_REG_o_EPFIFO3 0x000C
 #define USBC_REG_o_EPFIFO4 0x0010
 #define USBC_REG_o_EPFIFO5 0x0014
+/**
+ * @brief Calculate the offset of the USBC_REG_o_EPFIFOx register.
+ *
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_o_EPFIFOx(uint32_t n)
 {
 	return (uintptr_t)(n << 2);
@@ -106,313 +113,687 @@ static inline uintptr_t USBC_REG_o_EPFIFOx(uint32_t n)
 /*   registers*/
 /*-----------------------------------------------------------------------*/
 
+/**
+ * @brief Return the address of the USBC_REG_FADDR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_FADDR(uintptr_t base)
 {
 	return base + USBC_REG_o_FADDR;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_PCTL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_PCTL(uintptr_t base)
 {
 	return base + USBC_REG_o_PCTL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTTx register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTTx(uintptr_t base)
 {
 	return base + USBC_REG_o_INTTx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTRx register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTRx(uintptr_t base)
 {
 	return base + USBC_REG_o_INTRx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTTxE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTTxE(uintptr_t base)
 {
 	return base + USBC_REG_o_INTTxE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTRxE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTRxE(uintptr_t base)
 {
 	return base + USBC_REG_o_INTRxE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTUSB register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTUSB(uintptr_t base)
 {
 	return base + USBC_REG_o_INTUSB;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_INTUSBE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_INTUSBE(uintptr_t base)
 {
 	return base + USBC_REG_o_INTUSBE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_FRNUM register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_FRNUM(uintptr_t base)
 {
 	return base + USBC_REG_o_FRNUM;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPIND register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPIND(uintptr_t base)
 {
 	return base + USBC_REG_o_EPIND;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TMCTL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TMCTL(uintptr_t base)
 {
 	return base + USBC_REG_o_TMCTL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXMAXP register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXMAXP(uintptr_t base)
 {
 	return base + USBC_REG_o_TXMAXP;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_CSR0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_CSR0(uintptr_t base)
 {
 	return base + USBC_REG_o_CSR0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXCSR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXCSR(uintptr_t base)
 {
 	return base + USBC_REG_o_TXCSR;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXMAXP register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXMAXP(uintptr_t base)
 {
 	return base + USBC_REG_o_RXMAXP;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXCSR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXCSR(uintptr_t base)
 {
 	return base + USBC_REG_o_RXCSR;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_COUNT0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_COUNT0(uintptr_t base)
 {
 	return base + USBC_REG_o_COUNT0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXCOUNT register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXCOUNT(uintptr_t base)
 {
 	return base + USBC_REG_o_RXCOUNT;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EP0TYPE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EP0TYPE(uintptr_t base)
 {
 	return base + USBC_REG_o_EP0TYPE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXTYPE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXTYPE(uintptr_t base)
 {
 	return base + USBC_REG_o_TXTYPE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_NAKLIMIT0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_NAKLIMIT0(uintptr_t base)
 {
 	return base + USBC_REG_o_NAKLIMIT0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXINTERVAL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXINTERVAL(uintptr_t base)
 {
 	return base + USBC_REG_o_TXINTERVAL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXTYPE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXTYPE(uintptr_t base)
 {
 	return base + USBC_REG_o_RXTYPE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXINTERVAL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXINTERVAL(uintptr_t base)
 {
 	return base + USBC_REG_o_RXINTERVAL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_CONFIGDATA register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_CONFIGDATA(uintptr_t base)
 {
 	return base + USBC_REG_o_CONFIGDATA;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO0(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO1 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO1(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO1;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO2 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO2(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO2;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO3 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO3(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO3;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO4 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO4(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO4;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFO5 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFO5(uintptr_t base)
 {
 	return base + USBC_REG_o_EPFIFO5;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPFIFOx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPFIFOx(uintptr_t base, uint32_t n)
 {
 	return base + USBC_REG_o_EPFIFOx(n);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DEVCTL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DEVCTL(uintptr_t base)
 {
 	return base + USBC_REG_o_DEVCTL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXFIFOSZ register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXFIFOSZ(uintptr_t base)
 {
 	return base + USBC_REG_o_TXFIFOSZ;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXFIFOSZ register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXFIFOSZ(uintptr_t base)
 {
 	return base + USBC_REG_o_RXFIFOSZ;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXFIFOAD register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXFIFOAD(uintptr_t base)
 {
 	return base + USBC_REG_o_TXFIFOAD;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXFIFOAD register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXFIFOAD(uintptr_t base)
 {
 	return base + USBC_REG_o_RXFIFOAD;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_VEND0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_VEND0(uintptr_t base)
 {
 	return base + USBC_REG_o_VEND0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_VEND1 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_VEND1(uintptr_t base)
 {
 	return base + USBC_REG_o_VEND1;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EPINFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EPINFO(uintptr_t base)
 {
 	return base + USBC_REG_o_EPINFO;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RAMINFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RAMINFO(uintptr_t base)
 {
 	return base + USBC_REG_o_RAMINFO;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_LINKINFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_LINKINFO(uintptr_t base)
 {
 	return base + USBC_REG_o_LINKINFO;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_VPLEN register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_VPLEN(uintptr_t base)
 {
 	return base + USBC_REG_o_VPLEN;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_HSEOF register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_HSEOF(uintptr_t base)
 {
 	return base + USBC_REG_o_HSEOF;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_FSEOF register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_FSEOF(uintptr_t base)
 {
 	return base + USBC_REG_o_FSEOF;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_LSEOF register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_LSEOF(uintptr_t base)
 {
 	return base + USBC_REG_o_LSEOF;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_FADDR0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_FADDR0(uintptr_t base)
 {
 	return base + USBC_REG_o_FADDR0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_HADDR0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_HADDR0(uintptr_t base)
 {
 	return base + USBC_REG_o_HADDR0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_HPORT0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_HPORT0(uintptr_t base)
 {
 	return base + USBC_REG_o_HPORT0;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXFADDRx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXFADDRx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_TXFADDRx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXHADDRx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXHADDRx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_TXHADDRx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_TXHPORTx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_TXHPORTx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_TXHPORTx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXFADDRx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXFADDRx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_RXFADDRx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXHADDRx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXHADDRx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_RXHADDRx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXHPORTx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXHPORTx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_RXHPORTx;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RPCOUNTx register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RPCOUNTx(uintptr_t base, uint32_t n)
 {
 	(void)n;
 	return base + USBC_REG_o_RPCOUNT;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_ISCR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_ISCR(uintptr_t base)
 {
 	return base + USBC_REG_o_ISCR;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_PHYCTL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_PHYCTL(uintptr_t base)
 {
 	return base + USBC_REG_o_PHYCTL;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_PHYBIST register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_PHYBIST(uintptr_t base)
 {
 	return base + USBC_REG_o_PHYBIST;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_PHYTUNE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_PHYTUNE(uintptr_t base)
 {
 	return base + USBC_REG_o_PHYTUNE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_RXFADDRx_Ex register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_RXFADDRx_Ex(uintptr_t base)
 {
 	return base + USBC_REG_o_RXFADDRx;
@@ -421,51 +802,115 @@ static inline uintptr_t USBC_REG_RXFADDRx_Ex(uintptr_t base)
 /*DMA*/
 #define USBC_REG_o_DMA_INTE 0x0500
 #define USBC_REG_o_DMA_INTS 0x0504
+/**
+ * @brief Calculate the offset of the USBC_REG_o_DMA_CHAN_CFN register.
+ *
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_o_DMA_CHAN_CFN(uint32_t n)
 {
 	return 0x0540U + (0x10U * n);
 }
 
+/**
+ * @brief Calculate the offset of the USBC_REG_o_DMA_SDRAM_ADD register.
+ *
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_o_DMA_SDRAM_ADD(uint32_t n)
 {
 	return 0x0544U + (0x10U * n);
 }
 
+/**
+ * @brief Calculate the offset of the USBC_REG_o_DMA_BC register.
+ *
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_o_DMA_BC(uint32_t n)
 {
 	return 0x0548U + (0x10U * n);
 }
 
+/**
+ * @brief Calculate the offset of the USBC_REG_o_DMA_RESIDUAL_BC register.
+ *
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_o_DMA_RESIDUAL_BC(uint32_t n)
 {
 	return 0x0548U + (0x10U * n);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_INTE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_INTE(uintptr_t base)
 {
 	return base + USBC_REG_o_DMA_INTE;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_INTS register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_INTS(uintptr_t base)
 {
 	return base + USBC_REG_o_DMA_INTS;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_CHAN_CFN register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_CHAN_CFN(uintptr_t base, uint32_t n)
 {
 	return base + USBC_REG_o_DMA_CHAN_CFN(n);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_SDRAM_ADD register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_SDRAM_ADD(uintptr_t base, uint32_t n)
 {
 	return base + USBC_REG_o_DMA_SDRAM_ADD(n);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_BC register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_BC(uintptr_t base, uint32_t n)
 {
 	return base + USBC_REG_o_DMA_BC(n);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_DMA_RESIDUAL_BC register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_DMA_RESIDUAL_BC(uintptr_t base, uint32_t n)
 {
 	return base + USBC_REG_o_DMA_RESIDUAL_BC(n);
@@ -474,131 +919,288 @@ static inline uintptr_t USBC_REG_DMA_RESIDUAL_BC(uintptr_t base, uint32_t n)
 /*-----------------------------------------------------------------------*/
 /*  registers extern*/
 /*-----------------------------------------------------------------------*/
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_EPFIFOn register.
+ *
+ * @param base The USB controller register base address.
+ * @param n The endpoint or DMA channel index.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_EPFIFOn(uintptr_t base, uint32_t n)
 {
 	return base + (n << 2);
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_GCS register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_GCS(uintptr_t base)
 {
 	return base + 0x0040U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_EPINTF register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_EPINTF(uintptr_t base)
 {
 	return base + 0x0044U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_EPINTE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_EPINTE(uintptr_t base)
 {
 	return base + 0x0048U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_BUSINTF register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_BUSINTF(uintptr_t base)
 {
 	return base + 0x004cU;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_BUSINTE register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_BUSINTE(uintptr_t base)
 {
 	return base + 0x0050U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_FNUM register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_FNUM(uintptr_t base)
 {
 	return base + 0x0054U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_TESTC register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_TESTC(uintptr_t base)
 {
 	return base + 0x007cU;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_CSR0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_CSR0(uintptr_t base)
 {
 	return base + 0x0080U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_TXCSR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_TXCSR(uintptr_t base)
 {
 	return base + 0x0080U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_RXCSR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_RXCSR(uintptr_t base)
 {
 	return base + 0x0084U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_COUNT0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_COUNT0(uintptr_t base)
 {
 	return base + 0x0088U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_RXCOUNT register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_RXCOUNT(uintptr_t base)
 {
 	return base + 0x0088U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_ATTR0 register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_ATTR0(uintptr_t base)
 {
 	return base + 0x008cU;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_EPATTR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_EPATTR(uintptr_t base)
 {
 	return base + 0x008cU;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_TXFIFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_TXFIFO(uintptr_t base)
 {
 	return base + 0x0090U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_RXFIFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_RXFIFO(uintptr_t base)
 {
 	return base + 0x0094U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_FADDR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_FADDR(uintptr_t base)
 {
 	return base + 0x0098U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_TXFADDR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_TXFADDR(uintptr_t base)
 {
 	return base + 0x0098U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_RXFADDR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_RXFADDR(uintptr_t base)
 {
 	return base + 0x009cU;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_CONFIGINFO register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_CONFIGINFO(uintptr_t base)
 {
 	return base + 0x00c0U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_LINKTIM register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_LINKTIM(uintptr_t base)
 {
 	return base + 0x00c4U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_OTGTIM register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_OTGTIM(uintptr_t base)
 {
 	return base + 0x00c8U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_ISCR register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_ISCR(uintptr_t base)
 {
 	return base + 0x0400U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_PHYCTL register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_PHYCTL(uintptr_t base)
 {
 	return base + 0x0404U;
 }
 
+/**
+ * @brief Return the address of the USBC_REG_EX_USB_PHYBIST register.
+ *
+ * @param base The USB controller register base address.
+ * @return The register address or offset.
+ */
 static inline uintptr_t USBC_REG_EX_USB_PHYBIST(uintptr_t base)
 {
 	return base + 0x0408U;
