@@ -15,6 +15,10 @@
 
 #include <drivers/usb/usb_controller.h>
 
+/** @file
+ * @brief MUSB controller handle, interrupt, FIFO, and endpoint operations.
+ */
+
 static uint32_t usbc_base_address[USBC_MAX_CTL_NUM];
 static usb_controller_otg_t usbc_otg_array[USBC_MAX_OPEN_NUM];
 static fifo_info_t usbc_info_g;
@@ -54,6 +58,11 @@ int usb_controller_close_otg(uintptr_t husb)
 	return 0;
 }
 
+/**
+ * @brief Implement the `usb_controller_wake_up_clear_change_detect` USB operation.
+ *
+ * @param reg_val The register value.
+ */
 static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val)
 {
 	uint32_t temp = reg_val;
@@ -63,6 +72,11 @@ static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val)
 	return temp;
 }
 
+/**
+ * @brief Implement the `usb_controller_force_id_low` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_id_low(uint32_t addr)
 {
 	uint32_t reg_val = 0;
@@ -75,6 +89,11 @@ static void usb_controller_force_id_low(uint32_t addr)
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
+/**
+ * @brief Implement the `usb_controller_force_id_high` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_id_high(uint32_t addr)
 {
 	uint32_t reg_val = 0;
@@ -86,6 +105,11 @@ static void usb_controller_force_id_high(uint32_t addr)
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
+/**
+ * @brief Implement the `usb_controller_force_id_disable` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_id_disable(uint32_t addr)
 {
 	uint32_t reg_val = 0;
@@ -114,6 +138,11 @@ void usb_controller_force_id_status(uintptr_t husb, uint32_t id_type)
 	}
 }
 
+/**
+ * @brief Implement the `usb_controller_force_vbus_valid_disable` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_vbus_valid_disable(uint32_t addr)
 {
 	uint32_t reg_val = 0;
@@ -125,6 +154,11 @@ static void usb_controller_force_vbus_valid_disable(uint32_t addr)
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
+/**
+ * @brief Implement the `usb_controller_force_vbus_valid_low` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_vbus_valid_low(uint32_t addr)
 {
 	uint32_t reg_val = 0;
@@ -137,6 +171,11 @@ static void usb_controller_force_vbus_valid_low(uint32_t addr)
 	writel(reg_val, USBC_REG_ISCR(addr));
 }
 
+/**
+ * @brief Implement the `usb_controller_force_vbus_valid_high` USB operation.
+ *
+ * @param addr The controller register address.
+ */
 static void usb_controller_force_vbus_valid_high(uint32_t addr)
 {
 	uint32_t reg_val = 0;

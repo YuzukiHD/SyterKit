@@ -23,6 +23,7 @@
 volatile uint32_t sunxi_usb_winusb_flag;
 static uint8_t sunxi_usb_winusb_configuration;
 
+/** @brief USB configuration and interface descriptors exposed by WinUSB. */
 struct sunxi_usb_winusb_configuration {
 	struct usb_configuration_descriptor configuration;
 	struct usb_interface_descriptor interface;
@@ -62,13 +63,25 @@ static const struct sunxi_usb_winusb_configuration sunxi_usb_winusb_config_descr
 	},
 };
 
+static const char sunxi_usb_winusb_log_init[] = "USB: sunxi_usb_winusb_init\n";
+static const char sunxi_usb_winusb_log_exit[] = "USB: sunxi_usb_winusb_exit\n";
+static const char sunxi_usb_winusb_log_rx_dma[] = "USB: dma int for usb rx occur\n";
+static const char sunxi_usb_winusb_log_tx_dma[] = "USB: dma int for usb tx occur\n";
+static const char sunxi_usb_winusb_log_unsupported_request[] =
+	"USB: WinUSB standard request is not supported\n";
+static const char sunxi_usb_winusb_log_host_detected[] = "USB: WinUSB host detected\n";
+static const char sunxi_usb_winusb_name[] = "winusb";
+static const char sunxi_usb_winusb_manufacturer[] = "Allwinner";
+static const char sunxi_usb_winusb_product[] = "SyterKit WinUSB Device";
+static const char sunxi_usb_winusb_serial[] = "0001";
+
 static const char *const sunxi_usb_winusb_strings[] = {
-	"Allwinner",
-	"SyterKit WinUSB Device",
-	"0001",
+	sunxi_usb_winusb_manufacturer,
+	sunxi_usb_winusb_product,
+	sunxi_usb_winusb_serial,
 };
 
-/* Microsoft OS 1.0 string descriptor: "MSFT100" plus the vendor request code. */
+/** @brief Microsoft OS 1.0 string descriptor for WinUSB discovery. */
 static const uint8_t sunxi_usb_winusb_ms_os_string[] = {
 	18U,
 	USB_DT_STRING,
@@ -90,7 +103,7 @@ static const uint8_t sunxi_usb_winusb_ms_os_string[] = {
 	0U,
 };
 
-/* Microsoft Extended Compatible ID descriptor for interface 0. */
+/** @brief Microsoft Extended Compatible ID descriptor for interface zero. */
 static const uint8_t sunxi_usb_winusb_compat_id[] = {
 	0x28U,
 	0x00U,
@@ -137,6 +150,11 @@ static const uint8_t sunxi_usb_winusb_compat_id[] = {
 _Static_assert(sizeof(sunxi_usb_winusb_ms_os_string) == 18U, "invalid Microsoft OS string descriptor");
 _Static_assert(sizeof(sunxi_usb_winusb_compat_id) == 40U, "invalid WinUSB compatible ID descriptor");
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_send_string` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_winusb_send_string(const struct usb_device_request *req, uint8_t *buffer)
 {
 	uint8_t index = req->value & 0xffU;
@@ -169,6 +187,11 @@ static int sunxi_usb_winusb_send_string(const struct usb_device_request *req, ui
 		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_get_descriptor` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_winusb_get_descriptor(const struct usb_device_request *req, uint8_t *buffer)
 {
 	uint8_t type = req->value >> 8;
@@ -215,40 +238,66 @@ static int sunxi_usb_winusb_get_descriptor(const struct usb_device_request *req,
 	}
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_init` USB operation.
+ */
 static int sunxi_usb_winusb_init(void)
 {
-	printk_debug("USB: sunxi_usb_winusb_init\n");
+	printk_debug(sunxi_usb_winusb_log_init);
 	sunxi_usb_winusb_flag = 0;
 	sunxi_usb_winusb_configuration = 0;
 	return 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_exit` USB operation.
+ */
 static int sunxi_usb_winusb_exit(void)
 {
-	printk_debug("USB: sunxi_usb_winusb_exit\n");
+	printk_debug(sunxi_usb_winusb_log_exit);
 	sunxi_usb_winusb_flag = 0;
 	sunxi_usb_winusb_configuration = 0;
 	return 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_reset` USB operation.
+ */
 static void sunxi_usb_winusb_reset(void)
 {
 	sunxi_usb_winusb_flag = 0;
 	sunxi_usb_winusb_configuration = 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_rx_dma_isr` USB operation.
+ *
+ * @param p_arg The callback argument.
+ */
 static void sunxi_usb_winusb_rx_dma_isr(void *p_arg)
 {
 	(void)p_arg;
-	printk_debug("USB: dma int for usb rx occur\n");
+	printk_debug(sunxi_usb_winusb_log_rx_dma);
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_tx_dma_isr` USB operation.
+ *
+ * @param p_arg The callback argument.
+ */
 static void sunxi_usb_winusb_tx_dma_isr(void *p_arg)
 {
 	(void)p_arg;
-	printk_debug("USB: dma int for usb tx occur\n");
+	printk_debug(sunxi_usb_winusb_log_tx_dma);
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_standard_req_op` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param cmd The request command.
+ */
 static int sunxi_usb_winusb_standard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer)
 {
 	if (req == NULL)
@@ -301,12 +350,21 @@ static int sunxi_usb_winusb_standard_req_op(uint32_t cmd, struct usb_device_requ
 			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	}
 	default: {
-		printk_error("USB: WinUSB standard request is not supported\n");
+		printk_error(sunxi_usb_winusb_log_unsupported_request);
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 	}
 	}
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_nonstandard_req_op` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param cmd The request command.
+ *
+ * @param data_status The data stage status.
+ */
 static int sunxi_usb_winusb_nonstandard_req_op(
 	uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status)
 {
@@ -324,12 +382,17 @@ static int sunxi_usb_winusb_nonstandard_req_op(
 		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_winusb_state_loop` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_winusb_state_loop(void *buffer)
 {
 	(void)buffer;
 
 	if (sunxi_usb_winusb_flag == 1U) {
-		printk_info("USB: WinUSB host detected\n");
+		printk_info(sunxi_usb_winusb_log_host_detected);
 		sunxi_usb_winusb_flag = 2U;
 	}
 	return 0;
@@ -348,6 +411,6 @@ static const sunxi_usb_function_ops_t sunxi_usb_winusb_ops = {
 
 const sunxi_usb_function_t sunxi_usb_function_winusb = {
 	.type = SUNXI_USB_DEVICE_WINUSB,
-	.name = "winusb",
+	.name = sunxi_usb_winusb_name,
 	.ops = &sunxi_usb_winusb_ops,
 };

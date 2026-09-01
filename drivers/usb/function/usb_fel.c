@@ -20,19 +20,21 @@
 #define SUNXI_USB_FEL_PIO_TRANSFER_MAX	512U
 #define SUNXI_USB_FEL_PHOENIX_DATA_SIZE (1U << SUNXI_FEL_PHOENIX_DATA_LEN_NR)
 
-/* These are the data blocks used by the common FEL commands. */
+/** @brief Payload returned by the FEL readiness command. */
 struct sunxi_fel_is_ready_data_t {
 	uint16_t state;
 	uint16_t interval_ms;
 	uint8_t reserved[12];
 } __attribute__((packed));
 
+/** @brief Payload returned by the FEL command-set version command. */
 struct sunxi_fel_cmd_set_ver_data_t {
 	uint16_t ver_high;
 	uint16_t ver_low;
 	uint8_t reserved[12];
 } __attribute__((packed));
 
+/** @brief States used while processing one FEL transport request. */
 enum sunxi_usb_fel_state {
 	SUNXI_USB_FEL_WAIT_HEADER = 0,
 	SUNXI_USB_FEL_WAIT_REQUEST,
@@ -40,12 +42,19 @@ enum sunxi_usb_fel_state {
 	SUNXI_USB_FEL_WAIT_WRITE_DMA,
 };
 
+/** @brief FEL transport request buffer aligned for DMA access. */
 static struct sunxi_usb_request_t sunxi_usb_fel_transport_request __attribute__((aligned(4)));
+/** @brief FEL command request buffer aligned for DMA access. */
 static struct sunxi_efex_request_t sunxi_usb_fel_request __attribute__((aligned(4)));
+/** @brief FEL command response buffer aligned for DMA access. */
 static struct sunxi_efex_response_t sunxi_usb_fel_status __attribute__((aligned(4)));
+/** @brief FEL verification response assembled for the host. */
 static struct sunxi_efex_device_resp_t sunxi_usb_fel_device_response;
+/** @brief FEL readiness response buffer aligned for DMA access. */
 static struct sunxi_fel_is_ready_data_t sunxi_usb_fel_ready_data __attribute__((aligned(4)));
+/** @brief FEL command-set version response buffer aligned for DMA access. */
 static struct sunxi_fel_cmd_set_ver_data_t sunxi_usb_fel_version_data __attribute__((aligned(4)));
+/** @brief FEL Phoenix compatibility data buffer aligned for DMA access. */
 static uint8_t sunxi_usb_fel_phoenix_data[SUNXI_USB_FEL_PHOENIX_DATA_SIZE] __attribute__((aligned(4)));
 
 static volatile enum sunxi_usb_fel_state sunxi_usb_fel_state;
@@ -65,6 +74,11 @@ _Static_assert(sizeof(struct sunxi_efex_request_t) == 16U, "invalid FEL request 
 _Static_assert(sizeof(struct sunxi_efex_response_t) == 8U, "invalid FEL response size");
 _Static_assert(sizeof(struct sunxi_efex_device_resp_t) == 32U, "invalid FEL verify response size");
 
+/**
+ * @brief Implement the `sunxi_usb_fel_range_valid` USB operation.
+ *
+ * @param length The transfer length.
+ */
 static bool sunxi_usb_fel_range_valid(uint32_t address, uint32_t length)
 {
 	if (address == 0U || length == 0U || length > SUNXI_USB_FEL_MAX_TRANSFER)
@@ -74,6 +88,13 @@ static bool sunxi_usb_fel_range_valid(uint32_t address, uint32_t length)
 	return (length - 1U) <= 0xffffffffU - address;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_dma_invalidate` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param length The transfer length.
+ */
 static void sunxi_usb_fel_dma_invalidate(uint8_t *buffer, uint32_t length)
 {
 #ifdef CONFIG_ARCH_DCACHE
@@ -85,6 +106,13 @@ static void sunxi_usb_fel_dma_invalidate(uint8_t *buffer, uint32_t length)
 #endif
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_dma_flush` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param length The transfer length.
+ */
 static void sunxi_usb_fel_dma_flush(uint8_t *buffer, uint32_t length)
 {
 #ifdef CONFIG_ARCH_DCACHE
@@ -96,6 +124,13 @@ static void sunxi_usb_fel_dma_flush(uint8_t *buffer, uint32_t length)
 #endif
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_set_status` USB operation.
+ *
+ * @param tag The request tag.
+ *
+ * @param status The request status.
+ */
 static void sunxi_usb_fel_set_status(uint16_t tag, uint8_t status)
 {
 	memset(&sunxi_usb_fel_status, 0, sizeof(sunxi_usb_fel_status));
@@ -105,6 +140,15 @@ static void sunxi_usb_fel_set_status(uint16_t tag, uint8_t status)
 	sunxi_usb_fel_status_pending = 1U;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_send_transport_response` USB operation.
+ *
+ * @param tag The request tag.
+ *
+ * @param residue The remaining transfer length.
+ *
+ * @param status The request status.
+ */
 static int sunxi_usb_fel_send_transport_response(uint32_t tag, uint32_t residue, uint8_t status)
 {
 	struct sunxi_usb_response_t response __attribute__((aligned(4)));
@@ -118,6 +162,9 @@ static int sunxi_usb_fel_send_transport_response(uint32_t tag, uint32_t residue,
 }
 
 /* libefex reads the application status as a separate, unframed packet. */
+/**
+ * @brief Implement the `sunxi_usb_fel_send_status` USB operation.
+ */
 static int sunxi_usb_fel_send_status(void)
 {
 	int ret;
@@ -131,6 +178,9 @@ static int sunxi_usb_fel_send_status(void)
 	return ret;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_clear_command` USB operation.
+ */
 static void sunxi_usb_fel_clear_command(void)
 {
 	sunxi_usb_fel_read_buffer = NULL;
@@ -143,6 +193,9 @@ static void sunxi_usb_fel_clear_command(void)
 	sunxi_usb_fel_dma_done = 0U;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_prepare_verify_response` USB operation.
+ */
 static void sunxi_usb_fel_prepare_verify_response(void)
 {
 	memset(&sunxi_usb_fel_device_response, 0, sizeof(sunxi_usb_fel_device_response));
@@ -163,6 +216,11 @@ static void sunxi_usb_fel_prepare_verify_response(void)
 }
 
 /* Decode and stage one libefex sunxi_efex_request_t. */
+/**
+ * @brief Implement the `sunxi_usb_fel_process_request` USB operation.
+ *
+ * @param request The FEL request.
+ */
 static uint8_t sunxi_usb_fel_process_request(const struct sunxi_efex_request_t *request)
 {
 	uint16_t command;
@@ -237,6 +295,13 @@ static uint8_t sunxi_usb_fel_process_request(const struct sunxi_efex_request_t *
 	return 1U;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_finish_write` USB operation.
+ *
+ * @param sunxi_ubuf The USB transfer buffer state.
+ *
+ * @param transport_status The transport status.
+ */
 static void sunxi_usb_fel_finish_write(sunxi_ubuf_t *sunxi_ubuf, uint8_t transport_status)
 {
 	uint8_t status = transport_status;
@@ -256,6 +321,9 @@ static void sunxi_usb_fel_finish_write(sunxi_ubuf_t *sunxi_ubuf, uint8_t transpo
 	sunxi_usb_fel_send_transport_response(sunxi_usb_fel_transport_request.tab, 0U, status);
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_finish_dma_write` USB operation.
+ */
 static void sunxi_usb_fel_finish_dma_write(void)
 {
 	uint8_t status = sunxi_usb_fel_dma_done && sunxi_usb_get_dma_rx_status() == 0 ? 0U : 1U;
@@ -272,6 +340,11 @@ static void sunxi_usb_fel_finish_dma_write(void)
 	sunxi_usb_fel_send_transport_response(sunxi_usb_fel_transport_request.tab, 0U, status);
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_handle_header` USB operation.
+ *
+ * @param sunxi_ubuf The USB transfer buffer state.
+ */
 static void sunxi_usb_fel_handle_header(sunxi_ubuf_t *sunxi_ubuf)
 {
 	uint32_t length;
@@ -367,6 +440,9 @@ static void sunxi_usb_fel_handle_header(sunxi_ubuf_t *sunxi_ubuf)
 	}
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_init` USB operation.
+ */
 static int sunxi_usb_fel_init(void)
 {
 	memset(&sunxi_usb_fel_device_response, 0, sizeof(sunxi_usb_fel_device_response));
@@ -377,6 +453,9 @@ static int sunxi_usb_fel_init(void)
 	return 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_exit` USB operation.
+ */
 static int sunxi_usb_fel_exit(void)
 {
 	sunxi_usb_fel_clear_command();
@@ -385,6 +464,9 @@ static int sunxi_usb_fel_exit(void)
 	return 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_reset` USB operation.
+ */
 static void sunxi_usb_fel_reset(void)
 {
 	sunxi_usb_fel_clear_command();
@@ -392,6 +474,11 @@ static void sunxi_usb_fel_reset(void)
 	sunxi_usb_fel_state = SUNXI_USB_FEL_WAIT_HEADER;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_send_string` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_fel_send_string(const struct usb_device_request *req, uint8_t *buffer)
 {
 	static const char *const strings[] = { "Allwinner", "SyterKit FEL", "0001" };
@@ -418,6 +505,11 @@ static int sunxi_usb_fel_send_string(const struct usb_device_request *req, uint8
 		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_get_descriptor` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_fel_get_descriptor(const struct usb_device_request *req, uint8_t *buffer)
 {
 	static const struct usb_device_descriptor device = {
@@ -523,6 +615,13 @@ static int sunxi_usb_fel_get_descriptor(const struct usb_device_request *req, ui
 	}
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_standard_req_op` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param cmd The request command.
+ */
 static int sunxi_usb_fel_standard_req_op(uint32_t cmd, struct usb_device_request *req, uint8_t *buffer)
 {
 	if (req == NULL)
@@ -571,6 +670,15 @@ static int sunxi_usb_fel_standard_req_op(uint32_t cmd, struct usb_device_request
 	}
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_nonstandard_req_op` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ *
+ * @param cmd The request command.
+ *
+ * @param data_status The data stage status.
+ */
 static int sunxi_usb_fel_nonstandard_req_op(
 	uint32_t cmd, struct usb_device_request *req, uint8_t *buffer, uint32_t data_status)
 {
@@ -581,6 +689,11 @@ static int sunxi_usb_fel_nonstandard_req_op(
 	return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_state_loop` USB operation.
+ *
+ * @param buffer The transfer buffer.
+ */
 static int sunxi_usb_fel_state_loop(void *buffer)
 {
 	sunxi_ubuf_t *sunxi_ubuf = (sunxi_ubuf_t *)buffer;
@@ -626,12 +739,22 @@ static int sunxi_usb_fel_state_loop(void *buffer)
 	return 0;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_rx_dma_isr` USB operation.
+ *
+ * @param p_arg The callback argument.
+ */
 static void sunxi_usb_fel_rx_dma_isr(void *p_arg)
 {
 	(void)p_arg;
 	sunxi_usb_fel_dma_done = 1U;
 }
 
+/**
+ * @brief Implement the `sunxi_usb_fel_tx_dma_isr` USB operation.
+ *
+ * @param p_arg The callback argument.
+ */
 static void sunxi_usb_fel_tx_dma_isr(void *p_arg)
 {
 	(void)p_arg;

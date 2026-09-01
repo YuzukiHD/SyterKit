@@ -21,6 +21,10 @@
 
 #include <drivers/usb/function/usb_function.h>
 #include <drivers/usb/platform/usb_platform.h>
+
+/** @file
+ * @brief USB device-mode state machine and active function dispatch.
+ */
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_device.h>
 #include <drivers/usb/usb_lowlevel.h>
@@ -51,6 +55,9 @@ static volatile uint8_t usb_dma_rx_error;
 
 static sunxi_usb_t sunxi_usb_config;
 
+/**
+ * @brief Disable the USB clock and release its reset state.
+ */
 static void sunxi_usb_clock_deinit(void)
 {
 	clrbits_le32(sunxi_usb_config.clock_gate_reg_base, BIT(sunxi_usb_config.reset_offset));
@@ -59,6 +66,9 @@ static void sunxi_usb_clock_deinit(void)
 	clrbits_le32(sunxi_usb_config.phy_clock_reg_base, BIT(sunxi_usb_config.phy_clock_gate_offset));
 }
 
+/**
+ * @brief Enable and reset the USB clock domain.
+ */
 static void sunxi_usb_clock_init(void)
 {
 	setbits_le32(sunxi_usb_config.phy_clock_reg_base, BIT(sunxi_usb_config.phy_clock_gate_offset));
@@ -80,6 +90,11 @@ static void sunxi_usb_clear_all_irq(void)
 }
 
 /* Stop in-flight transfers before resetting software and endpoint state. */
+/**
+ * @brief Reset manager transfer state and optionally notify the active function.
+ *
+ * @param notify_function Whether to invoke the active function reset callback.
+ */
 static void sunxi_usb_reset_transfer_state(bool notify_function)
 {
 	uint32_t old_ep_idx;
@@ -579,18 +594,8 @@ static int eptx_send_op()
 	return 0;
 }
 
-/*
- * Function name: sunxi_usb_recv_by_dma_isr
- *
- * @param p_arg: Pointer to the argument passed to the ISR. (Input)
- *
- * Description:
- * This function is the interrupt service routine for USB receive by DMA.
- * It takes a pointer to the argument passed to the ISR as an input parameter.
- * The function selects the RX endpoint, clears the DMA flag, and transfers the data using IO mode.
- * If there are unaligned bytes in the DMA transfer, it reads the packet manually and returns the status.
- * If the current DMA transfer is not a complete packet, it manually clears the interrupt.
- * Lastly, it selects the previous active endpoint and calls the RX DMA ISR of the active USB device.
+/**
+ * @brief sunxi_usb_recv_by_dma_isr.
  */
 static void sunxi_usb_recv_by_dma_isr(void *p_arg)
 {
@@ -640,15 +645,8 @@ static void sunxi_usb_recv_by_dma_isr(void *p_arg)
 		sunxi_udev_active->dma_rx_isr(p_arg);
 }
 
-/*
- * Function name: sunxi_usb_send_by_dma_isr
- *
- * Description:
- * This function is the interrupt service routine for sending data using DMA.
- * It calls the DMA transmit interrupt service routine specified by 'dma_tx_isr' of the active USB device.
- *
- * Parameters:
- * - p_arg: A void pointer that can be used to pass arguments to the DMA transmit interrupt service routine.
+/**
+ * @brief sunxi_usb_send_by_dma_isr.
  */
 static void sunxi_usb_send_by_dma_isr(void *p_arg)
 {
@@ -656,19 +654,8 @@ static void sunxi_usb_send_by_dma_isr(void *p_arg)
 		sunxi_udev_active->dma_tx_isr(p_arg);
 }
 
-/*
- * Function name: eprx_recv_op
- *
- * Description:
- * This function performs the USB receive operation on the RX endpoint. It selects the RX endpoint, checks if it is stalled,
- * and clears the stall if necessary. If the data is ready to be read, it reads the length from the FIFO and checks if DMA is in progress.
- * If DMA is in progress, it reads the packet manually and returns the status.
- * Otherwise, if the buffer is not ready to receive data, it reads the data into the buffer and sets the buffer flag.
- * If the buffer is already set, it does nothing and leaves it to DMA.
- * Lastly, it selects the previous active endpoint and returns 0.
- *
- * Return:
- * 0 - Success
+/**
+ * @brief eprx_recv_op.
  */
 static int eprx_recv_op(void)
 {
@@ -723,7 +710,9 @@ out:
 	return ret;
 }
 
-/* Revisit a packet whose endpoint IRQ arrived while rx_ready_for_data was set. */
+/**
+ * @brief Revisit a packet deferred while the receive buffer was busy.
+ */
 static void sunxi_usb_process_deferred_rx(void)
 {
 	if (!usb_rx_deferred || usb_dma_rx_active || sunxi_ubuf.rx_ready_for_data)
@@ -733,17 +722,21 @@ static void sunxi_usb_process_deferred_rx(void)
 	eprx_recv_op();
 }
 
-void sunxi_usb_attach_module(uint32_t device_type)
+void sunxi_usb_attach_function(const sunxi_usb_function_t *function)
 {
-	const sunxi_usb_function_t *function = sunxi_usb_function_lookup(device_type);
-
 	if (function == NULL || function->ops == NULL) {
-		printk_error("USB: device function %u is not registered\n", device_type);
+		printk_error("USB: invalid device function\n");
 		return;
 	}
 
 	sunxi_udev_active = function->ops;
 	printk_info("USB: selected device function %s\n", function->name);
+}
+
+/* Compatibility path for callers that still select functions by numeric type. */
+void sunxi_usb_attach_module(uint32_t device_type)
+{
+	sunxi_usb_attach_function(sunxi_usb_function_lookup(device_type));
 }
 
 int sunxi_usb_init()

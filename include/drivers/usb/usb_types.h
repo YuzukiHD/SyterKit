@@ -3,6 +3,10 @@
 #ifndef __DRIVERS_USB_TYPES_H__
 #define __DRIVERS_USB_TYPES_H__
 
+/** @file
+ * @brief Common USB protocol types, constants, and controller metadata.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -13,7 +17,7 @@
 #define SUNXI_USB_COMPATIBLE "allwinner,sunxi-usb"
 #define SUNXI_USB_MAX_CONTROLLERS 3U
 
-/* Compatibility helpers used by legacy USB functions. */
+/** @brief Compatibility aliases used by legacy USB functions. */
 #define printk_trace pr_trace
 #define printk_debug pr_debug
 #define printk_info pr_info
@@ -26,7 +30,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-/* USB device and interface classes. */
+/** @brief USB device and interface class codes. */
 #define USB_CLASS_PER_INTERFACE 0
 #define USB_CLASS_AUDIO 1
 #define USB_CLASS_COMM 2
@@ -39,7 +43,7 @@
 #define USB_CLASS_APP_SPEC 0xfe
 #define USB_CLASS_VENDOR_SPEC 0xff
 
-/* bmRequestType fields. */
+/** @brief Bit-field values used by bmRequestType. */
 #define USB_TYPE_STANDARD (0x00 << 5)
 #define USB_TYPE_CLASS (0x01 << 5)
 #define USB_TYPE_VENDOR (0x02 << 5)
@@ -53,7 +57,7 @@
 #define USB_DIR_OUT 0x00
 #define USB_DIR_IN 0x80
 
-/* Descriptor types and fixed descriptor sizes. */
+/** @brief USB descriptor types and fixed descriptor sizes. */
 #define USB_DT_DEVICE 0x01
 #define USB_DT_CONFIG 0x02
 #define USB_DT_STRING 0x03
@@ -87,7 +91,7 @@
 #define USB_ENDPOINT_XFER_BULK 2
 #define USB_ENDPOINT_XFER_INT 3
 
-/* USB packet identifiers. */
+/** @brief USB packet identifiers. */
 #define USB_PID_UNDEF_0 0xf0
 #define USB_PID_OUT 0xe1
 #define USB_PID_ACK 0xd2
@@ -106,7 +110,7 @@
 #define USB_PID_STALL 0x1e
 #define USB_PID_MDATA 0x0f
 
-/* Standard and HID request codes. */
+/** @brief Standard and HID request codes. */
 #define USB_REQ_GET_STATUS 0x00
 #define USB_REQ_CLEAR_FEATURE 0x01
 #define USB_REQ_SET_FEATURE 0x03
@@ -164,6 +168,7 @@
 #define USB_DEVICE_REMOTE_WAKEUP 0x01
 #define USB_TEST_MODE 0x02
 
+/** @brief USB bus speed negotiated by the device controller. */
 enum usb_device_speed {
 	USB_SPEED_LOW,
 	USB_SPEED_FULL,
@@ -171,6 +176,7 @@ enum usb_device_speed {
 	USB_SPEED_RESERVED,
 };
 
+/** @brief USB endpoint descriptor transferred on the control pipe. */
 struct usb_endpoint_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -180,6 +186,7 @@ struct usb_endpoint_descriptor {
 	uint8_t bInterval;
 } __attribute__((packed));
 
+/** @brief USB interface descriptor transferred on the control pipe. */
 struct usb_interface_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -192,6 +199,7 @@ struct usb_interface_descriptor {
 	uint8_t iInterface;
 } __attribute__((packed));
 
+/** @brief USB configuration descriptor transferred on the control pipe. */
 struct usb_configuration_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -203,6 +211,7 @@ struct usb_configuration_descriptor {
 	uint8_t bMaxPower;
 } __attribute__((packed));
 
+/** @brief USB device descriptor returned during enumeration. */
 struct usb_device_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -220,6 +229,7 @@ struct usb_device_descriptor {
 	uint8_t bNumConfigurations;
 } __attribute__((packed));
 
+/** @brief USB high-speed device qualifier descriptor. */
 struct usb_qualifier_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -232,18 +242,21 @@ struct usb_qualifier_descriptor {
 	uint8_t breserved;
 } __attribute__((packed));
 
+/** @brief Variable-length USB string descriptor header. */
 struct usb_string_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
 	uint16_t wData[0];
 } __attribute__((packed));
 
+/** @brief Common header shared by class-specific descriptors. */
 struct usb_generic_descriptor {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
 	uint8_t bDescriptorSubtype;
 } __attribute__((packed));
 
+/** @brief USB setup packet received on endpoint zero. */
 struct usb_device_request {
 	uint8_t request_type;
 	uint8_t request;
@@ -252,7 +265,7 @@ struct usb_device_request {
 	uint16_t length;
 } __attribute__((packed));
 
-/* Devicetree-provided controller and platform configuration. */
+/** @brief Devicetree-provided controller and platform configuration. */
 typedef struct sunxi_usb {
 	int dt_node;
 	uint8_t id;
@@ -267,7 +280,7 @@ typedef struct sunxi_usb {
 	bool detected;
 } sunxi_usb_t;
 
-/* MUSB register bit helpers shared by the controller and gadget layers. */
+/** @brief MUSB register bit helpers shared by controller and gadget layers. */
 #define usb_get_bit8(bp, reg) (read8(reg) & (1 << (bp)))
 #define usb_get_bit16(bp, reg) (read16(reg) & (1 << (bp)))
 #define usb_get_bit32(bp, reg) (read32(reg) & (1 << (bp)))

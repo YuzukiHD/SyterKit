@@ -15,6 +15,10 @@
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_device.h>
 
+/** @file
+ * @brief USB device-mode endpoint and transfer operations.
+ */
+
 void usb_device_set_address_default(uintptr_t husb)
 {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb;

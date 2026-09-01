@@ -5,26 +5,30 @@
 
 #include <stdint.h>
 
-/* The host side uses the original AWUC/AWUS bulk transport. */
+/** @brief Magic values used by the original AWUC/AWUS bulk transport. */
 #define SUNXI_USB_REQ_MAGIC "AWUC"
 #define SUNXI_USB_RSP_MAGIC "AWUS"
 
+/** @brief USB vendor and product identifiers used by FEL. */
 enum sunxi_usb_ids {
 	SUNXI_USB_VENDOR = 0x1f3a,
 	SUNXI_USB_PRODUCT = 0xefe8,
 };
 
+/** @brief FEL transport request codes. */
 enum sunxi_efex_usb_request_t {
 	AW_USB_READ = 0x11,
 	AW_USB_WRITE = 0x12,
 };
 
+/** @brief FEL command status request marker. */
 #define SUNXI_EFEX_STATUS_CMD 0xffffU
 
-/* The wire field is eight bytes; this is the FEL protocol spelling. */
+/** @brief FEL verification response constants and wire length. */
 #define SUNXI_VERIFY_RSP_MAGIC	      "AWUSBFEX"
 #define SUNXI_FEL_PHOENIX_DATA_LEN_NR 8U
 
+/** @brief Commands supported by the FEL protocol. */
 enum sunxi_efex_cmd_t {
 	EFEX_CMD_VERIFY_DEVICE = 0x0001,
 	EFEX_CMD_SWITCH_ROLE = 0x0002,
@@ -36,11 +40,12 @@ enum sunxi_efex_cmd_t {
 	EFEX_CMD_FEL_READ = 0x0103,
 };
 
+/** @brief Device mode reported by a FEL verification response. */
 enum sunxi_verify_device_mode_t {
 	DEVICE_MODE_FEL = 0x1,
 };
 
-/* Keep these layouts byte-for-byte compatible with libefex. */
+/** @brief FEL transport request header shared with libefex. */
 struct sunxi_usb_request_t {
 	union {
 		char magic[4];
@@ -54,6 +59,7 @@ struct sunxi_usb_request_t {
 	uint8_t cmd_package[16];
 } __attribute__((packed));
 
+/** @brief FEL transport response header shared with libefex. */
 struct sunxi_usb_response_t {
 	union {
 		char magic[4];
@@ -64,6 +70,7 @@ struct sunxi_usb_response_t {
 	uint8_t status;
 } __attribute__((packed));
 
+/** @brief FEL command request sent after transport framing. */
 struct sunxi_efex_request_t {
 	uint16_t cmd;
 	uint16_t tag;
@@ -72,6 +79,7 @@ struct sunxi_efex_request_t {
 	uint32_t flags;
 } __attribute__((packed));
 
+/** @brief FEL command response returned after a request. */
 struct sunxi_efex_response_t {
 	uint16_t magic;
 	uint16_t tag;
@@ -79,6 +87,7 @@ struct sunxi_efex_response_t {
 	uint8_t reserve[3];
 } __attribute__((packed));
 
+/** @brief Device information returned by the FEL verification command. */
 struct sunxi_efex_device_resp_t {
 	char magic[8];
 	uint32_t id;

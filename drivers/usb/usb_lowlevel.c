@@ -16,6 +16,10 @@
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_lowlevel.h>
 
+/** @file
+ * @brief Low-level DMA channel management for the USB controller.
+ */
+
 #define SUNXI_USB_DMA_MAX (8)
 
 static uintptr_t usb_hd;

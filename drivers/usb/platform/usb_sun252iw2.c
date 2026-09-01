@@ -11,6 +11,12 @@
 #define SUN252IW2_SYSCTRL_SRAM_REMAP 0x004U
 #define SUN252IW2_USB_SRAM_MASK	     (BIT(25) | BIT(27))
 
+/**
+ * @brief Reserve the sun252iw2 SRAM regions used by the USB FIFO.
+ *
+ * @param usb The controller description loaded from the devicetree.
+ * @return Zero on success, or a driver error when the description is NULL.
+ */
 int sunxi_usb_platform_init(const sunxi_usb_t *usb)
 {
 	if (usb == NULL)
@@ -20,6 +26,11 @@ int sunxi_usb_platform_init(const sunxi_usb_t *usb)
 	return DRIVER_OK;
 }
 
+/**
+ * @brief Release platform-specific USB resources on sun252iw2.
+ *
+ * @param usb The controller description loaded from the devicetree.
+ */
 void sunxi_usb_platform_deinit(const sunxi_usb_t *usb)
 {
 	(void)usb;

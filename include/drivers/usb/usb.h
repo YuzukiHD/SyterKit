@@ -3,7 +3,9 @@
 #ifndef __DRIVERS_USB_H__
 #define __DRIVERS_USB_H__
 
-/* Public compatibility umbrella for USB gadget users. */
+/** @file
+ * @brief Public umbrella header for the USB gadget interfaces.
+ */
 #include <drivers/usb/usb_types.h>
 #include <drivers/usb/usb_manager.h>
 #include <drivers/usb/function/usb_function.h>
