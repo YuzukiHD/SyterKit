@@ -16,6 +16,7 @@ obj-$(CONFIG_DRIVER_REMOTEPROC) += remoteproc/
 obj-$(CONFIG_DRIVER_RTC) += rtc/
 obj-$(CONFIG_DRIVER_SERIAL) += serial/
 obj-$(CONFIG_DRIVER_SID) += sid/
+obj-$(CONFIG_DRIVER_SOC) += soc/
 obj-$(CONFIG_DRIVER_SPIF) += spif/
 obj-$(CONFIG_DRIVER_SPI) += spi/
 obj-$(CONFIG_DRIVER_USB) += usb/
