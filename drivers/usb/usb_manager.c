@@ -34,6 +34,7 @@
 #define SUNXI_USB_CTRL_EP_INDEX	      0
 #define SUNXI_USB_BULK_IN_EP_INDEX    1 /* tx */
 #define SUNXI_USB_BULK_OUT_EP_INDEX   2 /* rx */
+#define SUNXI_USB_WRITE_TIMEOUT_MS    100U
 
 static uint8_t sunxi_usb_ep0_buffer[SUNXI_USB_EP0_BUFFER_SIZE];
 
@@ -107,26 +108,24 @@ static void sunxi_usb_read_complete(uintptr_t husb, uint32_t ep_type, uint32_t c
  * @brief Handle USB write complete event
  *
  * This function is called when a USB write operation is completed. It updates
- * the write data status using usb_device_write_data_status(), waits for the
- * transmit packet to be sent out, and clears the data end and IRQ if the
- * endpoint type is EP0.
+ * the write data status using usb_device_write_data_status(). EP0 completion
+ * is handled asynchronously by the next TX interrupt, while bulk transfers
+ * wait for the FIFO to become available before sending the next packet.
  *
  * @param husb     The USB handle
  * @param ep_type  The type of the endpoint
  * @param complete The completion status of the write operation
- * @return none
+ * @return 0 on success, or -1 if the status update or bulk TX wait fails
  */
-static void sunxi_usb_write_complete(uintptr_t husb, uint32_t ep_type, uint32_t complete)
+static int sunxi_usb_write_complete(uintptr_t husb, uint32_t ep_type, uint32_t complete)
 {
-	uint32_t timeout = time_ms();
+	uint32_t start_time;
+	uint32_t write_ready;
+	int ret;
 
-	usb_device_write_data_status(husb, ep_type, complete);
-
-	while (usb_device_get_write_data_ready(husb, ep_type) && (time_ms() - timeout < 100))
-		;
-
-	if (time_ms() - timeout >= 100)
-		pr_warn("usb: ep%u write complete timed out waiting for TX ready\n", usb_controller_get_active_ep(husb));
+	ret = usb_device_write_data_status(husb, ep_type, complete);
+	if (ret != 0)
+		return ret;
 
 	if (ep_type == USBC_EP_TYPE_EP0) {
 		/* Clear data end */
@@ -136,8 +135,21 @@ static void sunxi_usb_write_complete(uintptr_t husb, uint32_t ep_type, uint32_t 
 
 		/* Clear IRQ */
 		usb_controller_int_clear_ep_pending(husb, USBC_EP_TYPE_TX, SUNXI_USB_CTRL_EP_INDEX);
+		return 0;
 	}
-	return;
+
+	/* EP0 is completed from the next TX interrupt. Bulk TX must wait here
+	 * because the caller may immediately fill the same FIFO again. */
+	start_time = time_ms();
+	while ((write_ready = usb_device_get_write_data_ready(husb, ep_type)) != 0) {
+		if (time_ms() - start_time >= SUNXI_USB_WRITE_TIMEOUT_MS) {
+			pr_warn("usb: ep%u write complete timed out waiting for TX ready\n",
+				usb_controller_get_active_ep(husb));
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 /**
@@ -160,6 +172,7 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 	uint32_t transfered = 0;
 	uint32_t left = 0;
 	uint32_t this_len;
+	int ret = 0;
 
 	/* Save index */
 	old_ep_idx = usb_controller_get_active_ep(sunxi_udc_source.usbc_hd);
@@ -175,13 +188,20 @@ static int sunxi_usb_write_fifo(uint8_t *buffer, uint32_t buffer_size)
 		printk_trace("USB: tx packet ep=%u len=0x%x buf=0x%x\n", SUNXI_USB_BULK_IN_EP_INDEX,
 			this_len, (uint32_t)(uintptr_t)(buffer + transfered));
 		this_len = usb_controller_write_packet(sunxi_udc_source.usbc_hd, fifo, this_len, buffer + transfered);
+		if (!this_len) {
+			ret = -1;
+			break;
+		}
 		transfered += this_len;
 		left -= this_len;
-		sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, 1);
+		if (sunxi_usb_write_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_TX, 1) != 0) {
+			ret = -1;
+			break;
+		}
 	}
 
 	usb_controller_select_active_ep(sunxi_udc_source.usbc_hd, old_ep_idx);
-	return 0;
+	return ret;
 }
 
 /**
