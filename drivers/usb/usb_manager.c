@@ -18,12 +18,12 @@
 #include <dt-compatible/usb-dt.h>
 #include <interrupt.h>
 
-#include <drivers/usb/platform.h>
-#include <drivers/usb/usb.h>
+#include <drivers/usb/function/usb_function.h>
+#include <drivers/usb/platform/usb_platform.h>
 #include <drivers/usb/usb_controller.h>
-#include <drivers/usb/usb_dma.h>
-#include <drivers/usb/usb_defs.h>
 #include <drivers/usb/usb_device.h>
+#include <drivers/usb/usb_lowlevel.h>
+#include <drivers/usb/usb_manager.h>
 
 #define SUNXI_USB_EP0_BUFFER_SIZE (512)
 #define HIGH_SPEED_EP_MAX_PACKET_SIZE (512)
@@ -37,8 +37,8 @@
 static uint8_t sunxi_usb_ep0_buffer[SUNXI_USB_EP0_BUFFER_SIZE];
 
 static sunxi_ubuf_t sunxi_ubuf;
-sunxi_udc_t sunxi_udc_source;
-sunxi_usb_setup_req_t *sunxi_udev_active;
+static sunxi_udc_t sunxi_udc_source;
+static const sunxi_usb_function_ops_t *sunxi_udev_active;
 
 static uint8_t usb_dma_trans_unaliged_bytes;
 static uint8_t *usb_dma_trans_unaligned_buf;
@@ -545,7 +545,7 @@ static int eprx_recv_op(void) {
 				sunxi_ubuf.rx_ready_for_data = 1;
 
 				printk_trace("USB: read ep bytes 0x%x\n", sunxi_ubuf.rx_req_length);
-				sunxi_usb_read_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1); /*返回状态*/
+				sunxi_usb_read_complete(sunxi_udc_source.usbc_hd, USBC_EP_TYPE_RX, 1); /* Return status */
 			} else {
 				printk_trace("USB: eprx do nothing and left it to dma\n");
 			}
@@ -558,17 +558,15 @@ static int eprx_recv_op(void) {
 }
 
 void sunxi_usb_attach_module(uint32_t device_type) {
-	switch (device_type) {
-		case SUNXI_USB_DEVICE_WINUSB:
-			sunxi_usb_module_reg(SUNXI_USB_DEVICE_WINUSB);
-			break;
-		case SUNXI_USB_DEVICE_MASS:
-			printk_error("USB: mass storage is not enabled\n");
-			break;
-		default:
-			printk_error("USB: unknown device, type id = %d\n", device_type);
-			break;
+	const sunxi_usb_function_t *function = sunxi_usb_function_lookup(device_type);
+
+	if (function == NULL || function->ops == NULL) {
+		printk_error("USB: device function %u is not registered\n", device_type);
+		return;
 	}
+
+	sunxi_udev_active = function->ops;
+	printk_info("USB: selected device function %s\n", function->name);
 }
 
 int sunxi_usb_init() {
@@ -861,6 +859,11 @@ void sunxi_usb_irq(void *data) {
 }
 
 void sunxi_usb_attach() {
+	if (sunxi_udev_active == NULL) {
+		printk_error("USB: no device function attached\n");
+		return;
+	}
+
 	interrupt_enable();
 
 	for (;;) {
@@ -870,6 +873,10 @@ void sunxi_usb_attach() {
 }
 
 int sunxi_usb_extern_loop() {
+	if (sunxi_udev_active == NULL) {
+		return -1;
+	}
+
 	return sunxi_udev_active->state_loop(&sunxi_ubuf);
 }
 
@@ -950,11 +957,9 @@ int sunxi_usb_get_ep_out_type(void) {
 void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {
 	uint32_t old_ep_index = 0;
 
-	if (ep_index >= 0) {
-		old_ep_index = readw(usbc_base + USBC_REG_o_EPIND);
-		writew(ep_index, (usbc_base + USBC_REG_o_EPIND));
-		printk_trace("old_ep_index = %d, ep_index = %d\n", old_ep_index, ep_index);
-	}
+	old_ep_index = readw(usbc_base + USBC_REG_o_EPIND);
+	writew(ep_index, (usbc_base + USBC_REG_o_EPIND));
+	printk_trace("old_ep_index = %d, ep_index = %d\n", old_ep_index, ep_index);
 
 	printk_trace("USBC_REG_o_FADDR         = 0x%08x\n", readb(usbc_base + USBC_REG_o_FADDR));
 	printk_trace("USBC_REG_o_PCTL          = 0x%08x\n", readb(usbc_base + USBC_REG_o_PCTL));
@@ -1001,9 +1006,7 @@ void sunxi_usb_dump(uint32_t usbc_base, uint32_t ep_index) {
 	printk_trace("USBC_REG_o_PHYCTL        = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYCTL));
 	printk_trace("USBC_REG_o_PHYBIST       = 0x%08x\n", (uint32_t) readl(usbc_base + USBC_REG_o_PHYBIST));
 
-	if (ep_index >= 0) {
-		writew(old_ep_index, (usbc_base + USBC_REG_o_EPIND));
-	}
+	writew(old_ep_index, (usbc_base + USBC_REG_o_EPIND));
 
 	return;
 }

@@ -12,9 +12,8 @@
 
 #include <drivers/clk/clk.h>
 
-#include <drivers/usb/usb.h>
 #include <drivers/usb/usb_controller.h>
-#include <drivers/usb/usb_dma.h>
+#include <drivers/usb/usb_lowlevel.h>
 
 #define SUNXI_USB_DMA_MAX (8)
 

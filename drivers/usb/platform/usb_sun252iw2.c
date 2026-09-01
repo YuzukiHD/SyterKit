@@ -6,7 +6,7 @@
 #include <driver.h>
 #include <dt-bindings/soc/sun252iw2.h>
 
-#include <drivers/usb/platform.h>
+#include <drivers/usb/platform/usb_platform.h>
 
 #define SUN252IW2_SYSCTRL_SRAM_REMAP 0x004U
 #define SUN252IW2_USB_SRAM_MASK (BIT(25) | BIT(27))

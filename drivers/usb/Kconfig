@@ -6,6 +6,17 @@ config DRIVER_USB
 	bool "Allwinner USB device controller support"
 	depends on DRIVER_INTC
 
+if DRIVER_USB
+
+config DRIVER_USB_FUNCTION_WINUSB
+	bool "WinUSB device function"
+	default y
+	help
+	  Build the minimal WinUSB function. Additional USB functions register
+	  through the USB function registry instead of modifying the controller.
+
+endif
+
 choice
 	prompt "USB driver log level"
 	default DRIVER_USB_LOG_TRACE if BUILD_TRACE
