@@ -17,7 +17,7 @@
 
 #include <drivers/sid/sid.h>
 
-#include "sid-internal.h"
+#include "sid-platform.h"
 
 #define SID_PRCTL_OFFSET 0x00U
 #define SID_PR_ADDR_OFFSET 0x04U

@@ -3,7 +3,7 @@
 #include <dt2c/dt.h>
 #include <dt-compatible/sid-dt.h>
 
-#include <sid-internal.h>
+#include <sid-platform.h>
 
 #include "syter_test.h"
 

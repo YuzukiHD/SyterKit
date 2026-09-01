@@ -8,7 +8,7 @@
  * Defines the named eFuse storage sections available on this SoC.
  */
 
-#include "sid-internal.h"
+#include "sid-platform.h"
 
 /**
  * @brief eFuse section layout for the Sun8iw21 SoC.
