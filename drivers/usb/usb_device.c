@@ -12,7 +12,6 @@
 
 #include <drivers/clk/clk.h>
 
-#include <drivers/usb/usb.h>
 #include <drivers/usb/usb_controller.h>
 #include <drivers/usb/usb_device.h>
 
@@ -242,22 +241,18 @@ int usb_device_get_ep_stall(uintptr_t husb, uint32_t ep_type) {
 
 	switch (ep_type) {
 		case USBC_EP_TYPE_EP0:
-			usb_device_ep0_get_stall(usbc_otg->base_addr);
-			break;
+			return usb_device_ep0_get_stall(usbc_otg->base_addr);
 
 		case USBC_EP_TYPE_TX:
-			usb_device_tx_get_ep_stall(usbc_otg->base_addr);
-			break;
+			return usb_device_tx_get_ep_stall(usbc_otg->base_addr);
 
 		case USBC_EP_TYPE_RX:
-			usb_device_rx_get_ep_stall(usbc_otg->base_addr);
-			break;
+			return usb_device_rx_get_ep_stall(usbc_otg->base_addr);
 
 		default:
 			return -1;
 	}
 
-	return 0;
 }
 
 int usb_device_ep_send_stall(uintptr_t husb, uint32_t ep_type) {

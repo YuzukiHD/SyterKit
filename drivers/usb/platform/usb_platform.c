@@ -2,7 +2,7 @@
 
 #include <driver.h>
 
-#include <drivers/usb/platform.h>
+#include <drivers/usb/platform/usb_platform.h>
 
 int __attribute__((weak)) sunxi_usb_platform_init(const sunxi_usb_t *usb)
 {

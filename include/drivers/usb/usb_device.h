@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 
-#ifndef __USB_DEVICE_H__
-#define __USB_DEVICE_H__
+#ifndef __DRIVERS_USB_DEVICE_H__
+#define __DRIVERS_USB_DEVICE_H__
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -9,197 +9,8 @@
 #include <stdint.h>
 #include <types.h>
 
-#include "reg/reg-usb.h"
-
-/*
- * Device and/or Interface Class codes
- */
-#define USB_CLASS_PER_INTERFACE 0 /* for DeviceClass */
-#define USB_CLASS_AUDIO 1
-#define USB_CLASS_COMM 2
-#define USB_CLASS_HID 3
-#define USB_CLASS_PHYSICAL 5
-#define USB_CLASS_PRINTER 7
-#define USB_CLASS_MASS_STORAGE 8
-#define USB_CLASS_HUB 9
-#define USB_CLASS_DATA 10
-#define USB_CLASS_APP_SPEC 0xfe
-#define USB_CLASS_VENDOR_SPEC 0xff
-
-/*
- * USB types
- */
-#define USB_TYPE_STANDARD (0x00 << 5)
-#define USB_TYPE_CLASS (0x01 << 5)
-#define USB_TYPE_VENDOR (0x02 << 5)
-#define USB_TYPE_RESERVED (0x03 << 5)
-
-/*
- * USB recipients
- */
-#define USB_RECIP_DEVICE 0x00
-#define USB_RECIP_INTERFACE 0x01
-#define USB_RECIP_ENDPOINT 0x02
-#define USB_RECIP_OTHER 0x03
-
-/*
- * USB directions
- */
-#define USB_DIR_OUT 0
-#define USB_DIR_IN 0x80
-
-/*
- * Descriptor types
- */
-#define USB_DT_DEVICE 0x01
-#define USB_DT_CONFIG 0x02
-#define USB_DT_STRING 0x03
-#define USB_DT_INTERFACE 0x04
-#define USB_DT_ENDPOINT 0x05
-#define USB_DT_DEVICE_QUALIFIER 0x06
-
-#if defined(CONFIG_USBD_HS)
-#define USB_DT_QUAL 0x06
-#endif
-
-#define USB_DT_HID (USB_TYPE_CLASS | 0x01)
-#define USB_DT_REPORT (USB_TYPE_CLASS | 0x02)
-#define USB_DT_PHYSICAL (USB_TYPE_CLASS | 0x03)
-#define USB_DT_HUB (USB_TYPE_CLASS | 0x09)
-
-/*
- * Descriptor sizes per descriptor type
- */
-#define USB_DT_DEVICE_SIZE 18
-#define USB_DT_CONFIG_SIZE 9
-#define USB_DT_INTERFACE_SIZE 9
-#define USB_DT_ENDPOINT_SIZE 7
-#define USB_DT_ENDPOINT_AUDIO_SIZE 9 /* Audio extension */
-#define USB_DT_HUB_NONVAR_SIZE 7
-#define USB_DT_HID_SIZE 9
-
-/*
- * Endpoints
- */
-#define USB_ENDPOINT_NUMBER_MASK 0x0f /* in bEndpointAddress */
-#define USB_ENDPOINT_DIR_MASK 0x80
-
-#define USB_ENDPOINT_XFERTYPE_MASK 0x03 /* in bmAttributes */
-#define USB_ENDPOINT_XFER_CONTROL 0
-#define USB_ENDPOINT_XFER_ISOC 1
-#define USB_ENDPOINT_XFER_BULK 2
-#define USB_ENDPOINT_XFER_INT 3
-
-/*
- * USB Packet IDs (PIDs)
- */
-#define USB_PID_UNDEF_0 0xf0
-#define USB_PID_OUT 0xe1
-#define USB_PID_ACK 0xd2
-#define USB_PID_DATA0 0xc3
-#define USB_PID_PING 0xb4 /* USB 2.0 */
-#define USB_PID_SOF 0xa5
-#define USB_PID_NYET 0x96  /* USB 2.0 */
-#define USB_PID_DATA2 0x87 /* USB 2.0 */
-#define USB_PID_SPLIT 0x78 /* USB 2.0 */
-#define USB_PID_IN 0x69
-#define USB_PID_NAK 0x5a
-#define USB_PID_DATA1 0x4b
-#define USB_PID_PREAMBLE 0x3c /* Token mode */
-#define USB_PID_ERR 0x3c	  /* USB 2.0: handshake mode */
-#define USB_PID_SETUP 0x2d
-#define USB_PID_STALL 0x1e
-#define USB_PID_MDATA 0x0f /* USB 2.0 */
-
-/*
- * Standard requests
- */
-#define USB_REQ_GET_STATUS 0x00
-#define USB_REQ_CLEAR_FEATURE 0x01
-#define USB_REQ_SET_FEATURE 0x03
-#define USB_REQ_SET_ADDRESS 0x05
-#define USB_REQ_GET_DESCRIPTOR 0x06
-#define USB_REQ_SET_DESCRIPTOR 0x07
-#define USB_REQ_GET_CONFIGURATION 0x08
-#define USB_REQ_SET_CONFIGURATION 0x09
-#define USB_REQ_GET_INTERFACE 0x0A
-#define USB_REQ_SET_INTERFACE 0x0B
-#define USB_REQ_SYNCH_FRAME 0x0C
-
-#define USBD_DEVICE_REQUESTS(x) (((unsigned int) x <= USB_REQ_SYNCH_FRAME) ? usbd_device_requests[x] : "UNKNOWN")
-
-/*
- * HID requests
- */
-#define USB_REQ_GET_REPORT 0x01
-#define USB_REQ_GET_IDLE 0x02
-#define USB_REQ_GET_PROTOCOL 0x03
-#define USB_REQ_SET_REPORT 0x09
-#define USB_REQ_SET_IDLE 0x0A
-#define USB_REQ_SET_PROTOCOL 0x0B
-
-/*
- * USB Spec Release number
- */
-
-#if defined(CONFIG_USBD_HS)
-#define USB_BCD_VERSION 0x0200
-#else
-#define USB_BCD_VERSION 0x0110
-#endif
-
-/*
- * Device Requests	(c.f Table 9-2)
- */
-
-#define USB_REQ_DIRECTION_MASK 0x80
-#define USB_REQ_TYPE_MASK 0x60
-#define USB_REQ_RECIPIENT_MASK 0x1f
-
-#define USB_REQ_DEVICE2HOST 0x80
-#define USB_REQ_HOST2DEVICE 0x00
-
-#define USB_REQ_TYPE_STANDARD 0x00
-#define USB_REQ_TYPE_CLASS 0x20
-#define USB_REQ_TYPE_VENDOR 0x40
-
-#define USB_REQ_RECIPIENT_DEVICE 0x00
-#define USB_REQ_RECIPIENT_INTERFACE 0x01
-#define USB_REQ_RECIPIENT_ENDPOINT 0x02
-#define USB_REQ_RECIPIENT_OTHER 0x03
-
-/*
- * get status bits
- */
-
-#define USB_STATUS_SELFPOWERED 0x01
-#define USB_STATUS_REMOTEWAKEUP 0x02
-
-#define USB_STATUS_HALT 0x01
-
-/*
- * descriptor types
- */
-
-#define USB_DESCRIPTOR_TYPE_DEVICE 0x01
-#define USB_DESCRIPTOR_TYPE_CONFIGURATION 0x02
-#define USB_DESCRIPTOR_TYPE_STRING 0x03
-#define USB_DESCRIPTOR_TYPE_INTERFACE 0x04
-#define USB_DESCRIPTOR_TYPE_ENDPOINT 0x05
-#define USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER 0x06
-#define USB_DESCRIPTOR_TYPE_OTHER_SPEED_CONFIGURATION 0x07
-#define USB_DESCRIPTOR_TYPE_INTERFACE_POWER 0x08
-#define USB_DESCRIPTOR_TYPE_HID 0x21
-#define USB_DESCRIPTOR_TYPE_REPORT 0x22
-
-#define USBD_DEVICE_DESCRIPTORS(x) (((unsigned int) x <= USB_DESCRIPTOR_TYPE_INTERFACE_POWER) ? usbd_device_descriptors[x] : "UNKNOWN")
-
-/*
- * standard feature selectors
- */
-#define USB_ENDPOINT_HALT 0x00
-#define USB_DEVICE_REMOTE_WAKEUP 0x01
-#define USB_TEST_MODE 0x02
+#include <drivers/usb/usb_types.h>
+#include <drivers/usb/usb_regs.h>
 
 /**
  * Disable all transfer types for the USB device.
@@ -365,7 +176,7 @@ static inline void usb_device_ep0_write_data_complete(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static uint32_t usb_device_ep0_get_stall(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_stall(uint32_t addr) {
 	return usb_get_bit16(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(addr));
 }
 
@@ -394,7 +205,7 @@ static inline void usb_device_ep0_clear_stall(uint32_t addr) {
  * @param addr The address of the USB device.
  * @return Returns the status of the flag.
  */
-static uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
+static inline uint32_t usb_device_ep0_get_setup_end(uint32_t addr) {
 	return usb_get_bit16(USBC_BP_CSR0_D_SETUP_END, USBC_REG_CSR0(addr));
 }
 
@@ -1156,4 +967,4 @@ int usb_device_iso_update_enable(uintptr_t husb);
 void usb_device_flush_fifo(uintptr_t husb, uint32_t ep_type);
 
 
-#endif// __USB_DEVICE_H__
+#endif /* __DRIVERS_USB_DEVICE_H__ */

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 
-#ifndef __REG_USB_H__
-#define __REG_USB_H__
+#ifndef __DRIVERS_USB_USB_REGS_H__
+#define __DRIVERS_USB_USB_REGS_H__
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -50,7 +50,10 @@
 #define USBC_REG_o_EPFIFO3 0x000C
 #define USBC_REG_o_EPFIFO4 0x0010
 #define USBC_REG_o_EPFIFO5 0x0014
-#define USBC_REG_o_EPFIFOx(n) (0x0000 + (n << 2))
+static inline uintptr_t USBC_REG_o_EPFIFOx(uint32_t n)
+{
+	return (uintptr_t)(n << 2);
+}
 
 #define USBC_REG_o_DEVCTL 0x0041
 
@@ -103,126 +106,503 @@
 /*   registers*/
 /*-----------------------------------------------------------------------*/
 
-#define USBC_REG_FADDR(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_FADDR)
-#define USBC_REG_PCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PCTL)
-#define USBC_REG_INTTx(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTTx)
-#define USBC_REG_INTRx(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTRx)
-#define USBC_REG_INTTxE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTTxE)
-#define USBC_REG_INTRxE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTRxE)
-#define USBC_REG_INTUSB(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTUSB)
-#define USBC_REG_INTUSBE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_INTUSBE)
-#define USBC_REG_FRNUM(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_FRNUM)
-#define USBC_REG_EPIND(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPIND)
-#define USBC_REG_TMCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TMCTL)
-#define USBC_REG_TXMAXP(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXMAXP)
+static inline uintptr_t USBC_REG_FADDR(uintptr_t base)
+{
+	return base + USBC_REG_o_FADDR;
+}
 
-#define USBC_REG_CSR0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_CSR0)
-#define USBC_REG_TXCSR(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXCSR)
+static inline uintptr_t USBC_REG_PCTL(uintptr_t base)
+{
+	return base + USBC_REG_o_PCTL;
+}
 
-#define USBC_REG_RXMAXP(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXMAXP)
-#define USBC_REG_RXCSR(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXCSR)
+static inline uintptr_t USBC_REG_INTTx(uintptr_t base)
+{
+	return base + USBC_REG_o_INTTx;
+}
 
-#define USBC_REG_COUNT0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_COUNT0)
-#define USBC_REG_RXCOUNT(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXCOUNT)
+static inline uintptr_t USBC_REG_INTRx(uintptr_t base)
+{
+	return base + USBC_REG_o_INTRx;
+}
 
-#define USBC_REG_EP0TYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EP0TYPE)
-#define USBC_REG_TXTYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXTYPE)
+static inline uintptr_t USBC_REG_INTTxE(uintptr_t base)
+{
+	return base + USBC_REG_o_INTTxE;
+}
 
-#define USBC_REG_NAKLIMIT0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_NAKLIMIT0)
-#define USBC_REG_TXINTERVAL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXINTERVAL)
+static inline uintptr_t USBC_REG_INTRxE(uintptr_t base)
+{
+	return base + USBC_REG_o_INTRxE;
+}
 
-#define USBC_REG_RXTYPE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXTYPE)
-#define USBC_REG_RXINTERVAL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXINTERVAL)
-#define USBC_REG_CONFIGDATA(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_CONFIGDATA)
-#define USBC_REG_EPFIFO0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO0)
-#define USBC_REG_EPFIFO1(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO1)
-#define USBC_REG_EPFIFO2(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO2)
-#define USBC_REG_EPFIFO3(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO3)
-#define USBC_REG_EPFIFO4(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO4)
-#define USBC_REG_EPFIFO5(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPFIFO5)
-#define USBC_REG_EPFIFOx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_EPFIFOx(n))
-#define USBC_REG_DEVCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DEVCTL)
-#define USBC_REG_TXFIFOSZ(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXFIFOSZ)
-#define USBC_REG_RXFIFOSZ(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFIFOSZ)
-#define USBC_REG_TXFIFOAD(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_TXFIFOAD)
-#define USBC_REG_RXFIFOAD(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFIFOAD)
-#define USBC_REG_VEND0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VEND0)
-#define USBC_REG_VEND1(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VEND1)
-#define USBC_REG_EPINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_EPINFO)
-#define USBC_REG_RAMINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RAMINFO)
-#define USBC_REG_LINKINFO(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_LINKINFO)
-#define USBC_REG_VPLEN(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_VPLEN)
-#define USBC_REG_HSEOF(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HSEOF)
-#define USBC_REG_FSEOF(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_FSEOF)
-#define USBC_REG_LSEOF(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_LSEOF)
+static inline uintptr_t USBC_REG_INTUSB(uintptr_t base)
+{
+	return base + USBC_REG_o_INTUSB;
+}
 
-#define USBC_REG_FADDR0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_FADDR0)
-#define USBC_REG_HADDR0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HADDR0)
-#define USBC_REG_HPORT0(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_HPORT0)
+static inline uintptr_t USBC_REG_INTUSBE(uintptr_t base)
+{
+	return base + USBC_REG_o_INTUSBE;
+}
 
-#define USBC_REG_TXFADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXFADDRx)
-#define USBC_REG_TXHADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXHADDRx)
-#define USBC_REG_TXHPORTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_TXHPORTx)
-#define USBC_REG_RXFADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
-#define USBC_REG_RXHADDRx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXHADDRx)
-#define USBC_REG_RXHPORTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RXHPORTx)
+static inline uintptr_t USBC_REG_FRNUM(uintptr_t base)
+{
+	return base + USBC_REG_o_FRNUM;
+}
 
-#define USBC_REG_RPCOUNTx(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_RPCOUNT)
+static inline uintptr_t USBC_REG_EPIND(uintptr_t base)
+{
+	return base + USBC_REG_o_EPIND;
+}
 
-#define USBC_REG_ISCR(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_ISCR)
-#define USBC_REG_PHYCTL(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYCTL)
-#define USBC_REG_PHYBIST(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYBIST)
-#define USBC_REG_PHYTUNE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_PHYTUNE)
+static inline uintptr_t USBC_REG_TMCTL(uintptr_t base)
+{
+	return base + USBC_REG_o_TMCTL;
+}
 
-#define USBC_REG_RXFADDRx_Ex(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_RXFADDRx)
+static inline uintptr_t USBC_REG_TXMAXP(uintptr_t base)
+{
+	return base + USBC_REG_o_TXMAXP;
+}
+
+static inline uintptr_t USBC_REG_CSR0(uintptr_t base)
+{
+	return base + USBC_REG_o_CSR0;
+}
+
+static inline uintptr_t USBC_REG_TXCSR(uintptr_t base)
+{
+	return base + USBC_REG_o_TXCSR;
+}
+
+static inline uintptr_t USBC_REG_RXMAXP(uintptr_t base)
+{
+	return base + USBC_REG_o_RXMAXP;
+}
+
+static inline uintptr_t USBC_REG_RXCSR(uintptr_t base)
+{
+	return base + USBC_REG_o_RXCSR;
+}
+
+static inline uintptr_t USBC_REG_COUNT0(uintptr_t base)
+{
+	return base + USBC_REG_o_COUNT0;
+}
+
+static inline uintptr_t USBC_REG_RXCOUNT(uintptr_t base)
+{
+	return base + USBC_REG_o_RXCOUNT;
+}
+
+static inline uintptr_t USBC_REG_EP0TYPE(uintptr_t base)
+{
+	return base + USBC_REG_o_EP0TYPE;
+}
+
+static inline uintptr_t USBC_REG_TXTYPE(uintptr_t base)
+{
+	return base + USBC_REG_o_TXTYPE;
+}
+
+static inline uintptr_t USBC_REG_NAKLIMIT0(uintptr_t base)
+{
+	return base + USBC_REG_o_NAKLIMIT0;
+}
+
+static inline uintptr_t USBC_REG_TXINTERVAL(uintptr_t base)
+{
+	return base + USBC_REG_o_TXINTERVAL;
+}
+
+static inline uintptr_t USBC_REG_RXTYPE(uintptr_t base)
+{
+	return base + USBC_REG_o_RXTYPE;
+}
+
+static inline uintptr_t USBC_REG_RXINTERVAL(uintptr_t base)
+{
+	return base + USBC_REG_o_RXINTERVAL;
+}
+
+static inline uintptr_t USBC_REG_CONFIGDATA(uintptr_t base)
+{
+	return base + USBC_REG_o_CONFIGDATA;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO0(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO0;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO1(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO1;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO2(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO2;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO3(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO3;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO4(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO4;
+}
+
+static inline uintptr_t USBC_REG_EPFIFO5(uintptr_t base)
+{
+	return base + USBC_REG_o_EPFIFO5;
+}
+
+static inline uintptr_t USBC_REG_EPFIFOx(uintptr_t base, uint32_t n)
+{
+	return base + USBC_REG_o_EPFIFOx(n);
+}
+
+static inline uintptr_t USBC_REG_DEVCTL(uintptr_t base)
+{
+	return base + USBC_REG_o_DEVCTL;
+}
+
+static inline uintptr_t USBC_REG_TXFIFOSZ(uintptr_t base)
+{
+	return base + USBC_REG_o_TXFIFOSZ;
+}
+
+static inline uintptr_t USBC_REG_RXFIFOSZ(uintptr_t base)
+{
+	return base + USBC_REG_o_RXFIFOSZ;
+}
+
+static inline uintptr_t USBC_REG_TXFIFOAD(uintptr_t base)
+{
+	return base + USBC_REG_o_TXFIFOAD;
+}
+
+static inline uintptr_t USBC_REG_RXFIFOAD(uintptr_t base)
+{
+	return base + USBC_REG_o_RXFIFOAD;
+}
+
+static inline uintptr_t USBC_REG_VEND0(uintptr_t base)
+{
+	return base + USBC_REG_o_VEND0;
+}
+
+static inline uintptr_t USBC_REG_VEND1(uintptr_t base)
+{
+	return base + USBC_REG_o_VEND1;
+}
+
+static inline uintptr_t USBC_REG_EPINFO(uintptr_t base)
+{
+	return base + USBC_REG_o_EPINFO;
+}
+
+static inline uintptr_t USBC_REG_RAMINFO(uintptr_t base)
+{
+	return base + USBC_REG_o_RAMINFO;
+}
+
+static inline uintptr_t USBC_REG_LINKINFO(uintptr_t base)
+{
+	return base + USBC_REG_o_LINKINFO;
+}
+
+static inline uintptr_t USBC_REG_VPLEN(uintptr_t base)
+{
+	return base + USBC_REG_o_VPLEN;
+}
+
+static inline uintptr_t USBC_REG_HSEOF(uintptr_t base)
+{
+	return base + USBC_REG_o_HSEOF;
+}
+
+static inline uintptr_t USBC_REG_FSEOF(uintptr_t base)
+{
+	return base + USBC_REG_o_FSEOF;
+}
+
+static inline uintptr_t USBC_REG_LSEOF(uintptr_t base)
+{
+	return base + USBC_REG_o_LSEOF;
+}
+
+static inline uintptr_t USBC_REG_FADDR0(uintptr_t base)
+{
+	return base + USBC_REG_o_FADDR0;
+}
+
+static inline uintptr_t USBC_REG_HADDR0(uintptr_t base)
+{
+	return base + USBC_REG_o_HADDR0;
+}
+
+static inline uintptr_t USBC_REG_HPORT0(uintptr_t base)
+{
+	return base + USBC_REG_o_HPORT0;
+}
+
+static inline uintptr_t USBC_REG_TXFADDRx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_TXFADDRx;
+}
+
+static inline uintptr_t USBC_REG_TXHADDRx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_TXHADDRx;
+}
+
+static inline uintptr_t USBC_REG_TXHPORTx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_TXHPORTx;
+}
+
+static inline uintptr_t USBC_REG_RXFADDRx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_RXFADDRx;
+}
+
+static inline uintptr_t USBC_REG_RXHADDRx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_RXHADDRx;
+}
+
+static inline uintptr_t USBC_REG_RXHPORTx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_RXHPORTx;
+}
+
+static inline uintptr_t USBC_REG_RPCOUNTx(uintptr_t base, uint32_t n)
+{
+	(void)n;
+	return base + USBC_REG_o_RPCOUNT;
+}
+
+static inline uintptr_t USBC_REG_ISCR(uintptr_t base)
+{
+	return base + USBC_REG_o_ISCR;
+}
+
+static inline uintptr_t USBC_REG_PHYCTL(uintptr_t base)
+{
+	return base + USBC_REG_o_PHYCTL;
+}
+
+static inline uintptr_t USBC_REG_PHYBIST(uintptr_t base)
+{
+	return base + USBC_REG_o_PHYBIST;
+}
+
+static inline uintptr_t USBC_REG_PHYTUNE(uintptr_t base)
+{
+	return base + USBC_REG_o_PHYTUNE;
+}
+
+static inline uintptr_t USBC_REG_RXFADDRx_Ex(uintptr_t base)
+{
+	return base + USBC_REG_o_RXFADDRx;
+}
 
 /*DMA*/
 #define USBC_REG_o_DMA_INTE 0x0500
 #define USBC_REG_o_DMA_INTS 0x0504
-#define USBC_REG_o_DMA_CHAN_CFN(n) (0x0540 + (0x10 * n))
-#define USBC_REG_o_DMA_SDRAM_ADD(n) (0x0544 + (0x10 * n))
-#define USBC_REG_o_DMA_BC(n) (0x0548 + (0x10 * n))
-#define USBC_REG_o_DMA_RESIDUAL_BC(n) (0x0548 + (0x10 * n))
+static inline uintptr_t USBC_REG_o_DMA_CHAN_CFN(uint32_t n)
+{
+	return 0x0540U + (0x10U * n);
+}
 
-#define USBC_REG_DMA_INTE(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DMA_INTE)
-#define USBC_REG_DMA_INTS(usbc_base_addr) ((usbc_base_addr) + USBC_REG_o_DMA_INTS)
-#define USBC_REG_DMA_CHAN_CFN(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_CHAN_CFN(n))
-#define USBC_REG_DMA_SDRAM_ADD(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_SDRAM_ADD(n))
-#define USBC_REG_DMA_BC(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_BC(n))
-#define USBC_REG_DMA_RESIDUAL_BC(usbc_base_addr, n) ((usbc_base_addr) + USBC_REG_o_DMA_RESIDUAL_BC(n))
+static inline uintptr_t USBC_REG_o_DMA_SDRAM_ADD(uint32_t n)
+{
+	return 0x0544U + (0x10U * n);
+}
+
+static inline uintptr_t USBC_REG_o_DMA_BC(uint32_t n)
+{
+	return 0x0548U + (0x10U * n);
+}
+
+static inline uintptr_t USBC_REG_o_DMA_RESIDUAL_BC(uint32_t n)
+{
+	return 0x0548U + (0x10U * n);
+}
+
+static inline uintptr_t USBC_REG_DMA_INTE(uintptr_t base)
+{
+	return base + USBC_REG_o_DMA_INTE;
+}
+
+static inline uintptr_t USBC_REG_DMA_INTS(uintptr_t base)
+{
+	return base + USBC_REG_o_DMA_INTS;
+}
+
+static inline uintptr_t USBC_REG_DMA_CHAN_CFN(uintptr_t base, uint32_t n)
+{
+	return base + USBC_REG_o_DMA_CHAN_CFN(n);
+}
+
+static inline uintptr_t USBC_REG_DMA_SDRAM_ADD(uintptr_t base, uint32_t n)
+{
+	return base + USBC_REG_o_DMA_SDRAM_ADD(n);
+}
+
+static inline uintptr_t USBC_REG_DMA_BC(uintptr_t base, uint32_t n)
+{
+	return base + USBC_REG_o_DMA_BC(n);
+}
+
+static inline uintptr_t USBC_REG_DMA_RESIDUAL_BC(uintptr_t base, uint32_t n)
+{
+	return base + USBC_REG_o_DMA_RESIDUAL_BC(n);
+}
 
 /*-----------------------------------------------------------------------*/
 /*  registers extern*/
 /*-----------------------------------------------------------------------*/
-#define USBC_REG_EX_USB_EPFIFOn(usbc_base_addr) ((usbc_base_addr) + (0x00 + (n << 2)))
-#define USBC_REG_EX_USB_GCS(usbc_base_addr) ((usbc_base_addr) + 0x0040)
-#define USBC_REG_EX_USB_EPINTF(usbc_base_addr) ((usbc_base_addr) + 0x0044)
-#define USBC_REG_EX_USB_EPINTE(usbc_base_addr) ((usbc_base_addr) + 0x0048)
-#define USBC_REG_EX_USB_BUSINTF(usbc_base_addr) ((usbc_base_addr) + 0x004C)
-#define USBC_REG_EX_USB_BUSINTE(usbc_base_addr) ((usbc_base_addr) + 0x0050)
-#define USBC_REG_EX_USB_FNUM(usbc_base_addr) ((usbc_base_addr) + 0x0054)
-#define USBC_REG_EX_USB_TESTC(usbc_base_addr) ((usbc_base_addr) + 0x007C)
+static inline uintptr_t USBC_REG_EX_USB_EPFIFOn(uintptr_t base, uint32_t n)
+{
+	return base + (n << 2);
+}
 
-#define USBC_REG_EX_USB_CSR0(usbc_base_addr) ((usbc_base_addr) + 0x0080)
-#define USBC_REG_EX_USB_TXCSR(usbc_base_addr) ((usbc_base_addr) + 0x0080)
-#define USBC_REG_EX_USB_RXCSR(usbc_base_addr) ((usbc_base_addr) + 0x0084)
-#define USBC_REG_EX_USB_COUNT0(usbc_base_addr) ((usbc_base_addr) + 0x0088)
-#define USBC_REG_EX_USB_RXCOUNT(usbc_base_addr) ((usbc_base_addr) + 0x0088)
-#define USBC_REG_EX_USB_ATTR0(usbc_base_addr) ((usbc_base_addr) + 0x008C)
-#define USBC_REG_EX_USB_EPATTR(usbc_base_addr) ((usbc_base_addr) + 0x008C)
-#define USBC_REG_EX_USB_TXFIFO(usbc_base_addr) ((usbc_base_addr) + 0x0090)
-#define USBC_REG_EX_USB_RXFIFO(usbc_base_addr) ((usbc_base_addr) + 0x0094)
-#define USBC_REG_EX_USB_FADDR(usbc_base_addr) ((usbc_base_addr) + 0x0098)
-#define USBC_REG_EX_USB_TXFADDR(usbc_base_addr) ((usbc_base_addr) + 0x0098)
-#define USBC_REG_EX_USB_RXFADDR(usbc_base_addr) ((usbc_base_addr) + 0x009C)
+static inline uintptr_t USBC_REG_EX_USB_GCS(uintptr_t base)
+{
+	return base + 0x0040U;
+}
 
-#define USBC_REG_EX_USB_CONFIGINFO(usbc_base_addr) ((usbc_base_addr) + 0x00C0)
-#define USBC_REG_EX_USB_LINKTIM(usbc_base_addr) ((usbc_base_addr) + 0x00C4)
-#define USBC_REG_EX_USB_OTGTIM(usbc_base_addr) ((usbc_base_addr) + 0x00C8)
+static inline uintptr_t USBC_REG_EX_USB_EPINTF(uintptr_t base)
+{
+	return base + 0x0044U;
+}
 
-#define USBC_REG_EX_USB_ISCR(usbc_base_addr) ((usbc_base_addr) + 0x0400)
-#define USBC_REG_EX_USB_PHYCTL(usbc_base_addr) ((usbc_base_addr) + 0x0404)
-#define USBC_REG_EX_USB_PHYBIST(usbc_base_addr) ((usbc_base_addr) + 0x0408)
+static inline uintptr_t USBC_REG_EX_USB_EPINTE(uintptr_t base)
+{
+	return base + 0x0048U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_BUSINTF(uintptr_t base)
+{
+	return base + 0x004cU;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_BUSINTE(uintptr_t base)
+{
+	return base + 0x0050U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_FNUM(uintptr_t base)
+{
+	return base + 0x0054U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_TESTC(uintptr_t base)
+{
+	return base + 0x007cU;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_CSR0(uintptr_t base)
+{
+	return base + 0x0080U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_TXCSR(uintptr_t base)
+{
+	return base + 0x0080U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_RXCSR(uintptr_t base)
+{
+	return base + 0x0084U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_COUNT0(uintptr_t base)
+{
+	return base + 0x0088U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_RXCOUNT(uintptr_t base)
+{
+	return base + 0x0088U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_ATTR0(uintptr_t base)
+{
+	return base + 0x008cU;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_EPATTR(uintptr_t base)
+{
+	return base + 0x008cU;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_TXFIFO(uintptr_t base)
+{
+	return base + 0x0090U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_RXFIFO(uintptr_t base)
+{
+	return base + 0x0094U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_FADDR(uintptr_t base)
+{
+	return base + 0x0098U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_TXFADDR(uintptr_t base)
+{
+	return base + 0x0098U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_RXFADDR(uintptr_t base)
+{
+	return base + 0x009cU;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_CONFIGINFO(uintptr_t base)
+{
+	return base + 0x00c0U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_LINKTIM(uintptr_t base)
+{
+	return base + 0x00c4U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_OTGTIM(uintptr_t base)
+{
+	return base + 0x00c8U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_ISCR(uintptr_t base)
+{
+	return base + 0x0400U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_PHYCTL(uintptr_t base)
+{
+	return base + 0x0404U;
+}
+
+static inline uintptr_t USBC_REG_EX_USB_PHYBIST(uintptr_t base)
+{
+	return base + 0x0408U;
+}
 
 /*-----------------------------------------------------------------------*/
 /*   bit position*/
@@ -481,12 +861,12 @@
 #define USBC_BP_ISCR_DPDM_CHANGE_DETECT_EN 0
 
 /*-----------------------------------------------------------------------*/
-/*   自定义*/
+/* Custom definitions */
 /*-----------------------------------------------------------------------*/
 
-/* usb资源描述 */
+/* USB resource description */
 #define USBC_MAX_CTL_NUM 3
-#define USBC_MAX_EP_NUM 6 /* 能够支持的最大ep号, ep0~5 */
+#define USBC_MAX_EP_NUM 6 /* Maximum supported EP number, ep0~5 */
 #define USBC0_MAX_FIFO_SIZE (8 * 1024)
 #define USBC_EP0_FIFOSIZE 64 /* This is non-configurable */
 
@@ -589,4 +969,4 @@
 #define USBC_PHY_CTL_VBUSVLDEXT 5
 #define USBC_PHY_CTL_SIDDQ 3
 
-#endif// __REG_USB_H__
+#endif /* __DRIVERS_USB_USB_REGS_H__ */

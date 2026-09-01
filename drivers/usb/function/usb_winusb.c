@@ -13,8 +13,8 @@
 
 #include <drivers/clk/clk.h>
 
-#include <drivers/usb/usb_defs.h>
-#include <drivers/usb/usb.h>
+#include <drivers/usb/function/usb_function.h>
+#include <drivers/usb/usb_manager.h>
 
 #define WINUSB_MS_OS_STRING_INDEX       0xeeU
 #define WINUSB_MS_VENDOR_CODE           0x20U
@@ -193,11 +193,13 @@ static void sunxi_usb_winusb_reset(void)
 
 static void sunxi_usb_winusb_rx_dma_isr(void *p_arg)
 {
+	(void)p_arg;
 	printk_debug("USB: dma int for usb rx occur\n");
 }
 
 static void sunxi_usb_winusb_tx_dma_isr(void *p_arg)
 {
+	(void)p_arg;
 	printk_debug("USB: dma int for usb tx occur\n");
 }
 
@@ -279,6 +281,8 @@ static int sunxi_usb_winusb_nonstandard_req_op(
 
 static int sunxi_usb_winusb_state_loop(void *buffer)
 {
+	(void)buffer;
+
 	if (sunxi_usb_winusb_flag == 1U) {
 		printk_info("USB: WinUSB host detected\n");
 		sunxi_usb_winusb_flag = 2U;
@@ -286,6 +290,19 @@ static int sunxi_usb_winusb_state_loop(void *buffer)
 	return 0;
 }
 
-sunxi_usb_module_init(SUNXI_USB_DEVICE_WINUSB, sunxi_usb_winusb_init, sunxi_usb_winusb_exit, sunxi_usb_winusb_reset,
-	sunxi_usb_winusb_standard_req_op, sunxi_usb_winusb_nonstandard_req_op, sunxi_usb_winusb_state_loop,
-	sunxi_usb_winusb_rx_dma_isr, sunxi_usb_winusb_tx_dma_isr);
+static const sunxi_usb_function_ops_t sunxi_usb_winusb_ops = {
+	.state_init = sunxi_usb_winusb_init,
+	.state_exit = sunxi_usb_winusb_exit,
+	.state_reset = sunxi_usb_winusb_reset,
+	.standard_req_op = sunxi_usb_winusb_standard_req_op,
+	.nonstandard_req_op = sunxi_usb_winusb_nonstandard_req_op,
+	.state_loop = sunxi_usb_winusb_state_loop,
+	.dma_rx_isr = sunxi_usb_winusb_rx_dma_isr,
+	.dma_tx_isr = sunxi_usb_winusb_tx_dma_isr,
+};
+
+const sunxi_usb_function_t sunxi_usb_function_winusb = {
+	.type = SUNXI_USB_DEVICE_WINUSB,
+	.name = "winusb",
+	.ops = &sunxi_usb_winusb_ops,
+};

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier:	GPL-2.0+ */
 
-#ifndef __USB_CONTROLLER_H__
-#define __USB_CONTROLLER_H__
+#ifndef __DRIVERS_USB_CONTROLLER_H__
+#define __DRIVERS_USB_CONTROLLER_H__
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -9,7 +9,8 @@
 #include <stdint.h>
 #include <types.h>
 
-#include "reg/reg-usb.h"
+#include <drivers/usb/usb_types.h>
+#include <drivers/usb/usb_regs.h>
 
 #define USBC_MAX_OPEN_NUM 8
 #define USBC_MAX_CTL_NUM 3
@@ -516,4 +517,4 @@ uint32_t usb_controller_get_port_fifo_size(uintptr_t husb);
  */
 uint32_t usb_controller_select_fifo(uintptr_t husb, uint32_t ep_index);
 
-#endif// __USB_CONTROLLER_H__
+#endif /* __DRIVERS_USB_CONTROLLER_H__ */

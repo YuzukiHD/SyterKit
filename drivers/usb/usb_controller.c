@@ -13,7 +13,6 @@
 
 #include <drivers/clk/clk.h>
 
-#include <drivers/usb/usb.h>
 #include <drivers/usb/usb_controller.h>
 
 static uint32_t usbc_base_address[USBC_MAX_CTL_NUM];
@@ -63,7 +62,7 @@ static uint32_t usb_controller_wake_up_clear_change_detect(uint32_t reg_val) {
 static void usb_controller_force_id_low(uint32_t addr) {
 	uint32_t reg_val = 0;
 
-	/* vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位 */
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(addr));
 	reg_val &= ~(0x03 << USBC_BP_ISCR_FORCE_ID);
 	reg_val |= (0x02 << USBC_BP_ISCR_FORCE_ID);
@@ -74,7 +73,7 @@ static void usb_controller_force_id_low(uint32_t addr) {
 static void usb_controller_force_id_high(uint32_t addr) {
 	uint32_t reg_val = 0;
 
-	/*先写00，后写10*/
+	/* Write 00 first, then 10 */
 	reg_val = read32(USBC_REG_ISCR(addr));
 	reg_val |= (0x03 << USBC_BP_ISCR_FORCE_ID);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -84,7 +83,7 @@ static void usb_controller_force_id_high(uint32_t addr) {
 static void usb_controller_force_id_disable(uint32_t addr) {
 	uint32_t reg_val = 0;
 
-	/*vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位*/
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(addr));
 	reg_val &= ~(0x03 << USBC_BP_ISCR_FORCE_ID);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -110,7 +109,7 @@ void usb_controller_force_id_status(uintptr_t husb, uint32_t id_type) {
 static void usb_controller_force_vbus_valid_disable(uint32_t addr) {
 	uint32_t reg_val = 0;
 
-	/*先写00，后写10*/
+	/* Write 00 first, then 10 */
 	reg_val = read32(USBC_REG_ISCR(addr));
 	reg_val &= ~(0x03 << USBC_BP_ISCR_FORCE_VBUS_VALID);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -120,7 +119,7 @@ static void usb_controller_force_vbus_valid_disable(uint32_t addr) {
 static void usb_controller_force_vbus_valid_low(uint32_t addr) {
 	uint32_t reg_val = 0;
 
-	/*先写00，后写10*/
+	/* Write 00 first, then 10 */
 	reg_val = read32(USBC_REG_ISCR(addr));
 	reg_val &= ~(0x03 << USBC_BP_ISCR_FORCE_VBUS_VALID);
 	reg_val |= (0x02 << USBC_BP_ISCR_FORCE_VBUS_VALID);
@@ -158,7 +157,7 @@ void usb_controller_id_pull_enable(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	/*vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位*/
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(usbc_otg->base_addr));
 	reg_val |= (1 << USBC_BP_ISCR_ID_PULLUP_EN);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -169,7 +168,7 @@ void usb_controller_id_pull_disable(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	/*vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位*/
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(usbc_otg->base_addr));
 	reg_val &= ~(1 << USBC_BP_ISCR_ID_PULLUP_EN);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -180,7 +179,7 @@ void usb_controller_dpdm_pull_enable(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	/*vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位*/
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(usbc_otg->base_addr));
 	reg_val |= (1 << USBC_BP_ISCR_DPDM_PULLUP_EN);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -191,7 +190,7 @@ void usb_controller_dpdm_pull_disable(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	uint32_t reg_val = 0;
 
-	/*vbus, id, dpdm变化位是写1清零, 因此我们在操作其他bit的时候清除这些位*/
+	/* The vbus/id/dpdm change-detect bits are write-1-to-clear, so clear them whenever touching other bits */
 	reg_val = read32(USBC_REG_ISCR(usbc_otg->base_addr));
 	reg_val &= ~(1 << USBC_BP_ISCR_DPDM_PULLUP_EN);
 	reg_val = usb_controller_wake_up_clear_change_detect(reg_val);
@@ -214,7 +213,7 @@ void usb_controller_select_bus(uintptr_t husb, uint32_t io_type, uint32_t ep_typ
 			reg_val |= 0x1 << USBC_BP_VEND0_BUS_SEL;
 		}
 	} else {
-		reg_val &= 0x00; /*清除drq_sel, 选择pio*/
+		reg_val &= 0x00; /* Clear drq_sel, select PIO */
 	}
 	writeb(reg_val, USBC_REG_VEND0(usbc_otg->base_addr));
 }
@@ -328,12 +327,12 @@ void usb_controller_config_fifo_tx_ep_default(uint32_t addr) {
 
 void usb_controller_config_fifo_tx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
 	uint32_t temp = 0;
-	uint32_t size = 0;		/*fifo_size = (size + 3)的2次方*/
+	uint32_t size = 0;		/* fifo_size = 2^(size + 3) */
 	uint32_t addr_base = 0; /*fifo_addr = addr * 8*/
 
-	/*--<1>--换算sz, 不满512，以512对齐*/
+	/* Convert sz, aligned up to 512 bytes */
 	temp = fifo_size + 511;
-	temp &= ~511; /*把511后面的清零*/
+	temp &= ~511; /* Round up to a multiple of 512 */
 	temp >>= 3;
 	temp >>= 1;
 	while (temp) {
@@ -357,12 +356,12 @@ void usb_controller_config_fifo_rx_ep_default(uint32_t addr) {
 
 void usb_controller_config_fifo_rx_ep(uint32_t addr, uint32_t is_double_fifo, uint32_t fifo_size, uint32_t fifo_addr) {
 	uint32_t temp = 0;
-	uint32_t size = 0;		/*fifo_size = (size + 3)的2次方*/
+	uint32_t size = 0;		/* fifo_size = 2^(size + 3) */
 	uint32_t addr_base = 0; /*fifo_addr = addr * 8*/
 
-	/*--<1>--换算sz, 不满512，以512对齐*/
+	/* Convert sz, aligned up to 512 bytes */
 	temp = fifo_size + 511;
-	temp &= ~511; /*把511后面的清零*/
+	temp &= ~511; /* Round up to a multiple of 512 */
 	temp >>= 3;
 	temp >>= 1;
 	while (temp) {
@@ -401,7 +400,7 @@ void usb_controller_config_fifo(uintptr_t husb, uint32_t ep_type, uint32_t is_do
 	}
 }
 
-/* 获得ep中断标志位 */
+/* Get the EP interrupt pending flags */
 uint32_t usb_controller_int_ep_pending(uintptr_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -422,7 +421,7 @@ uint32_t usb_controller_int_ep_pending(uintptr_t husb, uint32_t ep_type) {
 	}
 }
 
-/* 清除ep中断标志位 */
+/* Clear the EP interrupt pending flags */
 void usb_controller_int_clear_ep_pending(uintptr_t husb, uint32_t ep_type, uint8_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -447,7 +446,7 @@ void usb_controller_int_clear_ep_pending(uintptr_t husb, uint32_t ep_type, uint8
 	return;
 }
 
-/* 清除ep中断标志位 */
+/* Clear the EP interrupt pending flags */
 void usb_controller_int_clear_ep_pending_all(uintptr_t husb, uint32_t ep_type) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -472,7 +471,7 @@ void usb_controller_int_clear_ep_pending_all(uintptr_t husb, uint32_t ep_type) {
 	return;
 }
 
-/* 获得usb misc中断标志位 */
+/* Get the USB MISC interrupt pending flags */
 uint32_t usb_controller_int_misc_pending(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -483,7 +482,7 @@ uint32_t usb_controller_int_misc_pending(uintptr_t husb) {
 	return readb(USBC_REG_INTUSB(usbc_otg->base_addr));
 }
 
-/* 清除usb misc中断标志位 */
+/* Clear the USB MISC interrupt pending flags */
 void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -494,7 +493,7 @@ void usb_controller_int_clear_misc_pending(uintptr_t husb, uint32_t mask) {
 	writeb(mask, USBC_REG_INTUSB(usbc_otg->base_addr));
 }
 
-/* 清除所有usb misc中断标志位 */
+/* Clear all USB MISC interrupt pending flags */
 void usb_controller_int_clear_misc_pending_all(uintptr_t husb) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -505,7 +504,7 @@ void usb_controller_int_clear_misc_pending_all(uintptr_t husb) {
 	writeb(0xff, USBC_REG_INTUSB(usbc_otg->base_addr));
 }
 
-/* 关某tx ep的中断 */
+/* Disable a TX EP interrupt */
 void usb_controller_int_disable_ep(uintptr_t husb, uint32_t ep_type, uint8_t ep_index) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 
@@ -636,6 +635,7 @@ uint32_t usb_controller_read_packet(uintptr_t husb, uint32_t fifo, uint32_t cnt,
 void usb_controller_config_fifo_base(uintptr_t husb, uint32_t sram_base) {
 	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb;
 	fifo_info_t *usbc_info = &usbc_info_g;
+	(void)sram_base;
 
 	if (usbc_otg == NULL) {
 		return;
