@@ -32,17 +32,20 @@ static uint32_t usb_dma_used[SUNXI_USB_DMA_MAX];
  *
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_set_channal_para(uintptr_t husb, uint32_t dma_chan, uint32_t trans_dir, uint32_t ep_type) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
-	uint32_t reg_val = 0;											/**< The value to be written to the register */
+static int lowlevel_usb_dma_set_channal_para(uintptr_t husb, uint32_t dma_chan, uint32_t trans_dir, uint32_t ep_type)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
+	uint32_t reg_val = 0; /**< The value to be written to the register */
 	if (usbc_otg == NULL) {
 		return -1;
 	}
-	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Read the current value of the register */
-	reg_val &= ~((1 << 4) | (0xf << 0));											/**< Clear the bits related to transfer direction and endpoint type */
-	reg_val |= ((trans_dir & 1) << 4);												/**< Set the transfer direction bit in the register */
-	reg_val |= ((ep_type & 0xf) << 0);												/**< Set the endpoint type bits in the register */
-	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Write the updated value back to the register */
+	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+			0x10 * dma_chan); /**< Read the current value of the register */
+	reg_val &= ~((1 << 4) | (0xf << 0)); /**< Clear the bits related to transfer direction and endpoint type */
+	reg_val |= ((trans_dir & 1) << 4); /**< Set the transfer direction bit in the register */
+	reg_val |= ((ep_type & 0xf) << 0); /**< Set the endpoint type bits in the register */
+	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+				0x10 * dma_chan); /**< Write the updated value back to the register */
 	return 0;
 }
 
@@ -57,23 +60,26 @@ static int lowlevel_usb_dma_set_channal_para(uintptr_t husb, uint32_t dma_chan, 
  *
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_set_packet_len(uintptr_t husb, uint32_t dma_chan, uint32_t pkt_len) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
-	uint32_t reg_val = 0;											/**< The value to be written to the register */
+static int lowlevel_usb_dma_set_packet_len(uintptr_t husb, uint32_t dma_chan, uint32_t pkt_len)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
+	uint32_t reg_val = 0; /**< The value to be written to the register */
 
 	if (usbc_otg == NULL) {
 		return -1;
 	}
 
-	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Read the current value of the register */
-	reg_val &= ~(0x7ff << 16);														/**< Clear the bits related to packet length */
+	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+			0x10 * dma_chan); /**< Read the current value of the register */
+	reg_val &= ~(0x7ff << 16); /**< Clear the bits related to packet length */
 
 	/* 1650 burst len: datawidth is 32bit = 4byte, so burst len = pkt_len/4 */
 	/* reg_val |=  (((pkt_len/4) & 0x7ff) << 16); */
 
 	/* 1667 burst len: datawidth is 8bit, so burst len = 1byte */
-	reg_val |= (((pkt_len) &0x7ff) << 16);											/**< Set the burst length bits in the register */
-	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Write the updated value back to the register */
+	reg_val |= (((pkt_len) & 0x7ff) << 16); /**< Set the burst length bits in the register */
+	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+				0x10 * dma_chan); /**< Write the updated value back to the register */
 
 	return 0;
 }
@@ -90,8 +96,9 @@ static int lowlevel_usb_dma_set_packet_len(uintptr_t husb, uint32_t dma_chan, ui
  *
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_start(uintptr_t husb, uint32_t dma_chan, uint32_t addr, uint32_t pkt_len) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
+static int lowlevel_usb_dma_start(uintptr_t husb, uint32_t dma_chan, uint32_t addr, uint32_t pkt_len)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
 	uint32_t reg_val;
 
 	if (usbc_otg == NULL) {
@@ -102,21 +109,27 @@ static int lowlevel_usb_dma_start(uintptr_t husb, uint32_t dma_chan, uint32_t ad
 		return -1;
 	}
 
-	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Read the current value of the DMA enable register */
-	reg_val |= (1 << (dma_chan & 0xff));						  /**< Enable the specified DMA channel */
-	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Write the updated value back to the DMA enable register */
+	reg_val = readl(
+		usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Read the current value of the DMA enable register */
+	reg_val |= (1 << (dma_chan & 0xff)); /**< Enable the specified DMA channel */
+	writel(reg_val, usbc_otg->base_addr +
+				USBC_REG_o_DMA_ENABLE); /**< Write the updated value back to the DMA enable register */
 
-	writel(addr, usbc_otg->base_addr + USBC_REG_o_DMA_ADDR + 0x10 * dma_chan); /**< Set the address for the DMA transfer */
+	writel(addr, usbc_otg->base_addr + USBC_REG_o_DMA_ADDR +
+			     0x10 * dma_chan); /**< Set the address for the DMA transfer */
 
 	/* 1650 datawidth is 32 bit. so size = len/4 */
 	/* writel(pkt_len/4, usbc_otg->base_addr + USBC_REG_o_DMA_SIZE + 0x10 * dma_chan); */
 
 	/* 1667 datawidth is 8bit */
-	writel(pkt_len, usbc_otg->base_addr + USBC_REG_o_DMA_SIZE + 0x10 * dma_chan); /**< Set the size of the DMA transfer */
+	writel(pkt_len,
+		usbc_otg->base_addr + USBC_REG_o_DMA_SIZE + 0x10 * dma_chan); /**< Set the size of the DMA transfer */
 
-	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Read the current value of the DMA config register */
-	reg_val |= (1U << 31);															/**< Set the DMA start bit */
-	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_chan); /**< Write the updated value back to the DMA config register */
+	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+			0x10 * dma_chan); /**< Read the current value of the DMA config register */
+	reg_val |= (1U << 31); /**< Set the DMA start bit */
+	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_CONFIG +
+				0x10 * dma_chan); /**< Write the updated value back to the DMA config register */
 
 	return 0;
 }
@@ -131,17 +144,20 @@ static int lowlevel_usb_dma_start(uintptr_t husb, uint32_t dma_chan, uint32_t ad
  *
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_stop(uintptr_t husb, uint32_t dma_chan) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
+static int lowlevel_usb_dma_int_stop(uintptr_t husb, uint32_t dma_chan)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
 	uint32_t reg_val;
 
 	if (usbc_otg == NULL) {
 		return -1;
 	}
 
-	reg_val = readl(usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Read the current value of the DMA enable register */
-	reg_val &= ~(1 << (dma_chan & 0xff));						  /**< Disable the specified DMA channel */
-	writel(reg_val, usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Write the updated value back to the DMA enable register */
+	reg_val = readl(
+		usbc_otg->base_addr + USBC_REG_o_DMA_ENABLE); /**< Read the current value of the DMA enable register */
+	reg_val &= ~(1 << (dma_chan & 0xff)); /**< Disable the specified DMA channel */
+	writel(reg_val, usbc_otg->base_addr +
+				USBC_REG_o_DMA_ENABLE); /**< Write the updated value back to the DMA enable register */
 
 	return 0;
 }
@@ -155,8 +171,9 @@ static int lowlevel_usb_dma_int_stop(uintptr_t husb, uint32_t dma_chan) {
  *
  * @return The status of DMA transfers on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_query(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
+static int lowlevel_usb_dma_int_query(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
 
 	if (usbc_otg == NULL) {
 		return -1;
@@ -174,8 +191,9 @@ static int lowlevel_usb_dma_int_query(uintptr_t husb) {
  *
  * @return 0 on success, -1 on failure
  */
-static int lowlevel_usb_dma_int_clear(uintptr_t husb) {
-	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *) husb; /**< The USB controller handle */
+static int lowlevel_usb_dma_int_clear(uintptr_t husb)
+{
+	usb_controller_otg_t *usbc_otg = (usb_controller_otg_t *)husb; /**< The USB controller handle */
 
 	if (usbc_otg == NULL) {
 		return -1;
@@ -195,7 +213,8 @@ static int lowlevel_usb_dma_int_clear(uintptr_t husb) {
  *
  * @return 0 on success, -1 on failure
  */
-static int usb_index_check(uint32_t dma_index) {
+static int usb_index_check(uint32_t dma_index)
+{
 	if (dma_index > SUNXI_USB_DMA_MAX) { /**< Check if the DMA index is within range */
 		printk_error("USB: dma %d is overrange\n", dma_index);
 		return -1;
@@ -207,16 +226,18 @@ static int usb_index_check(uint32_t dma_index) {
 	return 0;
 }
 
-int usb_dma_init(uintptr_t husb) {
+int usb_dma_init(uintptr_t husb)
+{
 	usb_hd = husb; /**< Set the USB handle */
 
 	return 0;
 }
 
-int usb_dma_request(void) {
+int usb_dma_request(void)
+{
 	for (int i = 1; i < SUNXI_USB_DMA_MAX; i++) {
 		if (usb_dma_used[i] == 0) { /**< Check if the DMA channel is available */
-			usb_dma_used[i] = 1;	/**< Mark the DMA channel as used */
+			usb_dma_used[i] = 1; /**< Mark the DMA channel as used */
 			return i;
 		}
 	}
@@ -224,7 +245,8 @@ int usb_dma_request(void) {
 	return 0;
 }
 
-int usb_dma_release(uint32_t dma_index) {
+int usb_dma_release(uint32_t dma_index)
+{
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
@@ -235,7 +257,8 @@ int usb_dma_release(uint32_t dma_index) {
 	return 0;
 }
 
-int usb_dma_setting(uint32_t dma_index, uint32_t trans_dir, uint32_t ep) {
+int usb_dma_setting(uint32_t dma_index, uint32_t trans_dir, uint32_t ep)
+{
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
@@ -244,7 +267,8 @@ int usb_dma_setting(uint32_t dma_index, uint32_t trans_dir, uint32_t ep) {
 	return lowlevel_usb_dma_set_channal_para(usb_hd, dma_index, trans_dir, ep);
 }
 
-int usb_dma_set_pktlen(uint32_t dma_index, uint32_t pkt_len) {
+int usb_dma_set_pktlen(uint32_t dma_index, uint32_t pkt_len)
+{
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
@@ -253,7 +277,8 @@ int usb_dma_set_pktlen(uint32_t dma_index, uint32_t pkt_len) {
 	return lowlevel_usb_dma_set_packet_len(usb_hd, dma_index, pkt_len);
 }
 
-int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes) {
+int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes)
+{
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
@@ -262,7 +287,8 @@ int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes) {
 	return lowlevel_usb_dma_start(usb_hd, dma_index, addr, bytes);
 }
 
-int usb_dma_stop(uint32_t dma_index) {
+int usb_dma_stop(uint32_t dma_index)
+{
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
@@ -271,10 +297,12 @@ int usb_dma_stop(uint32_t dma_index) {
 	return lowlevel_usb_dma_int_stop(usb_hd, dma_index);
 }
 
-int usb_dma_int_query(void) {
+int usb_dma_int_query(void)
+{
 	return lowlevel_usb_dma_int_query(usb_hd);
 }
 
-int usb_dma_int_clear(void) {
+int usb_dma_int_clear(void)
+{
 	return lowlevel_usb_dma_int_clear(usb_hd);
 }

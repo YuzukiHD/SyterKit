@@ -15,6 +15,15 @@ config DRIVER_USB_FUNCTION_WINUSB
 	  Build the minimal WinUSB function. Additional USB functions register
 	  through the USB function registry instead of modifying the controller.
 
+config DRIVER_USB_FUNCTION_FEL
+	bool "Sunxi FEL device function"
+	depends on DRIVER_SID
+	default y
+	help
+	  Build the Sunxi FEL USB device function. It implements the AWUC/AWUS
+	  bulk transport and the memory read, write and execute commands used by
+	  libefex.
+
 endif
 
 choice

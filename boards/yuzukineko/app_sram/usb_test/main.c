@@ -22,7 +22,7 @@ int main(void)
 	}
 
 	sunxi_clk_init();
-	sunxi_usb_attach_module(SUNXI_USB_DEVICE_WINUSB);
+	sunxi_usb_attach_module(SUNXI_USB_DEVICE_FEL);
 	if (sunxi_usb_init() != 0) {
 		pr_err("USB: init failed\n");
 		return -1;

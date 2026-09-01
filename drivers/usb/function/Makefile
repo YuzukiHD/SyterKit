@@ -2,3 +2,4 @@
 
 obj-y += usb_registry.o
 obj-$(CONFIG_DRIVER_USB_FUNCTION_WINUSB) += usb_winusb.o
+obj-$(CONFIG_DRIVER_USB_FUNCTION_FEL) += usb_fel.o

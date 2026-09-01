@@ -6,7 +6,9 @@
 #include <drivers/usb/usb_types.h>
 
 #define SUNXI_USB_DEVICE_WINUSB 1U
-#define SUNXI_USB_DEVICE_MASS 2U
+#define SUNXI_USB_DEVICE_MASS	2U
+#define SUNXI_USB_DEVICE_FEL	3U
+#define SUNXI_USB_DEVICE_EFEX	SUNXI_USB_DEVICE_FEL
 
 typedef struct sunxi_usb_function_ops {
 	int (*state_init)(void);
@@ -32,6 +34,9 @@ const sunxi_usb_function_t *sunxi_usb_function_lookup(uint32_t type);
 
 #if defined(CONFIG_DRIVER_USB_FUNCTION_WINUSB)
 extern const sunxi_usb_function_t sunxi_usb_function_winusb;
+#endif
+#if defined(CONFIG_DRIVER_USB_FUNCTION_FEL)
+extern const sunxi_usb_function_t sunxi_usb_function_fel;
 #endif
 
 #endif /* __DRIVERS_USB_FUNCTION_USB_FUNCTION_H__ */
