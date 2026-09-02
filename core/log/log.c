@@ -90,6 +90,17 @@ void printk(int level, const char *fmt, ...)
 }
 
 /**
+ * @brief Forward a preformatted message through the generic kernel logger.
+ * @param[in] level Log severity from the `LOG_LEVEL_*` constants.
+ * @param[in] message NUL-terminated message text.
+ */
+void printk_string(int level, const char *message)
+{
+	if (message != NULL)
+		printk(level, "%s", message);
+}
+
+/**
  * @brief Format a message directly to the UART without a severity prefix.
  * @param[in] fmt printf-style format string.
  * @param[in] ... Values consumed by @p fmt.

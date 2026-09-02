@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+[workspace]
+members = ["ffi", "core", "drivers", "lib"]
+resolver = "2"
+
+[profile.release]
+panic = "abort"

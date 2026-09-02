@@ -4,6 +4,7 @@ set -euo pipefail
 
 srctree="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 third_party_dt2c="${srctree}/tools/dt2c"
+rust_tree="${srctree}/rust"
 status=0
 
 fail() {
@@ -236,16 +237,17 @@ if grep -R -n --exclude-dir=dt2c --include='Makefile' --include='*.mk' --include
 	fail "warning suppression flags are not allowed"
 fi
 
-for forbidden_dir in linux sunxi sstdlib cmake rust; do
+for forbidden_dir in linux sunxi sstdlib cmake; do
 	if find "${srctree}" -path "${third_party_dt2c}" -prune -o \
 			-type d -name "${forbidden_dir}" -print -quit | grep -q .; then
 		fail "forbidden directory name: ${forbidden_dir}"
 	fi
 done
 
-if find "${srctree}" -path "${third_party_dt2c}" -prune -o \
+if find "${srctree}" \( -path "${third_party_dt2c}" -o -path "${rust_tree}" \) -prune -o \
 		-type f \( -name CMakeLists.txt -o -name '*.cmake' \
-		-o -name Cargo.toml -o -name '*.rs' \) -print -quit | grep -q .; then
+		-o -name Cargo.toml -o -name '*.rs' \) \
+		! -path "${srctree}/boards/*/*/*/main.rs" -print -quit | grep -q .; then
 	fail "CMake and Rust build files are not allowed"
 fi
 

@@ -28,4 +28,13 @@ endchoice
 config OPTIMIZE_FOR_SIZE
 	bool "Optimize for size"
 
+config RUST_FFI
+	bool "Build Rust FFI and applications"
+	depends on DRIVER_SERIAL
+	help
+	  Build the no_std Rust FFI, driver, core, and library crates. Bindings are generated
+	  by bindgen from rust/ffi/headers.txt; board-declared Rust applications are
+	  linked into the selected image. The feature is optional so normal C-only
+	  builds do not require Rust or libclang.
+
 endmenu

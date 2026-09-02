@@ -59,6 +59,12 @@ int raise(int signum);
 /** @brief Print the SyterKit build and version banner. */
 void show_banner(void);
 
+/**
+ * @brief Print the startup banner with an application-selected build identity.
+ * @param[in] build_info NUL-terminated compiler/toolchain description.
+ */
+void show_banner_with_build_info(const char *build_info);
+
 /** @brief Flush board state required before leaving SyterKit. */
 void clean_syterkit_data(void);
 
