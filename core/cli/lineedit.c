@@ -385,6 +385,9 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
 			default:;
 				/* do nothing */
 			}
+		} else if (second == 'O' && third == 'M') {
+			/* VT100 application keypad Enter. */
+			input = MSH_KEYBIND_ENTER;
 		} else {
 			/* do nothing */
 		}
@@ -395,6 +398,7 @@ static int cursor_inputchar(cmdline_t *pcmdline, unsigned char c)
          * End of input if newline char.
          */
 	case MSH_KEYBIND_ENTER:
+	case '\r':
 		uart_putchar('\n');
 		return 0;
 

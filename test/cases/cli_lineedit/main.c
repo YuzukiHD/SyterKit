@@ -85,5 +85,22 @@ void test_case_main(const char *case_dir)
 	TEST_STREQ(expected, line);
 	TEST_EQ(1, get_history_count());
 	TEST_STREQ(expected, history_get(0));
+
+	input_length = 0;
+	input_position = 0;
+	input[input_length++] = 'c';
+	input[input_length++] = 'r';
+	input[input_length++] = '\r';
+	TEST_EQ(2, msh_get_cmdline(line));
+	TEST_STREQ("cr", line);
+
+	input_length = 0;
+	input_position = 0;
+	input[input_length++] = '\033';
+	input[input_length++] = 'O';
+	input[input_length++] = 'M';
+	TEST_EQ(0, msh_get_cmdline(line));
+	TEST_STREQ("", line);
+	TEST_EQ(2, get_history_count());
 	TEST_ASSERT(terminal_length > 0);
 }
