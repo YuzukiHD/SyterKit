@@ -1,0 +1,5 @@
+# The default ABI is generated from all public C headers. Architecture headers
+# are pulled transitively through the normal include paths, which avoids
+# feeding assembly-only macro headers to the C parser. Use explicit
+# project-relative paths for a smaller product-specific binding set.
+@all include

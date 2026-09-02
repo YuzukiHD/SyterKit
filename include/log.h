@@ -107,6 +107,17 @@ void set_timer_count();
 void printk(int level, const char *fmt, ...);
 
 /**
+ * @brief Print a preformatted message through the generic kernel log path.
+ *
+ * This non-variadic adapter is provided for language bindings whose formatting
+ * values are assembled before crossing the C ABI boundary.
+ *
+ * @param level Information level, typically one of the LOG_LEVEL_* constants.
+ * @param message NUL-terminated message text; it must not be NULL.
+ */
+void printk_string(int level, const char *message);
+
+/**
  * @brief Print message via UART
  * 
  * This function is used to print formatted message to the terminal via UART serial port.

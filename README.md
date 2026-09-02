@@ -49,7 +49,7 @@ Active configurations are grouped under `configs/<board>/`. Most boards provide 
 
 SyterKit is intentionally small and static. The selected board contributes its applications and DTS, Kconfig selects the architecture and drivers, dt2c turns the board DTS into compile-time data, and the linker combines the selected objects into the final firmware image.
 
-See [Compile-time device tree](docs/devicetree.md) and [Driver architecture](docs/driver-model.md) for the full model.
+See [Compile-time device tree](docs/devicetree.md), [Driver architecture](docs/driver-model.md), and optional [Rust FFI](docs/rust-ffi.md) for the full model.
 
 ## Getting Started
 
@@ -159,6 +159,7 @@ Detailed boot-header and media-layout documentation is available in the [documen
 - [Getting started and Allwinner boot flow](docs/README.md)
 - [Driver architecture](docs/driver-model.md)
 - [Compile-time device tree](docs/devicetree.md)
+- [Bare-metal Rust FFI](docs/rust-ffi.md)
 - [Generated API documentation](https://syterkit.yuzukihd.top/api/html/)
 
 ## Contributing

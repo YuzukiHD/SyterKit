@@ -134,12 +134,14 @@ app_mode := app_sram
 apps := $(apps-sram-y)
 endif
 
+include $(srctree)/scripts/Makefile.rust
+
 export srctree objtree CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC DT2C DT2C_INCLUDE
 export KBUILD_CPPFLAGS KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_LDFLAGS
 
 .PHONY: all artifacts image images prepare tools utilities firmware check config \
 	menuconfig olddefconfig syncconfig defconfig savedefconfig release list-defconfigs \
-	list-apps list-firmware list-utilities test docs help clean mrproper \
+	list-apps list-firmware list-utilities test docs rust-ffi help clean mrproper \
 	board-kconfig dt2c-check FORCE
 
 ifneq ($(wildcard $(auto_conf)),)
@@ -347,13 +349,15 @@ $(bin_lds): $(lds_src) $(auto_header)
 endif
 
 link_flags = $(KBUILD_CFLAGS) -nostdlib -Wl,--gc-sections \
-	-Wl,-z,noexecstack -Wl,--whole-archive $(common_builtins) $(1) $(board_libs) \
-	-Wl,--no-whole-archive -lgcc
+	-Wl,-z,noexecstack $(rust_ffi_linker_flags) \
+	-Wl,--whole-archive $(common_builtins) $(1) $(board_libs) \
+	-Wl,--no-whole-archive $(2) -lgcc
 
 define app_template
 app_$(1)_dir := $(image_root)/$(1)
 app_$(1)_rel_dir := $(image_rel_root)/$(1)
-app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
+app_$(1)_builtin := $(if $(filter $(1),$(rust_apps)),$(rust_app_$(1)_builtin),$(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o)
+app_$(1)_rust_input := $(if $(filter $(1),$(rust_apps)),$(call rust_app_lib,$(1)),$(rust_core_link_input))
 app_$(1)_fel_elf := $$(app_$(1)_dir)/$(1)_fel.elf
 app_$(1)_bin_elf := $$(app_$(1)_dir)/$(1)_bin.elf
 app_$(1)_fel_bin := $$(app_$(1)_dir)/$(1)_fel.bin
@@ -379,13 +383,13 @@ endif
 	@echo "Images are in $$(app_$(1)_rel_dir)"
 
 ifeq ($(CONFIG_BACKTRACE_FULL),y)
-$$(app_$(1)_fel_pass1): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(fel_lds)
+$$(app_$(1)_fel_pass1): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(fel_lds)
 	@mkdir -p $$(dir $$@)
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) -o $$@
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(fel_lds) -o $$@
 
-$$(app_$(1)_bin_pass1): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
+$$(app_$(1)_bin_pass1): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(bin_lds)
 	@mkdir -p $$(dir $$@)
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) -o $$@
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(bin_lds) -o $$@
 
 $$(app_$(1)_fel_nm): $$(app_$(1)_fel_pass1)
 	@$$(NM) -n -S --defined-only $$< > $$@
@@ -405,41 +409,41 @@ $$(app_$(1)_fel_symbols_o): $$(app_$(1)_fel_symbols_s)
 $$(app_$(1)_bin_symbols_o): $$(app_$(1)_bin_symbols_s)
 	@$$(CC) $$(KBUILD_CPPFLAGS) $$(KBUILD_AFLAGS) -c $$< -o $$@
 
-$$(app_$(1)_fel_elf): $$(app_$(1)_fel_symbols_o) $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(fel_lds)
+$$(app_$(1)_fel_elf): $$(app_$(1)_fel_symbols_o) $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(fel_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_fel.elf"
-	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) \
+	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(fel_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@$$(NM) -n -S --defined-only $$@ > $$(app_$(1)_fel_nm)
 	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $$(app_$(1)_fel_nm) $$(app_$(1)_fel_symbols_s)
 	@$$(CC) $$(KBUILD_CPPFLAGS) $$(KBUILD_AFLAGS) -c $$(app_$(1)_fel_symbols_s) -o $$(app_$(1)_fel_symbols_o)
-	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) \
+	@$$(CC) $$(app_$(1)_fel_symbols_o) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(fel_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_fel.elf
 
-$$(app_$(1)_bin_elf): $$(app_$(1)_bin_symbols_o) $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
+$$(app_$(1)_bin_elf): $$(app_$(1)_bin_symbols_o) $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(bin_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_bin.elf"
-	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(bin_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@$$(NM) -n -S --defined-only $$@ > $$(app_$(1)_bin_nm)
 	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $$(app_$(1)_bin_nm) $$(app_$(1)_bin_symbols_s)
 	@$$(CC) $$(KBUILD_CPPFLAGS) $$(KBUILD_AFLAGS) -c $$(app_$(1)_bin_symbols_s) -o $$(app_$(1)_bin_symbols_o)
-	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+	@$$(CC) $$(app_$(1)_bin_symbols_o) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(bin_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_bin.elf
 else
-$$(app_$(1)_fel_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(fel_lds)
+$$(app_$(1)_fel_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(fel_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_fel.elf"
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(fel_lds) \
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(fel_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_fel.elf
 
-$$(app_$(1)_bin_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
+$$(app_$(1)_bin_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(bin_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_bin.elf"
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(bin_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_bin.elf
 endif
@@ -462,7 +466,8 @@ endef
 define efex_app_template
 app_$(1)_dir := $(image_root)/$(1)
 app_$(1)_rel_dir := $(image_rel_root)/$(1)
-app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
+app_$(1)_builtin := $(if $(filter $(1),$(rust_apps)),$(rust_app_$(1)_builtin),$(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o)
+app_$(1)_rust_input := $(if $(filter $(1),$(rust_apps)),$(call rust_app_lib,$(1)),$(rust_core_link_input))
 app_$(1)_efex_elf := $$(app_$(1)_dir)/$(1)_efex.elf
 app_$(1)_efex_bin := $$(app_$(1)_dir)/$(1)_efex.bin
 
@@ -470,10 +475,10 @@ app_$(1)_efex_bin := $$(app_$(1)_dir)/$(1)_efex.bin
 $(1): $$(app_$(1)_efex_bin)
 	@echo "Images are in $$(app_$(1)_rel_dir)"
 
-$$(app_$(1)_efex_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(efex_lds)
+$$(app_$(1)_efex_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(efex_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_efex.elf"
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(efex_lds) \
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(efex_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_efex.elf
 
@@ -486,7 +491,8 @@ endef
 define dram_app_template
 app_$(1)_dir := $(image_root)/$(1)
 app_$(1)_rel_dir := $(image_rel_root)/$(1)
-app_$(1)_builtin := $(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o
+app_$(1)_builtin := $(if $(filter $(1),$(rust_apps)),$(rust_app_$(1)_builtin),$(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o)
+app_$(1)_rust_input := $(if $(filter $(1),$(rust_apps)),$(call rust_app_lib,$(1)),$(rust_core_link_input))
 app_$(1)_dram_elf := $$(app_$(1)_dir)/$(1)_dram.elf
 app_$(1)_dram_bin := $$(app_$(1)_dir)/$(1)_dram.bin
 
@@ -494,10 +500,10 @@ app_$(1)_dram_bin := $$(app_$(1)_dir)/$(1)_dram.bin
 $(1): $$(app_$(1)_dram_bin)
 	@echo "Images are in $$(app_$(1)_rel_dir)"
 
-$$(app_$(1)_dram_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $(bin_lds)
+$$(app_$(1)_dram_elf): $(common_builtins) $$(app_$(1)_builtin) $(board_libs) $$(app_$(1)_rust_input) $(bin_lds)
 	@mkdir -p $$(dir $$@)
 	@echo "  LD      $$(app_$(1)_rel_dir)/$(1)_dram.elf"
-	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin)) -T$(bin_lds) \
+	@$$(CC) $$(call link_flags,$$(app_$(1)_builtin),$$(app_$(1)_rust_input)) -T$(bin_lds) \
 		-Wl,-Map,$$(@:.elf=.map) -o $$@
 	@cd $(objtree) && $$(SIZE) -B -x $$(app_$(1)_rel_dir)/$(1)_dram.elf
 
@@ -578,6 +584,7 @@ help:
 	@echo '  artifacts               Build images, companion firmware, and utilities'
 	@echo '  <app>                   Build one application for the selected mode'
 	@echo '  list-apps               List applications for the selected board'
+	@echo '  rust-ffi                Generate and build the optional Rust FFI library'
 	@echo '  tools                   Build host tools'
 	@echo '  utilities               Build standalone BL33 utility images'
 	@echo '  firmware                Build companion firmware for the selected board'

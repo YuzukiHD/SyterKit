@@ -4,12 +4,16 @@ The test tree validates hardware-independent APIs against the real SyterKit
 sources. Host cases use mocks only at hardware boundaries. Architecture cases
 build freestanding images and run them with QEMU.
 
+The `rust_ffi_bindings` host case runs the Rust binding and driver tests. It
+generates bindings from the normal public-header manifest and uses Rust ABI
+mocks, so it does not require a board or a cross compiler.
+
 Each directory below `cases/` is self-contained and contains:
 
 - `Makefile`: case type, source list, and build settings;
-- `main.c`: test code;
-- `data/`: input vectors and expected results;
-- `verify.sh`: case-specific result validation.
+- `main.c` or a language-specific test entry point;
+- `data/`: input vectors when required;
+- `verify.sh`: case-specific result validation when required.
 
 Run all tests with:
 

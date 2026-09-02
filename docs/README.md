@@ -11,6 +11,9 @@ subsystem details, see [Driver architecture](driver-model.md) and
 [Compile-time device tree](devicetree.md). Generated declarations are available
 in the [API documentation](https://syterkit.yuzukihd.top/api/html/).
 
+Optional bare-metal Rust bindings and Cargo integration are described in
+[Rust FFI](rust-ffi.md).
+
 ## Getting started
 
 ### Install dependencies
