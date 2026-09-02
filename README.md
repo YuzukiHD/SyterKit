@@ -24,16 +24,6 @@ SyterKit is a small, static bare-metal firmware framework for Allwinner SoCs. It
 
 SyterKit uses GNU Make, Kconfig, Kbuild-style object lists, application-owned initialization, and Linux-style board device trees compiled to immutable C data by [dt2c](https://github.com/YuzukiTsuru/dt2c).
 
-## Features
-
-- Board bring-up and peripheral drivers for Allwinner ARM (Cortex-A) and RISC-V (C906/C907/E907) SoCs
-- Bootloader applications (`syter_boot`) with image loading for SD/eMMC and SPI NOR/NAND boot
-- `eGON.BT0` boot image generation, padding, and checksums via `tools/mksunxi`
-- Compile-time device trees: board DTS validated and converted to static C data by [dt2c](https://github.com/YuzukiTsuru/dt2c); payload DTBs for loaded kernels handled with libfdt
-- Linux kernel-style build system: Kconfig, Kbuild object lists, GNU Make, and out-of-tree `O=` builds
-- Companion firmware and standalone BL33 utilities
-- Host and QEMU-based tests, Doxygen API documentation
-
 ## Supported Boards
 
 Run `make list-defconfigs` for the authoritative list in your checkout. Board-specific applications and hardware notes live in [`boards/`](boards/). Archived board sources are preserved under [`archive/`](archive/).
