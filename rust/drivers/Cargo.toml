@@ -11,5 +11,6 @@ build = "build.rs"
 crate-type = ["rlib"]
 
 [dependencies]
+embedded-hal = "1.0.0"
 syterkit-ffi = { path = "../ffi" }
 syterkit-lib = { path = "../lib" }

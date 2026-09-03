@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
-use core::marker::PhantomData;
-
+use core::{convert::Infallible, marker::PhantomData};
+use embedded_hal::digital::{ErrorType, InputPin, OutputPin, PinState};
 use syterkit_ffi::raw;
 #[cfg(syterkit_config_driver_gpio_v2_pow)]
 use syterkit_lib::{DriverResult, INVALID_ARGUMENT};
@@ -77,29 +77,6 @@ impl GpioPin {
         unsafe { raw::sunxi_gpio_init(&self.raw) };
     }
 
-    /// Set the output level.
-    pub fn set_level(&self, high: bool) {
-        let value = if high {
-            raw::GPIO_LEVEL_HIGH
-        } else {
-            raw::GPIO_LEVEL_LOW
-        };
-        unsafe { raw::sunxi_gpio_set_value(&self.raw, value as i32) };
-    }
-
-    pub fn set_high(&self) {
-        self.set_level(true);
-    }
-
-    pub fn set_low(&self) {
-        self.set_level(false);
-    }
-
-    /// Read the current digital level.
-    pub fn is_high(&self) -> bool {
-        unsafe { raw::sunxi_gpio_read(&self.raw) != 0 }
-    }
-
     pub fn set_pull(&self, pull: GpioPull) {
         unsafe { raw::sunxi_gpio_set_pull(&self.raw, pull.into_raw()) };
     }
@@ -127,11 +104,45 @@ impl GpioPin {
     }
 }
 
+impl ErrorType for GpioPin {
+    type Error = Infallible;
+}
+
+impl InputPin for GpioPin {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
+        Ok(unsafe { raw::sunxi_gpio_read(&self.raw) != 0 })
+    }
+
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
+        Ok(unsafe { raw::sunxi_gpio_read(&self.raw) == 0 })
+    }
+}
+
+impl OutputPin for GpioPin {
+    fn set_low(&mut self) -> Result<(), Self::Error> {
+        self.set_state(PinState::Low)
+    }
+
+    fn set_high(&mut self) -> Result<(), Self::Error> {
+        self.set_state(PinState::High)
+    }
+
+    fn set_state(&mut self, state: PinState) -> Result<(), Self::Error> {
+        let value = match state {
+            PinState::Low => raw::GPIO_LEVEL_LOW,
+            PinState::High => raw::GPIO_LEVEL_HIGH,
+        };
+        unsafe { raw::sunxi_gpio_set_value(&self.raw, value as i32) };
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{GpioPin, GpioPull, GPIO};
     use core::ffi::c_int;
     use core::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
+    use embedded_hal::digital::{InputPin, OutputPin, StatefulOutputPin};
     use std::sync::Mutex;
 
     static TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -206,18 +217,18 @@ mod tests {
         GPIO_DRIVE.store(0, Ordering::Relaxed);
 
         GPIO.initialize_power_mode();
-        let pin = unsafe { GpioPin::new(0x1000, 7, 2, 1) };
+        let mut pin = unsafe { GpioPin::new(0x1000, 7, 2, 1) };
         pin.initialize();
         pin.set_pull(GpioPull::Down);
         pin.set_drive_strength(3);
-        pin.set_high();
+        pin.set_high().ok();
 
         assert!(GPIO_INITIALIZED.load(Ordering::Relaxed));
         assert_eq!(GPIO_PULL.load(Ordering::Relaxed), 1);
         assert_eq!(GPIO_DRIVE.load(Ordering::Relaxed), 3);
-        assert!(pin.is_high());
-        pin.set_low();
-        assert!(!pin.is_high());
+        assert!(pin.is_high().unwrap());
+        pin.set_low().ok();
+        assert!(!pin.is_high().unwrap());
 
         #[cfg(syterkit_config_driver_gpio_v2_pow)]
         {
