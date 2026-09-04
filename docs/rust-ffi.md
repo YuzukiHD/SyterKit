@@ -93,7 +93,7 @@ The generated declarations are exposed as the `syterkit_ffi::raw` module, with `
 
 ## Crate layout
 
-The workspace (`rust/Cargo.toml`, resolver 2, `panic = "abort"` in the release profile) contains:
+The workspace (`Cargo.toml`, resolver 2, `panic = "abort"` in the release profile) contains:
 
 - `syterkit-ffi` (`rust/ffi`) — includes the generated `bindings.rs` into the `raw` module. It is an ABI description, not a driver model.
 - `syterkit-lib` (`rust/lib`) — shared no_std helpers: `DriverResult<T>` (the `Result<T, i32>` wrapper around C status codes), `INVALID_ARGUMENT`, `c_name` for NUL-terminated byte strings, `status` for the common zero-is-success convention, the `BlockDevice` trait and its buffer/block-count checking helpers, and `Disk`, the adapter over the existing FatFs disk layer.

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 [workspace]
-members = ["ffi", "core", "drivers", "lib"]
+members = ["rust/ffi", "rust/core", "rust/drivers", "rust/lib"]
 resolver = "2"
 
 [profile.release]
