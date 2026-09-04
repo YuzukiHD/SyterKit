@@ -25,7 +25,7 @@ run:
 	 SYTERKIT_FFI_ARCH=arm \
 	 SYTERKIT_FFI_CLANG_ARGS="$(RUST_TEST_CLANG_ARGS)" \
 	 CARGO_TARGET_DIR="$(RUST_TEST_TARGET_DIR)" \
-	 $(RUST_CARGO) test --locked --manifest-path "$(srctree)/rust/Cargo.toml" \
+	 $(RUST_CARGO) test --locked --manifest-path "$(srctree)/Cargo.toml" \
 		--package syterkit-ffi --package syterkit-drivers \
 		--package syterkit-core --package syterkit-lib
 

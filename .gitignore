@@ -3,7 +3,7 @@
 /.obj/
 /.kconfig/
 /out/
-/rust/**/target/
+/target/
 /build/
 /test/out/
 /docs/api/
