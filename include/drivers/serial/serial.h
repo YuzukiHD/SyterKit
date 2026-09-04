@@ -131,6 +131,21 @@ int sunxi_serial_init_stdout(void);
 void sunxi_serial_putc(void *arg, char c);
 
 /**
+ * @brief Wait until all queued output has left the UART transmitter.
+ *
+ * @param arg Pointer to the Sunxi serial interface argument.
+ */
+void sunxi_serial_flush(void *arg);
+
+/**
+ * @brief Read the UART line status register.
+ *
+ * @param arg Pointer to the Sunxi serial interface argument.
+ * @return The current UART line status register value.
+ */
+uint32_t sunxi_serial_get_status(void *arg);
+
+/**
  * @brief Check if there is any character available for reading from the Sunxi serial interface.
  *
  * @param arg Pointer to the Sunxi serial interface argument.

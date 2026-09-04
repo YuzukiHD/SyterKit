@@ -45,7 +45,7 @@ pub use psram::Psram;
 pub use pwm::{Pwm, PwmConfig, PwmMode, PwmPolarity};
 pub use remoteproc::RemoteProcessor;
 pub use rtc::Rtc;
-pub use serial::{SerialPort, StdoutUart};
+pub use serial::{SerialError, SerialPort, StdoutUart};
 pub use sid::Sid;
 pub use soc::{Soc, SOC};
 pub use spi::{SpiBus, SpiIoMode};

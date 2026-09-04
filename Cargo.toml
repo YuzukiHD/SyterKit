@@ -2,6 +2,7 @@
 
 [workspace]
 members = ["rust/ffi", "rust/core", "rust/drivers", "rust/lib"]
+exclude = ["tools/dt2c"]
 resolver = "2"
 
 [profile.release]

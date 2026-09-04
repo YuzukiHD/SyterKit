@@ -135,6 +135,28 @@ void __attribute__((weak)) sunxi_serial_putc(void *arg, char c)
 }
 
 /**
+ * @brief Wait until all queued UART output has left the transmitter.
+ *
+ * @param[in] arg Pointer to the UART structure (cast to void* for compatibility)
+ */
+void __attribute__((weak)) sunxi_serial_flush(void *arg)
+{
+	sunxi_serial_t *uart = (sunxi_serial_t *)arg;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
+
+	while ((serial_reg->lsr & (1 << 6)) == 0)
+		;
+}
+
+uint32_t __attribute__((weak)) sunxi_serial_get_status(void *arg)
+{
+	sunxi_serial_t *uart = (sunxi_serial_t *)arg;
+	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
+
+	return serial_reg->lsr;
+}
+
+/**
  * @brief Read a character from the UART
  * 
  * This function reads a single character from the UART receive buffer. It waits until

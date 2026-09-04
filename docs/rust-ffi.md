@@ -136,7 +136,7 @@ pub fn main() -> i32 {
 }
 ```
 
-`StdoutUart::init()` only initializes the device-tree-selected console; `SerialPort` wraps a caller-owned UART descriptor instead.
+`StdoutUart::init()` only initializes the device-tree-selected console. The returned handle implements the blocking `embedded_io::Read` and `embedded_io::Write` traits; `SerialPort` wraps a caller-owned UART descriptor instead.
 
 ## Rust applications
 
