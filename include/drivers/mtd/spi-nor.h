@@ -303,6 +303,16 @@ uint32_t spi_nor_read_block(spi_nor_t *nor, uint8_t *buf, uint32_t blk_no, uint3
  */
 uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rxlen);
 
+/**
+ * @brief Program data to the SPI NOR flash memory.
+ *
+ * Data is split at the flash page boundary. The destination must have been
+ * erased by the caller when changing programmed bits from zero back to one.
+ *
+ * @return Number of bytes programmed, or 0 on invalid input or failure.
+ */
+uint32_t spi_nor_write(spi_nor_t *nor, const uint8_t *buf, uint32_t addr, uint32_t txlen);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

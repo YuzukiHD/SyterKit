@@ -1075,6 +1075,7 @@ static int spif_nor_write_page(spif_nor_t *nor, uint32_t addr, const uint8_t *bu
 	int ret;
 
 	if (nor == NULL || buf == NULL || count == 0U || count > SPIF_NOR_TRAINING_PAGE_SIZE ||
+		(nor->info.address_length != 3U && nor->info.address_length != 4U) ||
 		(addr & (SPIF_NOR_TRAINING_PAGE_SIZE - 1U)) + count > SPIF_NOR_TRAINING_PAGE_SIZE)
 		return DRIVER_ERROR_INVALID;
 	ret = spif_nor_set_write_enable(nor);
@@ -1809,6 +1810,31 @@ uint32_t spif_nor_read(spif_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rx
 		if (spif_nor_read_bytes(nor, addr + done, buf + done, length) != 0)
 			break;
 		done += length;
+	}
+	return done;
+}
+
+/**
+ * @brief Program a byte range in SPIF NOR, splitting transfers at page boundaries.
+ */
+uint32_t spif_nor_write(spif_nor_t *nor, const uint8_t *buf, uint32_t addr, uint32_t txlen)
+{
+	uint32_t done = 0U;
+
+	if (nor == NULL || buf == NULL || txlen == 0U || nor->info.capacity == 0U || spif_nor_select(nor) != 0 ||
+		(uint64_t)addr >= nor->info.capacity)
+		return 0U;
+	if ((uint64_t)txlen > (uint64_t)nor->info.capacity - addr)
+		txlen = nor->info.capacity - addr;
+	while (done < txlen) {
+		uint32_t page_offset = (addr + done) & (SPIF_NOR_TRAINING_PAGE_SIZE - 1U);
+		uint32_t count = SPIF_NOR_TRAINING_PAGE_SIZE - page_offset;
+
+		if (count > txlen - done)
+			count = txlen - done;
+		if (spif_nor_wait_for_busy(nor) != 0 || spif_nor_write_page(nor, addr + done, buf + done, count) != 0)
+			break;
+		done += count;
 	}
 	return done;
 }

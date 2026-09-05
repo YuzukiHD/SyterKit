@@ -21,6 +21,7 @@
 
 #define SPI_NOR_MAX_TRANSFER 65536U
 #define SPI_NOR_MAX_HEADER   261U
+#define SPI_NOR_PAGE_SIZE    256U
 
 static const spi_nor_info_t spi_nor_info_table[] = {
 	{ "W25X40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, NOR_OPCODE_READ, NOR_OPCODE_PROG, NOR_OPCODE_WREN,
@@ -75,11 +76,15 @@ static int spi_nor_exec_op(spi_nor_t *nor, const struct spi_mem_op *op)
 
 	dummy_bytes = ((uint32_t)op->dummy.nbytes * op->dummy.buswidth) / 8U;
 	if (dummy_bytes != 0U) {
+		if (dummy_bytes > sizeof(tx) || txlen > sizeof(tx) - dummy_bytes)
+			return DRIVER_ERROR_INVALID;
 		memset(tx + txlen, 0, dummy_bytes);
 		txlen += dummy_bytes;
 	}
 
 	if (op->data.dir == SPI_MEM_DATA_OUT) {
+		if (op->data.buf.out == NULL || txlen > sizeof(tx) || op->data.nbytes > sizeof(tx) - txlen)
+			return DRIVER_ERROR_INVALID;
 		memcpy(tx + txlen, op->data.buf.out, op->data.nbytes);
 		txlen += op->data.nbytes;
 	}
@@ -957,6 +962,41 @@ static int spi_nor_read_bytes(spi_nor_t *nor, uint32_t addr, uint8_t *buf, uint3
 	return spi_nor_exec_op(nor, &op);
 }
 
+static uint8_t spi_nor_program_opcode(const spi_nor_info_t *info)
+{
+	if (info != NULL && info->address_length == 4U && info->opcode_write == NOR_OPCODE_PROG)
+		return NOR_OPCODE_PROG_4B;
+	return info != NULL ? info->opcode_write : NOR_OPCODE_PROG;
+}
+
+static int spi_nor_write_page(spi_nor_t *nor, uint32_t addr, const uint8_t *buf, uint32_t count)
+{
+	struct spi_mem_op op = { 0 };
+	int ret;
+
+	if (nor == NULL || buf == NULL || count == 0U || count > SPI_NOR_PAGE_SIZE ||
+		(nor->info.address_length != 3U && nor->info.address_length != 4U) ||
+		(addr & (SPI_NOR_PAGE_SIZE - 1U)) + count > SPI_NOR_PAGE_SIZE)
+		return DRIVER_ERROR_INVALID;
+	ret = spi_nor_set_write_enable(nor);
+	if (ret != 0)
+		return ret;
+	op.cmd.nbytes = 1U;
+	op.cmd.buswidth = SPI_MEM_BUSWIDTH_1;
+	op.cmd.opcode = spi_nor_program_opcode(&nor->info);
+	op.addr.nbytes = nor->info.address_length;
+	op.addr.buswidth = SPI_MEM_BUSWIDTH_1;
+	op.addr.val = addr;
+	op.data.dir = SPI_MEM_DATA_OUT;
+	op.data.nbytes = count;
+	op.data.buswidth = SPI_MEM_BUSWIDTH_1;
+	op.data.buf.out = buf;
+	ret = spi_nor_exec_op(nor, &op);
+	if (ret != 0)
+		return ret;
+	return spi_nor_wait_for_busy(nor);
+}
+
 /**
  * @brief Detects the presence of an SPI NOR flash chip.
  *
@@ -1147,6 +1187,31 @@ uint32_t spi_nor_read(spi_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rxle
 		if (spi_nor_read_bytes(nor, addr + done, buf + done, length) != 0)
 			break;
 		done += length;
+	}
+	return done;
+}
+
+/**
+ * @brief Program a byte range in SPI NOR, splitting transfers at page boundaries.
+ */
+uint32_t spi_nor_write(spi_nor_t *nor, const uint8_t *buf, uint32_t addr, uint32_t txlen)
+{
+	uint32_t done = 0U;
+
+	if (nor == NULL || buf == NULL || txlen == 0U || nor->info.capacity == 0U || spi_nor_select(nor) != 0 ||
+		(uint64_t)addr >= nor->info.capacity)
+		return 0U;
+	if ((uint64_t)txlen > (uint64_t)nor->info.capacity - addr)
+		txlen = nor->info.capacity - addr;
+	while (done < txlen) {
+		uint32_t page_offset = (addr + done) & (SPI_NOR_PAGE_SIZE - 1U);
+		uint32_t count = SPI_NOR_PAGE_SIZE - page_offset;
+
+		if (count > txlen - done)
+			count = txlen - done;
+		if (spi_nor_wait_for_busy(nor) != 0 || spi_nor_write_page(nor, addr + done, buf + done, count) != 0)
+			break;
+		done += count;
 	}
 	return done;
 }

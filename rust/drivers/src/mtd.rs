@@ -36,6 +36,17 @@ impl<'a> SpiNor<'a> {
         })
     }
 
+    pub fn write(&mut self, address: u32, buffer: &[u8]) -> DriverResult<u32> {
+        write_result(unsafe {
+            raw::spi_nor_write(
+                self.raw,
+                buffer.as_ptr(),
+                address,
+                buffer.len().try_into().map_err(|_| INVALID_ARGUMENT)?,
+            )
+        })
+    }
+
     pub fn read_blocks(&mut self, block: u32, count: u32, buffer: &mut [u8]) -> u32 {
         if syterkit_lib::checked_block_bytes(self.block_size(), u64::from(count), buffer.len())
             .is_err()
@@ -65,6 +76,17 @@ impl<'a> SpiNand<'a> {
             raw::spi_nand_read(
                 self.raw,
                 buffer.as_mut_ptr(),
+                address,
+                buffer.len().try_into().map_err(|_| INVALID_ARGUMENT)?,
+            )
+        })
+    }
+
+    pub fn write(&mut self, address: u32, buffer: &[u8]) -> DriverResult<u32> {
+        write_result(unsafe {
+            raw::spi_nand_write(
+                self.raw,
+                buffer.as_ptr(),
                 address,
                 buffer.len().try_into().map_err(|_| INVALID_ARGUMENT)?,
             )
@@ -105,6 +127,17 @@ impl<'a> SpifNor<'a> {
         })
     }
 
+    pub fn write(&mut self, address: u32, buffer: &[u8]) -> DriverResult<u32> {
+        write_result(unsafe {
+            raw::spif_nor_write(
+                self.raw,
+                buffer.as_ptr(),
+                address,
+                buffer.len().try_into().map_err(|_| INVALID_ARGUMENT)?,
+            )
+        })
+    }
+
     pub fn read_blocks(&mut self, block: u32, count: u32, buffer: &mut [u8]) -> u32 {
         if syterkit_lib::checked_block_bytes(self.block_size(), u64::from(count), buffer.len())
             .is_err()
@@ -121,6 +154,10 @@ fn read_result(value: u32) -> DriverResult<u32> {
     } else {
         Ok(value)
     }
+}
+
+fn write_result(value: u32) -> DriverResult<u32> {
+    read_result(value)
 }
 
 #[cfg(test)]
@@ -154,6 +191,15 @@ mod tests {
         count
     }
     #[no_mangle]
+    pub extern "C" fn spi_nor_write(
+        _nor: *mut syterkit_ffi::raw::spi_nor_t,
+        _buffer: *const u8,
+        _address: u32,
+        length: u32,
+    ) -> u32 {
+        length
+    }
+    #[no_mangle]
     pub extern "C" fn spi_nand_detect(_nand: *mut syterkit_ffi::raw::spi_nand_t) -> c_int {
         0
     }
@@ -167,6 +213,15 @@ mod tests {
         unsafe {
             core::slice::from_raw_parts_mut(buffer, length as usize).fill(0xb2);
         }
+        length
+    }
+    #[no_mangle]
+    pub extern "C" fn spi_nand_write(
+        _nand: *mut syterkit_ffi::raw::spi_nand_t,
+        _buffer: *const u8,
+        _address: u32,
+        length: u32,
+    ) -> u32 {
         length
     }
     #[no_mangle]
@@ -194,6 +249,15 @@ mod tests {
     ) -> u32 {
         count
     }
+    #[no_mangle]
+    pub extern "C" fn spif_nor_write(
+        _nor: *mut syterkit_ffi::raw::spif_nor_t,
+        _buffer: *const u8,
+        _address: u32,
+        length: u32,
+    ) -> u32 {
+        length
+    }
 
     #[test]
     fn mtd_wrappers_dispatch_detection_and_reads() {
@@ -205,6 +269,7 @@ mod tests {
         let mut buffer = [0; 4];
         assert_eq!(nor.read(0x100, &mut buffer), Ok(4));
         assert_eq!(buffer, [0xa1; 4]);
+        assert_eq!(nor.write(0x100, &[1, 2, 3, 4]), Ok(4));
         let mut block_buffer = [0; 12];
         assert_eq!(nor.read_blocks(1, 3, &mut block_buffer), 3);
 
@@ -213,6 +278,7 @@ mod tests {
         nand.detect().unwrap();
         assert_eq!(nand.read(0, &mut buffer), Ok(4));
         assert_eq!(buffer, [0xb2; 4]);
+        assert_eq!(nand.write(0, &[1, 2, 3, 4]), Ok(4));
 
         let mut raw_spif: syterkit_ffi::raw::spif_nor_t = unsafe { core::mem::zeroed() };
         raw_spif.info.blksz = 4;
@@ -221,6 +287,7 @@ mod tests {
         spif.detect().unwrap();
         assert_eq!(spif.read(0, &mut buffer), Ok(4));
         assert_eq!(buffer, [0xc3; 4]);
+        assert_eq!(spif.write(0, &[1, 2, 3, 4]), Ok(4));
         assert_eq!(spif.read_blocks(0, 2, &mut block_buffer), 2);
 
         assert_eq!(nor.block_size(), 4);

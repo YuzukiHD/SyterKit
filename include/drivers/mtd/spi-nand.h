@@ -73,6 +73,16 @@ int spi_nand_detect(spi_nand_t *nand);
  */
 uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf, uint32_t addr, uint32_t rxlen);
 
+/**
+ * @brief Program data to the SPI NAND flash memory.
+ *
+ * Data is split at the NAND page boundary. Blocks must be erased before
+ * programming, and the caller is responsible for bad-block management.
+ *
+ * @return Number of bytes programmed, or 0 on invalid input or failure.
+ */
+uint32_t spi_nand_write(spi_nand_t *nand, const uint8_t *buf, uint32_t addr, uint32_t txlen);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

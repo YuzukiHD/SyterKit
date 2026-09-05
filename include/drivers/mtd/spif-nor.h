@@ -46,4 +46,14 @@ uint32_t spif_nor_read_block(spif_nor_t *nor, uint8_t *buf, uint32_t blk_no, uin
  */
 uint32_t spif_nor_read(spif_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rxlen);
 
+/**
+ * @brief Program data to the SPIF NOR flash memory.
+ *
+ * Data is split at the flash page boundary. The destination must have been
+ * erased by the caller when changing programmed bits from zero back to one.
+ *
+ * @return Number of bytes programmed, or 0 on invalid input or failure.
+ */
+uint32_t spif_nor_write(spif_nor_t *nor, const uint8_t *buf, uint32_t addr, uint32_t txlen);
+
 #endif /* __DRIVERS_MTD_SPIF_NOR_H__ */

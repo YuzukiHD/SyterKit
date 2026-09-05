@@ -13,6 +13,7 @@
 #include <log.h>
 
 #include <driver.h>
+#include <malloc.h>
 #include <drivers/clk/clk.h>
 #include <drivers/dma/dma.h>
 #include <drivers/gpio/gpio.h>
@@ -346,7 +347,7 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi)
 	do {
 		r = sunxi_spi_transfer(spi, SPI_IO_SINGLE, tx, 2, rx, 1); /* Perform SPI transfer */
 		if (r < 0)
-			break;
+			return false;
 		timeout--;
 		if (!timeout) {
 			pr_warn("NAND: wait busy timeout\n");
@@ -355,6 +356,58 @@ static bool spi_nand_wait_while_busy(sunxi_spi_t *spi)
 	} while ((rx[0] & 0x1) == 0x1); /* Check SR3 Busy bit */
 
 	return true;
+}
+
+static int spi_nand_set_write_enable(spi_nand_t *nand)
+{
+	uint8_t tx = OPCODE_WRITE_ENABLE;
+	uint8_t status;
+
+	if (nand == NULL || nand->spi == NULL)
+		return -1;
+	if (sunxi_spi_transfer(nand->spi, SPI_IO_SINGLE, &tx, 1, NULL, 0) < 0)
+		return -1;
+	if (spi_nand_get_config(nand->spi, CONFIG_ADDR_STATUS, &status) != 0 || !(status & (1U << 1)))
+		return -1;
+	return 0;
+}
+
+static int spi_nand_write_page(spi_nand_t *nand, uint32_t page, uint32_t column, const uint8_t *buf, uint32_t count)
+{
+	uint8_t *tx;
+	uint8_t exec[4];
+	uint8_t status;
+	int ret;
+
+	if (nand == NULL || nand->spi == NULL || buf == NULL || count == 0U || column >= nand->info.page_size ||
+		count > nand->info.page_size - column)
+		return -1;
+	if (count > 0xffffffffU - 3U)
+		return -1;
+	tx = malloc((size_t)count + 3U);
+	if (tx == NULL)
+		return -1;
+	tx[0] = OPCODE_PROGRAM_LOAD;
+	tx[1] = (uint8_t)(column >> 8);
+	tx[2] = (uint8_t)column;
+	memcpy(tx + 3, buf, count);
+	ret = sunxi_spi_transfer(nand->spi, SPI_IO_SINGLE, tx, count + 3U, NULL, 0);
+	free(tx);
+	if (ret < 0)
+		return -1;
+
+	exec[0] = OPCODE_PROGRAM_EXEC;
+	exec[1] = (uint8_t)(page >> 16);
+	exec[2] = (uint8_t)(page >> 8);
+	exec[3] = (uint8_t)page;
+	if (sunxi_spi_transfer(nand->spi, SPI_IO_SINGLE, exec, sizeof(exec), NULL, 0) < 0)
+		return -1;
+	if (!spi_nand_wait_while_busy(nand->spi))
+		return -1;
+	if (spi_nand_get_config(nand->spi, CONFIG_ADDR_STATUS, &status) != 0)
+		return -1;
+	/* P_FAIL and E_FAIL are bits 3 and 2 in the common status register. */
+	return (status & ((1U << 3) | (1U << 2))) == 0U ? 0 : -1;
 }
 
 /**
@@ -549,6 +602,43 @@ uint32_t spi_nand_read(spi_nand_t *nand, uint8_t *buf, uint32_t addr, uint32_t r
 	}
 
 	return len; /* Return total number of bytes read */
+}
+
+/**
+ * @brief Program a byte range in SPI NAND, splitting transfers at page boundaries.
+ */
+uint32_t spi_nand_write(spi_nand_t *nand, const uint8_t *buf, uint32_t addr, uint32_t txlen)
+{
+	uint64_t capacity;
+	uint64_t available;
+	uint32_t done = 0U;
+
+	if (nand == NULL || buf == NULL || txlen == 0U || nand->info.page_size == 0U ||
+		nand->info.pages_per_block == 0U || nand->info.blocks_per_die == 0U || nand->info.ndies == 0U ||
+		spi_nand_select(nand) != 0)
+		return 0U;
+	capacity = (uint64_t)nand->info.page_size * nand->info.pages_per_block * nand->info.blocks_per_die * nand->info.ndies;
+	if ((uint64_t)addr >= capacity)
+		return 0U;
+	available = capacity - addr;
+	if (available > 0x100000000ULL - addr)
+		available = 0x100000000ULL - addr;
+	if ((uint64_t)txlen > available)
+		txlen = (uint32_t)available;
+	while (done < txlen) {
+		uint32_t current = addr + done;
+		uint32_t column = current % nand->info.page_size;
+		uint32_t count = nand->info.page_size - column;
+		uint32_t page = current / nand->info.page_size;
+
+		if (count > txlen - done)
+			count = txlen - done;
+		if (!spi_nand_wait_while_busy(nand->spi) || spi_nand_set_write_enable(nand) != 0 ||
+			spi_nand_write_page(nand, page, column, buf + done, count) != 0)
+			break;
+		done += count;
+	}
+	return done;
 }
 
 DT2C_DRIVER_COMPAT("spi-nand");
