@@ -1,6 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0+
 include $(srctree)/boards/Makefile.common
 apps-sram-y := app
+
+ifeq ($(CONFIG_ARCH_RISCV32)$(CONFIG_DRIVER_PSRAM),yy)
+apps-sram-y += spinor-boot
+endif
+
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
 apps-sram-$(CONFIG_DRIVER_PLIC) += intc_test
 apps-sram-$(CONFIG_DRIVER_USB) += usb_test
