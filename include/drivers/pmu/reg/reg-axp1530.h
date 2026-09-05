@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp1530.h
+ * @brief Register map for the AXP1530 PMIC.
+ */
+
 #ifndef __REG_AXP1530_H__
 #define __REG_AXP1530_H__
 
@@ -35,4 +40,4 @@
 #define AXP1530_DCDC1_2_POWER_ON_DEFAULT_SET (0x80)
 #define AXP1530_DCDC3_ALDO1_POWER_ON_DEFAULT_SET (0x81)
 
-#endif// __REG_AXP1530_H__
+#endif // __REG_AXP1530_H__

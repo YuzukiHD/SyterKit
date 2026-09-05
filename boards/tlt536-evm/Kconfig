@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_TLT536_EVM
+	bool "TLT536 EVM"
+	depends on ARCH_ARM32 && CPU_ARMV8_2
+	select SOC_SUN55IW6

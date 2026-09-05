@@ -7,7 +7,7 @@ SECTIONS
 	. = ALIGN(4);
 	.text :
 	{
-		.obj/source/start.o (*.text)
+		KEEP(*start.o(.text))
 		*(.text*)
 	}
 

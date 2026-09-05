@@ -3,12 +3,12 @@
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  */
-#include "libfdt_env.h"
+#include <lib/fdt/libfdt_env.h>
 
-#include <fdt.h>
-#include <libfdt.h>
+#include <lib/fdt/fdt.h>
+#include <lib/fdt/libfdt.h>
 
-#include "libfdt_internal.h"
+#include <lib/fdt/libfdt_internal.h>
 
 int fdt_setprop_inplace_namelen_partial(void *fdt, int nodeoffset, const char *name, int namelen, uint32_t idx, const void *val, int len) {
 	void *propval;

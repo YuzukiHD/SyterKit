@@ -1,0 +1,67 @@
+/* SPDX-License-Identifier:	GPL-2.0+ */
+#define pr_fmt(fmt) "mmc-sun300iw1: " fmt
+
+#include <io.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <types.h>
+
+#include <log.h>
+#include <timer.h>
+
+#include <mmu.h>
+
+#include <drivers/gpio/gpio.h>
+
+#include <drivers/mmc/mmc.h>
+#include <drivers/mmc/sdhci.h>
+
+/**
+ * @brief Set the SDHC controller's clock frequency.
+ *
+ * This function sets the clock frequency for the specified SDHC controller.
+ *
+ * @param sdhci Pointer to the SDHC controller structure.
+ * @param clk_hz Desired clock frequency in Hertz.
+ * @return Returns 0 on success, -1 on failure.
+ */
+int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
+{
+	uint32_t reg_val = 0x0, sclk_hz = 0x0, div = 0x0;
+	uint32_t source;
+
+	if (sdhci == NULL || clk_hz == 0U)
+		return -1;
+	sunxi_sdhci_clk_t clk = sdhci->sdhci_clk;
+
+	source = clk_hz <= 4000000U ? 0U : clk.default_clk_sel;
+	sclk_hz = sunxi_sdhci_clk_source_rate(&clk, source);
+	if (sclk_hz == 0U) {
+		pr_debug("unsupported clock source %u\n", source);
+		return -1;
+	}
+
+	div = sclk_hz / clk_hz;
+	if (sclk_hz % clk_hz)
+		div += 1;
+
+	for (clk.factor_n = 1; clk.factor_n <= 32; clk.factor_n++) {
+		for (clk.factor_m = clk.factor_n; clk.factor_m <= 32; clk.factor_m++) {
+			if (clk.factor_n * clk.factor_m == div) {
+				goto set_mclk;
+			}
+		}
+	}
+	pr_warn("Illegal frequency division parameters %d\n", div);
+
+set_mclk:
+	reg_val = BIT(31) | (source << 24) | ((clk.factor_n - 1) << clk.reg_factor_n_offset) | ((clk.factor_m - 1) << clk.reg_factor_m_offset);
+
+	writel(reg_val, clk.reg_base);
+
+	pr_trace("sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base),
+		     source, div, clk.factor_n, clk.factor_m);
+	return 0;
+}

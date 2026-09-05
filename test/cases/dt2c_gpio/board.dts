@@ -1,0 +1,116 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		gpio0 = &pio;
+		gpio1 = &r_pio;
+		gpio-disabled = &pio_disabled;
+		gpio-invalid-cells = &pio_invalid_cells;
+		gpio-invalid-reg = &pio_invalid_reg;
+		gpio-invalid-bank = &pio_invalid_bank;
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		uart0_pins: uart0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 8 6>,
+				<SUNXI_GPIO_PORT_B 9 6>;
+		};
+
+		bad_count_pins: bad-count-pins {
+			allwinner,pins = <SUNXI_GPIO_PORT_B 8>;
+		};
+	};
+
+	r_pio: pinctrl@7022000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x07022000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		r_uart_pins: r-uart-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 3 2>,
+				<SUNXI_GPIO_PORT_L 4 2>;
+		};
+	};
+
+	pio_disabled: pinctrl@3000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x03000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+		status = "disabled";
+	};
+
+	pio_invalid_cells: pinctrl@4000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x04000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+
+	pio_invalid_reg: pinctrl@0 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+	};
+
+	pio_invalid_bank: pinctrl@5000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x05000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_N>;
+		allwinner,bank-count = <2>;
+		#gpio-cells = <3>;
+		gpio-controller;
+	};
+
+	orphan_pins: orphan-pins {
+		allwinner,pins = <SUNXI_GPIO_PORT_C 1 4>;
+	};
+
+	consumer {
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart0_pins>;
+		reset-gpio = <&r_pio SUNXI_GPIO_PORT_L 3 1>;
+		wrong-controller-gpio = <&pio SUNXI_GPIO_PORT_L 3 1>;
+		invalid-pin-gpio = <&pio 14 0 1>;
+		disabled-gpio = <&pio_disabled SUNXI_GPIO_PORT_A 0 1>;
+	};
+
+	r-consumer {
+		pinctrl-names = "default";
+		pinctrl-0 = <&r_uart_pins>;
+	};
+
+	bad-parent-consumer {
+		pinctrl-names = "default";
+		pinctrl-0 = <&orphan_pins>;
+	};
+
+	bad-count-consumer {
+		pinctrl-names = "default";
+		pinctrl-0 = <&bad_count_pins>;
+	};
+};

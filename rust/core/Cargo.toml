@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+[package]
+name = "syterkit-core"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0-only"
+build = "build.rs"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+syterkit-drivers = { path = "../drivers" }
+syterkit-lib = { path = "../lib" }
+syterkit-ffi = { path = "../ffi" }

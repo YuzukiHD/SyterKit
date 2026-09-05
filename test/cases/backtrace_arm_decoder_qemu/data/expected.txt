@@ -1,0 +1,9 @@
+CHECK thumb-imm8 PASS
+CHECK thumb-rotate PASS
+CHECK thumb-replicate PASS
+CHECK arm-sub PASS
+CHECK thumb-sub PASS
+CHECK thumb-sub-wide PASS
+CHECK arm-return PASS
+CHECK thumb-return PASS
+TEST PASS backtrace_arm_decoder_qemu

@@ -5,63 +5,72 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 /**
- * Writes a single character 'c' to the UART output.
+ * @brief Writes a single character 'c' to the UART output.
  *
- * @param c The character to be written.
- * @return The character that was written.
+ * @param[in] c The character to write.
+ * @return Zero after the character has been written.
  */
 int uart_putchar(int c);
 
 /**
- * Writes the null-terminated string 's' to the UART output.
+ * @brief Writes the null-terminated string 's' to the UART output.
  *
- * @param s The string to be written.
- * @return The number of characters written, excluding the terminating null byte.
+ * @param[in] s The string to write.
+ * @return One after the complete string has been written.
  */
 int uart_puts(const char *s);
 
 /**
- * Reads a single character from the UART input.
+ * @brief Reads a single character from the UART input.
  *
- * @return The character that was read.
+ * @return The received character, with carriage return converted to newline.
  */
 int uart_getchar(void);
 
 /**
- * Waits for and returns a single character from the UART input.
+ * @brief Waits for and returns a single character from the UART input.
  *
- * @return The character that was read.
+ * @return The received character, or zero if the receive timeout expires.
  */
 char get_uart_input(void);
 
 /**
- * Writes a single character 'c' to the log output.
+ * @brief Writes a single character 'c' to the log output.
  *
- * @param arg A pointer to optional arguments.
- * @param c The character to be written.
+ * @param[in] arg Ignored callback context.
+ * @param[in] c The character to write.
  */
 void uart_log_putchar(void *arg, char c);
 
 /**
- * Tests whether a character is waiting in the UART input buffer.
+ * @brief Mark the debug console ready and flush messages emitted during boot.
+ *
+ * The console driver calls this after the UART clock, registers, and pins have
+ * been initialized. Messages emitted before that point are kept in a small
+ * in-memory buffer by uart_log_putchar().
+ */
+void uart_log_console_ready(void);
+
+/**
+ * @brief Tests whether a character is waiting in the UART input buffer.
  *
  * @return 1 if a character is waiting, 0 otherwise.
  */
-int tstc();
+int tstc(void);
 
 /**
- * Writes the null-terminated string 's' to the standard output.
+ * @brief Writes the null-terminated string 's' to the standard output.
  *
- * @param s The string to be written.
- * @return The number of characters written, excluding the terminating null byte.
+ * @param[in] s The string to write.
+ * @return One after the complete string has been written.
  */
 extern int puts(const char *s);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif//__CLI_UART_H__
+#endif //__CLI_UART_H__

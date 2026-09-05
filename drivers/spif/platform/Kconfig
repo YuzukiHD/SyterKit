@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice
+	prompt "SPIF controller hardware version"
+	default DRIVER_SPIF_V1
+	depends on DRIVER_SPIF
+
+config DRIVER_SPIF_V0
+	bool "SPIF V0"
+	help
+	  Select the legacy SPIF descriptor and transfer layout.
+
+config DRIVER_SPIF_V1
+	bool "SPIF V1"
+	help
+	  Select the SPIF V1 descriptor and transfer layout.
+
+config DRIVER_SPIF_V2
+	bool "SPIF V2"
+	help
+	  Select the SPIF V2 descriptor layout with one- and two-byte addresses.
+
+endchoice

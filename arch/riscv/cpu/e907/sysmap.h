@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+/**
+ * @file sysmap.h
+ * @brief E907 system-memory-map register layout and attribute flags.
+ *
+ * Region limits are encoded in implementation-defined granules; the cache
+ * implementation converts byte addresses before programming these entries.
+ */
+
+#ifndef __SYSMAP_H__
+#define __SYSMAP_H__
+
+#define PLAT_SYSMAP_BASE_ADDR 0x3ffff000UL
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define SYSMAP_REGION_NUM 8
+
+#define SYSMAP_MEM_ATTR_SO 0x10
+#define SYSMAP_MEM_ATTR_CACHEABLE 0x8
+#define SYSMAP_MEM_ATTR_BUFFERABLE 0x4
+
+#define SYSMAP_MEM_ATTR_MASK (SYSMAP_MEM_ATTR_SO | SYSMAP_MEM_ATTR_CACHEABLE | SYSMAP_MEM_ATTR_BUFFERABLE)
+
+#define SYSMAP_MEM_ATTR_SO_NC_NB (SYSMAP_MEM_ATTR_SO)
+#define SYSMAP_MEM_ATTR_SO_NC_B (SYSMAP_MEM_ATTR_SO | SYSMAP_MEM_ATTR_BUFFERABLE)
+
+#define SYSMAP_MEM_ATTR_WO_NC_NB (0)
+#define SYSMAP_MEM_ATTR_WO_NC_B (SYSMAP_MEM_ATTR_BUFFERABLE)
+#define SYSMAP_MEM_ATTR_WO_C_NB (SYSMAP_MEM_ATTR_CACHEABLE)
+#define SYSMAP_MEM_ATTR_WO_C_B (SYSMAP_MEM_ATTR_CACHEABLE | SYSMAP_MEM_ATTR_BUFFERABLE)
+
+#define SYSMAP_MEM_ATTR_DEVICE (SYSMAP_MEM_ATTR_SO_NC_NB)
+#define SYSMAP_MEM_ATTR_RAM (SYSMAP_MEM_ATTR_WO_C_B)
+
+#define SYSMAP_ADDR_SHIFT 12
+#define SYSMAP_ADDR_ALIGN_SIZE (1 << SYSMAP_ADDR_SHIFT)
+#define IS_MEM_ADDR_ALIGNED(addr) (!(addr & (SYSMAP_ADDR_ALIGN_SIZE - 1)))
+
+/** @brief Print the E907 system memory-map region configuration. */
+void sysmap_dump_region_info(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __SYSMAP_H__ */

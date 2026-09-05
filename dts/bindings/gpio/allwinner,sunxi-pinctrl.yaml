@@ -1,0 +1,29 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner pin controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-pinctrl
+  reg:
+    type: reg
+  "#gpio-cells":
+    type: uint32
+  gpio-controller:
+    type: boolean
+  allwinner,bank-base:
+    type: uint32
+  allwinner,bank-count:
+    type: uint32
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - "#gpio-cells"
+  - gpio-controller
+  - allwinner,bank-base
+  - allwinner,bank-count
+
+dt2c,device: true

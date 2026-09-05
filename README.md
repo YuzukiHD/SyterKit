@@ -1,135 +1,184 @@
+<div align="center">
+
+![SyterKit LOGO](docs/assets/SyterKit%20LOGO_Thin.png)
+
 # SyterKit
 
-![SyterKit LOGO_Thin](https://github.com/YuzukiHD/SyterKit/assets/12003087/e6135860-1a6a-4cb4-b0f6-71af8eca1509)
+**A bare-metal firmware framework and bootloader toolkit for Allwinner SoCs**
 
-SyterKit is a bare-metal framework designed for Allwinner platform. SyterKit utilizes CMake as its build system and supports various applications and peripheral drivers. Additionally, SyterKit also has bootloader functionality
+[![Build](https://github.com/YuzukiHD/SyterKit/actions/workflows/build.yml/badge.svg)](https://github.com/YuzukiHD/SyterKit/actions/workflows/build.yml)
+[![Test](https://github.com/YuzukiHD/SyterKit/actions/workflows/test.yml/badge.svg)](https://github.com/YuzukiHD/SyterKit/actions/workflows/test.yml)
+[![Release](https://img.shields.io/github/v/release/YuzukiHD/SyterKit)](https://github.com/YuzukiHD/SyterKit/releases)
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL--2.0-blue.svg)](LICENSE)
 
-## Support list
+[Documentation](docs/README.md) ·
+[API Reference](https://syterkit.yuzukihd.top/api/html/) ·
+[Report Bug](https://github.com/YuzukiHD/SyterKit/issues) ·
+[Request Feature](https://github.com/YuzukiHD/SyterKit/issues/new)
 
-| Board                                                        | Platform      | Spec                                          | Config                   |
-| ------------------------------------------------------------ | ------------- | --------------------------------------------- | ------------------------ |
-| [Yuzukilizard](https://github.com/YuzukiHD/Yuzukilizard)     | V851s         | Cortex A7                                     | `yuzukilizard.cmake`     |
-| [TinyVision](https://github.com/YuzukiHD/TinyVision)         | V851se        | Cortex A7                                     | `tinyvision.cmake`       |
-| 100ask-t113s3                                                | T113-S3       | Dual-Core Cortex A7                           | `100ask-t113s3.cmake`    |
-| 100ask-t113i                                                 | T113-I        | Dual-Core Cortex A7 + C906 RISC-V             | `100ask-t113i.cmake`     |
-| 100ask-d1-h                                                  | D1-H          | C906 RISC-V                                   | `100ask-d1-h.cmake`      |
-| dongshanpi-aict                                              | V853          | Cortex A7                                     | `dongshanpi-aict.cmake`  |
-| project-yosemite                                             | V853          | Cortex A7                                     | `project-yosemite.cmake` |
-| mCore-R818                                                   | R818          | Quad-Core Cortex A53                          | `mcore-r818.cmake`       |
-| [longanpi-3h](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618          | Quad-Core Cortex A53                          | `longanpi-3h.cmake`      |
-| Avaota A1                                                    | T527/A527     | Octa-Core Cortex A55                          | `avaota-a1.cmake`        |
-| Radxa Cubie A7A                                              | A733          | Dual-Core Cortex A76 + Hexa-Core Cortex A55   | `radxa-cubie-a7a.cmake`  |
-| Avaota F1                                                    | V821          | RISC-V RV32 CPU + RISC-V RV32 MCU             | `avaota-f1.cmake`        |
-| TLT536-EVM                                                   | T536          | Quad-Core Cortex A55                          | `tlt536-evm.cmake`       |
-| Yuzukihomekit                                                | T113-M4020DC0 | Dual-Core Cortex A7 + C906 RISC-V + HIFI4 DSP | `yuzukihomekit.cmake`    |
+</div>
 
-# Getting Started
+## Overview
 
-## SyterKit Architecture
-![SyterKit_Arch](https://github.com/YuzukiHD/SyterKit/assets/12003087/f6ffe47e-6274-43ff-9a74-4a5b7b81083e)
+SyterKit is a small, static bare-metal firmware framework for Allwinner SoCs. It provides board bring-up, peripheral drivers, image loading, bootloader applications, and standalone firmware utilities for both ARM and RISC-V platforms.
 
-## Building SyterKit From Scratch
+SyterKit uses GNU Make, Kconfig, Kbuild-style object lists, application-owned initialization, and Linux-style board device trees compiled to immutable C data by [dt2c](https://github.com/YuzukiTsuru/dt2c).
 
-Building SyterKit is a straightforward process that only requires setting up the environment for compilation on a Linux operating system. The software packages required by SyterKit include:
+## Supported Boards
 
-- `gcc-arm-none-eabi`
-- `CMake`
+Run `make list-defconfigs` for the authoritative list in your checkout. Board-specific applications and hardware notes live in [`boards/`](boards/). Archived board sources are preserved under [`archive/`](archive/).
 
-For commonly used Ubuntu systems, they can be installed using the following command:
+| Board | SoC / Platform | SyterKit CPU | Configuration |
+| --- | --- | --- | --- |
+| [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 | 1 × Cortex-A7 | `tinyvision_defconfig` |
+| [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 | 4 × Cortex-A53 | `longanpi-3h_defconfig` |
+| Avaota A1 | T527/A527 | 8 × Cortex-A55 | `avaota-a1_defconfig` |
+| Radxa Cubie A7A | A733 | 6 × Cortex-A55 + 2 × Cortex-A76 | `radxa-cubie-a7a_defconfig` |
+| Avaota F1 | V821 | Xuantie E907 + Andes A27L2 | `avaota-f1_defconfig` |
+| Avaota F2 | V861 | Xuantie E907 + 2 × Xuantie C907 | `avaota-f2_defconfig` |
+| Avaota M1 | A537 | 6 × Cortex-A53 + 2 × Cortex-A73 | `avaota-m1_defconfig` |
+| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_defconfig`, `yuzukineko_rv32_usb_defconfig`, `yuzukineko_rv64_defconfig` |
+| TLT153 MiniEVM | T153 | 4 × Cortex-A7 | `tlt153-minievm_defconfig` |
+| TLT536 EVM | T536 | 4 × Cortex-A55 | `tlt536-evm_defconfig` |
 
-```shell
+Active configurations are grouped under `configs/<board>/`. Most boards provide `sram_defconfig`, `efex_defconfig`, and `dram_defconfig` variants; the public Make targets remain flat, e.g. `make avaota-a1_efex_defconfig`.
+
+## Architecture
+
+![SyterKit architecture](https://github.com/YuzukiHD/SyterKit/assets/12003087/f6ffe47e-6274-43ff-9a74-4a5b7b81083e)
+
+SyterKit is intentionally small and static. The selected board contributes its applications and DTS, Kconfig selects the architecture and drivers, dt2c turns the board DTS into compile-time data, and the linker combines the selected objects into the final firmware image.
+
+See [Compile-time device tree](docs/devicetree.md), [Driver architecture](docs/driver-model.md), and optional [Rust FFI](docs/rust-ffi.md) for the full model.
+
+## Getting Started
+
+### Prerequisites
+
+A Linux host needs GNU Make, a host C compiler, Flex, Bison, pkg-config, ncurses development headers, and a bare-metal cross compiler. On Ubuntu (ARM32 targets):
+
+```sh
 sudo apt-get update
-sudo apt-get install gcc-arm-none-eabi cmake build-essential -y
+sudo apt-get install -y build-essential gcc-arm-none-eabi flex bison \
+	libncurses-dev pkg-config doxygen graphviz default-jre
 ```
 
-Then create a folder to store the compiled output files and navigate to it:
+RISC-V boards require a compatible RISC-V toolchain whose flags match the CPU selected by Kconfig.
 
-```shell
-mkdir build
-cd build
+The checked-in Linux x86_64 dt2c distribution (`tools/bin/dt2c`) includes a musl-static binary and matching headers, so neither Rust nor the submodule is needed for a normal build. Initialize the submodule only to develop dt2c itself:
+
+```sh
+git submodule update --init tools/dt2c
 ```
 
-Finally, run the following commands to compile SyterKit:
+An external dt2c installation can be selected instead:
 
-```shell
-cmake -DCMAKE_BOARD_FILE={Board_config_file.cmake} ..
-make
+```sh
+make DT2C=/opt/dt2c/dt2c DT2C_INCLUDE=/opt/dt2c/include ...
 ```
 
-For example, if you want to compile SyterKit for the TinyVision platform, you need the following command:
+### Configure and Build
 
-```bash
-cmake -DCMAKE_BOARD_FILE=tinyvision.cmake ..
-make
+List the available boards, select one, and build:
+
+```sh
+make list-defconfigs
+make tinyvision_defconfig
+make -j$(nproc)
 ```
 
-The compiled executable files will be located in `build/board/{board_name}/{app_name}`.
+Out-of-tree builds follow the Linux kernel `O=` convention:
 
-The SyterKit project will compile two versions: firmware ending with `.elf` is for USB booting and requires bootloading by PC-side software, while firmware ending with `.bin` is for flashing and can be written into storage devices such as TF cards and SPI NAND.
-
-- For SD Card, You need to flash the `xxx_card.bin`
-- For SPI NAND/SPI NOR, You need to flash the `xxx_spi.bin`
-
-## Creating TF Card Boot Firmware
-
-After build the firmware, you can flash it into the TF card. For the V851s platform, you can write it to either an 8K offset or a 128K offset. Generally, if the TF card uses MBR format, write it with an 8K offset. If it uses GPT format, write it with a 128K offset. Assuming `/dev/sdb` is the target TF card, you can use the following command to write it with an 8K offset:
-
-```shell
-sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=8
+```sh
+make O=out tinyvision_defconfig
+make O=out -j$(nproc)
 ```
 
-If it is a GPT partition table, you need to write it with a 128K offset:
+Useful targets:
 
-```shell
-sudo dd if=syter_boot_bin_card.bin of=/dev/sdb bs=1024 seek=128
+| Target | Description |
+| --- | --- |
+| `make menuconfig` | Edit the active configuration interactively |
+| `make list-apps` | List applications selected for the active board |
+| `make syter_boot` | Build a single application and its three images |
+| `make firmware` | Build board companion firmware, when declared |
+| `make utilities` | Build the standalone BL33 utilities |
+| `make artifacts` | Build images, companion firmware, and utilities |
+| `make test` | Run host and QEMU tests |
+| `make docs` | Generate the Doxygen API documentation |
+| `make check` | Make/Kconfig source-tree consistency checks |
+
+Override the toolchain prefix when it is not in the default location:
+
+```sh
+make CROSS_COMPILE=/opt/toolchains/arm-none-eabi- -j$(nproc)
 ```
 
-### Creating the Firmware for SPI NAND
+### Build Outputs
 
-For SPI NAND, we need to create the firmware for SPI NAND by writing SyterKit to the corresponding positions:
+Each application is written below `build/<board>/<application>/` (or the chosen `O=` directory):
 
-```shell
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
+| File | Purpose |
+| --- | --- |
+| `<app>_fel.bin` | Load and run from SRAM with a host FEL tool |
+| `<app>_card.bin` | Padded and checksummed for SD/eMMC boot |
+| `<app>_spi.bin` | Padded and checksummed for SPI NOR/NAND boot |
+| `<app>_fel.elf`, `<app>_bin.elf` | Symbols and debugging |
+| `<app>_fel.map`, `<app>_bin.map` | Link maps |
+
+## Writing Boot Media
+
+> **Warning:** Writing raw devices can destroy existing data. Confirm the target device before running any command.
+
+**SD/eMMC, MBR-formatted media** (BROM searches at an 8 KiB offset):
+
+```sh
+sudo dd if=syter_boot_card.bin of=/dev/sdX bs=1024 seek=8 conv=fsync
 ```
 
-You can also include the Linux kernel and device tree in the firmware:
+**SD/eMMC, GPT media** (secondary 128 KiB BROM location):
 
-```shell
-dd if=sunxi.dtb of=spi.img bs=2k seek=128     # DTB on page 128
-dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256
+```sh
+sudo dd if=syter_boot_card.bin of=/dev/sdX bs=1024 seek=128 conv=fsync
 ```
 
-Use the xfel tool to flash the created firmware into SPI NAND:
+**SPI NAND/NOR** (redundant copies at 64 KiB intervals, programmed with [xfel](https://github.com/xboot/xfel)):
 
-```shell
-xfel spinand write 0x0 spi.img
+```sh
+dd if=syter_boot_spi.bin of=spi.img bs=2k
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=32
+dd if=syter_boot_spi.bin of=spi.img bs=2k seek=64
+
+xfel spinand write 0 spi.img   # or: xfel spinor write 0 spi.img
 ```
 
-### Creating the Firmware for SPI NOR
+Detailed boot-header and media-layout documentation is available in the [documentation source](docs/README.md).
 
-For SPI NOR, we need to create the firmware for SPI NOR by writing SyterKit to the corresponding positions:
+## Documentation
 
-```shell
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=32
-dd if=syter_boot_bin_spi.bin of=spi.img bs=2k seek=64
-```
+- [Getting started and Allwinner boot flow](docs/README.md)
+- [Driver architecture](docs/driver-model.md)
+- [Compile-time device tree](docs/devicetree.md)
+- [Bare-metal Rust FFI](docs/rust-ffi.md)
+- [Generated API documentation](https://syterkit.yuzukihd.top/api/html/)
 
-You can also include the Linux kernel and device tree in the firmware:
+## Contributing
 
-```shell
-dd if=sunxi.dtb of=spi.img bs=2k seek=128     # DTB on page 128
-dd if=zImage of=spi.img bs=2k seek=256        # Kernel on page 256
-```
+Contributions are welcome! To contribute:
 
-Use the xfel tool to flash the created firmware into SPI NOR:
+1. Fork the repository and create a feature branch.
+2. Follow the existing code style (`.clang-format` is provided).
+3. Run `make check` and `make test` before submitting.
+4. Open a pull request with a clear description of the change.
 
-```shell
-xfel spinor write 0x0 spi.img
-```
+Bug reports and feature requests are tracked in the [issue tracker](https://github.com/YuzukiHD/SyterKit/issues).
 
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the community leaders listed in the document.
 
 ## License
+
+SyterKit is released under the **GNU General Public License v2.0**. See [LICENSE](LICENSE) for the full text.
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FYuzukiHD%2FSyterKit.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FYuzukiHD%2FSyterKit?ref=badge_large)

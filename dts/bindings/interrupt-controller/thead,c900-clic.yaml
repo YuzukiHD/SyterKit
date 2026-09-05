@@ -1,0 +1,26 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: T-Head C900 Core-Local Interrupt Controller used by SyterKit
+
+properties:
+  compatible:
+    const: thead,c900-clic
+  reg:
+    type: reg
+  interrupt-controller:
+    type: boolean
+  "#interrupt-cells":
+    type: uint32
+  riscv,num-sources:
+    type: uint32
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - interrupt-controller
+  - "#interrupt-cells"
+  - riscv,num-sources
+
+dt2c,device: true

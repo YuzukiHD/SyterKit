@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #ifndef __packed
 #define __packed __attribute__((__packed__))
@@ -13,12 +13,12 @@ extern "C" {
 #define __aligned(x) __attribute__((__aligned__(x)))
 #endif
 
-#define MAX_LEVEL 32	/* how deeply nested we will go */
+#define MAX_LEVEL 32 /* how deeply nested we will go */
 #define SCRATCHPAD 1024 /* bytes of scratchpad memory */
 #define CMD_FDT_MAX_DUMP 64
 
 /**
- * Print the contents of the device tree at the specified path with a given property and depth.
+ * @brief Print the contents of the device tree at the specified path with a given property and depth.
  *
  * @param working_fdt The pointer to the device tree.
  * @param pathp The path of the node to start printing from.
@@ -26,10 +26,10 @@ extern "C" {
  * @param depth The maximum depth to traverse while printing.
  * @return The number of printed properties.
  */
-int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int depth);
+int fdt_print(unsigned char *working_fdt, const char *pathp, const char *prop, int depth);
 
 /**
- * Parse the property values in the data buffer and return the new value pointers and lengths.
+ * @brief Parse the property values in the data buffer and return the new value pointers and lengths.
  *
  * @param newval The pointer to store the new value pointers.
  * @param count The number of properties in the data buffer.
@@ -40,7 +40,7 @@ int fdt_print(unsigned char *working_fdt, const char *pathp, char *prop, int dep
 int fdt_parse_prop(char const **newval, int count, char *data, int *len);
 
 /**
- * Increase the size of the flattened device tree by adding additional length.
+ * @brief Increase the size of the flattened device tree by adding additional length.
  *
  * @param fdt The pointer to the flattened device tree.
  * @param add_len The additional length to be added to the device tree.
@@ -49,30 +49,26 @@ int fdt_parse_prop(char const **newval, int count, char *data, int *len);
 int fdt_increase_size(void *fdt, int add_len);
 
 /**
- * fdt_find_or_add_subnode() - find or possibly add a subnode of a given node
+ * @brief Find or add a subnode of a device-tree node.
  *
- * @fdt: pointer to the device tree blob
- * @parentoffset: structure block offset of a node
- * @name: name of the subnode to locate
- *
- * fdt_subnode_offset() finds a subnode of the node with a given name.
- * If the subnode does not exist, it will be created.
+ * @param fdt Pointer to the device-tree blob.
+ * @param parentoffset Structure-block offset of the parent node.
+ * @param name Name of the subnode to locate.
+ * @return The subnode offset on success, or a negative libfdt error code.
  */
 int fdt_find_or_add_subnode(void *fdt, int parentoffset, const char *name);
 
 /**
- * fdt_overlay_apply_verbose - Apply an overlay with verbose error reporting
+ * @brief Apply a device-tree overlay with verbose error reporting.
  *
- * @fdt: ptr to device tree
- * @fdto: ptr to device tree overlay
- *
- * Convenience function to apply an overlay and display helpful messages
- * in the case of an error
+ * @param fdt Pointer to the base device tree.
+ * @param fdto Pointer to the device-tree overlay.
+ * @return Zero on success, or a negative libfdt error code.
  */
 int fdt_overlay_apply_verbose(void *fdt, void *fdto);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
-#endif//__FDT_WRAPPER_H__
+#endif //__FDT_WRAPPER_H__

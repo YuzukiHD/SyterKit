@@ -11,9 +11,9 @@ void sunxi_uart_init(uint32_t base);
 
 void sunxi_uart_putc(char c);
 
-void uart_printf(const char *fmt, ...);
+int uart_printf(const char *fmt, ...);
 
-void printf(const char *fmt, ...);
+int printf(const char *fmt, ...);
 
 uint32_t time_ms(void);
 

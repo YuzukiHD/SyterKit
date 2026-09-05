@@ -1,0 +1,4 @@
+CHECK bad-pc PASS
+CHECK bad-sp PASS
+CHECK bad-context PASS
+TEST PASS backtrace_e907_invalid_context_qemu

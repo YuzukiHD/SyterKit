@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define __ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
-#define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x)) (a) -1)
+#define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x))(a) - 1)
 
 struct boot_head_t {
 	uint32_t instruction;
@@ -20,7 +21,8 @@ struct boot_head_t {
 	uint32_t string_pool[13];
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	struct boot_head_t *h;
 	FILE *fp;
 	char *buffer;
@@ -67,20 +69,27 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	h = (struct boot_head_t *) buffer;
-	p = (uint32_t *) h;
-	l = (h->length);
+	h = (struct boot_head_t *)buffer;
+	p = (uint32_t *)h;
+	l = filelen;
 	printf("len: %u\n", l);
 	l = ALIGN(l, padding);
 	h->length = (l);
 	h->checksum = (0x5F0A6C39);
 	loop = l >> 2;
-	for (i = 0, sum = 0; i < loop; i++) sum += (p[i]);
+	for (i = 0, sum = 0; i < loop; i++)
+		sum += (p[i]);
 	h->checksum = (sum);
 
 	fseek(fp, 0L, SEEK_SET);
-	if (fwrite(buffer, 1, buflen, fp) != buflen) {
+	if (fwrite(buffer, 1, l, fp) != (size_t)l) {
 		printf("Write bootloader error\n");
+		free(buffer);
+		fclose(fp);
+		return -1;
+	}
+	if (ftruncate(fileno(fp), l) != 0) {
+		printf("Can't resize bootloader\n");
 		free(buffer);
 		fclose(fp);
 		return -1;

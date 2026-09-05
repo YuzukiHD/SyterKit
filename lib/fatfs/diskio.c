@@ -6,15 +6,17 @@
 /* This is an example of glue functions to attach various exsisting      */
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
-#include "ff.h" /* Obtains integer types */
+#include <lib/fatfs/ff.h> /* Obtains integer types */
 
-#include "diskio.h"
+#include <lib/fatfs/diskio.h>
 
-#include <sys-dma.h>
-#include <sys-dram.h>
-#include <sys-sdcard.h>
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
+#include <drivers/mmc/sdcard.h>
+#include <malloc.h>
+#include <string.h>
 
-static DSTATUS Stat = STA_NOINIT; /* Disk status */
+static sdmmc_pdata_t *disk_devices[FF_VOLUMES];
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
 /* we can consume up to CONFIG_FATFS_CACHE_SIZE of SDRAM starting at CONFIG_FATFS_CACHE_ADDR */
@@ -22,9 +24,10 @@ static DSTATUS Stat = STA_NOINIT; /* Disk status */
 #define FATFS_CACHE_SECTORS (CONFIG_FATFS_CACHE_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_SECTORS_PER_BIT (FATFS_CACHE_CHUNK_SIZE / FF_MIN_SS)
 #define FATFS_CACHE_CHUNKS (FATFS_CACHE_SECTORS / FATFS_CACHE_SECTORS_PER_BIT)
+#define FATFS_CACHE_BITMAP_SIZE ((FATFS_CACHE_CHUNKS + 7U) / 8U)
 
 static uint8_t *const cache_data = (uint8_t *) CONFIG_FATFS_CACHE_ADDR; /* in CONFIG_FATFS_CACHE_ADDR */
-static uint8_t cache_bitmap[FATFS_CACHE_CHUNKS / 8];					/* in SRAM */
+static uint8_t *cache_bitmap;
 static BYTE cache_pdrv = -1;
 static int current_cache_sdhci_id = -1;
 
@@ -41,6 +44,18 @@ static int current_cache_sdhci_id = -1;
 		__typeof(ss) _ss = (ss);                                                      \
 		cache_bitmap[CACHE_SECTOR_TO_OFFSET(_ss)] |= (1 << CACHE_SECTOR_TO_BIT(_ss)); \
 	} while (0)
+
+static int cache_prepare(void)
+{
+	if (cache_bitmap)
+		return 1;
+
+	cache_bitmap = malloc(FATFS_CACHE_BITMAP_SIZE);
+	if (!cache_bitmap)
+		return 0;
+	memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
+	return 1;
+}
 #endif
 
 /*-----------------------------------------------------------------------*/
@@ -49,10 +64,11 @@ static int current_cache_sdhci_id = -1;
 
 DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 ) {
-	if (pdrv)
+	if (pdrv >= FF_VOLUMES || disk_devices[pdrv] == NULL ||
+	    !disk_devices[pdrv]->online)
 		return STA_NOINIT;
 
-	return Stat;
+	return 0;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -62,12 +78,23 @@ DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 DSTATUS
 disk_initialize(BYTE pdrv /* Physical drive nmuber to identify the drive */
 ) {
-	if (pdrv)
-		return STA_NOINIT;
+	return disk_status(pdrv);
+}
 
-	Stat &= ~STA_NOINIT;
+DRESULT disk_set_device(BYTE pdrv, struct sdmmc_pdata *device) {
+	if (pdrv >= FF_VOLUMES)
+		return RES_PARERR;
 
-	return Stat;
+	disk_devices[pdrv] = device;
+#ifdef CONFIG_FATFS_CACHE_SIZE
+	if (cache_pdrv == pdrv) {
+		if (cache_bitmap)
+			memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
+		cache_pdrv = (BYTE) -1;
+		current_cache_sdhci_id = -1;
+	}
+#endif
+	return RES_OK;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -79,29 +106,35 @@ DRESULT disk_read(BYTE pdrv,	/* Physical drive nmuber to identify the drive */
 				  LBA_t sector, /* Start sector in LBA */
 				  UINT count	/* Number of sectors to read */
 ) {
-	if (pdrv || !count)
+	sdmmc_pdata_t *device;
+
+	if (pdrv >= FF_VOLUMES || !count)
 		return RES_PARERR;
-	if (Stat & STA_NOINIT)
+	device = disk_devices[pdrv];
+	if (device == NULL || !device->online)
 		return RES_NOTRDY;
 
-	printk_trace("FATFS: read %u sectors at %u\r\n", count, (uint32_t) sector);
+	pr_trace("FATFS: read %u sectors at %u\r\n", count, (uint32_t) sector);
 
 #ifdef CONFIG_FATFS_CACHE_SIZE
-	if (pdrv != cache_pdrv || current_cache_sdhci_id != card0.hci->id) {
-		printk_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
+	if (!cache_prepare())
+		return (sdmmc_blk_read(device, buff, sector, count) == count ? RES_OK : RES_ERROR);
+
+	if (pdrv != cache_pdrv || current_cache_sdhci_id != device->hci->id) {
+		pr_debug("FATFS: cache: %u bytes in %u chunks\r\n", CONFIG_FATFS_CACHE_SIZE, FATFS_CACHE_CHUNKS);
 		if (cache_pdrv != -1)
-			memset(cache_bitmap, 0, sizeof(cache_bitmap));
+			memset(cache_bitmap, 0, FATFS_CACHE_BITMAP_SIZE);
 		cache_pdrv = pdrv;
 	}
 
-	current_cache_sdhci_id = card0.hci->id;
+	current_cache_sdhci_id = device->hci->id;
 
 	while (count) {
 		if (sector >= FATFS_CACHE_SECTORS) {
-			printk_trace("FATFS: beyond cache %u count %u\r\n", (uint32_t) sector, count);
+			pr_trace("FATFS: beyond cache %u count %u\r\n", (uint32_t) sector, count);
 			/* beyond end of cache, read remaining */
-			if (sdmmc_blk_read(&card0, buff, sector, count) != count) {
-				printk_warning("FATFS: read failed %u count %u\r\n", (uint32_t) sector, count);
+			if (sdmmc_blk_read(device, buff, sector, count) != count) {
+				pr_warn("FATFS: read failed %u count %u\r\n", (uint32_t) sector, count);
 				return RES_ERROR;
 			}
 			return RES_OK;
@@ -109,14 +142,14 @@ DRESULT disk_read(BYTE pdrv,	/* Physical drive nmuber to identify the drive */
 
 		if (!CACHE_IS_VALID(sector)) {
 			LBA_t chunk = sector & ~(FATFS_CACHE_SECTORS_PER_BIT - 1);
-			printk_trace("FATFS: cache miss %u, loading %u count %u\r\n", (uint32_t) sector, chunk, FATFS_CACHE_SECTORS_PER_BIT);
-			if (sdmmc_blk_read(&card0, &cache_data[chunk * FF_MIN_SS], chunk, FATFS_CACHE_SECTORS_PER_BIT) != FATFS_CACHE_SECTORS_PER_BIT) {
-				printk_warning("FATFS: read failed %u count %u\r\n", (uint32_t) sector, FATFS_CACHE_SECTORS_PER_BIT);
+			pr_trace("FATFS: cache miss %u, loading %u count %u\r\n", (uint32_t) sector, chunk, FATFS_CACHE_SECTORS_PER_BIT);
+			if (sdmmc_blk_read(device, &cache_data[chunk * FF_MIN_SS], chunk, FATFS_CACHE_SECTORS_PER_BIT) != FATFS_CACHE_SECTORS_PER_BIT) {
+				pr_warn("FATFS: read failed %u count %u\r\n", (uint32_t) sector, FATFS_CACHE_SECTORS_PER_BIT);
 				return RES_ERROR;
 			}
 			CACHE_SET_VALID(sector);
 		} else {
-			printk_trace("FATFS: cache hit %u\r\n", (uint32_t) sector);
+			pr_trace("FATFS: cache hit %u\r\n", (uint32_t) sector);
 		}
 		memcpy(buff, &cache_data[sector * FF_MIN_SS], FF_MIN_SS);
 
@@ -126,7 +159,7 @@ DRESULT disk_read(BYTE pdrv,	/* Physical drive nmuber to identify the drive */
 	}
 	return RES_OK;
 #else
-	return (sdmmc_blk_read(&card0, buff, sector, count) == count ? RES_OK : RES_ERROR);
+	return (sdmmc_blk_read(device, buff, sector, count) == count ? RES_OK : RES_ERROR);
 #endif
 }
 
@@ -141,14 +174,17 @@ DRESULT disk_write(BYTE pdrv,		 /* Physical drive nmuber to identify the drive *
 				   LBA_t sector,	 /* Start sector in LBA */
 				   UINT count		 /* Number of sectors to write */
 ) {
-	if (pdrv || !count)
+	sdmmc_pdata_t *device;
+
+	if (pdrv >= FF_VOLUMES || !count)
 		return RES_PARERR;
-	if (Stat & STA_NOINIT)
+	device = disk_devices[pdrv];
+	if (device == NULL || !device->online)
 		return RES_NOTRDY;
 
-	printk_trace("FATFS: write %u sectors at %llu\r\n", count, sector);
+	pr_trace("FATFS: write %u sectors at %llu\r\n", count, sector);
 
-	return (sdmmc_blk_write(&card0, buff, sector, count) == count ? RES_OK : RES_ERROR);
+	return (sdmmc_blk_write(device, (uint8_t *) buff, sector, count) == count ? RES_OK : RES_ERROR);
 }
 
 #endif

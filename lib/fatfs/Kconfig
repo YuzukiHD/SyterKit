@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config FATFS_LFN_HEAP
+	bool "Allocate FatFs long-name buffers from the heap"
+	help
+	  Use FatFs' dynamic LFN and exFAT directory buffers. This removes about
+	  1.1 KiB of permanent SRAM usage, but requires malloc_init() before the
+	  first filesystem operation. Leave disabled for early-boot users without
+	  an initialized heap.
+
+config FATFS_CACHE
+	bool "Enable the FatFs cache"
+
+if FATFS_CACHE
+
+config FATFS_CACHE_SIZE
+	hex
+	default 0x02000000 if BOARD_AVAOTA_86BOX || BOARD_TLT153_MINIEVM || BOARD_YUZUKIHOMEKIT
+	default 0x0fffffff if BOARD_AVAOTA_A1 || BOARD_AVAOTA_M1 || BOARD_MCORE_R818 || BOARD_RADXA_CUBIE_A7A
+	default 0x00ffffff if BOARD_AVAOTA_F1 || BOARD_AVAOTA_F2
+
+config FATFS_CACHE_ADDR
+	hex
+	default 0x48000000 if BOARD_AVAOTA_86BOX || BOARD_TLT153_MINIEVM || BOARD_YUZUKIHOMEKIT
+	default 0x04400000 if BOARD_AVAOTA_A1 || BOARD_MCORE_R818
+	default 0x82000000 if BOARD_AVAOTA_F1
+	default 0x42000000 if BOARD_AVAOTA_F2
+	default 0x44000000 if BOARD_AVAOTA_M1
+	default 0x60000000 if BOARD_RADXA_CUBIE_A7A
+
+endif

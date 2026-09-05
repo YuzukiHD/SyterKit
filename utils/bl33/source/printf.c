@@ -9,7 +9,7 @@
 #include <types.h>
 
 #include <rtc.h>
-#include <xformat.h>
+#include <format.h>
 
 typedef struct uart_serial {
 	volatile uint32_t rbr; /* 0 */
@@ -33,22 +33,26 @@ static uart_serial_t *uart_dbg;
 
 static uint32_t init_timestamp = 0;
 
-void set_timer_count() {
+void set_timer_count()
+{
 	init_timestamp = read32(SUNXI_RTC_DATA_BASE + RTC_FEL_INDEX * 4);
 }
 
-void sunxi_serial_init() {
-	uart_dbg = (uart_serial_t *) SUNXI_UART0_BASE;
+void sunxi_serial_init()
+{
+	uart_dbg = (uart_serial_t *)SUNXI_UART0_BASE;
 }
 
 // Function to transmit a single character via UART
-void sunxi_uart_putc(char c) {
+void sunxi_uart_putc(char c)
+{
 	while ((uart_dbg->lsr & (1 << 6)) == 0)
 		;
 	uart_dbg->thr = c;
 }
 
-void uart_log_putchar(void *arg, char c) {
+void uart_log_putchar(void *arg, char c)
+{
 	if (c == '\n') {
 		/* If the character is a newline, transmit a carriage return before newline */
 		sunxi_uart_putc('\r');
@@ -58,26 +62,30 @@ void uart_log_putchar(void *arg, char c) {
 }
 
 // Output a formatted string to the standard output
-void uart_printf(const char *fmt, ...) {
+int uart_printf(const char *fmt, ...)
+{
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	int count = vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
+	return count;
 }
 
-void printf(const char *fmt, ...) {
+int printf(const char *fmt, ...)
+{
 	uint32_t now_timestamp = time_ms() - init_timestamp;
 	uint32_t seconds = now_timestamp / 1000;
 	uint32_t milliseconds = now_timestamp % 1000;
-	uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
+	int count = uart_printf("[%5lu.%06lu][I] ", seconds, milliseconds);
 	va_list args;
 	va_start(args, fmt);
 	va_list args_copy;
 	va_copy(args_copy, args);
-	xvformat(uart_log_putchar, NULL, fmt, args_copy);
+	count += vformat(uart_log_putchar, NULL, fmt, args_copy);
 	va_end(args);
 	va_end(args_copy);
+	return count;
 }

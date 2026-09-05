@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice
+	prompt "RISC-V processor core"
+	depends on ARCH_RISCV
+	optional
+
+config ARCH_CPU_E907
+	bool "Xuantie E907"
+	depends on ARCH_RISCV32
+
+config ARCH_CPU_C907
+	bool "Xuantie C907"
+	depends on ARCH_RISCV32 || ARCH_RISCV64
+
+config ARCH_CPU_C906
+	bool "Xuantie C906"
+	depends on ARCH_RISCV64
+
+endchoice
+
+config ARCH_MTVT
+	bool "Enable the mtvt vector-table base register"
+	depends on ARCH_RISCV
+	help
+	  Program the Xuantie mtvt CSR (0x307) with the interrupt vector-table base.
+
+config ARCH_EXTRA_CFLAG
+	string
+	default "-mcpu=e907f" if ARCH_CPU_E907
+	default "-mtune=c907" if ARCH_CPU_C907
+	default "-mtune=c906" if ARCH_CPU_C906
+
+config ARCH_RISCV64_ABI_LP64
+	bool "Use the integer-only LP64 ABI"
+	depends on ARCH_RISCV64 && ARCH_CPU_C907
+	help
+	  Build C907 RV64 firmware with the soft-float LP64 calling convention.
+	  Enable this when linking vendor objects that use the LP64 ABI rather
+	  than LP64D.

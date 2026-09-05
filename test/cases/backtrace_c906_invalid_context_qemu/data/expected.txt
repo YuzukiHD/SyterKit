@@ -1,0 +1,4 @@
+CHECK bad-pc PASS
+CHECK bad-sp PASS
+CHECK null-context PASS
+TEST PASS backtrace_c906_invalid_context_qemu

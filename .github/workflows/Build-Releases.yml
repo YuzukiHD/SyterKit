@@ -1,77 +1,109 @@
+# SPDX-License-Identifier: GPL-2.0+
+
 name: Release
 
 on:
   release:
     types: [published]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+permissions:
+  contents: write
 
 jobs:
-  prepare_release:
-    runs-on: ubuntu-latest
-    steps:
-      - id: last-release
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: ${{ github.repository }}
-    outputs:
-      release_id: ${{ steps.last-release.outputs.id }}
-
   build:
-    runs-on: ubuntu-latest
-    needs: prepare_release
+    name: Build release images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-    - name: Setup env
-      run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabi g++-arm-linux-gnueabihf build-essential libncurses5-dev zlib1g-dev gawk flex bison quilt libssl-dev xsltproc libxml-parser-perl mercurial bzr ecj cvs unzip lsof
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            bison \
+            build-essential \
+            ca-certificates \
+            curl \
+            flex \
+            gcc-arm-none-eabi \
+            libncurses-dev \
+            pkg-config \
+            ripgrep
 
-    - name: Install RV64 Toolchain
-      run: |
-        wget https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
-        tar -xf Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+      - name: Install Xuantie RISC-V toolchain
+        env:
+          TOOLCHAIN_URL: https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1751370399722/Xuantie-900-gcc-elf-newlib-x86_64-V3.2.0-20250627.tar.gz
+          TOOLCHAIN_SHA256: 80c174c6445f7565bc082d328045021862a63beddfad8c393c534e2d9523dc3b
+        run: |
+          archive="${RUNNER_TEMP}/xuantie-toolchain.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/xuantie"
+          curl --fail --location --retry 3 --output "${archive}" \
+            "${TOOLCHAIN_URL}"
+          echo "${TOOLCHAIN_SHA256}  ${archive}" | sha256sum --check --strict
+          tar --extract --gzip --strip-components=1 \
+            --directory "${RUNNER_TEMP}/xuantie" --file "${archive}"
+          toolchain="${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-"
+          "${toolchain}gcc" --version | grep -F \
+            'Xuantie-900 elf newlib gcc Toolchain V3.2.0 B-20250627'
+          echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
+            >> "${GITHUB_ENV}"
 
-    - name: Find and build CMake files
-      run: |
-        export RISCV_ROOT_PATH=${{github.workspace}}/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/bin/
-        find ./cmake/board/ -name "*.cmake" -type f | while read file; do
-          cmake -B ${{github.workspace}}/build-$(basename "$file") -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_BOARD_FILE=$(basename "$file")
-          cmake --build ${{github.workspace}}/build-$(basename "$file") --config ${{env.BUILD_TYPE}}
-        done
+      - name: Build and package release images
+        env:
+          ARM_CROSS_COMPILE: arm-none-eabi-
+          RELEASE_ROOT: ${{ runner.temp }}/syterkit-release
+        run: |
+          set -euo pipefail
+          mkdir -p "${RELEASE_ROOT}/assets"
+          built=0
 
-    - name: Compress files
-      run: |
-        mkdir ${{github.workspace}}/releases
-        find ./cmake/board/ -name "*.cmake" -type f | while read file; do
-          cmakename=$(basename "$file")
-          boardname=${cmakename:0:-6}
-          if [ -d ${{github.workspace}}/build-$(basename "$file")/board/${boardname} ]; then
-            rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "*.cmake")
-            rm $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "Makefile")
-            rm -rf $(find ${{github.workspace}}/build-$(basename "$file")/board/${boardname} -name "CMakeFiles")
-            cd ${{github.workspace}}/build-$(basename "$file")/board/${boardname} && tar -zcvf ${{github.workspace}}/releases/${boardname}.tar.gz ./*
-          fi
-        done
+          while IFS= read -r config; do
+            built=1
+            config_name="${config%_defconfig}"
+            output="${RELEASE_ROOT}/build/${config_name}"
 
-    - name: Upload
-      if: needs.prepare_release.outputs.release_id != ''
-      uses: xresloader/upload-to-github-release@v1
-      env:
+            make "O=${output}" "${config}"
+            if grep -q '^CONFIG_ARCH_RISCV' "${output}/.config"; then
+              cross="${RISCV_CROSS_COMPILE}"
+            else
+              cross="${ARM_CROSS_COMPILE}"
+            fi
+            make "O=${output}" CROSS_COMPILE="${cross}" -j"$(nproc)"
+
+            board="$(sed -n 's/^CONFIG_SYS_BOARD="\([^"]*\)"$/\1/p' \
+              "${output}/.config")"
+            test -n "${board}"
+            image_dir="${output}/build/${board}"
+            test -d "${image_dir}"
+            test -n "$(find "${image_dir}" -type f -print -quit)"
+            tar --create --gzip \
+              --file="${RELEASE_ROOT}/assets/${config_name}.tar.gz" \
+              --directory="${image_dir}" .
+          done < <(make list-defconfigs)
+
+          test "${built}" -eq 1
+          printf 'Release assets:\n'
+          find "${RELEASE_ROOT}/assets" -maxdepth 1 -type f -name '*.tar.gz' \
+            -printf '%f\n' | sort
+
+      - name: Upload release assets
+        uses: xresloader/upload-to-github-release@v1
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ needs.prepare_release.outputs.release_id }}
-        file: "${{github.workspace}}/releases/*.tar.gz"
-        draft: false
+        with:
+          release_id: ${{ github.event.release.id }}
+          file: "${{ runner.temp }}/syterkit-release/assets/*.tar.gz"
+          draft: false
 
-    - name: Rollback release
-      if: failure() && needs.prepare_release.outputs.release_id != ''
-      uses: author/action-rollback@stable
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ needs.prepare_release.outputs.release_id }}
-     
+      - name: Roll back release on failure
+        if: failure() && github.event.release.id != ''
+        uses: author/action-rollback@stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ github.event.release.id }}

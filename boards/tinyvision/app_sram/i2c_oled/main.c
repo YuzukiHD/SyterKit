@@ -1,0 +1,36 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <types.h>
+
+#include <log.h>
+#include <drivers/clk/clk.h>
+
+#include <common.h>
+
+#include <drivers/serial/serial.h>
+
+#include "oled.h"
+
+extern sunxi_serial_t uart_dbg;
+
+int main(void)
+{
+	sunxi_clk_init();
+
+	pr_info("Hello World\n");
+
+	if (OLED_Init() != 0)
+		return -1;
+
+	OLED_ShowString(12, 16, "SyterKit", 16, 1);
+	OLED_ShowString(20, 32, "I2C OLED", 16, 1);
+
+	OLED_Refresh();
+
+	abort();
+
+	return 0;
+}

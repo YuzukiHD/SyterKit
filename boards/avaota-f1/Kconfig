@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_AVAOTA_F1
+	bool "Avaota F1"
+	depends on ARCH_RISCV32 && ARCH_CPU_E907
+	select SOC_SUN300IW1

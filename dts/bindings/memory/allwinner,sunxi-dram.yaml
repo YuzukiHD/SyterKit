@@ -1,0 +1,17 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner DRAM parameters used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-dram
+  allwinner,dram-parameters:
+    type: uint32-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - allwinner,dram-parameters
+
+dt2c,device: true

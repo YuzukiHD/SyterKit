@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Core services"
+
+config UART_EARLY_LOG
+	bool "Buffer UART logs before console initialization"
+	depends on DRIVER_SERIAL
+	help
+	  Keep log output generated before the UART console probe in memory and
+	  flush it after the console hardware has been initialized.
+
+config UART_EARLY_LOG_BUFFER_SIZE
+	int "Early UART log buffer size"
+	depends on UART_EARLY_LOG
+	default 16384
+	range 256 1048576
+	help
+	  Number of bytes reserved for log output emitted before the UART
+	  console is ready.
+
+config CLI_HEAP_STORAGE
+	bool "Allocate interactive CLI buffers from the heap"
+	help
+	  Allocate the command history and line editor state on demand from the
+	  heap. This reduces permanent SRAM use by about 3 KiB, and requires
+	  malloc_init() before the CLI is entered.
+
+endmenu

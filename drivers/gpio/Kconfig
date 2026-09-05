@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "GPIO driver"
+
+choice
+	prompt "GPIO controller version"
+	optional
+
+config DRIVER_GPIO_V1
+	bool "GPIO controller v1"
+
+config DRIVER_GPIO_V2
+	bool "GPIO controller v2"
+
+config DRIVER_GPIO_V2_POW
+	bool "GPIO controller v2-pow (withstand-voltage mode)"
+
+config DRIVER_GPIO_V3
+	bool "GPIO controller v3"
+
+config DRIVER_GPIO_V4
+	bool "GPIO controller v4"
+
+endchoice
+
+choice
+	prompt "GPIO driver log level"
+	default DRIVER_GPIO_LOG_TRACE if BUILD_TRACE
+	default DRIVER_GPIO_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_GPIO_LOG_GLOBAL
+	depends on DRIVER_GPIO_V1 || DRIVER_GPIO_V2 || DRIVER_GPIO_V2_POW || DRIVER_GPIO_V3 || DRIVER_GPIO_V4
+
+config DRIVER_GPIO_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_GPIO_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_GPIO_LOG_ERROR
+	bool "Error"
+
+config DRIVER_GPIO_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_GPIO_LOG_INFO
+	bool "Info"
+
+config DRIVER_GPIO_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_GPIO_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_GPIO_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+endmenu

@@ -1,0 +1,37 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		dma0 = &dma0;
+		dma1 = &dma1;
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		dma0: dma-controller@7000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x7000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0x8000 2>;
+			allwinner,clock-gate = <0x8100 3>;
+			allwinner,reset = <0x8200 19>;
+			status = "okay";
+		};
+
+		dma1: dma-controller@9000 {
+			compatible = "allwinner,sunxi-dma";
+			reg = <0x9000 0x1000>;
+			#dma-cells = <1>;
+			allwinner,mbus-clock-gate = <0xa000 4>;
+			allwinner,clock-gate = <0xa100 5>;
+			allwinner,reset = <0xa200 21>;
+			status = "okay";
+		};
+	};
+};

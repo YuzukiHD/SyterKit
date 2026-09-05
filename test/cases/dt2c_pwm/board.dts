@@ -1,0 +1,79 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/pwm/sunxi-pwm.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		pwm0 = &pwm0;
+		pwm1 = &pwm1;
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		pwm0_pins: pwm0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_E 0 4>,
+				<SUNXI_GPIO_PORT_E 1 4>,
+				<SUNXI_GPIO_PORT_E 2 4>,
+				<SUNXI_GPIO_PORT_E 3 4>;
+		};
+
+		pwm1_pins: pwm1-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_F 4 5>,
+				<SUNXI_GPIO_PORT_F 7 5>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		pwm0: pwm@f000 {
+			compatible = "allwinner,sunxi-pwm";
+			reg = <0xf000 0x400>;
+			#pwm-cells = <3>;
+			allwinner,pwm-id = <0>;
+			clock-frequency = <24000000>;
+			allwinner,apb-clock-frequency = <200000000>;
+			allwinner,clock-gate = <0x10000 8>;
+			allwinner,reset = <0x10100 24>;
+			allwinner,channel-config =
+				<0 SUNXI_PWM_CHANNEL_SINGLE 0 0>,
+				<1 SUNXI_PWM_CHANNEL_SINGLE 0 0>,
+				<2 SUNXI_PWM_CHANNEL_BIND 3 4000>,
+				<3 SUNXI_PWM_CHANNEL_BIND 2 4000>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pwm0_pins>;
+			status = "okay";
+		};
+
+		pwm1: pwm@11000 {
+			compatible = "allwinner,sunxi-pwm";
+			reg = <0x11000 0x400>;
+			#pwm-cells = <3>;
+			allwinner,pwm-id = <1>;
+			clock-frequency = <40000000>;
+			allwinner,apb-clock-frequency = <384000000>;
+			allwinner,clock-gate = <0x12000 9>;
+			allwinner,reset = <0x12100 25>;
+			allwinner,channel-config =
+				<4 SUNXI_PWM_CHANNEL_SINGLE 0 0>,
+				<7 SUNXI_PWM_CHANNEL_SINGLE 0 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pwm1_pins>;
+			status = "okay";
+		};
+	};
+};

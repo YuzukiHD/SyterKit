@@ -1,0 +1,90 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+/**
+ * @file
+ * @brief Cache control functions for RISC-V architecture.
+ *
+ * This header file provides functions for initializing and controlling
+ * data and instruction caches on RISC-V architecture.
+ */
+
+#ifndef __CACHE_H__
+#define __CACHE_H__
+
+#include <stdint.h>
+#include "barrier.h"
+#include "csr.h"
+
+/**
+ * @brief Initialize the cache configuration.
+ *
+ * This function configures the cache settings by writing specific 
+ * values to the control and status registers.
+ */
+void cache_init(void);
+
+/**
+ * @brief Enable the data cache.
+ *
+ * This function enables the data cache by writing to the machine 
+ * cache control register.
+ */
+void dcache_enable(void);
+
+/** @brief Disable the data cache. */
+void dcache_disable(void);
+
+/**
+ * @brief Enable the instruction cache.
+ *
+ * This function enables the instruction cache by setting the 
+ * appropriate control bits in the machine cache control register.
+ */
+void icache_enable(void);
+
+/**
+ * @brief Flush a data-cache address range.
+ *
+ * The range uses an inclusive start and exclusive end. Implementations round
+ * the start down to a cache-line boundary and write back all covered lines.
+ * The operation is followed by an instruction/data synchronization barrier.
+ *
+ * @param[in] start First byte of the range to flush.
+ * @param[in] end One-past-last byte of the range to flush.
+ */
+void flush_dcache_range(uint64_t start, uint64_t end);
+
+/**
+ * @brief Invalidate a data-cache address range.
+ *
+ * The range uses an inclusive start and exclusive end. Implementations round
+ * the start down to a cache-line boundary and discard every covered line
+ * before synchronizing subsequent memory accesses.
+ *
+ * @param[in] start First byte of the range to invalidate.
+ * @param[in] end One-past-last byte of the range to invalidate.
+ */
+void invalidate_dcache_range(uint64_t start, uint64_t end);
+
+/**
+ * @brief Flushes the entire data cache.
+ *
+ * This function flushes all data cache lines, ensuring that any modified or "dirty"
+ * cache lines are written back to the main memory. It ensures that the data in the cache
+ * is coherent with the memory.
+ */
+void flush_dcache_all();
+
+/**
+ * @brief Invalidates the entire data cache.
+ *
+ * This function invalidates all data cache lines, ensuring that no stale or outdated
+ * data remains in the cache. This operation discards the cache contents and ensures that
+ * the next access will fetch fresh data from memory.
+ */
+void invalidate_dcache_all();
+
+/** @brief Ensure all preceding memory accesses are globally visible. */
+void data_sync_barrier(void);
+
+#endif /* __CACHE_H__ */

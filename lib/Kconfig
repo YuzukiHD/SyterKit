@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Library routines"
+
+source "lib/fatfs/Kconfig"
+
+endmenu

@@ -1,0 +1,286 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <types.h>
+
+#include <config.h>
+#include <log.h>
+#include <drivers/clk/clk.h>
+#include <timer.h>
+
+#include <common.h>
+#include <jmp.h>
+#include <mmu.h>
+#include <malloc.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <cli/cli.h>
+#include <cli/cli_shell.h>
+#include <cli/cli_termesc.h>
+
+#include <image/image_loader.h>
+
+#include <drivers/dram/dram.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/mmc/sdcard.h>
+#include <drivers/sid/sid.h>
+#include <drivers/spi/spi.h>
+#include <drivers/serial/serial.h>
+#include <dt-compatible/dram-dt.h>
+#include <dt-compatible/mmc-dt.h>
+
+#include "fdt_wrapper.h"
+#include <lib/fatfs/ff.h>
+#include <lib/fatfs/diskio.h>
+#include <lib/fdt/libfdt.h>
+#include "uart.h"
+
+#define CONFIG_KERNEL_FILENAME "zImage"
+#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_CMDLINE                                         \
+	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
+	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
+	"root=/dev/mmcblk0p2 init=/init rdinit=/rdinit"        \
+	"partitions=boot@mmcblk0p1:rootfs@mmcblk0p2:rootfs_data@mmcblk0p3:UDISK@mmcblk0p4"
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
+
+#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
+#define CONFIG_CONFIG_LOAD_ADDR (0x40008000)
+
+#define CONFIG_HEAP_BASE (0x40800000)
+#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
+
+#define CONFIG_DEFAULT_BOOTDELAY 0
+
+#define FILENAME_MAX_LEN 16
+typedef struct {
+	uint8_t *dest;
+	uint8_t *of_dest;
+	char filename[FILENAME_MAX_LEN];
+	char of_filename[FILENAME_MAX_LEN];
+} image_info_t;
+
+extern sunxi_serial_t uart_dbg;
+
+static sunxi_dram_t dram;
+
+image_info_t image;
+
+#define CHUNK_SIZE 0x20000
+
+static int fatfs_loadimage(char *filename, BYTE *dest)
+{
+	FIL file;
+	UINT byte_to_read = CHUNK_SIZE;
+	UINT byte_read;
+	UINT total_read = 0;
+	FRESULT fret;
+	int ret = 1;
+	uint32_t start, time;
+
+	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
+	if (fret != FR_OK) {
+		pr_err("FATFS: open, filename: [%s]: error %d\n", filename, fret);
+		ret = -1;
+		goto open_fail;
+	}
+
+	start = time_ms();
+
+	do {
+		byte_read = 0;
+		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
+		dest += byte_to_read;
+		total_read += byte_read;
+	} while (byte_read >= byte_to_read && fret == FR_OK);
+
+	time = time_ms() - start + 1;
+
+	if (fret != FR_OK) {
+		pr_err("FATFS: read: error %d\n", fret);
+		ret = -1;
+		goto read_fail;
+	}
+	ret = 0;
+
+read_fail:
+	fret = f_close(&file);
+
+	pr_info("FATFS: read in %ums at %.2fMB/S\n", time, (f32)(total_read / time) / 1024.0f);
+
+open_fail:
+	return ret;
+}
+
+static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
+{
+	FATFS fs;
+	FRESULT fret;
+	int ret;
+	uint32_t start;
+
+	uint32_t test_time;
+	start = time_ms();
+	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	test_time = time_ms() - start;
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+
+	start = time_ms();
+
+	fret = f_mount(&fs, "", 1);
+	if (fret != FR_OK) {
+		pr_err("FATFS: mount error: %d\n", fret);
+		return -1;
+	} else {
+		pr_debug("FATFS: mount OK\n");
+	}
+
+	/* load DTB */
+	pr_info("FATFS: read %s addr=%x\n", image->of_filename, (uint32_t)image->of_dest);
+	ret = fatfs_loadimage(image->of_filename, image->of_dest);
+	if (ret)
+		return ret;
+
+	/* load Kernel */
+	pr_info("FATFS: read %s addr=%x\n", image->filename, (uint32_t)image->dest);
+	ret = fatfs_loadimage(image->filename, image->dest);
+	if (ret)
+		return ret;
+
+	/* umount fs */
+	fret = f_mount(0, "", 0);
+	if (fret != FR_OK) {
+		pr_err("FATFS: unmount error %d\n", fret);
+		return -1;
+	} else {
+		pr_debug("FATFS: unmount OK\n");
+	}
+	pr_info("FATFS: done in %ums\n", time_ms() - start);
+
+	return 0;
+}
+
+msh_declare_command(boot);
+msh_define_help(boot, "boot to linux", "Usage: boot\n");
+int cmd_boot(int argc, const char **argv)
+{
+	/* Initialize variables for kernel entry point and SD card access. */
+	uint32_t entry_point = 0;
+	void (*kernel_entry)(int zero, int arch, uint32_t params);
+
+	/* Set up boot parameters for the kernel. */
+	if (zImage_loader((uint8_t *)image.dest, &entry_point)) {
+		pr_err("boot setup failed\n");
+		abort();
+	}
+
+	/* Disable MMU, data cache, instruction cache, interrupts */
+	clean_syterkit_data();
+
+	enable_kernel_smp();
+	pr_info("enable kernel smp ok...\n");
+
+	/* Debug message to indicate the kernel address that the system is jumping to. */
+	pr_info("jump to kernel address: 0x%x\n\n", image.dest);
+
+	/* Jump to the kernel entry point. */
+	kernel_entry = (void (*)(int, int, uint32_t))entry_point;
+	kernel_entry(0, ~0, (uint32_t)image.of_dest);
+
+	// if kernel boot not success, jump to fel.
+	jmp_to_fel();
+	return 0;
+}
+
+const msh_command_entry commands[] = {
+	msh_define_command(boot),
+	msh_command_end,
+};
+
+/* 
+ * main function for the bootloader. Initializes and sets up the system, loads the kernel and device tree binary from
+ * an SD card, sets boot arguments, and boots the kernel. If the kernel fails to boot, the function jumps to FEL mode.
+ */
+int main(void)
+{
+	sdmmc_pdata_t card = { 0 };
+	sunxi_sdhci_t sdhci0;
+
+	/* Initialize the debug serial interface. */
+
+	/* Display the bootloader banner. */
+	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		pr_err("SMHC: invalid devicetree configuration\n");
+		goto _shell;
+	}
+
+	/* Initialize the system clock. */
+
+	sunxi_clk_init();
+
+	/* Initialize the DRAM and enable memory management unit (MMU). */
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
+		pr_err("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	uint32_t dram_size = sunxi_dram_init(&dram);
+	arm32_mmu_enable(dram.memory_base, dram_size);
+
+	/* Initialize the small memory allocator. */
+	malloc_init(CONFIG_HEAP_BASE, CONFIG_HEAP_SIZE);
+
+	/* Dump information about the system clocks. */
+	sunxi_clk_dump();
+
+	/* Clear the image_info_t struct. */
+	memset(&image, 0, sizeof(image_info_t));
+
+	/* Set the destination address for the device tree binary (DTB), kernel image, and configuration data. */
+	image.of_dest = (uint8_t *)CONFIG_DTB_LOAD_ADDR;
+	image.dest = (uint8_t *)CONFIG_KERNEL_LOAD_ADDR;
+
+	/* Copy the filenames for the DTB, kernel image, and configuration data. */
+	strcpy(image.filename, CONFIG_KERNEL_FILENAME);
+	strcpy(image.of_filename, CONFIG_DTB_FILENAME);
+
+	/* Initialize the SD host controller. */
+	if (sunxi_sdhci_init(&sdhci0) != 0) {
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
+		goto _shell;
+	} else {
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
+	}
+
+	/* Initialize the SD card and check if initialization is successful. */
+	if (sdmmc_init(&card, &sdhci0) != 0) {
+		pr_warn("SMHC: init failed, retry...\n");
+		if (sdmmc_init(&card, &sdhci0) != 0) {
+			goto _shell;
+		}
+	}
+	disk_set_device(0, &card);
+
+	/* Load the DTB, kernel image, and configuration data from the SD card. */
+	if (load_sdcard(&image, &card) != 0) {
+		pr_warn("SMHC: loading failed\n");
+		goto _shell;
+	}
+
+	cmd_boot(0, NULL);
+
+_shell:
+	syterkit_shell_attach(commands);
+
+	/* If the kernel boot fails, jump to FEL mode. */
+	jmp_to_fel();
+
+	/* Return 0 to indicate successful execution. */
+	return 0;
+}

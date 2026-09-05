@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file cli_config.h
+ * @brief Compile-time configuration for the SyterKit command line shell.
+ *
+ * Defines the command line buffer sizes, history depth, prompt string and
+ * the key bindings and quoting characters used by the CLI line editor and
+ * parser.
+ */
+
 #ifndef __CLI_CONFIG_H__
 #define __CLI_CONFIG_H__
 
@@ -61,11 +70,10 @@
 #define MSH_KEYBIND_HISTNEXT MSH_CTRL_KEY('n')
 
 /* parse.c */
-#define MSH_CMD_DQUOTE_CHAR '"'	 /* double quote */
+#define MSH_CMD_DQUOTE_CHAR '"' /* double quote */
 #define MSH_CMD_SQUOTE_CHAR '\'' /* single quote */
 #define MSH_CMD_ESCAPE_CHAR '\\' /* backslash */
-#define MSH_CMD_SEP_CHAR ';'	 /* command separator */
-#define MSH_CMD_FS_CHAR ' '		 /* field separator */
-
+#define MSH_CMD_SEP_CHAR ';' /* command separator */
+#define MSH_CMD_FS_CHAR ' ' /* field separator */
 
 #endif /*__CLI_CONFIG_H__*/

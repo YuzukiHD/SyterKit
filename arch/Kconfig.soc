@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config SOC_SUN20IW1
+	bool
+
+config SOC_SUN252IW1
+	bool
+
+config SOC_SUN252IW2
+	bool
+
+config SOC_SUN300IW1
+	bool
+
+config SOC_SUN50IW9
+	bool
+
+config SOC_SUN50IW10
+	bool
+
+config SOC_SUN55IW3
+	bool
+
+config SOC_SUN55IW6
+	bool
+
+config SOC_SUN60IW2
+	bool
+
+config SOC_SUN65IW1
+	bool
+
+config SOC_SUN8IW20
+	bool
+
+config SOC_SUN8IW21
+	bool
+
+config SOC_SUN8IW22
+	bool

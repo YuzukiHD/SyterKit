@@ -1,0 +1,266 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+#include <drivers/serial/serial.h>
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <types.h>
+
+#include <backtrace.h>
+#include <log.h>
+#include <drivers/clk/clk.h>
+
+#include <drivers/dma/dma.h>
+#include <drivers/dram/dram.h>
+#include <dt-compatible/dram-dt.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/i2c/i2c.h>
+#include <drivers/mmc/sdcard.h>
+#include <drivers/mmc/sdhci.h>
+#include <drivers/mtd/spi-nor.h>
+#include <dt-bindings/soc/sun300iw1.h>
+#include <drivers/spi/spi.h>
+#include <dt-compatible/dma-dt.h>
+#include <dt-compatible/mmc-dt.h>
+#include <dt-compatible/spi-nor-dt.h>
+#include <dt-compatible/spi-dt.h>
+
+#include <common.h>
+
+#include <cli/cli.h>
+#include <cli/cli_shell.h>
+#include <cli/cli_termesc.h>
+#include <string.h>
+
+static sunxi_dram_t dram;
+
+extern sunxi_serial_t uart_dbg;
+
+static sdmmc_pdata_t sd_card;
+static sunxi_sdhci_t sdhci0;
+
+#define CONFIG_SDMMC_SPEED_TEST_SIZE 4 * 1024 // (unit: 512B sectors)
+#define CHUNK_SIZE 0x20000
+
+msh_declare_command(read);
+msh_define_help(read, "read SMHC", "Usage: read\n");
+int cmd_read(int argc, const char **argv)
+{
+	uint32_t start;
+	uint32_t test_time;
+
+	pr_debug("Clear Buffer data\n");
+	memset((void *)dram.memory_base, 0x00, 0x2000);
+	dump_hex(dram.memory_base, 0x100);
+
+	pr_debug("Read data to buffer data\n");
+
+	start = time_ms();
+	sdmmc_blk_read(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	test_time = time_ms() - start;
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	dump_hex(dram.memory_base, 0x100);
+	return 0;
+}
+
+msh_declare_command(write);
+msh_define_help(write, "test", "Usage: write\n");
+int cmd_write(int argc, const char **argv)
+{
+	uint32_t start;
+	uint32_t test_time;
+
+	pr_debug("Set Buffer data\n");
+	memset((void *)dram.memory_base, 0x5A, 0x2000);
+	memcpy((void *)dram.memory_base, argv[1], strlen(argv[1]));
+
+	start = time_ms();
+	sdmmc_blk_write(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
+	test_time = time_ms() - start;
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	return 0;
+}
+
+msh_declare_command(load);
+msh_define_help(load, "load SMHC", "Usage: load\n");
+int cmd_load(int argc, const char **argv)
+{
+	if (sunxi_sdhci_init(&sdhci0) != 0) {
+		pr_err("SMHC: %s controller init failed\n", sdhci0.name);
+	} else {
+		pr_info("SMHC: %s controller initialized\n", sdhci0.name);
+	}
+
+	/* Initialize the SD card and check if initialization is successful. */
+	if (sdmmc_init(&sd_card, &sdhci0) != 0) {
+		pr_warn("SMHC: init failed\n");
+	} else {
+		pr_debug("Card OK!\n");
+	}
+	return 0;
+}
+
+msh_declare_command(reset);
+msh_define_help(reset, "reset test", "Usage: reset\n");
+int cmd_reset(int argc, const char **argv)
+{
+	setbits_le32(SUNXI_PRCM_BASE + 0x1c, BIT(3)); /* enable WDT clk */
+	writel(0x16aa0000, SUNXI_RTC_WDG_BASE + 0x18); /* disable WDT */
+	writel(0x16aa0000 | BIT(0), SUNXI_RTC_WDG_BASE + 0x08); /* trigger WDT */
+	return 0;
+}
+
+msh_declare_command(bt);
+msh_define_help(bt, "backtrace test", "Usage: bt\n");
+int cmd_bt(int argc, const char **argv)
+{
+	dump_stack();
+	return 0;
+}
+
+static void __attribute__((noinline)) cmd_fault_illegal(void)
+{
+	__asm__ volatile(".word 0xffffffff" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_load(void)
+{
+	const uintptr_t address = (uintptr_t)0xdead0000U;
+	uint32_t value;
+
+	__asm__ volatile("lw %0, 0(%1)" : "=r"(value) : "r"(address) : "memory");
+	(void)value;
+}
+
+static void __attribute__((noinline)) cmd_fault_load_misaligned(void)
+{
+	volatile uint8_t storage[8] = { 0x11, 0x22, 0x33, 0x44 };
+	const uintptr_t address = (uintptr_t)&storage[1];
+	uint32_t value;
+
+	__asm__ volatile("lw %0, 0(%1)" : "=r"(value) : "r"(address) : "memory");
+	(void)value;
+}
+
+static void __attribute__((noinline)) cmd_fault_store(void)
+{
+	const uintptr_t address = (uintptr_t)0xdead0000U;
+	const uint32_t value = 0xdeadbeefU;
+
+	__asm__ volatile("sw %0, 0(%1)" : : "r"(value), "r"(address) : "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_store_misaligned(void)
+{
+	volatile uint8_t storage[8] = { 0 };
+	const uintptr_t address = (uintptr_t)&storage[1];
+	const uint32_t value = 0xdeadbeefU;
+
+	__asm__ volatile("sw %0, 0(%1)" : : "r"(value), "r"(address) : "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_ecall(void)
+{
+	__asm__ volatile("ecall" ::: "memory");
+}
+
+static void __attribute__((noinline)) cmd_fault_breakpoint(void)
+{
+	__asm__ volatile("ebreak" ::: "memory");
+}
+
+msh_declare_command(fault);
+msh_define_help(fault, "trigger an exception for backtrace testing", "Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+int cmd_fault(int argc, const char **argv)
+{
+	if (argc != 2) {
+		pr_err("Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+		return -1;
+	}
+
+	if (strcmp(argv[1], "illegal") == 0)
+		cmd_fault_illegal();
+	else if (strcmp(argv[1], "load") == 0)
+		cmd_fault_load();
+	else if (strcmp(argv[1], "load-misaligned") == 0)
+		cmd_fault_load_misaligned();
+	else if (strcmp(argv[1], "store") == 0)
+		cmd_fault_store();
+	else if (strcmp(argv[1], "store-misaligned") == 0)
+		cmd_fault_store_misaligned();
+	else if (strcmp(argv[1], "ecall") == 0)
+		cmd_fault_ecall();
+	else if (strcmp(argv[1], "breakpoint") == 0)
+		cmd_fault_breakpoint();
+	else {
+		pr_err("fault: unknown type '%s'\n", argv[1]);
+		return -1;
+	}
+
+	return 0;
+}
+
+const msh_command_entry commands[] = {
+	msh_define_command(load),  msh_define_command(read),  msh_define_command(write), msh_define_command(bt),
+	msh_define_command(fault), msh_define_command(reset), msh_command_end,
+};
+
+int main(void)
+{
+	sunxi_dma_t dma;
+	spi_nor_t nor;
+	sunxi_spi_t spi;
+
+	sunxi_clk_preinit();
+
+	if (sunxi_serial_init_stdout() != 0)
+		return -1;
+
+	show_banner();
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK) {
+		pr_err("SMHC: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+	    spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
+		pr_err("SPI: invalid devicetree configuration\n");
+		return -1;
+	}
+
+	pr_info("Hello World!\n");
+
+	sunxi_clk_init();
+
+	pr_info("CLK init finish\n");
+
+	sunxi_clk_dump();
+
+	if (sunxi_dram_dt_read_alias(&dram, "dram0") != DRIVER_OK) {
+		pr_err("DRAM: invalid devicetree configuration\n");
+		return -1;
+	}
+	if (sunxi_dram_init(&dram) == 0U) {
+		pr_err("DRAM: initialization failed\n");
+		return -1;
+	}
+
+	sunxi_spi_init(&spi);
+
+	spi_nor_detect(&nor);
+
+	memset((void *)0x81000000, 0x0, 0x1000);
+
+	uint32_t time = time_ms();
+	spi_nor_read(&nor, (void *)0x81000000, 0x0, 1024 * 1024 * 4);
+	uint32_t time_end = time_ms();
+
+	pr_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));
+
+	syterkit_shell_attach(commands);
+
+	abort();
+
+	return 0;
+}

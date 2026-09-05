@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice DRIVER_UFS_HOST_SUNXI_CHIP
+	prompt "Allwinner UFS host chip"
+	depends on DRIVER_UFS
+
+config DRIVER_UFS_HOST_SUN60IW2
+	bool "Sun60IW2P1"
+	depends on SOC_SUN60IW2
+	select DRIVER_SID
+	help
+	  Use the Sun60IW2P1 BGR-based UFS CCU and PHY sequence.
+
+endchoice

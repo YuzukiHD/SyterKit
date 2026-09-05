@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+obj-$(CONFIG_DRIVER_CLK) += clk/
+obj-$(CONFIG_DRIVER_DMA) += dma/
+obj-y += gpio/
+obj-$(CONFIG_DRIVER_I2C) += i2c/
+obj-$(CONFIG_DRIVER_INTC) += intc/
+obj-$(CONFIG_DRIVER_MMC) += mmc/
+obj-$(CONFIG_DRIVER_MTD) += mtd/
+obj-$(CONFIG_DRIVER_PMIC_AXP) += pmu/
+obj-$(CONFIG_DRIVER_PWM) += pwm/
+obj-$(CONFIG_DRIVER_DRAM) += dram/
+obj-$(CONFIG_DRIVER_PSRAM) += psram/
+obj-$(CONFIG_DRIVER_PCIE) += pcie/
+obj-$(CONFIG_DRIVER_REMOTEPROC) += remoteproc/
+obj-$(CONFIG_DRIVER_RTC) += rtc/
+obj-$(CONFIG_DRIVER_SERIAL) += serial/
+obj-$(CONFIG_DRIVER_SID) += sid/
+obj-$(CONFIG_DRIVER_SOC) += soc/
+obj-$(CONFIG_DRIVER_SPIF) += spif/
+obj-$(CONFIG_DRIVER_SPI) += spi/
+obj-$(CONFIG_DRIVER_USB) += usb/
+obj-$(CONFIG_DRIVER_UFS) += ufs/

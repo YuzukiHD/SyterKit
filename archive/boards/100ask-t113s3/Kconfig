@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config BOARD_100ASK_T113S3
+	bool "100ASK T113-S3"
+	depends on ARCH_ARM32 && CPU_CORTEX_A7
+	select SOC_SUN8IW20

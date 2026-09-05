@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/pcie/allwinner,sun55iw6-pcie.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Allwinner sun55iw6 PCIe controller
+
+maintainers:
+  - SyterKit maintainers
+
+properties:
+  compatible:
+    enum:
+      - allwinner,sun55iw6-pcie-rc
+      - allwinner,sun55iw6-pcie-ep
+
+  reg:
+    maxItems: 1
+    description: DesignWare DBI register space
+
+  allwinner,app-base:
+    type: uint32
+    description: Optional application register base, defaults to DBI + 0x400000
+
+  allwinner,phy-subsys-base:
+    type: uint32
+    description: SerDes subsystem application register base
+
+  allwinner,phy-base:
+    type: uint32
+    description: INNO PCIe PHY register base
+
+  allwinner,config-window:
+    type: uint32-array
+    minItems: 3
+    maxItems: 3
+    description: CPU address, PCI address metadata and size of the configuration window; the controller encodes the BDF as the iATU target
+
+  allwinner,io-window:
+    type: uint32-array
+    minItems: 3
+    maxItems: 3
+    description: CPU address, PCI address and size of the I/O window
+
+  allwinner,mem-window:
+    type: uint32-array
+    minItems: 3
+    maxItems: 3
+    description: CPU address, PCI address and size of the memory window
+
+  num-lanes:
+    type: uint32
+    enum: [1]
+    default: 1
+
+  max-link-speed:
+    type: uint32
+    enum: [1, 2]
+    default: 2
+
+  allwinner,timeout-us:
+    type: uint32
+    default: 1000000
+
+  reset-gpios:
+    type: phandle-array
+    minItems: 1
+    maxItems: 1
+    description: Optional external endpoint reset GPIO in SyterKit GPIO format
+
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+
+additionalProperties: true
+
+dt2c,device: true

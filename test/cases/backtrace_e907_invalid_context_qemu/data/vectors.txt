@@ -1,0 +1,3 @@
+pc=invalid,sp=valid,lr=invalid
+pc=valid,sp=invalid,lr=valid
+pc=invalid,sp=invalid,lr=invalid

@@ -1,0 +1,81 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x02000000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		i2c1_pins: i2c1-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 4 3>,
+				<SUNXI_GPIO_PORT_B 5 3>;
+		};
+	};
+
+	r_pio: pinctrl@7022000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <0x07022000 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		#gpio-cells = <3>;
+		gpio-controller;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		i2c0: i2c@3000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3000 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <6>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x4000 0>;
+			allwinner,reset = <0x4000 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+		};
+
+		i2c1: i2c@5000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x5000 0x400>;
+			clock-frequency = <100000>;
+			allwinner,i2c-id = <1>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <0x6000 1>;
+			allwinner,reset = <0x6000 17>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c1_pins>;
+			status = "okay";
+
+		};
+	};
+};

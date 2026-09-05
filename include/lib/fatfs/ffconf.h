@@ -102,7 +102,11 @@
 /     0 - Include all code pages above and configured by f_setcp()
 */
 
+#ifdef CONFIG_FATFS_LFN_HEAP
+#define FF_USE_LFN 3
+#else
 #define FF_USE_LFN 1
+#endif
 #define FF_MAX_LFN 255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /

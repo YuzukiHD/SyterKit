@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "MTD driver"
+
+config DRIVER_MTD
+	bool "Memory technology device support"
+
+choice
+	prompt "MTD driver log level"
+	default DRIVER_MTD_LOG_TRACE if BUILD_TRACE
+	default DRIVER_MTD_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_MTD_LOG_GLOBAL
+	depends on DRIVER_MTD
+
+config DRIVER_MTD_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_MTD_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_MTD_LOG_ERROR
+	bool "Error"
+
+config DRIVER_MTD_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_MTD_LOG_INFO
+	bool "Info"
+
+config DRIVER_MTD_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_MTD_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_MTD_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+choice DRIVER_MTD_FLASH_BACKEND
+	prompt "MTD flash driver"
+	default DRIVER_MTD_SPI_NOR if DRIVER_SPI
+	default DRIVER_MTD_SPIF_NOR if DRIVER_SPIF
+	depends on DRIVER_MTD
+
+config DRIVER_MTD_SPI_NOR
+	bool "SPI NOR (standard SPI controller)"
+	depends on DRIVER_SPI
+
+config DRIVER_MTD_SPIF_NOR
+	bool "SPI NOR (SPIF controller)"
+	depends on DRIVER_SPIF
+
+config DRIVER_MTD_SPI_NAND
+	bool "SPI NAND"
+	depends on DRIVER_SPI
+
+endchoice
+
+source "drivers/mtd/nand/Kconfig"
+source "drivers/mtd/spi-nor/Kconfig"
+source "drivers/mtd/spif-nor/Kconfig"
+
+endmenu

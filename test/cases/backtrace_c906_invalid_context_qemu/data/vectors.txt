@@ -1,0 +1,3 @@
+pc=invalid,sp=valid,fp=invalid,lr=invalid
+pc=valid,sp=invalid,fp=invalid,lr=valid
+context=null

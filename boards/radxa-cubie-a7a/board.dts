@@ -1,0 +1,211 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+#include <dt-bindings/dram/dram-param.h>
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/soc/sun60iw2.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "Radxa Cubie A7A";
+	compatible = "syterkit,radxa-cubie-a7a";
+
+	aliases {
+		sid0 = &sid0;
+		dram0 = &dram0;
+		gpio0 = &pio;
+		i2c0 = &i2c0;
+		mmc0 = &mmc0;
+		ufs0 = &ufs0;
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	dram0: dram-controller {
+		compatible = "allwinner,sunxi-dram";
+		allwinner,dram-base = <0x40000000>;
+		allwinner,dram-parameters =
+			<0x00000960>,
+			<SUNXI_DRAM_LPDDR5>,
+			<0x0e0e0e0e>,
+			<0x0f0f0f0f>,
+			<0xec030e0f>,
+			<0x00000000>,
+			<0x0000a10a>,
+			<0x00001001>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000006>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00000012>,
+			<0x00000044>,
+			<0x00000000>,
+			<0x00000034>,
+			<0x00000000>,
+			<0x00000006>,
+			<0x00000000>,
+			<0x00004040>,
+			<0x00000000>,
+			<0x0170b070>,
+			<0x00003800>,
+			<0x00003514>,
+			<0x325f0000>,
+			<0x00000000>,
+			<0x00000000>,
+			<0x00010061>,
+			<0x00000000>;
+		status = "okay";
+	};
+
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <SUNXI_PIO_BASE 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		mmc0_pins: mmc0-pins {
+			/* Existing board data does not define CLK or D3 routing. */
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_F 3 2>,
+				<SUNXI_GPIO_PORT_F 1 2>,
+				<SUNXI_GPIO_PORT_F 0 2>,
+				<SUNXI_GPIO_PORT_F 5 2>;
+		};
+
+		uart0_pins: uart0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_B 9 2>,
+				<SUNXI_GPIO_PORT_B 10 2>;
+		};
+	};
+
+	r_pio: pinctrl@7025000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <SUNXI_RPIO_BASE 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_L>;
+		allwinner,bank-count = <3>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		i2c0_pins: i2c0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_L 0 2>,
+				<SUNXI_GPIO_PORT_L 1 2>;
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		mmc0_dma: dma-descriptors@70080000 {
+			reg = <0x70080000 0x100000>;
+			no-map;
+		};
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		sid0: efuse@3006000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <SUNXI_SID_BASE 0x400>;
+			status = "okay";
+		};
+
+		mmc0: mmc@4020000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <SUNXI_SMHC0_BASE 0x1000>;
+			label = "sdhci0";
+			allwinner,mmc-id = <0>;
+			bus-width = <4>;
+			max-frequency = <50000000>;
+			memory-region = <&mmc0_dma>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xd0c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xd0c) 16>;
+			allwinner,module-clock =
+				<(SUNXI_CCU_BASE + 0xd00) 8 0 1>;
+			allwinner,clock-source-rates =
+				<24000000 300000000 0 0>;
+			allwinner,card-detect =
+				<&pio SUNXI_GPIO_PORT_F 6 0 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc0_pins>;
+			status = "disabled";
+		};
+
+		ufs0: ufs@4520000 {
+			compatible = "allwinner,sunxi-ufs";
+			reg = <SUNXI_UFS_BASE 0x1000>;
+			allwinner,axi-clock = <SUNXI_UFS_AXI_CLK_REG
+				SUNXI_UFS_AXI_CLK_GATE SUNXI_UFS_AXI_CLK_SRC_MASK
+				SUNXI_UFS_AXI_CLK_SRC_300 SUNXI_UFS_AXI_CLK_SRC_200
+				SUNXI_UFS_AXI_CLK_FACTOR_MASK>;
+			allwinner,cfg-clock = <SUNXI_UFS_CFG_CLK_REG
+				SUNXI_UFS_CFG_CLK_GATE SUNXI_UFS_CFG_CLK_SRC_MASK
+				SUNXI_UFS_CFG_CLK_SRC_480 SUNXI_UFS_CFG_CLK_FACTOR_MASK
+				SUNXI_UFS_CFG_CLK_FACTOR>;
+			allwinner,controller-clock = <SUNXI_UFS_CFG_REG_OFFSET
+				SUNXI_UFS_CLK_GATE_REG_OFFSET SUNXI_UFS_CFG_CLK_FREQ_MASK
+				SUNXI_UFS_CFG_CLK_FREQ SUNXI_UFS_REF_CLK_UNIPRO_SEL
+				SUNXI_UFS_REF_CLK_APP_SEL SUNXI_UFS_REF_CLK_APP_ENABLE
+				SUNXI_UFS_REF_CLK_FREQ_MASK SUNXI_UFS_REF_CLK_FREQ_EXT_26M
+				SUNXI_UFS_REF_CLK_FREQ_INT_19_2M SUNXI_UFS_REF_CLK_FREQ_INT_26M
+				SUNXI_UFS_REF_CLK_FREQ_EXT_19_2M SUNXI_UFS_MPHY_CFGCLK_GATE
+				SUNXI_UFS_CLK24M_GATE SUNXI_UFS_CLK_GATE_AUTOGATE_OFF>;
+			allwinner,phy-ref-clock = <SUNXI_UFS_PHY_REF_CLK_CTRL>;
+			allwinner,rtc-clock = <SUNXI_UFS_RTC_XO_CTRL
+				SUNXI_UFS_RTC_XO_CTRL1 SUNXI_UFS_RTC_WP
+				SUNXI_UFS_RTC_REF_TYPE_SHIFT SUNXI_UFS_RTC_REF_TYPE_MASK
+				SUNXI_UFS_RTC_EXTERNAL_REF_TYPES SUNXI_UFS_RTC_DCXO_GATE
+				SUNXI_UFS_RTC_CLK_REQ_DISABLE SUNXI_UFS_RTC_WP_KEY>;
+			allwinner,reset = <SUNXI_UFS_RESET_REG SUNXI_UFS_CORE_RST
+				SUNXI_UFS_PHY_RST SUNXI_UFS_AXI_RST SUNXI_UFS_BUS_RST
+				SUNXI_UFS_AHB_GATE>;
+			allwinner,timeout-us = <1000000>;
+			status = "okay";
+		};
+
+		i2c0: i2c@7083000 {
+			compatible = "allwinner,sunxi-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <SUNXI_R_TWI0_BASE 0x400>;
+			clock-frequency = <400000>;
+			allwinner,i2c-id = <6>;
+			allwinner,parent-clock-frequency = <24000000>;
+			allwinner,clock-gate = <(SUNXI_RPRCM_BASE + 0x19c) 0>;
+			allwinner,reset = <(SUNXI_RPRCM_BASE + 0x19c) 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "okay";
+
+		};
+
+		uart0: serial@2500000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <SUNXI_UART0_BASE 0x400>;
+			current-speed = <115200>;
+			clock-frequency = <24000000>;
+			allwinner,uart-id = <0>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xe00) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xe00) 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+			status = "okay";
+		};
+	};
+};

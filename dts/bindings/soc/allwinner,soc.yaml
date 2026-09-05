@@ -1,0 +1,17 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner SoC identification registers used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,soc
+  reg:
+    type: reg
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+
+dt2c,device: true

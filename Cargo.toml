@@ -1,12 +1,9 @@
-[workspace]
-resolver = "2"
-members = [
-    "rust",
-    "rust/macros",
-    "rust/xtask",
-    "board/100ask-d1-h-rs",
-]
+# SPDX-License-Identifier: GPL-2.0+
 
-[patch.crates-io]
-allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal", rev = "aa6ec965" }
-allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal", rev = "aa6ec965" }
+[workspace]
+members = ["rust/ffi", "rust/core", "rust/drivers", "rust/lib"]
+exclude = ["tools/dt2c"]
+resolver = "2"
+
+[profile.release]
+panic = "abort"

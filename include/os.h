@@ -28,25 +28,29 @@ typedef struct timer_struct {
 } timer_t;
 
 /**
-    @brief Create a timer.
-    @param timer A pointer to a timer_t object to save the newly created timer.
-    @param callback A pointer to the function that will be called when the timer times out.
-    @param arg A void pointer used to pass arguments to the callback function. 
-*/
+ * @brief Initialize a timer object.
+ *
+ * @param[out] timer Timer object to initialize.
+ * @param[in] callback Function invoked whenever the timer expires.
+ * @param[in] arg Opaque argument passed to @p callback.
+ */
 void timer_create(timer_t *timer, void (*callback)(void *arg, uint32_t event), void *arg);
 
-
 /**
-    @brief Start a timer.
-    @param timer A pointer to an already created timer_t object.
-    @param max_run_count The maximum number of times the timer will run. 0 means it will run indefinitely.
-    @param interval The time interval of the timer. 
-*/
+ * @brief Start a timer.
+ *
+ * @param[in,out] timer Initialized timer object.
+ * @param[in] max_run_count Maximum number of expirations, or zero to run
+ *                          indefinitely.
+ * @param[in] interval Number of timer-handler ticks between expirations.
+ */
 void timer_start(timer_t *timer, uint32_t max_run_count, uint32_t interval);
 
 /**
-    @brief Timer processing function, needs to be called continuously in the main loop to achieve normal operation of the timer. 
-*/
-void timer_handle();
+ * @brief Advance and dispatch all active software timers.
+ *
+ * Call this function once per scheduler tick.
+ */
+void timer_handle(void);
 
-#endif// __OS_H__
+#endif // __OS_H__

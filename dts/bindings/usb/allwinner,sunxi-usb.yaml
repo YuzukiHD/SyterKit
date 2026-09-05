@@ -1,0 +1,34 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner USB device controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-usb
+  reg:
+    type: reg
+  allwinner,usb-id:
+    type: uint32
+  interrupts:
+    type: uint32-array
+  allwinner,phy-clock:
+    type: uint32-array
+  allwinner,phy-reset:
+    type: uint32-array
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - allwinner,usb-id
+  - allwinner,phy-clock
+  - allwinner,phy-reset
+  - allwinner,clock-gate
+  - allwinner,reset
+
+dt2c,device: true

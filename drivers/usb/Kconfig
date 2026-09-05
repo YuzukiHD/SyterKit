@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "USB driver"
+
+config DRIVER_USB
+	bool "Allwinner USB device controller support"
+	depends on DRIVER_INTC
+
+if DRIVER_USB
+
+config DRIVER_USB_FUNCTION_WINUSB
+	bool "WinUSB device function"
+	default y
+	help
+	  Build the minimal WinUSB function. Additional USB functions register
+	  through the USB function registry instead of modifying the controller.
+
+config DRIVER_USB_FUNCTION_FEL
+	bool "Sunxi FEL device function"
+	depends on DRIVER_SOC
+	default y
+	help
+	  Build the Sunxi FEL USB device function. It implements the AWUC/AWUS
+	  bulk transport and the memory read, write and execute commands used by
+	  libefex.
+
+endif
+
+choice
+	prompt "USB driver log level"
+	default DRIVER_USB_LOG_TRACE if BUILD_TRACE
+	default DRIVER_USB_LOG_DEBUG if BUILD_DEBUG
+	default DRIVER_USB_LOG_GLOBAL
+	depends on DRIVER_USB
+
+config DRIVER_USB_LOG_GLOBAL
+	bool "Inherit global log level"
+
+config DRIVER_USB_LOG_MUTE
+	bool "Mute"
+
+config DRIVER_USB_LOG_ERROR
+	bool "Error"
+
+config DRIVER_USB_LOG_WARNING
+	bool "Warning"
+
+config DRIVER_USB_LOG_INFO
+	bool "Info"
+
+config DRIVER_USB_LOG_DEBUG
+	bool "Debug"
+
+config DRIVER_USB_LOG_TRACE
+	bool "Trace"
+
+config DRIVER_USB_LOG_BACKTRACE
+	bool "Backtrace"
+
+endchoice
+
+endmenu

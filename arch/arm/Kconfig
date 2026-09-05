@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+choice
+	prompt "ARM processor core"
+	depends on ARCH_ARM32
+	optional
+
+config CPU_CORTEX_A7
+	bool "Cortex-A7"
+
+config CPU_ARMV8
+	bool "ARMv8-A"
+
+config CPU_ARMV8_2
+	bool "ARMv8.2-A"
+
+endchoice
+
+config ARM_HARDFP
+	bool "Use the hard-float ABI"
+	depends on CPU_CORTEX_A7

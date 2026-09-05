@@ -37,15 +37,18 @@
 
 extern uint32_t __sunxi_smc_call(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3);
 
-uint32_t sunxi_smc_call_atf(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3, smc_call_arg_t pResult) {
+uint32_t sunxi_smc_call_atf(smc_call_arg_t arg0, smc_call_arg_t arg1, smc_call_arg_t arg2, smc_call_arg_t arg3, smc_call_arg_t pResult)
+{
 	return __sunxi_smc_call(arg0, arg1, arg2, arg3);
 }
 
-uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2) {
+uint32_t arm_svc_run_os(smc_call_arg_t kernel, smc_call_arg_t fdt, smc_call_arg_t arg2)
+{
 	return sunxi_smc_call_atf(ARM_SVC_RUNNSOS, kernel, fdt, arg2, 0);
 }
 
-void print_banner(void) {
+void print_banner(void)
+{
 	printf(" _____     _           _____ __    ___ ___ \n");
 	printf("|   __|_ _| |_ ___ ___| __  |  |  |_  |_  |\n");
 	printf("|__   | | |  _| -_|  _| __ -|  |__|_  |_  |\n");
@@ -61,7 +64,8 @@ void print_banner(void) {
 	mdelay(10);
 }
 
-void sys_boot() {
-	sunxi_smc_call_atf(ARM_SVC_ARISC_STARTUP, (uint64_t) CONFIG_DTB_LOAD_ADDR, 0, 0, 0);
+void sys_boot()
+{
+	sunxi_smc_call_atf(ARM_SVC_ARISC_STARTUP, (uint64_t)CONFIG_DTB_LOAD_ADDR, 0, 0, 0);
 	arm_svc_run_os(CONFIG_KERNEL_LOAD_ADDR, CONFIG_DTB_LOAD_ADDR, 1);
 }

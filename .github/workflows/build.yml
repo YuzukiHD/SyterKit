@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build all board configurations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            bison \
+            build-essential \
+            ca-certificates \
+            curl \
+            flex \
+            gcc-arm-none-eabi \
+            libncurses-dev \
+            pkg-config \
+            ripgrep
+
+      - name: Install Xuantie RISC-V toolchain
+        env:
+          TOOLCHAIN_URL: https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1751370399722/Xuantie-900-gcc-elf-newlib-x86_64-V3.2.0-20250627.tar.gz
+          TOOLCHAIN_SHA256: 80c174c6445f7565bc082d328045021862a63beddfad8c393c534e2d9523dc3b
+        run: |
+          archive="${RUNNER_TEMP}/xuantie-toolchain.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/xuantie"
+          curl --fail --location --retry 3 --output "${archive}" \
+            "${TOOLCHAIN_URL}"
+          echo "${TOOLCHAIN_SHA256}  ${archive}" | sha256sum --check --strict
+          tar --extract --gzip --strip-components=1 \
+            --directory "${RUNNER_TEMP}/xuantie" --file "${archive}"
+          toolchain="${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-"
+          "${toolchain}gcc" --version | grep -F \
+            'Xuantie-900 elf newlib gcc Toolchain V3.2.0 B-20250627'
+          echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
+            >> "${GITHUB_ENV}"
+
+      - name: Verify dt2c distributions
+        run: |
+          tools/bin/dt2c generate --help
+          test -f tools/bin/include/dt2c/dt.h
+          test -f tools/bin/include/dt2c/dt_runtime.h
+          cmp tools/bin/include/dt2c/dt.h tools/dt2c/include/dt2c/dt.h
+          cmp tools/bin/include/dt2c/dt_runtime.h \
+            tools/dt2c/include/dt2c/dt_runtime.h
+          file tools/bin/dt2c | grep -F 'static-pie linked'
+          ! readelf -d tools/bin/dt2c | grep -q '(NEEDED)'
+          rustup toolchain install stable --profile minimal
+          rustup target add --toolchain stable riscv32imac-unknown-none-elf
+          source_build="${RUNNER_TEMP}/dt2c-source-build"
+          make O="${source_build}" \
+            DT2C="${source_build}/.obj/tools/dt2c/release/dt2c" \
+            CARGO="cargo +stable" dt2c-check
+          mv tools/dt2c "${RUNNER_TEMP}/dt2c-source"
+          make O="${RUNNER_TEMP}/dt2c-prebuilt-check" dt2c-check
+
+      - name: Build all board configurations
+        env:
+          ARM_CROSS_COMPILE: arm-none-eabi-
+          O: ${{ runner.temp }}/syterkit-build
+        run: |
+          set -euo pipefail
+          while IFS= read -r name; do
+            make "O=${O}" "${name}"
+            if grep -q '^CONFIG_ARCH_RISCV' "${O}/.config"; then
+              cross="${RISCV_CROSS_COMPILE}"
+            else
+              cross="${ARM_CROSS_COMPILE}"
+            fi
+            make "O=${O}" CROSS_COMPILE="${cross}" -j"$(nproc)"
+          done < <(make list-defconfigs)

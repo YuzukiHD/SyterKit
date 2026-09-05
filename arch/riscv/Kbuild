@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+obj-y += timer.o memcpy.o memset.o memcmp.o
+obj-$(CONFIG_ARCH_EXCEPTION) += exception.o
+
+obj-$(CONFIG_ARCH_RISCV32) += riscv32/
+obj-$(CONFIG_ARCH_RISCV64) += riscv64/
+
+obj-$(CONFIG_ARCH_CPU_E907) += cpu/e907/
+obj-$(CONFIG_ARCH_CPU_C907) += cpu/c907/
+obj-$(CONFIG_ARCH_CPU_C906) += cpu/c906/

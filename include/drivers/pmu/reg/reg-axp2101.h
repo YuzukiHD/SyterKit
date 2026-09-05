@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp2101.h
+ * @brief Register map for the AXP2101 PMIC.
+ */
+
 #ifndef __REG_AXP2101_H__
 #define __REG_AXP2101_H__
 
@@ -62,4 +67,4 @@
 #define AXP2101_EFREQ_CTRL (0xF1)
 #define AXP2101_SELLP_CFG (0x26)
 
-#endif// __REG_AXP2101_H__
+#endif // __REG_AXP2101_H__

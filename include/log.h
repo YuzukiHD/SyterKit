@@ -10,13 +10,13 @@
 
 #include <timer.h>
 
-#include <sys-uart.h>
+#include <drivers/serial/serial.h>
 
-#include "xformat.h"
+#include "format.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif// __cplusplus
+#endif // __cplusplus
 
 #define LOG_LEVEL_MUTE 0
 #define LOG_LEVEL_ERROR 1
@@ -34,38 +34,54 @@ extern "C" {
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_TRACE
 #else
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_INFO
-#endif// DEBUG_MODE
+#endif // DEBUG_MODE
 
-#endif// LOG_LEVEL_DEFAULT
+#endif // LOG_LEVEL_DEFAULT
+
+/* Driver subdirectories may override the global threshold per build unit. */
+#ifdef DRIVER_LOG_LEVEL
+#undef LOG_LEVEL_DEFAULT
+#define LOG_LEVEL_DEFAULT DRIVER_LOG_LEVEL
+#endif
+
+#ifndef pr_fmt
+#define pr_fmt(fmt) fmt
+#endif
+
+#define no_printk(level, fmt, ...)                         \
+	do {                                               \
+		if (0)                                     \
+			printk(level, fmt, ##__VA_ARGS__); \
+	} while (0)
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_TRACE
-#define printk_trace(fmt, ...) printk(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__)
+#define pr_trace(fmt, ...) printk(LOG_LEVEL_TRACE, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define printk_trace(fmt, ...) ((void) 0)
+#define pr_trace(fmt, ...) no_printk(LOG_LEVEL_TRACE, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_DEBUG
-#define printk_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define pr_debug(fmt, ...) printk(LOG_LEVEL_DEBUG, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define printk_debug(fmt, ...) ((void) 0)
+#define pr_debug(fmt, ...) no_printk(LOG_LEVEL_DEBUG, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_INFO
-#define printk_info(fmt, ...) printk(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__)
+#define pr_info(fmt, ...) printk(LOG_LEVEL_INFO, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define printk_info(fmt, ...) ((void) 0)
+#define pr_info(fmt, ...) no_printk(LOG_LEVEL_INFO, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_WARNING
-#define printk_warning(fmt, ...) printk(LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
+#define pr_warn(fmt, ...) printk(LOG_LEVEL_WARNING, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define printk_warning(fmt, ...) ((void) 0)
+#define pr_warn(fmt, ...) no_printk(LOG_LEVEL_WARNING, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 #if LOG_LEVEL_DEFAULT >= LOG_LEVEL_ERROR
-#define printk_error(fmt, ...) printk(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) printk(LOG_LEVEL_ERROR, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define printk_error(fmt, ...) ((void) 0)
+#define pr_err(fmt, ...) no_printk(LOG_LEVEL_ERROR, pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 /**
@@ -89,6 +105,17 @@ void set_timer_count();
  * @note This function should be used within the kernel to record important system information or debug messages.
  */
 void printk(int level, const char *fmt, ...);
+
+/**
+ * @brief Print a preformatted message through the generic kernel log path.
+ *
+ * This non-variadic adapter is provided for language bindings whose formatting
+ * values are assembled before crossing the C ABI boundary.
+ *
+ * @param level Information level, typically one of the LOG_LEVEL_* constants.
+ * @param message NUL-terminated message text; it must not be NULL.
+ */
+void printk_string(int level, const char *message);
 
 /**
  * @brief Print message via UART
@@ -124,10 +151,10 @@ int printf(const char *fmt, ...);
  * @param start_addr The starting address of the memory region to dump.
  * @param count The number of bytes to dump.
  */
-void dump_hex(uint32_t start_addr, uint32_t count);
+void dump_hex(uintptr_t start_addr, uint32_t count);
 
 #ifdef __cplusplus
 }
-#endif// __cplusplus
+#endif // __cplusplus
 
 #endif

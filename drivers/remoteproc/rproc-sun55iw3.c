@@ -1,0 +1,113 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+#define pr_fmt(fmt) "rproc-sun55iw3: " fmt
+
+/**
+ * @file rproc-sun55iw3.c
+ * @brief Sun55iw3 E906 remote processor bring-up.
+ *
+ * Implements the remoteproc callbacks that configure the RISC-V E906 core
+ * clock and reset controls through the DSP power/reset/clock manager.
+ */
+
+#include <stdint.h>
+
+#include <driver.h>
+#include <drivers/remoteproc/remoteproc.h>
+#include <dt2c/driver.h>
+#include <io.h>
+#include <log.h>
+
+#include <drivers/clk/sun55iw3/reg.h>
+
+#define SUN55IW3_E906_PUBSRAM_CFG_OFFSET 0x0114U
+#define SUN55IW3_E906_CLK_OFFSET 0x0120U
+#define SUN55IW3_E906_CFG_BGR_OFFSET 0x0124U
+#define SUN55IW3_E906_START_OFFSET 0x0204U
+
+/**
+ * @brief Register resource indices used by the E906 remote processor.
+ */
+enum sun55iw3_e906_register {
+	SUN55IW3_E906_DSP_PRCM,
+	SUN55IW3_E906_CFG,
+};
+
+/**
+ * @brief Start the RISC-V E906 core.
+ *
+ * Releases the configuration and core resets, sets the entry address and
+ * enables the RISC-V clock gating.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register
+ *                       bases and the entry point.
+ * @return DRIVER_OK on success.
+ */
+static int sun55iw3_e906_start(sunxi_remoteproc_t *remoteproc)
+{
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
+	uintptr_t cfg = remoteproc->registers[SUN55IW3_E906_CFG].base;
+
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, RISCV_CFG_RST | RISCV_CFG_GATING);
+	write32(cfg + SUN55IW3_E906_START_OFFSET, (uint32_t)remoteproc->entry);
+	value = read32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET);
+	value |= RISCV_CORE_RST | RISCV_APB_DB_RST;
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, value);
+	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
+	value |= RISCV_CLK_GATING;
+	write32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET, value);
+	return DRIVER_OK;
+}
+
+/**
+ * @brief Reset the RISC-V E906 core.
+ *
+ * Releases the public SRAM reset and gating and clears the configuration
+ * block reset register.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ * @return DRIVER_OK on success.
+ */
+static int sun55iw3_e906_reset(sunxi_remoteproc_t *remoteproc)
+{
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
+
+	value = read32(dsp_prcm + SUN55IW3_E906_PUBSRAM_CFG_OFFSET);
+	value |= RISCV_PUBSRAM_RST | RISCV_PUBSRAM_GATING;
+	write32(dsp_prcm + SUN55IW3_E906_PUBSRAM_CFG_OFFSET, value);
+	write32(dsp_prcm + SUN55IW3_E906_CFG_BGR_OFFSET, 0U);
+	return DRIVER_OK;
+}
+
+/**
+ * @brief Report the current RISC-V E906 clock configuration.
+ *
+ * Reads the RISC-V clock register and prints the raw value together with
+ * the decoded clock source, core divisor and AXI divisor.
+ *
+ * @param[in] remoteproc Remote processor descriptor holding the register bases.
+ */
+static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc)
+{
+	uint32_t factor_m;
+	uint32_t factor_n;
+	uint32_t value;
+	uintptr_t dsp_prcm = remoteproc->registers[SUN55IW3_E906_DSP_PRCM].base;
+
+	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
+	factor_m = (value & 0x1fU) + 1U;
+	factor_n = ((value >> 8) & 0x3U) + 1U;
+	pr_debug("RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m, factor_n);
+}
+
+/**
+ * @brief E906 remote processor operations exposed to the remoteproc core.
+ */
+const sunxi_remoteproc_ops_t sunxi_remoteproc_ops = {
+	.reset = sun55iw3_e906_reset,
+	.start = sun55iw3_e906_start,
+	.dump = sun55iw3_e906_dump,
+};
+
+DT2C_DRIVER_COMPAT("allwinner,sun55iw3-e906");

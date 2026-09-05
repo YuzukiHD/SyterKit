@@ -1,5 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
+/**
+ * @file reg-axp2202.h
+ * @brief Register map for the AXP2202 PMIC.
+ */
+
 #ifndef __REG_AXP2202_H__
 #define __REG_AXP2202_H__
 
@@ -74,4 +79,4 @@
 
 #define AXP2202_MODULE_EN (0x19)
 
-#endif// __REG_AXP2202_H__
+#endif // __REG_AXP2202_H__

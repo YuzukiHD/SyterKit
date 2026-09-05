@@ -1,0 +1,49 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner SPIF controller used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-spif
+  reg:
+    type: reg
+  allwinner,spif-id:
+    type: uint32
+  clock-frequency:
+    type: uint32
+  allwinner,module-clock:
+    type: uint32-array
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  allwinner,clock-layout:
+    type: uint32
+    enum: [0, 1]
+  spif-rx-bus-width:
+    type: uint32
+    enum: [1, 2, 4, 8]
+  spif-tx-bus-width:
+    type: uint32
+    enum: [1, 4, 8]
+  dtr-enable:
+    type: uint32
+  io-mode-enable:
+    type: uint32
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - allwinner,module-clock
+  - allwinner,clock-gate
+  - allwinner,reset
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true

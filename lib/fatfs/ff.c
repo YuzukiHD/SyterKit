@@ -19,8 +19,8 @@
 /----------------------------------------------------------------------------*/
 
 #include <string.h>
-#include "ff.h"		/* Declarations of FatFs API */
-#include "diskio.h" /* Declarations of device I/O functions */
+#include <lib/fatfs/ff.h>		/* Declarations of FatFs API */
+#include <lib/fatfs/diskio.h> /* Declarations of device I/O functions */
 
 /*--------------------------------------------------------------------------
 
@@ -707,7 +707,7 @@ static void st_qword(BYTE *ptr, QWORD val) /* Store an 8-byte word in little-end
 /*-----------------------------------------------------------------------*/
 
 /* Test if the byte is DBC 1st byte */
-static int dbc_1st(BYTE c) {
+static inline int dbc_1st(BYTE c) {
 #if FF_CODE_PAGE == 0 /* Variable code page */
 	if (DbcTbl && c >= DbcTbl[0]) {
 		if (c <= DbcTbl[1])
@@ -730,7 +730,7 @@ static int dbc_1st(BYTE c) {
 }
 
 /* Test if the byte is DBC 2nd byte */
-static int dbc_2nd(BYTE c) {
+static inline int dbc_2nd(BYTE c) {
 #if FF_CODE_PAGE == 0 /* Variable code page */
 	if (DbcTbl && c >= DbcTbl[4]) {
 		if (c <= DbcTbl[5])
@@ -837,7 +837,7 @@ static DWORD tchar2uni(					 /* Returns a character in UTF-16 encoding (>=0x1000
 }
 
 /* Store a Unicode char in defined API encoding */
-static UINT put_utf(			/* Returns number of encoding units written (0:buffer overflow or wrong encoding) */
+static inline UINT put_utf(	/* Returns number of encoding units written (0:buffer overflow or wrong encoding) */
 					DWORD chr,	/* UTF-16 encoded character (Surrogate pair if >=0x10000) */
 					TCHAR *buf, /* Output buffer */
 					UINT szb	/* Size of the buffer */

@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Architecture"
+
+config ARCH_ARM
+	bool
+
+config ARCH_RISCV
+	bool
+
+choice
+	prompt "Architecture"
+	optional
+
+config ARCH_ARM32
+	select ARCH_ARM
+	bool "ARM 32-bit"
+
+config ARCH_RISCV32
+	select ARCH_RISCV
+	bool "RISC-V 32-bit"
+
+config ARCH_RISCV64
+	select ARCH_RISCV
+	bool "RISC-V 64-bit"
+
+endchoice
+
+source "arch/arm/Kconfig"
+source "arch/riscv/Kconfig"
+
+config ARCH_DCACHE
+	bool "Enable the data cache"
+
+config ARCH_ICACHE
+	bool "Enable the instruction cache"
+
+config BACKTRACE
+	bool
+
+choice
+	prompt "Backtrace implementation"
+	optional
+
+config BACKTRACE_MIN
+	bool "Minimal address-only backtrace"
+	select BACKTRACE
+	help
+	  Print raw return addresses with the smallest runtime and image-size
+	  overhead.
+
+config BACKTRACE_FULL
+	bool "Full symbolized backtrace"
+	select BACKTRACE
+	help
+	  Generate a symbol table for each output ELF and print function names,
+	  offsets, and sizes in the call trace.
+
+endchoice
+
+config ARCH_EXCEPTION
+	bool "Enable exception handling"
+	depends on ARCH_ARM || ARCH_RISCV
+	default y
+	help
+	  Install the architecture trap entry and dispatch interrupts through the
+	  configured interrupt controller.  Other traps halt the system.
+
+source "arch/Kconfig.soc"
+
+source "arch/Kconfig.boot"
+
+endmenu
