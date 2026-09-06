@@ -4,6 +4,7 @@ apps-sram-y := app
 
 ifeq ($(CONFIG_ARCH_RISCV32)$(CONFIG_DRIVER_PSRAM),yy)
 apps-sram-y += spinor-boot
+apps-sram-y += usb-boot
 endif
 
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
