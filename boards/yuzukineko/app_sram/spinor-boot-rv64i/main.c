@@ -5,12 +5,12 @@
  *
  * This is the RV64 handoff variant of spinor-boot. The SPL itself is linked
  * as RV32 because the C907 starts in RV32 mode. After loading the payloads
- * from SPI NOR, it resets the core into RV64 and enters OpenSBI in PSRAM.
+ * from SPI NOR, it resets the core into RV64 and enters SBI firmware in PSRAM.
  *
  * SPI NOR layout (all offsets are 2 KiB aligned):
  *	0x000000  bootloader   (this image, eGON BT0, up to 64 KiB)
  *	0x010000  device tree  (<= 256 KiB)
- *	0x050000  fw_jump.bin  (OpenSBI, 512 KiB)
+ *	0x050000  fw_jump.bin  (SBI firmware, 512 KiB)
  *	0x0d0000  Image        (Linux kernel, up to 6 MiB)
  *	0x6d0000  root filesystem
  */
@@ -41,17 +41,17 @@
 #define F101_RAM_SIZE		0x01000000U
 
 /*
- * PSRAM reservations, bottom up: Linux Image, then DTB, then OpenSBI pinned
+ * PSRAM reservations, bottom up: Linux Image, then DTB, then SBI firmware pinned
  * at the top of PSRAM. The heap for the SPIF sampling training lives in the
  * gap between the kernel region and the DTB reservation.
  */
 #define F101_KERNEL_SIZE	0x00600000U	/* Linux Image up to 6 MiB */
 #define F101_DTB_SIZE		0x00040000U	/* Device tree up to 256 KiB */
-#define F101_OPENSBI_SIZE	0x00080000U	/* OpenSBI fw_jump 512 KiB */
+#define F101_SBI_SIZE	0x00080000U	/* SBI firmware fw_jump 512 KiB */
 
 #define F101_LINUX_ADDR		(F101_RAM_BASE)
-#define F101_OPENSBI_ADDR	(F101_RAM_BASE + F101_RAM_SIZE - F101_OPENSBI_SIZE)
-#define F101_DTB_ADDR		(F101_OPENSBI_ADDR - F101_DTB_SIZE)
+#define F101_SBI_ADDR	(F101_RAM_BASE + F101_RAM_SIZE - F101_SBI_SIZE)
+#define F101_DTB_ADDR		(F101_SBI_ADDR - F101_DTB_SIZE)
 
 #define F101_HEAP_BASE		(F101_LINUX_ADDR + F101_KERNEL_SIZE)
 #define F101_HEAP_SIZE		(F101_DTB_ADDR - F101_HEAP_BASE)
@@ -60,18 +60,18 @@
 #define F101_BOOT_SIZE		0x00010000U
 
 #define F101_NOR_DTB_OFFSET		F101_BOOT_SIZE
-#define F101_NOR_OPENSBI_OFFSET		(F101_NOR_DTB_OFFSET + F101_DTB_SIZE)
-#define F101_NOR_KERNEL_OFFSET		(F101_NOR_OPENSBI_OFFSET + F101_OPENSBI_SIZE)
+#define F101_NOR_SBI_OFFSET		(F101_NOR_DTB_OFFSET + F101_DTB_SIZE)
+#define F101_NOR_KERNEL_OFFSET		(F101_NOR_SBI_OFFSET + F101_SBI_SIZE)
 
 /*
  * This entry is executed after the C907 has been reset into RV64 mode. It
  * must stay as raw instructions because this application itself is linked as
- * RV32. The reset vector points here, then the stub supplies the OpenSBI
+ * RV32. The reset vector points here, then the stub supplies the SBI firmware
  * arguments before jumping to fw_jump in PSRAM.
  *
  *	0x00000513  addi a0, zero, 0
  *	0x40f405b7  lui  a1, 0x40f40       (F101_DTB_ADDR)
- *	0x40f802b7  lui  t0, 0x40f80       (F101_OPENSBI_ADDR)
+ *	0x40f802b7  lui  t0, 0x40f80       (F101_SBI_ADDR)
  *	0x0000100f  fence.i
  *	0x00028067  jr   t0
  */
@@ -124,7 +124,7 @@ static int f101_validate_dtb(void)
 	return 0;
 }
 
-static __attribute__((noreturn, noinline)) void f101_boot_opensbi(void)
+static __attribute__((noreturn, noinline)) void f101_boot_sbi_firmware(void)
 {
 	uintptr_t rv64_entry = (uintptr_t)f101_rv64_entry;
 
@@ -135,7 +135,7 @@ static __attribute__((noreturn, noinline)) void f101_boot_opensbi(void)
 	/*
 	 * C907 latches the ISA mode at reset. Program the reset vector and force
 	 * RV64, then use the RISC-V watchdog to restart the core. The reset lands
-	 * in f101_rv64_entry, which sets a0/a1 and jumps to OpenSBI.
+	 * in f101_rv64_entry, which sets a0/a1 and jumps to SBI firmware.
 	 */
 	asm volatile(
 		"li t0, 0x02001d0c\n\t"
@@ -215,8 +215,8 @@ static int f101_load_images(spif_nor_t *nor)
 			       F101_DTB_ADDR, F101_DTB_SIZE) != 0)
 		return -1;
 
-	if (f101_read_from_nor(nor, "fw_jump", F101_NOR_OPENSBI_OFFSET,
-			       F101_OPENSBI_ADDR, F101_OPENSBI_SIZE) != 0)
+	if (f101_read_from_nor(nor, "fw_jump", F101_NOR_SBI_OFFSET,
+			       F101_SBI_ADDR, F101_SBI_SIZE) != 0)
 		return -1;
 
 	if (f101_read_from_nor(nor, "Image", F101_NOR_KERNEL_OFFSET,
@@ -237,9 +237,9 @@ int cmd_boot(int argc, const char **argv)
 	if (f101_validate_dtb())
 		return -1;
 
-	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x OpenSBI=0x%08x\n",
-		F101_LINUX_ADDR, F101_DTB_ADDR, F101_OPENSBI_ADDR);
-	f101_boot_opensbi();
+	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x SBI firmware=0x%08x\n",
+		F101_LINUX_ADDR, F101_DTB_ADDR, F101_SBI_ADDR);
+	f101_boot_sbi_firmware();
 }
 
 static const msh_command_entry commands[] = {
