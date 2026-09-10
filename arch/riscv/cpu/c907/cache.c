@@ -35,7 +35,7 @@ void data_sync_barrier(void)
 void cache_init(void)
 {
 	csr_write(mcor, 0x70013);
-	csr_write(mhcr, 0x11ff);
+	csr_write(mhcr, 0x11ff & ~(MHCR_IE | MHCR_DE));
 	csr_set(mxstatus, 0x638000);
 	csr_write(mhint, 0x16e30c);
 }
