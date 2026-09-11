@@ -123,7 +123,14 @@ static __attribute__((noreturn)) void f101_boot_sbi_firmware(void)
 
 	/* Make images loaded from the SPI NOR visible to SBI firmware and Linux. */
 	flush_dcache_all();
+	/* Keep D-cache off through PSRAM initialization and image loading. */
+	if (!(csr_read(mhcr) & MHCR_DE)) {
+		invalidate_dcache_all();
+		dcache_enable();
+		data_sync_barrier();
+	}
 	asm volatile("fence rw, rw\n\tfence.i" ::: "memory");
+	pr_info("SBI handoff: MHCR=0x%lx\n", csr_read(mhcr));
 
 	entry(0UL, F101_DTB_ADDR);
 	__builtin_unreachable();
