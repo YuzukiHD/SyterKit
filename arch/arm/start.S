@@ -69,7 +69,7 @@ _start:
 	.align 5
 _vector:
 	b reset
-#ifndef CONFIG_ARCH_EXCEPTION
+#if !defined(CONFIG_ARCH_EXCEPTION) || defined(CONFIG_ARCH_MINSTACK)
 	ldr pc, _unhandled_exception
 	ldr pc, _unhandled_exception
 	ldr pc, _unhandled_exception
@@ -128,7 +128,7 @@ reset:
 
 	bl neon_enable
 
-#ifdef CONFIG_ARCH_EXCEPTION
+#if defined(CONFIG_ARCH_EXCEPTION) && !defined(CONFIG_ARCH_MINSTACK)
 	mrs r0, cpsr
 	bic r0, r0, #ARMV7_MODE_MASK
 	orr r1, r0, #ARMV7_UND_MODE
@@ -202,7 +202,7 @@ clear_bss:
 	blo 1b
 2:	bx lr
 
-#ifndef CONFIG_ARCH_EXCEPTION
+#if !defined(CONFIG_ARCH_EXCEPTION) || defined(CONFIG_ARCH_MINSTACK)
 	.align 5
 unhandled_exception:
 	wfi

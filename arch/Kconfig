@@ -35,6 +35,13 @@ config ARCH_DCACHE
 config ARCH_ICACHE
 	bool "Enable the instruction cache"
 
+config ARCH_MINSTACK
+	bool "Disable exception-mode stacks"
+	depends on ARCH_ARM32
+	help
+	  Omit the UND, ABT, IRQ and FIQ stacks to save SRAM. Exceptions use a
+	  no-stack halt vector in this mode and cannot be handled or resumed.
+
 config BACKTRACE
 	bool
 
@@ -61,7 +68,8 @@ endchoice
 config ARCH_EXCEPTION
 	bool "Enable exception handling"
 	depends on ARCH_ARM || ARCH_RISCV
-	default y
+	default ARCH_ARM
+	default ARCH_RISCV
 	help
 	  Install the architecture trap entry and dispatch interrupts through the
 	  configured interrupt controller.  Other traps halt the system.
