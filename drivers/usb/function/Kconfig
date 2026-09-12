@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# USB function implementations are controlled by the parent USB symbols.

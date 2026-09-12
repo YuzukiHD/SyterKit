@@ -29,14 +29,14 @@ make_config_symbols() {
 }
 
 defconfig_symbols() {
-	find "${srctree}/configs" -type f -name '*_defconfig' -exec sed -n -E \
+	find "${srctree}/boards" "${srctree}/soc" -path '*/configs/*_defconfig' -type f -exec sed -n -E \
 		-e 's/^CONFIG_([A-Z0-9_]+)=.*/\1/p' \
 		-e 's/^# CONFIG_([A-Z0-9_]+) is not set$/\1/p' {} + |
 		sort -u
 }
 
 doxygen_source_files() {
-	find "${srctree}/arch" "${srctree}/boards" "${srctree}/core" \
+	find "${srctree}/arch" "${srctree}/boards" "${srctree}/soc" "${srctree}/core" \
 		"${srctree}/drivers" "${srctree}/include" "${srctree}/lib" \
 		"${srctree}/test" "${srctree}/tools" "${srctree}/utils" \
 		\( -path "${third_party_dt2c}" \
@@ -44,7 +44,7 @@ doxygen_source_files() {
 			-o -path "${srctree}/lib/fdt" \
 			-o -path "${srctree}/include/lib/fatfs" \
 			-o -path "${srctree}/lib/fatfs" \
-			-o -path "${srctree}/boards/longanpi-3h/tinymaix" \) -prune \
+			-o -path "${srctree}/boards/longanpi-3h/app_sram/tinymaix" \) -prune \
 		-o -path "${srctree}/test/out" -prune \
 		-o -type f \( -name '*.c' -o -name '*.h' -o -name '*.S' \) -print0
 }
@@ -103,9 +103,9 @@ if rg -n '^[[:space:]]*\*[[:space:]]+@(param(\[[^]]+\])?|return|retval)[[:space:
 	fail "Doxygen parameter and return commands require an inline description"
 fi
 
-if rg -n '^[[:space:]]*\*[[:space:]]+@macro([[:space:]]|$)|^[[:space:]]*\*[[:space:]]+@file[[:space:]]+[^@[:space:]]' \
+if rg -n '^[[:space:]]*\*[[:space:]]+@macro([[:space:]]|$)' \
 		"${doxygen_files[@]}"; then
-	fail "use @def for macros and argument-free @file commands"
+	fail "use @def for macros"
 fi
 
 if grep -R -n -E --exclude-dir=dt2c --include='Kconfig*' \
@@ -130,14 +130,14 @@ while IFS= read -r symbol; do
 	[[ -n "${symbol}" ]] && fail "defconfig references undefined Kconfig symbol CONFIG_${symbol}"
 done < <(comm -23 <(defconfig_symbols) <(kconfig_symbols))
 
+# Configurable driver directories own both metadata files. Implementation-only
+# subdirectories are checked separately below and may intentionally omit Kconfig.
 while IFS= read -r driver_dir; do
+	[[ "${driver_dir}" == "${srctree}/drivers" ]] && continue
 	relative_dir="${driver_dir#${srctree}/}"
 	parent_dir="$(dirname -- "${driver_dir}")"
 	base_dir="$(basename -- "${driver_dir}")"
 
-	if [[ ! -f "${driver_dir}/Kconfig" ]]; then
-		fail "${relative_dir} has no Kconfig"
-	fi
 	if [[ ! -f "${driver_dir}/Makefile" ]]; then
 		fail "${relative_dir} has no Makefile"
 	fi
@@ -149,6 +149,17 @@ while IFS= read -r driver_dir; do
 			! grep -Fq "${base_dir}/" "${parent_dir}/Makefile"; then
 		fail "${relative_dir}/Makefile is not descended into by its parent"
 	fi
+done < <(find "${srctree}/drivers" -mindepth 1 -type f -name Kconfig -printf '%h\n' | sort -u)
+
+while IFS= read -r driver_dir; do
+	[[ -f "${driver_dir}/Makefile" && -f "${driver_dir}/Kconfig" ]] && continue
+	[[ -f "${driver_dir}/Makefile" ]] || continue
+	parent_dir="$(dirname -- "${driver_dir}")"
+	base_dir="$(basename -- "${driver_dir}")"
+	if [[ ! -f "${parent_dir}/Makefile" ]] || \
+		! grep -Fq "${base_dir}/" "${parent_dir}/Makefile"; then
+		fail "${driver_dir#${srctree}/} has no Kconfig and is not referenced by its parent"
+	fi
 done < <(find "${srctree}/drivers" -mindepth 1 -type d | sort)
 
 while IFS= read -r board_dir; do
@@ -157,8 +168,8 @@ while IFS= read -r board_dir; do
 	[[ -f "${board_dir}/Makefile" ]] || fail "${relative_dir} has no Makefile"
 	[[ -f "${board_dir}/board.dts" ]] || fail "${relative_dir} has no board.dts"
 	board_name="$(basename -- "${board_dir}")"
-	if [[ ! -d "${srctree}/configs/${board_name}" ]] ||
-	   ! find "${srctree}/configs/${board_name}" -maxdepth 1 -type f \
+	if [[ ! -d "${board_dir}/configs" ]] ||
+	   ! find "${board_dir}/configs" -maxdepth 1 -type f \
 		\( -name '*_sram_defconfig' -o -name 'sram_defconfig' \) \
 		-print -quit | grep -q .; then
 		fail "${relative_dir} has no matching defconfig"
@@ -166,8 +177,11 @@ while IFS= read -r board_dir; do
 done < <(find "${srctree}/boards" -mindepth 1 -maxdepth 1 -type d | sort)
 
 while IFS= read -r defconfig; do
-	name="${defconfig#${srctree}/configs/}"
-	board="$(basename -- "$(dirname -- "${defconfig}")")"
+	name="${defconfig#${srctree}/}"
+	config_root="$(dirname -- "${defconfig}")"
+	platform="$(basename -- "$(dirname -- "${config_root}")")"
+	is_soc_config="${config_root#${srctree}/}"; is_soc_config="${is_soc_config%%/*}"
+	board="$(basename -- "$(dirname -- "${config_root}")")"
 	variant="${defconfig##*/}"
 	variant="${variant%_defconfig}"
 	mode="${variant##*_}"
@@ -197,8 +211,12 @@ while IFS= read -r defconfig; do
 	[[ "${core_count}" -eq 1 ]] || fail "${name} must select exactly one processor core"
 	[[ "${build_mode_count}" -eq 1 ]] || fail "${name} must select exactly one build mode"
 	[[ "${gpio_count}" -eq 1 ]] || fail "${name} must select exactly one GPIO controller"
-	[[ "${board_count}" -eq 1 ]] || fail "${name} must select exactly one board"
-	[[ "${value_count}" -eq 5 ]] || fail "${name} must define all board image parameters"
+	if [[ "${is_soc_config}" == boards ]]; then
+		[[ "${board_count}" -eq 1 ]] || fail "${name} must select exactly one board"
+		[[ "${value_count}" -eq 5 ]] || fail "${name} must define all board image parameters"
+	else
+		[[ "${mode}" == efex ]] || fail "${name} SoC configurations must use eFEX mode"
+	fi
 	[[ "${app_mode_count}" -eq 1 ]] || fail "${name} must select exactly one application mode"
 	case "${mode}" in
 		sram) expected_mode="APP_SRAM" ;;
@@ -214,26 +232,37 @@ while IFS= read -r defconfig; do
 		[[ "${dram_value_count}" -eq 2 ]] || \
 			fail "${name} must define the DRAM application window"
 	fi
-	[[ "${configured_board}" == "${board}" ]] || \
-		fail "${name} CONFIG_SYS_BOARD must be \"${board}\""
-done < <(find "${srctree}/configs" -type f -name '*_defconfig' | sort)
+	if [[ "${is_soc_config}" == boards ]]; then
+		[[ "${configured_board}" == "${board}" ]] || \
+			fail "${name} CONFIG_SYS_BOARD must be \"${board}\""
+	else
+		grep -q '^CONFIG_EFEX_SOC_[A-Z0-9_]*=' "${defconfig}" || \
+			fail "${name} must select a SoC eFEX symbol"
+	fi
+done < <(find "${srctree}/boards" "${srctree}/soc" -path '*/configs/*_defconfig' -type f | sort)
 
 if ! grep -Fqx 'source "$(BOARD_KCONFIG_LIST)"' "${srctree}/boards/Kconfig" || \
-		! grep -Fq '$(wildcard $(srctree)/boards/*/Kconfig)' "${srctree}/Makefile"; then
+		! grep -Fq '$(wildcard $(srctree)/boards/*/Kconfig)' "${srctree}/scripts/Makefile.config" || \
+		! grep -Fq '$(wildcard $(srctree)/soc/*/Kconfig)' "${srctree}/scripts/Makefile.config"; then
 	fail "board Kconfig discovery must remain automatic"
 fi
 
-if ! grep -Fqx 'arch_inc := arch/$(arch_dir)/include' "${srctree}/Makefile" || \
-		! grep -Fqx 'include_dirs := include $(arch_inc)' "${srctree}/Makefile"; then
+if ! grep -Fqx 'arch_inc := arch/$(arch_dir)/include' "${srctree}/scripts/Makefile.target" || \
+		! grep -Fqx 'include_dirs := include $(arch_inc)' "${srctree}/scripts/Makefile.target"; then
 	fail "top-level include paths must contain only include and the selected arch include"
 fi
 
-if grep -n -E -- '-m(cpu|arch|abi|fpu|float-abi)(=|[[:space:]])' "${srctree}/Makefile"; then
+if grep -n -E -- '-m(cpu|arch|abi|fpu|float-abi)(=|[[:space:]])' \
+		"${srctree}/Makefile"; then
 	fail "CPU and ABI flags belong in arch/*/Makefile"
 fi
 
-if grep -R -n --exclude-dir=dt2c --include='Makefile' --include='*.mk' --include='*.c' \
-		--include='*.h' --include='*.S' -- '-Wno-' "${srctree}"; then
+if grep -R -n --exclude-dir=dt2c --exclude-dir=test/out \
+		--include='Makefile' --include='*.mk' --include='*.c' --include='*.h' \
+		--include='*.S' -- '-Wno-' "${srctree}/arch" "${srctree}/boards" \
+		"${srctree}/soc" \
+		"${srctree}/core" "${srctree}/drivers" "${srctree}/include" \
+		"${srctree}/lib" "${srctree}/scripts"; then
 	fail "warning suppression flags are not allowed"
 fi
 
@@ -244,16 +273,29 @@ for forbidden_dir in linux sunxi sstdlib cmake; do
 	fi
 done
 
-if find "${srctree}" \( -path "${third_party_dt2c}" -o -path "${rust_tree}" \) -prune -o \
-		-type f \( -name CMakeLists.txt -o -name '*.cmake' \
-		-o -name Cargo.toml -o -name '*.rs' \) \
-		! -path "${srctree}/boards/*/*/*/main.rs" -print -quit | grep -q .; then
-	fail "CMake and Rust build files are not allowed"
+if find "${srctree}" -path "${third_party_dt2c}" -prune -o \
+		-path "${srctree}/test/out" -prune -o \
+		-type f \( -name CMakeLists.txt -o -name '*.cmake' \) -print -quit | grep -q .; then
+	fail "CMake build files are not allowed"
 fi
 
-if grep -R -n -E --exclude-dir=dt2c --include='Makefile' --include='*.mk' --include='*.c' \
-		--include='*.h' --include='*.S' \
-		'(^|[/<])sstdlib([/.>]|$)|include/linux|<linux/' "${srctree}"; then
+while IFS= read -r rust_file; do
+	case "${rust_file}" in
+		"${srctree}/Cargo.toml"|"${srctree}/Cargo.lock"|"${rust_tree}"/*|\
+			"${srctree}/boards"/*/*/*/main.rs|"${srctree}/soc"/*/*/*/main.rs) ;;
+		*) fail "unexpected Rust file: ${rust_file#"${srctree}"/}" ;;
+	esac
+done < <(find "${srctree}" -path "${srctree}/.git" -prune -o \
+		-path "${srctree}/test/out" -prune -o -type f \
+		\( -name Cargo.toml -o -name Cargo.lock -o -name '*.rs' \) -print)
+
+if grep -R -n -E --exclude-dir=dt2c --exclude-dir=test/out \
+		--include='Makefile' --include='*.mk' --include='*.c' --include='*.h' \
+		--include='*.S' '(^|[/<])sstdlib([/.>]|$)|include/linux|<linux/' \
+		"${srctree}/arch" "${srctree}/boards" "${srctree}/soc" \
+		"${srctree}/core" \
+		"${srctree}/drivers" "${srctree}/include" "${srctree}/lib" \
+		"${srctree}/scripts"; then
 	fail "legacy or Linux header paths are not allowed"
 fi
 

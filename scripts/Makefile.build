@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+RM ?= rm -f
+
 src := $(srctree)/$(obj)
 out := $(objtree)/.obj/$(obj)
 
 include $(objtree)/include/config/auto.conf
 kbuild-file := $(if $(wildcard $(src)/Kbuild),$(src)/Kbuild,$(src)/Makefile)
 include $(kbuild-file)
+
+# Include the local metadata in the dependency graph so changes to an object
+# list or per-directory flags invalidate the aggregate and its objects.
+build_inputs += $(kbuild-file)
 
 local-objects := $(filter %.o,$(obj-y))
 subdirs := $(patsubst %/,%,$(filter %/,$(obj-y)))
@@ -23,26 +29,34 @@ dt2c-manifest:
 	@for source in $(dt2c-local-sources); do \
 		printf '%s\n' "$$source"; \
 	done
-	@for subdir in $(subdirs); do \
-		$(MAKE) -f $(srctree)/scripts/Makefile.build \
-			obj=$(obj)/$$subdir dt2c-manifest; \
-	done
+	@if test -n "$(make_dry_run)"; then \
+		exit 0; \
+	else \
+		for subdir in $(subdirs); do \
+			$(MAKE) -f $(srctree)/scripts/Makefile.build \
+				obj=$(obj)/$$subdir dt2c-manifest; \
+		done; \
+	fi
 
-$(target): $(objects) $(subtargets)
+$(target): $(objects) $(subtargets) $(build_inputs)
 	@mkdir -p $(dir $@)
 	@$(RM) $@
-	@$(LD) $(KBUILD_LDFLAGS) -r -o $@ $^
+	@$(LD) $(KBUILD_LDFLAGS) -r -o $@ $(objects) $(subtargets)
 
 $(out)/%/built-in.o: FORCE
-	@$(MAKE) -f $(srctree)/scripts/Makefile.build obj=$(obj)/$*
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     scripts/Makefile.build obj=$(obj)/$*"; \
+	else \
+		$(MAKE) -f $(srctree)/scripts/Makefile.build obj=$(obj)/$*; \
+	fi
 
-$(out)/%.o: $(src)/%.c $(objtree)/include/generated/autoconf.h
+$(out)/%.o: $(src)/%.c $(objtree)/include/generated/autoconf.h $(build_inputs)
 	@mkdir -p $(dir $@)
 	@echo "  CC      $(patsubst $(srctree)/%,%,$<)"
 	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(ccflags-y) \
 		$(CFLAGS_$(@F)) -MMD -MP -c $< -o $@
 
-$(out)/%.o: $(src)/%.S $(objtree)/include/generated/autoconf.h
+$(out)/%.o: $(src)/%.S $(objtree)/include/generated/autoconf.h $(build_inputs)
 	@mkdir -p $(dir $@)
 	@echo "  AS      $(patsubst $(srctree)/%,%,$<)"
 	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(asflags-y) \

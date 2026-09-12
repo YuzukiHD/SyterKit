@@ -1,0 +1,201 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+.DEFAULT_GOAL := all
+.SUFFIXES:
+# This worker receives all of its inputs from the parent make.  Disable GNU
+# make's built-in recipes so a forced build cannot compile host tools with CC.
+MAKEFLAGS += -rR
+
+ifndef APP
+$(error APP is required; invoke this worker through the top-level Makefile)
+endif
+
+include $(objtree)/include/config/auto.conf
+
+app_source := $(srctree)/$(platform_dir)/$(app_mode)/$(APP)
+app_dir := $(image_root)/$(APP)
+app_rel_dir := $(image_rel_root)/$(APP)
+app_object := $(objtree)/.obj/apps/$(target_name)/$(app_mode)/$(APP)/built-in.o
+
+ifneq ($(filter $(APP),$(rust_apps)),)
+app_builtin := $(if $(wildcard $(app_source)/main.c),$(app_object))
+app_rust_input := $(rust_app_build_root)/$(APP)/$(rust_ffi_target)/release/libsyterkit_core.a
+else
+app_builtin := $(app_object)
+app_rust_input := $(rust_core_link_input)
+endif
+
+image_worker := $(srctree)/scripts/Makefile.image
+link_prerequisites := $(image_worker) $(common_builtins) $(app_builtin) \
+	$(platform_libs) $(app_rust_input)
+link_flags := $(KBUILD_CFLAGS) -nostdlib -Wl,--gc-sections \
+	-Wl,-z,noexecstack $(rust_ffi_linker_flags)
+link_objects := $(common_builtins) $(app_builtin) $(platform_libs)
+
+.PHONY: all
+
+ifeq ($(CONFIG_APP_SRAM),y)
+fel_elf := $(app_dir)/$(APP)_fel.elf
+bin_elf := $(app_dir)/$(APP)_bin.elf
+fel_bin := $(app_dir)/$(APP)_fel.bin
+card_bin := $(app_dir)/$(APP)_card.bin
+spi_bin := $(app_dir)/$(APP)_spi.bin
+
+all: $(fel_bin) $(card_bin) $(spi_bin)
+ifneq ($(filter y,$(CONFIG_BUILD_DEBUG) $(CONFIG_BUILD_TRACE)),)
+	@echo "  OBJDUMP $(app_rel_dir)/$(APP)_fel.asm"
+	@$(OBJDUMP) -D $(fel_elf) > $(fel_elf:.elf=.asm)
+	@echo "  OBJDUMP $(app_rel_dir)/$(APP)_bin.asm"
+	@$(OBJDUMP) -D $(bin_elf) > $(bin_elf:.elf=.asm)
+endif
+	@echo "Images are in $(app_rel_dir)"
+
+ifeq ($(CONFIG_BACKTRACE_FULL),y)
+fel_pass1 := $(app_dir)/.$(APP)_fel.pass1.elf
+bin_pass1 := $(app_dir)/.$(APP)_bin.pass1.elf
+fel_nm := $(app_dir)/.$(APP)_fel.symbols.nm
+bin_nm := $(app_dir)/.$(APP)_bin.symbols.nm
+fel_symbols_s := $(app_dir)/.$(APP)_fel.symbols.S
+bin_symbols_s := $(app_dir)/.$(APP)_bin.symbols.S
+fel_symbols_o := $(app_dir)/.$(APP)_fel.symbols.o
+bin_symbols_o := $(app_dir)/.$(APP)_bin.symbols.o
+
+$(fel_pass1): $(link_prerequisites) $(fel_lds)
+	@mkdir -p $(dir $@)
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(fel_lds) -o $@
+
+$(bin_pass1): $(link_prerequisites) $(bin_lds)
+	@mkdir -p $(dir $@)
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(bin_lds) -o $@
+
+$(fel_nm): $(fel_pass1)
+	@$(NM) -n -S --defined-only $< > $@
+
+$(bin_nm): $(bin_pass1)
+	@$(NM) -n -S --defined-only $< > $@
+
+$(fel_symbols_s): $(fel_nm) $(objtree)/tools/mkbacktrace
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $< $@
+
+$(bin_symbols_s): $(bin_nm) $(objtree)/tools/mkbacktrace
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $< $@
+
+$(fel_symbols_o): $(fel_symbols_s)
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) -c $< -o $@
+
+$(bin_symbols_o): $(bin_symbols_s)
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) -c $< -o $@
+
+$(fel_elf): $(fel_symbols_o) $(link_prerequisites) $(fel_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_fel.elf"
+	@$(CC) $(fel_symbols_o) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(fel_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@$(NM) -n -S --defined-only $@ > $(fel_nm)
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $(fel_nm) $(fel_symbols_s)
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) -c $(fel_symbols_s) -o $(fel_symbols_o)
+	@$(CC) $(fel_symbols_o) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(fel_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_fel.elf
+
+$(bin_elf): $(bin_symbols_o) $(link_prerequisites) $(bin_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_bin.elf"
+	@$(CC) $(bin_symbols_o) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(bin_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@$(NM) -n -S --defined-only $@ > $(bin_nm)
+	@$(objtree)/tools/mkbacktrace $(backtrace_address_bits) $(bin_nm) $(bin_symbols_s)
+	@$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) -c $(bin_symbols_s) -o $(bin_symbols_o)
+	@$(CC) $(bin_symbols_o) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(bin_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_bin.elf
+else
+$(fel_elf): $(link_prerequisites) $(fel_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_fel.elf"
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(fel_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_fel.elf
+
+$(bin_elf): $(link_prerequisites) $(bin_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_bin.elf"
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(bin_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_bin.elf
+endif
+
+$(fel_bin): $(fel_elf)
+	@echo "  OBJCOPY $(app_rel_dir)/$(APP)_fel.bin"
+	@$(OBJCOPY) -O binary $< $@
+
+$(card_bin): $(bin_elf) $(objtree)/tools/mksunxi
+	@echo "  OBJCOPY $(app_rel_dir)/$(APP)_card.bin"
+	@$(OBJCOPY) -O binary $< $@
+	@$(objtree)/tools/mksunxi $@ 512
+
+$(spi_bin): $(bin_elf) $(objtree)/tools/mksunxi
+	@echo "  OBJCOPY $(app_rel_dir)/$(APP)_spi.bin"
+	@$(OBJCOPY) -O binary $< $@
+	@$(objtree)/tools/mksunxi $@ 8192
+
+else ifeq ($(CONFIG_EFEX),y)
+efex_elf := $(app_dir)/$(APP)_efex.elf
+efex_bin := $(app_dir)/$(APP)_efex.bin
+
+all: $(efex_bin)
+	@echo "Images are in $(app_rel_dir)"
+
+$(efex_elf): $(link_prerequisites) $(efex_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_efex.elf"
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(efex_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_efex.elf
+
+$(efex_bin): $(efex_elf)
+	@echo "  OBJCOPY $(app_rel_dir)/$(APP)_efex.bin"
+	@$(OBJCOPY) -O binary $< $@
+
+else ifeq ($(CONFIG_APP_DRAM),y)
+dram_elf := $(app_dir)/$(APP)_dram.elf
+dram_bin := $(app_dir)/$(APP)_dram.bin
+
+all: $(dram_bin)
+	@echo "Images are in $(app_rel_dir)"
+
+$(dram_elf): $(link_prerequisites) $(bin_lds)
+	@mkdir -p $(dir $@)
+	@echo "  LD      $(app_rel_dir)/$(APP)_dram.elf"
+	@$(CC) $(link_flags) \
+		-Wl,--whole-archive $(link_objects) \
+		-Wl,--no-whole-archive $(app_rust_input) -lgcc \
+		-T$(bin_lds) -Wl,-Map,$(@:.elf=.map) -o $@
+	@cd $(objtree) && $(SIZE) -B -x $(app_rel_dir)/$(APP)_dram.elf
+
+$(dram_bin): $(dram_elf)
+	@echo "  OBJCOPY $(app_rel_dir)/$(APP)_dram.bin"
+	@$(OBJCOPY) -O binary $< $@
+else
+$(error The selected configuration does not define an image mode)
+endif

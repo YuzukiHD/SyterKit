@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# Root-complex support is controlled by DRIVER_PCIE_RC in the parent menu.

@@ -1,0 +1,115 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+.PHONY: prepare
+
+prepare: $(objtree)/include/generated/config.h $(dt2c_header)
+
+git_hash := $(shell git -C $(srctree) rev-parse --short HEAD 2>/dev/null || echo unknown)
+generated_config_inputs := $(srctree)/Makefile \
+	$(srctree)/scripts/Makefile.target $(srctree)/scripts/Makefile.prepare
+
+$(objtree)/include/generated/config.h: $(auto_header) $(generated_config_inputs)
+	@mkdir -p $(dir $@)
+	@echo "  GEN     $(patsubst $(objtree)/%,%,$@)"
+	@{ \
+		echo '/* SPDX-License-Identifier: GPL-2.0+ */'; \
+		echo '#ifndef __GENERATED_CONFIG_H__'; \
+		echo '#define __GENERATED_CONFIG_H__'; \
+		echo '#define PROJECT_NAME "SyterKit"'; \
+		echo '#define PROJECT_VERSION "$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)"'; \
+		echo '#define PROJECT_GIT_HASH "$(git_hash)"'; \
+		echo '#define PROJECT_C_COMPILER "$(notdir $(CC))"'; \
+		echo '#define PROJECT_C_COMPILER_VERSION "'$$($(CC) -dumpfullversion -dumpversion)'"'; \
+		echo '#endif'; \
+	} > $@
+
+build_dirs := core lib drivers arch/$(arch_dir)
+ifeq ($(CONFIG_EFEX),y)
+build_dirs += $(soc-build-dirs-y)
+else
+build_dirs += $(platform_dir)
+endif
+common_builtins := $(addprefix $(objtree)/.obj/,$(addsuffix /built-in.o,$(build_dirs)))
+
+$(objtree)/.obj/%/built-in.o: prepare FORCE
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     scripts/Makefile.build obj=$*"; \
+	else \
+		$(MAKE) -f $(srctree)/scripts/Makefile.build obj=$*; \
+	fi
+
+$(objtree)/.obj/apps/$(target_name)/$(app_mode)/%/built-in.o: prepare FORCE
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     scripts/Makefile.app mode=$(app_mode) app=$*"; \
+	else \
+		$(MAKE) -f $(srctree)/scripts/Makefile.app mode=$(app_mode) app=$*; \
+	fi
+
+ifeq ($(CONFIG_EFEX),y)
+platform_libs := $(addprefix $(srctree)/$(platform_dir)/,$(soc-libs-y))
+else
+platform_libs := $(addprefix $(srctree)/$(platform_dir)/,$(board-libs-y))
+endif
+
+image_root := $(objtree)/build/$(target_name)/$(app_mode)
+image_rel_root := build/$(target_name)/$(app_mode)
+backtrace_address_bits := $(if $(CONFIG_ARCH_RISCV64),64,32)
+fel_lds := $(image_root)/link_fel.ld
+bin_lds := $(image_root)/link_bin.ld
+efex_lds := $(image_root)/efex.lds
+
+ifeq ($(CONFIG_APP_SRAM),y)
+image_linker_scripts := $(fel_lds) $(bin_lds)
+ifneq ($(board-fel-lds-y),)
+board_fel_lds := $(srctree)/boards/$(board)/$(board-fel-lds-y)
+board_bin_lds := $(srctree)/boards/$(board)/$(board-bin-lds-y)
+
+$(fel_lds): $(board_fel_lds)
+	@mkdir -p $(dir $@)
+	@cp $< $@
+
+$(bin_lds): $(board_bin_lds)
+	@mkdir -p $(dir $@)
+	@cp $< $@
+else
+lds_src := $(srctree)/arch/$(arch_dir)/syterkit.lds.S
+
+$(fel_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/link_fel.ld"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c \
+		-DSPL_TEXT_BASE=$(CONFIG_SPL_FEL_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_SPL_FEL_MAX_SIZE) $< -o $@
+
+$(bin_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/link_bin.ld"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c \
+		-DSPL_TEXT_BASE=$(CONFIG_SPL_BIN_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_SPL_BIN_MAX_SIZE) $< -o $@
+endif
+else ifeq ($(CONFIG_EFEX),y)
+image_linker_scripts := $(efex_lds)
+lds_src := $(srctree)/arch/$(arch_dir)/efex.lds.S
+
+$(efex_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/efex.lds"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c \
+		-DSPL_TEXT_BASE=$(CONFIG_SPL_FEL_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_SPL_FEL_MAX_SIZE) $< -o $@
+else
+image_linker_scripts := $(bin_lds)
+lds_src := $(srctree)/arch/$(arch_dir)/syterkit.lds.S
+
+$(bin_lds): $(lds_src) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  LDS     $(image_rel_root)/link_bin.ld"
+	@$(CC) $(KBUILD_CPPFLAGS) -E -P -x c \
+		-DSPL_TEXT_BASE=$(CONFIG_APP_DRAM_TEXT_BASE) \
+		-DSPL_MAX_SIZE=$(CONFIG_APP_DRAM_MAX_SIZE) $< -o $@
+endif
+
+export build_dirs common_builtins platform_libs
+export image_root image_rel_root backtrace_address_bits
+export fel_lds bin_lds efex_lds image_linker_scripts

@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# Endpoint support is controlled by DRIVER_PCIE_EP in the parent menu.

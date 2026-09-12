@@ -43,8 +43,9 @@ else ifeq ($(CONFIG_ARCH_ARM32),y)
 rust_ffi_target_default := armv7a-none-eabi
 rust_ffi_clang_target_default := arm-none-eabi
 endif
-rust_ffi_target := $(if $(strip $(RUST_FFI_TARGET)),$(RUST_FFI_TARGET),$(rust_ffi_target_default))
-rust_ffi_clang_target := $(if $(strip $(RUST_FFI_CLANG_TARGET)),$(RUST_FFI_CLANG_TARGET),$(rust_ffi_clang_target_default))
+rust_ffi_target := $(or $(strip $(RUST_FFI_TARGET)),$(rust_ffi_target_default))
+rust_ffi_clang_target := $(or $(strip $(RUST_FFI_CLANG_TARGET)),\
+	$(rust_ffi_clang_target_default))
 
 ifeq ($(CONFIG_ARCH_RISCV64_ABI_LP64),y)
 ifeq ($(CONFIG_RUST_FFI),y)
@@ -62,9 +63,9 @@ else
 rust_apps := $(rust-apps-sram-y)
 endif
 
-rust_ffi_build_dir := $(objtree)/.obj/rust/$(board)/$(app_mode)
+rust_ffi_build_dir := $(objtree)/.obj/rust/$(target_name)/$(app_mode)
 rust_core_lib := $(rust_ffi_build_dir)/$(rust_ffi_target)/release/libsyterkit_core.a
-rust_app_build_root := $(objtree)/.obj/rust/$(board)/$(app_mode)/apps
+rust_app_build_root := $(objtree)/.obj/rust/$(target_name)/$(app_mode)/apps
 rust_app_lib = $(rust_app_build_root)/$(1)/$(rust_ffi_target)/release/libsyterkit_core.a
 rust_ffi_opt_level := $(if $(CONFIG_OPTIMIZE_FOR_SIZE),z,3)
 rust_ffi_rustflags := -C panic=abort -C opt-level=$(rust_ffi_opt_level) \
@@ -86,13 +87,22 @@ endif
 ifeq ($(CONFIG_RUST_FFI),y)
 rust_core_link_input := $(rust_core_lib)
 
-rust_app_missing_sources := $(foreach rust_app,$(rust_apps),\
-	$(if $(wildcard $(srctree)/boards/$(board)/$(app_mode)/$(rust_app)/main.rs),,\
-		$(error Rust app '$(rust_app)' is missing boards/$(board)/$(app_mode)/$(rust_app)/main.rs)))
+rust_app_source_dirs := $(addprefix $(srctree)/$(platform_dir)/$(app_mode)/,$(rust_apps))
+rust_app_sources := $(addsuffix /main.rs,$(rust_app_source_dirs))
+rust_app_missing_sources := $(filter-out $(wildcard $(rust_app_sources)),$(rust_app_sources))
+ifneq ($(strip $(rust_app_missing_sources)),)
+$(error Rust app sources are missing: $(patsubst $(srctree)/%,%,$(rust_app_missing_sources)))
+endif
+
 rust_app_conflicts := $(filter $(rust_apps),$(apps))
 ifneq ($(strip $(rust_app_conflicts)),)
 $(error Rust app names also appear in the C app list: $(rust_app_conflicts))
 endif
+
+rust_app_c_sources := $(wildcard $(addsuffix /main.c,$(rust_app_source_dirs)))
+rust_apps_with_c := $(notdir $(patsubst %/main.c,%,$(rust_app_c_sources)))
+rust_app_libs := $(addsuffix /$(rust_ffi_target)/release/libsyterkit_core.a,\
+	$(addprefix $(rust_app_build_root)/,$(rust_apps)))
 apps += $(rust_apps)
 
 $(rust_core_lib): $(rust_ffi_inputs) $(KCONFIG_CONFIG) $(auto_conf) $(auto_header)
@@ -113,15 +123,12 @@ $(rust_core_lib): $(rust_ffi_inputs) $(KCONFIG_CONFIG) $(auto_conf) $(auto_heade
 		--package syterkit-core \
 		--target $(rust_ffi_target)
 
-define rust_app_rule
-rust_app_$(1)_source := $(srctree)/boards/$(board)/$(app_mode)/$(1)/main.rs
-rust_app_$(1)_lib := $(call rust_app_lib,$(1))
-rust_app_$(1)_c_source := $(srctree)/boards/$(board)/$(app_mode)/$(1)/main.c
-rust_app_$(1)_builtin := $(if $(wildcard $(srctree)/boards/$(board)/$(app_mode)/$(1)/main.c),$(objtree)/.obj/apps/$(board)/$(app_mode)/$(1)/built-in.o,)
-
-$$(rust_app_$(1)_lib): $(rust_ffi_inputs) $(KCONFIG_CONFIG) $(auto_conf) $(auto_header) $$(rust_app_$(1)_source) $$(rust_app_$(1)_c_source)
-	@mkdir -p $$(dir $$@)
-	@echo "  CARGO   boards/$(board)/$(app_mode)/$(1) ($(rust_ffi_target))"
+ifneq ($(strip $(rust_app_libs)),)
+$(rust_app_libs): $(rust_app_build_root)/%/$(rust_ffi_target)/release/libsyterkit_core.a: \
+		$(srctree)/$(platform_dir)/$(app_mode)/%/main.rs \
+		$(rust_ffi_inputs) $(KCONFIG_CONFIG) $(auto_conf) $(auto_header)
+	@mkdir -p $(dir $@)
+	@echo "  CARGO   $(platform_dir)/$(app_mode)/$* ($(rust_ffi_target))"
 	@SYTERKIT_SOURCE_DIR="$(srctree)" \
 	 SYTERKIT_FFI_HEADER_MANIFEST="$(rust_ffi_manifest)" \
 	 SYTERKIT_FFI_HEADERS="$(RUST_FFI_HEADERS)" \
@@ -130,23 +137,21 @@ $$(rust_app_$(1)_lib): $(rust_ffi_inputs) $(KCONFIG_CONFIG) $(auto_conf) $(auto_
 	 SYTERKIT_FFI_CLANG_ARGS="$(rust_ffi_clang_args)" \
 	 SYTERKIT_FFI_CONFIG="$(KCONFIG_CONFIG)" \
 	 SYTERKIT_FFI_AUTOCONF="$(auto_header)" \
-	 SYTERKIT_RUST_APP_SOURCE="$$(rust_app_$(1)_source)" \
-	 CARGO_TARGET_DIR="$(rust_app_build_root)/$(1)" \
+	 SYTERKIT_RUST_APP_SOURCE="$<" \
+	 CARGO_TARGET_DIR="$(rust_app_build_root)/$*" \
 	 RUSTFLAGS="$(RUSTFLAGS) $(rust_ffi_rustflags)" \
 	 $(RUST_FFI_CARGO) build --locked --release \
 		--manifest-path $(rust_workspace)/Cargo.toml \
 		--package syterkit-core \
 		--target $(rust_ffi_target)
-endef
-
-$(foreach rust_app,$(rust_apps),$(eval $(call rust_app_rule,$(rust_app))))
-
-rust_app_libs := $(foreach rust_app,$(rust_apps),$(call rust_app_lib,$(rust_app)))
+endif
 
 .PHONY: rust-ffi
 rust-ffi: $(rust_core_lib) $(rust_app_libs)
 else
 rust_apps :=
+rust_apps_with_c :=
+rust_app_libs :=
 rust_core_link_input :=
 
 .PHONY: rust-ffi
@@ -154,3 +159,6 @@ rust-ffi:
 	@echo "Rust FFI is disabled; enable CONFIG_RUST_FFI in menuconfig first." >&2
 	@false
 endif
+
+export rust_apps rust_apps_with_c rust_app_build_root rust_ffi_target
+export rust_core_link_input rust_ffi_linker_flags

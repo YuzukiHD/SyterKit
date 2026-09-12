@@ -13,14 +13,14 @@ config DRIVER_PCIE
 config DRIVER_PCIE_RC
 	bool "PCIe root complex support"
 	depends on DRIVER_PCIE
-	default y
+	default DRIVER_PCIE
 	help
 	  Provide root-complex setup, link training and configuration-space access.
 
 config DRIVER_PCIE_EP
 	bool "PCIe endpoint support"
 	depends on DRIVER_PCIE
-	default y
+	default DRIVER_PCIE
 	help
 	  Provide endpoint header, BAR, iATU, MSI and LTSSM operations.
 
@@ -56,5 +56,10 @@ config DRIVER_PCIE_LOG_BACKTRACE
 	bool "Backtrace"
 
 endchoice
+
+source "drivers/pcie/controller/Kconfig"
+source "drivers/pcie/ep/Kconfig"
+source "drivers/pcie/phy/Kconfig"
+source "drivers/pcie/rc/Kconfig"
 
 endmenu

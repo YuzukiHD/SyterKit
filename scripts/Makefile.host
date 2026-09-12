@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+host_tools := mksunxi bin2array bin2asm mkbacktrace
+utility_dirs := bl33 bl33_t527
+utility_root := $(objtree)/utilities
+utility_rel_root := utilities
+firmware_root := $(objtree)/firmware/$(board)
+firmware_rel_root := firmware/$(board)
+
+.PHONY: artifacts tools utilities firmware list-apps list-firmware \
+	list-utilities test docs help
+
+list-apps:
+	@$(if $(apps),printf '%s\n' $(apps),:)
+
+list-firmware:
+	@$(if $(firmware-y),printf '%s\n' $(firmware-y),:)
+
+list-utilities:
+	@printf '%s\n' $(utility_dirs)
+
+tools: $(addprefix $(objtree)/tools/,$(host_tools)) dt2c-check
+
+$(objtree)/tools/%: $(srctree)/tools/%.c
+	@mkdir -p $(dir $@)
+	@echo "  HOSTCC  tools/$(notdir $<)"
+	@$(HOSTCC) -O2 -std=gnu99 $< -o $@
+
+utilities:
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     utilities"; \
+	else \
+		set -e; for utility_dir in $(utility_dirs); do \
+			$(MAKE) -C $(srctree)/utils/$$utility_dir \
+				BUILD=$(utility_root)/$$utility_dir \
+				CROSS_COMPILE=$(BL33_CROSS_COMPILE); \
+		done; \
+		echo "Utility images are in $(utility_rel_root)"; \
+	fi
+
+firmware:
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     firmware"; \
+	elif test -z "$(firmware-y)"; then \
+		echo "No companion firmware is defined for $(board)"; \
+	else \
+		set -e; for firmware_dir in $(firmware-y); do \
+			$(MAKE) -C $(srctree)/boards/$(board)/$$firmware_dir \
+				BUILD=$(firmware_root)/$$firmware_dir \
+				CROSS_COMPILE=$(FIRMWARE_CROSS_COMPILE); \
+		done; \
+		echo "Firmware images are in $(firmware_rel_root)"; \
+	fi
+
+test: dt2c-check
+	@if test -n "$(make_dry_run)"; then \
+		echo "  MAKE     test"; \
+	else \
+		$(MAKE) --no-print-directory -C $(srctree)/test; \
+	fi
+
+docs:
+	@command -v $(DOXYGEN) >/dev/null 2>&1 || { \
+		echo "doxygen is required to build the API documentation" >&2; \
+		exit 1; \
+	}
+	@$(DOXYGEN) $(srctree)/Doxyfile
+	@echo "API documentation is in docs/api/html"
+
+ifeq ($(strip $(config_ready)),)
+artifacts: require-config
+else
+artifacts: images firmware utilities
+endif
+
+help:
+	@echo 'Configuration:'
+	@echo '  <board-or-soc>[_<variant>]_defconfig'
+	@echo '                          Select a board or SoC and application mode'
+	@echo '  menuconfig              Configure with the source-built Kconfig UI'
+	@echo '  release                 Switch build and driver logs to Release'
+	@echo '  savedefconfig           Save a minimal configuration'
+	@echo '  list-defconfigs         List available board and SoC configurations'
+	@echo '  list-defconfig-targets  List configuration targets for automation'
+	@echo 'Build:'
+	@echo '  all                     Build every application for the selected target'
+	@echo '  artifacts               Build images, companion firmware, and utilities'
+	@echo '  <app>                   Build one application for the selected mode'
+	@echo '  list-apps               List applications for the selected target'
+	@echo '  rust-ffi                Generate and build the optional Rust FFI library'
+	@echo '  tools                   Build host tools'
+	@echo '  utilities               Build standalone BL33 utility images'
+	@echo '  firmware                Build companion firmware for the selected target'
+	@echo '  test                    Run host and QEMU API tests'
+	@echo '  docs                    Build strict Doxygen API documentation'
+	@echo '  clean                   Remove generated build files'
+	@echo '  mrproper                Also remove configuration files'

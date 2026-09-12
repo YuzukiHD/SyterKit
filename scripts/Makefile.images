@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+.PHONY: all image images image-prereqs
+
+ifeq ($(strip $(config_ready)),)
+all: require-config
+image-prereqs: require-config
+images: require-config
+else
+all: images
+
+image_tools :=
+ifeq ($(CONFIG_APP_SRAM),y)
+image_tools += $(objtree)/tools/mksunxi
+ifeq ($(CONFIG_BACKTRACE_FULL),y)
+image_tools += $(objtree)/tools/mkbacktrace
+endif
+endif
+
+image-prereqs: prepare $(common_builtins) $(platform_libs) \
+	$(image_linker_scripts) $(image_tools)
+
+# Shared inputs stay in the parent graph; each recursive worker owns only one
+# app directory, so parallel image builds cannot write the same output.
+non_rust_apps := $(filter-out $(rust_apps),$(apps))
+c_image_apps := $(sort $(non_rust_apps) $(rust_apps_with_c))
+
+ifneq ($(strip $(apps)),)
+.PHONY: $(apps)
+$(apps): image-prereqs
+ifeq ($(make_dry_run),)
+	+@$(MAKE) -f $(srctree)/scripts/Makefile.image APP=$@
+else
+	@echo "  MAKE     scripts/Makefile.image APP=$@"
+endif
+
+ifneq ($(strip $(c_image_apps)),)
+$(c_image_apps): %: $(objtree)/.obj/apps/$(target_name)/$(app_mode)/%/built-in.o
+endif
+
+ifneq ($(strip $(rust_apps)),)
+$(rust_apps): %: $(call rust_app_lib,%)
+endif
+
+ifneq ($(strip $(rust_core_link_input)),)
+ifneq ($(strip $(non_rust_apps)),)
+$(non_rust_apps): $(rust_core_link_input)
+endif
+endif
+endif
+
+images: tools $(apps)
+	@echo "All images are in $(image_rel_root)"
+endif
+
+image: images

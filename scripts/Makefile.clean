@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+.PHONY: clean mrproper FORCE
+
+clean:
+	@$(RM) -r $(objtree)/.obj $(objtree)/build $(objtree)/firmware \
+		$(objtree)/utilities $(srctree)/docs/api \
+		$(objtree)/tools/mksunxi \
+		$(objtree)/tools/bin2array $(objtree)/tools/bin2asm \
+		$(objtree)/tools/mkbacktrace \
+		$(objtree)/include/generated/config.h
+
+mrproper: clean
+	@$(RM) -r $(objtree)/include/config $(objtree)/include/generated \
+		$(kconfig_out) $(KCONFIG_CONFIG) $(objtree)/defconfig
+
+FORCE:

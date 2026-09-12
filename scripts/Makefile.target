@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+unquote = $(subst ",,$(1))
+
+board := $(call unquote,$(CONFIG_SYS_BOARD))
+soc := $(call unquote,$(CONFIG_SYS_SOC))
+
+ifeq ($(CONFIG_EFEX),y)
+target_name := soc/$(soc)
+platform_dir := soc/$(soc)
+else
+target_name := $(board)
+platform_dir := boards/$(board)
+endif
+
+arch_dir := $(if $(CONFIG_ARCH_ARM32),arm,riscv)
+arch_inc := arch/$(arch_dir)/include
+include_dirs := include $(arch_inc)
+
+KBUILD_CPPFLAGS := -I$(objtree)/include/generated \
+	$(addprefix -I$(srctree)/,$(include_dirs)) \
+	-I$(srctree)/dts/include -include $(auto_header)
+KBUILD_CFLAGS := -nostdlib -nostdinc -ffreestanding -fno-builtin \
+	-fno-common -fno-stack-protector -ffunction-sections -fdata-sections \
+	-Wall
+KBUILD_AFLAGS := $(KBUILD_CFLAGS)
+
+ifeq ($(CONFIG_OPTIMIZE_FOR_SIZE),y)
+KBUILD_CFLAGS += -Os
+KBUILD_AFLAGS += -Os
+else
+KBUILD_CFLAGS += -O2
+KBUILD_AFLAGS += -O2
+endif
+ifeq ($(CONFIG_BUILD_DEBUG),y)
+KBUILD_CFLAGS += -g -ggdb
+KBUILD_AFLAGS += -g -ggdb
+KBUILD_CPPFLAGS += -DDEBUG_MODE
+endif
+ifeq ($(CONFIG_BUILD_TRACE),y)
+KBUILD_CPPFLAGS += -DTRACE_MODE
+endif
+
+ifneq ($(strip $(board)$(soc)),)
+include $(srctree)/arch/$(arch_dir)/Makefile
+include $(srctree)/$(platform_dir)/Makefile
+endif
+
+# Object recipes inherit these files as prerequisites.  A changed architecture
+# or platform Makefile can alter flags and object lists, so stale objects must
+# not survive an incremental build.
+build_inputs := $(srctree)/Makefile \
+	$(srctree)/scripts/Makefile.target $(srctree)/scripts/Makefile.build \
+	$(srctree)/arch/$(arch_dir)/Makefile
+ifneq ($(strip $(board)$(soc)),)
+build_inputs += $(srctree)/$(platform_dir)/Makefile
+endif
+
+ifneq ($(filter default undefined,$(origin CC)),)
+CC := $(CROSS_COMPILE)gcc
+endif
+ifneq ($(filter default undefined,$(origin AR)),)
+AR := $(CROSS_COMPILE)ar
+endif
+ifneq ($(filter default undefined,$(origin LD)),)
+LD := $(CROSS_COMPILE)ld
+endif
+NM ?= $(CROSS_COMPILE)nm
+OBJCOPY ?= $(CROSS_COMPILE)objcopy
+OBJDUMP ?= $(CROSS_COMPILE)objdump
+SIZE ?= $(CROSS_COMPILE)size
+HOSTCC ?= cc
+DOXYGEN ?= doxygen
+RM ?= rm -f
+FIRMWARE_CROSS_COMPILE ?= riscv64-unknown-elf-
+BL33_CROSS_COMPILE ?= arm-none-eabi-
+
+ifeq ($(CONFIG_EFEX),y)
+app_mode := app_efex
+apps := $(apps-efex-y)
+else ifeq ($(CONFIG_APP_DRAM),y)
+app_mode := app_dram
+apps := $(apps-dram-y)
+else
+app_mode := app_sram
+apps := $(apps-sram-y)
+endif
+
+export srctree objtree board soc target_name platform_dir arch_dir app_mode apps
+export build_inputs
+export CC AR LD NM OBJCOPY OBJDUMP SIZE HOSTCC RM
+export KBUILD_CPPFLAGS KBUILD_CFLAGS KBUILD_AFLAGS KBUILD_LDFLAGS

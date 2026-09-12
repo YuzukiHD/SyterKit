@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# eFEX has explicit driver descriptors and does not consume a board DTS.
+ifeq ($(CONFIG_EFEX),y)
+.PHONY: dt2c-check
+else
+include $(srctree)/scripts/Makefile.dt2c
+endif
+
+export DT2C DT2C_INCLUDE
+
+ifneq ($(board),)
+board_dts := $(srctree)/boards/$(board)/board.dts
+dt2c_bindings := $(srctree)/dts/bindings
+dt2c_out := $(objtree)/.obj/boards/$(board)/dt2c
+dt2c_driver_manifest := $(dt2c_out)/selected-drivers
+dt2c_driver_inputs := $(shell find $(srctree)/drivers -type f \
+	\( -name '*.c' -o -name Makefile -o -name Kbuild \) -print)
+dt2c_include := $(dt2c_out)/include
+dt2c_header := $(dt2c_include)/generated/fdt_generated.h
+dt2c_depfile := $(dt2c_out)/devicetree.d
+dt2c_report := $(dt2c_out)/devicetree.json
+
+KBUILD_CPPFLAGS += -I$(dt2c_include)
+KBUILD_CPPFLAGS += -I$(DT2C_INCLUDE)
+
+dt2c_recorded_deps := $(filter-out %:,\
+	$(filter /%,$(file <$(dt2c_depfile))))
+dt2c_missing_deps := $(filter-out $(wildcard $(dt2c_recorded_deps)),\
+	$(dt2c_recorded_deps))
+ifneq ($(strip $(dt2c_missing_deps)),)
+# Let the manifest/header rules regenerate stale depfiles after source removal.
+$(dt2c_missing_deps):
+endif
+-include $(dt2c_depfile)
+
+$(dt2c_driver_manifest): $(dt2c_driver_inputs) $(auto_conf) \
+		$(srctree)/Makefile $(srctree)/scripts/Makefile.devicetree \
+		$(srctree)/scripts/Makefile.build FORCE
+	@if test -n "$(make_dry_run)"; then exit 0; fi; \
+	set -e; \
+	mkdir -p $(dir $@); \
+	tmp="$@.tmp.$$$$"; \
+	trap '$(RM) "$$tmp"' EXIT; \
+	$(MAKE) -f $(srctree)/scripts/Makefile.build obj=drivers \
+		dt2c-manifest > "$$tmp"; \
+	if cmp -s "$$tmp" "$@"; then \
+		:; \
+	else \
+		mv "$$tmp" "$@"; \
+	fi
+
+$(dt2c_header): $(board_dts) $(dt2c_driver_manifest) $(dt2c_path) \
+		| dt2c-check
+	@mkdir -p $(dir $@)
+	@echo "  DT2C    boards/$(board)/board.dts"
+	@$(dt2c_path) generate \
+		--dts $(board_dts) \
+		--bindings $(dt2c_bindings) \
+		--drivers $(dt2c_driver_manifest) \
+		--header $(dt2c_header) \
+		--depfile $(dt2c_depfile) \
+		--report $(dt2c_report) \
+		-I $(srctree)/dts/include \
+		-I $(srctree)/include
+endif

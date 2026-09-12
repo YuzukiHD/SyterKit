@@ -38,4 +38,6 @@ config DRIVER_SID_LOG_BACKTRACE
 
 endchoice
 
+source "drivers/sid/platform/Kconfig"
+
 endmenu

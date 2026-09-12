@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+# The PHY implementation is selected by the SoC and has no local symbols.
