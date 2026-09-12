@@ -262,6 +262,9 @@ int usb_dma_release(uint32_t dma_index)
 		return ret;
 	}
 
+	ret = usb_dma_stop(dma_index);
+	if (ret != 0)
+		return ret;
 	usb_dma_used[dma_index] = 0; /**< Mark the DMA channel as unused */
 
 	return 0;
@@ -299,11 +302,15 @@ int usb_dma_start(uint32_t dma_index, uint32_t addr, uint32_t bytes)
 
 int usb_dma_stop(uint32_t dma_index)
 {
+	usb_controller_otg_t *otg = (usb_controller_otg_t *)usb_hd;
 	int ret = usb_index_check(dma_index);
 	if (ret) {
 		return ret;
 	}
 
+	clrbits_le32(otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_index, BIT(31));
+	if (readl(otg->base_addr + USBC_REG_o_DMA_CONFIG + 0x10 * dma_index) & BIT(31))
+		return -1;
 	return lowlevel_usb_dma_int_stop(usb_hd, dma_index);
 }
 

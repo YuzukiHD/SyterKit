@@ -15,6 +15,11 @@
 #include <drivers/usb/function/usb_function.h>
 #include <drivers/usb/usb_manager.h>
 #include <drivers/soc/soc.h>
+#include <drivers/intc/intc.h>
+#include <drivers/usb/platform/usb_platform.h>
+#include <drivers/usb/usb_lowlevel.h>
+#include <drivers/usb/usb_regs.h>
+#include <dt-compatible/usb-dt.h>
 
 #define SUNXI_USB_FEL_MAX_TRANSFER	(64U * 1024U)
 #define SUNXI_USB_FEL_PIO_TRANSFER_MAX	512U
@@ -341,6 +346,61 @@ static void sunxi_usb_fel_finish_dma_write(void)
 }
 
 /**
+ * @brief Execute a FEL payload with USB platform resources released.
+ *
+ * The final response must be sent before calling this function. A returning
+ * payload must preserve the FEL image and restore its execution/clock context.
+ *
+ * @param entry Payload entry point.
+ * @return Zero on success, or a negative error code on failure.
+ */
+static int sunxi_usb_fel_run_payload(void (*entry)(void))
+{
+	sunxi_usb_t usb;
+	uint32_t gate_mask;
+	uint32_t dma_channels;
+	int ret;
+
+	if (entry == NULL || sunxi_usb_dt_read_alias(&usb, "usb0") != DRIVER_OK || usb.irq == 0U)
+		return -1;
+	gate_mask = BIT(usb.clock_gate_offset);
+	if (irq_disable((int)usb.irq) != DRIVER_OK)
+		return -1;
+
+	/* EXEC is handled after the previous transfer and its response finish.
+	 * Stop channels with DMA interrupts enabled without exposing manager state. */
+	dma_channels = readl(usb.base + USBC_REG_o_DMA_ENABLE);
+	while (dma_channels != 0U) {
+		unsigned channel = __builtin_ctz(dma_channels);
+
+		if (usb_dma_stop(channel) != 0) {
+			irq_enable((int)usb.irq);
+			return -1;
+		}
+		dma_channels &= dma_channels - 1U;
+	}
+
+	/* Freeze the controller without resetting endpoint addresses or toggles.
+	 * Interrupt masking alone does not stop hardware from using FIFO SRAM. */
+	clrbits_le32(usb.clock_gate_reg_base, gate_mask);
+	if (readl(usb.clock_gate_reg_base) & gate_mask) {
+		irq_enable((int)usb.irq);
+		return -1;
+	}
+	sunxi_usb_platform_deinit(&usb);
+	entry();
+
+	/* Reacquire SRAM before allowing the controller to access it again. */
+	ret = sunxi_usb_platform_init(&usb);
+	if (ret != DRIVER_OK)
+		return ret;
+	setbits_le32(usb.clock_gate_reg_base, gate_mask);
+	if (!(readl(usb.clock_gate_reg_base) & gate_mask))
+		return -1;
+	return irq_enable((int)usb.irq);
+}
+
+/**
  * @brief Implement the `sunxi_usb_fel_handle_header` USB operation.
  *
  * @param sunxi_ubuf The USB transfer buffer state.
@@ -436,7 +496,8 @@ static void sunxi_usb_fel_handle_header(sunxi_ubuf_t *sunxi_ubuf)
 	response_status = sunxi_usb_fel_send_transport_response(sunxi_usb_fel_transport_request.tab, 0U, status);
 	if (response_status == 0 && status == 0U && execute) {
 		sunxi_usb_fel_exec_pending = 0U;
-		entry();
+		if (sunxi_usb_fel_run_payload(entry) != 0)
+			printk_error("FEL: payload handoff failed\n");
 	}
 }
 
