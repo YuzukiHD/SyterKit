@@ -15,18 +15,12 @@
 #include "timer.h"
 
 struct arm_regs_t {
-	/** Saved exception stack pointer. */
-	uint32_t esp;
-	/** Saved CPSR value, including the processor mode bits. */
-	uint32_t cpsr;
-	/** Saved general-purpose registers r0 through r12. */
-	uint32_t r[13];
-	/** Saved stack pointer. */
-	uint32_t sp;
-	/** Saved link register. */
-	uint32_t lr;
-	/** Saved program counter. */
-	uint32_t pc;
+	uint32_t esp; /**< Saved exception stack pointer. */
+	uint32_t cpsr; /**< Saved CPSR value, including the processor mode bits. */
+	uint32_t r[13]; /**< Saved general-purpose registers r0 through r12. */
+	uint32_t sp; /**< Saved stack pointer. */
+	uint32_t lr; /**< Saved link register. */
+	uint32_t pc; /**< Saved program counter. */
 };
 
 /* SCTLR bits used by the ARM32 implementation. */

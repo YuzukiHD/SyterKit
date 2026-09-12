@@ -31,32 +31,19 @@ struct ufshc_host;
  * @brief SCSI discovery and transfer state for one UFS logical unit.
  */
 struct ufs_scsi_device {
-	/** Host-controller used to submit UPIUs. */
-	struct ufshc_host *host;
-	/** Logical unit number. */
-	uint8_t lun;
-	/** Logical block size in bytes reported by READ CAPACITY. */
-	uint32_t block_size;
-	/** Number of addressable logical blocks. */
-	uint64_t block_count;
-	/** Device manufacturer identifier from the descriptor. */
-	uint16_t manufacturer_id;
-	/** NUL-terminated product model, when reported by INQUIRY. */
-	char model[17];
-	/** Last response transaction type. */
-	uint8_t last_response_type;
-	/** Last UPIU task response code. */
-	uint8_t last_task_response;
-	/** Last SCSI status byte. */
-	uint8_t last_status;
-	/** Number of valid bytes in @ref last_sense. */
-	uint8_t last_sense_length;
-	/** Sense data returned by the last failed command. */
-	uint8_t last_sense[18];
-	/** Bytes not transferred by the last command. */
-	uint32_t last_residual_transfer_count;
-	/** True when the logical unit passed discovery and readiness checks. */
-	bool present;
+	struct ufshc_host *host; /**< Host-controller used to submit UPIUs. */
+	uint8_t lun; /**< Logical unit number. */
+	uint32_t block_size; /**< Logical block size in bytes reported by READ CAPACITY. */
+	uint64_t block_count; /**< Number of addressable logical blocks. */
+	uint16_t manufacturer_id; /**< Device manufacturer identifier from the descriptor. */
+	char model[17]; /**< NUL-terminated product model, when reported by INQUIRY. */
+	uint8_t last_response_type; /**< Last response transaction type. */
+	uint8_t last_task_response; /**< Last UPIU task response code. */
+	uint8_t last_status; /**< Last SCSI status byte. */
+	uint8_t last_sense_length; /**< Number of valid bytes in @ref last_sense. */
+	uint8_t last_sense[18]; /**< Sense data returned by the last failed command. */
+	uint32_t last_residual_transfer_count; /**< Bytes not transferred by the last command. */
+	bool present; /**< True when the logical unit passed discovery and readiness checks. */
 };
 
 /**

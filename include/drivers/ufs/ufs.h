@@ -14,14 +14,10 @@
  * @brief Top-level state for one initialized UFS logical unit.
  */
 struct ufs_device {
-	/** Host-controller state owned by this device. */
-	struct ufshc_host host;
-	/** SCSI block-device state for @ref lun. */
-	struct ufs_scsi_device scsi;
-	/** Logical unit addressed by block operations. */
-	uint8_t lun;
-	/** True after the host and logical unit have completed initialization. */
-	bool initialized;
+	struct ufshc_host host; /**< Host-controller state owned by this device. */
+	struct ufs_scsi_device scsi; /**< SCSI block-device state for @ref lun. */
+	uint8_t lun; /**< Logical unit addressed by block operations. */
+	bool initialized; /**< True after the host and logical unit have completed initialization. */
 };
 
 /**
