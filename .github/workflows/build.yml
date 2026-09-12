@@ -87,4 +87,4 @@ jobs:
               cross="${ARM_CROSS_COMPILE}"
             fi
             make "O=${O}" CROSS_COMPILE="${cross}" -j"$(nproc)"
-          done < <(make list-defconfigs)
+          done < <(make list-defconfig-targets)

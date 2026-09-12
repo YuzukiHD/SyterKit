@@ -70,7 +70,7 @@ Cargo into `.obj/tools/dt2c/`. Other compatible installations can be selected
 explicitly:
 
 ```sh
-make tinyvision_defconfig
+make tinyvision_sram_defconfig
 make DT2C=/opt/dt2c/dt2c \
 	DT2C_INCLUDE=/opt/dt2c/include -j$(nproc)
 ```

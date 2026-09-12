@@ -18,8 +18,6 @@ SECTIONS
 		. = ALIGN(4);
 		PROVIDE(__image_start = .);
 		PROVIDE(__spl_start = .);
-		KEEP(*(.boot0_head))
-		. = ALIGN(64);
 		KEEP(*(.text.entry))
 		*(.text .text.*)
 		PROVIDE(__ddr_bin_start = .);
@@ -55,6 +53,6 @@ SECTIONS
 
 	. = ALIGN(4); _end = .;
 	PROVIDE(__sram_end = ORIGIN(ram) + LENGTH(ram));
-	ASSERT(_start == __spl_start + 0x40,
-	       "eFEX entry must be 0x40 bytes from the image start")
+	ASSERT(_start == __spl_start,
+	       "eFEX entry must be at the image start")
 }

@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "SoC eFEX applications"
+	depends on EFEX
+
+choice
+	prompt "Target SoC"
+
+source "$(SOC_KCONFIG_LIST)"
+
+endchoice
+
+config SYS_SOC
+	string
+	default "sun252iw1" if EFEX_SOC_SUN252IW1
+	default "sun252iw2" if EFEX_SOC_SUN252IW2
+	default "sun300iw1" if EFEX_SOC_SUN300IW1
+	default "sun50iw9" if EFEX_SOC_SUN50IW9
+	default "sun55iw3" if EFEX_SOC_SUN55IW3
+	default "sun55iw6" if EFEX_SOC_SUN55IW6
+	default "sun60iw2" if EFEX_SOC_SUN60IW2
+	default "sun65iw1" if EFEX_SOC_SUN65IW1
+	default "sun8iw21" if EFEX_SOC_SUN8IW21
+	default "sun8iw22" if EFEX_SOC_SUN8IW22
+
+choice
+	prompt "sun60iw2 DRAM type"
+	depends on EFEX_SOC_SUN60IW2
+	default EFEX_DRAM_LPDDR5
+
+config EFEX_DRAM_LPDDR4
+	bool "LPDDR4"
+
+config EFEX_DRAM_LPDDR5
+	bool "LPDDR5"
+
+endchoice
+
+endmenu

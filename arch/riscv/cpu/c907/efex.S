@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 
 /**
- * @file efex.S
+ * @file
  * @brief Returning RISC-V eFEX entry using the Boot ROM stack (C907).
  *
  * The eFEX image runs on the Boot ROM stack and returns control to the

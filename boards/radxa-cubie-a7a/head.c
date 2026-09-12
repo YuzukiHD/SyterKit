@@ -38,12 +38,7 @@ typedef struct boot_file_head {
 
 extern uint32_t __spl_size[];
 extern uint32_t __code_start_address[];
-#ifdef CONFIG_EFEX
-extern uint32_t __efex_result_start[];
-#define BOOT_RET_ADDR ((uint32_t)(uintptr_t)__efex_result_start)
-#else
 #define BOOT_RET_ADDR ((uint32_t)(uintptr_t)__code_start_address)
-#endif
 
 /**
  * @brief The boot0 header instance emitted at the start of the boot image.

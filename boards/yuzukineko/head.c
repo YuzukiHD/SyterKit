@@ -74,10 +74,7 @@ typedef struct boot_file_head {
 
 extern uint32_t __spl_size[];
 extern uint32_t __code_start_address[];
-#if defined(CONFIG_EFEX)
-extern uint32_t __efex_result_start[];
-#define BOOT_RET_ADDR ((uint32_t)(uintptr_t)__efex_result_start)
-#elif !defined(CONFIG_ARCH_RISCV64)
+#if !defined(CONFIG_ARCH_RISCV64)
 #define BOOT_RET_ADDR ((uint32_t)(uintptr_t)__code_start_address)
 #endif
 

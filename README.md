@@ -30,18 +30,18 @@ Run `make list-defconfigs` for the authoritative list in your checkout. Board-sp
 
 | Board | SoC / Platform | SyterKit CPU | Configuration |
 | --- | --- | --- | --- |
-| [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 | 1 × Cortex-A7 | `tinyvision_defconfig` |
-| [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 | 4 × Cortex-A53 | `longanpi-3h_defconfig` |
-| Avaota A1 | T527/A527 | 8 × Cortex-A55 | `avaota-a1_defconfig` |
-| Radxa Cubie A7A | A733 | 6 × Cortex-A55 + 2 × Cortex-A76 | `radxa-cubie-a7a_defconfig` |
-| Avaota F1 | V821 | Xuantie E907 + Andes A27L2 | `avaota-f1_defconfig` |
-| Avaota F2 | V861 | Xuantie E907 + 2 × Xuantie C907 | `avaota-f2_defconfig` |
-| Avaota M1 | A537 | 6 × Cortex-A53 + 2 × Cortex-A73 | `avaota-m1_defconfig` |
-| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_defconfig`, `yuzukineko_rv32_usb_defconfig`, `yuzukineko_rv64_defconfig` |
-| TLT153 MiniEVM | T153 | 4 × Cortex-A7 | `tlt153-minievm_defconfig` |
-| TLT536 EVM | T536 | 4 × Cortex-A55 | `tlt536-evm_defconfig` |
+| [TinyVision](https://github.com/YuzukiHD/TinyVision) | V851se/V851s3 | 1 × Cortex-A7 | `tinyvision_sram_defconfig` |
+| [LonganPi 3H](https://wiki.sipeed.com/hardware/zh/longan/H618/lpi3h/1_intro.html) | H618 | 4 × Cortex-A53 | `longanpi-3h_sram_defconfig` |
+| Avaota A1 | T527/A527 | 8 × Cortex-A55 | `avaota-a1_sram_defconfig` |
+| Radxa Cubie A7A | A733 | 6 × Cortex-A55 + 2 × Cortex-A76 | `radxa-cubie-a7a_sram_defconfig` |
+| Avaota F1 | V821 | Xuantie E907 + Andes A27L2 | `avaota-f1_sram_defconfig` |
+| Avaota F2 | V861 | Xuantie E907 + 2 × Xuantie C907 | `avaota-f2_sram_defconfig` |
+| Avaota M1 | A537 | 6 × Cortex-A53 + 2 × Cortex-A73 | `avaota-m1_sram_defconfig` |
+| YuzukiNeko | F101 | Xuantie C907 | `yuzukineko_rv32_sram_defconfig`, `yuzukineko_rv32_usb_sram_defconfig`, `yuzukineko_rv64_sram_defconfig` |
+| TLT153 MiniEVM | T153 | 4 × Cortex-A7 | `tlt153-minievm_sram_defconfig` |
+| TLT536 EVM | T536 | 4 × Cortex-A55 | `tlt536-evm_sram_defconfig` |
 
-Active configurations are grouped under `configs/<board>/`. Most boards provide `sram_defconfig`, `efex_defconfig`, and `dram_defconfig` variants; the public Make targets remain flat, e.g. `make avaota-a1_efex_defconfig`.
+Board configurations live under `boards/<board>/configs/` and provide SRAM and DRAM applications. Returning eFEX applications are selected by chip from `soc/<soc>/configs/`, for example `make O=out sun55iw3_efex_defconfig`. See [`soc/README.md`](soc/README.md) for the chip configurations and build paths.
 
 ## Architecture
 
@@ -83,14 +83,14 @@ List the available boards, select one, and build:
 
 ```sh
 make list-defconfigs
-make tinyvision_defconfig
+make tinyvision_sram_defconfig
 make -j$(nproc)
 ```
 
 Out-of-tree builds follow the Linux kernel `O=` convention:
 
 ```sh
-make O=out tinyvision_defconfig
+make O=out tinyvision_sram_defconfig
 make O=out -j$(nproc)
 ```
 
@@ -104,9 +104,9 @@ Useful targets:
 | `make firmware` | Build board companion firmware, when declared |
 | `make utilities` | Build the standalone BL33 utilities |
 | `make artifacts` | Build images, companion firmware, and utilities |
+| `make check` | Validate Make/Kconfig structure and all defconfigs |
 | `make test` | Run host and QEMU tests |
 | `make docs` | Generate the Doxygen API documentation |
-| `make check` | Make/Kconfig source-tree consistency checks |
 
 Override the toolchain prefix when it is not in the default location:
 

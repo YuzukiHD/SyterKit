@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config EFEX_SOC_SUN55IW6
+	bool "sun55iw6"
+	depends on ARCH_ARM32 && CPU_ARMV8_2
+	select SOC_SUN55IW6

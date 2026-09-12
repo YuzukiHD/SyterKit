@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config EFEX_SOC_SUN252IW1
+	bool "sun252iw1"
+	depends on ARCH_RISCV32 && (ARCH_CPU_E907 || ARCH_CPU_C907)
+	select SOC_SUN252IW1

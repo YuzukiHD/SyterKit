@@ -24,7 +24,7 @@
 #include <log.h>
 #include <uart.h>
 #include <drivers/serial/serial.h>
-#include <dt-compatible/serial-dt.h>
+#include <dt2c/driver.h>
 
 #include <drivers/clk/clk.h>
 
@@ -190,20 +190,6 @@ int __attribute__((weak)) sunxi_serial_tstc(void *arg)
 	sunxi_serial_reg_t *serial_reg = (sunxi_serial_reg_t *)uart->base;
 
 	return serial_reg->lsr & 1;
-}
-
-int sunxi_serial_init_stdout(void)
-{
-	int result = sunxi_serial_dt_read_stdout(&uart_dbg);
-
-	if (result != DRIVER_OK)
-		return result;
-
-	sunxi_serial_init(&uart_dbg);
-
-	/* Flush early logs at the first point where the UART is usable. */
-	uart_log_console_ready();
-	return DRIVER_OK;
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-uart");

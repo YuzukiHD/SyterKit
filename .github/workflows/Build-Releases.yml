@@ -75,16 +75,23 @@ jobs:
             fi
             make "O=${output}" CROSS_COMPILE="${cross}" -j"$(nproc)"
 
-            board="$(sed -n 's/^CONFIG_SYS_BOARD="\([^"]*\)"$/\1/p' \
-              "${output}/.config")"
-            test -n "${board}"
-            image_dir="${output}/build/${board}"
+            if grep -qx 'CONFIG_EFEX=y' "${output}/.config"; then
+              soc="$(sed -n 's/^CONFIG_SYS_SOC="\([^"]*\)"$/\1/p' \
+                "${output}/.config")"
+              test -n "${soc}"
+              image_dir="${output}/build/soc/${soc}"
+            else
+              board="$(sed -n 's/^CONFIG_SYS_BOARD="\([^"]*\)"$/\1/p' \
+                "${output}/.config")"
+              test -n "${board}"
+              image_dir="${output}/build/${board}"
+            fi
             test -d "${image_dir}"
             test -n "$(find "${image_dir}" -type f -print -quit)"
             tar --create --gzip \
               --file="${RELEASE_ROOT}/assets/${config_name}.tar.gz" \
               --directory="${image_dir}" .
-          done < <(make list-defconfigs)
+          done < <(make list-defconfig-targets)
 
           test "${built}" -eq 1
           printf 'Release assets:\n'

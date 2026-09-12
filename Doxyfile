@@ -869,6 +869,7 @@ INPUT                  = README.md \
                          docs/devicetree.md \
                          arch \
                          boards \
+                         soc \
                          core \
                          drivers \
                          include \

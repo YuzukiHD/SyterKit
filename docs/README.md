@@ -52,15 +52,17 @@ List the available board configurations and select one:
 
 ```sh
 make list-defconfigs
-make tinyvision_defconfig
+make tinyvision_sram_defconfig
 ```
 
 The defconfig selects the board, architecture, drivers, and the applications
 that are built by default. Use `make menuconfig` to inspect or change those
 options. `make list-apps` prints the applications selected for the active board.
-Configuration files are grouped by board in `configs/<board>/`; Make translates
-those paths into flat targets such as `avaota-a1_defconfig` and
-`avaota-a1_efex_defconfig`.
+Board configuration files live in `boards/<board>/configs/`, with targets such as
+`avaota-a1_sram_defconfig`. Returning eFEX configurations live in
+`soc/<soc>/configs/`, with targets such as `sun55iw3_efex_defconfig`.
+eFEX applications configure drivers with C structures and build without a
+board selection or device-tree generation. See [SoC applications](../soc/README.md).
 
 ### Build
 
@@ -79,7 +81,7 @@ make syter_boot
 Use an output directory without modifying the source tree:
 
 ```sh
-make O=out tinyvision_defconfig
+make O=out tinyvision_sram_defconfig
 make O=out -j$(nproc)
 ```
 
@@ -96,9 +98,9 @@ Additional targets include:
 | `make firmware` | Board-specific companion firmware |
 | `make utilities` | Standalone BL33 utility images |
 | `make artifacts` | Applications, companion firmware, and utilities |
+| `make check` | Validate Make/Kconfig structure and all defconfigs |
 | `make test` | Host tests and ARM/RISC-V QEMU tests |
 | `make docs` | Doxygen API documentation in `docs/api/html/` |
-| `make check` | Make/Kconfig source-tree consistency checks |
 
 ### Output files
 
@@ -108,6 +110,7 @@ chosen `O=` directory:
 | Output | Description |
 | --- | --- |
 | `<app>_fel.bin` | SRAM image intended for host-side FEL loading |
+| `<app>_efex.bin` | Raw eFEX payload linked at the configured FEL SRAM address |
 | `<app>_card.bin` | eGON image padded to 512-byte media blocks |
 | `<app>_spi.bin` | eGON image padded to 8192-byte flash blocks |
 | `<app>_fel.elf` | ELF linked for the FEL SRAM address |
@@ -196,9 +199,9 @@ the common layout above.
 
 ### Boot header
 
-Each board provides a header definition in `boards/<board>/head.c`. The linker
-places it in `.boot0_head` before the normal startup code. Its important fields
-are:
+Boot-media images provide a header definition in `boards/<board>/head.c`. The
+linker places it in `.boot0_head` before the normal startup code. Its important
+fields are:
 
 | Field | Purpose |
 | --- | --- |
@@ -216,6 +219,10 @@ The linked ELF initially contains a checksum stamp. When producing
 or 8192-byte alignment. The tool pads the image, updates `length`, replaces the
 stamp with the checksum seed, sums the complete padded image as 32-bit words,
 and stores the result in `check_sum`.
+
+Returning eFEX images are raw FEL payloads. Their `_start` entry is linked at
+the beginning of the configured SRAM range, and `<app>_efex.bin` is produced
+directly from the ELF without a boot header, padding, or `mksunxi` processing.
 
 ### ARM jump instruction
 

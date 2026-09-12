@@ -46,13 +46,13 @@ The Rust target is inferred from the Kconfig architecture, and the C cross compi
 Select a board configuration, enable `Build Rust FFI and applications` (`CONFIG_RUST_FFI`, which depends on `DRIVER_SERIAL`) in `menuconfig`, then build the library or the normal images:
 
 ```sh
-make O=out tinyvision_defconfig
+make O=out tinyvision_sram_defconfig
 make O=out menuconfig
 make O=out CROSS_COMPILE=arm-none-eabi- rust-ffi
 make O=out CROSS_COMPILE=arm-none-eabi- -j$(nproc)
 ```
 
-`rust-ffi` builds the Rust core archive and every Rust app declared by the selected board. The core archive is placed at `.obj/rust/<board>/<app_mode>/<rust-target>/release/libsyterkit_core.a`, and each app archive at `.obj/rust/<board>/<app_mode>/apps/<app>/<rust-target>/release/libsyterkit_core.a` in the selected output tree, where `<app_mode>` is `app_sram`, `app_dram`, or `app_efex` depending on the configuration. Cargo runs with `--locked` and receives `-C panic=abort -C opt-level=<z|3>` through `RUSTFLAGS`, using `z` when `CONFIG_OPTIMIZE_FOR_SIZE` is set and `3` otherwise; extra flags can be appended through `RUST_FFI_RUSTFLAGS`.
+`rust-ffi` builds the Rust core archive and every Rust app declared by the selected board. For SoC eFEX configurations, `<board>` in the following paths is replaced by `soc/<soc>`. The core archive is placed at `.obj/rust/<board>/<app_mode>/<rust-target>/release/libsyterkit_core.a`, and each app archive at `.obj/rust/<board>/<app_mode>/apps/<app>/<rust-target>/release/libsyterkit_core.a` in the selected output tree, where `<app_mode>` is `app_sram`, `app_dram`, or `app_efex` depending on the configuration. Cargo runs with `--locked` and receives `-C panic=abort -C opt-level=<z|3>` through `RUSTFLAGS`, using `z` when `CONFIG_OPTIMIZE_FOR_SIZE` is set and `3` otherwise; extra flags can be appended through `RUST_FFI_RUSTFLAGS`.
 
 The Rust archive is linked with `--no-whole-archive`, so a C app does not pull Rust code into its image unless it references a Rust symbol. A Rust app replaces the C app archive for its entry point and supplies the ABI-compatible `main` symbol instead. C apps and Rust apps can coexist in the board's application list, but a name that appears in both lists is a build error, and a declared Rust app without a `main.rs` fails the build before Cargo runs.
 
@@ -146,7 +146,10 @@ A board declares Rust apps in its Makefile with the same mode-specific naming us
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
 ```
 
-`rust-apps-dram-y` and `rust-apps-efex-y` are the DRAM and efex equivalents. The source is then stored at:
+`rust-apps-dram-y` declares board DRAM applications. SoC Makefiles can declare
+`rust-apps-efex-y`; their sources live at `soc/<soc>/app_efex/<app>/main.rs`,
+and their artifacts use `soc/<soc>` in place of `<board>` in the paths above.
+The board SRAM example above stores its source at:
 
 ```text
 boards/<board>/app_sram/app-rs/main.rs
@@ -178,7 +181,7 @@ pub fn main() -> i32 {
 Build the app like any other selected app:
 
 ```sh
-make O=out yuzukineko_rv32_defconfig
+make O=out yuzukineko_rv32_sram_defconfig
 make O=out menuconfig                 # enable Rust FFI
 make O=out CROSS_COMPILE=riscv64-unknown-elf- app-rs
 ```
