@@ -4,6 +4,11 @@ menu "PSRAM driver"
 
 config DRIVER_PSRAM
 	bool "PSRAM controller support"
+	select DRIVER_LPSRAM_RCE
+
+config DRIVER_LPSRAM_RCE
+	bool "Use the reverse engineering C code lpsram driver"
+	depends on DRIVER_PSRAM
 
 choice
 	prompt "PSRAM driver log level"
