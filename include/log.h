@@ -141,6 +141,9 @@ void uart_printf(const char *fmt, ...);
  */
 int printf(const char *fmt, ...);
 
+/** @brief Print a timestamped informational message during DRAM bring-up. */
+int printf_dram(const char *fmt, ...);
+
 /**
  * @brief Dumps memory content in hexadecimal format.
  *
