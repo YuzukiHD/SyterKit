@@ -4,6 +4,9 @@ menu "PSRAM driver"
 
 config DRIVER_PSRAM
 	bool "PSRAM controller support"
+	help
+	  Enable PSRAM support. The sun252iw2 implementation initializes PSRAM
+	  from its parameter block and performs a basic read/write check;
 
 choice
 	prompt "PSRAM driver log level"
