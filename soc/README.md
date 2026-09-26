@@ -33,8 +33,9 @@ The old board-named eFEX targets have been removed. SRAM and DRAM board targets
 continue to use `boards/<board>/configs/` and their board device trees.
 
 Architecture directories contain the eFEX return entry assembly and linker
-scripts. The shared eFEX result implementation lives in `core/`, with the
-public interface in `include/efex.h`. Chip directories own their
+scripts. The shared eFEX parameter area lives in `core/efex_param.c`, with the public interface in `include/efex.h`: a host can
+override UART, PMU I²C, PMU rail and DRAM/PSRAM settings per run and read the
+results back (see `docs/efex-param.md`). Chip directories own their
 applications, Kconfig, defconfigs, and required DRAM libraries or payloads.
 Board applications share those chip libraries where needed.
 

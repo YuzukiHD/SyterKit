@@ -114,7 +114,14 @@ static void sunxi_res_ctrl_init(const sunxi_sid_t *sid)
 	writel(res1, INT_DDR_RES_CTRL_REG);
 }
 
-static void sunxi_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c, axp_pmu_t *axp2202, axp_pmu_t *axp1530)
+/* PMU rail defaults in mV as [pmu][rail]; the host may override them. */
+static int rail_mv[][EFEX_PARAM_RAIL_MAX] = {
+	{ 1050, 900, 3300, 1800 }, /* AXP2202: dcdc1 dcdc2(sys) dcdc4 bldo3 */
+	{ 1000, 1000, 940 }, /* AXP1530: dcdc1 dcdc2 dcdc3(gpu) */
+};
+
+/* Select the SYS and GPU rail defaults from the eFuse bin before host overrides. */
+static void sunxi_rail_defaults(const sunxi_sid_t *sid)
 {
 	uint32_t efuse = sunxi_efuse_sram_read(sid, 0x14U);
 	uint8_t value = (uint8_t)(efuse >> 16);
@@ -132,18 +139,24 @@ static void sunxi_power_init(const sunxi_sid_t *sid, sunxi_i2c_t *i2c, axp_pmu_t
 		sys_mv = 920;
 		gpu_mv = 960;
 	}
+	if ((readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK) < 2U)
+		sys_mv = gpu_mv;
+	rail_mv[0][1] = (int) sys_mv;
+	rail_mv[1][2] = (int) gpu_mv;
+}
+
+static void sunxi_power_init(sunxi_i2c_t *i2c, axp_pmu_t *axp2202, axp_pmu_t *axp1530)
+{
 	sunxi_i2c_init(i2c);
 	pmu_axp2202_init(axp2202);
 	pmu_axp1530_init(axp1530);
-	if ((readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK) < 2U)
-		sys_mv = gpu_mv;
-	pmu_axp2202_set_vol(axp2202, "dcdc1", 1050, 1);
-	pmu_axp2202_set_vol(axp2202, "dcdc2", sys_mv, 1);
-	pmu_axp2202_set_vol(axp2202, "dcdc4", 3300, 1);
-	pmu_axp2202_set_vol(axp2202, "bldo3", 1800, 1);
-	pmu_axp1530_set_vol(axp1530, "dcdc1", 1000, 1);
-	pmu_axp1530_set_vol(axp1530, "dcdc2", 1000, 1);
-	pmu_axp1530_set_vol(axp1530, "dcdc3", gpu_mv, 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc1", rail_mv[0][0], 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc2", rail_mv[0][1], 1);
+	pmu_axp2202_set_vol(axp2202, "dcdc4", rail_mv[0][2], 1);
+	pmu_axp2202_set_vol(axp2202, "bldo3", rail_mv[0][3], 1);
+	pmu_axp1530_set_vol(axp1530, "dcdc1", rail_mv[1][0], 1);
+	pmu_axp1530_set_vol(axp1530, "dcdc2", rail_mv[1][1], 1);
+	pmu_axp1530_set_vol(axp1530, "dcdc3", rail_mv[1][2], 1);
 }
 
 int main(void)
@@ -152,20 +165,29 @@ int main(void)
 	axp_pmu_t axp1530;
 
 	sunxi_res_ctrl_init(&sid);
+	sunxi_rail_defaults(&sid);
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.i2c = &i2c,
+		.dram = &dram,
+		.rail_mv = rail_mv,
+		.pmu_count = ARRAY_SIZE(rail_mv),
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	if (pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
 		pr_err("PMU: configuration failed\n");
 		return -1;
 	}
-	sunxi_power_init(&sid, &i2c, &axp2202, &axp1530);
+	sunxi_power_init(&i2c, &axp2202, &axp1530);
 	dram.power.vdd_sys = &axp2202;
 	dram.power.ddr = &axp1530;
-	if (sunxi_dram_init(&dram) == 0U) {
+	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
+	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
 	}
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }

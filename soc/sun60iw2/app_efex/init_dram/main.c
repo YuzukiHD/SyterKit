@@ -152,6 +152,11 @@ int main(void)
 	axp_pmu_t pmu;
 
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.i2c = &i2c,
+		.dram = &dram,
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	if (pmu_axp8191_config(&pmu, &i2c) != DRIVER_OK)
@@ -161,10 +166,11 @@ int main(void)
 	sunxi_clk_init();
 	pmu_axp8191_init(&pmu);
 	dram.power.ddr = &pmu;
-	if (sunxi_dram_init(&dram) == 0U) {
+	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
+	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
 	}
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }

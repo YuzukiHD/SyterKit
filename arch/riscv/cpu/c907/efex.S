@@ -76,6 +76,8 @@ _start:
 
 	/* Preserve main's return value in the ABI a0 slot. */
 	EFEX_STORE a0, 9
+	/* Record status and results in the parameter area before the cache sync. */
+	jal	ra, efex_param_finish
 	jal	ra, syterkit_efex_arch_sync
 	fence	rw, rw
 	fence.i

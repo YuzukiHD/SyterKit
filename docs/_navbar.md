@@ -2,6 +2,7 @@
 * [Getting started](/#getting-started)
 * [Driver architecture](/driver-model.md)
 * [Device tree](/devicetree.md)
+* [eFEX parameters](/efex-param.md)
 * [GitHub](https://github.com/YuzukiHD/SyterKit)
 * [Gitee](https://gitee.com/YuzukiHD-Mirror/SyterKit)
 * [API](https://syterkit.yuzukihd.top/api/html/)

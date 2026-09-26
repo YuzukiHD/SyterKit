@@ -3,6 +3,7 @@
 #include <dt-bindings/soc/sun252iw2.h>
 #include <uart.h>
 
+#include <efex.h>
 #include <log.h>
 #include <drivers/serial/serial.h>
 
@@ -29,6 +30,9 @@ static const sunxi_serial_t console = {
 int main(void)
 {
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	pr_info("SyterKit eFEX hello world\n");

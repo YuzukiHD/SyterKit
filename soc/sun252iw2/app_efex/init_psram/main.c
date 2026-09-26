@@ -41,16 +41,20 @@ static sunxi_psram_t psram = {
 int main(void)
 {
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.psram = &psram,
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	sunxi_clk_init();
 
-	if (sunxi_psram_init(&psram) == 0U) {
+	uint32_t psram_size = sunxi_psram_init(&psram);
+	efex_param_report_psram(&psram, psram_size);
+	if (psram_size == 0U) {
 		pr_err("PSRAM: initialization failed\n");
-		syterkit_efex_set_dram_result_status(psram.parameters, psram.parameter_count, 0U);
 		return -1;
 	}
 
-	syterkit_efex_set_dram_result(psram.parameters, psram.parameter_count);
 	return 0;
 }

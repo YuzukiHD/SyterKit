@@ -73,13 +73,18 @@ static sunxi_dram_t dram = {
 int main(void)
 {
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.dram = &dram,
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	sunxi_clk_init();
-	if (sunxi_dram_init(&dram) == 0U) {
+	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
+	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
 	}
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }

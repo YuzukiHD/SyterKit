@@ -37,10 +37,11 @@ SECTIONS
 		*(.data .data.* .sdata .sdata.*)
 	} > ram :data
 
-	.efex_result : ALIGN(16) {
-		PROVIDE(__efex_result_start = .);
-		KEEP(*(.efex.result))
-		PROVIDE(__efex_result_end = .);
+	/* Host-visible parameter area, see include/efex.h. */
+	.efex_param : ALIGN(16) {
+		PROVIDE(__efex_param_start = .);
+		KEEP(*(.efex.param))
+		PROVIDE(__efex_param_end = .);
 	} > ram :data
 
 	PROVIDE(__spl_end = .);
@@ -57,4 +58,6 @@ SECTIONS
 	PROVIDE(__sram_end = ORIGIN(ram) + LENGTH(ram));
 	ASSERT(_start == __spl_start + 0x40,
 	       "eFEX entry must be 0x40 bytes from the image start")
+	ASSERT(__efex_param_end - __efex_param_start == 4096,
+	       "eFEX parameter area must be 4 KiB")
 }
