@@ -23,7 +23,7 @@ static inline __attribute__((always_inline)) int sunxi_soc_dt_read_config(sunxi_
 	sunxi_soc_t config = { 0 };
 
 	if (soc == NULL || node < 0 || !syterkit_dt_node_available(node) ||
-	    dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SOC_COMPATIBLE) != 0)
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SOC_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);

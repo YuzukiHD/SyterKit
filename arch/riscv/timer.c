@@ -61,9 +61,9 @@ uint64_t get_arch_counter(void)
 		     "    rdtime %[lower]\n"
 		     "    rdtimeh %[upper_new]\n"
 		     "    bne %[upper], %[upper_new], 1b\n"
-		     : [upper] "=r"(upper), [lower] "=r"(lower), [upper_new] "=&r"(upper_new)
-		     :
-		     : "memory");
+		: [upper] "=r"(upper), [lower] "=r"(lower), [upper_new] "=&r"(upper_new)
+		:
+		: "memory");
 
 	return ((uint64_t)upper << 32) | lower;
 #else
@@ -129,9 +129,9 @@ void sdelay(uint32_t loops)
 		     "1:\n"
 		     "addi t0, t0, -1\n"
 		     "bnez t0, 1b\n"
-		     :
-		     : "r"(loops)
-		     : "t0");
+		:
+		: "r"(loops)
+		: "t0");
 #endif
 }
 

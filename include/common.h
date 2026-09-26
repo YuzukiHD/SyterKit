@@ -15,14 +15,14 @@ extern "C" {
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 #define ALIGN(size, align) (((size) + (align) - 1) & (~((align) - 1)))
-#define OF_ALIGN(size) ALIGN(size, 4)
+#define OF_ALIGN(size)	   ALIGN(size, 4)
 
 #ifndef NULL
 #define NULL 0
 #endif
 
 #define FALSE 0
-#define TRUE 1
+#define TRUE  1
 
 typedef struct sunxi_rtc sunxi_rtc_t;
 

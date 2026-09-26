@@ -12,7 +12,7 @@
 #include <drivers/intc/intc.h>
 
 #define SUNXI_GIC_COMPATIBLE "arm,gic-400"
-#define SUNXI_GIC_MAX_IRQS 256U
+#define SUNXI_GIC_MAX_IRQS   256U
 
 typedef struct sunxi_gic {
 	int dt_node;

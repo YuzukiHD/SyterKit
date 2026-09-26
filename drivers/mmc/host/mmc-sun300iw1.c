@@ -57,11 +57,12 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	pr_warn("Illegal frequency division parameters %d\n", div);
 
 set_mclk:
-	reg_val = BIT(31) | (source << 24) | ((clk.factor_n - 1) << clk.reg_factor_n_offset) | ((clk.factor_m - 1) << clk.reg_factor_m_offset);
+	reg_val = BIT(31) | (source << 24) | ((clk.factor_n - 1) << clk.reg_factor_n_offset) |
+		  ((clk.factor_m - 1) << clk.reg_factor_m_offset);
 
 	writel(reg_val, clk.reg_base);
 
-	pr_trace("sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id, clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base),
-		     source, div, clk.factor_n, clk.factor_m);
+	pr_trace("sdhci%d clk want %uHz parent %uHz, m1div, mclk=0x%08x clk_sel=%u, div=%u, n=%u, m=%u\n", sdhci->id,
+		clk_hz, sclk_hz, readl(sdhci->sdhci_clk.reg_base), source, div, clk.factor_n, clk.factor_m);
 	return 0;
 }

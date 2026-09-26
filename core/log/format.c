@@ -229,7 +229,9 @@ unsigned vformat(format_putc_t putc, void *arg, const char *fmt, va_list args)
 						value = va_arg(args, unsigned int);
 				}
 				{
-					unsigned base = spec == 'o' ? 8 : ((spec == 'x' || spec == 'X' || spec == 'p') ? 16 : 10);
+					unsigned base = spec == 'o' ?
+								8 :
+								((spec == 'x' || spec == 'X' || spec == 'p') ? 16 : 10);
 					bool upper = spec == 'X';
 					digits = number_digits(value, base, number, upper);
 					if (precision == 0 && value == 0)

@@ -38,16 +38,16 @@
 #include "uart.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 #define CONFIG_CONFIG_FILENAME "config.txt"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 #define CONFIG_CONFIG_LOAD_ADDR (0x40008000)
-#define CONFIG_HEAP_BASE (0x40800000)
-#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
+#define CONFIG_HEAP_BASE	(0x40800000)
+#define CONFIG_HEAP_SIZE	(16 * 1024 * 1024)
 
 #define CONFIG_DEFAULT_BOOTDELAY 5
 
@@ -67,9 +67,9 @@ typedef struct {
 	char config_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-#define MAX_SECTION_LEN 16
-#define MAX_KEY_LEN 16
-#define MAX_VALUE_LEN 512
+#define MAX_SECTION_LEN	 16
+#define MAX_KEY_LEN	 16
+#define MAX_VALUE_LEN	 512
 #define CONFIG_MAX_ENTRY 3
 
 typedef struct {
@@ -146,7 +146,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&boot_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -339,7 +340,8 @@ static int update_bootargs_from_config(uint32_t dram_size)
 
 _add_dts_size:
 	/* Modify bootargs string */
-	ret = fdt_setprop(image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
+	ret = fdt_setprop(
+		image.of_dest, bootargs_node, "bootargs", bootargs_str_config, strlen(bootargs_str_config) + 1);
 	if (ret == -FDT_ERR_NOSPACE) {
 		pr_debug("FDT: FDT_ERR_NOSPACE, Size = %d, Increase Size = %d\n", size, 512);
 		ret = fdt_increase_size(image.of_dest, 512);
@@ -399,8 +401,8 @@ static int abortboot_single_key(int bootdelay)
 
 msh_declare_command(bootargs);
 msh_define_help(bootargs, "get/set bootargs for kernel",
-		"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
-		"       bootargs get            - get current bootargs\n");
+	"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
+	"       bootargs get            - get current bootargs\n");
 int cmd_bootargs(int argc, const char **argv)
 {
 	int err = 0;
@@ -438,7 +440,8 @@ int cmd_bootargs(int argc, const char **argv)
 
 _add_dts_size:
 		/* Modify bootargs string */
-		err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
+		err = fdt_setprop(
+			image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 		if (err == -FDT_ERR_NOSPACE) {
 			pr_debug("FDT: FDT_ERR_NOSPACE, Increase Size = %d\n", 512);
 			err = fdt_increase_size(image.of_dest, 512);
@@ -510,7 +513,8 @@ int cmd_print(int argc, const char **argv)
 		int entry_count = parse_ini_data(image.config_dest, size_a, entries, CONFIG_MAX_ENTRY);
 		for (int i = 0; i < entry_count; ++i) {
 			/* Print parsed INI entries */
-			printk(LOG_LEVEL_MUTE, "ENV: [%s] %s = %s\n", entries[i].section, entries[i].key, entries[i].value);
+			printk(LOG_LEVEL_MUTE, "ENV: [%s] %s = %s\n", entries[i].section, entries[i].key,
+				entries[i].value);
 		}
 	} else {
 		pr_warn("ENV: Can not find env file\n");
@@ -551,7 +555,11 @@ int cmd_boot(int argc, const char **argv)
 }
 
 const msh_command_entry commands[] = {
-	msh_define_command(bootargs), msh_define_command(reload), msh_define_command(boot), msh_define_command(print), msh_command_end,
+	msh_define_command(bootargs),
+	msh_define_command(reload),
+	msh_define_command(boot),
+	msh_define_command(print),
+	msh_command_end,
 };
 
 /* 

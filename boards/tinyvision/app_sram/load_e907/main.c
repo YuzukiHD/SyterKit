@@ -94,7 +94,8 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -136,7 +137,8 @@ int main(void)
 		return -1;
 
 	show_banner();
-	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK ||
+		sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -169,7 +171,8 @@ int main(void)
 		return 0;
 	}
 
-	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK || sunxi_remoteproc_prepare(&e907) != DRIVER_OK || sunxi_remoteproc_load(&e907) != DRIVER_OK) {
+	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK || sunxi_remoteproc_prepare(&e907) != DRIVER_OK ||
+		sunxi_remoteproc_load(&e907) != DRIVER_OK) {
 		pr_err("RISC-V E907: prepare or load failed\n");
 		return 0;
 	}

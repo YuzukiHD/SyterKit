@@ -7,8 +7,7 @@
 #include <drivers/mtd/spif-nor.h>
 #include <dt-compatible/dt-common.h>
 
-static inline __attribute__((always_inline)) int spif_nor_dt_read_config(
-	spif_nor_t *nor, int node, sunxi_spif_t *spif)
+static inline __attribute__((always_inline)) int spif_nor_dt_read_config(spif_nor_t *nor, int node, sunxi_spif_t *spif)
 {
 	const dt2c_fdt32_t *frequency;
 	const dt2c_fdt32_t *reg;

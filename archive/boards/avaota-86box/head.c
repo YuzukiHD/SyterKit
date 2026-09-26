@@ -19,10 +19,10 @@ typedef struct boot_file_head {
 } boot_file_head_t;
 
 #define BROM_FILE_HEAD_SIZE_OFFSET (((sizeof(boot_file_head_t) + sizeof(int)) / sizeof(int) + 1))
-#define JUMP_INSTRUCTION (BROM_FILE_HEAD_SIZE_OFFSET | 0xEA000000)
+#define JUMP_INSTRUCTION	   (BROM_FILE_HEAD_SIZE_OFFSET | 0xEA000000)
 
-#define BOOT0_MAGIC "eGON.BT0"
-#define STAMP_VALUE (0x12345678)
+#define BOOT0_MAGIC	      "eGON.BT0"
+#define STAMP_VALUE	      (0x12345678)
 #define BOOT_PUB_HEAD_VERSION "3000"
 
 extern uint32_t __spl_size[];

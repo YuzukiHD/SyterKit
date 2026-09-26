@@ -284,7 +284,8 @@ static int find_lr_offset(char *LR, bool *state, bool emit)
 		// If state is THUMB and not a specific instruction, determine offset using helper function
 		else if (*state == THUMB_STATE) {
 			ins16 = *(uint16_t *)(LR_fixed - 4); ///< Fetch instruction at LR - 4
-			offset = thumb_thumb32bit_code(ins16) == 1 ? 4 : 2; ///< Determine offset based on instruction type
+			offset = thumb_thumb32bit_code(ins16) == 1 ? 4 :
+								     2; ///< Determine offset based on instruction type
 		}
 	}
 
@@ -316,7 +317,8 @@ static int find_lr_offset(char *LR, bool *state, bool emit)
  *
  * @return Returns the 32-bit instruction if Thumb-32 is detected, otherwise returns the appropriate 16-bit instruction.
  */
-static int thumb_get_next_inst(int *error, int *offset, char *ins16_h_addr, char *ins16_l_addr, int lsb, int *thumb32bit)
+static int thumb_get_next_inst(
+	int *error, int *offset, char *ins16_h_addr, char *ins16_l_addr, int lsb, int *thumb32bit)
 {
 	uint32_t ins32 = 0; ///< 32-bit instruction to be returned
 	uint16_t ins16_l = 0; ///< Lower 16 bits of the instruction
@@ -382,7 +384,8 @@ static int thumb_get_push_lr_ins_framesize(uint32_t inst, int *offset, int thumb
 		if ((inst & 0xFFFFF000) == 0xe92d4000) {
 			// The instruction is "stmdb sp!, {..., lr}"
 			pr_trace("BT: \tstmdb sp!, {..., lr}\n");
-			framesize = __builtin_popcount(inst & 0xFFF); ///< Count the number of registers in the mask (lower 12 bits)
+			framesize = __builtin_popcount(
+				inst & 0xFFF); ///< Count the number of registers in the mask (lower 12 bits)
 			framesize++; ///< Add 1 for the lr register being stored
 			*offset = 1; ///< Set offset to 1 (this is a 32-bit instruction)
 		}
@@ -430,7 +433,8 @@ static int thumb_backtrace_stack_push(uint32_t inst, int thumb32bit)
 		// Check if the instruction is a store-multiple decrement (stmdb sp!, {...})
 		if ((inst & 0xFFFFF000) == 0xe92d4000) {
 			pr_trace("BT: \tstmdb sp!, { ... }\n");
-			framesize = __builtin_popcount(inst & 0xfff); /**< Count the number of registers to be stored. */
+			framesize =
+				__builtin_popcount(inst & 0xfff); /**< Count the number of registers to be stored. */
 			framesize++; /**< Add 1 for the 'lr' register being stored. */
 		}
 		// Check if the instruction is a subtract (sub.w sp, sp, #imm)
@@ -442,18 +446,21 @@ static int thumb_backtrace_stack_push(uint32_t inst, int thumb32bit)
 		// Check if the instruction is a vector push for 64-bit registers (vpush {...} x64)
 		else if ((inst & 0xffbf0f00) == 0xed2d0b00) {
 			pr_trace("BT: \tvpush {...} x64\n");
-			framesize = (inst & 0xff); /**< Frame size is determined by the lower byte of the instruction. */
+			framesize =
+				(inst & 0xff); /**< Frame size is determined by the lower byte of the instruction. */
 		}
 		// Check if the instruction is a vector push for 32-bit registers (vpush {...} x32)
 		else if ((inst & 0xffbf0f00) == 0xed2d0a00) {
 			pr_trace("BT: \tvpush {...} x32\n");
-			framesize = (inst & 0xff); /**< Frame size is determined by the lower byte of the instruction. */
+			framesize =
+				(inst & 0xff); /**< Frame size is determined by the lower byte of the instruction. */
 		}
 	} else {
 		// Check if the instruction is a push instruction involving the link register (push {..., lr})
 		if ((inst & 0xff00) == 0xb500) {
 			pr_trace("BT: \tpush {..., lr}\n");
-			framesize = __builtin_popcount(inst & 0xff); /**< Count the registers being pushed, including lr. */
+			framesize =
+				__builtin_popcount(inst & 0xff); /**< Count the registers being pushed, including lr. */
 			framesize++; /**< Add 1 for the 'lr' register. */
 		}
 		// Check if the instruction is a subtract instruction (sub sp, sp, #imm)
@@ -522,7 +529,8 @@ static int thumb_backtrace_from_stack(int **pSP, char **pPC, char **pLR)
 			break;
 	}
 
-	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d, framesize = %d\n", i, parse_addr, PC, offset, framesize);
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d, framesize = %d\n", i, parse_addr, PC, offset,
+		framesize);
 
 	// Check if the scan reached the maximum limit without finding a valid frame size.
 	if (i >= BT_SCAN_MAX_LIMIT) {
@@ -722,7 +730,8 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR)
 	}
 
 	// Trace information about the found instruction and frame size
-	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d, framesize = %d\n", i, parse_addr, PC, offset, framesize);
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, offset = %d, framesize = %d\n", i, parse_addr, PC, offset,
+		framesize);
 
 	if (i >= BT_SCAN_MAX_LIMIT) {
 		printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. scope overflow\n");
@@ -794,7 +803,8 @@ static int arm_bakctrace_from_stack(int **pSP, char **pPC, char **pLR)
 	}
 
 	// Trace the final stack pointer, program counter, and frame size
-	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state = %d\n", *pSP, offset, *pPC, framesize, state);
+	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state = %d\n", *pSP, offset, *pPC, framesize,
+		state);
 
 	return offset == 0 ? 1 : 0; /**< Return 1 if backtrace is successful, else 0 or -1 */
 }
@@ -958,7 +968,8 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR)
 	if (backtrace_check_address(PC) == 0) {
 		// Check if the link register is a valid address
 		if (backtrace_check_address(LR) == 0) {
-			printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n", LR); /**< Log invalid LR address */
+			printk(LOG_LEVEL_BACKTRACE, "backtrace: invalid lr 0x%08x\n",
+				LR); /**< Log invalid LR address */
 			return -1; /**< Return error on invalid LR */
 		}
 		// Find the LR offset and adjust the program counter
@@ -1002,7 +1013,8 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR)
 		return -1;
 	}
 
-	pr_trace("BT: parse_addr = 0x%08x, framesize = %d, sp_change = %d\n", parse_addr, framesize, sp_change); /**< Log framesize and SP change status */
+	pr_trace("BT: parse_addr = 0x%08x, framesize = %d, sp_change = %d\n", parse_addr, framesize,
+		sp_change); /**< Log framesize and SP change status */
 
 	// If the stack pointer has changed, scan for push instructions
 	if (sp_change) {
@@ -1044,7 +1056,8 @@ static int thumb_backtrace_from_lr(int **pSP, char **pPC, char *LR)
 		MAKE_THUMB_ADDR(*pPC); /**< Adjust PC to Thumb address format */
 	}
 
-	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state=%d\n", *pSP, offset, *pPC, framesize, state); /**< Trace final backtrace information */
+	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state=%d\n", *pSP, offset, *pPC, framesize,
+		state); /**< Trace final backtrace information */
 
 	return offset == 0 ? 1 : 0; /**< Return success or failure based on LR offset */
 }
@@ -1121,7 +1134,8 @@ static int arm_backtrace_stack_pop(uint32_t inst)
 		framesize = 1; /**< Frame size is 1 (single word loaded) */
 	}
 
-	pr_trace("BT: inst = 0x%x, framesize = %d\n", inst, framesize); /**< Log the instruction and computed frame size */
+	pr_trace("BT: inst = 0x%x, framesize = %d\n", inst,
+		framesize); /**< Log the instruction and computed frame size */
 	return framesize; /**< Return the computed frame size */
 }
 
@@ -1210,7 +1224,8 @@ static int arm_backtrace_from_lr(int **pSP, char **pPC, char *LR)
 		MAKE_THUMB_ADDR(*pPC);
 	}
 
-	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state = %d\n", *pSP, offset, *pPC, framesize, state);
+	pr_trace("BT: *pSP = %p, offset = %d, *pPC = %p, framesize = %d, state = %d\n", *pSP, offset, *pPC, framesize,
+		state);
 
 	return offset == 0 ? 1 : 0; /**< Return 1 for success with no offset, 0 for success with offset */
 }

@@ -125,7 +125,8 @@ static inline void set_ahb(void)
 {
 	/* PLL6:AHB1:APB1 = 600M:200M:100M */
 	writel((2 << 0) | (0 << 8), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
-	writel((0x03 << 24) | readl(SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
+	writel((0x03 << 24) | readl(SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG),
+		SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
 	udelay(1);
 	/*PLL6:AHB3 = 600M:200M*/
 	writel((2 << 0) | (0 << 8), SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG);
@@ -252,9 +253,15 @@ static inline void set_modules_clock(void)
 {
 	uint32_t reg_val, i;
 	uint32_t ccmu_pll_addr[] = {
-		SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG,  SUNXI_CCM_BASE + CCU_PLL_PERI1_CTRL_REG,  SUNXI_CCM_BASE + CCU_PLL_GPU_CTRL_REG,
-		SUNXI_CCM_BASE + CCU_PLL_VIDE00_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VIDE01_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VIDE02_CTRL_REG,
-		SUNXI_CCM_BASE + CCU_PLL_VIDE03_CTRL_REG, SUNXI_CCM_BASE + CCU_PLL_VE_CTRL_REG,	    SUNXI_CCM_BASE + CCU_PLL_COM_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_PERI0_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_PERI1_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_GPU_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE00_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE01_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE02_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VIDE03_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_VE_CTRL_REG,
+		SUNXI_CCM_BASE + CCU_PLL_COM_CTRL_REG,
 		SUNXI_CCM_BASE + CCU_PLL_AUDIO_CTRL_REG,
 	};
 
@@ -368,7 +375,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI0 disabled\r\n");
 	}
@@ -381,7 +389,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI1 disabled\r\n");
 	}

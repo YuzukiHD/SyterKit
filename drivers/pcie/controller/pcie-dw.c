@@ -19,8 +19,8 @@
 
 #include <drivers/pcie/controller/pcie-controller.h>
 
-#define PCIE_DW_DBI2_BASE               0x100000U
-#define PCIE_DW_DBI2_BAR_ENABLE         0x1U
+#define PCIE_DW_DBI2_BASE	0x100000U
+#define PCIE_DW_DBI2_BAR_ENABLE 0x1U
 
 /**
  * @brief Check that a configuration access width is supported.
@@ -41,14 +41,12 @@ static bool pcie_access_size_valid(uint8_t size)
  * @param[in] size Access width in bytes.
  * @return PCIE_OK when the access is in range and aligned.
  */
-static int pcie_dbi_access_valid(const struct pcie_controller *controller,
-		uint32_t offset, uint8_t size)
+static int pcie_dbi_access_valid(const struct pcie_controller *controller, uint32_t offset, uint8_t size)
 {
-	if (controller == NULL || !pcie_access_size_valid(size) ||
-	    (offset & ((uint32_t)size - 1U)) != 0U || controller->config.dbi_base == 0U)
+	if (controller == NULL || !pcie_access_size_valid(size) || (offset & ((uint32_t)size - 1U)) != 0U ||
+		controller->config.dbi_base == 0U)
 		return PCIE_ERR_INVALID;
-	if (controller->config.dbi_size != 0U &&
-	    (uint64_t)offset + size > controller->config.dbi_size)
+	if (controller->config.dbi_size != 0U && (uint64_t)offset + size > controller->config.dbi_size)
 		return PCIE_ERR_INVALID;
 	return PCIE_OK;
 }
@@ -60,13 +58,11 @@ static int pcie_dbi_access_valid(const struct pcie_controller *controller,
  * @param[in] offset Register offset.
  * @return PCIE_OK when the access is in range.
  */
-static int pcie_app_access_valid(const struct pcie_controller *controller,
-		uint32_t offset)
+static int pcie_app_access_valid(const struct pcie_controller *controller, uint32_t offset)
 {
 	if (controller == NULL || controller->config.app_base == 0U)
 		return PCIE_ERR_INVALID;
-	if (controller->config.app_size != 0U &&
-	    (uint64_t)offset + sizeof(uint32_t) > controller->config.app_size)
+	if (controller->config.app_size != 0U && (uint64_t)offset + sizeof(uint32_t) > controller->config.app_size)
 		return PCIE_ERR_INVALID;
 	return PCIE_OK;
 }
@@ -80,8 +76,7 @@ static int pcie_app_access_valid(const struct pcie_controller *controller,
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_read_dbi(struct pcie_controller *controller,
-		uint32_t offset, uint8_t size, uint32_t *value)
+static int pcie_dw_read_dbi(struct pcie_controller *controller, uint32_t offset, uint8_t size, uint32_t *value)
 {
 	uintptr_t address;
 
@@ -106,8 +101,7 @@ static int pcie_dw_read_dbi(struct pcie_controller *controller,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_write_dbi(struct pcie_controller *controller,
-		uint32_t offset, uint8_t size, uint32_t value)
+static int pcie_dw_write_dbi(struct pcie_controller *controller, uint32_t offset, uint8_t size, uint32_t value)
 {
 	uintptr_t address;
 
@@ -131,8 +125,7 @@ static int pcie_dw_write_dbi(struct pcie_controller *controller,
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_read_app(struct pcie_controller *controller,
-		uint32_t offset, uint32_t *value)
+static int pcie_dw_read_app(struct pcie_controller *controller, uint32_t offset, uint32_t *value)
 {
 	if (value == NULL || pcie_app_access_valid(controller, offset) != PCIE_OK)
 		return PCIE_ERR_INVALID;
@@ -148,8 +141,7 @@ static int pcie_dw_read_app(struct pcie_controller *controller,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_write_app(struct pcie_controller *controller,
-		uint32_t offset, uint32_t value)
+static int pcie_dw_write_app(struct pcie_controller *controller, uint32_t offset, uint32_t value)
 {
 	if (pcie_app_access_valid(controller, offset) != PCIE_OK)
 		return PCIE_ERR_INVALID;
@@ -172,34 +164,27 @@ static int pcie_dw_init(struct pcie_controller *controller)
 		return PCIE_ERR_INVALID;
 	config = &controller->config;
 	address_max = (uintptr_t)-1;
-	if ((config->mode != PCIE_MODE_RC && config->mode != PCIE_MODE_EP) ||
-	    config->dbi_base == 0U || config->app_base == 0U ||
-	    config->lanes == 0U || config->link_gen == 0U ||
-	    (config->mode == PCIE_MODE_EP && config->ep_function_stride == 0U) ||
-	    config->max_lanes < config->lanes ||
-	    config->max_link_gen < config->link_gen ||
-	    config->num_ob_windows > 16U || config->num_ib_windows > 16U ||
-	    (config->dbi_size != 0U &&
-	     config->dbi_base > address_max - (config->dbi_size - 1U)) ||
-	    (config->app_size != 0U &&
-	     config->app_base > address_max - (config->app_size - 1U)) ||
-	    (config->mode == PCIE_MODE_RC &&
-	     (config->cfg_cpu_addr == 0U || config->cfg_size < 0x1000U ||
-	      config->cfg_cpu_addr > address_max - (config->cfg_size - 1U))) ||
-	    (config->mem_size != 0U &&
-	     (config->mem_cpu_addr == 0U ||
-	      config->mem_cpu_addr > address_max - (config->mem_size - 1U) ||
-	      config->mem_pci_addr > (uint64_t)-1 - (config->mem_size - 1U))) ||
-	    (config->io_size != 0U &&
-	     (config->io_cpu_addr == 0U ||
-	      config->io_cpu_addr > address_max - (config->io_size - 1U) ||
-	      config->io_pci_addr > (uint64_t)-1 - (config->io_size - 1U))))
+	if ((config->mode != PCIE_MODE_RC && config->mode != PCIE_MODE_EP) || config->dbi_base == 0U ||
+		config->app_base == 0U || config->lanes == 0U || config->link_gen == 0U ||
+		(config->mode == PCIE_MODE_EP && config->ep_function_stride == 0U) ||
+		config->max_lanes < config->lanes || config->max_link_gen < config->link_gen ||
+		config->num_ob_windows > 16U || config->num_ib_windows > 16U ||
+		(config->dbi_size != 0U && config->dbi_base > address_max - (config->dbi_size - 1U)) ||
+		(config->app_size != 0U && config->app_base > address_max - (config->app_size - 1U)) ||
+		(config->mode == PCIE_MODE_RC &&
+			(config->cfg_cpu_addr == 0U || config->cfg_size < 0x1000U ||
+				config->cfg_cpu_addr > address_max - (config->cfg_size - 1U))) ||
+		(config->mem_size != 0U &&
+			(config->mem_cpu_addr == 0U || config->mem_cpu_addr > address_max - (config->mem_size - 1U) ||
+				config->mem_pci_addr > (uint64_t)-1 - (config->mem_size - 1U))) ||
+		(config->io_size != 0U &&
+			(config->io_cpu_addr == 0U || config->io_cpu_addr > address_max - (config->io_size - 1U) ||
+				config->io_pci_addr > (uint64_t)-1 - (config->io_size - 1U))))
 		return PCIE_ERR_INVALID;
 	return PCIE_OK;
 }
 
-static int pcie_dw_disable_atu(struct pcie_controller *controller,
-		enum pcie_atu_direction direction, uint8_t index);
+static int pcie_dw_disable_atu(struct pcie_controller *controller, enum pcie_atu_direction direction, uint8_t index);
 
 /**
  * @brief Disable all ATU windows and tear down the controller.
@@ -214,16 +199,12 @@ static void pcie_dw_exit(struct pcie_controller *controller)
 
 	if (controller == NULL)
 		return;
-	ob_windows = controller->config.num_ob_windows != 0U ?
-		controller->config.num_ob_windows : 8U;
-	ib_windows = controller->config.num_ib_windows != 0U ?
-		controller->config.num_ib_windows : 8U;
+	ob_windows = controller->config.num_ob_windows != 0U ? controller->config.num_ob_windows : 8U;
+	ib_windows = controller->config.num_ib_windows != 0U ? controller->config.num_ib_windows : 8U;
 	for (index = 0U; index < ob_windows; ++index)
-		(void)pcie_dw_disable_atu(controller, PCIE_ATU_OUTBOUND,
-			(uint8_t)index);
+		(void)pcie_dw_disable_atu(controller, PCIE_ATU_OUTBOUND, (uint8_t)index);
 	for (index = 0U; index < ib_windows; ++index)
-		(void)pcie_dw_disable_atu(controller, PCIE_ATU_INBOUND,
-			(uint8_t)index);
+		(void)pcie_dw_disable_atu(controller, PCIE_ATU_INBOUND, (uint8_t)index);
 }
 
 /**
@@ -236,11 +217,9 @@ static void pcie_dw_exit(struct pcie_controller *controller)
  * @param[in] mode PCIE_MODE_RC or PCIE_MODE_EP.
  * @return PCIE_OK on success, PCIE_ERR_INVALID on a bad mode.
  */
-static int pcie_dw_set_mode(struct pcie_controller *controller,
-		enum pcie_mode mode)
+static int pcie_dw_set_mode(struct pcie_controller *controller, enum pcie_mode mode)
 {
-	if (controller == NULL ||
-	    (mode != PCIE_MODE_RC && mode != PCIE_MODE_EP))
+	if (controller == NULL || (mode != PCIE_MODE_RC && mode != PCIE_MODE_EP))
 		return PCIE_ERR_INVALID;
 	/* sun55iw6 uses APP 0xc00 only for LTSSM enable; role is platform-fixed. */
 	return PCIE_OK;
@@ -253,8 +232,7 @@ static int pcie_dw_set_mode(struct pcie_controller *controller,
  * @param[in] enable true to allow read-only field writes.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_set_dbi_ro_write(struct pcie_controller *controller,
-		bool enable)
+static int pcie_dw_set_dbi_ro_write(struct pcie_controller *controller, bool enable)
 {
 	uint32_t value;
 	int ret;
@@ -279,28 +257,25 @@ static int pcie_dw_set_dbi_ro_write(struct pcie_controller *controller,
  * @param[in] bar_64bit true when the BAR is 64-bit wide.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_set_ep_bar(struct pcie_controller *controller,
-		uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
+static int pcie_dw_set_ep_bar(
+	struct pcie_controller *controller, uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
 {
 	uint32_t offset;
 	uint64_t offset64;
 	int ret;
 
-	if (controller == NULL || function >= 8U || bar >= 6U ||
-	    controller->config.ep_function_stride == 0U ||
-	    (bar_64bit && bar != 0U && bar != 4U))
+	if (controller == NULL || function >= 8U || bar >= 6U || controller->config.ep_function_stride == 0U ||
+		(bar_64bit && bar != 0U && bar != 4U))
 		return PCIE_ERR_INVALID;
-	offset64 = (uint64_t)PCIE_DW_DBI2_BASE +
-		(uint64_t)function * controller->config.ep_function_stride +
-		PCIE_CFG_BAR0 + 4U * bar;
+	offset64 = (uint64_t)PCIE_DW_DBI2_BASE + (uint64_t)function * controller->config.ep_function_stride +
+		   PCIE_CFG_BAR0 + 4U * bar;
 	if (offset64 > 0xffffffffULL)
 		return PCIE_ERR_INVALID;
 	offset = (uint32_t)offset64;
 	ret = pcie_dbi_access_valid(controller, offset, 4U);
 	if (ret)
 		return ret;
-	ret = pcie_dw_write_dbi(controller, offset, 4U,
-		enable ? PCIE_DW_DBI2_BAR_ENABLE : 0U);
+	ret = pcie_dw_write_dbi(controller, offset, 4U, enable ? PCIE_DW_DBI2_BAR_ENABLE : 0U);
 	if (!ret && !enable && bar_64bit)
 		ret = pcie_dw_write_dbi(controller, offset + 4U, 4U, 0U);
 	return ret;
@@ -322,8 +297,8 @@ static int pcie_dw_set_link(struct pcie_controller *controller)
 	int ret;
 
 	if (controller->config.lanes == 0U || controller->config.link_gen == 0U ||
-	    controller->config.link_gen > controller->config.max_link_gen ||
-	    controller->config.lanes > controller->config.max_lanes)
+		controller->config.link_gen > controller->config.max_link_gen ||
+		controller->config.lanes > controller->config.max_lanes)
 		return PCIE_ERR_INVALID;
 	switch (controller->config.lanes) {
 	case 1U:
@@ -333,37 +308,31 @@ static int pcie_dw_set_link(struct pcie_controller *controller)
 	default:
 		return PCIE_ERR_UNSUPPORTED;
 	}
-	capability = pcie_controller_find_capability(controller, 0U,
-		PCIE_CAP_ID_EXPRESS);
+	capability = pcie_controller_find_capability(controller, 0U, PCIE_CAP_ID_EXPRESS);
 	if (capability < 0)
 		return capability;
 	ret = pcie_dw_set_dbi_ro_write(controller, true);
 	if (ret)
 		return ret;
 
-	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CAP,
-		4U, &link_cap);
+	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CAP, 4U, &link_cap);
 	if (ret)
 		goto disable_ro_write;
-	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2,
-		4U, &value);
+	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2, 4U, &value);
 	if (ret)
 		goto disable_ro_write;
 	value &= ~PCIE_CAP_EXP_LINK_SPEED_MASK;
 	value |= controller->config.link_gen & PCIE_CAP_EXP_LINK_SPEED_MASK;
-	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2,
-		4U, value);
+	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2, 4U, value);
 	if (ret)
 		goto disable_ro_write;
 	link_cap &= ~PCIE_CAP_EXP_LINK_SPEED_MASK;
 	link_cap |= controller->config.link_gen & PCIE_CAP_EXP_LINK_SPEED_MASK;
-	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CAP,
-		4U, link_cap);
+	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CAP, 4U, link_cap);
 	if (ret)
 		goto disable_ro_write;
 
-	ret = pcie_dw_read_dbi(controller, PCIE_DW_PORT_LINK_CONTROL, 4U,
-		&port_mode);
+	ret = pcie_dw_read_dbi(controller, PCIE_DW_PORT_LINK_CONTROL, 4U, &port_mode);
 	if (ret)
 		goto disable_ro_write;
 	port_mode &= ~PCIE_DW_PORT_LINK_MODE_MASK;
@@ -377,13 +346,11 @@ static int pcie_dw_set_link(struct pcie_controller *controller)
 		ret = PCIE_ERR_UNSUPPORTED;
 		goto disable_ro_write;
 	}
-	ret = pcie_dw_write_dbi(controller, PCIE_DW_PORT_LINK_CONTROL, 4U,
-		port_mode);
+	ret = pcie_dw_write_dbi(controller, PCIE_DW_PORT_LINK_CONTROL, 4U, port_mode);
 	if (ret)
 		goto disable_ro_write;
 
-	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-		&link_width);
+	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, &link_width);
 	if (ret)
 		goto disable_ro_write;
 	link_width &= ~PCIE_DW_LINK_WIDTH_MASK;
@@ -396,8 +363,7 @@ static int pcie_dw_set_link(struct pcie_controller *controller)
 	else
 		ret = PCIE_ERR_UNSUPPORTED;
 	if (!ret)
-		ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-			link_width);
+		ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, link_width);
 
 disable_ro_write:
 	if (pcie_dw_set_dbi_ro_write(controller, false) != PCIE_OK)
@@ -412,8 +378,7 @@ disable_ro_write:
  * @param[in] link_gen Target link generation.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_change_speed(struct pcie_controller *controller,
-		uint8_t link_gen)
+static int pcie_dw_change_speed(struct pcie_controller *controller, uint8_t link_gen)
 {
 	uint32_t value;
 	int capability;
@@ -421,50 +386,39 @@ static int pcie_dw_change_speed(struct pcie_controller *controller,
 	uint32_t timeout_us;
 	int ret;
 
-	if (controller == NULL || link_gen == 0U ||
-	    link_gen > controller->config.max_link_gen)
+	if (controller == NULL || link_gen == 0U || link_gen > controller->config.max_link_gen)
 		return PCIE_ERR_INVALID;
-	capability = pcie_controller_find_capability(controller, 0U,
-		PCIE_CAP_ID_EXPRESS);
+	capability = pcie_controller_find_capability(controller, 0U, PCIE_CAP_ID_EXPRESS);
 	if (capability < 0)
 		return capability;
 	ret = pcie_dw_set_dbi_ro_write(controller, true);
 	if (ret)
 		return ret;
-	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2,
-		4U, &value);
+	ret = pcie_dw_read_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2, 4U, &value);
 	if (ret)
 		goto disable_ro_write;
-	value = (value & ~PCIE_CAP_EXP_LINK_SPEED_MASK) |
-		(link_gen & PCIE_CAP_EXP_LINK_SPEED_MASK);
-	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2,
-		4U, value);
+	value = (value & ~PCIE_CAP_EXP_LINK_SPEED_MASK) | (link_gen & PCIE_CAP_EXP_LINK_SPEED_MASK);
+	ret = pcie_dw_write_dbi(controller, capability + PCIE_CAP_EXP_LINK_CTRL2, 4U, value);
 	if (ret)
 		goto disable_ro_write;
-	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-		&value);
+	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, &value);
 	if (ret)
 		goto disable_ro_write;
 	value &= ~PCIE_DW_SPEED_CHANGE;
-	ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-		value);
+	ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, value);
 	if (ret)
 		goto disable_ro_write;
-	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-		&value);
+	ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, &value);
 	if (ret)
 		goto disable_ro_write;
-	ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U,
-		value | PCIE_DW_SPEED_CHANGE);
+	ret = pcie_dw_write_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, value | PCIE_DW_SPEED_CHANGE);
 	if (ret)
 		goto disable_ro_write;
 
-	timeout_us = controller->config.timeout_us != 0U ?
-		controller->config.timeout_us : 1000000U;
+	timeout_us = controller->config.timeout_us != 0U ? controller->config.timeout_us : 1000000U;
 	start = time_us();
 	for (;;) {
-		ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL,
-			4U, &value);
+		ret = pcie_dw_read_dbi(controller, PCIE_DW_LINK_WIDTH_SPEED_CTRL, 4U, &value);
 		if (ret)
 			goto disable_ro_write;
 		if ((value & PCIE_DW_SPEED_CHANGE) == 0U)
@@ -528,16 +482,14 @@ static bool pcie_dw_link_up(struct pcie_controller *controller)
  * @param[in] timeout_us Timeout in microseconds, or zero for the default.
  * @return PCIE_OK when the link is up, PCIE_ERR_TIMEOUT otherwise.
  */
-static int pcie_dw_wait_link(struct pcie_controller *controller,
-		uint32_t timeout_us)
+static int pcie_dw_wait_link(struct pcie_controller *controller, uint32_t timeout_us)
 {
 	uint64_t start;
 
 	if (controller == NULL)
 		return PCIE_ERR_INVALID;
 	if (timeout_us == 0U)
-		timeout_us = controller->config.timeout_us != 0U ?
-			controller->config.timeout_us : 1000000U;
+		timeout_us = controller->config.timeout_us != 0U ? controller->config.timeout_us : 1000000U;
 	start = time_us();
 	for (;;) {
 		if (pcie_dw_link_up(controller))
@@ -556,14 +508,14 @@ static int pcie_dw_wait_link(struct pcie_controller *controller,
  * @param[in] offset Field offset within the window.
  * @return The absolute register address.
  */
-static uintptr_t pcie_dw_atu_reg(const struct pcie_controller *controller,
-		const struct pcie_atu_region *region, uint32_t offset)
+static uintptr_t pcie_dw_atu_reg(
+	const struct pcie_controller *controller, const struct pcie_atu_region *region, uint32_t offset)
 {
-	uint32_t direction_offset = region->direction == PCIE_ATU_INBOUND ?
-		PCIE_DW_ATU_INBOUND_OFFSET : PCIE_DW_ATU_OUTBOUND_OFFSET;
+	uint32_t direction_offset = region->direction == PCIE_ATU_INBOUND ? PCIE_DW_ATU_INBOUND_OFFSET :
+									    PCIE_DW_ATU_OUTBOUND_OFFSET;
 
-	return controller->config.dbi_base + PCIE_DW_ATU_BASE +
-		direction_offset + (uint32_t)region->index * PCIE_DW_ATU_REGION_STRIDE + offset;
+	return controller->config.dbi_base + PCIE_DW_ATU_BASE + direction_offset +
+	       (uint32_t)region->index * PCIE_DW_ATU_REGION_STRIDE + offset;
 }
 
 /**
@@ -574,11 +526,9 @@ static uintptr_t pcie_dw_atu_reg(const struct pcie_controller *controller,
  * @param[out] last Receives the last address of the range.
  * @return true when the range is valid.
  */
-static bool pcie_dw_u64_range_valid(uint64_t address, uint64_t size,
-		uint64_t *last)
+static bool pcie_dw_u64_range_valid(uint64_t address, uint64_t size, uint64_t *last)
 {
-	if (last == NULL || size == 0U ||
-	    size - 1U > (uint64_t)-1 - address)
+	if (last == NULL || size == 0U || size - 1U > (uint64_t)-1 - address)
 		return false;
 	*last = address + size - 1U;
 	return true;
@@ -594,8 +544,7 @@ static bool pcie_dw_u64_range_valid(uint64_t address, uint64_t size,
  * @param[in] region ATU window descriptor.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_program_atu(struct pcie_controller *controller,
-		const struct pcie_atu_region *region)
+static int pcie_dw_program_atu(struct pcie_controller *controller, const struct pcie_atu_region *region)
 {
 	uint64_t base;
 	uint64_t limit;
@@ -607,26 +556,22 @@ static int pcie_dw_program_atu(struct pcie_controller *controller,
 	uint32_t direction_offset;
 
 	if (controller == NULL || region == NULL ||
-	    (region->direction != PCIE_ATU_OUTBOUND &&
-	     region->direction != PCIE_ATU_INBOUND) ||
-	    (region->type != PCIE_ATU_TYPE_MEM &&
-	     region->type != PCIE_ATU_TYPE_IO &&
-	     region->type != PCIE_ATU_TYPE_CFG0 &&
-	     region->type != PCIE_ATU_TYPE_CFG1))
+		(region->direction != PCIE_ATU_OUTBOUND && region->direction != PCIE_ATU_INBOUND) ||
+		(region->type != PCIE_ATU_TYPE_MEM && region->type != PCIE_ATU_TYPE_IO &&
+			region->type != PCIE_ATU_TYPE_CFG0 && region->type != PCIE_ATU_TYPE_CFG1))
 		return PCIE_ERR_INVALID;
-	windows = region->direction == PCIE_ATU_INBOUND ?
-		controller->config.num_ib_windows : controller->config.num_ob_windows;
+	windows = region->direction == PCIE_ATU_INBOUND ? controller->config.num_ib_windows :
+							  controller->config.num_ob_windows;
 	if (windows == 0U)
 		windows = 8U;
-	if (region->index >= windows || region->index >= 16U ||
-	    region->function >= 8U || region->bar >= 6U)
+	if (region->index >= windows || region->index >= 16U || region->function >= 8U || region->bar >= 6U)
 		return PCIE_ERR_INVALID;
-	direction_offset = region->direction == PCIE_ATU_INBOUND ?
-		PCIE_DW_ATU_INBOUND_OFFSET : PCIE_DW_ATU_OUTBOUND_OFFSET;
-	if (controller->config.dbi_size != 0U &&
-	    PCIE_DW_ATU_BASE + direction_offset +
-	    (uint32_t)region->index * PCIE_DW_ATU_REGION_STRIDE +
-	    PCIE_DW_ATU_LIMIT_HI + sizeof(uint32_t) > controller->config.dbi_size)
+	direction_offset = region->direction == PCIE_ATU_INBOUND ? PCIE_DW_ATU_INBOUND_OFFSET :
+								   PCIE_DW_ATU_OUTBOUND_OFFSET;
+	if (controller->config.dbi_size != 0U && PCIE_DW_ATU_BASE + direction_offset +
+								 (uint32_t)region->index * PCIE_DW_ATU_REGION_STRIDE +
+								 PCIE_DW_ATU_LIMIT_HI + sizeof(uint32_t) >
+							 controller->config.dbi_size)
 		return PCIE_ERR_INVALID;
 
 	if (region->direction == PCIE_ATU_INBOUND && region->bar_match) {
@@ -653,7 +598,7 @@ static int pcie_dw_program_atu(struct pcie_controller *controller,
 	}
 
 	if ((base & ((uint64_t)PCIE_DW_ATU_ALIGNMENT - 1U)) != 0U ||
-	    (target & ((uint64_t)PCIE_DW_ATU_ALIGNMENT - 1U)) != 0U)
+		(target & ((uint64_t)PCIE_DW_ATU_ALIGNMENT - 1U)) != 0U)
 		return PCIE_ERR_INVALID;
 	ctrl1 = (uint32_t)region->type;
 	if ((limit >> 32) > (base >> 32))
@@ -668,18 +613,12 @@ static int pcie_dw_program_atu(struct pcie_controller *controller,
 
 	/* Disable the region while changing its address tuple. */
 	writel(0U, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_CTRL2));
-	writel((uint32_t)base, pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_BASE_LO));
-	writel((uint32_t)(base >> 32), pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_BASE_HI));
-	writel((uint32_t)limit, pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_LIMIT_LO));
-	writel((uint32_t)target, pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_TARGET_LO));
-	writel((uint32_t)(target >> 32), pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_TARGET_HI));
-	writel((uint32_t)(limit >> 32), pcie_dw_atu_reg(controller, region,
-		PCIE_DW_ATU_LIMIT_HI));
+	writel((uint32_t)base, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_BASE_LO));
+	writel((uint32_t)(base >> 32), pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_BASE_HI));
+	writel((uint32_t)limit, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_LIMIT_LO));
+	writel((uint32_t)target, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_TARGET_LO));
+	writel((uint32_t)(target >> 32), pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_TARGET_HI));
+	writel((uint32_t)(limit >> 32), pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_LIMIT_HI));
 	writel(ctrl1, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_CTRL1));
 	writel(ctrl2, pcie_dw_atu_reg(controller, region, PCIE_DW_ATU_CTRL2));
 	return PCIE_OK;
@@ -693,28 +632,22 @@ static int pcie_dw_program_atu(struct pcie_controller *controller,
  * @param[in] index Window index.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_dw_disable_atu(struct pcie_controller *controller,
-		enum pcie_atu_direction direction, uint8_t index)
+static int pcie_dw_disable_atu(struct pcie_controller *controller, enum pcie_atu_direction direction, uint8_t index)
 {
 	uint32_t windows;
 	uint32_t direction_offset;
 	uint32_t offset;
 	uintptr_t address;
 
-	if (controller == NULL ||
-	    (direction != PCIE_ATU_OUTBOUND && direction != PCIE_ATU_INBOUND) ||
-	    index >= 16U || controller->config.dbi_base == 0U)
+	if (controller == NULL || (direction != PCIE_ATU_OUTBOUND && direction != PCIE_ATU_INBOUND) || index >= 16U ||
+		controller->config.dbi_base == 0U)
 		return PCIE_ERR_INVALID;
-	windows = direction == PCIE_ATU_INBOUND ? controller->config.num_ib_windows :
-		controller->config.num_ob_windows;
+	windows = direction == PCIE_ATU_INBOUND ? controller->config.num_ib_windows : controller->config.num_ob_windows;
 	if (windows != 0U && index >= windows)
 		return PCIE_ERR_INVALID;
-	direction_offset = direction == PCIE_ATU_INBOUND ?
-		PCIE_DW_ATU_INBOUND_OFFSET : PCIE_DW_ATU_OUTBOUND_OFFSET;
-	offset = PCIE_DW_ATU_BASE + direction_offset +
-		(uint32_t)index * PCIE_DW_ATU_REGION_STRIDE + PCIE_DW_ATU_CTRL2;
-	if (controller->config.dbi_size != 0U &&
-	    (uint64_t)offset + sizeof(uint32_t) > controller->config.dbi_size)
+	direction_offset = direction == PCIE_ATU_INBOUND ? PCIE_DW_ATU_INBOUND_OFFSET : PCIE_DW_ATU_OUTBOUND_OFFSET;
+	offset = PCIE_DW_ATU_BASE + direction_offset + (uint32_t)index * PCIE_DW_ATU_REGION_STRIDE + PCIE_DW_ATU_CTRL2;
+	if (controller->config.dbi_size != 0U && (uint64_t)offset + sizeof(uint32_t) > controller->config.dbi_size)
 		return PCIE_ERR_INVALID;
 	address = controller->config.dbi_base + offset;
 	writel(0U, address);
@@ -748,8 +681,7 @@ static const struct pcie_controller_ops pcie_dw_ops = {
  * @param[in] config Controller configuration to apply.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_init(struct pcie_controller *controller,
-		const struct pcie_controller_config *config)
+int pcie_controller_init(struct pcie_controller *controller, const struct pcie_controller_config *config)
 {
 	return pcie_controller_init_with_ops(controller, config, &pcie_dw_ops);
 }
@@ -762,9 +694,8 @@ int pcie_controller_init(struct pcie_controller *controller,
  * @param[in] ops Controller operations table.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_init_with_ops(struct pcie_controller *controller,
-		const struct pcie_controller_config *config,
-		const struct pcie_controller_ops *ops)
+int pcie_controller_init_with_ops(struct pcie_controller *controller, const struct pcie_controller_config *config,
+	const struct pcie_controller_ops *ops)
 {
 	int ret;
 
@@ -803,11 +734,10 @@ void pcie_controller_exit(struct pcie_controller *controller)
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_dbi_read(struct pcie_controller *controller,
-		uint32_t offset, uint8_t size, uint32_t *value)
+int pcie_controller_dbi_read(struct pcie_controller *controller, uint32_t offset, uint8_t size, uint32_t *value)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->read_dbi == NULL)
+		controller->ops->read_dbi == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->read_dbi(controller, offset, size, value);
 }
@@ -821,11 +751,10 @@ int pcie_controller_dbi_read(struct pcie_controller *controller,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_dbi_write(struct pcie_controller *controller,
-		uint32_t offset, uint8_t size, uint32_t value)
+int pcie_controller_dbi_write(struct pcie_controller *controller, uint32_t offset, uint8_t size, uint32_t value)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->write_dbi == NULL)
+		controller->ops->write_dbi == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->write_dbi(controller, offset, size, value);
 }
@@ -838,11 +767,10 @@ int pcie_controller_dbi_write(struct pcie_controller *controller,
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_app_read(struct pcie_controller *controller,
-		uint32_t offset, uint32_t *value)
+int pcie_controller_app_read(struct pcie_controller *controller, uint32_t offset, uint32_t *value)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->read_app == NULL)
+		controller->ops->read_app == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->read_app(controller, offset, value);
 }
@@ -855,11 +783,10 @@ int pcie_controller_app_read(struct pcie_controller *controller,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_app_write(struct pcie_controller *controller,
-		uint32_t offset, uint32_t value)
+int pcie_controller_app_write(struct pcie_controller *controller, uint32_t offset, uint32_t value)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->write_app == NULL)
+		controller->ops->write_app == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->write_app(controller, offset, value);
 }
@@ -871,8 +798,7 @@ int pcie_controller_app_write(struct pcie_controller *controller,
  * @param[in] enable true to allow read-only field writes.
  * @return PCIE_OK on success, PCIE_ERR_UNSUPPORTED when unavailable.
  */
-int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller,
-		bool enable)
+int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller, bool enable)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL)
 		return PCIE_ERR_INVALID;
@@ -891,15 +817,14 @@ int pcie_controller_dbi_ro_write_enable(struct pcie_controller *controller,
  * @param[in] bar_64bit true when the BAR is 64-bit wide.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_set_ep_bar(struct pcie_controller *controller,
-		uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
+int pcie_controller_set_ep_bar(
+	struct pcie_controller *controller, uint8_t function, uint8_t bar, bool enable, bool bar_64bit)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL)
 		return PCIE_ERR_INVALID;
 	if (controller->ops->set_ep_bar == NULL)
 		return PCIE_ERR_UNSUPPORTED;
-	return controller->ops->set_ep_bar(controller, function, bar, enable,
-		bar_64bit);
+	return controller->ops->set_ep_bar(controller, function, bar, enable, bar_64bit);
 }
 
 /**
@@ -909,14 +834,12 @@ int pcie_controller_set_ep_bar(struct pcie_controller *controller,
  * @param[in] mode PCIE_MODE_RC or PCIE_MODE_EP.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_set_mode(struct pcie_controller *controller,
-		enum pcie_mode mode)
+int pcie_controller_set_mode(struct pcie_controller *controller, enum pcie_mode mode)
 {
 	int ret;
 
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->set_mode == NULL ||
-	    (mode != PCIE_MODE_RC && mode != PCIE_MODE_EP))
+		controller->ops->set_mode == NULL || (mode != PCIE_MODE_RC && mode != PCIE_MODE_EP))
 		return PCIE_ERR_INVALID;
 	ret = controller->ops->set_mode(controller, mode);
 	if (ret)
@@ -934,7 +857,7 @@ int pcie_controller_set_mode(struct pcie_controller *controller,
 int pcie_controller_set_link(struct pcie_controller *controller)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->set_link == NULL)
+		controller->ops->set_link == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->set_link(controller);
 }
@@ -946,11 +869,10 @@ int pcie_controller_set_link(struct pcie_controller *controller)
  * @param[in] link_gen Target link generation.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_change_speed(struct pcie_controller *controller,
-		uint8_t link_gen)
+int pcie_controller_change_speed(struct pcie_controller *controller, uint8_t link_gen)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->change_speed == NULL)
+		controller->ops->change_speed == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->change_speed(controller, link_gen);
 }
@@ -964,8 +886,7 @@ int pcie_controller_change_speed(struct pcie_controller *controller,
  */
 int pcie_controller_ltssm(struct pcie_controller *controller, bool enable)
 {
-	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->ltssm == NULL)
+	if (controller == NULL || !controller->initialized || controller->ops == NULL || controller->ops->ltssm == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->ltssm(controller, enable);
 }
@@ -979,7 +900,7 @@ int pcie_controller_ltssm(struct pcie_controller *controller, bool enable)
 bool pcie_controller_link_up(struct pcie_controller *controller)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->link_up == NULL)
+		controller->ops->link_up == NULL)
 		return false;
 	return controller->ops->link_up(controller);
 }
@@ -991,11 +912,10 @@ bool pcie_controller_link_up(struct pcie_controller *controller)
  * @param[in] timeout_us Timeout in microseconds.
  * @return PCIE_OK when the link is up, otherwise an error code.
  */
-int pcie_controller_wait_link(struct pcie_controller *controller,
-		uint32_t timeout_us)
+int pcie_controller_wait_link(struct pcie_controller *controller, uint32_t timeout_us)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->wait_link == NULL)
+		controller->ops->wait_link == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->wait_link(controller, timeout_us);
 }
@@ -1007,11 +927,10 @@ int pcie_controller_wait_link(struct pcie_controller *controller,
  * @param[in] region ATU window descriptor.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_program_atu(struct pcie_controller *controller,
-		const struct pcie_atu_region *region)
+int pcie_controller_program_atu(struct pcie_controller *controller, const struct pcie_atu_region *region)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->program_atu == NULL)
+		controller->ops->program_atu == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->program_atu(controller, region);
 }
@@ -1024,11 +943,10 @@ int pcie_controller_program_atu(struct pcie_controller *controller,
  * @param[in] index Window index.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_disable_atu(struct pcie_controller *controller,
-		enum pcie_atu_direction direction, uint8_t index)
+int pcie_controller_disable_atu(struct pcie_controller *controller, enum pcie_atu_direction direction, uint8_t index)
 {
 	if (controller == NULL || !controller->initialized || controller->ops == NULL ||
-	    controller->ops->disable_atu == NULL)
+		controller->ops->disable_atu == NULL)
 		return PCIE_ERR_INVALID;
 	return controller->ops->disable_atu(controller, direction, index);
 }
@@ -1041,8 +959,7 @@ int pcie_controller_disable_atu(struct pcie_controller *controller,
  * @param[in] capability Capability ID to search for.
  * @return The capability offset on success, otherwise an error code.
  */
-int pcie_controller_find_capability(struct pcie_controller *controller,
-		uint32_t function_offset, uint8_t capability)
+int pcie_controller_find_capability(struct pcie_controller *controller, uint32_t function_offset, uint8_t capability)
 {
 	uint32_t pointer;
 	uint32_t header;
@@ -1050,19 +967,16 @@ int pcie_controller_find_capability(struct pcie_controller *controller,
 	unsigned int count;
 	int ret;
 
-	if (controller == NULL || !controller->initialized || capability == 0U ||
-	    function_offset >= 0x800000U)
+	if (controller == NULL || !controller->initialized || capability == 0U || function_offset >= 0x800000U)
 		return PCIE_ERR_INVALID;
-	ret = pcie_controller_dbi_read(controller,
-		function_offset + PCIE_CFG_CAP_PTR, 2U, &pointer);
+	ret = pcie_controller_dbi_read(controller, function_offset + PCIE_CFG_CAP_PTR, 2U, &pointer);
 	if (ret)
 		return ret;
 	pointer &= 0xffU;
 	for (count = 0U; pointer != 0U && count < 48U; ++count) {
 		if (pointer < 0x40U || pointer >= 0x1000U || (pointer & 0x3U) != 0U)
 			return PCIE_ERR_UNSUPPORTED;
-		ret = pcie_controller_dbi_read(controller,
-			function_offset + pointer, 2U, &header);
+		ret = pcie_controller_dbi_read(controller, function_offset + pointer, 2U, &header);
 		if (ret)
 			return ret;
 		if ((header & 0xffU) == capability)
@@ -1081,8 +995,8 @@ int pcie_controller_find_capability(struct pcie_controller *controller,
  * @param[in] capability Extended capability ID to search for.
  * @return The capability offset on success, otherwise an error code.
  */
-int pcie_controller_find_ext_capability(struct pcie_controller *controller,
-		uint32_t function_offset, uint16_t capability)
+int pcie_controller_find_ext_capability(
+	struct pcie_controller *controller, uint32_t function_offset, uint16_t capability)
 {
 	uint32_t header;
 	uint32_t next;
@@ -1090,16 +1004,13 @@ int pcie_controller_find_ext_capability(struct pcie_controller *controller,
 	unsigned int count;
 	int ret;
 
-	if (controller == NULL || !controller->initialized || capability == 0U ||
-	    function_offset >= 0x800000U)
+	if (controller == NULL || !controller->initialized || capability == 0U || function_offset >= 0x800000U)
 		return PCIE_ERR_INVALID;
 	offset = PCIE_EXT_CAP_START;
 	for (count = 0U; count < 1024U; ++count) {
-		if (offset < PCIE_EXT_CAP_START || offset >= 0x1000U ||
-		    (offset & 0x3U) != 0U)
+		if (offset < PCIE_EXT_CAP_START || offset >= 0x1000U || (offset & 0x3U) != 0U)
 			return PCIE_ERR_UNSUPPORTED;
-		ret = pcie_controller_dbi_read(controller,
-			function_offset + offset, 4U, &header);
+		ret = pcie_controller_dbi_read(controller, function_offset + offset, 4U, &header);
 		if (ret)
 			return ret;
 		if ((header & PCIE_EXT_CAP_ID_MASK) == capability)
@@ -1128,25 +1039,20 @@ int pcie_controller_find_ext_capability(struct pcie_controller *controller,
  * @param[in] write_value Value to write for a write access.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_controller_cfg_access(struct pcie_controller *controller,
-		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value,
-		bool write, uint32_t write_value)
+static int pcie_controller_cfg_access(struct pcie_controller *controller, uint32_t bdf, uint32_t offset, uint8_t size,
+	uint32_t *value, bool write, uint32_t write_value)
 {
 	struct pcie_atu_region region;
 	uintptr_t address;
 	uint32_t bus;
 
-	if (controller == NULL || !controller->initialized || value == NULL ||
-	    !pcie_access_size_valid(size) ||
-	    (offset & ((uint32_t)size - 1U)) != 0U ||
-	    (uint64_t)offset + size > 0x1000U)
+	if (controller == NULL || !controller->initialized || value == NULL || !pcie_access_size_valid(size) ||
+		(offset & ((uint32_t)size - 1U)) != 0U || (uint64_t)offset + size > 0x1000U)
 		return PCIE_ERR_INVALID;
-	if ((bdf & ~0x00ffff00U) != 0U ||
-	    PCIE_BDF_DEVICE(bdf) >= 32U || PCIE_BDF_FUNCTION(bdf) >= 8U)
+	if ((bdf & ~0x00ffff00U) != 0U || PCIE_BDF_DEVICE(bdf) >= 32U || PCIE_BDF_FUNCTION(bdf) >= 8U)
 		return PCIE_ERR_INVALID;
 	bus = PCIE_BDF_BUS(bdf);
-	if (bus == 0U && PCIE_BDF_DEVICE(bdf) == 0U &&
-	    PCIE_BDF_FUNCTION(bdf) == 0U) {
+	if (bus == 0U && PCIE_BDF_DEVICE(bdf) == 0U && PCIE_BDF_FUNCTION(bdf) == 0U) {
 		if (write)
 			return pcie_controller_dbi_write(controller, offset, size, write_value);
 		return pcie_controller_dbi_read(controller, offset, size, value);
@@ -1200,11 +1106,10 @@ static int pcie_controller_cfg_access(struct pcie_controller *controller,
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_cfg_read(struct pcie_controller *controller,
-		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value)
+int pcie_controller_cfg_read(
+	struct pcie_controller *controller, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value)
 {
-	return pcie_controller_cfg_access(controller, bdf, offset, size, value,
-		false, 0U);
+	return pcie_controller_cfg_access(controller, bdf, offset, size, value, false, 0U);
 }
 
 /**
@@ -1217,12 +1122,11 @@ int pcie_controller_cfg_read(struct pcie_controller *controller,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_controller_cfg_write(struct pcie_controller *controller,
-		uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value)
+int pcie_controller_cfg_write(
+	struct pcie_controller *controller, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value)
 {
 	uint32_t ignored;
 
 	ignored = 0U;
-	return pcie_controller_cfg_access(controller, bdf, offset, size, &ignored,
-		true, value);
+	return pcie_controller_cfg_access(controller, bdf, offset, size, &ignored, true, value);
 }

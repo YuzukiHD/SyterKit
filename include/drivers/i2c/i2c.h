@@ -110,8 +110,8 @@ struct sunxi_twi_reg {
 #define TWI_CTL_ACK (0x1 << 2)
 /* INT_FLAG,interrupt status flag: set '1' when interrupt coming */
 #define TWI_CTL_INTFLG (0x1 << 3)
-#define TWI_CTL_STP (0x1 << 4) /* M_STP,Automatic clear 0 */
-#define TWI_CTL_STA (0x1 << 5) /* M_STA,atutomatic clear 0 */
+#define TWI_CTL_STP    (0x1 << 4) /* M_STP,Automatic clear 0 */
+#define TWI_CTL_STA    (0x1 << 5) /* M_STA,atutomatic clear 0 */
 /* BUS_EN, master mode should be set 1.*/
 #define TWI_CTL_BUSEN (0x1 << 6)
 #define TWI_CTL_INTEN (0x1 << 7) /* INT_EN */
@@ -127,10 +127,10 @@ struct sunxi_twi_reg {
  * Foscl is clock SCL;standard mode:100KHz or fast mode:400KHz
  */
 #define TWI_CLK_DUTY_30_EN (0x1 << 8) /* 8bit  */
-#define TWI_CLK_DUTY (0x1 << 7) /* 7bit  */
-#define TWI_CLK_DIV_M (0xf << 3) /* 6:3bit  */
-#define TWI_CLK_DIV_N (0x7 << 0) /* 2:0bit */
-#define TWI_LCR_WMASK (TWI_CTL_STA | TWI_CTL_STP | TWI_CTL_INTFLG)
+#define TWI_CLK_DUTY	   (0x1 << 7) /* 7bit  */
+#define TWI_CLK_DIV_M	   (0xf << 3) /* 6:3bit  */
+#define TWI_CLK_DIV_N	   (0x7 << 0) /* 2:0bit */
+#define TWI_LCR_WMASK	   (TWI_CTL_STA | TWI_CTL_STP | TWI_CTL_INTFLG)
 
 void sunxi_i2c_init(sunxi_i2c_t *i2c_dev);
 

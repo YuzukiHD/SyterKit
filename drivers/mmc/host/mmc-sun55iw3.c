@@ -91,7 +91,8 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	}
 
 	// Configure the clock register value
-	reg_val = (source << 24) | (clk.factor_n << clk.reg_factor_n_offset) | (clk.factor_m << clk.reg_factor_m_offset);
+	reg_val = (source << 24) | (clk.factor_n << clk.reg_factor_n_offset) |
+		  (clk.factor_m << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
 	return 0;
@@ -123,8 +124,8 @@ int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio, uin
 
 	detected_voltage = sunxi_gpio_get_io_voltage(gpio);
 	if (detected_voltage >= 0 && (uint32_t)detected_voltage != voltage_uv)
-		pr_warn("GPIO bank voltage detector reports %u mV, requesting %u mV\n",
-			detected_voltage / 1000U, voltage_uv / 1000U);
+		pr_warn("GPIO bank voltage detector reports %u mV, requesting %u mV\n", detected_voltage / 1000U,
+			voltage_uv / 1000U);
 	if (sunxi_gpio_set_io_voltage(gpio, voltage_uv) != 0) {
 		pr_warn("GPIO bank withstand-voltage mode is unavailable\n");
 		return -1;

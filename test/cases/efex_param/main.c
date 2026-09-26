@@ -249,10 +249,8 @@ static void test_apply_i2c_rpio(void)
 static void test_apply_rails_and_app(void)
 {
 	const struct efex_param_ent host[] = {
-		{ EFEX_PARAM_PMU_RAIL(1, 1), 940 },
-		{ EFEX_PARAM_PMU_RAIL(2, 0), 1200 }, /* no third PMU */
-		{ EFEX_PARAM_APP(1), 0xabcd },
-		{ EFEX_PARAM_APP(2), 0x1234 }, /* beyond app_count */
+		{ EFEX_PARAM_PMU_RAIL(1, 1), 940 }, { EFEX_PARAM_PMU_RAIL(2, 0), 1200 }, /* no third PMU */
+		{ EFEX_PARAM_APP(1), 0xabcd }, { EFEX_PARAM_APP(2), 0x1234 }, /* beyond app_count */
 	};
 	int rail_mv[][EFEX_PARAM_RAIL_MAX] = { { 1100, 920 }, { 1000, 1000 } };
 	uint32_t app[2] = { 7, 8 };

@@ -24,9 +24,9 @@ static inline void arm32_interrupt_enable(void)
 	__asm__ __volatile__("mrs %0, cpsr\n"
 			     "bic %0, %0, #(1<<7)\n"
 			     "msr cpsr_cxsf, %0"
-			     : "=r"(tmp)
-			     :
-			     : "memory");
+		: "=r"(tmp)
+		:
+		: "memory");
 }
 
 /**
@@ -53,9 +53,9 @@ static inline void arm32_interrupt_disable(void)
 	__asm__ __volatile__("mrs %0, cpsr\n"
 			     "orr %0, %0, #(1<<7)\n"
 			     "msr cpsr_cxsf, %0"
-			     : "=r"(tmp)
-			     :
-			     : "memory");
+		: "=r"(tmp)
+		:
+		: "memory");
 }
 
 /**

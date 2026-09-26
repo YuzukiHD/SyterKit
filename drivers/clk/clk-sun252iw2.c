@@ -17,8 +17,8 @@
 
 #define SUNXI_C907_CLK (600)
 
-#define PLL_CPU_UPDATE_OFFSET (26)
-#define PLL_CPU_LOCK_OFFSET (28)
+#define PLL_CPU_UPDATE_OFFSET	   (26)
+#define PLL_CPU_LOCK_OFFSET	   (28)
 #define PLL_CPU_LOCK_ENABLE_OFFSET (29)
 
 /**
@@ -36,10 +36,8 @@ static void static_pll_switch_freq(uintptr_t reg_addr, uint32_t n_factor)
 
 	/* set n=m0=m1=1,p=1: PLL_OUT = 24M * n / (m0 * m1 * p) */
 	reg_val = readl(reg_addr);
-	reg_val &= ~((0xffU << PLL_CPU_CTRL_REG_PLL_N_OFFSET) |
-		     (0x7U << PLL_CPU_CTRL_REG_PLL_P_OFFSET) |
-		     (0x3U << PLL_CPU_CTRL_REG_PLL_M0_OFFSET) |
-		     (0xfU << PLL_CPU_CTRL_REG_PLL_M1_OFFSET));
+	reg_val &= ~((0xffU << PLL_CPU_CTRL_REG_PLL_N_OFFSET) | (0x7U << PLL_CPU_CTRL_REG_PLL_P_OFFSET) |
+		     (0x3U << PLL_CPU_CTRL_REG_PLL_M0_OFFSET) | (0xfU << PLL_CPU_CTRL_REG_PLL_M1_OFFSET));
 	reg_val |= (n_factor << PLL_CPU_CTRL_REG_PLL_N_OFFSET) | (0x0U << PLL_CPU_CTRL_REG_PLL_M1_OFFSET);
 	writel(reg_val, reg_addr);
 	udelay(10);
@@ -269,7 +267,8 @@ void sunxi_clk_dump(void)
 		break;
 	}
 
-	plln = (readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_N_CLEAR_MASK) >> PLL_CPU_CTRL_REG_PLL_N_OFFSET;
+	plln = (readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & PLL_CPU_CTRL_REG_PLL_N_CLEAR_MASK) >>
+	       PLL_CPU_CTRL_REG_PLL_N_OFFSET;
 
 	pr_debug("CPU CLK_reg=0x%08x\n", reg_val);
 	pr_debug("CPU PLL=%s FREQ=%uMHz\n", clock_str, 24 * plln);

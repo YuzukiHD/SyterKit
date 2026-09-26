@@ -51,7 +51,8 @@ static axp_contrl_info *get_ctrl_info_from_tbl(char *name, axp_contrl_info *axp_
  * @param axp_ctrl_tbl_size Number of entries in axp_ctrl_tbl
  * @return 0 on success, -1 if the rail is unknown or an I2C access fails
  */
-int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size)
+int axp_set_vol(
+	axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size)
 {
 	uint8_t reg_value, i;
 	axp_contrl_info *p_item = NULL;
@@ -79,11 +80,14 @@ int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_i
 		reg_value &= ~p_item->cfg_reg_mask;
 
 		for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {
-			if ((set_vol > p_item->axp_step_tbl[i].step_max_vol) && (set_vol < p_item->axp_step_tbl[i + 1].step_min_vol)) {
+			if ((set_vol > p_item->axp_step_tbl[i].step_max_vol) &&
+				(set_vol < p_item->axp_step_tbl[i + 1].step_min_vol)) {
 				set_vol = p_item->axp_step_tbl[i].step_max_vol;
 			}
 			if (p_item->axp_step_tbl[i].step_max_vol >= set_vol) {
-				reg_value |= ((base_step + ((set_vol - p_item->axp_step_tbl[i].step_min_vol) / p_item->axp_step_tbl[i].step_val)) << p_item->reg_addr_offset);
+				reg_value |= ((base_step + ((set_vol - p_item->axp_step_tbl[i].step_min_vol) /
+								   p_item->axp_step_tbl[i].step_val))
+					      << p_item->reg_addr_offset);
 				if (p_item->axp_step_tbl[i].regation) {
 					uint8_t reg_value_temp = (~reg_value & p_item->cfg_reg_mask);
 					reg_value &= ~p_item->cfg_reg_mask;
@@ -91,8 +95,10 @@ int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_i
 				}
 				break;
 			} else {
-				base_step += ((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol + p_item->axp_step_tbl[i].step_val) /
-					      p_item->axp_step_tbl[i].step_val);
+				base_step +=
+					((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol +
+						 p_item->axp_step_tbl[i].step_val) /
+						p_item->axp_step_tbl[i].step_val);
 			}
 		}
 
@@ -161,12 +167,17 @@ int axp_get_vol(axp_pmu_t *pmu, char *name, axp_contrl_info *axp_ctrl_tbl, uint8
 	reg_value &= p_item->cfg_reg_mask;
 	reg_value >>= p_item->reg_addr_offset;
 	for (i = 0; p_item->axp_step_tbl[i].step_max_vol != 0; i++) {
-		base_step1 += ((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol + p_item->axp_step_tbl[i].step_val) / p_item->axp_step_tbl[i].step_val);
+		base_step1 += ((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol +
+				       p_item->axp_step_tbl[i].step_val) /
+			       p_item->axp_step_tbl[i].step_val);
 		if (reg_value < base_step1) {
-			vol = (reg_value - base_step2) * p_item->axp_step_tbl[i].step_val + p_item->axp_step_tbl[i].step_min_vol;
+			vol = (reg_value - base_step2) * p_item->axp_step_tbl[i].step_val +
+			      p_item->axp_step_tbl[i].step_min_vol;
 			return vol;
 		}
-		base_step2 += ((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol + p_item->axp_step_tbl[i].step_val) / p_item->axp_step_tbl[i].step_val);
+		base_step2 += ((p_item->axp_step_tbl[i].step_max_vol - p_item->axp_step_tbl[i].step_min_vol +
+				       p_item->axp_step_tbl[i].step_val) /
+			       p_item->axp_step_tbl[i].step_val);
 	}
 	return -1;
 }

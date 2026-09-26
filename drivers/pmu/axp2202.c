@@ -110,7 +110,8 @@ int pmu_axp2202_init(axp_pmu_t *pmu)
 	}
 
 	if (sunxi_i2c_read(pmu->i2c, pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
-		if (pmu->fallback_address == 0U || sunxi_i2c_read(pmu->i2c, pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
+		if (pmu->fallback_address == 0U ||
+			sunxi_i2c_read(pmu->i2c, pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
 			pr_warn("AXP2202 PMU Read error\n");
 			return -1;
 		}
@@ -204,6 +205,7 @@ int pmu_axp2202_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp2202_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp2202_ctrl_tbl); i++) {
-		pr_debug("AXP2202 %s = %dmv\n", axp2202_ctrl_tbl[i].name, pmu_axp2202_get_vol(pmu, axp2202_ctrl_tbl[i].name));
+		pr_debug("AXP2202 %s = %dmv\n", axp2202_ctrl_tbl[i].name,
+			pmu_axp2202_get_vol(pmu, axp2202_ctrl_tbl[i].name));
 	}
 }

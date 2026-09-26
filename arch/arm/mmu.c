@@ -14,28 +14,28 @@
 #include "log.h"
 #include "mmu.h"
 
-#define MMU_SECTION_SHIFT 20U
-#define MMU_SECTION_COUNT 4096U
-#define MMU_TABLE_BYTES (MMU_SECTION_COUNT * sizeof(uint32_t))
-#define MMU_TABLE_ALIGN 0x4000U
+#define MMU_SECTION_SHIFT     20U
+#define MMU_SECTION_COUNT     4096U
+#define MMU_TABLE_BYTES	      (MMU_SECTION_COUNT * sizeof(uint32_t))
+#define MMU_TABLE_ALIGN	      0x4000U
 #define ARM32_DRAM_SIZE_LIMIT 2048U
 
 /* Short-descriptor level-1 section attributes. */
-#define TTB_SECT_SECURE (0U << 19)
-#define TTB_SECT_AP (3U << 10) /* privileged/user read-write */
+#define TTB_SECT_SECURE	   (0U << 19)
+#define TTB_SECT_AP	   (3U << 10) /* privileged/user read-write */
 #define TTB_SECT_DOMAIN(x) (((x) & 0xfU) << 5)
-#define TTB_SECT_C (1U << 3)
-#define TTB_SECT_B (1U << 2)
-#define TTB_SECT (2U << 0)
-#define TTB_SECT_BASE(x) ((x) << MMU_SECTION_SHIFT)
+#define TTB_SECT_C	   (1U << 3)
+#define TTB_SECT_B	   (1U << 2)
+#define TTB_SECT	   (2U << 0)
+#define TTB_SECT_BASE(x)   ((x) << MMU_SECTION_SHIFT)
 
-#define MMU_DOMAIN 15U
+#define MMU_DOMAIN	15U
 #define DACR_ALL_CLIENT 0x55555555U
 
 /* TTBR0 inner/outer write-back, shareable, write-allocate attributes. */
 #define TTBR0_IRGN_WB_WA (1U << 0)
-#define TTBR0_S (1U << 1)
-#define TTBR0_RGN_WT (2U << 3)
+#define TTBR0_S		 (1U << 1)
+#define TTBR0_RGN_WT	 (2U << 3)
 
 /** @brief Invalidate unified, data, and instruction TLB entries. */
 static void invalidate_tlb(void)
@@ -204,7 +204,8 @@ void arm32_mmu_enable(uint32_t dram_base, uint32_t dram_size)
 #endif
 
 	reg = arm32_read_p15_c1();
-	pr_trace("MMU: table=0x%08x dram=0x%08x size=%uMiB CR=0x%08x\n", (uint32_t)table_address, dram_base, dram_size, reg);
+	pr_trace("MMU: table=0x%08x dram=0x%08x size=%uMiB CR=0x%08x\n", (uint32_t)table_address, dram_base, dram_size,
+		reg);
 }
 
 /**

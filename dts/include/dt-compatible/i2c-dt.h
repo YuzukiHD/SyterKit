@@ -18,7 +18,8 @@ static inline __attribute__((always_inline)) int sunxi_i2c_dt_read_config(sunxi_
 	sunxi_i2c_t config = { 0 };
 	uint32_t id;
 
-	if (i2c == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_I2C_COMPATIBLE) != 0)
+	if (i2c == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_I2C_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);
@@ -47,22 +48,25 @@ static inline __attribute__((always_inline)) int sunxi_i2c_dt_read_config(sunxi_
 	config.i2c_clk.gate_reg_offset = dt2c_fdt32_to_cpu(clock_gate[1]);
 	config.i2c_clk.rst_reg_base = (uintptr_t)dt2c_fdt32_to_cpu(reset[0]);
 	config.i2c_clk.rst_reg_offset = dt2c_fdt32_to_cpu(reset[1]);
-	if (config.i2c_clk.parent_clk == 0U || config.i2c_clk.gate_reg_base == 0U || config.i2c_clk.rst_reg_base == 0U || config.i2c_clk.gate_reg_offset >= 32U ||
-	    config.i2c_clk.rst_reg_offset >= 32U)
+	if (config.i2c_clk.parent_clk == 0U || config.i2c_clk.gate_reg_base == 0U ||
+		config.i2c_clk.rst_reg_base == 0U || config.i2c_clk.gate_reg_offset >= 32U ||
+		config.i2c_clk.rst_reg_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
 	pins = syterkit_dt_pinctrl_cells(node, 6, &gpio_controller);
 	if (pins == NULL || !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller, &config.gpio.gpio_scl) ||
-	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.gpio.gpio_sda))
+		!syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.gpio.gpio_sda))
 		return DRIVER_ERROR_INVALID;
 	config.status = false;
 
 	*i2c = config;
 	SYTERKIT_DT_TRACE_NODE("i2c", node);
-	SYTERKIT_DT_TRACE("i2c config base=%p id=%u speed=%u scl=%u/%u sda=%u/%u\n", (void *)i2c->base, i2c->id, i2c->speed, i2c->gpio.gpio_scl.pin, i2c->gpio.gpio_scl.mux,
-			  i2c->gpio.gpio_sda.pin, i2c->gpio.gpio_sda.mux);
-	SYTERKIT_DT_TRACE("i2c clock parent=%u gate=%p:%u reset=%p:%u\n", i2c->i2c_clk.parent_clk, (void *)i2c->i2c_clk.gate_reg_base, i2c->i2c_clk.gate_reg_offset,
-			  (void *)i2c->i2c_clk.rst_reg_base, i2c->i2c_clk.rst_reg_offset);
+	SYTERKIT_DT_TRACE("i2c config base=%p id=%u speed=%u scl=%u/%u sda=%u/%u\n", (void *)i2c->base, i2c->id,
+		i2c->speed, i2c->gpio.gpio_scl.pin, i2c->gpio.gpio_scl.mux, i2c->gpio.gpio_sda.pin,
+		i2c->gpio.gpio_sda.mux);
+	SYTERKIT_DT_TRACE("i2c clock parent=%u gate=%p:%u reset=%p:%u\n", i2c->i2c_clk.parent_clk,
+		(void *)i2c->i2c_clk.gate_reg_base, i2c->i2c_clk.gate_reg_offset, (void *)i2c->i2c_clk.rst_reg_base,
+		i2c->i2c_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 

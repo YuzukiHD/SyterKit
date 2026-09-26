@@ -3,17 +3,17 @@
 #ifdef SYTERKIT_CLI_CMD_FDT
 msh_declare_command(fdt);
 msh_define_help(fdt, "flattened device tree utility commands",
-		"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
-		"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
-		"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
-		"fdt mknode <path> <node>            - Create a new node after <path>\n"
-		"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
-		"fdt header                          - Display header info\n"
-		"fdt rsvmem print                    - Show current mem reserves\n"
-		"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
-		"fdt rsvmem delete <index>           - Delete a mem reserves\n"
-		"NOTE: Dereference aliases by omitting the leading '/', "
-		"e.g. fdt print ethernet0.\n\n");
+	"fdt print  <path> [<prop>]          - Recursive print starting at <path>\n"
+	"fdt list   <path> [<prop>]          - Print one level starting at <path>\n"
+	"fdt set    <path> <prop> [<val>]    - Set <property> [to <val>]\n"
+	"fdt mknode <path> <node>            - Create a new node after <path>\n"
+	"fdt rm     <path> [<prop>]          - Delete the node or <property>\n"
+	"fdt header                          - Display header info\n"
+	"fdt rsvmem print                    - Show current mem reserves\n"
+	"fdt rsvmem add <addr> <size>        - Add a mem reserve\n"
+	"fdt rsvmem delete <index>           - Delete a mem reserves\n"
+	"NOTE: Dereference aliases by omitting the leading '/', "
+	"e.g. fdt print ethernet0.\n\n");
 int cmd_fdt(int argc, const char **argv)
 {
 	if (argc < 2) {
@@ -160,7 +160,8 @@ int cmd_fdt(int argc, const char **argv)
 	} else if (argv[1][0] == 'h') {
 		u32 version = fdt_version(image.of_dest);
 		printk(LOG_LEVEL_MUTE, "magic:\t\t\t0x%x\n", fdt_magic(image.of_dest));
-		printk(LOG_LEVEL_MUTE, "totalsize:\t\t0x%x (%d)\n", fdt_totalsize(image.of_dest), fdt_totalsize(image.of_dest));
+		printk(LOG_LEVEL_MUTE, "totalsize:\t\t0x%x (%d)\n", fdt_totalsize(image.of_dest),
+			fdt_totalsize(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "off_dt_struct:\t\t0x%x\n", fdt_off_dt_struct(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "off_dt_strings:\t\t0x%x\n", fdt_off_dt_strings(image.of_dest));
 		printk(LOG_LEVEL_MUTE, "off_mem_rsvmap:\t\t0x%x\n", fdt_off_mem_rsvmap(image.of_dest));
@@ -188,7 +189,8 @@ int cmd_fdt(int argc, const char **argv)
 					printk(LOG_LEVEL_MUTE, "libfdt fdt_get_mem_rsv():  %s\n", fdt_strerror(err));
 					return 0;
 				}
-				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32)(addr >> 32), (u32)(addr & 0xffffffff), (u32)(size >> 32), (u32)(size & 0xffffffff));
+				printk(LOG_LEVEL_MUTE, "    %x\t%08x%08x\t%08x%08x\n", j, (u32)(addr >> 32),
+					(u32)(addr & 0xffffffff), (u32)(size >> 32), (u32)(size & 0xffffffff));
 			}
 		} else if (argv[2][0] == 'a') {
 			uint64_t addr, size;

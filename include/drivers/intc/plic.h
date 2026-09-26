@@ -10,7 +10,7 @@
 #include <drivers/intc/intc.h>
 
 #define SUNXI_PLIC_COMPATIBLE "allwinner,sunxi-plic"
-#define SUNXI_PLIC_MAX_IRQS 256U
+#define SUNXI_PLIC_MAX_IRQS   256U
 
 typedef struct sunxi_plic {
 	int dt_node;

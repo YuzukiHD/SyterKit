@@ -112,11 +112,12 @@ void backtrace_print_frame(uintptr_t raw_address)
 	}
 
 #if __SIZEOF_POINTER__ == 8
-	printk(LOG_LEVEL_BACKTRACE, " [<0x%016lx>] %s+0x%lx/0x%lx\n", (unsigned long)address, __backtrace_symbol_names + symbol->name_offset,
-	       (unsigned long)(address - symbol->address), (unsigned long)size);
+	printk(LOG_LEVEL_BACKTRACE, " [<0x%016lx>] %s+0x%lx/0x%lx\n", (unsigned long)address,
+		__backtrace_symbol_names + symbol->name_offset, (unsigned long)(address - symbol->address),
+		(unsigned long)size);
 #else
-	printk(LOG_LEVEL_BACKTRACE, " [<0x%08x>] %s+0x%x/0x%x\n", (uint32_t)address, __backtrace_symbol_names + symbol->name_offset, (uint32_t)(address - symbol->address),
-	       (uint32_t)size);
+	printk(LOG_LEVEL_BACKTRACE, " [<0x%08x>] %s+0x%x/0x%x\n", (uint32_t)address,
+		__backtrace_symbol_names + symbol->name_offset, (uint32_t)(address - symbol->address), (uint32_t)size);
 #endif
 }
 

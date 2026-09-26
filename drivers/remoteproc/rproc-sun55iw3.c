@@ -20,9 +20,9 @@
 #include <drivers/clk/sun55iw3/reg.h>
 
 #define SUN55IW3_E906_PUBSRAM_CFG_OFFSET 0x0114U
-#define SUN55IW3_E906_CLK_OFFSET 0x0120U
-#define SUN55IW3_E906_CFG_BGR_OFFSET 0x0124U
-#define SUN55IW3_E906_START_OFFSET 0x0204U
+#define SUN55IW3_E906_CLK_OFFSET	 0x0120U
+#define SUN55IW3_E906_CFG_BGR_OFFSET	 0x0124U
+#define SUN55IW3_E906_START_OFFSET	 0x0204U
 
 /**
  * @brief Register resource indices used by the E906 remote processor.
@@ -98,7 +98,8 @@ static void sun55iw3_e906_dump(const sunxi_remoteproc_t *remoteproc)
 	value = read32(dsp_prcm + SUN55IW3_E906_CLK_OFFSET);
 	factor_m = (value & 0x1fU) + 1U;
 	factor_n = ((value >> 8) & 0x3U) + 1U;
-	pr_debug("RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m, factor_n);
+	pr_debug("RISC-V reg=0x%08x, source=%u, core-div=%u, axi-div=%u\n", value, (value >> 24) & 0x7U, factor_m,
+		factor_n);
 }
 
 /**

@@ -174,10 +174,11 @@ static int cmd_help(int argc, const char **argv)
 /** @brief Built-in command table. */
 const msh_command_entry msh_builtin_commands[] = {
 	{ "help", cmd_help, "display help for available commands",
-	  "Usage: help [command]\n"
-	  "    Displays help for 'command', or all commands and their\n"
-	  "    short descriptions.\n" },
-	{ "echo", cmd_echo, "echo all arguments separated by a whitespace it can show args", "Usage: echo [string ...]\n" },
+		"Usage: help [command]\n"
+		"    Displays help for 'command', or all commands and their\n"
+		"    short descriptions.\n" },
+	{ "echo", cmd_echo, "echo all arguments separated by a whitespace it can show args",
+		"Usage: echo [string ...]\n" },
 	{ "history", cmd_history, "show all history command", "Usage: history\n" },
 	{ "hexdump", cmd_hexdump, "dumps memory region in hex", "Usage: hexdump [address] [length]\n" },
 	{ "read32", cmd_read32, "read 32-bits value from device reg", "Usage: read32 [address]\n" },

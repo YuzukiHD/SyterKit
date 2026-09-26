@@ -21,12 +21,12 @@
 #include <lib/fatfs/ff.h>
 #include <lib/fatfs/diskio.h>
 
-#define APP_DRAM_FILENAME "hello_world_dram.bin"
-#define LOADER_HEAP_BASE 0x40800000U
-#define LOADER_HEAP_SIZE 0x01000000U
+#define APP_DRAM_FILENAME  "hello_world_dram.bin"
+#define LOADER_HEAP_BASE   0x40800000U
+#define LOADER_HEAP_SIZE   0x01000000U
 #define APP_DRAM_LOAD_ADDR 0x42000000U
-#define APP_DRAM_MAX_SIZE 0x01000000U
-#define LOAD_CHUNK_SIZE 0x00020000U
+#define APP_DRAM_MAX_SIZE  0x01000000U
+#define LOAD_CHUNK_SIZE	   0x00020000U
 
 extern void set_rpio_power_mode(void);
 
@@ -42,16 +42,13 @@ static int load_app_dram(FIL *file, uint32_t image_size)
 
 		if (bytes_to_read > LOAD_CHUNK_SIZE)
 			bytes_to_read = LOAD_CHUNK_SIZE;
-		result = f_read(file, destination + offset, bytes_to_read,
-				&bytes_read);
+		result = f_read(file, destination + offset, bytes_to_read, &bytes_read);
 		if (result != FR_OK) {
-			pr_err("Bootloader: read %s failed at 0x%x: %d\n",
-			       APP_DRAM_FILENAME, offset, result);
+			pr_err("Bootloader: read %s failed at 0x%x: %d\n", APP_DRAM_FILENAME, offset, result);
 			return -1;
 		}
 		if (bytes_read != bytes_to_read) {
-			pr_err("Bootloader: short read at 0x%x: %u/%u bytes\n",
-			       offset, bytes_read, bytes_to_read);
+			pr_err("Bootloader: short read at 0x%x: %u/%u bytes\n", offset, bytes_read, bytes_to_read);
 			return -1;
 		}
 		offset += bytes_read;
@@ -80,10 +77,9 @@ int main(void)
 		return -1;
 	show_banner();
 	if (sunxi_remoteproc_dt_read_alias(&e906, "e906", NULL) != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&mmc, "mmc0") != DRIVER_OK) {
+		sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+		pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+		sunxi_sdhci_dt_read_alias(&mmc, "mmc0") != DRIVER_OK) {
 		pr_err("Bootloader: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -114,8 +110,7 @@ int main(void)
 		pr_err("Bootloader: DRAM initialization failed\n");
 		return -1;
 	}
-	pr_info("Bootloader: DRAM ready, %u MiB at 0x%lx\n", dram_size_mb,
-		(unsigned long)dram.memory_base);
+	pr_info("Bootloader: DRAM ready, %u MiB at 0x%lx\n", dram_size_mb, (unsigned long)dram.memory_base);
 	arm32_mmu_enable(dram.memory_base, dram_size_mb);
 	if (malloc_init(LOADER_HEAP_BASE, LOADER_HEAP_SIZE) != 0) {
 		pr_err("Bootloader: heap initialization failed\n");
@@ -134,34 +129,27 @@ int main(void)
 	}
 	fat_error = f_open(&file, APP_DRAM_FILENAME, FA_OPEN_EXISTING | FA_READ);
 	if (fat_error != FR_OK) {
-		pr_err("Bootloader: open %s failed: %d\n", APP_DRAM_FILENAME,
-		       fat_error);
+		pr_err("Bootloader: open %s failed: %d\n", APP_DRAM_FILENAME, fat_error);
 		f_mount(NULL, "", 0);
 		return -1;
 	}
 
 	file_size = f_size(&file);
-	dram_end = (uint64_t)dram.memory_base +
-		   (uint64_t)dram_size_mb * 1024U * 1024U;
+	dram_end = (uint64_t)dram.memory_base + (uint64_t)dram_size_mb * 1024U * 1024U;
 	if (file_size == 0 || file_size > APP_DRAM_MAX_SIZE) {
-		pr_err("Bootloader: invalid DRAM app size: %llu bytes\n",
-		       (unsigned long long)file_size);
+		pr_err("Bootloader: invalid DRAM app size: %llu bytes\n", (unsigned long long)file_size);
 		f_close(&file);
 		f_mount(NULL, "", 0);
 		return -1;
 	}
-	if (APP_DRAM_LOAD_ADDR < dram.memory_base ||
-	    (uint64_t)APP_DRAM_LOAD_ADDR + APP_DRAM_MAX_SIZE > dram_end) {
-		pr_err("Bootloader: DRAM app window 0x%x-0x%llx is outside DRAM\n",
-		       APP_DRAM_LOAD_ADDR,
-		       (unsigned long long)((uint64_t)APP_DRAM_LOAD_ADDR +
-					    APP_DRAM_MAX_SIZE));
+	if (APP_DRAM_LOAD_ADDR < dram.memory_base || (uint64_t)APP_DRAM_LOAD_ADDR + APP_DRAM_MAX_SIZE > dram_end) {
+		pr_err("Bootloader: DRAM app window 0x%x-0x%llx is outside DRAM\n", APP_DRAM_LOAD_ADDR,
+			(unsigned long long)((uint64_t)APP_DRAM_LOAD_ADDR + APP_DRAM_MAX_SIZE));
 		f_close(&file);
 		f_mount(NULL, "", 0);
 		return -1;
 	}
-	pr_info("Bootloader: loading %s (%llu bytes) to 0x%x\n",
-		APP_DRAM_FILENAME, (unsigned long long)file_size,
+	pr_info("Bootloader: loading %s (%llu bytes) to 0x%x\n", APP_DRAM_FILENAME, (unsigned long long)file_size,
 		APP_DRAM_LOAD_ADDR);
 	if (load_app_dram(&file, (uint32_t)file_size) != 0) {
 		f_close(&file);
@@ -172,8 +160,7 @@ int main(void)
 	f_mount(NULL, "", 0);
 
 	pr_info("Bootloader: entering DRAM app at 0x%x\n", APP_DRAM_LOAD_ADDR);
-	flush_dcache_range(APP_DRAM_LOAD_ADDR,
-			   (uint64_t)APP_DRAM_LOAD_ADDR + file_size);
+	flush_dcache_range(APP_DRAM_LOAD_ADDR, (uint64_t)APP_DRAM_LOAD_ADDR + file_size);
 	arm32_icache_invalidate_all();
 	clean_syterkit_data();
 	((void (*)(void))(uintptr_t)APP_DRAM_LOAD_ADDR)();

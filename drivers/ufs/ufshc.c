@@ -163,7 +163,7 @@ static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
 	if (!host || !host->base)
 		return;
 	pr_info("diag %s: hcs=%08x hce=%08x is=%08x ie=%08x utrl=%08x:%08x/%08x "
-		    "utmr=%08x:%08x/%08x uic=%08x err=%08x/%08x/%08x/%08x/%08x\n",
+		"utmr=%08x:%08x/%08x uic=%08x err=%08x/%08x/%08x/%08x/%08x\n",
 		stage, ufshc_read(host, UFSHC_REG_CONTROLLER_STATUS), ufshc_read(host, UFSHC_REG_CONTROLLER_ENABLE),
 		ufshc_read(host, UFSHC_REG_INTERRUPT_STATUS), ufshc_read(host, UFSHC_REG_INTERRUPT_ENABLE),
 		ufshc_read(host, UFSHC_REG_UTRL_BASE_H), ufshc_read(host, UFSHC_REG_UTRL_BASE_L),
@@ -174,7 +174,9 @@ static void ufshc_log_state(const struct ufshc_host *host, const char *stage)
 		ufshc_read(host, UFSHC_REG_UIC_ERROR_TRANSPORT), ufshc_read(host, UFSHC_REG_UIC_ERROR_DME));
 }
 #else
-#define ufshc_log_state(host, stage) do { } while (0)
+#define ufshc_log_state(host, stage) \
+	do {                         \
+	} while (0)
 #endif
 
 /**
@@ -500,8 +502,8 @@ int ufshc_uic_command(struct ufshc_host *host, const struct ufshc_uic_cmd_args *
 				continue;
 			}
 			pr_err("UIC command 0x%02x failed\n", args->command);
-			ufs_debug("UFSHCI: UIC error is=%08x err=%08x/%08x/%08x/%08x/%08x\n",
-				status, phy_error, dl_error, nl_error, tl_error, dme_error);
+			ufs_debug("UFSHCI: UIC error is=%08x err=%08x/%08x/%08x/%08x/%08x\n", status, phy_error,
+				dl_error, nl_error, tl_error, dme_error);
 			return UFS_ERR_IO;
 		}
 		if (status & completion_mask)
@@ -646,13 +648,13 @@ int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *m
 
 	ret = ufshc_dme_get(host, UFSHC_PA_CONNECTEDRXDATALANES, &value, false);
 	if (ret) {
-			ufs_debug("UFSHCI: read connected RX lanes failed ret=%d\n", ret);
+		ufs_debug("UFSHCI: read connected RX lanes failed ret=%d\n", ret);
 		return ret;
 	}
 	mode->lane_rx = (uint8_t)value;
 	ret = ufshc_dme_get(host, UFSHC_PA_CONNECTEDTXDATALANES, &value, false);
 	if (ret) {
-			ufs_debug("UFSHCI: read connected TX lanes failed ret=%d\n", ret);
+		ufs_debug("UFSHCI: read connected TX lanes failed ret=%d\n", ret);
 		return ret;
 	}
 	mode->lane_tx = (uint8_t)value;
@@ -661,14 +663,14 @@ int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *m
 
 	ret = ufshc_dme_get(host, UFSHC_PA_MAXRXHSGEAR, &value, false);
 	if (ret) {
-			ufs_debug("UFSHCI: read local max HS gear failed ret=%d\n", ret);
+		ufs_debug("UFSHCI: read local max HS gear failed ret=%d\n", ret);
 		return ret;
 	}
 	mode->gear_rx = (uint8_t)value;
 	if (!mode->gear_rx) {
 		ret = ufshc_dme_get(host, UFSHC_PA_MAXRXPWMGEAR, &value, false);
 		if (ret) {
-				ufs_debug("UFSHCI: read local max PWM gear failed ret=%d\n", ret);
+			ufs_debug("UFSHCI: read local max PWM gear failed ret=%d\n", ret);
 			return ret;
 		}
 		mode->gear_rx = (uint8_t)value;
@@ -677,14 +679,14 @@ int ufshc_get_max_power_mode(struct ufshc_host *host, struct ufshc_power_mode *m
 
 	ret = ufshc_dme_get(host, UFSHC_PA_MAXRXHSGEAR, &value, true);
 	if (ret) {
-			ufs_debug("UFSHCI: read peer max HS gear failed ret=%d\n", ret);
+		ufs_debug("UFSHCI: read peer max HS gear failed ret=%d\n", ret);
 		return ret;
 	}
 	mode->gear_tx = (uint8_t)value;
 	if (!mode->gear_tx) {
 		ret = ufshc_dme_get(host, UFSHC_PA_MAXRXPWMGEAR, &value, true);
 		if (ret) {
-				ufs_debug("UFSHCI: read peer max PWM gear failed ret=%d\n", ret);
+			ufs_debug("UFSHCI: read peer max PWM gear failed ret=%d\n", ret);
 			return ret;
 		}
 		mode->gear_tx = (uint8_t)value;
@@ -717,8 +719,8 @@ int ufshc_change_power_mode(struct ufshc_host *host, const struct ufshc_power_mo
 
 	if (!host || !mode || !mode->gear_rx || !mode->gear_tx || !mode->lane_rx || !mode->lane_tx)
 		return UFS_ERR_INVALID;
-	ufs_debug("UFSHCI: change power mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode->pwr_tx,
-		mode->pwr_rx, mode->gear_tx, mode->gear_rx, mode->lane_tx, mode->lane_rx, mode->hs_rate);
+	ufs_debug("UFSHCI: change power mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode->pwr_tx, mode->pwr_rx,
+		mode->gear_tx, mode->gear_rx, mode->lane_tx, mode->lane_rx, mode->hs_rate);
 	/* Match ufshcd_dme_configure_adapt(): initial adaptation is only valid
 	 * for HS Gear 4; PWM and lower gears must explicitly select no
 	 * adaptation. */
@@ -870,12 +872,11 @@ int ufshc_init(struct ufshc_host *host, const struct ufshc_config *config)
 		if (!retry_without_phy) {
 			ret = sunxi_ufs_link_startup(host);
 			if (ret) {
-				pr_err("host PHY link setup failed attempt=%u ret=%d\n",
-					retry + 1U, ret);
+				pr_err("host PHY link setup failed attempt=%u ret=%d\n", retry + 1U, ret);
 				if (retry < UFSHC_LINK_STARTUP_RETRIES) {
 					ret = ufshc_reinitialize_controller(host);
 					if (ret)
-							break;
+						break;
 				}
 				continue;
 			}
@@ -1029,10 +1030,9 @@ static int ufshc_exec_devman(struct ufshc_host *host)
 			pr_err("device-management OCS=0x%x\n", utrd->header[2] & UFSHC_OCS_MASK);
 			ufs_debug(
 				"UFSHCI: devman utrd=%p ucd=%p hdr=%08x/%08x/%08x/%08x rsp=%u@%u prdt=%u@%u req=%08x\n",
-				(void *)utrd, (void *)ucd, utrd->header[0],
-				utrd->header[1], utrd->header[2], utrd->header[3], utrd->response_length,
-				utrd->response_offset, utrd->prdt_length, utrd->prdt_offset,
-				ufs_be32(ufs_load32(ucd->command_upiu)));
+				(void *)utrd, (void *)ucd, utrd->header[0], utrd->header[1], utrd->header[2],
+				utrd->header[3], utrd->response_length, utrd->response_offset, utrd->prdt_length,
+				utrd->prdt_offset, ufs_be32(ufs_load32(ucd->command_upiu)));
 			ufshc_devman_ocs_reported = true;
 		}
 		return UFS_ERR_IO;

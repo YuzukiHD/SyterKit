@@ -63,7 +63,9 @@ void get_vdd_sys_pmu_id(void)
 	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202))
 		return;
 	if (sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_CHIP_ID_EXT, &axp_val)) {
-		if (vdd_sys_pmu->fallback_address == 0U || sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
+		if (vdd_sys_pmu->fallback_address == 0U ||
+			sunxi_i2c_read(
+				vdd_sys_pmu->i2c, vdd_sys_pmu->fallback_address, AXP2202_CHIP_ID_EXT, &axp_val)) {
 			pr_warn("AXP2202 PMU Read error\n");
 			return;
 		}
@@ -112,7 +114,8 @@ int set_vdd_sys_reg(int set_vol, int onoff)
 	if (sunxi_i2c_write(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_OUTPUT_CTL0, reg_value))
 		return -1;
 
-	pr_debug("Setting VDD_SYS to %d mV, state: %s\n", pmu_axp2202_get_vol(vdd_sys_pmu, "dcdc2"), onoff ? "ON" : "OFF");
+	pr_debug("Setting VDD_SYS to %d mV, state: %s\n", pmu_axp2202_get_vol(vdd_sys_pmu, "dcdc2"),
+		onoff ? "ON" : "OFF");
 
 	return 0;
 }
@@ -127,7 +130,8 @@ uint8_t get_vdd_sys_reg(void)
 	axp_pmu_t *vdd_sys_pmu = dram_vdd_sys_pmu;
 	uint8_t reg_val = 0;
 
-	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202) || sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_DC2OUT_VOL, &reg_val))
+	if (!axp_pmu_matches(vdd_sys_pmu, AXP_PMU_AXP2202) ||
+		sunxi_i2c_read(vdd_sys_pmu->i2c, vdd_sys_pmu->address, AXP2202_DC2OUT_VOL, &reg_val))
 		return -1;
 
 	pr_debug("Getting VDD_SYS reg = 0x%x\n", reg_val);

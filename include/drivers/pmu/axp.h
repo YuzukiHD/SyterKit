@@ -77,7 +77,8 @@ static inline bool axp_pmu_matches(const axp_pmu_t *pmu, axp_pmu_type_t type)
  * @param axp_addr AXP device address.
  * @return Integer indicating the success status of the operation.
  */
-int axp_set_vol(axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
+int axp_set_vol(
+	axp_pmu_t *pmu, char *name, int set_vol, int onoff, axp_contrl_info *axp_ctrl_tbl, uint8_t axp_ctrl_tbl_size);
 
 /**
  * @brief Get the voltage value for a specific power domain controlled by AXP.

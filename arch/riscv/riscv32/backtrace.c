@@ -794,7 +794,8 @@ static int riscv_ins16_backtrace_stack_pop(uint16_t inst)
 		int immed_6 = (inst >> 5) & 0x01; /**< Extract bit 5 for immediate part. */
 		int immed_7_8 = (inst >> 3) & 0x3; /**< Extract bits 3-4 for immediate part. */
 		int immed_9 = (inst >> 12) & 0x1; /**< Extract bit 12 for immediate part. */
-		int immed = (immed_4 << 4) | (immed_5 << 5) | (immed_6 << 6) | (immed_7_8 << 7) | (immed_9 << 9); /**< Combine extracted bits into a full immediate value. */
+		int immed = (immed_4 << 4) | (immed_5 << 5) | (immed_6 << 6) | (immed_7_8 << 7) |
+			    (immed_9 << 9); /**< Combine extracted bits into a full immediate value. */
 
 		if ((immed >> 9) != 0) { /**< If the immediate value is too large, adjust it. */
 			immed = 0x3FF - immed + 1; /**< Adjust the immediate for negative values. */
@@ -858,7 +859,8 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 	long *SP = *pSP; /**< Local stack pointer. */
 	char *PC = *pPC; /**< Local program counter. */
 	char *parse_addr = NULL; /**< Temporary address for instruction parsing. */
-	int i, temp, framesize = 0, offset = 0, result = 0; /**< Loop counters, temporary values, and result variables. */
+	int i, temp, framesize = 0, offset = 0,
+		     result = 0; /**< Loop counters, temporary values, and result variables. */
 	uint32_t ins32 = 0; /**< 32-bit instruction. */
 	uint16_t ins16 = 0, ins16_h = 0, ins16_l = 0; /**< 16-bit instruction (low and high). */
 
@@ -881,13 +883,15 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 
 		/* Check if the current address is valid. */
 		if (backtrace_check_address(parse_addr) == 0) {
-			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr); /**< Log failure. */
+			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n",
+				parse_addr); /**< Log failure. */
 			return -1;
 		}
 
 		/* Check the next address for a valid instruction. */
 		if (backtrace_check_address(parse_addr + 2) == 0) {
-			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr + 2); /**< Log failure. */
+			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n",
+				parse_addr + 2); /**< Log failure. */
 			return -1;
 		}
 
@@ -896,13 +900,16 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 
 		/* Check if the instruction length is 4 bytes or invalid, then combine into 32-bit. */
 		if (insn_length(ins16_l) == 4 || ins16_l == 0) {
-			ins32 = (ins16_h << 16) | ins16_l; /**< Combine high and low 16-bits into a 32-bit instruction. */
-			result = riscv_ins32_backtrace_return_pop(ins32); /**< Check if it's a return pop for 32-bit instruction. */
+			ins32 = (ins16_h << 16) |
+				ins16_l; /**< Combine high and low 16-bits into a 32-bit instruction. */
+			result = riscv_ins32_backtrace_return_pop(
+				ins32); /**< Check if it's a return pop for 32-bit instruction. */
 			i += 2; /**< Adjust the loop index for 32-bit instruction. */
 			parse_addr -= 4; /**< Move back by 4 bytes for 32-bit instruction. */
 		} else {
 			ins16 = ins16_l; /**< Use the 16-bit instruction if it's valid. */
-			result = riscv_ins16_backtrace_return_pop(ins16); /**< Check if it's a return pop for 16-bit instruction. */
+			result = riscv_ins16_backtrace_return_pop(
+				ins16); /**< Check if it's a return pop for 16-bit instruction. */
 			parse_addr -= 2; /**< Move back by 2 bytes for 16-bit instruction. */
 		}
 
@@ -912,7 +919,8 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 		}
 	}
 
-	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, framesize = %d\n", i, parse_addr, PC, framesize); /**< Log backtrace progress. */
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, framesize = %d\n", i, parse_addr, PC,
+		framesize); /**< Log backtrace progress. */
 
 	framesize = result; /**< Set the frame size from the result. */
 
@@ -926,13 +934,15 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 	for (i = 0; parse_addr - i >= PC; i += 2) {
 		/* Validate the address before processing the instruction. */
 		if (backtrace_check_address(parse_addr - i) == 0) {
-			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr - i); /**< Log failed address. */
+			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n",
+				parse_addr - i); /**< Log failed address. */
 			return -1;
 		}
 
 		/* Check the previous 2-byte instruction for validity. */
 		if (backtrace_check_address(parse_addr - i - 2) == 0) {
-			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n", parse_addr - i - 2); /**< Log failed address. */
+			printk(LOG_LEVEL_BACKTRACE, "backtrace: failed. addr 0x%08x\n",
+				parse_addr - i - 2); /**< Log failed address. */
 			return -1;
 		}
 
@@ -956,7 +966,8 @@ static int riscv_backtrace_from_lr(long **pSP, char **pPC, char *LR)
 		}
 	}
 
-	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, SP = %p, framesize = %d\n", i, parse_addr, PC, SP, framesize); /**< Log final backtrace details. */
+	pr_trace("BT: i = %d, parse_addr = %p, PC = %p, SP = %p, framesize = %d\n", i, parse_addr, PC, SP,
+		framesize); /**< Log final backtrace details. */
 
 	/* Check if the LR is valid again before updating SP and PC. */
 	if (backtrace_check_address(LR) == 0) {
@@ -1015,7 +1026,8 @@ int backtrace(char *PC, long *SP, char *LR)
 			PC = _PC;
 			LR = _LR;
 			for (; level < BT_LEVEL_LIMIT; level++) {
-				ret = backtrace_from_stack(&SP, &PC, &LR); ///< Continue stack backtrace if LR tracing succeeds
+				ret = backtrace_from_stack(
+					&SP, &PC, &LR); ///< Continue stack backtrace if LR tracing succeeds
 				if (ret != 0) {
 					break;
 				}

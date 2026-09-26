@@ -42,7 +42,8 @@ static inline void set_pll_cpux_axi(void)
 	writel(reg_val, SUNXI_CCM_BASE + CCU_PLL_CPUX_CTRL_REG);
 
 	/* set default val: clk is 1008M, PLL_OUTPUT = 24 M*N / (M*P) */
-	reg_val = (read32(SUNXI_CCM_BASE + CCU_PLL_CPUX_CTRL_REG) & ~((0x3 << 16) | (0xff << 8) | (0x3 << 0))) | (41 << 8);
+	reg_val = (read32(SUNXI_CCM_BASE + CCU_PLL_CPUX_CTRL_REG) & ~((0x3 << 16) | (0xff << 8) | (0x3 << 0))) |
+		  (41 << 8);
 	writel(reg_val, SUNXI_CCM_BASE + CCU_PLL_CPUX_CTRL_REG);
 
 	/* lock enable */
@@ -113,7 +114,8 @@ static inline void set_ahb(void)
 {
 	/* PLL6:AHB1:APB1 = 600M:200M:100M */
 	writel((2 << 0) | (0 << 8), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
-	writel((0x03 << 24) | read32(SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG), SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
+	writel((0x03 << 24) | read32(SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG),
+		SUNXI_CCM_BASE + CCU_PSI_AHB1_AHB2_CFG_REG);
 	sdelay(1);
 	/*PLL6:AHB3 = 600M:200M*/
 	writel((2 << 0) | (0 << 8), SUNXI_CCM_BASE + CCU_AHB3_CFG_GREG);
@@ -389,7 +391,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI0 disabled\r\n");
 	}
@@ -402,7 +405,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (1200M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI1 disabled\r\n");
 	}

@@ -617,7 +617,8 @@ uint32_t spi_nand_write(spi_nand_t *nand, const uint8_t *buf, uint32_t addr, uin
 		nand->info.pages_per_block == 0U || nand->info.blocks_per_die == 0U || nand->info.ndies == 0U ||
 		spi_nand_select(nand) != 0)
 		return 0U;
-	capacity = (uint64_t)nand->info.page_size * nand->info.pages_per_block * nand->info.blocks_per_die * nand->info.ndies;
+	capacity = (uint64_t)nand->info.page_size * nand->info.pages_per_block * nand->info.blocks_per_die *
+		   nand->info.ndies;
 	if ((uint64_t)addr >= capacity)
 		return 0U;
 	available = capacity - addr;

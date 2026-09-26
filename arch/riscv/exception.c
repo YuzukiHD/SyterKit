@@ -90,8 +90,10 @@ static void riscv_show_trap(const struct pt_regs_t *regs)
 	bool interrupt = (regs->cause & RISCV_CAUSE_INTERRUPT) != 0U;
 	unsigned long cause = regs->cause & ~RISCV_CAUSE_INTERRUPT;
 
-	pr_err("RISC-V %s: %s (%lu)\n", interrupt ? "interrupt" : "exception", riscv_trap_name(cause, interrupt), cause);
-	pr_err("mcause=0x%08lx mepc=0x%08lx mtval=0x%08lx mstatus=0x%08lx\n", regs->cause, regs->epc, regs->badvaddr, regs->status);
+	pr_err("RISC-V %s: %s (%lu)\n", interrupt ? "interrupt" : "exception", riscv_trap_name(cause, interrupt),
+		cause);
+	pr_err("mcause=0x%08lx mepc=0x%08lx mtval=0x%08lx mstatus=0x%08lx\n", regs->cause, regs->epc, regs->badvaddr,
+		regs->status);
 	pr_err("ra=0x%08lx sp=0x%08lx gp=0x%08lx tp=0x%08lx\n", regs->x[1], regs->x[2], regs->x[3], regs->x[4]);
 	pr_err("t0=0x%08lx t1=0x%08lx t2=0x%08lx s0=0x%08lx\n", regs->x[5], regs->x[6], regs->x[7], regs->x[8]);
 	pr_err("s1=0x%08lx s2=0x%08lx s3=0x%08lx s4=0x%08lx\n", regs->x[9], regs->x[18], regs->x[19], regs->x[20]);

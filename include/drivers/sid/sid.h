@@ -10,7 +10,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-#define SUNXI_SID_COMPATIBLE "allwinner,sunxi-sid"
+#define SUNXI_SID_COMPATIBLE  "allwinner,sunxi-sid"
 #define SUNXI_SID_SRAM_OFFSET 0x200U
 
 typedef struct sunxi_sid {

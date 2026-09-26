@@ -31,12 +31,12 @@ typedef struct sunxi_ubuf {
 	uint32_t request_size;
 } sunxi_ubuf_t;
 
-#define SUNXI_USB_REQ_SUCCESSED 0
+#define SUNXI_USB_REQ_SUCCESSED		   0
 #define SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED (-1)
-#define SUNXI_USB_REQ_UNKNOWN_COMMAND (-2)
-#define SUNXI_USB_REQ_UNMATCHED_COMMAND (-3)
-#define SUNXI_USB_REQ_DATA_HUNGRY (-4)
-#define SUNXI_USB_REQ_OP_ERR (-5)
+#define SUNXI_USB_REQ_UNKNOWN_COMMAND	   (-2)
+#define SUNXI_USB_REQ_UNMATCHED_COMMAND	   (-3)
+#define SUNXI_USB_REQ_DATA_HUNGRY	   (-4)
+#define SUNXI_USB_REQ_OP_ERR		   (-5)
 
 /**
  * @brief Attach a concrete USB function implementation.

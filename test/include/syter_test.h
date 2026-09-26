@@ -26,7 +26,8 @@ void test_fail(const char *expression, const char *file, int line);
  * @param file Source file containing the assertion.
  * @param line Source line containing the assertion.
  */
-void test_fail_value(const char *expression, unsigned long long expected, unsigned long long actual, const char *file, int line);
+void test_fail_value(
+	const char *expression, unsigned long long expected, unsigned long long actual, const char *file, int line);
 
 /**
  * @brief Compare two strings and record a failure if they differ.

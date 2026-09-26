@@ -235,6 +235,7 @@ int pmu_axp8191_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp8191_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp8191_ctrl_tbl); i++) {
-		pr_debug("axp8191 %s = %dmv\n", axp8191_ctrl_tbl[i].name, pmu_axp8191_get_vol(pmu, axp8191_ctrl_tbl[i].name));
+		pr_debug("axp8191 %s = %dmv\n", axp8191_ctrl_tbl[i].name,
+			pmu_axp8191_get_vol(pmu, axp8191_ctrl_tbl[i].name));
 	}
 }

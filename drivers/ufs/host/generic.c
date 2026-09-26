@@ -30,9 +30,9 @@
 #include <drivers/sid/sid.h>
 #include <drivers/ufs/host/sunxi.h>
 
-#define SUNXI_UFS_MPHY_SRAM_INIT_DONE	(1U << 24)
-#define SUNXI_UFS_MPHY_SRAM_BYPASS	(1U << 20)
-#define SUNXI_UFS_MPHY_SRAM_EXT_DONE	(1U << 19)
+#define SUNXI_UFS_MPHY_SRAM_INIT_DONE (1U << 24)
+#define SUNXI_UFS_MPHY_SRAM_BYPASS    (1U << 20)
+#define SUNXI_UFS_MPHY_SRAM_EXT_DONE  (1U << 19)
 
 /* Synopsys Test Chip (C10/RMMI) attributes used by the Sun60 PHY. */
 #define TC_CBRATSEL		      0x8114U
@@ -109,8 +109,7 @@ int __attribute__((weak)) sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal __
  * @param[in] high High calibration word read from eFuse SRAM.
  * @return Zero on success, otherwise a UFS host-controller error code.
  */
-int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
-		uint32_t low, uint32_t high)
+int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal, uint32_t low, uint32_t high)
 {
 	if (!cal)
 		return UFSHC_ERR_INVALID;
@@ -132,12 +131,10 @@ int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
 
 	/* A lane pair is usable only when both values are programmed and valid. */
 	if (cal->att_lane0 && cal->ctle_lane0 &&
-		(cal->att_lane0 == 0U || cal->att_lane0 == 0xffU ||
-		 cal->ctle_lane0 == 0U || cal->ctle_lane0 == 0xffU))
+		(cal->att_lane0 == 0U || cal->att_lane0 == 0xffU || cal->ctle_lane0 == 0U || cal->ctle_lane0 == 0xffU))
 		return UFSHC_ERR_IO;
 	if (cal->att_lane1 && cal->ctle_lane1 &&
-		(cal->att_lane1 == 0U || cal->att_lane1 == 0xffU ||
-		 cal->ctle_lane1 == 0U || cal->ctle_lane1 == 0xffU))
+		(cal->att_lane1 == 0U || cal->att_lane1 == 0xffU || cal->ctle_lane1 == 0U || cal->ctle_lane1 == 0xffU))
 		return UFSHC_ERR_IO;
 	return 0;
 }
@@ -181,21 +178,15 @@ static const struct sunxi_ufs_variant *sunxi_variant(void)
  */
 static bool sunxi_variant_valid(const struct sunxi_ufs_variant *variant)
 {
-	return variant && variant->reset_reg && variant->axi_clk_reg &&
-		variant->cfg_clk_reg && variant->rtc_xo_ctrl &&
-		variant->rtc_xo_ctrl1 && variant->rtc_wp && variant->core_rst &&
-		variant->phy_rst && variant->axi_rst && variant->bus_rst &&
-		variant->ahb_gate && variant->axi_clk_gate &&
-		variant->axi_clk_src_mask && variant->axi_clk_factor_mask &&
-		variant->cfg_clk_gate && variant->cfg_clk_src_mask &&
-		variant->cfg_clk_factor_mask && variant->ufs_cfg_reg &&
-		variant->ufs_clk_gate_reg && variant->ufs_cfg_clk_freq_mask &&
-		variant->ufs_ref_clk_freq_mask && variant->phy_ref_clk_ctrl &&
-		variant->ufs_mphy_cfgclk_gate && variant->ufs_clk24m_gate &&
-		variant->rtc_dcxo_gate && variant->rtc_clk_req_disable &&
-		variant->rtc_wp_key &&
-		variant->rtc_ref_type_mask &&
-		variant->rtc_ref_type_shift < 32U;
+	return variant && variant->reset_reg && variant->axi_clk_reg && variant->cfg_clk_reg && variant->rtc_xo_ctrl &&
+	       variant->rtc_xo_ctrl1 && variant->rtc_wp && variant->core_rst && variant->phy_rst && variant->axi_rst &&
+	       variant->bus_rst && variant->ahb_gate && variant->axi_clk_gate && variant->axi_clk_src_mask &&
+	       variant->axi_clk_factor_mask && variant->cfg_clk_gate && variant->cfg_clk_src_mask &&
+	       variant->cfg_clk_factor_mask && variant->ufs_cfg_reg && variant->ufs_clk_gate_reg &&
+	       variant->ufs_cfg_clk_freq_mask && variant->ufs_ref_clk_freq_mask && variant->phy_ref_clk_ctrl &&
+	       variant->ufs_mphy_cfgclk_gate && variant->ufs_clk24m_gate && variant->rtc_dcxo_gate &&
+	       variant->rtc_clk_req_disable && variant->rtc_wp_key && variant->rtc_ref_type_mask &&
+	       variant->rtc_ref_type_shift < 32U;
 }
 
 /**
@@ -227,14 +218,12 @@ static uint32_t sunxi_detect_ref_clk_type(void)
 
 	if (!sunxi_variant_valid(variant))
 		return 0;
-	previous = (readl(variant->rtc_xo_ctrl) >> variant->rtc_ref_type_shift) &
-		variant->rtc_ref_type_mask;
+	previous = (readl(variant->rtc_xo_ctrl) >> variant->rtc_ref_type_shift) & variant->rtc_ref_type_mask;
 	current = previous;
 
 	/* The RTC value can change while the oscillator detector settles. */
 	while (stable < 3U) {
-		current = (readl(variant->rtc_xo_ctrl) >> variant->rtc_ref_type_shift) &
-			variant->rtc_ref_type_mask;
+		current = (readl(variant->rtc_xo_ctrl) >> variant->rtc_ref_type_shift) & variant->rtc_ref_type_mask;
 		if (current == previous)
 			++stable;
 		else {
@@ -244,8 +233,7 @@ static uint32_t sunxi_detect_ref_clk_type(void)
 		udelay(3);
 	}
 
-	ufs_debug("UFS PHY: reference clock type=%u rtc_xo_ctrl=0x%08x\n", current,
-		readl(variant->rtc_xo_ctrl));
+	ufs_debug("UFS PHY: reference clock type=%u rtc_xo_ctrl=0x%08x\n", current, readl(variant->rtc_xo_ctrl));
 	return current;
 }
 
@@ -270,11 +258,9 @@ static uint32_t sunxi_ref_clk_type(void)
  * @param[in] type Reference-clock type to check.
  * @return true when the type is an external reference clock.
  */
-static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant,
-	uint32_t type)
+static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant, uint32_t type)
 {
-	return variant && type < 32U &&
-		(variant->rtc_external_ref_types & BIT(type)) != 0U;
+	return variant && type < 32U && (variant->rtc_external_ref_types & BIT(type)) != 0U;
 }
 
 /**
@@ -284,8 +270,7 @@ static bool sunxi_ref_clk_is_external(const struct sunxi_ufs_variant *variant,
  * @param[in] type Reference-clock type to look up.
  * @return The encoded frequency, or 0 for an unknown type.
  */
-static uint32_t sunxi_ref_clk_freq(const struct sunxi_ufs_variant *variant,
-	uint32_t type)
+static uint32_t sunxi_ref_clk_freq(const struct sunxi_ufs_variant *variant, uint32_t type)
 {
 	if (!variant || type >= 4U)
 		return 0;
@@ -390,13 +375,11 @@ static void sunxi_axi_clk(bool enable)
 		clrbits_le32(variant->reset_reg, variant->axi_rst);
 		clrbits_le32(variant->axi_clk_reg, variant->axi_clk_factor_mask);
 		udelay(10);
-		clrsetbits_le32(variant->axi_clk_reg, variant->axi_clk_src_mask,
-			variant->axi_clk_src_300);
+		clrsetbits_le32(variant->axi_clk_reg, variant->axi_clk_src_mask, variant->axi_clk_src_300);
 		udelay(10);
 		return;
 	}
-	clrsetbits_le32(variant->axi_clk_reg, variant->axi_clk_src_mask,
-		variant->axi_clk_src_200);
+	clrsetbits_le32(variant->axi_clk_reg, variant->axi_clk_src_mask, variant->axi_clk_src_200);
 	udelay(10);
 	clrbits_le32(variant->axi_clk_reg, variant->axi_clk_factor_mask);
 	udelay(10);
@@ -506,11 +489,10 @@ int __attribute__((weak)) sunxi_ufs_prepare(void)
 	external = sunxi_ref_clk_is_external(variant, ref_type);
 
 	value = readl(variant->ufs_cfg_reg);
-	value &= ~(SUNXI_UFS_MPHY_SRAM_BYPASS | SUNXI_UFS_MPHY_SRAM_EXT_DONE |
-		   variant->ufs_cfg_clk_freq_mask | variant->ufs_ref_clk_freq_mask |
-		   variant->ufs_ref_clk_unipro_sel | variant->ufs_ref_clk_app_sel);
+	value &= ~(SUNXI_UFS_MPHY_SRAM_BYPASS | SUNXI_UFS_MPHY_SRAM_EXT_DONE | variant->ufs_cfg_clk_freq_mask |
+		   variant->ufs_ref_clk_freq_mask | variant->ufs_ref_clk_unipro_sel | variant->ufs_ref_clk_app_sel);
 	value |= (variant->ufs_cfg_clk_freq & variant->ufs_cfg_clk_freq_mask) |
-		(ref_freq & variant->ufs_ref_clk_freq_mask) | variant->ufs_ref_clk_app_enable;
+		 (ref_freq & variant->ufs_ref_clk_freq_mask) | variant->ufs_ref_clk_app_enable;
 	if (external)
 		value |= variant->ufs_ref_clk_unipro_sel | variant->ufs_ref_clk_app_sel;
 	writel(value, variant->ufs_cfg_reg);
@@ -769,8 +751,8 @@ int __attribute__((weak)) sunxi_ufs_link_startup(struct ufshc_host *host)
 		for (size_t i = 0; i < sizeof(afe_cal) / sizeof(afe_cal[0]); ++i) {
 			ret = sunxi_c10_write(host, afe_cal[i].reg, afe_cal[i].value);
 			if (ret) {
-				ufs_debug("UFS PHY: C10 AFE calibration reg=0x%04x failed ret=%d\n",
-					afe_cal[i].reg, ret);
+				ufs_debug(
+					"UFS PHY: C10 AFE calibration reg=0x%04x failed ret=%d\n", afe_cal[i].reg, ret);
 				return ret;
 			}
 		}

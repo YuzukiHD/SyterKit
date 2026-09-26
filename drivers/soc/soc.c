@@ -20,9 +20,9 @@
 #include <drivers/soc/soc.h>
 #include <dt-compatible/soc-dt.h>
 
-#define SUNXI_SOC_VERSION_OFFSET  0x24U
-#define SUNXI_SOC_DIE_ENABLE_BIT  (1u << 15)
-#define SUNXI_SOC_DIE_INFO_MASK   0xFFFF0000U
+#define SUNXI_SOC_VERSION_OFFSET 0x24U
+#define SUNXI_SOC_DIE_ENABLE_BIT (1u << 15)
+#define SUNXI_SOC_DIE_INFO_MASK	 0xFFFF0000U
 
 static sunxi_soc_t soc_descriptor;
 static bool soc_descriptor_valid;

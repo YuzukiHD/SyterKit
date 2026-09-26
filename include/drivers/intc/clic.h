@@ -10,13 +10,18 @@
 #include <drivers/intc/intc.h>
 
 #define SUNXI_CLIC_COMPATIBLE "thead,c900-clic"
-#define SUNXI_CLIC_MAX_IRQS 256U
+#define SUNXI_CLIC_MAX_IRQS   256U
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef enum irq_trigger_type { IRQ_TRIGGER_TYPE_LEVEL, IRQ_TRIGGER_TYPE_EDGE_RISING, IRQ_TRIGGER_TYPE_EDGE_FALLING, IRQ_TRIGGER_TYPE_EDGE_BOTH } irq_trigger_type_t;
+typedef enum irq_trigger_type {
+	IRQ_TRIGGER_TYPE_LEVEL,
+	IRQ_TRIGGER_TYPE_EDGE_RISING,
+	IRQ_TRIGGER_TYPE_EDGE_FALLING,
+	IRQ_TRIGGER_TYPE_EDGE_BOTH
+} irq_trigger_type_t;
 
 typedef struct sunxi_clic {
 	int dt_node;

@@ -26,8 +26,8 @@
  * to expose the eFuse regions by name.
  */
 typedef struct sunxi_sid_section {
-	const char *name;   /**< Section name used by the framework. */
-	uint32_t offset;    /**< Byte offset of the section in eFuse space. */
+	const char *name; /**< Section name used by the framework. */
+	uint32_t offset; /**< Byte offset of the section in eFuse space. */
 	uint32_t size_bits; /**< Size of the section in bits. */
 } sunxi_sid_section_t;
 

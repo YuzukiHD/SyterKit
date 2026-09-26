@@ -114,9 +114,9 @@ static void efex_param_apply_pins(const struct efex_param_bus *bus, gpio_mux_t *
 		if (efex_param_bus_get(bus, EFEX_PARAM_BUS_GPIO_BASE, &value))
 			pin->base = value;
 		efex_param_bus_get(bus, index ? EFEX_PARAM_BUS_PIN1 : EFEX_PARAM_BUS_PIN0, &pin->pin);
-		pin->bank = (uint8_t) ((pin->pin >> PIO_NUM_IO_BITS) - bank0);
+		pin->bank = (uint8_t)((pin->pin >> PIO_NUM_IO_BITS) - bank0);
 		if (efex_param_bus_get(bus, index ? EFEX_PARAM_BUS_MUX1 : EFEX_PARAM_BUS_MUX0, &value))
-			pin->mux = (uint8_t) value;
+			pin->mux = (uint8_t)value;
 	}
 }
 
@@ -127,15 +127,15 @@ static void efex_param_apply_serial(const struct efex_param_bus *bus, sunxi_seri
 	if (efex_param_bus_get(bus, EFEX_PARAM_BUS_BASE, &value))
 		uart->base = value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_BUS_ID, &value))
-		uart->id = (uint8_t) value;
+		uart->id = (uint8_t)value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_BUS_RATE, &value))
-		uart->baud_rate = (sunxi_serial_baudrate_t) value;
+		uart->baud_rate = (sunxi_serial_baudrate_t)value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_UART_PARITY, &value))
-		uart->parity = (sunxi_serial_parity_t) value;
+		uart->parity = (sunxi_serial_parity_t)value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_UART_STOP, &value))
-		uart->stop = (sunxi_serial_stop_bit_t) value;
+		uart->stop = (sunxi_serial_stop_bit_t)value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_UART_DLEN, &value))
-		uart->dlen = (sunxi_serial_dlen_t) value;
+		uart->dlen = (sunxi_serial_dlen_t)value;
 	efex_param_apply_clk(bus, &uart->uart_clk);
 	efex_param_apply_pins(bus, &uart->gpio_pin.gpio_tx, &uart->gpio_pin.gpio_rx);
 }
@@ -147,15 +147,15 @@ static void efex_param_apply_i2c(const struct efex_param_bus *bus, sunxi_i2c_t *
 	if (efex_param_bus_get(bus, EFEX_PARAM_BUS_BASE, &value))
 		i2c->base = value;
 	if (efex_param_bus_get(bus, EFEX_PARAM_BUS_ID, &value))
-		i2c->id = (uint8_t) value;
+		i2c->id = (uint8_t)value;
 	efex_param_bus_get(bus, EFEX_PARAM_BUS_RATE, &i2c->speed);
 	efex_param_apply_clk(bus, &i2c->i2c_clk);
 	efex_param_apply_pins(bus, &i2c->gpio.gpio_scl, &i2c->gpio.gpio_sda);
 }
 
 /* Memory entries apply directly; returns false for a field the target lacks. */
-static bool efex_param_apply_mem(uint32_t id, uint32_t index, uint32_t value, uint32_t *parameters,
-				 size_t max_words, size_t *count, uintptr_t *memory_base, size_t *memory_size)
+static bool efex_param_apply_mem(uint32_t id, uint32_t index, uint32_t value, uint32_t *parameters, size_t max_words,
+	size_t *count, uintptr_t *memory_base, size_t *memory_size)
 {
 	switch (id) {
 	case EFEX_PARAM_MEM_PARA:
@@ -185,7 +185,7 @@ static bool efex_param_apply_mem(uint32_t id, uint32_t index, uint32_t value, ui
 
 /* Apply or collect one host entry; returns true when a target consumed it. */
 static bool efex_param_apply_entry(const struct efex_param_targets *targets, uint32_t key, uint32_t value,
-				   struct efex_param_bus *uart, struct efex_param_bus *twi)
+	struct efex_param_bus *uart, struct efex_param_bus *twi)
 {
 	uint32_t group = (key >> 24) & 0x3fU;
 	uint32_t id = (key >> 8) & 0xffffU;
@@ -207,18 +207,16 @@ static bool efex_param_apply_entry(const struct efex_param_targets *targets, uin
 	case EFEX_PARAM_GROUP_PMU_RAIL:
 		if (targets->rail_mv == NULL || id >= targets->pmu_count || index >= EFEX_PARAM_RAIL_MAX)
 			return false;
-		targets->rail_mv[id][index] = (int) value;
+		targets->rail_mv[id][index] = (int)value;
 		return true;
 	case EFEX_PARAM_GROUP_DRAM:
-		return targets->dram != NULL &&
-		       efex_param_apply_mem(id, index, value, targets->dram->parameters, SUNXI_DRAM_MAX_PARAM_WORDS,
-					    &targets->dram->parameter_count, &targets->dram->memory_base,
-					    &targets->dram->memory_size);
+		return targets->dram != NULL && efex_param_apply_mem(id, index, value, targets->dram->parameters,
+							SUNXI_DRAM_MAX_PARAM_WORDS, &targets->dram->parameter_count,
+							&targets->dram->memory_base, &targets->dram->memory_size);
 	case EFEX_PARAM_GROUP_PSRAM:
-		return targets->psram != NULL &&
-		       efex_param_apply_mem(id, index, value, targets->psram->parameters, SUNXI_PSRAM_MAX_PARAM_WORDS,
-					    &targets->psram->parameter_count, &targets->psram->memory_base,
-					    &targets->psram->memory_size);
+		return targets->psram != NULL && efex_param_apply_mem(id, index, value, targets->psram->parameters,
+							 SUNXI_PSRAM_MAX_PARAM_WORDS, &targets->psram->parameter_count,
+							 &targets->psram->memory_base, &targets->psram->memory_size);
 	case EFEX_PARAM_GROUP_APP:
 		if (targets->app == NULL || (key & 0xffffffU) >= targets->app_count)
 			return false;

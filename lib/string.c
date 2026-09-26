@@ -348,10 +348,10 @@ enum ranks {
 	rank_longlong = 2,
 };
 
-#define MIN_RANK rank_char
-#define MAX_RANK rank_longlong
-#define INTMAX_RANK rank_longlong
-#define SIZE_T_RANK rank_long
+#define MIN_RANK       rank_char
+#define MAX_RANK       rank_longlong
+#define INTMAX_RANK    rank_longlong
+#define SIZE_T_RANK    rank_long
 #define PTRDIFF_T_RANK rank_long
 
 #define EMIT(x)                     \
@@ -1184,7 +1184,8 @@ is_string: {
 				case 'e':
 				case 'f':
 				case 'g':
-					sz = format_float(q, (o < n) ? n - o : 0, (double)(va_arg(ap, double)), flags | FL_SIGNED, ch, width, prec);
+					sz = format_float(q, (o < n) ? n - o : 0, (double)(va_arg(ap, double)),
+						flags | FL_SIGNED, ch, width, prec);
 					q += sz;
 					o += sz;
 					break;

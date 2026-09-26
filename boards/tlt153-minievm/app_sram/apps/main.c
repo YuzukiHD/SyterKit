@@ -70,7 +70,8 @@ int cmd_read(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_read(&mmc_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
@@ -89,7 +90,8 @@ int cmd_write(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_write(&mmc_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
@@ -144,7 +146,8 @@ static void __attribute__((noinline)) cmd_fault_data_write(void)
 }
 
 msh_declare_command(fault);
-msh_define_help(fault, "trigger an ARM exception for testing", "Usage: fault <undefined|swi|prefetch|data-read|data-write>\n");
+msh_define_help(
+	fault, "trigger an ARM exception for testing", "Usage: fault <undefined|swi|prefetch|data-read|data-write>\n");
 int cmd_fault(int argc, const char **argv)
 {
 	if (argc != 2) {
@@ -184,7 +187,8 @@ int cmd_dram(int argc, const char **argv)
 {
 	pr_info("Trainned DRAM PARAM:\n");
 	for (size_t i = 0; i < 32; i += 4) {
-		pr_info(" 0x%08x 0x%08x 0x%08x 0x%08x\n", dram.parameters[i], dram.parameters[i + 1], dram.parameters[i + 2], dram.parameters[i + 3]);
+		pr_info(" 0x%08x 0x%08x 0x%08x 0x%08x\n", dram.parameters[i], dram.parameters[i + 1],
+			dram.parameters[i + 2], dram.parameters[i + 3]);
 	}
 	return 0;
 }
@@ -214,7 +218,8 @@ int main(void)
 		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+		sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
 		spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
 		pr_err("SPI: invalid devicetree configuration\n");
 		return -1;

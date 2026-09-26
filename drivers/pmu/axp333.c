@@ -130,6 +130,7 @@ int pmu_axp333_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp333_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp333_ctrl_tbl); i++) {
-		pr_debug("AXP333 %s = %dmv\n", axp333_ctrl_tbl[i].name, pmu_axp333_get_vol(pmu, axp333_ctrl_tbl[i].name));
+		pr_debug("AXP333 %s = %dmv\n", axp333_ctrl_tbl[i].name,
+			pmu_axp333_get_vol(pmu, axp333_ctrl_tbl[i].name));
 	}
 }

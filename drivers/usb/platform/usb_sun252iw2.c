@@ -26,8 +26,7 @@ int sunxi_usb_platform_init(const sunxi_usb_t *usb)
 		return DRIVER_ERROR_INVALID;
 
 	if (!sram_acquired) {
-		saved_sram_mapping = readl(SUNXI_SYSCTRL_BASE + SUN252IW2_SYSCTRL_SRAM_REMAP) &
-			SUN252IW2_USB_SRAM_MASK;
+		saved_sram_mapping = readl(SUNXI_SYSCTRL_BASE + SUN252IW2_SYSCTRL_SRAM_REMAP) & SUN252IW2_USB_SRAM_MASK;
 		sram_acquired = 1;
 	}
 	clrbits_le32(SUNXI_SYSCTRL_BASE + SUN252IW2_SYSCTRL_SRAM_REMAP, SUN252IW2_USB_SRAM_MASK);
@@ -46,7 +45,6 @@ void sunxi_usb_platform_deinit(const sunxi_usb_t *usb)
 
 	/* Restore only the banks acquired here, after the controller is stopped.
 	 * This restores the caller's mapping, not an assumed CPU mapping. */
-	clrsetbits_le32(SUNXI_SYSCTRL_BASE + SUN252IW2_SYSCTRL_SRAM_REMAP,
-		SUN252IW2_USB_SRAM_MASK, saved_sram_mapping);
+	clrsetbits_le32(SUNXI_SYSCTRL_BASE + SUN252IW2_SYSCTRL_SRAM_REMAP, SUN252IW2_USB_SRAM_MASK, saved_sram_mapping);
 	sram_acquired = 0;
 }

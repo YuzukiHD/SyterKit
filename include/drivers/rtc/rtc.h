@@ -16,10 +16,10 @@ extern "C" {
 
 #define SUNXI_RTC_COMPATIBLE "allwinner,sunxi-rtc"
 
-#define EFEX_FLAG (0x5AA5A55A)
-#define RTC_FEL_INDEX 2
+#define EFEX_FLAG	   (0x5AA5A55A)
+#define RTC_FEL_INDEX	   2
 #define RTC_DRAM_PARA_ADDR 3
-#define RTC_BOOT_INDEX 6
+#define RTC_BOOT_INDEX	   6
 
 typedef struct sunxi_rtc {
 	int dt_node;

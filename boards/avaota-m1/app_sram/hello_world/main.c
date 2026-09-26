@@ -57,7 +57,7 @@ const msh_command_entry commands[] = {
 
 /* Resource Control Register Configuration Macros */
 #define RES_CTRL_BASE_VAL 0x19190000 /* Base value for resource control registers */
-#define RES_VAL_MASK 0xF /* Resource configuration value mask */
+#define RES_VAL_MASK	  0xF /* Resource configuration value mask */
 
 /**
  * @brief Initialize resource controller
@@ -91,16 +91,16 @@ static void sunxi_res_ctrl_init(const sunxi_sid_t *sid)
 /* Voltage Configuration Related Macros */
 #define DEFAULT_SYS_VOLTAGE 900 /* Default system voltage 0.9V */
 #define DEFAULT_GPU_VOLTAGE 940 /* Default GPU voltage 0.94V */
-#define VDD_DCDC1_VOLTAGE 1050 /* DCDC1 voltage 1.05V */
-#define VDD_3V3_VOLTAGE 3300 /* 3.3V voltage */
-#define VDD_1V8_VOLTAGE 1800 /* 1.8V voltage */
+#define VDD_DCDC1_VOLTAGE   1050 /* DCDC1 voltage 1.05V */
+#define VDD_3V3_VOLTAGE	    3300 /* 3.3V voltage */
+#define VDD_1V8_VOLTAGE	    1800 /* 1.8V voltage */
 
 /* EFUSE Related Register Offset and Mask */
 #define EFUSE_SRAM_OFFSET 0x14 /* EFUSE SRAM mirror offset */
-#define EFUSE_MASK 0xFF0000 /* EFUSE mask */
-#define EFUSE_EXT_MASK 0xFF000000 /* Extended EFUSE mask */
-#define EFUSE_SHIFT 16 /* EFUSE shift */
-#define EFUSE_EXT_SHIFT 24 /* Extended EFUSE shift */
+#define EFUSE_MASK	  0xFF0000 /* EFUSE mask */
+#define EFUSE_EXT_MASK	  0xFF000000 /* Extended EFUSE mask */
+#define EFUSE_SHIFT	  16 /* EFUSE shift */
+#define EFUSE_EXT_SHIFT	  24 /* Extended EFUSE shift */
 
 /**
  * @brief Voltage configuration structure
@@ -206,7 +206,8 @@ int main(void)
 		return -1;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+		pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK) {
 		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}

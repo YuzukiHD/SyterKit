@@ -60,6 +60,6 @@ void test_case_main(const char *case_dir)
 	TEST_EQ(0, malloc_add_region((uintptr_t)second_heap, sizeof(second_heap)));
 	second_region = malloc(second_size);
 	TEST_ASSERT((uintptr_t)second_region >= (uintptr_t)second_heap &&
-		(uintptr_t)second_region < (uintptr_t)second_heap + sizeof(second_heap));
+		    (uintptr_t)second_region < (uintptr_t)second_heap + sizeof(second_heap));
 	free(second_region);
 }

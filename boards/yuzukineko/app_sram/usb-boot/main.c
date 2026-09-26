@@ -32,16 +32,16 @@
 #include <dt-bindings/soc/sun252iw2.h>
 #include <lib/fdt/libfdt.h>
 
-#define F101_RAM_BASE		SUNXI_PSRAM_BASE
-#define F101_RAM_SIZE		0x01000000U
+#define F101_RAM_BASE SUNXI_PSRAM_BASE
+#define F101_RAM_SIZE 0x01000000U
 
-#define F101_KERNEL_SIZE	0x00600000U	/* Linux Image up to 6 MiB */
-#define F101_DTB_SIZE		0x00040000U	/* Device tree up to 256 KiB */
-#define F101_SBI_SIZE	0x00080000U	/* SBI firwmare fw_jump 512 KiB */
+#define F101_KERNEL_SIZE 0x00600000U /* Linux Image up to 6 MiB */
+#define F101_DTB_SIZE	 0x00040000U /* Device tree up to 256 KiB */
+#define F101_SBI_SIZE	 0x00080000U /* SBI firwmare fw_jump 512 KiB */
 
-#define F101_LINUX_ADDR		(F101_RAM_BASE)
+#define F101_LINUX_ADDR (F101_RAM_BASE)
 #define F101_SBI_ADDR	(F101_RAM_BASE + F101_RAM_SIZE - F101_SBI_SIZE)
-#define F101_DTB_ADDR		(F101_SBI_ADDR - F101_DTB_SIZE)
+#define F101_DTB_ADDR	(F101_SBI_ADDR - F101_DTB_SIZE)
 
 typedef void (*sbi_entry_t)(unsigned long hartid, uintptr_t fdt_addr);
 
@@ -53,15 +53,13 @@ static int f101_validate_dtb(void)
 
 	rc = fdt_check_header(fdt);
 	if (rc) {
-		pr_err("DTB: invalid blob at 0x%08x: %s\n", F101_DTB_ADDR,
-		       fdt_strerror(rc));
+		pr_err("DTB: invalid blob at 0x%08x: %s\n", F101_DTB_ADDR, fdt_strerror(rc));
 		return -1;
 	}
 
 	size = fdt_totalsize(fdt);
 	if (size > F101_DTB_SIZE) {
-		pr_err("DTB: %u bytes exceeds reserved %u bytes\n", size,
-		       F101_DTB_SIZE);
+		pr_err("DTB: %u bytes exceeds reserved %u bytes\n", size, F101_DTB_SIZE);
 		return -1;
 	}
 
@@ -91,8 +89,8 @@ int cmd_boot(int argc, const char **argv)
 	if (f101_validate_dtb())
 		return -1;
 
-	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x SBI firwmare=0x%08x\n",
-		F101_LINUX_ADDR, F101_DTB_ADDR, F101_SBI_ADDR);
+	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x SBI firwmare=0x%08x\n", F101_LINUX_ADDR, F101_DTB_ADDR,
+		F101_SBI_ADDR);
 	f101_boot_sbi_firmware();
 }
 

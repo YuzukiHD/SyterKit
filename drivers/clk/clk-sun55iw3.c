@@ -29,10 +29,10 @@
  * @brief PLL divider factors used to program a CPU core PLL.
  */
 typedef struct {
-	int FactorN;  /**< N divider factor. */
+	int FactorN; /**< N divider factor. */
 	int FactorM0; /**< M0 divider factor. */
 	int FactorM1; /**< M1 divider factor. */
-	int FactorP;  /**< P divider factor. */
+	int FactorP; /**< P divider factor. */
 } core_pll_freq_fact;
 
 /**
@@ -395,9 +395,15 @@ static void set_modules_clock(void)
 {
 	uint32_t reg_val, i;
 	uintptr_t ccmu_pll_addr[] = {
-		SUNXI_CCMU_BASE + CCU_PLL_PERI0_CTRL_REG,  SUNXI_CCMU_BASE + CCU_PLL_PERI1_CTRL_REG,  SUNXI_CCMU_BASE + CCU_PLL_GPU_CTRL_REG,
-		SUNXI_CCMU_BASE + CCU_PLL_VIDE00_CTRL_REG, SUNXI_CCMU_BASE + CCU_PLL_VIDE01_CTRL_REG, SUNXI_CCMU_BASE + CCU_PLL_VIDE02_CTRL_REG,
-		SUNXI_CCMU_BASE + CCU_PLL_VIDE03_CTRL_REG, SUNXI_CCMU_BASE + CCU_PLL_VE_CTRL_REG,     SUNXI_CCMU_BASE + CCU_PLL_AUDIO_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_PERI0_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_PERI1_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_GPU_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_VIDE00_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_VIDE01_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_VIDE02_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_VIDE03_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_VE_CTRL_REG,
+		SUNXI_CCMU_BASE + CCU_PLL_AUDIO_CTRL_REG,
 	};
 
 	for (i = 0; i < sizeof(ccmu_pll_addr) / sizeof(ccmu_pll_addr[0]); i++) {
@@ -592,7 +598,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI0 disabled\r\n");
 	}
@@ -605,7 +612,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI1 disabled\r\n");
 	}

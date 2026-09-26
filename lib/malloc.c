@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define MALLOC_ALIGNMENT 16U
+#define MALLOC_ALIGNMENT   16U
 #define MALLOC_MAX_REGIONS 2U
 
 /** @struct malloc_block
@@ -59,8 +59,7 @@ static size_t align_size(size_t size)
  * @return The address of the payload of @p block minus the descriptor
  *         overhead, or the payload address itself for the heap tail.
  */
-static uintptr_t block_limit(const struct malloc_region *region,
-				     const struct malloc_block *block)
+static uintptr_t block_limit(const struct malloc_region *region, const struct malloc_block *block)
 {
 	if (block == &region->tail)
 		return block->address;
@@ -77,9 +76,7 @@ static uintptr_t block_limit(const struct malloc_region *region,
  * @return The descriptor matching @p ptr, or NULL if @p ptr is not a live
  *         allocation.
  */
-static struct malloc_block *find_block(const void *ptr,
-				       struct malloc_block **previous,
-				       struct malloc_region **owner)
+static struct malloc_block *find_block(const void *ptr, struct malloc_block **previous, struct malloc_region **owner)
 {
 	struct malloc_block *block;
 	size_t region_index;
@@ -133,8 +130,7 @@ int malloc_add_region(uintptr_t heap_start, size_t heap_size)
 
 	heap_end = heap_start + heap_size;
 	for (region_index = 0U; region_index < heap_region_count; region_index++) {
-		if (aligned_start < heap_regions[region_index].end &&
-			heap_end > heap_regions[region_index].start)
+		if (aligned_start < heap_regions[region_index].end && heap_end > heap_regions[region_index].start)
 			return -1;
 	}
 	if (heap_region_count >= MALLOC_MAX_REGIONS)
@@ -212,7 +208,8 @@ void *malloc(size_t size)
 
 			metadata_address = block->address + block->size;
 			limit = block_limit(&heap_regions[region_index], block->next);
-			if (metadata_address > limit || limit - metadata_address < sizeof(*new_block) || limit - metadata_address - sizeof(*new_block) < aligned_size)
+			if (metadata_address > limit || limit - metadata_address < sizeof(*new_block) ||
+				limit - metadata_address - sizeof(*new_block) < aligned_size)
 				continue;
 
 			new_block = (struct malloc_block *)metadata_address;

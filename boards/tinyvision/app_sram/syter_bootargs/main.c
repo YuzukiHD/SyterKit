@@ -33,11 +33,11 @@
 #include <string.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 
 #define FILENAME_MAX_LEN 64
@@ -119,7 +119,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -156,8 +157,8 @@ static int load_sdcard(image_info_t *image)
 
 msh_declare_command(bootargs);
 msh_define_help(bootargs, "get/set bootargs for kernel",
-		"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
-		"       bootargs get            - get current bootargs\n");
+	"Usage: bootargs set \"bootargs\" - set new bootargs for zImage\n"
+	"       bootargs get            - get current bootargs\n");
 int cmd_bootargs(int argc, const char **argv)
 {
 	if (argc < 2) {
@@ -194,7 +195,8 @@ int cmd_bootargs(int argc, const char **argv)
 		printk(LOG_LEVEL_MUTE, "Now set bootargs to \"%s\"\n", new_bootargs_str);
 
 		/* Modify bootargs string */
-		err = fdt_setprop(image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
+		err = fdt_setprop(
+			image.of_dest, bootargs_node, "bootargs", new_bootargs_str, strlen(new_bootargs_str) + 1);
 
 		if (err < 0) {
 			pr_err("libfdt fdt_setprop() error: %s\n", fdt_strerror(err));

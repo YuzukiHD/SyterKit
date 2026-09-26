@@ -453,18 +453,24 @@ static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para)
 	writel((para->dram_odt_en >> 4) & 0x3, (dram->registers.mctl_phy.base + MCTL_PHY_LP3MR11));
 
 	/* Set dram timing DRAMTMG0 - DRAMTMG5 */
-	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG0));
+	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG0));
 	writel((txp << 16) | (trtp << 8) | (trc << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG1));
-	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG2));
+	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG2));
 	writel((tmrw << 16) | (tmrd << 12) | (tmod << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG3));
-	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG4));
-	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG5));
+	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG4));
+	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG5));
 
 	/* Set dual rank timing */
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG8), 0xf000ffff, (para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
+	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG8), 0xf000ffff,
+		(para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
 
 	/* Set phy interface time PITMG0, PTR3, PTR4 */
-	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0), (dram->registers.mctl_phy.base + MCTL_PHY_PITMG0));
+	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_PITMG0));
 	writel(((tdinit0 << 0) | (tdinit1 << 20)), (dram->registers.mctl_phy.base + MCTL_PHY_PTR3));
 	writel(((tdinit2 << 0) | (tdinit3 << 20)), (dram->registers.mctl_phy.base + MCTL_PHY_PTR4));
 
@@ -668,9 +674,11 @@ static const uint8_t ac_remapping_tables[][22] = {
 	/* No Remap */
 	[0] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 	/* V853 DDR3 */
-	[1] = { 0x5, 0x13, 0x4, 0xF, 0xC, 0x3, 0xD, 0xE, 0x1, 0xA, 0x16, 0x14, 0x11, 0x10, 0x6, 0x8, 0x7, 0x9, 0x15, 0x2, 0xB, 0x12 },
+	[1] = { 0x5, 0x13, 0x4, 0xF, 0xC, 0x3, 0xD, 0xE, 0x1, 0xA, 0x16, 0x14, 0x11, 0x10, 0x6, 0x8, 0x7, 0x9, 0x15,
+		0x2, 0xB, 0x12 },
 	/* V853s SIP Winbond 128M DDR3 */
-	[2] = { 0x13, 0x4, 0x12, 0x2, 0x6, 0x3, 0x5, 0x7, 0xC, 0x8, 0xD, 0xA, 0x9, 0x0, 0x0, 0x0, 0x16, 0x1, 0xB, 0x11, 0x15, 0x14 },
+	[2] = { 0x13, 0x4, 0x12, 0x2, 0x6, 0x3, 0x5, 0x7, 0xC, 0x8, 0xD, 0xA, 0x9, 0x0, 0x0, 0x0, 0x16, 0x1, 0xB, 0x11,
+		0x15, 0x14 },
 };
 
 /*
@@ -784,7 +792,8 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 	} else if (dqs_gating_mode == 2) {
 		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR2), 0xc0, 0x80);
 
-		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DQSGMR), 0x107, (((para->dram_tpr13 >> 16) & 0x1f) - 2) | 0x100);
+		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DQSGMR), 0x107,
+			(((para->dram_tpr13 >> 16) & 0x1f) - 2) | 0x100);
 		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DXCCR), (1 << 31), (1 << 27));
 	} else {
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR2), 0x40);
@@ -799,7 +808,8 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 			clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DXCCR), 0x77000000, 0x22000000);
 	}
 
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DTCR), 0x0fffffff, (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007);
+	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DTCR), 0x0fffffff,
+		(para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007);
 
 	if (readl((dram->registers.r_cpucfg.base + SUNXI_R_CPUCFG_SUP_STAN_FLAG)) & (1 << 16)) {
 		clrbits_le32((dram->registers.r_prcm.base + VDD_SYS_PWROFF_GATING_REG), 0x2);
@@ -807,7 +817,8 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 	}
 
 	// Set ZQ config
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ZQCR), 0x3ffffff, (para->dram_zq & 0x00ffffff) | (1 << 25));
+	clrsetbits_le32(
+		(dram->registers.mctl_phy.base + MCTL_PHY_ZQCR), 0x3ffffff, (para->dram_zq & 0x00ffffff) | (1 << 25));
 
 	// Initialise DRAM controller
 	if (dqs_gating_mode == 1) {
@@ -822,7 +833,7 @@ static uint32_t mctl_channel_init(const sunxi_dram_t *dram, uint32_t ch_index, d
 		// 0x520 = prep DQS gating + DRAM init + d-cal
 		if (para->dram_type == SUNXI_DRAM_TYPE_DDR3)
 			writel(0x5a0,
-			       (dram->registers.mctl_phy.base + MCTL_PHY_PIR)); // + DRAM reset
+				(dram->registers.mctl_phy.base + MCTL_PHY_PIR)); // + DRAM reset
 		else
 			writel(0x520, (dram->registers.mctl_phy.base + MCTL_PHY_PIR));
 	} else {
@@ -1472,7 +1483,8 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 
 	/* Set VTF feature */
 	if (para->dram_tpr13 & (1 << 8))
-		writel(readl((dram->registers.mctl_phy.base + MCTL_PHY_VTFCR)) | 0x300, (dram->registers.mctl_phy.base + MCTL_PHY_VTFCR));
+		writel(readl((dram->registers.mctl_phy.base + MCTL_PHY_VTFCR)) | 0x300,
+			(dram->registers.mctl_phy.base + MCTL_PHY_VTFCR));
 
 	/* Set PAD Hold */
 	if (para->dram_tpr13 & (1 << 16))
@@ -1504,7 +1516,8 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
  */
 uint32_t sunxi_dram_init(sunxi_dram_t *dram)
 {
-	if (dram == NULL || dram->memory_size < sizeof(uint32_t) || dram->parameter_count < sizeof(dram_para_t) / sizeof(uint32_t))
+	if (dram == NULL || dram->memory_size < sizeof(uint32_t) ||
+		dram->parameter_count < sizeof(dram_para_t) / sizeof(uint32_t))
 		return 0U;
 	dram->size = init_DRAM(dram, 0, (dram_para_t *)dram->parameters);
 	return dram->size;

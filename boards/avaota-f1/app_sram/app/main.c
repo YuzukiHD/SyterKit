@@ -42,7 +42,7 @@ static sdmmc_pdata_t sd_card;
 static sunxi_sdhci_t sdhci0;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 4 * 1024 // (unit: 512B sectors)
-#define CHUNK_SIZE 0x20000
+#define CHUNK_SIZE		     0x20000
 
 msh_declare_command(read);
 msh_define_help(read, "read SMHC", "Usage: read\n");
@@ -60,7 +60,8 @@ int cmd_read(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_read(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
@@ -79,7 +80,8 @@ int cmd_write(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_write(&sd_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
@@ -172,7 +174,8 @@ static void __attribute__((noinline)) cmd_fault_breakpoint(void)
 }
 
 msh_declare_command(fault);
-msh_define_help(fault, "trigger an exception for backtrace testing", "Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
+msh_define_help(fault, "trigger an exception for backtrace testing",
+	"Usage: fault <illegal|load|load-misaligned|store|store-misaligned|ecall|breakpoint>\n");
 int cmd_fault(int argc, const char **argv)
 {
 	if (argc != 2) {
@@ -203,8 +206,13 @@ int cmd_fault(int argc, const char **argv)
 }
 
 const msh_command_entry commands[] = {
-	msh_define_command(load),  msh_define_command(read),  msh_define_command(write), msh_define_command(bt),
-	msh_define_command(fault), msh_define_command(reset), msh_command_end,
+	msh_define_command(load),
+	msh_define_command(read),
+	msh_define_command(write),
+	msh_define_command(bt),
+	msh_define_command(fault),
+	msh_define_command(reset),
+	msh_command_end,
 };
 
 int main(void)
@@ -223,8 +231,9 @@ int main(void)
 		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
-	    spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+		sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+		spi_nor_dt_read_alias(&nor, "spi-nor0", &spi) != DRIVER_OK) {
 		pr_err("SPI: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -256,7 +265,8 @@ int main(void)
 	spi_nor_read(&nor, (void *)0x81000000, 0x0, 1024 * 1024 * 4);
 	uint32_t time_end = time_ms();
 
-	pr_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time), 1024 * 1024 * 4 / (time_end - time));
+	pr_debug("SPI: speedtest %uKB in %ums at %uKB/S\n", 1024 * 1024 * 4 / 1024, (time_end - time),
+		1024 * 1024 * 4 / (time_end - time));
 
 	syterkit_shell_attach(commands);
 

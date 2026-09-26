@@ -213,14 +213,16 @@ static uint32_t sunxi_mmc_tuning_fill_block(uint8_t *data, bool bus8)
 
 	if (bus8) {
 		for (uint32_t line = 0U; line < 8U; ++line)
-			sunxi_mmc_tuning_fill_line(data + block_count * SUNXI_MMC_TUNING_BLOCK_SIZE +
-				line * SUNXI_MMC_TUNING_PATTERNS_PER_LINE * SUNXI_MMC_TUNING_PATTERN_8BIT,
+			sunxi_mmc_tuning_fill_line(
+				data + block_count * SUNXI_MMC_TUNING_BLOCK_SIZE +
+					line * SUNXI_MMC_TUNING_PATTERNS_PER_LINE * SUNXI_MMC_TUNING_PATTERN_8BIT,
 				line, SUNXI_MMC_TUNING_PATTERN_8BIT, true);
 		block_count += 8U;
 	} else {
 		for (uint32_t line = 0U; line < 8U; ++line)
-			sunxi_mmc_tuning_fill_line(data + block_count * SUNXI_MMC_TUNING_BLOCK_SIZE +
-				line * SUNXI_MMC_TUNING_PATTERNS_PER_LINE * SUNXI_MMC_TUNING_PATTERN_4BIT,
+			sunxi_mmc_tuning_fill_line(
+				data + block_count * SUNXI_MMC_TUNING_BLOCK_SIZE +
+					line * SUNXI_MMC_TUNING_PATTERNS_PER_LINE * SUNXI_MMC_TUNING_PATTERN_4BIT,
 				line, SUNXI_MMC_TUNING_PATTERN_4BIT, false);
 		block_count += 4U;
 	}
@@ -292,7 +294,7 @@ static int sunxi_mmc_tuning_get_pattern(sunxi_sdhci_t *sdhci, struct sunxi_mmc_t
 	}
 
 	aligned = ((uintptr_t)allocation + SUNXI_MMC_TUNING_ALIGNMENT - 1U) &
-		~(uintptr_t)(SUNXI_MMC_TUNING_ALIGNMENT - 1U);
+		  ~(uintptr_t)(SUNXI_MMC_TUNING_ALIGNMENT - 1U);
 	pattern->data = (uint8_t *)aligned;
 	pattern->readback = pattern->data + size;
 	pattern->allocation = allocation;
@@ -508,8 +510,7 @@ static int sunxi_mmc_tuning_probe_pattern(sunxi_sdhci_t *sdhci, const void *arg)
 		return -1;
 	}
 
-	return memcmp(pattern->data, pattern->readback,
-		pattern->blocks * SUNXI_MMC_TUNING_BLOCK_SIZE) == 0 ? 0 : -1;
+	return memcmp(pattern->data, pattern->readback, pattern->blocks * SUNXI_MMC_TUNING_BLOCK_SIZE) == 0 ? 0 : -1;
 }
 
 /**
@@ -647,8 +648,7 @@ static int sunxi_mmc_tuning_prepare_card(sunxi_sdhci_t *sdhci, const struct sunx
 		transfer_failed = true;
 		goto restore;
 	}
-	if (memcmp(pattern->data, pattern->readback,
-		pattern->blocks * SUNXI_MMC_TUNING_BLOCK_SIZE) != 0)
+	if (memcmp(pattern->data, pattern->readback, pattern->blocks * SUNXI_MMC_TUNING_BLOCK_SIZE) != 0)
 		goto restore;
 
 	card_prepared = true;
@@ -677,7 +677,7 @@ restore:
 static bool sunxi_mmc_tuning_card_ready(const sunxi_sdhci_t *sdhci)
 {
 	return sdhci != NULL && sunxi_mmc_tuning_patterns.host == sdhci &&
-		sunxi_mmc_tuning_patterns.bus_width == sdhci->mmc.bus_width;
+	       sunxi_mmc_tuning_patterns.bus_width == sdhci->mmc.bus_width;
 }
 
 #ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
@@ -757,18 +757,18 @@ static uint32_t sunxi_mmc_tuning_bus_width(const mmc_t *mmc)
  * @param run Pointer to the completed tuning run
  * @param pattern_blocks Number of pattern blocks used (HS200 data tuning)
  */
-static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode,
-	const struct sunxi_mmc_tuning_run *run, uint32_t pattern_blocks)
+static void sunxi_mmc_tuning_print_result(
+	sunxi_mmc_tuning_mode_t mode, const struct sunxi_mmc_tuning_run *run, uint32_t pattern_blocks)
 {
 	const char *name = sunxi_mmc_tuning_mode_name(mode);
 	const mmc_t *mmc = run->mmc;
 
 	if (run->selected == SUNXI_MMC_TUNING_INVALID)
-		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=invalid\n", name, run->freq_id,
-			mmc->clock, sunxi_mmc_tuning_bus_width(mmc), SUNXI_MMC_TUNING_POINTS);
+		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=invalid\n", name, run->freq_id, mmc->clock,
+			sunxi_mmc_tuning_bus_width(mmc), SUNXI_MMC_TUNING_POINTS);
 	else
-		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=%u\n", name, run->freq_id,
-			mmc->clock, sunxi_mmc_tuning_bus_width(mmc), SUNXI_MMC_TUNING_POINTS, run->selected);
+		pr_info("%s: freq=%u clock=%uHz bus=%ubit points=%u selected=%u\n", name, run->freq_id, mmc->clock,
+			sunxi_mmc_tuning_bus_width(mmc), SUNXI_MMC_TUNING_POINTS, run->selected);
 
 #ifdef CONFIG_DRIVER_MMC_SHOW_TRAINING
 	sunxi_mmc_tuning_dump_chart(name, run->pass, run->selected);
@@ -784,9 +784,9 @@ static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode,
 				mmc->tune_sdly.tm4_dsdly[0], mmc->tune_sdly.tm4_dsdly[1], mmc->tune_sdly.tm4_dsdly[2],
 				mmc->tune_sdly.tm4_dsdly[3], mmc->tune_sdly.tm4_dsdly[4], mmc->tune_sdly.tm4_dsdly[5]);
 		else
-			pr_info("%s: dsdly=0x%02x%02x%02x%02x%02x%02x selected=%u\n", name,
-				mmc->tune_sdly.tm4_dsdly[0], mmc->tune_sdly.tm4_dsdly[1], mmc->tune_sdly.tm4_dsdly[2],
-				mmc->tune_sdly.tm4_dsdly[3], mmc->tune_sdly.tm4_dsdly[4], mmc->tune_sdly.tm4_dsdly[5], run->selected);
+			pr_info("%s: dsdly=0x%02x%02x%02x%02x%02x%02x selected=%u\n", name, mmc->tune_sdly.tm4_dsdly[0],
+				mmc->tune_sdly.tm4_dsdly[1], mmc->tune_sdly.tm4_dsdly[2], mmc->tune_sdly.tm4_dsdly[3],
+				mmc->tune_sdly.tm4_dsdly[4], mmc->tune_sdly.tm4_dsdly[5], run->selected);
 	} else {
 		pr_info("%s: smx_fx=0x%08x 0x%08x\n", name, mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U],
 			mmc->tune_sdly.tm4_smx_fx[MMC_HS400 * 2U + 1U]);
@@ -805,8 +805,8 @@ static void sunxi_mmc_tuning_print_result(sunxi_mmc_tuning_mode_t mode,
 static bool sunxi_mmc_tuning_host_valid(const sunxi_sdhci_t *sdhci, uint32_t speed_mode, uint32_t width)
 {
 	return sdhci != NULL && sdhci->id == MMC_CONTROLLER_2 &&
-		sdhci->mmc_host.timing_mode == SUNXI_MMC_TIMING_MODE_4 && sdhci->mmc.speed_mode == speed_mode &&
-		sdhci->mmc.bus_width == width;
+	       sdhci->mmc_host.timing_mode == SUNXI_MMC_TIMING_MODE_4 && sdhci->mmc.speed_mode == speed_mode &&
+	       sdhci->mmc.bus_width == width;
 }
 
 /**
@@ -828,8 +828,7 @@ int sunxi_mmc_execute_hs400_command_tuning(sunxi_sdhci_t *sdhci)
 	};
 	int result = -1;
 
-	if (!sunxi_mmc_tuning_host_valid(sdhci, MMC_HS400, SMHC_WIDTH_8BIT) ||
-		!sunxi_mmc_tuning_begin(&run, sdhci))
+	if (!sunxi_mmc_tuning_host_valid(sdhci, MMC_HS400, SMHC_WIDTH_8BIT) || !sunxi_mmc_tuning_begin(&run, sdhci))
 		return -1;
 
 	run.freq_id = sunxi_mmc_tuning_freq_id(run.mmc->clock);

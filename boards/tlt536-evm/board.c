@@ -44,7 +44,7 @@ void clean_syterkit_data(void)
 	pr_info("free interrupt ok...\n");
 }
 
-#define GPIO_POW_MOD_SEL_MASK (0x033ffff3)
+#define GPIO_POW_MOD_SEL_MASK	(0x033ffff3)
 #define R_GPIO_POW_MOD_SEL_MASK (0xf)
 
 /**
@@ -59,7 +59,8 @@ void sunxi_gpio_power_mode_init(void)
 	sunxi_gpio_t r_pio;
 	uint32_t reg_val;
 
-	if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK || sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
+	if (sunxi_gpio_dt_read_alias(&pio, "gpio0") != DRIVER_OK ||
+		sunxi_gpio_dt_read_alias(&r_pio, "gpio1") != DRIVER_OK) {
 		pr_err("GPIO: invalid PIO devicetree configuration\n");
 		return;
 	}

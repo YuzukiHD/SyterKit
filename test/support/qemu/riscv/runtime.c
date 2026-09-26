@@ -90,11 +90,15 @@ static void qemu_vprintf(const char *format, va_list args)
 			qemu_puts(va_arg(args, const char *));
 			break;
 		case 'u':
-			qemu_print_unsigned(long_argument ? (uintptr_t)va_arg(args, unsigned long) : (uintptr_t)va_arg(args, unsigned int), 10U, width, padding);
+			qemu_print_unsigned(long_argument ? (uintptr_t)va_arg(args, unsigned long) :
+							    (uintptr_t)va_arg(args, unsigned int),
+				10U, width, padding);
 			break;
 		case 'x':
 		case 'X':
-			qemu_print_unsigned(long_argument ? (uintptr_t)va_arg(args, unsigned long) : (uintptr_t)va_arg(args, unsigned int), 16U, width, padding);
+			qemu_print_unsigned(long_argument ? (uintptr_t)va_arg(args, unsigned long) :
+							    (uintptr_t)va_arg(args, unsigned int),
+				16U, width, padding);
 			break;
 		default:
 			qemu_putchar('%');

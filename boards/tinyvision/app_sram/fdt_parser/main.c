@@ -107,7 +107,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -221,7 +222,8 @@ int main(void)
 	pr_info("DTB OLD bootargs = \"%s\"\n", bootargs_str);
 
 	/* New bootargs string */
-	char *new_bootargs_str = "earlyprintk=sunxi-uart,0x02500C00 root=/dev/mmcblk0p3 rootwait loglevel=8 initcall_debug=0 console=ttyS0 init=/init";
+	char *new_bootargs_str =
+		"earlyprintk=sunxi-uart,0x02500C00 root=/dev/mmcblk0p3 rootwait loglevel=8 initcall_debug=0 console=ttyS0 init=/init";
 	pr_info("Now set bootargs to \"%s\"\n", new_bootargs_str);
 
 	/* Modify bootargs string */

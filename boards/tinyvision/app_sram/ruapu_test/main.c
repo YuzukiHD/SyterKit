@@ -13,11 +13,11 @@
 #include <drivers/clk/clk.h>
 #include <mmu.h>
 
-#define __SYTERKIT__ 1
-#define __arm__ 1
-#define __thumb__ 1
+#define __SYTERKIT__	     1
+#define __arm__		     1
+#define __thumb__	     1
 #define RUAPU_IMPLEMENTATION 1
-#define RUAPU_BAREMETAL 1
+#define RUAPU_BAREMETAL	     1
 
 // Hack for arm-linux-gnueabi
 #ifdef __linux__

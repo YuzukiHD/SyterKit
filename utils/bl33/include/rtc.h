@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define SUNXI_RTC_BASE (0x07000000)
+#define SUNXI_RTC_BASE	    (0x07000000)
 #define SUNXI_RTC_DATA_BASE (SUNXI_RTC_BASE + 0x100)
 
 #define RTC_FEL_INDEX 2

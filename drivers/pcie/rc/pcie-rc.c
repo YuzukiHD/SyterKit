@@ -60,8 +60,7 @@ int pcie_rc_setup(struct pcie *pcie, const struct pcie_rc_config *config)
 		pcie_rc_config_default(&defaults);
 		config = &defaults;
 	}
-	if (config->secondary_bus <= config->primary_bus ||
-	    config->subordinate_bus < config->secondary_bus)
+	if (config->secondary_bus <= config->primary_bus || config->subordinate_bus < config->secondary_bus)
 		return PCIE_ERR_INVALID;
 
 	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_BAR0, 4U, 0x4U);
@@ -70,25 +69,19 @@ int pcie_rc_setup(struct pcie *pcie, const struct pcie_rc_config *config)
 	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_BAR0 + 4U, 4U, 0U);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_read(&pcie->controller, PCIE_CFG_INTERRUPT_LINE, 4U,
-		&value);
+	ret = pcie_controller_dbi_read(&pcie->controller, PCIE_CFG_INTERRUPT_LINE, 4U, &value);
 	if (ret)
 		return ret;
 	value = (value & 0xffff00ffU) | 0x00000100U;
-	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_INTERRUPT_LINE, 4U,
-		value);
+	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_INTERRUPT_LINE, 4U, value);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_read(&pcie->controller, PCIE_CFG_PRIMARY_BUS, 4U,
-		&value);
+	ret = pcie_controller_dbi_read(&pcie->controller, PCIE_CFG_PRIMARY_BUS, 4U, &value);
 	if (ret)
 		return ret;
-	value = (value & 0xff000000U) |
-		(uint32_t)config->primary_bus |
-		((uint32_t)config->secondary_bus << 8) |
+	value = (value & 0xff000000U) | (uint32_t)config->primary_bus | ((uint32_t)config->secondary_bus << 8) |
 		((uint32_t)config->subordinate_bus << 16);
-	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_PRIMARY_BUS, 4U,
-		value);
+	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_PRIMARY_BUS, 4U, value);
 	if (ret)
 		return ret;
 	ret = pcie_controller_dbi_read(&pcie->controller, PCIE_CFG_COMMAND, 4U, &value);
@@ -159,8 +152,8 @@ static int pcie_rc_reset_endpoint(struct pcie *pcie)
 {
 	if (!pcie->has_reset_gpio)
 		return PCIE_OK;
-#if defined(CONFIG_DRIVER_GPIO_V1) || defined(CONFIG_DRIVER_GPIO_V2) || \
-	defined(CONFIG_DRIVER_GPIO_V3) || defined(CONFIG_DRIVER_GPIO_V4)
+#if defined(CONFIG_DRIVER_GPIO_V1) || defined(CONFIG_DRIVER_GPIO_V2) || defined(CONFIG_DRIVER_GPIO_V3) || \
+	defined(CONFIG_DRIVER_GPIO_V4)
 	sunxi_gpio_init(&pcie->reset_gpio);
 	sunxi_gpio_set_value(&pcie->reset_gpio, GPIO_LEVEL_LOW);
 	udelay(100000U);
@@ -179,8 +172,7 @@ static int pcie_rc_reset_endpoint(struct pcie *pcie)
  * @param[in] rc_config Root-complex configuration, or NULL for defaults.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config,
-		const struct pcie_rc_config *rc_config)
+int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config, const struct pcie_rc_config *rc_config)
 {
 	int ret;
 
@@ -201,13 +193,11 @@ int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config,
  * @param[in] rc_config Root-complex configuration, or NULL for defaults.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_rc_init_dt(struct pcie *pcie, int node,
-		const struct pcie_rc_config *rc_config)
+int pcie_rc_init_dt(struct pcie *pcie, int node, const struct pcie_rc_config *rc_config)
 {
 	struct pcie_config config;
 
-	if (sunxi_pcie_dt_read_config(&config, node) != DRIVER_OK ||
-	    config.mode != PCIE_MODE_RC)
+	if (sunxi_pcie_dt_read_config(&config, node) != DRIVER_OK || config.mode != PCIE_MODE_RC)
 		return PCIE_ERR_INVALID;
 	return pcie_rc_init(pcie, &config, rc_config);
 }
@@ -244,8 +234,7 @@ int pcie_rc_start(struct pcie *pcie, uint32_t timeout_us)
 		return ret;
 	}
 	if (pcie->controller.config.link_gen > 1U) {
-		ret = pcie_controller_change_speed(&pcie->controller,
-			pcie->controller.config.link_gen);
+		ret = pcie_controller_change_speed(&pcie->controller, pcie->controller.config.link_gen);
 		if (ret) {
 			pcie_controller_ltssm(&pcie->controller, false);
 			return ret;
@@ -290,8 +279,7 @@ bool pcie_rc_link_up(struct pcie *pcie)
  * @param[out] value Receives the read value.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
-		uint8_t size, uint32_t *value)
+int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_RC)
 		return PCIE_ERR_INVALID;
@@ -308,8 +296,7 @@ int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
  * @param[in] value Value to write.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
-		uint8_t size, uint32_t value)
+int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value)
 {
 	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_RC)
 		return PCIE_ERR_INVALID;
@@ -327,9 +314,8 @@ int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
  * @param[in] size Window size in bytes.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_rc_program_outbound(struct pcie *pcie, uint8_t index,
-		enum pcie_atu_type type, uint64_t cpu_addr, uint64_t pci_addr,
-		uint64_t size)
+int pcie_rc_program_outbound(
+	struct pcie *pcie, uint8_t index, enum pcie_atu_type type, uint64_t cpu_addr, uint64_t pci_addr, uint64_t size)
 {
 	struct pcie_atu_region region;
 

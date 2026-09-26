@@ -120,7 +120,8 @@ static int sunxi_sdhci_update_clk(sunxi_sdhci_t *sdhci)
  *
  * @return 0 on success, -1 on failure.
  */
-static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const uint32_t spd_md_id, const uint32_t freq_id)
+static int sunxi_sdhci_get_timing_config_timing_4(
+	sunxi_sdhci_t *sdhci, const uint32_t spd_md_id, const uint32_t freq_id)
 {
 	sunxi_sdhci_timing_t *timing_data = &sdhci->timing_data;
 	uint32_t spd_md_sdly = 0, dly = 0;
@@ -212,10 +213,8 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	/* TM4 output phase follows the vendor defaults. HS200 and HS400 use
 	 * PH180 at the identification clock, then PH90 at data rates. */
 	if (spd_md_id == MMC_HSDDR52_DDR50) {
-		timing_data->odly = sdhci->width == SMHC_WIDTH_8BIT ?
-			TM4_OUT_PH180 : TM4_OUT_PH90;
-	} else if ((spd_md_id == MMC_HS200_SDR104 || spd_md_id == MMC_HS400) &&
-		   freq_id != MMC_CLK_400K) {
+		timing_data->odly = sdhci->width == SMHC_WIDTH_8BIT ? TM4_OUT_PH180 : TM4_OUT_PH90;
+	} else if ((spd_md_id == MMC_HS200_SDR104 || spd_md_id == MMC_HS400) && freq_id != MMC_CLK_400K) {
 		timing_data->odly = TM4_OUT_PH90;
 	} else {
 		timing_data->odly = TM4_OUT_PH180;
@@ -224,7 +223,8 @@ static int sunxi_sdhci_get_timing_config_timing_4(sunxi_sdhci_t *sdhci, const ui
 	/* Set the calculated delay */
 	timing_data->sdly = dly;
 
-	pr_trace("TM4 Timing odly = %u, sdly = %u, spd_md_id = %u, freq_id = %u\n", timing_data->odly, timing_data->sdly, spd_md_id, freq_id);
+	pr_trace("TM4 Timing odly = %u, sdly = %u, spd_md_id = %u, freq_id = %u\n", timing_data->odly,
+		timing_data->sdly, spd_md_id, freq_id);
 
 	return ret;
 }
@@ -390,7 +390,8 @@ static int sunxi_sdhci_config_delay(sunxi_sdhci_t *sdhci, uint32_t spd_md_id, ui
 #endif
 
 		sunxi_sdhci_set_skew(sdhci);
-		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly, timing_data->sdly, spd_md_orig);
+		pr_trace("config delay freq = %d, odly = %d, sdly = %d, spd_md_id = %d\n", freq_id, timing_data->odly,
+			timing_data->sdly, spd_md_orig);
 	}
 	return ret;
 }
@@ -538,9 +539,10 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk)
 	// Adjust clock frequency if it exceeds the maximum supported frequency for certain speed modes
 	if ((mmc->speed_mode == MMC_HSDDR52_DDR50
 #if CONFIG_DRIVER_MMC_TUNING
-	    || mmc->speed_mode == MMC_HS400
+		    || mmc->speed_mode == MMC_HS400
 #endif
-	    ) && clk > mmc->f_max_ddr) {
+		    ) &&
+		clk > mmc->f_max_ddr) {
 		clk = mmc->f_max_ddr;
 	}
 
@@ -554,7 +556,8 @@ static int sunxi_sdhci_config_clock(sunxi_sdhci_t *sdhci, uint32_t clk)
 	}
 
 	// Configure clock mode based on timing mode
-	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
+	if (mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_1 || mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_3 ||
+		mmc_host->timing_mode == SUNXI_MMC_TIMING_MODE_4) {
 		if (sunxi_sdhci_clock_mode(sdhci, clk)) {
 			pr_debug("Failed to configure clock mode\n");
 			return -1;
@@ -686,8 +689,7 @@ static void sunxi_sdhci_pin_config(sunxi_sdhci_t *sdhci)
  * @param timeout_us CPU FIFO polling timeout in microseconds.
  * @return 0 on success, -1 on failure.
  */
-static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data,
-					    uint32_t timeout_us)
+static int sunxi_sunxi_sdhci_trans_data_cpu(sunxi_sdhci_t *sdhci, mmc_data_t *data, uint32_t timeout_us)
 {
 	sunxi_sdhci_host_t *mmc_host = &sdhci->mmc_host;
 	uint64_t timeout = time_us() + timeout_us;
@@ -798,9 +800,10 @@ static int sunxi_sunxi_sdhci_trans_data_dma(sunxi_sdhci_t *sdhci, mmc_data_t *da
 
 #ifndef SMHC_DMA_TRACE
 		pr_trace("frag %d, remain %d, des[%d] = 0x%08x:"
-			     "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
-			     i, remain, des_idx, (uint32_t)(uintptr_t)&pdes[des_idx], (uint32_t)((uint32_t *)&pdes[des_idx])[0], (uint32_t)((uint32_t *)&pdes[des_idx])[1],
-			     (uint32_t)((uint32_t *)&pdes[des_idx])[2], (uint32_t)((uint32_t *)&pdes[des_idx])[3]);
+			 "  [0] = 0x%08x, [1] = 0x%08x, [2] = 0x%08x, [3] = 0x%08x\n",
+			i, remain, des_idx, (uint32_t)(uintptr_t)&pdes[des_idx],
+			(uint32_t)((uint32_t *)&pdes[des_idx])[0], (uint32_t)((uint32_t *)&pdes[des_idx])[1],
+			(uint32_t)((uint32_t *)&pdes[des_idx])[2], (uint32_t)((uint32_t *)&pdes[des_idx])[3]);
 #endif // SMHC_DMA_TRACE
 	}
 	sunxi_sdhci_sync_all_cache();
@@ -975,9 +978,8 @@ int sunxi_sdhci_core_init(sunxi_sdhci_t *sdhci)
  * @param dma_timeout_us DMA completion polling timeout in microseconds.
  * @return Returns 0 on success, -1 on failure.
  */
-static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
-					  mmc_data_t *data, uint32_t timeout_us,
-					  uint32_t dma_timeout_us)
+static int sunxi_sdhci_xfer_with_timeouts(
+	sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data, uint32_t timeout_us, uint32_t dma_timeout_us)
 {
 	if (sdhci == NULL || cmd == NULL || timeout_us == 0U || dma_timeout_us == 0U)
 		return -1;
@@ -1036,13 +1038,15 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 		 * old test treated "no flag" as write and accepted both flags, which
 		 * could program CMD.WRITE one way while selecting the buffer the other
 		 * way. */
-		if ((data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == 0U || (data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == (MMC_DATA_READ | MMC_DATA_WRITE)) {
+		if ((data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == 0U ||
+			(data->flags & (MMC_DATA_READ | MMC_DATA_WRITE)) == (MMC_DATA_READ | MMC_DATA_WRITE)) {
 			pr_debug("invalid data direction flags 0x%x\n", data->flags);
 			error_code = -1;
 			goto out;
 		}
-		if (data->blocks == 0U || data->blocksize == 0U || data->blocksize > 0xffffffffU / data->blocks || ((data->flags & MMC_DATA_READ) && data->b.dest == NULL) ||
-		    ((data->flags & MMC_DATA_WRITE) && data->b.src == NULL)) {
+		if (data->blocks == 0U || data->blocksize == 0U || data->blocksize > 0xffffffffU / data->blocks ||
+			((data->flags & MMC_DATA_READ) && data->b.dest == NULL) ||
+			((data->flags & MMC_DATA_WRITE) && data->b.src == NULL)) {
 			pr_debug("invalid data length\n");
 			error_code = -1;
 			goto out;
@@ -1067,11 +1071,13 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 	} else {
 		if ((cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION) && (cmd->flags & MMC_CMD_MANUAL)) {
 			cmdval |= SMHC_CMD_STOP_ABORT_CMD; //stop current data transferin progress.
-			cmdval &= ~SMHC_CMD_WAIT_PRE_OVER; //Send command at once, even if previous data transfer has notcompleted
+			cmdval &=
+				~SMHC_CMD_WAIT_PRE_OVER; //Send command at once, even if previous data transfer has notcompleted
 		}
 	}
 
-	pr_trace("CMD: %u(0x%08x), arg: 0x%x, dlen:%u\n", cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg, data ? data->blocks * data->blocksize : 0);
+	pr_trace("CMD: %u(0x%08x), arg: 0x%x, dlen:%u\n", cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg,
+		data ? data->blocks * data->blocksize : 0);
 
 	mmc_host->reg->arg = cmd->cmdarg;
 
@@ -1091,7 +1097,7 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 		use_dma_status = data->blocksize * data->blocks > SUNXI_SDHCI_CPU_TRANSFER_MAX &&
 				 mmc_host->sdhci_desc != NULL;
 		pr_trace("transfer data %lu bytes by %s\n", data->blocksize * data->blocks,
-			     use_dma_status ? "DMA" : "CPU");
+			use_dma_status ? "DMA" : "CPU");
 		if (use_dma_status) {
 			mmc_host->reg->gctrl &= ~SMHC_GCTRL_ACCESS_BY_AHB;
 			ret = sunxi_sunxi_sdhci_trans_data_dma(sdhci, data);
@@ -1105,7 +1111,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 		if (ret) {
 			error_code = mmc_host->reg->rint & SMHC_RINT_INTERRUPT_ERROR_BIT;
 			if (!MMC_IS_TRAINING(&sdhci->mmc))
-				pr_debug("error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT, error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
+				pr_debug("error 0x%x status 0x%x\n", error_code & SMHC_RINT_INTERRUPT_ERROR_BIT,
+					error_code & ~SMHC_RINT_INTERRUPT_ERROR_BIT);
 			if (!error_code) {
 				error_code = 0xffffffff;
 			}
@@ -1199,7 +1206,8 @@ static int sunxi_sdhci_xfer_with_timeouts(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
 		cmd->response[1] = mmc_host->reg->resp2;
 		cmd->response[2] = mmc_host->reg->resp1;
 		cmd->response[3] = mmc_host->reg->resp0;
-		pr_trace("resp 0x%08x 0x%08x 0x%08x 0x%08x\n", cmd->response[3], cmd->response[2], cmd->response[1], cmd->response[0]);
+		pr_trace("resp 0x%08x 0x%08x 0x%08x 0x%08x\n", cmd->response[3], cmd->response[2], cmd->response[1],
+			cmd->response[0]);
 	} else {
 		cmd->response[0] = mmc_host->reg->resp0;
 		pr_trace("resp 0x%08x\n", cmd->response[0]);
@@ -1260,8 +1268,7 @@ out:
  * @param timeout_us Timeout in microseconds for the transfer
  * @return 0 on success, -1 on failure
  */
-int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
-			     mmc_data_t *data, uint32_t timeout_us)
+int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data, uint32_t timeout_us)
 {
 	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data, timeout_us, timeout_us);
 }
@@ -1277,8 +1284,7 @@ int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
  */
 int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data)
 {
-	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data,
-					       SMHC_TIMEOUT, SMHC_DMA_TIMEOUT);
+	return sunxi_sdhci_xfer_with_timeouts(sdhci, cmd, data, SMHC_TIMEOUT, SMHC_DMA_TIMEOUT);
 }
 
 /**
@@ -1344,7 +1350,8 @@ int sunxi_sdhci_init(sunxi_sdhci_t *sdhci)
 	}
 
 	/* Set supported voltages and host capabilities */
-	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
+	mmc->voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 |
+			MMC_VDD_35_36;
 	mmc->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
 #if CONFIG_DRIVER_MMC_TUNING
 	if (sdhci->id == MMC_CONTROLLER_2 && sdhci->io_voltage_uv == GPIO_IO_VOLTAGE_1V8)

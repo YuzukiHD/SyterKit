@@ -246,7 +246,8 @@ int main(void)
 		return -1;
 	}
 	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
-	    pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK || sunxi_spi_dt_read_alias(&sunxi_spi0_lcd, "spi-lcd", NULL) != DRIVER_OK) {
+		pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+		sunxi_spi_dt_read_alias(&sunxi_spi0_lcd, "spi-lcd", NULL) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}

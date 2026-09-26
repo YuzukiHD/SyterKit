@@ -35,15 +35,15 @@
 #include <string.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 
 // 128KB erase sectors, so place them starting from 2nd sector
-#define CONFIG_SPINAND_DTB_ADDR (128 * 2048)
+#define CONFIG_SPINAND_DTB_ADDR	   (128 * 2048)
 #define CONFIG_SPINAND_KERNEL_ADDR (256 * 2048)
 
 #define FILENAME_MAX_LEN 64
@@ -125,7 +125,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -177,7 +178,8 @@ static int load_spi_nand(spi_nand_t *nand, image_info_t *image)
 	}
 
 	size = fdt_totalsize(image->of_dest);
-	pr_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR, (uint32_t)image->of_dest, size);
+	pr_debug("SPI-NAND: dt blob: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_DTB_ADDR,
+		(uint32_t)image->of_dest, size);
 	start = time_us();
 	spi_nand_read(nand, image->of_dest, CONFIG_SPINAND_DTB_ADDR, (uint32_t)size);
 	time = time_us() - start;
@@ -191,7 +193,8 @@ static int load_spi_nand(spi_nand_t *nand, image_info_t *image)
 		return -1;
 	}
 	size = hdr->end - hdr->start;
-	pr_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)image->dest, size);
+	pr_debug("SPI-NAND: Image: Copy from 0x%08x to 0x%08lx size:0x%08x\n", CONFIG_SPINAND_KERNEL_ADDR,
+		(uint32_t)image->dest, size);
 	start = time_us();
 	spi_nand_read(nand, image->dest, CONFIG_SPINAND_KERNEL_ADDR, (uint32_t)size);
 	time = time_us() - start;
@@ -214,8 +217,9 @@ int main(void)
 		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
-	    spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+		sunxi_spi_dt_read_alias(&spi, "spi0", &dma) != DRIVER_OK ||
+		spi_nand_dt_read_alias(&nand, "spi-nand0", &spi) != DRIVER_OK) {
 		pr_err("SPI: invalid devicetree configuration\n");
 		return -1;
 	}

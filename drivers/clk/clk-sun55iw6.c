@@ -15,8 +15,8 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun55iw6/reg.h>
 
-#define CPU_UPDATE_OFFSET (26)
-#define CPU_LOCK_OFFSET (28)
+#define CPU_UPDATE_OFFSET      (26)
+#define CPU_LOCK_OFFSET	       (28)
 #define CPU_LOCK_ENABLE_OFFSET (29)
 
 /**
@@ -110,14 +110,17 @@ static void set_apb(void)
 	// Set APB1 clock source to HOSC
 	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Read the current APB1 config register value
 	reg_value &= ~APB1_CLK_REG_CLK_SRC_SEL_CLEAR_MASK; ///< Clear the clock source selection mask
-	reg_value |= (APB1_CLK_REG_CLK_SRC_SEL_HOSC << APB1_CLK_REG_CLK_SRC_SEL_OFFSET); ///< Set HOSC as the clock source
-	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
+	reg_value |=
+		(APB1_CLK_REG_CLK_SRC_SEL_HOSC << APB1_CLK_REG_CLK_SRC_SEL_OFFSET); ///< Set HOSC as the clock source
+	writel(reg_value,
+		SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
 	udelay(10); ///< Delay to ensure stable configuration
 
 	// Reset the APB clock divider factor to default
 	reg_value = readl(SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Read the APB1 config register again
 	reg_value &= ~APB1_CLK_REG_FACTOR_M_CLEAR_MASK; ///< Clear the APB divider mask
-	writel(reg_value, SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
+	writel(reg_value,
+		SUNXI_CCMU_BASE + APB1_CLK_REG); ///< Write the modified value back to the APB1 config register
 	udelay(10); ///< Delay to ensure stable configuration
 }
 
@@ -162,7 +165,8 @@ static void set_pll_nsi(void)
 
 	/* Set NSI clock source to DDR PLL */
 	reg_val &= ~(NSI_CLK_REG_NSI_CLK_SEL_CLEAR_MASK); ///< Clear the clock source selection bits
-	reg_val |= (NSI_CLK_REG_NSI_CLK_SEL_DDRPLL << NSI_CLK_REG_NSI_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
+	reg_val |=
+		(NSI_CLK_REG_NSI_CLK_SEL_DDRPLL << NSI_CLK_REG_NSI_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
 
 	/* Enable NSI clock */
 	reg_val |= (0X01 << NSI_CLK_REG_NSI_CLK_GATING_OFFSET); ///< Enable clock gating
@@ -224,7 +228,8 @@ static void set_pll_mbus(void)
 
 	/* Set MBUS clock source to DDR PLL */
 	reg_val &= ~(MBUS_CLK_REG_MBUS_CLK_SEL_CLEAR_MASK); ///< Clear the clock source selection bits
-	reg_val |= (MBUS_CLK_REG_MBUS_CLK_SEL_DDRPLL << MBUS_CLK_REG_MBUS_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
+	reg_val |= (MBUS_CLK_REG_MBUS_CLK_SEL_DDRPLL
+		    << MBUS_CLK_REG_MBUS_CLK_SEL_OFFSET); ///< Set DDR PLL as the clock source
 
 	/* Enable MBUS clock */
 	reg_val |= (0X01 << MBUS_CLK_REG_MBUS_CLK_GATING_OFFSET); ///< Enable clock gating
@@ -304,7 +309,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI0 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI0 disabled\r\n");
 	}
@@ -317,7 +323,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_PERI1 (2X)=%luMHz, (1X)=%luMHz, (800M)=%luMHz\r\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_PERI1 disabled\r\n");
 	}

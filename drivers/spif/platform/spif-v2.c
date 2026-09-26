@@ -178,8 +178,7 @@ bool sunxi_spif_platform_needs_cache_bounce(uintptr_t address)
  */
 void sunxi_spif_platform_set_data_length(uint32_t *block_data_len, uint32_t *addr_dummy_data_count, uint32_t length)
 {
-	*block_data_len = (*block_data_len & ~SPIF_DMA_DATA_LEN_V1) |
-		(length & SPIF_DMA_DATA_LEN_V1);
+	*block_data_len = (*block_data_len & ~SPIF_DMA_DATA_LEN_V1) | (length & SPIF_DMA_DATA_LEN_V1);
 	*addr_dummy_data_count &= ~(SPIF_DMA_TRANS_NUM_16BIT | SPIF_DMA_TRANS_NUM);
 	if (length == SPIF_MAX_TRANS_V1)
 		*addr_dummy_data_count |= SPIF_DMA_TRANS_NUM_16BIT;

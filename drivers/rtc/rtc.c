@@ -32,7 +32,8 @@
 
 static bool rtc_data_index_valid(const sunxi_rtc_t *rtc, int index)
 {
-	return rtc != NULL && rtc->data_base != 0U && index >= 0 && (uint32_t)index <= (UINT32_MAX / sizeof(uint32_t)) &&
+	return rtc != NULL && rtc->data_base != 0U && index >= 0 &&
+	       (uint32_t)index <= (UINT32_MAX / sizeof(uint32_t)) &&
 	       ((uint32_t)index + 1U) * sizeof(uint32_t) <= rtc->data_size;
 }
 

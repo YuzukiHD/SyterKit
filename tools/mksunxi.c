@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #define __ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
-#define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x))(a) - 1)
+#define ALIGN(x, a)	      __ALIGN_MASK((x), (typeof(x))(a) - 1)
 
 struct boot_head_t {
 	uint32_t instruction;

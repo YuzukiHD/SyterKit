@@ -176,7 +176,7 @@ int main(void)
 	if (sunxi_serial_init_stdout() != 0)
 		return -1;
 
-    show_banner();
+	show_banner();
 
 	pr_info("T153 SMP application: starting CPU0 + CPU1..CPU3\n");
 	smp_init();

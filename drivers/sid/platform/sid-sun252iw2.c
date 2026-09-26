@@ -19,15 +19,15 @@
 
 #include "sid-platform.h"
 
-#define SID_PRCTL_OFFSET 0x00U
-#define SID_PR_ADDR_OFFSET 0x04U
-#define SID_PRKEY_OFFSET 0x08U
-#define SID_RDKEY_OFFSET 0x0CU
-#define SID_KEY_MASK 0xffffU
-#define SID_OPERATION_MASK 0x3U
-#define SID_READ_KEY 0xadbfU
-#define SID_WRITE_KEY 0xe0c9U
-#define SID_OFFSET_MASK 0x1ffU
+#define SID_PRCTL_OFFSET      0x00U
+#define SID_PR_ADDR_OFFSET    0x04U
+#define SID_PRKEY_OFFSET      0x08U
+#define SID_RDKEY_OFFSET      0x0CU
+#define SID_KEY_MASK	      0xffffU
+#define SID_OPERATION_MASK    0x3U
+#define SID_READ_KEY	      0xadbfU
+#define SID_WRITE_KEY	      0xe0c9U
+#define SID_OFFSET_MASK	      0x1ffU
 #define SID_OPERATION_RETRIES 1000000U
 
 /**

@@ -10,12 +10,12 @@
 
 #include <common.h>
 
-#define rand_ul() rand32()
-#define UL_ONEBITS 0xffffffff
-#define UL_LEN 32
+#define rand_ul()     rand32()
+#define UL_ONEBITS    0xffffffff
+#define UL_LEN	      32
 #define CHECKERBOARD1 0x55555555
 #define CHECKERBOARD2 0xaaaaaaaa
-#define UL_BYTE(x) ((x | x << 8 | x << 16 | x << 24))
+#define UL_BYTE(x)    ((x | x << 8 | x << 16 | x << 24))
 
 typedef unsigned int ul;
 typedef unsigned long long ull;
@@ -38,18 +38,20 @@ union {
 	ul val;
 } mword16;
 
-uint32_t rand32() {
+uint32_t rand32()
+{
 	return time_ms();
 }
 
 char progress[] = "-\\|/";
-#define PROGRESSLEN 4
+#define PROGRESSLEN   4
 #define PROGRESSOFTEN 2500
-#define ONE 0x00000001L
+#define ONE	      0x00000001L
 
 /* Function definitions. */
 
-int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
+int compare_regions(ulv *bufa, ulv *bufb, size_t count)
+{
 	int r = 0;
 	size_t i;
 	ulv *p1 = bufa;
@@ -58,9 +60,9 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
 	for (i = 0; i < count; i++, p1++, p2++) {
 		if (*p1 != *p2) {
 			printk(LOG_LEVEL_MUTE,
-				   "FAILURE: 0x%x != 0x%x at physical address "
-				   "0x%x 0x%x.\n",
-				   *p1, *p2, p1, p2);
+				"FAILURE: 0x%x != 0x%x at physical address "
+				"0x%x 0x%x.\n",
+				*p1, *p2, p1, p2);
 			r = -1;
 			break;
 		}
@@ -68,7 +70,8 @@ int compare_regions(ulv *bufa, ulv *bufb, size_t count) {
 	return r;
 }
 
-int test_stuck_address(ulv *bufa, size_t count) {
+int test_stuck_address(ulv *bufa, size_t count)
+{
 	ulv *p1 = bufa;
 	unsigned int j;
 	size_t i;
@@ -76,23 +79,24 @@ int test_stuck_address(ulv *bufa, size_t count) {
 	printk(LOG_LEVEL_MUTE, "           ");
 	for (j = 0; j < 16; j++) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
-		p1 = (ulv *) bufa;
+		p1 = (ulv *)bufa;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
 		for (i = 0; i < count; i++) {
-			*p1 = ((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1);
+			*p1 = ((j + i) % 2) == 0 ? (ul)p1 : ~((ul)p1);
 			*p1++;
 		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
-		p1 = (ulv *) bufa;
+		p1 = (ulv *)bufa;
 		for (i = 0; i < count; i++, p1++) {
-			if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
+			if (*p1 != (((j + i) % 2) == 0 ? (ul)p1 : ~((ul)p1))) {
 				printk(LOG_LEVEL_MUTE,
-					   "FAILURE: possible bad address line at physical "
-					   "address 0x%x.\n",
-					   p1);
+					"FAILURE: possible bad address line at physical "
+					"address 0x%x.\n",
+					p1);
 
-				printk(LOG_LEVEL_MUTE, "address 0x%x value is 0x%x, should be 0x%x\n", p1, *p1, (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1)));
+				printk(LOG_LEVEL_MUTE, "address 0x%x value is 0x%x, should be 0x%x\n", p1, *p1,
+					(((j + i) % 2) == 0 ? (ul)p1 : ~((ul)p1)));
 
 				printk(LOG_LEVEL_MUTE, "Skipping to next test...\n");
 				return -1;
@@ -103,7 +107,8 @@ int test_stuck_address(ulv *bufa, size_t count) {
 	return 0;
 }
 
-int test_random_value(ulv *bufa, ulv *bufb, size_t count) {
+int test_random_value(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	ul j = 0;
@@ -121,7 +126,8 @@ int test_random_value(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_xor_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_xor_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -134,7 +140,8 @@ int test_xor_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_sub_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_sub_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -147,7 +154,8 @@ int test_sub_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_mul_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_mul_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -160,7 +168,8 @@ int test_mul_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_div_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_div_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -176,7 +185,8 @@ int test_div_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_or_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_or_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -189,7 +199,8 @@ int test_or_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_and_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_and_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
@@ -202,17 +213,21 @@ int test_and_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_seqinc_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_seqinc_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	size_t i;
 	ul q = rand_ul();
 
-	for (i = 0; i < count; i++) { *p1++ = *p2++ = (i + q); }
+	for (i = 0; i < count; i++) {
+		*p1++ = *p2++ = (i + q);
+	}
 	return compare_regions(bufa, bufb, count);
 }
 
-int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -224,9 +239,11 @@ int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		q = (j % 2) == 0 ? UL_ONEBITS : 0;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
-		for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
+		for (i = 0; i < count; i++) {
+			*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
+		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
 		if (compare_regions(bufa, bufb, count)) {
@@ -237,7 +254,8 @@ int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -249,9 +267,11 @@ int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		q = (j % 2) == 0 ? CHECKERBOARD1 : CHECKERBOARD2;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
-		for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
+		for (i = 0; i < count; i++) {
+			*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
+		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
 		if (compare_regions(bufa, bufb, count)) {
@@ -262,7 +282,8 @@ int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -271,10 +292,12 @@ int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	printk(LOG_LEVEL_MUTE, "           ");
 	for (j = 0; j < 256; j++) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
-		for (i = 0; i < count; i++) { *p1++ = *p2++ = (ul) UL_BYTE(j); }
+		for (i = 0; i < count; i++) {
+			*p1++ = *p2++ = (ul)UL_BYTE(j);
+		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 		printk(LOG_LEVEL_MUTE, "testing %3u", j);
 		if (compare_regions(bufa, bufb, count)) {
@@ -285,7 +308,8 @@ int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -294,8 +318,8 @@ int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	printk(LOG_LEVEL_MUTE, "           ");
 	for (j = 0; j < UL_LEN * 2; j++) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
@@ -314,7 +338,8 @@ int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -323,8 +348,8 @@ int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	printk(LOG_LEVEL_MUTE, "           ");
 	for (j = 0; j < UL_LEN * 2; j++) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
@@ -343,7 +368,8 @@ int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j;
@@ -352,15 +378,18 @@ int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	printk(LOG_LEVEL_MUTE, "           ");
 	for (j = 0; j < UL_LEN * 2; j++) {
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
-		p1 = (ulv *) bufa;
-		p2 = (ulv *) bufb;
+		p1 = (ulv *)bufa;
+		p2 = (ulv *)bufb;
 		printk(LOG_LEVEL_MUTE, "setting %3u", j);
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
-				*p1++ = *p2++ = (i % 2 == 0) ? (ONE << j) | (ONE << (j + 2)) : UL_ONEBITS ^ ((ONE << j) | (ONE << (j + 2)));
+				*p1++ = *p2++ = (i % 2 == 0) ? (ONE << j) | (ONE << (j + 2)) :
+							       UL_ONEBITS ^ ((ONE << j) | (ONE << (j + 2)));
 			} else { /* Walk it back down. */
-				*p1++ = *p2++ =
-						(i % 2 == 0) ? (ONE << (UL_LEN * 2 - 1 - j)) | (ONE << (UL_LEN * 2 + 1 - j)) : UL_ONEBITS ^ (ONE << (UL_LEN * 2 - 1 - j) | (ONE << (UL_LEN * 2 + 1 - j)));
+				*p1++ = *p2++ = (i % 2 == 0) ?
+							(ONE << (UL_LEN * 2 - 1 - j)) | (ONE << (UL_LEN * 2 + 1 - j)) :
+							UL_ONEBITS ^ (ONE << (UL_LEN * 2 - 1 - j) |
+									     (ONE << (UL_LEN * 2 + 1 - j)));
 			}
 		}
 		printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
@@ -373,7 +402,8 @@ int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
+int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count)
+{
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
 	unsigned int j, k;
@@ -387,9 +417,11 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
 			printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 			q = ~q;
 			printk(LOG_LEVEL_MUTE, "setting %3u", k * 8 + j);
-			p1 = (ulv *) bufa;
-			p2 = (ulv *) bufb;
-			for (i = 0; i < count; i++) { *p1++ = *p2++ = (i % 2) == 0 ? q : ~q; }
+			p1 = (ulv *)bufa;
+			p2 = (ulv *)bufb;
+			for (i = 0; i < count; i++) {
+				*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
+			}
 			printk(LOG_LEVEL_MUTE, "\b\b\b\b\b\b\b\b\b\b\b");
 			printk(LOG_LEVEL_MUTE, "testing %3u", k * 8 + j);
 			if (compare_regions(bufa, bufb, count)) {
@@ -401,7 +433,8 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_8bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
+int test_8bit_wide_random(ulv *bufa, ulv *bufb, size_t count)
+{
 	u8v *p1, *t;
 	ulv *p2;
 	int attempt;
@@ -411,16 +444,18 @@ int test_8bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 	uart_putchar(' ');
 	for (attempt = 0; attempt < 2; attempt++) {
 		if (attempt & 1) {
-			p1 = (u8v *) bufa;
+			p1 = (u8v *)bufa;
 			p2 = bufb;
 		} else {
-			p1 = (u8v *) bufb;
+			p1 = (u8v *)bufb;
 			p2 = bufa;
 		}
 		for (i = 0; i < count; i++) {
 			t = mword8.bytes;
 			*p2++ = mword8.val = rand_ul();
-			for (b = 0; b < UL_LEN / 8; b++) { *p1++ = *t++; }
+			for (b = 0; b < UL_LEN / 8; b++) {
+				*p1++ = *t++;
+			}
 			if (!(i % PROGRESSOFTEN)) {
 				uart_putchar('\b');
 				uart_putchar(progress[++j % PROGRESSLEN]);
@@ -434,7 +469,8 @@ int test_8bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-int test_16bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
+int test_16bit_wide_random(ulv *bufa, ulv *bufb, size_t count)
+{
 	u16v *p1, *t;
 	ulv *p2;
 	int attempt;
@@ -444,16 +480,18 @@ int test_16bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 	uart_putchar(' ');
 	for (attempt = 0; attempt < 2; attempt++) {
 		if (attempt & 1) {
-			p1 = (u16v *) bufa;
+			p1 = (u16v *)bufa;
 			p2 = bufb;
 		} else {
-			p1 = (u16v *) bufb;
+			p1 = (u16v *)bufb;
 			p2 = bufa;
 		}
 		for (i = 0; i < count; i++) {
 			t = mword16.u16s;
 			*p2++ = mword16.val = rand_ul();
-			for (b = 0; b < UL_LEN / 16; b++) { *p1++ = *t++; }
+			for (b = 0; b < UL_LEN / 16; b++) {
+				*p1++ = *t++;
+			}
 			if (!(i % PROGRESSOFTEN)) {
 				uart_putchar('\b');
 				uart_putchar(progress[++j % PROGRESSLEN]);
@@ -467,27 +505,19 @@ int test_16bit_wide_random(ulv *bufa, ulv *bufb, size_t count) {
 	return 0;
 }
 
-static struct test tests[] = {{"Random Value", test_random_value},
-							  {"Compare XOR", test_xor_comparison},
-							  {"Compare SUB", test_sub_comparison},
-							  {"Compare MUL", test_mul_comparison},
-							  {"Compare DIV", test_div_comparison},
-							  {"Compare OR", test_or_comparison},
-							  {"Compare AND", test_and_comparison},
-							  {"Sequential Increment", test_seqinc_comparison},
-							  {"Solid Bits", test_solidbits_comparison},
-							  {"Block Sequential", test_blockseq_comparison},
-							  {"Checkerboard", test_checkerboard_comparison},
-							  {"Bit Spread", test_bitspread_comparison},
-							  {"Bit Flip", test_bitflip_comparison},
-							  {"Walking Ones", test_walkbits1_comparison},
-							  {"Walking Zeroes", test_walkbits0_comparison},
-							  {"8-bit Writes", test_8bit_wide_random},
-							  {"16-bit Writes", test_16bit_wide_random},
-							  {NULL, NULL}};
+static struct test tests[] = { { "Random Value", test_random_value }, { "Compare XOR", test_xor_comparison },
+	{ "Compare SUB", test_sub_comparison }, { "Compare MUL", test_mul_comparison },
+	{ "Compare DIV", test_div_comparison }, { "Compare OR", test_or_comparison },
+	{ "Compare AND", test_and_comparison }, { "Sequential Increment", test_seqinc_comparison },
+	{ "Solid Bits", test_solidbits_comparison }, { "Block Sequential", test_blockseq_comparison },
+	{ "Checkerboard", test_checkerboard_comparison }, { "Bit Spread", test_bitspread_comparison },
+	{ "Bit Flip", test_bitflip_comparison }, { "Walking Ones", test_walkbits1_comparison },
+	{ "Walking Zeroes", test_walkbits0_comparison }, { "8-bit Writes", test_8bit_wide_random },
+	{ "16-bit Writes", test_16bit_wide_random }, { NULL, NULL } };
 
 /* Function declarations */
-static int do_memtester(uint64_t start_addr, uint32_t dram_size, uint64_t test_size, uint32_t loops) {
+static int do_memtester(uint64_t start_addr, uint32_t dram_size, uint64_t test_size, uint32_t loops)
+{
 	ul i;
 	uint64_t wantbytes, wantmb, halflen, count;
 	ulv *bufa, *bufb;
@@ -496,8 +526,8 @@ static int do_memtester(uint64_t start_addr, uint32_t dram_size, uint64_t test_s
 	wantmb = (wantbytes >> 20);
 	halflen = wantbytes / 2;
 	count = halflen / sizeof(ul);
-	bufa = (ulv *) (uintptr_t) start_addr;
-	bufb = (ulv *) ((uintptr_t) bufa + (uintptr_t) test_size);
+	bufa = (ulv *)(uintptr_t)start_addr;
+	bufb = (ulv *)((uintptr_t)bufa + (uintptr_t)test_size);
 
 	printk(LOG_LEVEL_MUTE, "Memtester Want %dMB (%llu bytes)\n", wantmb, wantbytes);
 	printk(LOG_LEVEL_MUTE, "bufa 0x%x, bufb 0x%x, loops %d, count %d\n", bufa, bufb, loops, count);

@@ -133,7 +133,8 @@ static inline __attribute__((always_inline)) void arm32_dcache_maintain_all(uint
  * @param[in] end Exclusive last byte address.
  * @param[in] invalidate Non-zero to invalidate; zero to clean to PoC.
  */
-static inline __attribute__((always_inline)) void arm32_dcache_maintain_range(uint64_t start, uint64_t end, uint32_t invalidate)
+static inline __attribute__((always_inline)) void arm32_dcache_maintain_range(
+	uint64_t start, uint64_t end, uint32_t invalidate)
 {
 	uint32_t line;
 	uint64_t first;

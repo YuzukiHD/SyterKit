@@ -66,7 +66,8 @@ static int sun50iw10_ar100_copy(const sunxi_remoteproc_t *remoteproc, const void
 
 		if (range->device_start >= size)
 			continue;
-		if (range->device_start > range->device_end || range->physical_start > (uintptr_t)-1 - (range->device_end - range->device_start))
+		if (range->device_start > range->device_end ||
+			range->physical_start > (uintptr_t)-1 - (range->device_end - range->device_start))
 			return DRIVER_ERROR_INVALID;
 		length = size - range->device_start;
 		if (range->device_end - range->device_start < length - 1U)

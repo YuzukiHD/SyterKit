@@ -103,7 +103,7 @@ typedef struct {
 	uintptr_t dma_handler; /**< Per-controller RX DMA channel */
 } sunxi_spi_t;
 
-#define SUNXI_SPI_COMPATIBLE "allwinner,sunxi-spi"
+#define SUNXI_SPI_COMPATIBLE	 "allwinner,sunxi-spi"
 #define SUNXI_SPI_CONTROLLER_MAX 5
 
 #define MAX_FIFU (64) /**< Maximum FIFO size set to 64. */

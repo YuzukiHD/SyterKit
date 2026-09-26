@@ -140,8 +140,9 @@ int pmu_axp1530_set_dual_phase(axp_pmu_t *pmu)
 		return -1;
 	}
 
-	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E) || sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_DCDC_MODE_CTRL2, 0x02) ||
-	    sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, 0x22))
+	if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_OUTPUT_MONITOR_CONTROL, 0x1E) ||
+		sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_DCDC_MODE_CTRL2, 0x02) ||
+		sunxi_i2c_write(pmu->i2c, pmu->address, AXP1530_POWER_DOMN_SEQUENCE, 0x22))
 		return -1;
 
 	return 0;
@@ -181,6 +182,7 @@ int pmu_axp1530_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp1530_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp1530_ctrl_tbl); i++) {
-		pr_debug("AXP1530 %s = %dmv\n", axp1530_ctrl_tbl[i].name, pmu_axp1530_get_vol(pmu, axp1530_ctrl_tbl[i].name));
+		pr_debug("AXP1530 %s = %dmv\n", axp1530_ctrl_tbl[i].name,
+			pmu_axp1530_get_vol(pmu, axp1530_ctrl_tbl[i].name));
 	}
 }

@@ -96,7 +96,8 @@ static int load_sdcard(sunxi_remoteproc_t *remoteproc, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -153,7 +154,8 @@ int main(void)
 	sdmmc_pdata_t card = { 0 };
 	sunxi_sdhci_t sdhci0;
 
-	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&hifi4, "hifi4", NULL) != DRIVER_OK) {
+	if (sunxi_sdhci_dt_read_alias(&sdhci0, "mmc0") != DRIVER_OK ||
+		sunxi_remoteproc_dt_read_alias(&hifi4, "hifi4", NULL) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -191,7 +193,8 @@ int main(void)
 		return 0;
 	}
 
-	if (sunxi_remoteproc_reset(&hifi4) != DRIVER_OK || sunxi_remoteproc_prepare(&hifi4) != DRIVER_OK || sunxi_remoteproc_load(&hifi4) != DRIVER_OK) {
+	if (sunxi_remoteproc_reset(&hifi4) != DRIVER_OK || sunxi_remoteproc_prepare(&hifi4) != DRIVER_OK ||
+		sunxi_remoteproc_load(&hifi4) != DRIVER_OK) {
 		pr_err("HIFI4: prepare or load failed\n");
 		return 0;
 	}

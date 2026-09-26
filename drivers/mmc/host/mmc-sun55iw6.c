@@ -91,7 +91,8 @@ int sunxi_sdhci_set_mclk(sunxi_sdhci_t *sdhci, uint32_t clk_hz)
 	}
 
 	// Configure the clock register value
-	reg_val = (source << 24) | (clk.factor_n << clk.reg_factor_n_offset) | (clk.factor_m << clk.reg_factor_m_offset);
+	reg_val = (source << 24) | (clk.factor_n << clk.reg_factor_n_offset) |
+		  (clk.factor_m << clk.reg_factor_m_offset);
 	writel(reg_val, clk.reg_base);
 
 	return 0;

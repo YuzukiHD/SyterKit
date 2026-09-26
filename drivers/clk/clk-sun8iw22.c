@@ -23,8 +23,8 @@
 #include <drivers/clk/clk.h>
 #include <drivers/clk/sun8iw22/reg.h>
 
-#define CPU_UPDATE_OFFSET (26)
-#define CPU_LOCK_OFFSET (28)
+#define CPU_UPDATE_OFFSET      (26)
+#define CPU_LOCK_OFFSET	       (28)
 #define CPU_LOCK_ENABLE_OFFSET (29)
 
 /**
@@ -40,7 +40,8 @@ void sunxi_clk_init(void)
 
 	/* Configure PLL CPU: n=0x2a, m0=m1=1, p=1, CPU PLL 1008MHz */
 	/* 24M*n/p/(m0 * m1) */
-	clrsetbits_le32(SUNXI_CCMU_BASE + PLL_CPU_CTRL_REG, (0xffU << 8) | (0x7U << 16) | (0x3U << 20) | (0xfU << 0), (0x2a << 8) | (0x0 << 0));
+	clrsetbits_le32(SUNXI_CCMU_BASE + PLL_CPU_CTRL_REG, (0xffU << 8) | (0x7U << 16) | (0x3U << 20) | (0xfU << 0),
+		(0x2a << 8) | (0x0 << 0));
 	udelay(10);
 
 	/* Update PLL */

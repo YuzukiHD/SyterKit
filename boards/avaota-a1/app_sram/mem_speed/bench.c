@@ -181,8 +181,7 @@ static void bench_latency(uintptr_t base, size_t avail)
 	bench_sink = (uint32_t)(uintptr_t)p;
 
 	ns = (uint32_t)(((t1 - t0) * 1000ULL) / ITERATIONS);
-	pr_info("Latency (%uKB ring, %uB stride): %u ns/access\n",
-		(uint32_t)((entries * STRIDE) / 1024), STRIDE, ns);
+	pr_info("Latency (%uKB ring, %uB stride): %u ns/access\n", (uint32_t)((entries * STRIDE) / 1024), STRIDE, ns);
 }
 
 /**
@@ -195,14 +194,19 @@ void mem_speed_bench(uintptr_t base, size_t dram_bytes)
 	size_t avail = dram_bytes > (2 * 1024 * 1024) ? dram_bytes - (2 * 1024 * 1024) : 0;
 
 	static const uint32_t sizes[] = {
-		4 * 1024, 16 * 1024, 64 * 1024, 256 * 1024,
-		1024 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024,
-		32 * 1024 * 1024, 64 * 1024 * 1024,
+		4 * 1024,
+		16 * 1024,
+		64 * 1024,
+		256 * 1024,
+		1024 * 1024,
+		4 * 1024 * 1024,
+		16 * 1024 * 1024,
+		32 * 1024 * 1024,
+		64 * 1024 * 1024,
 	};
 
 	pr_info("\n=========== DRAM Performance Test ===========\n");
-	pr_info(" Base: 0x%08x, Size: %u MB\n",
-		(uint32_t)base, (uint32_t)(dram_bytes / (1024U * 1024U)));
+	pr_info(" Base: 0x%08x, Size: %u MB\n", (uint32_t)base, (uint32_t)(dram_bytes / (1024U * 1024U)));
 	pr_info(" block      memcpy     memset      read     write\n");
 	pr_info("--------   -------   -------   -------   -------\n");
 
@@ -219,10 +223,9 @@ void mem_speed_bench(uintptr_t base, size_t dram_bytes)
 		uint64_t t_rd = bench_read(base, block);
 		uint64_t t_wr = bench_write(base, block);
 
-		pr_info("%6uK   %7u   %7u   %7u   %7u   (MiB/s)\n",
-			(uint32_t)(block / 1024),
-			bytes_per_mib_s(block, t_cp), bytes_per_mib_s(block, t_ms),
-			bytes_per_mib_s(block, t_rd), bytes_per_mib_s(block, t_wr));
+		pr_info("%6uK   %7u   %7u   %7u   %7u   (MiB/s)\n", (uint32_t)(block / 1024),
+			bytes_per_mib_s(block, t_cp), bytes_per_mib_s(block, t_ms), bytes_per_mib_s(block, t_rd),
+			bytes_per_mib_s(block, t_wr));
 	}
 
 	pr_info("\n");

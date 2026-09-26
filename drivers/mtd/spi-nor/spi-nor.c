@@ -220,8 +220,7 @@ __attribute__((unused)) static inline void spi_nor_dump_sfdp(const sfdp_t *sfdp)
 		sfdp->header.sign[3]);
 	pr_trace("  Minor version: %u\n", sfdp->header.minor);
 	pr_trace("  Major version: %u\n", sfdp->header.major);
-	pr_trace(
-		"  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
+	pr_trace("  Number of Parameter Headers: %u (wire NPH=%u)\n", sfdp->parameter_header_count, sfdp->header.nph);
 	pr_trace("  Unused: 0x%02X\n", sfdp->header.unused);
 
 	pr_trace("SFDP Parameter Headers:\n");
@@ -1070,7 +1069,7 @@ int spi_nor_detect(spi_nor_t *nor)
 
 	pr_info("NOR: detect spi nor id=0x%06x capacity=%dMB\n", info->id, info->capacity / 1024 / 1024);
 	pr_info("NOR: read_proto=%d read_dummy=%d opcode_read=0x%02x\n", info->read_proto, info->read_dummy,
-		    info->opcode_read);
+		info->opcode_read);
 
 	return 0;
 }

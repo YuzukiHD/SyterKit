@@ -154,8 +154,9 @@ int pmu_axp2101_init(axp_pmu_t *pmu)
 			if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_SELLP_CFG, reg_value))
 				return -1;
 			reg_value = 0x00;
-			if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_TWI_ADDR_EXT, reg_value) || sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_EFREQ_CTRL, reg_value) ||
-			    sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_EFUS_OP_CFG, reg_value))
+			if (sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_TWI_ADDR_EXT, reg_value) ||
+				sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_EFREQ_CTRL, reg_value) ||
+				sunxi_i2c_write(pmu->i2c, pmu->address, AXP2101_EFUS_OP_CFG, reg_value))
 				return -1;
 		}
 
@@ -233,6 +234,7 @@ int pmu_axp2101_get_vol(axp_pmu_t *pmu, char *name)
 void pmu_axp2101_dump(axp_pmu_t *pmu)
 {
 	for (int i = 0; i < ARRAY_SIZE(axp2101_ctrl_tbl); i++) {
-		pr_debug("AXP2101 %s = %dmv\n", axp2101_ctrl_tbl[i].name, pmu_axp2101_get_vol(pmu, axp2101_ctrl_tbl[i].name));
+		pr_debug("AXP2101 %s = %dmv\n", axp2101_ctrl_tbl[i].name,
+			pmu_axp2101_get_vol(pmu, axp2101_ctrl_tbl[i].name));
 	}
 }

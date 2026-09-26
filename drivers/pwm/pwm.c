@@ -40,7 +40,15 @@
  */
 static const uint32_t pre_scal[][2] = {
 	/* reg_val clk_pre_div */
-	{ 0, 1 }, { 1, 2 }, { 2, 4 }, { 3, 8 }, { 4, 16 }, { 5, 32 }, { 6, 64 }, { 7, 128 }, { 8, 256 },
+	{ 0, 1 },
+	{ 1, 2 },
+	{ 2, 4 },
+	{ 3, 8 },
+	{ 4, 16 },
+	{ 5, 32 },
+	{ 6, 64 },
+	{ 7, 128 },
+	{ 8, 256 },
 };
 
 /**
@@ -74,7 +82,8 @@ static int sunxi_pwm_validate_channel(const sunxi_pwm_t *pwm, int channel)
 	if (channel < 0 || channel >= (int)SUNXI_PWM_CHANNEL_MAX || !(pwm->channel_mask & BIT(channel)))
 		return -1;
 
-	if (pwm->channel[channel].channel_mode != PWM_CHANNEL_SINGLE && pwm->channel[channel].channel_mode != PWM_CHANNEL_BIND)
+	if (pwm->channel[channel].channel_mode != PWM_CHANNEL_SINGLE &&
+		pwm->channel[channel].channel_mode != PWM_CHANNEL_BIND)
 		return -1;
 
 	return 0;
@@ -94,7 +103,8 @@ static int sunxi_pwm_validate_config(const sunxi_pwm_config_t *config)
 	if ((int)config->pwm_mode < PWM_MODE_CYCLE || (int)config->pwm_mode > PWM_MODE_PLUSE)
 		return -1;
 
-	if (config->pwm_mode == PWM_MODE_PLUSE && (config->pluse_count == 0U || config->pluse_count >= (1U << PWM_PULSE_NUM_WIDTH)))
+	if (config->pwm_mode == PWM_MODE_PLUSE &&
+		(config->pluse_count == 0U || config->pluse_count >= (1U << PWM_PULSE_NUM_WIDTH)))
 		return -1;
 
 	return 0;
@@ -144,7 +154,8 @@ static inline void sunxi_pwm_gpio_init(sunxi_pwm_t *pwm, int channel)
 
 	if (pwm->channel[channel].channel_mode == PWM_CHANNEL_BIND) {
 		uint32_t bind_channel = pwm->channel[channel].bind_channel;
-		if (bind_channel >= SUNXI_PWM_CHANNEL_MAX || bind_channel == (uint32_t)channel || !(pwm->channel_mask & BIT(bind_channel)))
+		if (bind_channel >= SUNXI_PWM_CHANNEL_MAX || bind_channel == (uint32_t)channel ||
+			!(pwm->channel_mask & BIT(bind_channel)))
 			return;
 
 		sunxi_gpio_init(&pwm->channel[bind_channel].pin);
@@ -370,7 +381,8 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 		setbits_le32(pwm->base + PWM_PCGR, BIT(PWM_CLK_BYPASS_SHIFT + channel));
 		/* select clk source to APB */
 		setbits_le32(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), BIT(PWM_CLK_SRC_SHIFT));
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT,
+			PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
 		goto set_done;
 	}
 
@@ -378,12 +390,14 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 		/* if freq between 3M~100M, then select APB as clock */
 		clock_source_clk = pwm->clk_src.clk_src_apb;
 		/* select clk source to APB */
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT,
+			PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
 	} else if (config->period_ns > 334) {
 		/* if freq < 3M, then select OSC clock */
 		clock_source_clk = pwm->clk_src.clk_src_hosc;
 		/* select clk source to OSC */
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT,
+			PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 	}
 	if (clock_source_clk == 0U) {
 		return -1;
@@ -427,13 +441,16 @@ static int sunxi_pwm_set_config_single(sunxi_pwm_t *pwm, int channel, sunxi_pwm_
 	setbits_le32(pwm->base + PWM_PCGR, BIT(channel));
 
 	/* config prescal */
-	sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channel, PWM_PRESCAL_SHIFT, PWM_PRESCAL_WIDTH, prescale);
+	sunxi_pwm_reg_set(
+		pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channel, PWM_PRESCAL_SHIFT, PWM_PRESCAL_WIDTH, prescale);
 
 	/* config active cycles */
-	sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channel, PWM_ACT_CYCLES_SHIFT, PWM_ACT_CYCLES_WIDTH, active_cycles);
+	sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channel, PWM_ACT_CYCLES_SHIFT,
+		PWM_ACT_CYCLES_WIDTH, active_cycles);
 
 	/* config period cycles */
-	sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channel, PWM_PERIOD_CYCLES_SHIFT, PWM_PERIOD_CYCLES_WIDTH, (entire_cycles - 1));
+	sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channel, PWM_PERIOD_CYCLES_SHIFT,
+		PWM_PERIOD_CYCLES_WIDTH, (entire_cycles - 1));
 
 set_done:
 	sunxi_pwm_enable_controller(pwm, channel);
@@ -468,14 +485,16 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 		return -1;
 
 	channels[0] = channel;
-	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX || pwm->channel[channel].bind_channel == (uint32_t)channel ||
-	    !(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
+	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
+		pwm->channel[channel].bind_channel == (uint32_t)channel ||
+		!(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
 		return -1;
 	}
 	channels[1] = (int)pwm->channel[channel].bind_channel;
 	dead_time = pwm->channel[channel].dead_time;
 
-	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x1);
+	sunxi_pwm_reg_set(
+		pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x1);
 
 	reg_val = readl(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]));
 	if (config->duty_ns < dead_time)
@@ -493,17 +512,20 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 			setbits_le32(pwm->base + PWM_PCGR, BIT(PWM_CLK_BYPASS_SHIFT + channels[i]));
 			/* select clk source to APB */
 			setbits_le32(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), BIT(PWM_CLK_SRC_SHIFT));
-			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
+			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT,
+				PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
 		} else if (config->period_ns > 10 && config->period_ns <= 334) {
 			/* if freq between 3M~100M, then select APB as clock */
 			clock_source_clk = pwm->clk_src.clk_src_apb;
 			/* select clk source to APB */
-			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
+			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT,
+				PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_APB);
 		} else if (config->period_ns > 334) {
 			/* if freq < 3M, then select OSC clock */
 			clock_source_clk = pwm->clk_src.clk_src_hosc;
 			/* select clk source to OSC */
-			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
+			sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT,
+				PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 		}
 	}
 	if (clock_source_clk == 0U) {
@@ -519,7 +541,8 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 	reg_dead_time = pwm_clk_freq;
 
 	for (pre_scal_id = 0; pre_scal_id < 9; pre_scal_id++) {
-		if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) && reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
+		if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) &&
+			reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
 			found = true;
 			break;
 		}
@@ -527,7 +550,8 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 			entire_cycles = (clk / pre_scal[pre_scal_id][1]) / (prescale + 1);
 			reg_dead_time = pwm_clk_freq;
 			sunxi_pwm_do_div(reg_dead_time, pre_scal[pre_scal_id][1] * (prescale + 1));
-			if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) && reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
+			if (entire_cycles <= (1U << PWM_PERIOD_CYCLES_WIDTH) &&
+				reg_dead_time <= ((1U << PWM_PDZINTV_WIDTH) - 1U)) {
 				div_m = pre_scal[pre_scal_id][0];
 				found = true;
 				break;
@@ -550,35 +574,43 @@ static int sunxi_pwm_set_config_bind(sunxi_pwm_t *pwm, int channel, sunxi_pwm_co
 
 	for (int i = 0; i < PWM_BIND_NUM; i++) {
 		/* config clk div_m */
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_DIV_M_SHIFT, PWM_DIV_M_WIDTH, div_m);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_DIV_M_SHIFT,
+			PWM_DIV_M_WIDTH, div_m);
 
 		/* config gating */
 		setbits_le32(pwm->base + PWM_PCGR, BIT(channels[i]));
 
 		/* config prescal */
-		sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PRESCAL_SHIFT, PWM_PRESCAL_WIDTH, prescale);
+		sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PRESCAL_SHIFT,
+			PWM_PRESCAL_WIDTH, prescale);
 
 		/* config active cycles */
-		sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channels[i], PWM_ACT_CYCLES_SHIFT, PWM_ACT_CYCLES_WIDTH, active_cycles);
+		sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channels[i], PWM_ACT_CYCLES_SHIFT,
+			PWM_ACT_CYCLES_WIDTH, active_cycles);
 
 		/* config period cycles */
-		sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channels[i], PWM_PERIOD_CYCLES_SHIFT, PWM_PERIOD_CYCLES_WIDTH, (entire_cycles - 1));
+		sunxi_pwm_reg_set(pwm->base + PWM_PPR + PWM_REG_CHN_OFFSET * channels[i], PWM_PERIOD_CYCLES_SHIFT,
+			PWM_PERIOD_CYCLES_WIDTH, (entire_cycles - 1));
 
 		/* init gpio */
 		sunxi_pwm_gpio_init(pwm, channels[i]);
 
 		if (config->pwm_mode == PWM_MODE_PLUSE) {
 			/* config pluse mode */
-			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_SHIFT, PWM_PULSE_WIDTH, 0x1);
+			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_SHIFT,
+				PWM_PULSE_WIDTH, 0x1);
 			/* config pulse num */
-			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_NUM_SHIFT, PWM_PULSE_NUM_WIDTH, (config->pluse_count - 1));
+			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_NUM_SHIFT,
+				PWM_PULSE_NUM_WIDTH, (config->pluse_count - 1));
 			/* enable pulse start */
-			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_START_SHIFT, PWM_PULSE_START_WIDTH, 0x1);
+			sunxi_pwm_reg_set(pwm->base + PWM_PCR + PWM_REG_CHN_OFFSET * channels[i], PWM_PULSE_START_SHIFT,
+				PWM_PULSE_START_WIDTH, 0x1);
 		}
 	}
 
 	/* config dead zone, one config for two pwm */
-	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_PDZINTV_SHIFT, PWM_PDZINTV_WIDTH, reg_dead_time);
+	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_PDZINTV_SHIFT, PWM_PDZINTV_WIDTH,
+		reg_dead_time);
 
 	/* pwm set channels[0] polarity */
 	sunxi_pwm_set_porality(pwm, channels[0], config->polarity);
@@ -614,7 +646,8 @@ static int sunxi_pwm_release_single(sunxi_pwm_t *pwm, int channel)
 	clrbits_le32(pwm->base + PWM_PCGR, BIT(channel));
 
 	/* clear clk src to osc */
-	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
+	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channel), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH,
+		PWM_CLK_SRC_OSC);
 
 	return 0;
 }
@@ -639,8 +672,9 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel)
 		return -1;
 
 	channels[0] = channel;
-	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX || pwm->channel[channel].bind_channel == (uint32_t)channel ||
-	    !(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
+	if (pwm->channel[channel].bind_channel >= SUNXI_PWM_CHANNEL_MAX ||
+		pwm->channel[channel].bind_channel == (uint32_t)channel ||
+		!(pwm->channel_mask & BIT(pwm->channel[channel].bind_channel))) {
 		return -1;
 	}
 	channels[1] = (int)pwm->channel[channel].bind_channel;
@@ -649,11 +683,13 @@ static int sunxi_pwm_release_bind(sunxi_pwm_t *pwm, int channel)
 		/* Close gate */
 		clrbits_le32(pwm->base + PWM_PCGR, BIT(channels[i]));
 		/* clear clk src to osc */
-		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT, PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
+		sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pccr_reg_offset(channels[i]), PWM_CLK_SRC_SHIFT,
+			PWM_CLK_SRC_WIDTH, PWM_CLK_SRC_OSC);
 	}
 
 	/* clear pdzcr select */
-	sunxi_pwm_reg_set(pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x0);
+	sunxi_pwm_reg_set(
+		pwm->base + sunxi_pwm_get_pdzcr_reg_offset(channels[0]), PWM_DZ_EN_SHIFT, PWM_DZ_EN_WIDTH, 0x0);
 
 	return 0;
 }

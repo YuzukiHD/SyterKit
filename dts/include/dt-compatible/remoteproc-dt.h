@@ -7,19 +7,22 @@
 #include <drivers/remoteproc/remoteproc.h>
 #include <dt-compatible/dt-common.h>
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_string(int node, const char *property, const char **value)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_string(
+	int node, const char *property, const char **value)
 {
 	const char *string;
 	int length;
 
 	string = (const char *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, property, &length);
-	if (string == NULL || length <= 1 || string[length - 1] != '\0' || __builtin_strlen(string) != (size_t)length - 1U)
+	if (string == NULL || length <= 1 || string[length - 1] != '\0' ||
+		__builtin_strlen(string) != (size_t)length - 1U)
 		return false;
 	*value = string;
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_registers(int node, sunxi_remoteproc_t *remoteproc)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_registers(
+	int node, sunxi_remoteproc_t *remoteproc)
 {
 	const dt2c_fdt32_t *cells;
 	size_t count;
@@ -46,7 +49,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_registers(
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_region(int node, sunxi_remoteproc_firmware_t *firmware)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_region(
+	int node, sunxi_remoteproc_firmware_t *firmware)
 {
 	const dt2c_fdt32_t *reg;
 	uint32_t address;
@@ -66,7 +70,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_region(int
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_primary_firmware(int node, sunxi_remoteproc_t *remoteproc)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_primary_firmware(
+	int node, sunxi_remoteproc_t *remoteproc)
 {
 	int region;
 
@@ -79,7 +84,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_primary_fi
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_auxiliary_firmware(int node, sunxi_remoteproc_t *remoteproc)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_auxiliary_firmware(
+	int node, sunxi_remoteproc_t *remoteproc)
 {
 	const dt2c_fdt32_t *phandles;
 	const char *name;
@@ -88,7 +94,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_auxiliary_
 	int region;
 	int index;
 
-	phandles = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-memory-regions", &length);
+	phandles = (const dt2c_fdt32_t *)dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-memory-regions", &length);
 	if (phandles == NULL && length == -DT2C_FDT_ERR_NOTFOUND) {
 		count = dt2c_fdt_stringlist_count(DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-firmware-names");
 		return count == -DT2C_FDT_ERR_NOTFOUND;
@@ -96,13 +103,16 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_auxiliary_
 	if (phandles == NULL || length <= 0 || length % (int)sizeof(*phandles) != 0)
 		return false;
 	count = length / (int)sizeof(*phandles);
-	if (count >= (int)SUNXI_REMOTEPROC_MAX_FIRMWARES || dt2c_fdt_stringlist_count(DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-firmware-names") != count)
+	if (count >= (int)SUNXI_REMOTEPROC_MAX_FIRMWARES ||
+		dt2c_fdt_stringlist_count(DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-firmware-names") != count)
 		return false;
 
 	for (index = 0; index < count; ++index) {
-		name = dt2c_fdt_stringlist_get(DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-firmware-names", index, &length);
+		name = dt2c_fdt_stringlist_get(
+			DT2C_FDT_COMPILED_TREE, node, "allwinner,auxiliary-firmware-names", index, &length);
 		region = dt2c_fdt_node_offset_by_phandle(DT2C_FDT_COMPILED_TREE, dt2c_fdt32_to_cpu(phandles[index]));
-		if (name == NULL || length <= 0 || !sunxi_remoteproc_dt_region(region, &remoteproc->firmware[index + 1U]))
+		if (name == NULL || length <= 0 ||
+			!sunxi_remoteproc_dt_region(region, &remoteproc->firmware[index + 1U]))
 			return false;
 		remoteproc->firmware[index + 1U].name = name;
 	}
@@ -132,7 +142,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_entry(int 
 	const dt2c_fdt32_t *entry;
 	int length;
 
-	entry = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,entry-address", &length);
+	entry = (const dt2c_fdt32_t *)dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,entry-address", &length);
 	if (entry == NULL && length == -DT2C_FDT_ERR_NOTFOUND) {
 		if (remoteproc->format == SUNXI_REMOTEPROC_FIRMWARE_RAW)
 			return false;
@@ -146,7 +157,8 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_entry(int 
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_address_map(int node, sunxi_remoteproc_t *remoteproc)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_address_map(
+	int node, sunxi_remoteproc_t *remoteproc)
 {
 	const dt2c_fdt32_t *cells;
 	size_t count;
@@ -169,14 +181,15 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_address_ma
 		range->device_end = (uintptr_t)dt2c_fdt32_to_cpu(cells[index * 3U + 1U]);
 		range->physical_start = (uintptr_t)dt2c_fdt32_to_cpu(cells[index * 3U + 2U]);
 		if (range->device_start > range->device_end || range->physical_start == 0U ||
-		    (index != 0U && range->device_start <= remoteproc->address_map[index - 1U].device_end))
+			(index != 0U && range->device_start <= remoteproc->address_map[index - 1U].device_end))
 			return false;
 	}
 	remoteproc->address_map_count = count;
 	return true;
 }
 
-static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_rtc(int node, sunxi_remoteproc_t *remoteproc, sunxi_rtc_t *rtc)
+static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_rtc(
+	int node, sunxi_remoteproc_t *remoteproc, sunxi_rtc_t *rtc)
 {
 	const dt2c_fdt32_t *phandle;
 	int length;
@@ -194,12 +207,15 @@ static inline __attribute__((always_inline)) bool sunxi_remoteproc_dt_rtc(int no
 	return true;
 }
 
-static inline __attribute__((always_inline)) int sunxi_remoteproc_dt_read_config(sunxi_remoteproc_t *remoteproc, int node, sunxi_rtc_t *rtc)
+static inline __attribute__((always_inline)) int sunxi_remoteproc_dt_read_config(
+	sunxi_remoteproc_t *remoteproc, int node, sunxi_rtc_t *rtc)
 {
 	sunxi_remoteproc_t config = { 0 };
-	if (remoteproc == NULL || node < 0 || !syterkit_dt_node_available(node) || !sunxi_remoteproc_dt_registers(node, &config) ||
-	    !sunxi_remoteproc_dt_primary_firmware(node, &config) || !sunxi_remoteproc_dt_auxiliary_firmware(node, &config) || !sunxi_remoteproc_dt_format(node, &config) ||
-	    !sunxi_remoteproc_dt_entry(node, &config) || !sunxi_remoteproc_dt_address_map(node, &config) || !sunxi_remoteproc_dt_rtc(node, &config, rtc))
+	if (remoteproc == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		!sunxi_remoteproc_dt_registers(node, &config) || !sunxi_remoteproc_dt_primary_firmware(node, &config) ||
+		!sunxi_remoteproc_dt_auxiliary_firmware(node, &config) || !sunxi_remoteproc_dt_format(node, &config) ||
+		!sunxi_remoteproc_dt_entry(node, &config) || !sunxi_remoteproc_dt_address_map(node, &config) ||
+		!sunxi_remoteproc_dt_rtc(node, &config, rtc))
 		return DRIVER_ERROR_INVALID;
 
 	config.dt_node = node;
@@ -208,17 +224,21 @@ static inline __attribute__((always_inline)) int sunxi_remoteproc_dt_read_config
 		return DRIVER_ERROR_INVALID;
 	*remoteproc = config;
 	SYTERKIT_DT_TRACE_NODE("remoteproc", node);
-	SYTERKIT_DT_TRACE("remoteproc config format=%u entry=%p entry_from_elf=%u firmware=%lu maps=%lu registers=%lu rtc=%p\n", remoteproc->format, (void *)remoteproc->entry,
-			  remoteproc->entry_from_elf, (unsigned long)remoteproc->firmware_count, (unsigned long)remoteproc->address_map_count,
-			  (unsigned long)remoteproc->register_count, (void *)remoteproc->rtc);
+	SYTERKIT_DT_TRACE(
+		"remoteproc config format=%u entry=%p entry_from_elf=%u firmware=%lu maps=%lu registers=%lu rtc=%p\n",
+		remoteproc->format, (void *)remoteproc->entry, remoteproc->entry_from_elf,
+		(unsigned long)remoteproc->firmware_count, (unsigned long)remoteproc->address_map_count,
+		(unsigned long)remoteproc->register_count, (void *)remoteproc->rtc);
 	for (size_t index = 0U; index < remoteproc->firmware_count; ++index) {
-		SYTERKIT_DT_TRACE("remoteproc firmware[%lu] name=%s address=%p size=0x%lx\n", (unsigned long)index, remoteproc->firmware[index].name,
-				  (void *)remoteproc->firmware[index].load_address, (unsigned long)remoteproc->firmware[index].region_size);
+		SYTERKIT_DT_TRACE("remoteproc firmware[%lu] name=%s address=%p size=0x%lx\n", (unsigned long)index,
+			remoteproc->firmware[index].name, (void *)remoteproc->firmware[index].load_address,
+			(unsigned long)remoteproc->firmware[index].region_size);
 	}
 	return DRIVER_OK;
 }
 
-static inline __attribute__((always_inline)) int sunxi_remoteproc_dt_read_alias(sunxi_remoteproc_t *remoteproc, const char *alias, sunxi_rtc_t *rtc)
+static inline __attribute__((always_inline)) int sunxi_remoteproc_dt_read_alias(
+	sunxi_remoteproc_t *remoteproc, const char *alias, sunxi_rtc_t *rtc)
 {
 	if (alias == NULL)
 		return DRIVER_ERROR_INVALID;
