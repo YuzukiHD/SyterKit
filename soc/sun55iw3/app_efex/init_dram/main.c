@@ -121,12 +121,25 @@ static void soc_set_rpio_power_mode(void)
 		write32(SUNXI_R_GPIO_BASE + 0x340, 1);
 }
 
+/* PMU rail defaults in mV as [pmu][rail]; the host may override them. */
+static int rail_mv[][EFEX_PARAM_RAIL_MAX] = {
+	{ 1100, 920, 1160, 3300, 1800, 1800 }, /* AXP2202: dcdc1 dcdc2 dcdc3 dcdc4 bldo3 bldo1 */
+	{ 1100, 1100 }, /* AXP1530: dcdc1 dcdc2 */
+};
+
 int main(void)
 {
 	axp_pmu_t axp2202;
 	axp_pmu_t axp1530;
 
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.i2c = &i2c,
+		.dram = &dram,
+		.rail_mv = rail_mv,
+		.pmu_count = ARRAY_SIZE(rail_mv),
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 
@@ -148,18 +161,18 @@ int main(void)
 
 	pmu_axp1530_init(&axp1530);
 
-	pmu_axp2202_set_vol(&axp2202, "dcdc1", 1100, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc1", rail_mv[0][0], 1);
 
 	pmu_axp1530_set_dual_phase(&axp1530);
-	pmu_axp1530_set_vol(&axp1530, "dcdc1", 1100, 1);
-	pmu_axp1530_set_vol(&axp1530, "dcdc2", 1100, 1);
+	pmu_axp1530_set_vol(&axp1530, "dcdc1", rail_mv[1][0], 1);
+	pmu_axp1530_set_vol(&axp1530, "dcdc2", rail_mv[1][1], 1);
 
-	pmu_axp2202_set_vol(&axp2202, "dcdc2", 920, 1);
-	pmu_axp2202_set_vol(&axp2202, "dcdc3", 1160, 1);
-	pmu_axp2202_set_vol(&axp2202, "dcdc4", 3300, 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc2", rail_mv[0][1], 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc3", rail_mv[0][2], 1);
+	pmu_axp2202_set_vol(&axp2202, "dcdc4", rail_mv[0][3], 1);
 
-	pmu_axp2202_set_vol(&axp2202, "bldo3", 1800, 1);
-	pmu_axp2202_set_vol(&axp2202, "bldo1", 1800, 1);
+	pmu_axp2202_set_vol(&axp2202, "bldo3", rail_mv[0][4], 1);
+	pmu_axp2202_set_vol(&axp2202, "bldo1", rail_mv[0][5], 1);
 
 	pmu_axp2202_dump(&axp2202);
 	pmu_axp1530_dump(&axp1530);
@@ -172,6 +185,7 @@ int main(void)
 	}
 
 	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
 	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
@@ -191,6 +205,5 @@ int main(void)
 
 	printk(LOG_LEVEL_MUTE, "\n");
 
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }

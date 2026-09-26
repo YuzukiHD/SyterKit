@@ -16,7 +16,7 @@ _start:
 	b	.Lreset
 
 .Lreset:
-	stmfd	sp!, {lr}
+	stmfd	sp!, {r4, lr}
 	bl	.Lclear_bss
 
 	/* BootROM enters with the instruction cache disabled. */
@@ -26,7 +26,13 @@ _start:
 	isb
 
 	bl	main
-	ldmfd	sp!, {lr}
+
+	/* Record status and results in the parameter area, keep main's r0. */
+	mov	r4, r0
+	bl	efex_param_finish
+	mov	r0, r4
+
+	ldmfd	sp!, {r4, lr}
 	bx	lr
 
 .Lclear_bss:

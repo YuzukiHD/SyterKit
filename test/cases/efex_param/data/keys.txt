@@ -1,0 +1,17 @@
+uart.base 0x01000000
+uart.rate 0x01000200
+uart.pin0 0x01000300
+uart.mux1 0x01000600
+uart.gpio_bank0 0x01000800
+uart.parent_clk 0x01000d00
+uart.dlen 0x01001000
+twi.rate 0x02000200
+twi.pin1 0x02000500
+twi.rst_bit 0x02000c00
+rail.1.2 0x03000102
+dram.para[31] 0x0400001f
+dram.para_count 0x04000100
+dram.size 0x04000300
+dram.size_mb 0x04001000
+psram.init_ok 0x05001100
+app.1795 0x3f000703

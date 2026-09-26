@@ -96,11 +96,23 @@ static void sunxi_pmc_config(void)
 		writel(BIT(0) | BIT(1) | BIT(2) | BIT(5), SUNXI_RTC_IOMODE_CTL);
 }
 
+/* PMU rail defaults in mV as [pmu][rail]; the host may override them. */
+static int rail_mv[][EFEX_PARAM_RAIL_MAX] = {
+	{ 1500 }, /* AXP333: dcdc2 */
+};
+
 int main(void)
 {
 	axp_pmu_t pmu;
 
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.i2c = &i2c,
+		.dram = &dram,
+		.rail_mv = rail_mv,
+		.pmu_count = ARRAY_SIZE(rail_mv),
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 	if (pmu_axp333_config(&pmu, &i2c) != DRIVER_OK) {
@@ -111,11 +123,12 @@ int main(void)
 	sunxi_pmc_config();
 	sunxi_i2c_init(&i2c);
 	pmu_axp333_init(&pmu);
-	pmu_axp333_set_vol(&pmu, "dcdc2", 1500, 1);
-	if (sunxi_dram_init(&dram) == 0U) {
+	pmu_axp333_set_vol(&pmu, "dcdc2", rail_mv[0][0], 1);
+	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
+	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
 	}
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }

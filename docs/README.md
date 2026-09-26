@@ -220,9 +220,11 @@ or 8192-byte alignment. The tool pads the image, updates `length`, replaces the
 stamp with the checksum seed, sums the complete padded image as 32-bit words,
 and stores the result in `check_sum`.
 
-Returning eFEX images are raw FEL payloads. Their `_start` entry is linked at
-the beginning of the configured SRAM range, and `<app>_efex.bin` is produced
-directly from the ELF without a boot header, padding, or `mksunxi` processing.
+Returning eFEX images are raw FEL payloads. They carry the shared 32-bit header
+from `soc/efex/head.c` with `_start` at +0x40, and `<app>_efex.bin` is produced
+directly from the ELF without padding or `mksunxi` processing. The otherwise
+unused bytes at +0x30 describe the runtime parameter area; see
+[eFEX runtime parameters](efex-param.md).
 
 ### ARM jump instruction
 

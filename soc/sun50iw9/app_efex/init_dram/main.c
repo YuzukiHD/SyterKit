@@ -125,11 +125,23 @@ static void set_cpu_poweroff(void)
 	}
 }
 
+/* PMU rail defaults in mV as [pmu][rail]; the host may override them. */
+static int rail_mv[][EFEX_PARAM_RAIL_MAX] = {
+	{ 1100 }, /* AXP1530: dcdc3 (LPDDR4) */
+};
+
 int main(void)
 {
 	axp_pmu_t pmu;
 
 	uart_dbg = console;
+	efex_param_load(&(const struct efex_param_targets){
+		.uart = &uart_dbg,
+		.i2c = &i2c,
+		.dram = &dram,
+		.rail_mv = rail_mv,
+		.pmu_count = ARRAY_SIZE(rail_mv),
+	});
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
 
@@ -151,7 +163,7 @@ int main(void)
 
 	pmu_axp1530_dump(&pmu);
 
-	int set_vol = 1100; /* LPDDR4 1100mv */
+	int set_vol = rail_mv[0][0];
 
 	int temp_vol, src_vol = pmu_axp1530_get_vol(&pmu, "dcdc3");
 	if (src_vol > set_vol) {
@@ -169,6 +181,7 @@ int main(void)
 	pmu_axp1530_dump(&pmu);
 
 	uint32_t dram_size = sunxi_dram_init(&dram);
+	efex_param_report_dram(&dram, dram_size);
 	if (dram_size == 0U) {
 		pr_err("DRAM: initialization failed\n");
 		return -1;
@@ -177,6 +190,5 @@ int main(void)
 
 	sunxi_clk_dump();
 
-	syterkit_efex_set_dram_result(dram.parameters, dram.parameter_count);
 	return 0;
 }
