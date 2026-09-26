@@ -15,7 +15,7 @@ typedef u32_t uint32_t;
 typedef s64_t int64_t;
 typedef u64_t uint64_t;
 
-#define UINT8_MAX (0xff)
+#define UINT8_MAX  (0xff)
 #define UINT16_MAX (0xffff)
 #define UINT32_MAX (0xffffffff)
 #define UINT64_MAX (0xffffffffffffffffULL)

@@ -23,7 +23,8 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	uint32_t usb_id;
 	sunxi_usb_t config = { 0 };
 
-	if (usb == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_USB_COMPATIBLE) != 0)
+	if (usb == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_USB_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);
@@ -41,7 +42,8 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	phy_reset_offset = dt2c_fdt32_to_cpu(phy_reset[1]);
 	clock_gate_offset = dt2c_fdt32_to_cpu(clock_gate[1]);
 	reset_offset = dt2c_fdt32_to_cpu(reset[1]);
-	if (usb_id >= SUNXI_USB_MAX_CONTROLLERS || phy_clock_gate_offset >= 32U || phy_reset_offset >= 32U || clock_gate_offset >= 32U || reset_offset >= 32U)
+	if (usb_id >= SUNXI_USB_MAX_CONTROLLERS || phy_clock_gate_offset >= 32U || phy_reset_offset >= 32U ||
+		clock_gate_offset >= 32U || reset_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
 	config.dt_node = node;
@@ -57,13 +59,15 @@ static inline __attribute__((always_inline)) int sunxi_usb_dt_read_config(sunxi_
 	config.reset_offset = (uint8_t)reset_offset;
 
 	if (config.base == 0U || config.phy_clock_reg_base == 0U || config.clock_gate_reg_base == 0U ||
-	    dt2c_fdt32_to_cpu(phy_reset[0]) != config.phy_clock_reg_base || dt2c_fdt32_to_cpu(reset[0]) != config.clock_gate_reg_base)
+		dt2c_fdt32_to_cpu(phy_reset[0]) != config.phy_clock_reg_base ||
+		dt2c_fdt32_to_cpu(reset[0]) != config.clock_gate_reg_base)
 		return DRIVER_ERROR_INVALID;
 
 	*usb = config;
 	SYTERKIT_DT_TRACE_NODE("usb", node);
-	SYTERKIT_DT_TRACE("usb config base=%p id=%u irq=%u phy=%p:%u/%u bus=%p:%u/%u\n", (void *)usb->base, usb->id, usb->irq, (void *)usb->phy_clock_reg_base,
-			  usb->phy_clock_gate_offset, usb->phy_reset_offset, (void *)usb->clock_gate_reg_base, usb->clock_gate_offset, usb->reset_offset);
+	SYTERKIT_DT_TRACE("usb config base=%p id=%u irq=%u phy=%p:%u/%u bus=%p:%u/%u\n", (void *)usb->base, usb->id,
+		usb->irq, (void *)usb->phy_clock_reg_base, usb->phy_clock_gate_offset, usb->phy_reset_offset,
+		(void *)usb->clock_gate_reg_base, usb->clock_gate_offset, usb->reset_offset);
 	return DRIVER_OK;
 }
 

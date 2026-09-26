@@ -2,7 +2,7 @@
 #define __RISCV64_ENDIAN_H__
 
 #define LITTLE_ENDIAN (0x1234)
-#define BIG_ENDIAN (0x4321)
+#define BIG_ENDIAN    (0x4321)
 
 #if (!defined(__LITTLE_ENDIAN) && !defined(__BIG_ENDIAN))
 #define __LITTLE_ENDIAN

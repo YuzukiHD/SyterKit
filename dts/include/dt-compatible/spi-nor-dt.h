@@ -16,7 +16,8 @@ static inline __attribute__((always_inline)) int spi_nor_dt_read_config(spi_nor_
 	uint32_t max_frequency;
 	int parent;
 
-	if (nor == NULL || spi == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SPI_NOR_COMPATIBLE) != 0)
+	if (nor == NULL || spi == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SPI_NOR_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	parent = dt2c_fdt_parent_offset(DT2C_FDT_COMPILED_TREE, node);
@@ -36,12 +37,13 @@ static inline __attribute__((always_inline)) int spi_nor_dt_read_config(spi_nor_
 	config.spi = spi;
 	*nor = config;
 	SYTERKIT_DT_TRACE_NODE("spi-nor", node);
-	SYTERKIT_DT_TRACE("spi-nor config spi=%p chip_select=%u max_frequency=%u\n", (void *)nor->spi,
-		nor->chip_select, nor->max_frequency);
+	SYTERKIT_DT_TRACE("spi-nor config spi=%p chip_select=%u max_frequency=%u\n", (void *)nor->spi, nor->chip_select,
+		nor->max_frequency);
 	return DRIVER_OK;
 }
 
-static inline __attribute__((always_inline)) int spi_nor_dt_read_alias(spi_nor_t *nor, const char *alias, sunxi_spi_t *spi)
+static inline __attribute__((always_inline)) int spi_nor_dt_read_alias(
+	spi_nor_t *nor, const char *alias, sunxi_spi_t *spi)
 {
 	int node;
 

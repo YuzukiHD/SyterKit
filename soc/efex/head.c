@@ -19,10 +19,8 @@ struct boot_file_head {
 	struct efex_param_desc param; /* image + 0x30, fills the gap before the entry */
 };
 
-_Static_assert(__builtin_offsetof(struct boot_file_head, param) == 0x30,
-	       "eFEX requires a 32-bit boot header");
-_Static_assert(sizeof(struct boot_file_head) == 0x40,
-	       "eFEX header must end at the entry point");
+_Static_assert(__builtin_offsetof(struct boot_file_head, param) == 0x30, "eFEX requires a 32-bit boot header");
+_Static_assert(sizeof(struct boot_file_head) == 0x40, "eFEX header must end at the entry point");
 
 extern uint32_t __spl_size[];
 extern uint32_t __code_start_address[];

@@ -13,8 +13,8 @@ extern "C" {
 #define __aligned(x) __attribute__((__aligned__(x)))
 #endif
 
-#define MAX_LEVEL 32 /* how deeply nested we will go */
-#define SCRATCHPAD 1024 /* bytes of scratchpad memory */
+#define MAX_LEVEL	 32 /* how deeply nested we will go */
+#define SCRATCHPAD	 1024 /* bytes of scratchpad memory */
 #define CMD_FDT_MAX_DUMP 64
 
 /**

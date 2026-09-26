@@ -38,18 +38,20 @@ typedef struct boot_file_head {
 * bitwise operations and utilizes it to construct a jump instruction. 
 */
 
-#define BROM_FILE_HEAD_SIZE (sizeof(boot_file_head_t) & 0x00FFFFF)
-#define BROM_FILE_HEAD_BIT_10_1 ((BROM_FILE_HEAD_SIZE & 0x7FE) >> 1)
-#define BROM_FILE_HEAD_BIT_11 ((BROM_FILE_HEAD_SIZE & 0x800) >> 11)
+#define BROM_FILE_HEAD_SIZE	 (sizeof(boot_file_head_t) & 0x00FFFFF)
+#define BROM_FILE_HEAD_BIT_10_1	 ((BROM_FILE_HEAD_SIZE & 0x7FE) >> 1)
+#define BROM_FILE_HEAD_BIT_11	 ((BROM_FILE_HEAD_SIZE & 0x800) >> 11)
 #define BROM_FILE_HEAD_BIT_19_12 ((BROM_FILE_HEAD_SIZE & 0xFF000) >> 12)
-#define BROM_FILE_HEAD_BIT_20 ((BROM_FILE_HEAD_SIZE & 0x100000) >> 20)
+#define BROM_FILE_HEAD_BIT_20	 ((BROM_FILE_HEAD_SIZE & 0x100000) >> 20)
 
-#define BROM_FILE_HEAD_SIZE_OFFSET ((BROM_FILE_HEAD_BIT_20 << 31) | (BROM_FILE_HEAD_BIT_10_1 << 21) | (BROM_FILE_HEAD_BIT_11 << 20) | (BROM_FILE_HEAD_BIT_19_12 << 12))
+#define BROM_FILE_HEAD_SIZE_OFFSET                                                                         \
+	((BROM_FILE_HEAD_BIT_20 << 31) | (BROM_FILE_HEAD_BIT_10_1 << 21) | (BROM_FILE_HEAD_BIT_11 << 20) | \
+		(BROM_FILE_HEAD_BIT_19_12 << 12))
 
 #define JUMP_INSTRUCTION (BROM_FILE_HEAD_SIZE_OFFSET | 0x6f)
 
-#define BOOT0_MAGIC "eGON.BT0"
-#define STAMP_VALUE (0x12345678)
+#define BOOT0_MAGIC	      "eGON.BT0"
+#define STAMP_VALUE	      (0x12345678)
 #define BOOT_PUB_HEAD_VERSION "3000"
 
 extern uint32_t __spl_size[];

@@ -37,31 +37,31 @@
 #include <lib/fdt/libfdt.h>
 
 /* PSRAM is the load target for every payload below. */
-#define F101_RAM_BASE		SUNXI_PSRAM_BASE
-#define F101_RAM_SIZE		0x01000000U
+#define F101_RAM_BASE SUNXI_PSRAM_BASE
+#define F101_RAM_SIZE 0x01000000U
 
 /*
  * PSRAM reservations, bottom up: Linux Image, then DTB, then SBI firmware pinned
  * at the top of PSRAM. The heap for the SPIF sampling training lives in the
  * gap between the kernel region and the DTB reservation.
  */
-#define F101_KERNEL_SIZE	0x00600000U	/* Linux Image up to 6 MiB */
-#define F101_DTB_SIZE		0x00040000U	/* Device tree up to 256 KiB */
-#define F101_SBI_SIZE	0x00080000U	/* SBI firmware fw_jump 512 KiB */
+#define F101_KERNEL_SIZE 0x00600000U /* Linux Image up to 6 MiB */
+#define F101_DTB_SIZE	 0x00040000U /* Device tree up to 256 KiB */
+#define F101_SBI_SIZE	 0x00080000U /* SBI firmware fw_jump 512 KiB */
 
-#define F101_LINUX_ADDR		(F101_RAM_BASE)
+#define F101_LINUX_ADDR (F101_RAM_BASE)
 #define F101_SBI_ADDR	(F101_RAM_BASE + F101_RAM_SIZE - F101_SBI_SIZE)
-#define F101_DTB_ADDR		(F101_SBI_ADDR - F101_DTB_SIZE)
+#define F101_DTB_ADDR	(F101_SBI_ADDR - F101_DTB_SIZE)
 
-#define F101_HEAP_BASE		(F101_LINUX_ADDR + F101_KERNEL_SIZE)
-#define F101_HEAP_SIZE		(F101_DTB_ADDR - F101_HEAP_BASE)
+#define F101_HEAP_BASE (F101_LINUX_ADDR + F101_KERNEL_SIZE)
+#define F101_HEAP_SIZE (F101_DTB_ADDR - F101_HEAP_BASE)
 
 /* Fixed SPI NOR layout. */
-#define F101_BOOT_SIZE		0x00010000U
+#define F101_BOOT_SIZE 0x00010000U
 
-#define F101_NOR_DTB_OFFSET		F101_BOOT_SIZE
-#define F101_NOR_SBI_OFFSET		(F101_NOR_DTB_OFFSET + F101_DTB_SIZE)
-#define F101_NOR_KERNEL_OFFSET		(F101_NOR_SBI_OFFSET + F101_SBI_SIZE)
+#define F101_NOR_DTB_OFFSET    F101_BOOT_SIZE
+#define F101_NOR_SBI_OFFSET    (F101_NOR_DTB_OFFSET + F101_DTB_SIZE)
+#define F101_NOR_KERNEL_OFFSET (F101_NOR_SBI_OFFSET + F101_SBI_SIZE)
 
 /*
  * This entry is executed after the C907 has been reset into RV64 mode. It
@@ -109,15 +109,13 @@ static int f101_validate_dtb(void)
 
 	rc = fdt_check_header(fdt);
 	if (rc) {
-		pr_err("DTB: invalid blob at 0x%08x: %s\n", F101_DTB_ADDR,
-		       fdt_strerror(rc));
+		pr_err("DTB: invalid blob at 0x%08x: %s\n", F101_DTB_ADDR, fdt_strerror(rc));
 		return -1;
 	}
 
 	size = fdt_totalsize(fdt);
 	if (size > F101_DTB_SIZE) {
-		pr_err("DTB: %u bytes exceeds reserved %u bytes\n", size,
-		       F101_DTB_SIZE);
+		pr_err("DTB: %u bytes exceeds reserved %u bytes\n", size, F101_DTB_SIZE);
 		return -1;
 	}
 
@@ -137,27 +135,26 @@ static __attribute__((noreturn, noinline)) void f101_boot_sbi_firmware(void)
 	 * RV64, then use the RISC-V watchdog to restart the core. The reset lands
 	 * in f101_rv64_entry, which sets a0/a1 and jumps to SBI firmware.
 	 */
-	asm volatile(
-		"li t0, 0x02001d0c\n\t"
-		"li t1, 0x1\n\t"
-		"sw t1, 0(t0)\n\t"
-		"li t0, 0x06010100\n\t"
-		"sw %[entry], 0(t0)\n\t"
-		"sw zero, 4(t0)\n\t"
-		"li t1, 0x200\n\t"
-		"sw t1, 8(t0)\n\t"
-		"sw zero, 0x6c(t0)\n\t"
-		"li t0, 0x06011000\n\t"
-		"li t1, 0x1\n\t"
-		"sw t1, 0(t0)\n\t"
-		"li t1, 0x16aa0000\n\t"
-		"sw t1, 0x14(t0)\n\t"
-		"li t1, 0x16aa0011\n\t"
-		"sw t1, 0x18(t0)\n"
-		"1: wfi\n\t"
-		"j 1b\n"
+	asm volatile("li t0, 0x02001d0c\n\t"
+		     "li t1, 0x1\n\t"
+		     "sw t1, 0(t0)\n\t"
+		     "li t0, 0x06010100\n\t"
+		     "sw %[entry], 0(t0)\n\t"
+		     "sw zero, 4(t0)\n\t"
+		     "li t1, 0x200\n\t"
+		     "sw t1, 8(t0)\n\t"
+		     "sw zero, 0x6c(t0)\n\t"
+		     "li t0, 0x06011000\n\t"
+		     "li t1, 0x1\n\t"
+		     "sw t1, 0(t0)\n\t"
+		     "li t1, 0x16aa0000\n\t"
+		     "sw t1, 0x14(t0)\n\t"
+		     "li t1, 0x16aa0011\n\t"
+		     "sw t1, 0x18(t0)\n"
+		     "1: wfi\n\t"
+		     "j 1b\n"
 		:
-		: [entry] "r" ((uint32_t)rv64_entry)
+		: [entry] "r"((uint32_t)rv64_entry)
 		: "t0", "t1", "memory");
 
 	__builtin_unreachable();
@@ -186,41 +183,34 @@ static int f101_nor_setup(sunxi_spif_t *spif, spif_nor_t *nor)
 		return -1;
 	}
 
-	pr_info("SPI NOR: flash id 0x%08x, %u KiB\n", nor->info.id,
-		nor->info.capacity >> 10);
+	pr_info("SPI NOR: flash id 0x%08x, %u KiB\n", nor->info.id, nor->info.capacity >> 10);
 	return 0;
 }
 
 /* Read one fixed-size region from SPI NOR into PSRAM and report it. */
-static int f101_read_from_nor(spif_nor_t *nor, const char *name, uint32_t offset,
-				      uintptr_t dest, uint32_t size)
+static int f101_read_from_nor(spif_nor_t *nor, const char *name, uint32_t offset, uintptr_t dest, uint32_t size)
 {
 	uint32_t got = spif_nor_read(nor, (uint8_t *)dest, offset, size);
 
 	if (got != size) {
-		pr_err("SPI NOR: %s: short read at 0x%08x (wanted %u got %u)\n",
-		       name, offset, size, got);
+		pr_err("SPI NOR: %s: short read at 0x%08x (wanted %u got %u)\n", name, offset, size, got);
 		return -1;
 	}
 
-	pr_info("SPI NOR: %-8s 0x%08x -> 0x%08x (%u KiB)\n", name, offset,
-		(unsigned int)dest, size >> 10);
+	pr_info("SPI NOR: %-8s 0x%08x -> 0x%08x (%u KiB)\n", name, offset, (unsigned int)dest, size >> 10);
 	return 0;
 }
 
 /* Load the fixed-layout boot payloads from SPI NOR into PSRAM. */
 static int f101_load_images(spif_nor_t *nor)
 {
-	if (f101_read_from_nor(nor, "dtb", F101_NOR_DTB_OFFSET,
-			       F101_DTB_ADDR, F101_DTB_SIZE) != 0)
+	if (f101_read_from_nor(nor, "dtb", F101_NOR_DTB_OFFSET, F101_DTB_ADDR, F101_DTB_SIZE) != 0)
 		return -1;
 
-	if (f101_read_from_nor(nor, "fw_jump", F101_NOR_SBI_OFFSET,
-			       F101_SBI_ADDR, F101_SBI_SIZE) != 0)
+	if (f101_read_from_nor(nor, "fw_jump", F101_NOR_SBI_OFFSET, F101_SBI_ADDR, F101_SBI_SIZE) != 0)
 		return -1;
 
-	if (f101_read_from_nor(nor, "Image", F101_NOR_KERNEL_OFFSET,
-			       F101_LINUX_ADDR, F101_KERNEL_SIZE) != 0)
+	if (f101_read_from_nor(nor, "Image", F101_NOR_KERNEL_OFFSET, F101_LINUX_ADDR, F101_KERNEL_SIZE) != 0)
 		return -1;
 
 	return 0;
@@ -237,8 +227,8 @@ int cmd_boot(int argc, const char **argv)
 	if (f101_validate_dtb())
 		return -1;
 
-	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x SBI firmware=0x%08x\n",
-		F101_LINUX_ADDR, F101_DTB_ADDR, F101_SBI_ADDR);
+	pr_info("Booting memory images: Linux=0x%08x DTB=0x%08x SBI firmware=0x%08x\n", F101_LINUX_ADDR, F101_DTB_ADDR,
+		F101_SBI_ADDR);
 	f101_boot_sbi_firmware();
 }
 

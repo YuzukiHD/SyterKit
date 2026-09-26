@@ -191,8 +191,10 @@ int main(void)
 	int spi_node;
 
 	spi_node = syterkit_dt_alias_node("spi0", SUNXI_SPI_COMPATIBLE);
-	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK || sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_node, &dma) != DRIVER_OK ||
-	    !sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_node, "allwinner,lcd-dc-gpio") || !sunxi_gpio_dt_read_property(&lcd_res_pins, spi_node, "allwinner,lcd-reset-gpio")) {
+	if (sunxi_dma_dt_read_alias(&dma, "dma0") != DRIVER_OK ||
+		sunxi_spi_dt_read_config(&sunxi_spi0_lcd, spi_node, &dma) != DRIVER_OK ||
+		!sunxi_gpio_dt_read_property(&lcd_dc_pins, spi_node, "allwinner,lcd-dc-gpio") ||
+		!sunxi_gpio_dt_read_property(&lcd_res_pins, spi_node, "allwinner,lcd-reset-gpio")) {
 		pr_err("SPI LCD: invalid devicetree configuration\n");
 		return -1;
 	}

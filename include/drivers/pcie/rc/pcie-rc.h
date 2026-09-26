@@ -38,14 +38,12 @@ void pcie_rc_config_default(struct pcie_rc_config *config);
 /**
  * @brief Initialize the PCIe controller as a Root Complex.
  */
-int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config,
-		const struct pcie_rc_config *rc_config);
+int pcie_rc_init(struct pcie *pcie, const struct pcie_config *config, const struct pcie_rc_config *rc_config);
 
 /**
  * @brief Initialize the PCIe controller as a Root Complex from a device-tree node.
  */
-int pcie_rc_init_dt(struct pcie *pcie, int node,
-		const struct pcie_rc_config *rc_config);
+int pcie_rc_init_dt(struct pcie *pcie, int node, const struct pcie_rc_config *rc_config);
 
 /**
  * @brief Set up the Root Complex bus window and command registers.
@@ -70,20 +68,17 @@ bool pcie_rc_link_up(struct pcie *pcie);
 /**
  * @brief Read a value from Root Complex configuration space.
  */
-int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
-		uint8_t size, uint32_t *value);
+int pcie_rc_read_config(struct pcie *pcie, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t *value);
 
 /**
  * @brief Write a value to Root Complex configuration space.
  */
-int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset,
-		uint8_t size, uint32_t value);
+int pcie_rc_write_config(struct pcie *pcie, uint32_t bdf, uint32_t offset, uint8_t size, uint32_t value);
 
 /**
  * @brief Program an outbound ATU translation window.
  */
-int pcie_rc_program_outbound(struct pcie *pcie, uint8_t index,
-		enum pcie_atu_type type, uint64_t cpu_addr, uint64_t pci_addr,
-		uint64_t size);
+int pcie_rc_program_outbound(
+	struct pcie *pcie, uint8_t index, enum pcie_atu_type type, uint64_t cpu_addr, uint64_t pci_addr, uint64_t size);
 
 #endif /* __DRIVERS_PCIE_RC_H__ */

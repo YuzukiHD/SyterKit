@@ -50,7 +50,8 @@ int main(void)
 	check(startup_timer_seen == 0x54494d45U, "timer-before-startup");
 
 	check((startup_cpsr & ARMV7_MODE_MASK) == ARMV7_SVC_MODE, "svc-mode");
-	check((startup_cpsr & (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)) == (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK), "interrupt-mask");
+	check((startup_cpsr & (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK)) == (ARMV7_IRQ_MASK | ARMV7_FIQ_MASK),
+		"interrupt-mask");
 	check((startup_cpsr & (1U << 9)) == 0U, "little-endian");
 	check(startup_svc_sp == address(__stack_srv_end), "svc-stack");
 	check((startup_svc_sp & 0xfU) == 0U, "stack-alignment");

@@ -12,10 +12,10 @@
 
 #include "oledfont.h"
 
-#define OLED_IIC_ADDR 0x3c
+#define OLED_IIC_ADDR	   0x3c
 #define OLED_IIC_GPIO_PORT 0
 
-#define OLED_CMD 0 /*写命令 */
+#define OLED_CMD  0 /*写命令 */
 #define OLED_DATA 1 /* 写数据 */
 
 uint8_t OLED_GRAM[144][8]; /* 显存 */

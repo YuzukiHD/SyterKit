@@ -66,7 +66,8 @@ void test_fail(const char *expression, const char *file, int line)
 	write_text("\n");
 }
 
-void test_fail_value(const char *expression, unsigned long long expected, unsigned long long actual, const char *file, int line)
+void test_fail_value(
+	const char *expression, unsigned long long expected, unsigned long long actual, const char *file, int line)
 {
 	test_fail(expression, file, line);
 	write_text("  expected=");

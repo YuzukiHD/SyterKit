@@ -64,7 +64,8 @@ static int run_pointer_case(void)
 	output_length = 0;
 	output[0] = '\0';
 	format(putc_buffer, NULL, "%p", (void *)(uintptr_t)0x1234U);
-	if (output_length < 6U || output[0] != '0' || output[1] != 'x' || output[output_length - 4U] != '1' || output[output_length - 1U] != '4') {
+	if (output_length < 6U || output[0] != '0' || output[1] != 'x' || output[output_length - 4U] != '1' ||
+		output[output_length - 1U] != '4') {
 		qemu_puts("CHECK FAIL pointer\n");
 		return 0;
 	}

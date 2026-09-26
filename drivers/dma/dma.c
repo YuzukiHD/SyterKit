@@ -571,7 +571,8 @@ int sunxi_dma_test(sunxi_dma_t *dma, uint32_t *src_addr, uint32_t *dst_addr, uin
 		pr_debug("test done in %lums\n", (time_ms() - timeout));
 
 		for (i = 0; i < (len / 4); i += 4) {
-			if (dst_addr[i] != i || dst_addr[i + 1] != i + 1 || dst_addr[i + 2] != i + 2 || dst_addr[i + 3] != i + 3) {
+			if (dst_addr[i] != i || dst_addr[i + 1] != i + 1 || dst_addr[i + 2] != i + 2 ||
+				dst_addr[i + 3] != i + 3) {
 				valid = 0;
 				break;
 			}

@@ -141,8 +141,8 @@ static void sunxi_rail_defaults(const sunxi_sid_t *sid)
 	}
 	if ((readl(SUNXI_SOC_VER_REG) & SUNXI_SOC_VER_MASK) < 2U)
 		sys_mv = gpu_mv;
-	rail_mv[0][1] = (int) sys_mv;
-	rail_mv[1][2] = (int) gpu_mv;
+	rail_mv[0][1] = (int)sys_mv;
+	rail_mv[1][2] = (int)gpu_mv;
 }
 
 static void sunxi_power_init(sunxi_i2c_t *i2c, axp_pmu_t *axp2202, axp_pmu_t *axp1530)

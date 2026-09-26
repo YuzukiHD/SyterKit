@@ -37,17 +37,17 @@
 #include <drivers/mmc/sdhci.h>
 #include <uart.h>
 
-#define SPI_LCD_COLOR_WHITE 0xFFFF
-#define SPI_LCD_COLOR_BLACK 0x0000
-#define SPI_LCD_COLOR_BLUE 0x001F
-#define SPI_LCD_COLOR_BRED 0XF81F
-#define SPI_LCD_COLOR_GRED 0XFFE0
-#define SPI_LCD_COLOR_GBLUE 0X07FF
-#define SPI_LCD_COLOR_RED 0xF800
+#define SPI_LCD_COLOR_WHITE   0xFFFF
+#define SPI_LCD_COLOR_BLACK   0x0000
+#define SPI_LCD_COLOR_BLUE    0x001F
+#define SPI_LCD_COLOR_BRED    0XF81F
+#define SPI_LCD_COLOR_GRED    0XFFE0
+#define SPI_LCD_COLOR_GBLUE   0X07FF
+#define SPI_LCD_COLOR_RED     0xF800
 #define SPI_LCD_COLOR_MAGENTA 0xF81F
-#define SPI_LCD_COLOR_GREEN 0x07E0
-#define SPI_LCD_COLOR_CYAN 0x7FFF
-#define SPI_LCD_COLOR_YELLOW 0xFFE0
+#define SPI_LCD_COLOR_GREEN   0x07E0
+#define SPI_LCD_COLOR_CYAN    0x7FFF
+#define SPI_LCD_COLOR_YELLOW  0xFFE0
 
 static sunxi_spi_t sunxi_spi0_lcd;
 /* A1 LCD wiring is fixed; only the SPI controller is read from DT. */
@@ -249,8 +249,8 @@ static int LCD_Init(void)
 
 #define SPLASH_START_X 52
 #define SPLASH_START_Y 43
-#define SPLASH_W 135
-#define SPLASH_H 48
+#define SPLASH_W       135
+#define SPLASH_H       48
 
 static void LCD_Show_Splash(uint8_t *splash_dest)
 {

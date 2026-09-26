@@ -1544,8 +1544,7 @@ static int spif_nor_train_sampling(spif_nor_t *nor)
 		goto restore;
 	}
 
-	pr_trace("training window scan: %u modes x %u delays\n", SPIF_NOR_TRAINING_MODES,
-		SPIF_NOR_TRAINING_DELAYS);
+	pr_trace("training window scan: %u modes x %u delays\n", SPIF_NOR_TRAINING_MODES, SPIF_NOR_TRAINING_DELAYS);
 	if (spif_nor_find_training_window(nor, &training, dtr, &best_mode, &best_delay, &best_length) != DRIVER_OK) {
 		pr_trace("training window scan failed\n");
 		goto restore;
@@ -1581,8 +1580,7 @@ fallback:
 	 * at the fallback frequency. */
 	nor->info.read_proto = SNOR_PROTO_1_1_1;
 	nor->info.read_dummy = 0U;
-	nor->info.opcode_read =
-		nor->info.address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
+	nor->info.opcode_read = nor->info.address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
 	if (spif_nor_apply_training_config(
 		    nor, safe_frequency, false, SUNXI_SPIF_SAMPLE_DEFAULT, SUNXI_SPIF_SAMPLE_DEFAULT) != 0)
 		goto cleanup_error;

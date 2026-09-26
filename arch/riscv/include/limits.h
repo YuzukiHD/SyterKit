@@ -39,12 +39,12 @@ extern "C" {
 #define USHRT_MAX (0xffff) /**< Maximum value for unsigned short int */
 
 /** @brief Minimum and maximum values a 'signed int' can hold */
-#define INT_MIN (-1 - 0x7fffffff) /**< Minimum value for signed int */
-#define INT_MAX (0x7fffffff) /**< Maximum value for signed int */
+#define INT_MIN	  (-1 - 0x7fffffff) /**< Minimum value for signed int */
+#define INT_MAX	  (0x7fffffff) /**< Maximum value for signed int */
 #define INT32_MAX (0x7fffffff) /**< Maximum value for 32-bit signed int */
 
 /** @brief Maximum value an 'unsigned int' can hold (Minimum is 0) */
-#define UINT_MAX (0xffffffffU) /**< Maximum value for unsigned int */
+#define UINT_MAX   (0xffffffffU) /**< Maximum value for unsigned int */
 #define UINT32_MAX (0xffffffffU) /**< Maximum value for 32-bit unsigned int */
 
 /** @brief Minimum and maximum values a 'signed long int' can hold */

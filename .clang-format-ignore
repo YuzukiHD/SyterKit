@@ -1,0 +1,24 @@
+# Files clang-format must not touch (clang-format >= 18).
+
+# Third-party code kept in upstream form.
+scripts/kconfig/**
+lib/fdt/**
+include/lib/fdt/**
+lib/fatfs/**
+include/lib/fatfs/**
+include/lib/elf/**
+tools/bin/include/dt2c/**
+tools/dt2c/**
+tools/dtc/**
+
+# Preprocessed by dt2c for board.dts, which does not accept continued #define lines.
+dts/include/dt-bindings/**
+
+# Assembly headers included from .S files.
+arch/arm/include/linkage.h
+arch/riscv/include/asm/trap.h
+arch/riscv/include/csr.h
+arch/riscv/include/linkage.h
+utils/*/include/linkage.h
+archive/boards/*/load_c906/c906_firmware/include/linkage.h
+archive/boards/*/load_c906/c906_firmware/include/riscv64.h

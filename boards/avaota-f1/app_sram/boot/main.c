@@ -42,7 +42,7 @@
 static sunxi_dram_t dram;
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 #define CONFIG_CMDLINE                                         \
 	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
 	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
@@ -51,11 +51,11 @@ static sunxi_dram_t dram;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x81008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x81008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x81800000)
 #define CONFIG_CONFIG_LOAD_ADDR (0x80008000)
-#define CONFIG_HEAP_BASE (0x80800000)
-#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
+#define CONFIG_HEAP_BASE	(0x80800000)
+#define CONFIG_HEAP_SIZE	(16 * 1024 * 1024)
 
 #define CONFIG_DEFAULT_BOOTDELAY 0
 

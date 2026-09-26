@@ -19,10 +19,10 @@
 	})
 
 #if (defined(__GNUC__) && (__GNUC__ >= 3))
-#define likely(expr) (__builtin_expect(!!(expr), 1))
+#define likely(expr)   (__builtin_expect(!!(expr), 1))
 #define unlikely(expr) (__builtin_expect(!!(expr), 0))
 #else
-#define likely(expr) (!!(expr))
+#define likely(expr)   (!!(expr))
 #define unlikely(expr) (!!(expr))
 #endif
 
@@ -42,9 +42,9 @@
 	})
 #define clamp(v, a, b) min(max(a, v), b)
 
-#define ifloor(x) ((x) > 0 ? (int)(x) : (int)((x) - 0.9999999999))
-#define iround(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
-#define iceil(x) ((x) > 0 ? (int)((x) + 0.9999999999) : (int)(x))
+#define ifloor(x)  ((x) > 0 ? (int)(x) : (int)((x) - 0.9999999999))
+#define iround(x)  ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
+#define iceil(x)   ((x) > 0 ? (int)((x) + 0.9999999999) : (int)(x))
 #define idiv255(x) ((((int)(x) + 1) * 257) >> 16)
 
 #define X(...) ("" #__VA_ARGS__ "")

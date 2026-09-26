@@ -36,7 +36,6 @@ limitations under the License.
 #error "UNSUPPORT ARCH!"
 #endif
 
-
 TM_PERF_REG(t_sbuf);
 TM_PERF_REG(t_dotp);
 TM_PERF_REG(t_post);
@@ -66,8 +65,9 @@ static float sumscale[TM_MAX_CSIZE];
 #endif
 
 //for valid or kernel in valid part, use fast method
-tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, int kw, int kh, int sx, int sy, int dx, int dy, int act, int pad_top, int pad_bottom,
-									 int pad_left, int pad_right, int dmul, sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)//kernel: (cho, chi, h, w)
+tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, int kw, int kh, int sx,
+	int sy, int dx, int dy, int act, int pad_top, int pad_bottom, int pad_left, int pad_right, int dmul,
+	sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) //kernel: (cho, chi, h, w)
 {
 	TM_PERF_INIT(t_sbuf);
 	TM_PERF_INIT(t_dotp);
@@ -86,7 +86,7 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 	if (maxk > TM_MAX_KSIZE)
 		return TM_ERR_KSIZE;
 	if (maxk == 1 && (pad_flag || dmul))
-		return TM_ERR_UNSUPPORT;//assume no pad or dwconv when pwconv
+		return TM_ERR_UNSUPPORT; //assume no pad or dwconv when pwconv
 	int chi = in->c;
 	int cho = out->c;
 	sumtype_t sum = 0;
@@ -95,34 +95,38 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 #if (TM_MDL_TYPE == TM_MDL_INT8) || (TM_MDL_TYPE == TM_MDL_INT16)
 #if TM_FASTSCALE
 	int32_t outscale = (1 << TM_FASTSCALE_SHIFT) / out_s;
-	for (int c = 0; c < out->c; c++) sumscale[c] = 1.0 / ws[c] / in_s;
+	for (int c = 0; c < out->c; c++)
+		sumscale[c] = 1.0 / ws[c] / in_s;
 #else
 	sctype_t outscale = out_s;
 	sctype_t outscale_inv = 1.f / outscale;
-	for (int c = 0; c < out->c; c++) sumscale[c] = ws[c] * in_s;
+	for (int c = 0; c < out->c; c++)
+		sumscale[c] = ws[c] * in_s;
 #endif
 #else
 	sctype_t outscale = out_s;
 #endif
 
 	if (maxk == 1) {
-		TM_PERF_START(t_pwconv);//pointwise conv
+		TM_PERF_START(t_pwconv); //pointwise conv
 #define BATCH_SIZE 2
 		sumtype_t sums[BATCH_SIZE];
 		for (int y = 0; y < out->h; y++) {
 			for (int x = 0; x < out->w; x++) {
-				mtype_t *sptr = (mtype_t *) TM_MATP(in, sy * y, sx * x, 0);
-				wtype_t *kptr = (wtype_t *) w;
+				mtype_t *sptr = (mtype_t *)TM_MATP(in, sy * y, sx * x, 0);
+				wtype_t *kptr = (wtype_t *)w;
 				int c = 0;
 				for (; c < out->c - BATCH_SIZE + 1;) {
-					for (int bat = 0; bat < BATCH_SIZE; bat += 2) tm_dot_prod_pack2(sptr, kptr + chi * bat, chi, sums + bat);
-					tm_postprocess_sum(BATCH_SIZE, sums, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
+					for (int bat = 0; bat < BATCH_SIZE; bat += 2)
+						tm_dot_prod_pack2(sptr, kptr + chi * bat, chi, sums + bat);
+					tm_postprocess_sum(
+						BATCH_SIZE, sums, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
 					c += BATCH_SIZE;
 					outp += BATCH_SIZE;
-					kptr += chi * BATCH_SIZE;//*2;
+					kptr += chi * BATCH_SIZE; //*2;
 				}
 				for (; c < out->c; c++) {
-					tm_dot_prod(sptr, kptr, chi, &sum);//size=maxk*chi //pw maxk==1
+					tm_dot_prod(sptr, kptr, chi, &sum); //size=maxk*chi //pw maxk==1
 					tm_postprocess_sum(1, &sum, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
 					outp++;
 					kptr += chi;
@@ -140,7 +144,7 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 	};
 	int oft = 0;
 	int idx = 0;
-	for (int y = 0; y < kh; y++) {//gen k_oft table
+	for (int y = 0; y < kh; y++) { //gen k_oft table
 		for (int x = 0; x < kw; x++) {
 			k_oft[idx] = oft;
 			idx += 1;
@@ -148,8 +152,8 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 		}
 		oft += (in->w - kw) * chi;
 	}
-	chi = dmul ? 1 : in->c;// dmul>=1 indicate depthwise; dummy chi for dwconv compatible
-	int slow_flag = 0;	   //same pad part is slow
+	chi = dmul ? 1 : in->c; // dmul>=1 indicate depthwise; dummy chi for dwconv compatible
+	int slow_flag = 0; //same pad part is slow
 	for (int y = 0; y < out->h; y++) {
 		int src_y0 = sy * y - pad_top;
 		for (int x = 0; x < out->w; x++) {
@@ -158,27 +162,30 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 			slow_flag = ((src_y0 < 0) + (src_x0 < 0) + (src_y0 + kh > in->h) + (src_x0 + kw > in->w));
 			//TM_PERF_START(t_sbuf);
 			if (!slow_flag) {
-				TM_PERF_START(t_valid);											//valid or same valid part
-				mtype_t *sptr_base = (mtype_t *) TM_MATP(in, src_y0, src_x0, 0);//?c/dmul:0
-				mtype_t *sptr = sptr_base;										//= (mtype_t*)TM_MATP(in, src_y0, src_x0, 0); //sbuf 不变
-				uint32_t sidx = 0;												//sbuf:cho,chi,maxk //dw:chi==1;
+				TM_PERF_START(t_valid); //valid or same valid part
+				mtype_t *sptr_base = (mtype_t *)TM_MATP(in, src_y0, src_x0, 0); //?c/dmul:0
+				mtype_t *sptr = sptr_base; //= (mtype_t*)TM_MATP(in, src_y0, src_x0, 0); //sbuf 不变
+				uint32_t sidx = 0; //sbuf:cho,chi,maxk //dw:chi==1;
 				for (int cc = 0; cc < (dmul ? cho : chi); cc++) {
-					for (int k = 0; k < maxk; k++) { sbuf[sidx + k] = sptr[k_oft[k]]; }
+					for (int k = 0; k < maxk; k++) {
+						sbuf[sidx + k] = sptr[k_oft[k]];
+					}
 					sidx += maxk;
 					sptr = sptr_base + (dmul ? (cc + 1) / dmul : (cc + 1));
 				}
 			} else {
-				TM_PERF_START(t_pad);//same pad part
+				TM_PERF_START(t_pad); //same pad part
 				int _ky0 = src_y0 < 0 ? -src_y0 : 0;
 				int _kx0 = src_x0 < 0 ? -src_x0 : 0;
 				int _ky1 = in->h - src_y0 > kh ? kh : in->h - src_y0;
 				int _kx1 = in->w - src_x0 > kw ? kw : in->w - src_x0;
-				uint32_t sidx = 0;//sbuf:cho,chi,maxk //dw:chi==1;
-				mtype_t *sptr_base = (mtype_t *) TM_MATP(in, src_y0, src_x0, 0);
+				uint32_t sidx = 0; //sbuf:cho,chi,maxk //dw:chi==1;
+				mtype_t *sptr_base = (mtype_t *)TM_MATP(in, src_y0, src_x0, 0);
 				mtype_t *sptr = sptr_base;
 #if TM_MDL_TYPE == TM_MDL_INT8
-				memset(sbuf, in_zp, dmul ? cho * maxk : chi * maxk);//do padding
-#elif (TM_MDL_TYPE == TM_MDL_FP32) || (TM_MDL_TYPE == TM_MDL_FP16) || (TM_MDL_TYPE == TM_MDL_FP8_143) || (TM_MDL_TYPE == TM_MDL_FP8_152)
+				memset(sbuf, in_zp, dmul ? cho * maxk : chi * maxk); //do padding
+#elif (TM_MDL_TYPE == TM_MDL_FP32) || (TM_MDL_TYPE == TM_MDL_FP16) || (TM_MDL_TYPE == TM_MDL_FP8_143) || \
+	(TM_MDL_TYPE == TM_MDL_FP8_152)
 				memset(sbuf, 0, (dmul ? cho * maxk : chi * maxk) * sizeof(mtype_t));
 #else
 #error "unsupport mdl type"
@@ -195,23 +202,25 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 				}
 			}
 			//TM_PERF_ADD(t_sbuf);
-			mtype_t *sptr = sbuf;		  //sbuf prepare ok~
-			if (maxk * chi == 9 && dmul) {//simple opt for 3x3 dwconv
+			mtype_t *sptr = sbuf; //sbuf prepare ok~
+			if (maxk * chi == 9 && dmul) { //simple opt for 3x3 dwconv
 				for (int c = 0; c < out->c; c++) {
-					wtype_t *kptr = (wtype_t *) w + c * chi * maxk;//TM_PERF_START(t_dotp);
-					tm_dot_prod_3x3x1(sptr, kptr, &sum);		   //TM_PERF_ADD(t_dotp);TM_PERF_START(t_post);
+					wtype_t *kptr = (wtype_t *)w + c * chi * maxk; //TM_PERF_START(t_dotp);
+					tm_dot_prod_3x3x1(
+						sptr, kptr, &sum); //TM_PERF_ADD(t_dotp);TM_PERF_START(t_post);
 					tm_postprocess_sum(1, &sum, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
-					outp++;		 //TM_PERF_ADD(t_post);
-					sptr += maxk;//dwconv need move step
+					outp++; //TM_PERF_ADD(t_post);
+					sptr += maxk; //dwconv need move step
 				}
 			} else {
 				for (int c = 0; c < out->c; c++) {
-					wtype_t *kptr = (wtype_t *) w + c * chi * maxk;//TM_PERF_START(t_dotp);
-					tm_dot_prod(sptr, kptr, maxk * chi, &sum);	   //TM_PERF_ADD(t_dotp);TM_PERF_START(t_post);
+					wtype_t *kptr = (wtype_t *)w + c * chi * maxk; //TM_PERF_START(t_dotp);
+					tm_dot_prod(sptr, kptr, maxk * chi,
+						&sum); //TM_PERF_ADD(t_dotp);TM_PERF_START(t_post);
 					tm_postprocess_sum(1, &sum, b + c, act, outp, SUMSCALE, OUTSCALE, out_zp);
-					outp++;//TM_PERF_ADD(t_post);
+					outp++; //TM_PERF_ADD(t_post);
 					if (dmul)
-						sptr += maxk;//dwconv need move step
+						sptr += maxk; //dwconv need move step
 				}
 			}
 			if (!slow_flag) {
@@ -230,21 +239,22 @@ tm_err_t TM_WEAK tml_conv2d_dwconv2d(tm_mat_t *in, tm_mat_t *out, wtype_t *w, bt
 }
 
 /*************************** TML_GAP **********************************/
-tm_err_t TM_WEAK tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t TM_WEAK tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *data;
 	for (int c = 0; c < out->c; c++) {
 		sumtype_t sum = 0;
 		data = in->data + c;
 		for (int y = 0; y < in->h; y++) {
 			for (int x = 0; x < in->w; x++) {
-				sum += ((sumtype_t) (*data));
+				sum += ((sumtype_t)(*data));
 				data += out->c;
 			}
 		}
 #if TM_MDL_TYPE == TM_MDL_INT8 || TM_MDL_TYPE == TM_MDL_INT16
-		out->data[c] = (mtype_t) ((sum / ((in->h) * (in->w)) - in_zp) * in_s / out_s + out_zp);//requant
+		out->data[c] = (mtype_t)((sum / ((in->h) * (in->w)) - in_zp) * in_s / out_s + out_zp); //requant
 #elif TM_MDL_TYPE == TM_MDL_FP32 || TM_MDL_TYPE == TM_MDL_FP16
-		out->data[c] = (mtype_t) (sum / ((in->h) * (in->w)));
+		out->data[c] = (mtype_t)(sum / ((in->h) * (in->w)));
 //#else //#elif TM_MDL_TYPE == TM_MDL_FP8_143 || TM_MDL_TYPE == TM_MDL_FP8_152
 #endif
 	}
@@ -252,29 +262,33 @@ tm_err_t TM_WEAK tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in
 }
 
 /*************************** TML_FC **********************************/
-tm_err_t TM_WEAK tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t TM_WEAK tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *ws, sctype_t in_s,
+	zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *data = in->data;
 	for (int c = 0; c < out->c; c++) {
 		sumtype_t sum = 0;
 		tm_dot_prod(data, w + c * in->c, in->c, &sum);
-		sum += b[c];//fuse with zp
+		sum += b[c]; //fuse with zp
 #if TM_MDL_TYPE == TM_MDL_INT8 || TM_MDL_TYPE == TM_MDL_INT16
-		out->data[c] = (mtype_t) (sum * in_s * ws[0] / out_s + out_zp);//requant
+		out->data[c] = (mtype_t)(sum * in_s * ws[0] / out_s + out_zp); //requant
 #else
-		out->data[c] = (mtype_t) (sum);
+		out->data[c] = (mtype_t)(sum);
 #endif
 	}
 	return TM_OK;
 }
 
 /*************************** TML_SOFTMAX **********************************/
-tm_err_t TM_WEAK tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t TM_WEAK tml_softmax(
+	tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *din = in->data;
-	float *dout = (float *) (out->data);
+	float *dout = (float *)(out->data);
 	float dmax = -FLT_MAX;
 	for (int c = 0; c < in->c; c++) {
 #if TM_MDL_TYPE == TM_MDL_INT8 || TM_MDL_TYPE == TM_MDL_INT16
-		dout[c] = (float) ((sumtype_t) din[c] - in_zp) * in_s;
+		dout[c] = (float)((sumtype_t)din[c] - in_zp) * in_s;
 #else
 		dout[c] = din[c];
 #endif
@@ -284,29 +298,31 @@ tm_err_t TM_WEAK tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_
 	float sum = 0;
 	for (int c = 0; c < in->c; c++) {
 		dout[c] -= dmax;
-		dout[c] = (float) tm_exp(dout[c]);
+		dout[c] = (float)tm_exp(dout[c]);
 		sum += dout[c];
-		dout[c] -= 0.000001;//prevent 1.0 value (cause 256 overflow)
+		dout[c] -= 0.000001; //prevent 1.0 value (cause 256 overflow)
 	}
-	for (int c = 0; c < in->c; c++) {//int8/int16 <= fp32, so it is ok
+	for (int c = 0; c < in->c; c++) { //int8/int16 <= fp32, so it is ok
 #if TM_MDL_TYPE == TM_MDL_INT8 || TM_MDL_TYPE == TM_MDL_INT16
-		out->data[c] = (mtype_t) (dout[c] / sum / out_s + out_zp);//requant
+		out->data[c] = (mtype_t)(dout[c] / sum / out_s + out_zp); //requant
 #else
-		out->data[c] = (mtype_t) (dout[c] / sum);
+		out->data[c] = (mtype_t)(dout[c] / sum);
 #endif
 	}
 	return TM_OK;
 }
 
 /*************************** TML_RESHAPE **********************************/
-tm_err_t TM_WEAK tml_reshape(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t TM_WEAK tml_reshape(
+	tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	//in fact do nothing... out shape
 	return TM_OK;
 }
 
-
-tm_err_t TM_WEAK tml_add(tm_mat_t *in0, tm_mat_t *in1, tm_mat_t *out, sctype_t in_s0, zptype_t in_zp0, sctype_t in_s1, zptype_t in_zp1, sctype_t out_s,
-						 zptype_t out_zp) {//TODO: check in0 shape == in1 shape
+tm_err_t TM_WEAK tml_add(tm_mat_t *in0, tm_mat_t *in1, tm_mat_t *out, sctype_t in_s0, zptype_t in_zp0, sctype_t in_s1,
+	zptype_t in_zp1, sctype_t out_s, zptype_t out_zp)
+{ //TODO: check in0 shape == in1 shape
 	//It is simple and experimental implement for ADD, could be more way faster
 	mtype_t *d0 = in0->data;
 	mtype_t *d1 = in1->data;
@@ -325,7 +341,9 @@ tm_err_t TM_WEAK tml_add(tm_mat_t *in0, tm_mat_t *in1, tm_mat_t *out, sctype_t i
 		res[i] = TM_QUANT(TM_DEQUANT(d0[i], in_s0, in_zp0) + TM_DEQUANT(d1[i], in_s1, in_zp1), out_s, out_zp);
 		i++;
 	}
-	for (; i < size; i++) { res[i] = TM_QUANT(TM_DEQUANT(d0[i], in_s0, in_zp0) + TM_DEQUANT(d1[i], in_s1, in_zp1), out_s, out_zp); }
+	for (; i < size; i++) {
+		res[i] = TM_QUANT(TM_DEQUANT(d0[i], in_s0, in_zp0) + TM_DEQUANT(d1[i], in_s1, in_zp1), out_s, out_zp);
+	}
 #else
 #error "ADD not support this data type yet"
 #endif

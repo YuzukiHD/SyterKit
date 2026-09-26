@@ -40,7 +40,7 @@
 #include "uart.h"
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 #define CONFIG_CMDLINE                                         \
 	"earlyprintk=uart8250,mmio32,0x02500C00 console=tty0 " \
 	"console=ttyAS3,115200 loglevel=8 initcall_debug=0 "   \
@@ -49,7 +49,7 @@
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 #define CONFIG_CONFIG_LOAD_ADDR (0x40008000)
 
@@ -129,7 +129,8 @@ static int load_sdcard(image_info_t *image, sdmmc_pdata_t *card)
 	start = time_ms();
 	sdmmc_blk_read(card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 

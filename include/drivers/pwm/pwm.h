@@ -108,8 +108,8 @@ typedef enum {
 
 #define PWM_CLK_BYPASS_SHIFT 0x10
 
-#define TIME_1_SECOND 1000000000
-#define PWM_BIND_NUM (2)
+#define TIME_1_SECOND	      1000000000
+#define PWM_BIND_NUM	      (2)
 #define SUNXI_PWM_CHANNEL_MAX 16U
 
 /**

@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-#define SUNXI_REMOTEPROC_MAX_FIRMWARES 4U
+#define SUNXI_REMOTEPROC_MAX_FIRMWARES	  4U
 #define SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS 4U
-#define SUNXI_REMOTEPROC_MAX_REGISTERS 4U
+#define SUNXI_REMOTEPROC_MAX_REGISTERS	  4U
 
 /**
  * @enum sunxi_remoteproc_firmware_format_t
@@ -75,7 +75,8 @@ typedef struct {
 	int (*prepare)(struct sunxi_remoteproc *remoteproc); /**< Prepare the remote processor for start. */
 	int (*start)(struct sunxi_remoteproc *remoteproc); /**< Start the remote processor. */
 	void (*dump)(const struct sunxi_remoteproc *remoteproc); /**< Dump remote processor state. */
-	int (*load_buffer)(struct sunxi_remoteproc *remoteproc, const void *firmware, size_t size); /**< Load a firmware buffer. */
+	int (*load_buffer)(
+		struct sunxi_remoteproc *remoteproc, const void *firmware, size_t size); /**< Load a firmware buffer. */
 } sunxi_remoteproc_ops_t;
 
 /**
@@ -87,7 +88,8 @@ typedef struct sunxi_remoteproc {
 	sunxi_remoteproc_firmware_format_t format; /**< Firmware image format. */
 	sunxi_remoteproc_firmware_t firmware[SUNXI_REMOTEPROC_MAX_FIRMWARES]; /**< Firmware region descriptions. */
 	size_t firmware_count; /**< Number of valid firmware regions. */
-	sunxi_remoteproc_address_map_t address_map[SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS]; /**< Device-to-physical address maps. */
+	sunxi_remoteproc_address_map_t
+		address_map[SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS]; /**< Device-to-physical address maps. */
 	size_t address_map_count; /**< Number of valid address maps. */
 	sunxi_remoteproc_register_t registers[SUNXI_REMOTEPROC_MAX_REGISTERS]; /**< Register windows. */
 	size_t register_count; /**< Number of valid register windows. */

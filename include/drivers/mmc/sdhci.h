@@ -22,16 +22,16 @@
 extern "C" {
 #endif // __cplusplus
 
-#define SMHC_DES_NUM_SHIFT 12 /* smhc2!! */
+#define SMHC_DES_NUM_SHIFT	12 /* smhc2!! */
 #define SMHC_DES_BUFFER_MAX_LEN (1 << SMHC_DES_NUM_SHIFT)
 
 #define MMC_REG_FIFO_OS (0x200)
 
-#define SMHC_TIMEOUT 0xfffff
-#define SMHC_DMA_TIMEOUT 0xffffff
+#define SMHC_TIMEOUT	      0xfffff
+#define SMHC_DMA_TIMEOUT      0xffffff
 #define SMHC_WAITBUSY_TIMEOUT 0xfffff
-#define SMHC_DATA_TIMEOUT 0xfffff
-#define SMHC_RESP_TIMEOUT 0xff
+#define SMHC_DATA_TIMEOUT     0xfffff
+#define SMHC_RESP_TIMEOUT     0xff
 
 enum {
 	MMC_CONTROLLER_0 = 0,
@@ -206,8 +206,7 @@ int sunxi_sdhci_xfer(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data);
  * @param timeout_us Command and data completion polling timeout in microseconds.
  * @return Returns 0 on success, -1 on failure.
  */
-int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd,
-			     mmc_data_t *data, uint32_t timeout_us);
+int sunxi_sdhci_xfer_timeout(sunxi_sdhci_t *sdhci, mmc_cmd_t *cmd, mmc_data_t *data, uint32_t timeout_us);
 
 /**
  * @brief Dump the contents of the SDHCI registers.
@@ -253,8 +252,7 @@ extern uint32_t sunxi_sdhci_get_mclk(sunxi_sdhci_t *sdhci);
  * @param voltage_uv Requested withstand voltage in microvolts.
  * @return 0 on success, or a negative value for an unsupported bank/value.
  */
-extern int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio,
-				      uint32_t voltage_uv);
+extern int sunxi_sdhci_set_io_voltage(sunxi_sdhci_t *sdhci, const gpio_mux_t *gpio, uint32_t voltage_uv);
 
 /**
  * @brief Apply any fixed data-line deskew required by the host.

@@ -17,11 +17,10 @@
 
 #include <drivers/pcie/pcie.h>
 
-#define PCIE_EP_BAR_IO                  (1U << 0)
-#define PCIE_EP_BAR_64BIT               (1U << 2)
-#define PCIE_EP_BAR_PREFETCHABLE        (1U << 3)
-#define PCIE_EP_BAR_FLAGS_MASK          (PCIE_EP_BAR_IO | \
-					PCIE_EP_BAR_64BIT | PCIE_EP_BAR_PREFETCHABLE)
+#define PCIE_EP_BAR_IO		 (1U << 0)
+#define PCIE_EP_BAR_64BIT	 (1U << 2)
+#define PCIE_EP_BAR_PREFETCHABLE (1U << 3)
+#define PCIE_EP_BAR_FLAGS_MASK	 (PCIE_EP_BAR_IO | PCIE_EP_BAR_64BIT | PCIE_EP_BAR_PREFETCHABLE)
 
 /**
  * @struct pcie_ep_header
@@ -64,14 +63,12 @@ int pcie_ep_init_dt(struct pcie *pcie, int node);
 /**
  * @brief Write the Endpoint configuration-space header.
  */
-int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
-		const struct pcie_ep_header *header);
+int pcie_ep_write_header(struct pcie *pcie, uint8_t function, const struct pcie_ep_header *header);
 
 /**
  * @brief Set up an Endpoint BAR.
  */
-int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
-		const struct pcie_ep_bar *bar);
+int pcie_ep_set_bar(struct pcie *pcie, uint8_t function, const struct pcie_ep_bar *bar);
 
 /**
  * @brief Clear an Endpoint BAR.
@@ -81,22 +78,19 @@ int pcie_ep_clear_bar(struct pcie *pcie, uint8_t function, uint8_t bar);
 /**
  * @brief Program an inbound ATU translation window.
  */
-int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function,
-		uint8_t index, enum pcie_atu_type type, uint64_t local_addr,
-		uint64_t pci_addr, uint64_t size);
+int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function, uint8_t index, enum pcie_atu_type type,
+	uint64_t local_addr, uint64_t pci_addr, uint64_t size);
 
 /**
  * @brief Program an outbound ATU translation window.
  */
-int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index,
-		enum pcie_atu_type type, uint64_t local_addr, uint64_t pci_addr,
-		uint64_t size);
+int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index, enum pcie_atu_type type, uint64_t local_addr,
+	uint64_t pci_addr, uint64_t size);
 
 /**
  * @brief Configure MSI for an Endpoint function.
  */
-int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function,
-		uint8_t multiple_message_capable);
+int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function, uint8_t multiple_message_capable);
 
 /**
  * @brief Start the Endpoint link.

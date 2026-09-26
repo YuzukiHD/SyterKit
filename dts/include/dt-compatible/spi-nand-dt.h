@@ -16,7 +16,8 @@ static inline __attribute__((always_inline)) int spi_nand_dt_read_config(spi_nan
 	uint32_t max_frequency;
 	int parent;
 
-	if (nand == NULL || spi == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SPI_NAND_COMPATIBLE) != 0)
+	if (nand == NULL || spi == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SPI_NAND_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	parent = dt2c_fdt_parent_offset(DT2C_FDT_COMPILED_TREE, node);
@@ -36,11 +37,13 @@ static inline __attribute__((always_inline)) int spi_nand_dt_read_config(spi_nan
 	config.spi = spi;
 	*nand = config;
 	SYTERKIT_DT_TRACE_NODE("spi-nand", node);
-	SYTERKIT_DT_TRACE("spi-nand config spi=%p chip_select=%u max_frequency=%u\n", (void *)nand->spi, nand->chip_select, nand->max_frequency);
+	SYTERKIT_DT_TRACE("spi-nand config spi=%p chip_select=%u max_frequency=%u\n", (void *)nand->spi,
+		nand->chip_select, nand->max_frequency);
 	return DRIVER_OK;
 }
 
-static inline __attribute__((always_inline)) int spi_nand_dt_read_alias(spi_nand_t *nand, const char *alias, sunxi_spi_t *spi)
+static inline __attribute__((always_inline)) int spi_nand_dt_read_alias(
+	spi_nand_t *nand, const char *alias, sunxi_spi_t *spi)
 {
 	int node;
 

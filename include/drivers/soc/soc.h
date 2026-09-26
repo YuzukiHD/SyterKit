@@ -15,9 +15,9 @@
  * Populated from the allwinner,soc device-tree node.
  */
 typedef struct sunxi_soc {
-	int dt_node;    /**< Device-tree node offset. */
+	int dt_node; /**< Device-tree node offset. */
 	uintptr_t base; /**< Register window base address. */
-	size_t size;    /**< Register window size. */
+	size_t size; /**< Register window size. */
 } sunxi_soc_t;
 
 /**

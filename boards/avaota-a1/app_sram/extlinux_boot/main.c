@@ -48,20 +48,20 @@
 static sunxi_dram_t dram;
 
 #define CONFIG_SPLASH_LOAD_ADDR (0x40080000)
-#define CONFIG_SPLASH_FILENAME "splash.bin"
+#define CONFIG_SPLASH_FILENAME	"splash.bin"
 
-#define CONFIG_BL31_FILENAME "bl31.bin"
+#define CONFIG_BL31_FILENAME  "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_DTB_LOAD_ADDR (0x40400000)
-#define CONFIG_DTBO_LOAD_ADDR (0x50400000)
+#define CONFIG_DTB_LOAD_ADDR	(0x40400000)
+#define CONFIG_DTBO_LOAD_ADDR	(0x50400000)
 #define CONFIG_INITRD_LOAD_ADDR (0x43000000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
-#define CONFIG_SCP_FILENAME "scp.bin"
+#define CONFIG_SCP_FILENAME  "scp.bin"
 #define CONFIG_SCP_LOAD_ADDR (0x48100000)
 
-#define CONFIG_EXTLINUX_FILENAME "extlinux/extlinux.conf"
+#define CONFIG_EXTLINUX_FILENAME  "extlinux/extlinux.conf"
 #define CONFIG_EXTLINUX_LOAD_ADDR (0x40020000)
 
 #define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
@@ -120,11 +120,11 @@ typedef struct {
 	char extlinux_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-#define IH_COMP_NONE 0 /*  No	 Compression Used	*/
-#define IH_COMP_GZIP 1 /* gzip	 Compression Used	*/
+#define IH_COMP_NONE  0 /*  No	 Compression Used	*/
+#define IH_COMP_GZIP  1 /* gzip	 Compression Used	*/
 #define IH_COMP_BZIP2 2 /* bzip2 Compression Used	*/
-#define IH_MAGIC 0x56190527 /* mkimage magic for uinitrd */
-#define IH_NMLEN 32 /* Image Name Length	*/
+#define IH_MAGIC      0x56190527 /* mkimage magic for uinitrd */
+#define IH_NMLEN      32 /* Image Name Length	*/
 typedef struct image_header {
 	uint32_t ih_magic; /* Image Header Magic Number	*/
 	uint32_t ih_hcrc; /* Image Header CRC Checksum	*/
@@ -378,7 +378,8 @@ static int update_pmu_ext_info_dtb(image_info_t *image)
 	/* Change cpu-supply to ext dcdc*/
 	err = fdt_setprop_u32(image->of_dest, nodeoffset, "cpu-supply", phandle);
 	if (err < 0) {
-		pr_warn("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status", fdt_strerror(err));
+		pr_warn("WARNING: fdt_setprop can't set %s from node %s: %s\n", "compatible", "status",
+			fdt_strerror(err));
 		return -1;
 	}
 
@@ -686,8 +687,10 @@ int main(void)
 		return -1;
 	}
 	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK || sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
+		sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+		pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+		sunxi_sdhci_dt_read_alias(&sdmmc, "mmc0") != DRIVER_OK ||
+		sunxi_sdhci_dt_read_alias(&emmc, "mmc2") != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -769,7 +772,8 @@ int main(void)
 	/* Initialize the SD host controller. */
 	if (sunxi_sdhci_init(&sdmmc) != 0) {
 		pr_err("SMHC: %s controller init failed\n", sdmmc.name);
-		LCD_ShowString(0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+		LCD_ShowString(
+			0, 92, "SMHC: SDC0 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
 		goto _fail;
 	} else {
 		pr_info("SMHC: %s controller initialized\n", sdmmc.name);
@@ -781,7 +785,8 @@ int main(void)
 		/* Initialize the SD host controller. */
 		if (sunxi_sdhci_init(&emmc) != 0) {
 			pr_err("SMHC: %s controller init failed\n", emmc.name);
-			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN,
+				SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
 			pr_info("SMHC: %s controller initialized\n", emmc.name);
@@ -807,7 +812,8 @@ int main(void)
 		}
 		if (sunxi_sdhci_init(&emmc) != 0) {
 			pr_err("SMHC: %s controller init failed\n", emmc.name);
-			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN, SPI_LCD_COLOR_BLACK, 12);
+			LCD_ShowString(0, 92, "SMHC: SDC2 controller init failed", SPI_LCD_COLOR_GREEN,
+				SPI_LCD_COLOR_BLACK, 12);
 			goto _fail;
 		} else {
 			if (sdmmc_init(&emmc_card, &emmc) != 0) {

@@ -197,7 +197,8 @@ void sunxi_clk_dump(void)
 		p1 = 1;
 	}
 
-	pr_debug("CPU PLL=%s FREQ=%uMHz\n", clock_str, ((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
+	pr_debug("CPU PLL=%s FREQ=%uMHz\n", clock_str,
+		((((read32(CCU_BASE + CCU_PLL_CPU_CTRL_REG) >> 8) & 0xff) + 1) * 24 / p1));
 
 	/* PLL PERI */
 	reg32 = read32(CCU_BASE + CCU_PLL_PERI_CTRL_REG);
@@ -207,7 +208,8 @@ void sunxi_clk_dump(void)
 		p0 = ((reg32 >> 16) & 0x03) + 1;
 		p1 = ((reg32 >> 20) & 0x03) + 1;
 
-		pr_debug("PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n", (24 * plln) / (pllm * p0), (24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
+		pr_debug("PLL_peri (2X)=%uMHz, (1X)=%uMHz, (800M)=%uMHz\n", (24 * plln) / (pllm * p0),
+			(24 * plln) / (pllm * p0) >> 1, (24 * plln) / (pllm * p1));
 	} else {
 		pr_debug("PLL_peri disabled\n");
 	}

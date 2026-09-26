@@ -16,10 +16,10 @@
 #include <image/image_loader.h>
 #include <string.h>
 
-#define ANDR_BOOT_MAGIC "ANDROID!"
+#define ANDR_BOOT_MAGIC	     "ANDROID!"
 #define ANDR_BOOT_MAGIC_SIZE 8
-#define ANDR_BOOT_NAME_SIZE 16
-#define ANDR_BOOT_ARGS_SIZE 512
+#define ANDR_BOOT_NAME_SIZE  16
+#define ANDR_BOOT_ARGS_SIZE  512
 #define BOOT_EXTRA_ARGS_SIZE 1024
 
 /** @brief Packed Android boot-image header used by the supported format. */

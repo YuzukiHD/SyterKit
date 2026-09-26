@@ -53,27 +53,27 @@
    Ctrl-L  Clear screen
  */
 #define MSH_CTRL_KEY_DECODE(c) (0x60 | c)
-#define MSH_KEYBIND_ENTER '\n'
-#define MSH_KEYBIND_BACKSPACE MSH_CTRL_KEY('h')
-#define MSH_KEYBIND_DISCARD MSH_CTRL_KEY('c')
-#define MSH_KEYBIND_DELETE MSH_CTRL_KEY('d')
-#define MSH_KEYBIND_KILLLINE MSH_CTRL_KEY('u')
-#define MSH_KEYBIND_CURRIGHT MSH_CTRL_KEY('f')
-#define MSH_KEYBIND_CURLEFT MSH_CTRL_KEY('b')
-#define MSH_KEYBIND_LINEHEAD MSH_CTRL_KEY('a')
-#define MSH_KEYBIND_LINETAIL MSH_CTRL_KEY('e')
-#define MSH_KEYBIND_YANK MSH_CTRL_KEY('y')
-#define MSH_KEYBIND_KILLTAIL MSH_CTRL_KEY('k')
-#define MSH_KEYBIND_KILLWORD MSH_CTRL_KEY('w')
-#define MSH_KEYBIND_CLEAR MSH_CTRL_KEY('l')
-#define MSH_KEYBIND_HISTPREV MSH_CTRL_KEY('p')
-#define MSH_KEYBIND_HISTNEXT MSH_CTRL_KEY('n')
+#define MSH_KEYBIND_ENTER      '\n'
+#define MSH_KEYBIND_BACKSPACE  MSH_CTRL_KEY('h')
+#define MSH_KEYBIND_DISCARD    MSH_CTRL_KEY('c')
+#define MSH_KEYBIND_DELETE     MSH_CTRL_KEY('d')
+#define MSH_KEYBIND_KILLLINE   MSH_CTRL_KEY('u')
+#define MSH_KEYBIND_CURRIGHT   MSH_CTRL_KEY('f')
+#define MSH_KEYBIND_CURLEFT    MSH_CTRL_KEY('b')
+#define MSH_KEYBIND_LINEHEAD   MSH_CTRL_KEY('a')
+#define MSH_KEYBIND_LINETAIL   MSH_CTRL_KEY('e')
+#define MSH_KEYBIND_YANK       MSH_CTRL_KEY('y')
+#define MSH_KEYBIND_KILLTAIL   MSH_CTRL_KEY('k')
+#define MSH_KEYBIND_KILLWORD   MSH_CTRL_KEY('w')
+#define MSH_KEYBIND_CLEAR      MSH_CTRL_KEY('l')
+#define MSH_KEYBIND_HISTPREV   MSH_CTRL_KEY('p')
+#define MSH_KEYBIND_HISTNEXT   MSH_CTRL_KEY('n')
 
 /* parse.c */
 #define MSH_CMD_DQUOTE_CHAR '"' /* double quote */
 #define MSH_CMD_SQUOTE_CHAR '\'' /* single quote */
 #define MSH_CMD_ESCAPE_CHAR '\\' /* backslash */
-#define MSH_CMD_SEP_CHAR ';' /* command separator */
-#define MSH_CMD_FS_CHAR ' ' /* field separator */
+#define MSH_CMD_SEP_CHAR    ';' /* command separator */
+#define MSH_CMD_FS_CHAR	    ' ' /* field separator */
 
 #endif /*__CLI_CONFIG_H__*/

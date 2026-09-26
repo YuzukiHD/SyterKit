@@ -19,8 +19,9 @@ limitations under the License.
 #include "arch_cpu.h"
 #include "float.h"
 
-uint8_t tm_fp32to8(float fp32) {
-	uint32_t data = *(uint32_t *) &fp32;
+uint8_t tm_fp32to8(float fp32)
+{
+	uint32_t data = *(uint32_t *)&fp32;
 	int32_t fp32_s = data >> 31;
 	int32_t fp32_e = (data >> 23) & 0x0ff;
 	int32_t fp32_m = (data & 0x07fffff);
@@ -41,48 +42,51 @@ uint8_t tm_fp32to8(float fp32) {
 	return fp8;
 }
 
-float tm_fp8to32(uint8_t fp8) {
+float tm_fp8to32(uint8_t fp8)
+{
 	uint8_t fp8_s = fp8 >> 7;
 	uint8_t fp8_e = (fp8 & 0x7f) >> TM_FP8_MCNT;
 	uint8_t fp8_m = fp8 & ((1 << TM_FP8_MCNT) - 1);
 	//printf("fp8 0x02x, s.e.m=%d, %d, %d",fp8, fp8_s, fp8_e, fp8_m);
 	uint32_t fp32_s = fp8_s;
-	uint32_t fp32_e = (uint32_t) ((int32_t) fp8_e - TM_FP8_BIAS + 127);
+	uint32_t fp32_e = (uint32_t)((int32_t)fp8_e - TM_FP8_BIAS + 127);
 	uint32_t fp32_m = fp8_m << (23 - TM_FP8_MCNT);
 
 	uint32_t tmp = (fp32_s << 31) | (fp32_e << 23) | fp32_m;
-	float fp32 = *(float *) &tmp;
+	float fp32 = *(float *)&tmp;
 	return fp32;
 }
 
 //preprocess data input for fp8 simulation //no weak attr
-tm_err_t tm_preprocess(tm_mdl_t *mdl, tm_pp_t pp_type, tm_mat_t *in, tm_mat_t *out) {
-	tml_head_t *l0h = (tml_head_t *) mdl->b->layers_body;
+tm_err_t tm_preprocess(tm_mdl_t *mdl, tm_pp_t pp_type, tm_mat_t *in, tm_mat_t *out)
+{
+	tml_head_t *l0h = (tml_head_t *)mdl->b->layers_body;
 	sctype_t in_s = l0h->in_s;
 	zptype_t in_zp = l0h->in_zp;
 	int in_size = in->h * in->w * in->c;
 	float tmp = 0;
 	switch (pp_type) {
-		case TMPP_UINT2FP01:
-			for (int i = 0; i < in_size; i++) {
-				tmp = (((uint8_t *) (in->data))[i]) / 255.0;
-				out->data[i] = tm_fp32to8(tmp);
-			}
-			break;
-		case TMPP_UINT2FPN11:
-			for (int i = 0; i < in_size; i++) {
-				tmp = ((((uint8_t *) (in->data))[i]) - 128) / 128.0;
-				out->data[i] = tm_fp32to8(tmp);
-			}
-			break;
-		default://don't do anything
-			out->data = in->data;
-			break;
+	case TMPP_UINT2FP01:
+		for (int i = 0; i < in_size; i++) {
+			tmp = (((uint8_t *)(in->data))[i]) / 255.0;
+			out->data[i] = tm_fp32to8(tmp);
+		}
+		break;
+	case TMPP_UINT2FPN11:
+		for (int i = 0; i < in_size; i++) {
+			tmp = ((((uint8_t *)(in->data))[i]) - 128) / 128.0;
+			out->data[i] = tm_fp32to8(tmp);
+		}
+		break;
+	default: //don't do anything
+		out->data = in->data;
+		break;
 	}
 	return TM_OK;
 }
 
-tm_err_t tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *data;
 	for (int c = 0; c < out->c; c++) {
 		sumtype_t sum = 0;
@@ -98,7 +102,9 @@ tm_err_t tml_gap(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sct
 	return TM_OK;
 }
 
-tm_err_t tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *ws, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *ws, sctype_t in_s, zptype_t in_zp,
+	sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *data = in->data;
 
 	for (int c = 0; c < out->c; c++) {
@@ -113,9 +119,10 @@ tm_err_t tml_fc(tm_mat_t *in, tm_mat_t *out, wtype_t *w, btype_t *b, sctype_t *w
 	return TM_OK;
 }
 
-tm_err_t tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp) {
+tm_err_t tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp, sctype_t out_s, zptype_t out_zp)
+{
 	mtype_t *din = in->data;
-	float *dout = (float *) (out->data);
+	float *dout = (float *)(out->data);
 	float dmax = -FLT_MAX;
 	for (int c = 0; c < in->c; c++) {
 		dout[c] = tm_fp8to32(din[c]);
@@ -125,15 +132,14 @@ tm_err_t tml_softmax(tm_mat_t *in, tm_mat_t *out, sctype_t in_s, zptype_t in_zp,
 	float sum = 0;
 	for (int c = 0; c < in->c; c++) {
 		dout[c] -= dmax;
-		dout[c] = (float) tm_exp(dout[c]);
+		dout[c] = (float)tm_exp(dout[c]);
 		sum += dout[c];
 		//dout[c] -= 0.000000001;  //prevent 1.0 value (cause 256 overflow)
 	}
-	for (int c = 0; c < in->c; c++) {//int8/int16 <= fp32, so it is ok
+	for (int c = 0; c < in->c; c++) { //int8/int16 <= fp32, so it is ok
 		out->data[c] = tm_fp32to8(dout[c] / sum);
 	}
 	return TM_OK;
 }
-
 
 #endif

@@ -86,7 +86,7 @@ typedef struct sfdp {
 #define SNOR_PROTO_INST_MASK (0xffUL << 16)
 #define SNOR_PROTO_ADDR_MASK (0xffUL << 8)
 #define SNOR_PROTO_DATA_MASK (0xffUL << 0)
-#define SNOR_PROTO_IS_DTR   (1UL << 24)
+#define SNOR_PROTO_IS_DTR    (1UL << 24)
 
 #define SNOR_PROTO_STR(__inst, __addr, __data) \
 	((((unsigned long)(__inst)) << 16) | (((unsigned long)(__addr)) << 8) | (unsigned long)(__data))
@@ -218,8 +218,10 @@ enum SPI_CMD_OPS {
 	SPI_CMD_FAST = 0x04, /**< Fast Command: Execute a fast operation or mode */
 	SPI_CMD_TXBUF = 0x05, /**< Transmit Buffer Command: Transmit data from a buffer to the SPI device */
 	SPI_CMD_RXBUF = 0x06, /**< Receive Buffer Command: Receive data from the SPI device to a buffer */
-	SPI_CMD_SPINOR_WAIT = 0x07, /**< Wait Command for SPI NOR: Wait for the SPI NOR flash to complete its operation */
-	SPI_CMD_SPINAND_WAIT = 0x08, /**< Wait Command for SPI NAND: Wait for the SPI NAND flash to complete its operation */
+	SPI_CMD_SPINOR_WAIT =
+		0x07, /**< Wait Command for SPI NOR: Wait for the SPI NOR flash to complete its operation */
+	SPI_CMD_SPINAND_WAIT =
+		0x08, /**< Wait Command for SPI NAND: Wait for the SPI NAND flash to complete its operation */
 };
 
 /**

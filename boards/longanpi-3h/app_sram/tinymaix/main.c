@@ -29,8 +29,6 @@ static sunxi_dram_t dram;
 
 extern sunxi_serial_t uart_dbg;
 
-
-
 extern void set_cpu_poweroff(void);
 
 #define CONFIG_HEAP_BASE (0x40800000)
@@ -225,7 +223,8 @@ const static uint8_t mnist_pic[28*28]={
 };
 /* clang-format on */
 
-static tm_err_t layer_cb(tm_mdl_t *mdl, tml_head_t *lh) {//dump middle result
+static tm_err_t layer_cb(tm_mdl_t *mdl, tml_head_t *lh)
+{ //dump middle result
 	int h = lh->out_dims[1];
 	int w = lh->out_dims[2];
 	int ch = lh->out_dims[3];
@@ -253,7 +252,8 @@ static tm_err_t layer_cb(tm_mdl_t *mdl, tml_head_t *lh) {//dump middle result
 	return TM_OK;
 }
 
-static void parse_output(tm_mat_t *outs) {
+static void parse_output(tm_mat_t *outs)
+{
 	tm_mat_t out = outs[0];
 	float *data = out.dataf;
 	float maxp = 0;
@@ -269,7 +269,8 @@ static void parse_output(tm_mat_t *outs) {
 	return;
 }
 
-int main(void) {
+int main(void)
+{
 	axp_pmu_t pmu;
 	sunxi_i2c_t i2c;
 
@@ -277,12 +278,10 @@ int main(void) {
 		return -1;
 
 	show_banner();
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK ||
-	    pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp1530_config(&pmu, &i2c) != DRIVER_OK) {
 		pr_err("PMU: invalid devicetree configuration\n");
 		return -1;
 	}
-
 
 	sunxi_clk_init();
 
@@ -302,9 +301,13 @@ int main(void) {
 
 	int temp_vol, src_vol = pmu_axp1530_get_vol(&pmu, "dcdc3");
 	if (src_vol > set_vol) {
-		for (temp_vol = src_vol; temp_vol >= set_vol; temp_vol -= 50) { pmu_axp1530_set_vol(&pmu, "dcdc3", temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol >= set_vol; temp_vol -= 50) {
+			pmu_axp1530_set_vol(&pmu, "dcdc3", temp_vol, 1);
+		}
 	} else if (src_vol < set_vol) {
-		for (temp_vol = src_vol; temp_vol <= set_vol; temp_vol += 50) { pmu_axp1530_set_vol(&pmu, "dcdc3", temp_vol, 1); }
+		for (temp_vol = src_vol; temp_vol <= set_vol; temp_vol += 50) {
+			pmu_axp1530_set_vol(&pmu, "dcdc3", temp_vol, 1);
+		}
 	}
 
 	mdelay(30); /* Delay 300ms for pmu bootup */
@@ -336,8 +339,8 @@ int main(void) {
 			TM_PRINTF("\n");
 	}
 
-	tm_mat_t in_uint8 = {3, 28, 28, 1, {(mtype_t *) mnist_pic}};
-	tm_mat_t in = {3, 28, 28, 1, {NULL}};
+	tm_mat_t in_uint8 = { 3, 28, 28, 1, { (mtype_t *)mnist_pic } };
+	tm_mat_t in = { 3, 28, 28, 1, { NULL } };
 	tm_mat_t outs[1];
 	tm_err_t res;
 

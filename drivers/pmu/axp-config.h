@@ -15,7 +15,8 @@
 #include <drivers/pmu/axp.h>
 
 /* PMU identity and runtime addresses belong to the selected chip driver. */
-static inline int sunxi_pmu_config(axp_pmu_t *pmu, sunxi_i2c_t *i2c, axp_pmu_type_t type, uint8_t address, uint8_t fallback_address)
+static inline int sunxi_pmu_config(
+	axp_pmu_t *pmu, sunxi_i2c_t *i2c, axp_pmu_type_t type, uint8_t address, uint8_t fallback_address)
 {
 	if (pmu == NULL || i2c == NULL || address == 0U || fallback_address == address || fallback_address > 0x7fU)
 		return DRIVER_ERROR_INVALID;

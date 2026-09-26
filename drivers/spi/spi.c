@@ -541,8 +541,7 @@ static uint32_t sunxi_spi_set_clk(sunxi_spi_t *spi, uint32_t spi_clk, uint32_t m
 clk_out:
 	// Print debug information about clock divider and actual SPI frequency
 	pr_debug("clock div=%u \n", div);
-	pr_debug("set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000,
-		mclk / 1000000);
+	pr_debug("set clock asked=%dMHz actual=%dMHz mclk=%dMHz\n", spi_clk / 1000000, freq / 1000000, mclk / 1000000);
 
 	return freq;
 }

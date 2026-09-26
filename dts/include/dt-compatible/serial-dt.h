@@ -7,12 +7,14 @@
 #include <drivers/serial/serial.h>
 #include <dt-compatible/pinctrl-dt.h>
 
-static inline __attribute__((always_inline)) bool sunxi_serial_dt_string_equal(const char *value, int length, const char *expected, size_t expected_length)
+static inline __attribute__((always_inline)) bool sunxi_serial_dt_string_equal(
+	const char *value, int length, const char *expected, size_t expected_length)
 {
 	return syterkit_dt_string_equal(value, length, expected, expected_length);
 }
 
-static inline __attribute__((always_inline)) const dt2c_fdt32_t *sunxi_serial_dt_cells(int node, const char *name, size_t count)
+static inline __attribute__((always_inline)) const dt2c_fdt32_t *sunxi_serial_dt_cells(
+	int node, const char *name, size_t count)
 {
 	return syterkit_dt_cells(node, name, count);
 }
@@ -39,7 +41,8 @@ static inline __attribute__((always_inline)) int sunxi_serial_dt_stdout_node(voi
 	node = dt2c_fdt_path_offset_namelen(DT2C_FDT_COMPILED_TREE, stdout_path, length - 1);
 	if (node < 0)
 		return node;
-	if (!sunxi_serial_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SERIAL_COMPATIBLE) != 0)
+	if (!sunxi_serial_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SERIAL_COMPATIBLE) != 0)
 		return -DT2C_FDT_ERR_BADVALUE;
 	return node;
 }
@@ -57,7 +60,8 @@ static inline __attribute__((always_inline)) int sunxi_serial_dt_read_config(sun
 	uint32_t value;
 	int length;
 
-	if (uart == NULL || node < 0 || !sunxi_serial_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SERIAL_COMPATIBLE) != 0)
+	if (uart == NULL || node < 0 || !sunxi_serial_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_SERIAL_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = sunxi_serial_dt_cells(node, "reg", 2);
@@ -85,13 +89,14 @@ static inline __attribute__((always_inline)) int sunxi_serial_dt_read_config(sun
 	config.uart_clk.gate_reg_offset = dt2c_fdt32_to_cpu(clock_gate[1]);
 	config.uart_clk.rst_reg_base = (uintptr_t)dt2c_fdt32_to_cpu(reset[0]);
 	config.uart_clk.rst_reg_offset = dt2c_fdt32_to_cpu(reset[1]);
-	if (config.uart_clk.parent_clk == 0U || config.uart_clk.gate_reg_base == 0U || config.uart_clk.rst_reg_base == 0U || config.uart_clk.gate_reg_offset >= 32U ||
-	    config.uart_clk.rst_reg_offset >= 32U)
+	if (config.uart_clk.parent_clk == 0U || config.uart_clk.gate_reg_base == 0U ||
+		config.uart_clk.rst_reg_base == 0U || config.uart_clk.gate_reg_offset >= 32U ||
+		config.uart_clk.rst_reg_offset >= 32U)
 		return DRIVER_ERROR_INVALID;
 
 	pins = syterkit_dt_pinctrl_cells(node, 6, &gpio_controller);
 	if (pins == NULL || !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller, &config.gpio_pin.gpio_tx) ||
-	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.gpio_pin.gpio_rx))
+		!syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.gpio_pin.gpio_rx))
 		return DRIVER_ERROR_INVALID;
 
 	value_cell = sunxi_serial_dt_cells(node, "data-bits", 1);
@@ -122,10 +127,13 @@ static inline __attribute__((always_inline)) int sunxi_serial_dt_read_config(sun
 
 	*uart = config;
 	SYTERKIT_DT_TRACE_NODE("serial", node);
-	SYTERKIT_DT_TRACE("serial config base=%p id=%u baud=%u data=%u stop=%u parity=%u tx=%u/%u rx=%u/%u\n", (void *)uart->base, uart->id, uart->baud_rate, uart->dlen + 5U,
-			  uart->stop + 1U, uart->parity, uart->gpio_pin.gpio_tx.pin, uart->gpio_pin.gpio_tx.mux, uart->gpio_pin.gpio_rx.pin, uart->gpio_pin.gpio_rx.mux);
-	SYTERKIT_DT_TRACE("serial clock parent=%u gate=%p:%u reset=%p:%u\n", uart->uart_clk.parent_clk, (void *)uart->uart_clk.gate_reg_base, uart->uart_clk.gate_reg_offset,
-			  (void *)uart->uart_clk.rst_reg_base, uart->uart_clk.rst_reg_offset);
+	SYTERKIT_DT_TRACE("serial config base=%p id=%u baud=%u data=%u stop=%u parity=%u tx=%u/%u rx=%u/%u\n",
+		(void *)uart->base, uart->id, uart->baud_rate, uart->dlen + 5U, uart->stop + 1U, uart->parity,
+		uart->gpio_pin.gpio_tx.pin, uart->gpio_pin.gpio_tx.mux, uart->gpio_pin.gpio_rx.pin,
+		uart->gpio_pin.gpio_rx.mux);
+	SYTERKIT_DT_TRACE("serial clock parent=%u gate=%p:%u reset=%p:%u\n", uart->uart_clk.parent_clk,
+		(void *)uart->uart_clk.gate_reg_base, uart->uart_clk.gate_reg_offset,
+		(void *)uart->uart_clk.rst_reg_base, uart->uart_clk.rst_reg_offset);
 	return DRIVER_OK;
 }
 

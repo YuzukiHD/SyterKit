@@ -42,13 +42,13 @@
 
 static sunxi_dram_t dram;
 
-#define CONFIG_BL31_FILENAME "bl31.bin"
+#define CONFIG_BL31_FILENAME  "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_DTB_FILENAME "sun50i-r818-mg-core.dtb"
+#define CONFIG_DTB_FILENAME  "sun50i-r818-mg-core.dtb"
 #define CONFIG_DTB_LOAD_ADDR (0x41f00000)
 
-#define CONFIG_KERNEL_FILENAME "Image"
+#define CONFIG_KERNEL_FILENAME	"Image"
 #define CONFIG_KERNEL_LOAD_ADDR (0x40080000)
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
@@ -156,7 +156,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&mmc_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -301,8 +302,9 @@ int main(void)
 	pr_info("Checking SoC Version...\n");
 
 	show_banner();
-	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
+		sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) != DRIVER_OK ||
+		sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}

@@ -74,15 +74,18 @@ static void task_loop(void)
 	task_t *cur_task = task_list; // Initialize a current task pointer to the head of the list
 
 	while (cur_task != NULL) {
-		cur_task->elapsed_time += 1; // Increment the elapsed time of the current task by 1 (assuming a timeout of 1 unit)
+		cur_task->elapsed_time +=
+			1; // Increment the elapsed time of the current task by 1 (assuming a timeout of 1 unit)
 
 		if (cur_task->elapsed_time >= cur_task->interval) {
-			cur_task->callback(cur_task->arg, cur_task->run_count); // Execute the callback function of the current task with its arguments
+			cur_task->callback(cur_task->arg,
+				cur_task->run_count); // Execute the callback function of the current task with its arguments
 			cur_task->elapsed_time = 0; // Reset the elapsed time of the current task to 0
 			cur_task->run_count++; // Increment the run count of the current task
 
 			// If the current task has reached its maximum run count and it is not set to always run, remove it from the list
-			if (cur_task->run_count >= cur_task->max_run_count && cur_task->max_run_count != TIMER_ALWAYS_RUN) {
+			if (cur_task->run_count >= cur_task->max_run_count &&
+				cur_task->max_run_count != TIMER_ALWAYS_RUN) {
 				remove_task(cur_task);
 			}
 		}

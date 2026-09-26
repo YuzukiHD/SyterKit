@@ -40,14 +40,14 @@
 
 static sunxi_dram_t dram;
 
-#define CONFIG_BL31_FILENAME "bl31.bin"
+#define CONFIG_BL31_FILENAME  "bl31.bin"
 #define CONFIG_BL31_LOAD_ADDR (0x48000000)
 
-#define CONFIG_DTB_LOAD_ADDR (0x40400000)
+#define CONFIG_DTB_LOAD_ADDR	(0x40400000)
 #define CONFIG_INITRD_LOAD_ADDR (0x43000000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x40800000)
 
-#define CONFIG_EXTLINUX_FILENAME "extlinux/extlinux.conf"
+#define CONFIG_EXTLINUX_FILENAME  "extlinux/extlinux.conf"
 #define CONFIG_EXTLINUX_LOAD_ADDR (0x40020000)
 
 #define CONFIG_PLATFORM_MAGIC "\0RAW\xbe\xe9\0\0"
@@ -100,11 +100,11 @@ typedef struct {
 	char extlinux_filename[FILENAME_MAX_LEN];
 } image_info_t;
 
-#define IH_COMP_NONE 0 /*  No	 Compression Used	*/
-#define IH_COMP_GZIP 1 /* gzip	 Compression Used	*/
+#define IH_COMP_NONE  0 /*  No	 Compression Used	*/
+#define IH_COMP_GZIP  1 /* gzip	 Compression Used	*/
 #define IH_COMP_BZIP2 2 /* bzip2 Compression Used	*/
-#define IH_MAGIC 0x56190527 /* mkimage magic for uinitrd */
-#define IH_NMLEN 32 /* Image Name Length	*/
+#define IH_MAGIC      0x56190527 /* mkimage magic for uinitrd */
+#define IH_NMLEN      32 /* Image Name Length	*/
 typedef struct image_header {
 	uint32_t ih_magic; /* Image Header Magic Number	*/
 	uint32_t ih_hcrc; /* Image Header CRC Checksum	*/
@@ -187,7 +187,8 @@ static int load_sdcard(image_info_t *image)
 	start = time_ms();
 	sdmmc_blk_read(&mmc_card, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -587,8 +588,10 @@ int main(void)
 	sunxi_sid_t sid;
 
 	show_banner();
-	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) != DRIVER_OK ||
-	    sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK || sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
+	if (sunxi_rtc_dt_read_alias(&rtc, "rtc0") != DRIVER_OK ||
+		sunxi_remoteproc_dt_read_alias(&ar100, "ar100", &rtc) != DRIVER_OK ||
+		sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&pmu, &i2c) != DRIVER_OK ||
+		sunxi_sid_dt_read_alias(&sid, "sid0") != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}

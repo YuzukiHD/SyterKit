@@ -42,7 +42,7 @@ enum {
 };
 
 #define GIC_SPURIOUS_IRQ_MIN 1022U
-#define GIC_IRQ_ID_MASK 0x3ffU
+#define GIC_IRQ_ID_MASK	     0x3ffU
 
 static irq_handler_t sunxi_int_handlers[SUNXI_GIC_MAX_IRQS];
 static sunxi_gic_t sunxi_gic_controller;
@@ -79,8 +79,9 @@ static inline uintptr_t gicc_reg(const sunxi_gic_t *gic, uint32_t offset)
  */
 static bool sunxi_gic_config_valid(const sunxi_gic_t *gic)
 {
-	return gic != NULL && gic->distributor_base != 0U && gic->distributor_size >= 0x1000U && gic->cpu_interface_base != 0U && gic->cpu_interface_size >= 0x1004U &&
-	       gic->irq_count >= 32U && gic->irq_count <= SUNXI_GIC_MAX_IRQS;
+	return gic != NULL && gic->distributor_base != 0U && gic->distributor_size >= 0x1000U &&
+	       gic->cpu_interface_base != 0U && gic->cpu_interface_size >= 0x1004U && gic->irq_count >= 32U &&
+	       gic->irq_count <= SUNXI_GIC_MAX_IRQS;
 }
 
 /**
@@ -400,7 +401,8 @@ int irq_enable(int irq)
 		return DRIVER_ERROR_INVALID;
 	}
 
-	writel(BIT((uint32_t)irq & 0x1fU), gicd_reg(&sunxi_gic_controller, GICD_ISENABLER + ((uint32_t)irq / 32U) * 4U));
+	writel(BIT((uint32_t)irq & 0x1fU),
+		gicd_reg(&sunxi_gic_controller, GICD_ISENABLER + ((uint32_t)irq / 32U) * 4U));
 	return DRIVER_OK;
 }
 
@@ -417,7 +419,8 @@ int irq_disable(int irq)
 		return DRIVER_ERROR_INVALID;
 	}
 
-	writel(BIT((uint32_t)irq & 0x1fU), gicd_reg(&sunxi_gic_controller, GICD_ICENABLER + ((uint32_t)irq / 32U) * 4U));
+	writel(BIT((uint32_t)irq & 0x1fU),
+		gicd_reg(&sunxi_gic_controller, GICD_ICENABLER + ((uint32_t)irq / 32U) * 4U));
 	return DRIVER_OK;
 }
 

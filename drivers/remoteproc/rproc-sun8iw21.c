@@ -19,10 +19,10 @@
 
 #include <drivers/clk/sun8iw21/reg.h>
 
-#define SUN8IW21_RISCV_CLK_OFFSET 0x0d00U
+#define SUN8IW21_RISCV_CLK_OFFSET	 0x0d00U
 #define SUN8IW21_RISCV_GATING_RST_OFFSET 0x0d04U
-#define SUN8IW21_RISCV_CFG_BGR_OFFSET 0x0d0cU
-#define SUN8IW21_RISCV_START_OFFSET 0x0204U
+#define SUN8IW21_RISCV_CFG_BGR_OFFSET	 0x0d0cU
+#define SUN8IW21_RISCV_START_OFFSET	 0x0204U
 
 /**
  * @brief Register resource indices used by the E907 remote processor.

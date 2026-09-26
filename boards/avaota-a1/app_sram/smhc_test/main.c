@@ -38,8 +38,8 @@ static sunxi_dram_t dram;
 extern sunxi_serial_t uart_dbg;
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
-#define CONFIG_HEAP_BASE (0x40800000)
-#define CONFIG_HEAP_SIZE (16 * 1024 * 1024)
+#define CONFIG_HEAP_BASE	     (0x40800000)
+#define CONFIG_HEAP_SIZE	     (16 * 1024 * 1024)
 
 static sdmmc_pdata_t test_card;
 static sunxi_sdhci_t test_mmc;
@@ -71,7 +71,8 @@ int cmd_read(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_read(&test_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	dump_hex(dram.memory_base, 0x100);
 	return 0;
 }
@@ -90,7 +91,8 @@ int cmd_write(int argc, const char **argv)
 	start = time_ms();
 	sdmmc_blk_write(&test_card, (uint8_t *)(dram.memory_base), 0, 1024);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 	return 0;
 }
 
@@ -119,8 +121,9 @@ int main(void)
 		pr_err("RISC-V E906: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK || pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
-	    sunxi_sdhci_dt_read_alias(&test_mmc, "mmc0") != DRIVER_OK) {
+	if (sunxi_i2c_dt_read_alias(&i2c, "i2c0") != DRIVER_OK || pmu_axp2202_config(&axp2202, &i2c) != DRIVER_OK ||
+		pmu_axp1530_config(&axp1530, &i2c) != DRIVER_OK ||
+		sunxi_sdhci_dt_read_alias(&test_mmc, "mmc0") != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}

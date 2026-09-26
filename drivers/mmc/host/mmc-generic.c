@@ -144,8 +144,7 @@ int __attribute__((weak, section(".text.mmc_generic_set_io_voltage"))) sunxi_sdh
  * @param sdhci Pointer to the SDHC controller structure
  * @return Always 0
  */
-int __attribute__((weak, section(".text.mmc_generic_set_skew"))) sunxi_sdhci_set_skew(
-	sunxi_sdhci_t *sdhci)
+int __attribute__((weak, section(".text.mmc_generic_set_skew"))) sunxi_sdhci_set_skew(sunxi_sdhci_t *sdhci)
 {
 	return 0;
 }

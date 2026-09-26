@@ -112,8 +112,7 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal);
  * @param[in] high High calibration word read from eFuse SRAM.
  * @return Zero on success, otherwise @ref UFSHC_ERR_INVALID.
  */
-int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal,
-		uint32_t low, uint32_t high);
+int sunxi_decode_cal_words(struct sunxi_ufs_cal_words *cal, uint32_t low, uint32_t high);
 
 /**
  * @brief Merge the selected SoC variant defaults with device-tree settings.

@@ -186,7 +186,8 @@ static void eye_delay_compensation(const sunxi_dram_t *dram, dram_para_t *para) 
 	// Set RAS, CAS, and CA delay for DRAM timing
 	delay = (para->dram_tpr10 & 0xf0) << 4; // Extract delay from dram_tpr10
 	for (i = 6; i < 27; ++i) {
-		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ACIOCR1(i)), delay); // Apply delay to AC IO control registers
+		setbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ACIOCR1(i)),
+			delay); // Apply delay to AC IO control registers
 	}
 
 	// Set CK CS delay based on dram_tpr10
@@ -517,18 +518,24 @@ static void mctl_set_timing_params(const sunxi_dram_t *dram, dram_para_t *para)
 	writel((para->dram_odt_en >> 4) & 0x3, (dram->registers.mctl_phy.base + MCTL_PHY_LP3MR11));
 
 	/* Set dram timing DRAMTMG0 - DRAMTMG5 */
-	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG0));
+	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG0));
 	writel((txp << 16) | (trtp << 8) | (trc << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG1));
-	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG2));
+	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG2));
 	writel((tmrw << 16) | (tmrd << 12) | (tmod << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG3));
-	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG4));
-	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0), (dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG5));
+	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG4));
+	writel((tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG5));
 
 	/* Set dual rank timing */
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG8), 0xf000ffff, (para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
+	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DRAMTMG8), 0xf000ffff,
+		(para->dram_clk < 800) ? 0xf0006610 : 0xf0007610);
 
 	/* Set phy interface time PITMG0, PTR3, PTR4 */
-	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0), (dram->registers.mctl_phy.base + MCTL_PHY_PITMG0));
+	writel((0x2 << 24) | (t_rdata_en << 16) | (1 << 8) | (wr_latency << 0),
+		(dram->registers.mctl_phy.base + MCTL_PHY_PITMG0));
 	writel(((tdinit0 << 0) | (tdinit1 << 20)), (dram->registers.mctl_phy.base + MCTL_PHY_PTR3));
 	writel(((tdinit2 << 0) | (tdinit3 << 20)), (dram->registers.mctl_phy.base + MCTL_PHY_PTR4));
 
@@ -609,11 +616,13 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 	}
 
 	clrsetbits_le32(dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG,
-			PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK | PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK | PLL_DDR_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK |
-				PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_CLEAR_MASK,
-			(PLL_DDR_CTRL_REG_PLL_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_EN_OFFSET) | (PLL_DDR_CTRL_REG_PLL_LDO_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_LDO_EN_OFFSET) |
-				((n - 1) << PLL_DDR_CTRL_REG_PLL_N_OFFSET) | ((m1 - 1) << PLL_DDR_CTRL_REG_PLL_INPUT_DIV_OFFSET) |
-				((m0 - 1) << PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_OFFSET));
+		PLL_DDR_CTRL_REG_PLL_N_CLEAR_MASK | PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK |
+			PLL_DDR_CTRL_REG_PLL_INPUT_DIV_CLEAR_MASK | PLL_DDR_CTRL_REG_PLL_OUTPUT_GATE_CLEAR_MASK,
+		(PLL_DDR_CTRL_REG_PLL_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_EN_OFFSET) |
+			(PLL_DDR_CTRL_REG_PLL_LDO_EN_ENABLE << PLL_DDR_CTRL_REG_PLL_LDO_EN_OFFSET) |
+			((n - 1) << PLL_DDR_CTRL_REG_PLL_N_OFFSET) |
+			((m1 - 1) << PLL_DDR_CTRL_REG_PLL_INPUT_DIV_OFFSET) |
+			((m0 - 1) << PLL_DDR_CTRL_REG_PLL_OUTPUT_DIV2_OFFSET));
 
 	/* Clear PLL Lock */
 	reg_val = readl(dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG);
@@ -622,10 +631,13 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 
 	/* Set PLL Lock */
 	reg_val = readl(dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG);
-	writel(reg_val | (PLL_DDR_CTRL_REG_LOCK_ENABLE_ENABLE << PLL_DDR_CTRL_REG_LOCK_ENABLE_OFFSET), dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG);
+	writel(reg_val | (PLL_DDR_CTRL_REG_LOCK_ENABLE_ENABLE << PLL_DDR_CTRL_REG_LOCK_ENABLE_OFFSET),
+		dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG);
 
 	/* Wait PLL Lock */
-	while (!(readl(dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG) & PLL_DDR_CTRL_REG_LOCK_LOCKED__IT_INDICATES_THAT_THE_PLL_HAS_BEEN_STABLE << PLL_DDR_CTRL_REG_LOCK_OFFSET))
+	while (!(readl(dram->registers.aon_ccu.base + PLL_DDR_CTRL_REG) &
+		 PLL_DDR_CTRL_REG_LOCK_LOCKED__IT_INDICATES_THAT_THE_PLL_HAS_BEEN_STABLE
+			 << PLL_DDR_CTRL_REG_LOCK_OFFSET))
 		;
 	udelay(20);
 
@@ -637,7 +649,8 @@ static int ccu_set_pll_ddr_clk(const sunxi_dram_t *dram, int index, dram_para_t 
 	reg_val = readl((dram->registers.ccu.base + DRAM_CLK_REG));
 	reg_val &= ~DRAM_CLK_REG_DRAM_CLK_SEL_CLEAR_MASK;
 	reg_val &= ~(DRAM_CLK_REG_DRAM_DIV1_CLEAR_MASK | DRAM_CLK_REG_DRAM_DIV2_CLEAR_MASK);
-	reg_val |= ((DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET) | (DRAM_CLK_REG_DRAM_CLK_SEL_DDRPLL << DRAM_CLK_REG_DRAM_CLK_SEL_OFFSET));
+	reg_val |= ((DRAM_CLK_REG_DRAM_CLK_GATING_CLOCK_IS_ON << DRAM_CLK_REG_DRAM_CLK_GATING_OFFSET) |
+		    (DRAM_CLK_REG_DRAM_CLK_SEL_DDRPLL << DRAM_CLK_REG_DRAM_CLK_SEL_OFFSET));
 	writel(reg_val, (dram->registers.ccu.base + DRAM_CLK_REG));
 
 	return ((hosc_freq * n) / p0 / m0 / m1);
@@ -928,7 +941,8 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 	} else if (dqs_gating_mode == 2) {
 		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR2), 0xc0, 0x80);
 
-		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DQSGMR), 0x107, (((para->dram_tpr13 >> 16) & 0x1f) - 2) | 0x100);
+		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DQSGMR), 0x107,
+			(((para->dram_tpr13 >> 16) & 0x1f) - 2) | 0x100);
 		clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DXCCR), (1 << 31), (1 << 27));
 	} else {
 		clrbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_PGCR2), 0x40);
@@ -943,7 +957,8 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 			clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DXCCR), 0x77000000, 0x22000000);
 	}
 
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DTCR), 0x0fffffff, (para->dram_para2 & (1 << 12)) ? 0x03000001 /* 2 rank */ : 0x01003087 /* 1 rank */);
+	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_DTCR), 0x0fffffff,
+		(para->dram_para2 & (1 << 12)) ? 0x03000001 /* 2 rank */ : 0x01003087 /* 1 rank */);
 
 	if (readl((dram->registers.r_prcm.base + 0x1c0U)) & (1 << 16)) {
 		clrbits_le32((dram->registers.pmu_rtc.base + 0x38U), 0x2);
@@ -951,7 +966,8 @@ static unsigned int mctl_channel_init(const sunxi_dram_t *dram, unsigned int ch_
 	}
 
 	// Set ZQ config
-	clrsetbits_le32((dram->registers.mctl_phy.base + MCTL_PHY_ZQCR), 0x3ffffff, (para->dram_zq & 0x00ffffff) | (1 << 25));
+	clrsetbits_le32(
+		(dram->registers.mctl_phy.base + MCTL_PHY_ZQCR), 0x3ffffff, (para->dram_zq & 0x00ffffff) | (1 << 25));
 
 	// Initialise DRAM controller
 	if (dqs_gating_mode == 1) {
@@ -1728,7 +1744,8 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 
 	/* Set VTF feature */
 	if (para->dram_tpr13 & (1 << 8))
-		writel(readl((dram->registers.mctl_phy.base + MCTL_PHY_VTFCR)) | 0x300, (dram->registers.mctl_phy.base + MCTL_PHY_VTFCR));
+		writel(readl((dram->registers.mctl_phy.base + MCTL_PHY_VTFCR)) | 0x300,
+			(dram->registers.mctl_phy.base + MCTL_PHY_VTFCR));
 
 	/* Set PAD Hold */
 	if (para->dram_tpr13 & (1 << 16))
@@ -1742,7 +1759,8 @@ static int init_DRAM(sunxi_dram_t *dram, int type, dram_para_t *para)
 
 	dram_enable_all_master(dram);
 	if (para->dram_tpr13 & (1 << 28)) {
-		if ((readl((dram->registers.r_prcm.base + 0x1c0U)) & (1 << 16)) || dramc_simple_wr_test(dram, mem_size_mb, 4096))
+		if ((readl((dram->registers.r_prcm.base + 0x1c0U)) & (1 << 16)) ||
+			dramc_simple_wr_test(dram, mem_size_mb, 4096))
 			return 0;
 	}
 

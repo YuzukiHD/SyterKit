@@ -16,10 +16,10 @@
 #include <drivers/pcie/ep/pcie-ep.h>
 #include <dt-compatible/pcie-dt.h>
 
-#define PCIE_EP_MSI_MMC_MASK            (0x7U << 1)
-#define PCIE_EP_BAR_MIN_SIZE             (1ULL << 12)
-#define PCIE_EP_REBAR_MIN_SIZE           (1ULL << 20)
-#define PCIE_EP_BAR_MAX_SIZE             (1ULL << 39)
+#define PCIE_EP_MSI_MMC_MASK   (0x7U << 1)
+#define PCIE_EP_BAR_MIN_SIZE   (1ULL << 12)
+#define PCIE_EP_REBAR_MIN_SIZE (1ULL << 20)
+#define PCIE_EP_BAR_MAX_SIZE   (1ULL << 39)
 
 /**
  * @brief Validate a BAR size.
@@ -32,8 +32,7 @@ static int pcie_ep_bar_size_valid(uint64_t size)
 {
 	if (size == 0U)
 		return PCIE_ERR_INVALID;
-	if (size < PCIE_EP_BAR_MIN_SIZE || size > PCIE_EP_BAR_MAX_SIZE ||
-	    (size & (size - 1U)) != 0U)
+	if (size < PCIE_EP_BAR_MIN_SIZE || size > PCIE_EP_BAR_MAX_SIZE || (size & (size - 1U)) != 0U)
 		return PCIE_ERR_UNSUPPORTED;
 	return PCIE_OK;
 }
@@ -46,8 +45,7 @@ static int pcie_ep_bar_size_valid(uint64_t size)
  * @param[out] entry Receives the REBAR capability entry index.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_ep_rebar_entry(uint8_t bar, uint32_t flags,
-		uint32_t *entry)
+static int pcie_ep_rebar_entry(uint8_t bar, uint32_t flags, uint32_t *entry)
 {
 	if (entry == NULL)
 		return PCIE_ERR_INVALID;
@@ -104,14 +102,11 @@ static int pcie_ep_rebar_size(uint64_t size, uint32_t *value)
  * @param[out] offset Receives the function's configuration offset.
  * @return PCIE_OK on success, otherwise an error code.
  */
-static int pcie_ep_function_offset(const struct pcie *pcie, uint8_t function,
-		uint32_t *offset)
+static int pcie_ep_function_offset(const struct pcie *pcie, uint8_t function, uint32_t *offset)
 {
-	if (pcie == NULL || offset == NULL || function >= 8U ||
-	    pcie->controller.config.ep_function_stride == 0U)
+	if (pcie == NULL || offset == NULL || function >= 8U || pcie->controller.config.ep_function_stride == 0U)
 		return PCIE_ERR_INVALID;
-	if ((uint64_t)function * pcie->controller.config.ep_function_stride >
-		0xffffffffULL)
+	if ((uint64_t)function * pcie->controller.config.ep_function_stride > 0xffffffffULL)
 		return PCIE_ERR_INVALID;
 	*offset = (uint32_t)function * pcie->controller.config.ep_function_stride;
 	return PCIE_OK;
@@ -136,8 +131,7 @@ int pcie_ep_init(struct pcie *pcie, const struct pcie_config *config)
 	if (ret)
 		goto fail;
 	value &= 0xffff0000U;
-	value |= PCIE_CFG_COMMAND_IO | PCIE_CFG_COMMAND_MEMORY |
-		PCIE_CFG_COMMAND_MASTER | PCIE_CFG_COMMAND_SERR;
+	value |= PCIE_CFG_COMMAND_IO | PCIE_CFG_COMMAND_MEMORY | PCIE_CFG_COMMAND_MASTER | PCIE_CFG_COMMAND_SERR;
 	ret = pcie_controller_dbi_write(&pcie->controller, PCIE_CFG_COMMAND, 4U, value);
 	if (ret)
 		goto fail;
@@ -159,8 +153,7 @@ int pcie_ep_init_dt(struct pcie *pcie, int node)
 {
 	struct pcie_config config;
 
-	if (sunxi_pcie_dt_read_config(&config, node) != DRIVER_OK ||
-	    config.mode != PCIE_MODE_EP)
+	if (sunxi_pcie_dt_read_config(&config, node) != DRIVER_OK || config.mode != PCIE_MODE_EP)
 		return PCIE_ERR_INVALID;
 	return pcie_ep_init(pcie, &config);
 }
@@ -173,15 +166,13 @@ int pcie_ep_init_dt(struct pcie *pcie, int node)
  * @param[in] header Header fields to program.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
-		const struct pcie_ep_header *header)
+int pcie_ep_write_header(struct pcie *pcie, uint8_t function, const struct pcie_ep_header *header)
 {
 	uint32_t function_offset;
 	uint32_t class_code;
 	int ret;
 
-	if (pcie == NULL || header == NULL || !pcie->initialized ||
-	    pcie->mode != PCIE_MODE_EP)
+	if (pcie == NULL || header == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP)
 		return PCIE_ERR_INVALID;
 	ret = pcie_ep_function_offset(pcie, function, &function_offset);
 	if (ret)
@@ -190,32 +181,25 @@ int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
 	ret = pcie_controller_dbi_ro_write_enable(&pcie->controller, true);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x00U,
-		2U, header->vendor_id);
+	ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x00U, 2U, header->vendor_id);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x02U,
-		2U, header->device_id);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x02U, 2U, header->device_id);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x08U,
-		1U, header->revision_id);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x08U, 1U, header->revision_id);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x09U,
-		1U, header->prog_if);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x09U, 1U, header->prog_if);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x0aU,
-		2U, class_code);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x0aU, 2U, class_code);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x0cU,
-		1U, header->cache_line_size);
+		ret = pcie_controller_dbi_write(
+			&pcie->controller, function_offset + 0x0cU, 1U, header->cache_line_size);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x2cU,
-		2U, header->subsystem_vendor_id);
+		ret = pcie_controller_dbi_write(
+			&pcie->controller, function_offset + 0x2cU, 2U, header->subsystem_vendor_id);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x2eU,
-		2U, header->subsystem_id);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x2eU, 2U, header->subsystem_id);
 	if (!ret)
-		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x3dU,
-		1U, header->interrupt_pin);
+		ret = pcie_controller_dbi_write(&pcie->controller, function_offset + 0x3dU, 1U, header->interrupt_pin);
 	if (pcie_controller_dbi_ro_write_enable(&pcie->controller, false) != PCIE_OK)
 		return PCIE_ERR_IO;
 	return ret;
@@ -232,8 +216,7 @@ int pcie_ep_write_header(struct pcie *pcie, uint8_t function,
  * @param[in] bar BAR configuration to apply.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
-		const struct pcie_ep_bar *bar)
+int pcie_ep_set_bar(struct pcie *pcie, uint8_t function, const struct pcie_ep_bar *bar)
 {
 	struct pcie_atu_region region;
 	uint32_t function_offset;
@@ -244,14 +227,12 @@ int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 	int cleanup_ret;
 	int ret;
 
-	if (pcie == NULL || bar == NULL || !pcie->initialized ||
-	    pcie->mode != PCIE_MODE_EP || bar->bar >= 6U || bar->size == 0U ||
-	    (bar->flags & ~PCIE_EP_BAR_FLAGS_MASK) != 0U)
+	if (pcie == NULL || bar == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP || bar->bar >= 6U ||
+		bar->size == 0U || (bar->flags & ~PCIE_EP_BAR_FLAGS_MASK) != 0U)
 		return PCIE_ERR_INVALID;
 	if ((bar->flags & PCIE_EP_BAR_IO) != 0U)
 		return PCIE_ERR_UNSUPPORTED;
-	if ((bar->flags & PCIE_EP_BAR_64BIT) != 0U &&
-	    (bar->bar != 0U && bar->bar != 4U))
+	if ((bar->flags & PCIE_EP_BAR_64BIT) != 0U && (bar->bar != 0U && bar->bar != 4U))
 		return PCIE_ERR_UNSUPPORTED;
 	ret = pcie_ep_bar_size_valid(bar->size);
 	if (ret)
@@ -279,14 +260,13 @@ int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 	ret = pcie_controller_dbi_ro_write_enable(&pcie->controller, true);
 	if (ret)
 		goto disable_atu;
-	ret = pcie_controller_dbi_write(&pcie->controller,
-		function_offset + PCIE_CFG_BAR0 + 4U * bar->bar, 4U, bar_value);
+	ret = pcie_controller_dbi_write(
+		&pcie->controller, function_offset + PCIE_CFG_BAR0 + 4U * bar->bar, 4U, bar_value);
 	if (!ret && (bar->flags & PCIE_EP_BAR_64BIT) != 0U)
-		ret = pcie_controller_dbi_write(&pcie->controller,
-			function_offset + PCIE_CFG_BAR0 + 4U * bar->bar + 4U, 4U, 0U);
+		ret = pcie_controller_dbi_write(
+			&pcie->controller, function_offset + PCIE_CFG_BAR0 + 4U * bar->bar + 4U, 4U, 0U);
 	if (!ret) {
-		ret = pcie_controller_find_ext_capability(&pcie->controller,
-			function_offset, PCIE_EXT_CAP_ID_REBAR);
+		ret = pcie_controller_find_ext_capability(&pcie->controller, function_offset, PCIE_EXT_CAP_ID_REBAR);
 		if (ret >= 0) {
 			rebar_offset = (uint32_t)ret;
 			ret = pcie_ep_rebar_entry(bar->bar, bar->flags, &rebar_entry);
@@ -297,23 +277,22 @@ int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 				if (!ret)
 					ret = pcie_controller_dbi_write(&pcie->controller,
 						function_offset + rebar_offset + PCIE_REBAR_CAP +
-						rebar_entry * PCIE_REBAR_ENTRY_STRIDE, 4U,
-						PCIE_REBAR_CAP_SIZES);
+							rebar_entry * PCIE_REBAR_ENTRY_STRIDE,
+						4U, PCIE_REBAR_CAP_SIZES);
 				if (!ret) {
 					rebar_ctrl = 0U;
 					ret = pcie_controller_dbi_read(&pcie->controller,
 						function_offset + rebar_offset + PCIE_REBAR_CTRL +
-						rebar_entry * PCIE_REBAR_ENTRY_STRIDE, 4U,
-						&rebar_ctrl);
+							rebar_entry * PCIE_REBAR_ENTRY_STRIDE,
+						4U, &rebar_ctrl);
 				}
 				if (!ret) {
-					rebar_ctrl = (rebar_ctrl &
-						~PCIE_REBAR_CTRL_BAR_SIZE_MASK) |
-						(bar_value & PCIE_REBAR_CTRL_BAR_SIZE_MASK);
+					rebar_ctrl = (rebar_ctrl & ~PCIE_REBAR_CTRL_BAR_SIZE_MASK) |
+						     (bar_value & PCIE_REBAR_CTRL_BAR_SIZE_MASK);
 					ret = pcie_controller_dbi_write(&pcie->controller,
 						function_offset + rebar_offset + PCIE_REBAR_CTRL +
-						rebar_entry * PCIE_REBAR_ENTRY_STRIDE, 4U,
-						rebar_ctrl);
+							rebar_entry * PCIE_REBAR_ENTRY_STRIDE,
+						4U, rebar_ctrl);
 				}
 			}
 		} else if (ret == PCIE_ERR_UNSUPPORTED) {
@@ -321,8 +300,8 @@ int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 		}
 	}
 	if (!ret)
-		ret = pcie_controller_set_ep_bar(&pcie->controller, function,
-			bar->bar, true, (bar->flags & PCIE_EP_BAR_64BIT) != 0U);
+		ret = pcie_controller_set_ep_bar(
+			&pcie->controller, function, bar->bar, true, (bar->flags & PCIE_EP_BAR_64BIT) != 0U);
 	if (pcie_controller_dbi_ro_write_enable(&pcie->controller, false) != PCIE_OK)
 		ret = PCIE_ERR_IO;
 	if (ret)
@@ -330,8 +309,7 @@ int pcie_ep_set_bar(struct pcie *pcie, uint8_t function,
 	return ret;
 
 disable_atu:
-	cleanup_ret = pcie_controller_disable_atu(&pcie->controller,
-		PCIE_ATU_INBOUND, bar->bar);
+	cleanup_ret = pcie_controller_disable_atu(&pcie->controller, PCIE_ATU_INBOUND, bar->bar);
 	if (cleanup_ret != PCIE_OK && ret == PCIE_OK)
 		ret = cleanup_ret;
 	return ret;
@@ -358,26 +336,22 @@ int pcie_ep_clear_bar(struct pcie *pcie, uint8_t function, uint8_t bar)
 	ret = pcie_ep_function_offset(pcie, function, &function_offset);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_read(&pcie->controller,
-		function_offset + PCIE_CFG_BAR0 + 4U * bar, 4U, &bar_value);
+	ret = pcie_controller_dbi_read(&pcie->controller, function_offset + PCIE_CFG_BAR0 + 4U * bar, 4U, &bar_value);
 	if (ret)
 		return ret;
 	bar_64bit = (bar_value & PCIE_EP_BAR_64BIT) != 0U && bar < 5U;
 	ret = pcie_controller_dbi_ro_write_enable(&pcie->controller, true);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_write(&pcie->controller,
-		function_offset + PCIE_CFG_BAR0 + 4U * bar, 4U, 0U);
+	ret = pcie_controller_dbi_write(&pcie->controller, function_offset + PCIE_CFG_BAR0 + 4U * bar, 4U, 0U);
 	if (!ret && bar_64bit)
-		ret = pcie_controller_dbi_write(&pcie->controller,
-			function_offset + PCIE_CFG_BAR0 + 4U * (bar + 1U), 4U, 0U);
+		ret = pcie_controller_dbi_write(
+			&pcie->controller, function_offset + PCIE_CFG_BAR0 + 4U * (bar + 1U), 4U, 0U);
 	if (!ret)
-		ret = pcie_controller_set_ep_bar(&pcie->controller, function, bar,
-			false, bar_64bit);
+		ret = pcie_controller_set_ep_bar(&pcie->controller, function, bar, false, bar_64bit);
 	if (pcie_controller_dbi_ro_write_enable(&pcie->controller, false) != PCIE_OK)
 		ret = PCIE_ERR_IO;
-	cleanup_ret = pcie_controller_disable_atu(&pcie->controller,
-		PCIE_ATU_INBOUND, bar);
+	cleanup_ret = pcie_controller_disable_atu(&pcie->controller, PCIE_ATU_INBOUND, bar);
 	if (cleanup_ret != PCIE_OK && ret == PCIE_OK)
 		ret = cleanup_ret;
 	return ret;
@@ -395,14 +369,12 @@ int pcie_ep_clear_bar(struct pcie *pcie, uint8_t function, uint8_t bar)
  * @param[in] size Window size in bytes.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function,
-		uint8_t index, enum pcie_atu_type type, uint64_t local_addr,
-		uint64_t pci_addr, uint64_t size)
+int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function, uint8_t index, enum pcie_atu_type type,
+	uint64_t local_addr, uint64_t pci_addr, uint64_t size)
 {
 	struct pcie_atu_region region;
 
-	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP ||
-		function >= 8U)
+	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP || function >= 8U)
 		return PCIE_ERR_INVALID;
 	region = (struct pcie_atu_region){
 		.direction = PCIE_ATU_INBOUND,
@@ -428,9 +400,8 @@ int pcie_ep_program_inbound(struct pcie *pcie, uint8_t function,
  * @param[in] size Window size in bytes.
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index,
-		enum pcie_atu_type type, uint64_t local_addr, uint64_t pci_addr,
-		uint64_t size)
+int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index, enum pcie_atu_type type, uint64_t local_addr,
+	uint64_t pci_addr, uint64_t size)
 {
 	struct pcie_atu_region region;
 
@@ -455,26 +426,23 @@ int pcie_ep_program_outbound(struct pcie *pcie, uint8_t index,
  * @param[in] multiple_message_capable Encoded MMC value (0-5).
  * @return PCIE_OK on success, otherwise an error code.
  */
-int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function,
-		uint8_t multiple_message_capable)
+int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function, uint8_t multiple_message_capable)
 {
 	uint32_t function_offset;
 	uint32_t flags;
 	int capability;
 	int ret;
 
-	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP ||
-	    multiple_message_capable > 5U)
+	if (pcie == NULL || !pcie->initialized || pcie->mode != PCIE_MODE_EP || multiple_message_capable > 5U)
 		return PCIE_ERR_INVALID;
 	ret = pcie_ep_function_offset(pcie, function, &function_offset);
 	if (ret)
 		return ret;
-	capability = pcie_controller_find_capability(&pcie->controller, function_offset,
-		PCIE_CAP_ID_MSI);
+	capability = pcie_controller_find_capability(&pcie->controller, function_offset, PCIE_CAP_ID_MSI);
 	if (capability < 0)
 		return capability;
-	ret = pcie_controller_dbi_read(&pcie->controller,
-		function_offset + (uint32_t)capability + PCIE_CAP_MSI_FLAGS, 2U, &flags);
+	ret = pcie_controller_dbi_read(
+		&pcie->controller, function_offset + (uint32_t)capability + PCIE_CAP_MSI_FLAGS, 2U, &flags);
 	if (ret)
 		return ret;
 	flags &= ~PCIE_EP_MSI_MMC_MASK;
@@ -482,8 +450,8 @@ int pcie_ep_configure_msi(struct pcie *pcie, uint8_t function,
 	ret = pcie_controller_dbi_ro_write_enable(&pcie->controller, true);
 	if (ret)
 		return ret;
-	ret = pcie_controller_dbi_write(&pcie->controller,
-		function_offset + (uint32_t)capability + PCIE_CAP_MSI_FLAGS, 2U, flags);
+	ret = pcie_controller_dbi_write(
+		&pcie->controller, function_offset + (uint32_t)capability + PCIE_CAP_MSI_FLAGS, 2U, flags);
 	if (pcie_controller_dbi_ro_write_enable(&pcie->controller, false) != PCIE_OK)
 		return PCIE_ERR_IO;
 	return ret;

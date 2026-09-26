@@ -38,13 +38,13 @@
  * @brief Hardware DMA descriptor for one SPIF transfer segment.
  */
 struct spif_descriptor_op {
-	u32 hburst_rw_flag;      /**< Burst direction and DMA flags. */
-	u32 block_data_len;      /**< Data length encoded for the block. */
-	u32 data_addr;           /**< Memory address of the data buffer. */
-	u32 next_des_addr;       /**< Address of the next descriptor, or zero. */
-	u32 trans_phase;         /**< Enabled command/address/mode/dummy phases. */
-	u32 flash_addr;          /**< Target flash address for this segment. */
-	u32 cmd_mode_buswidth;   /**< Command opcode and bus-width encodings. */
+	u32 hburst_rw_flag; /**< Burst direction and DMA flags. */
+	u32 block_data_len; /**< Data length encoded for the block. */
+	u32 data_addr; /**< Memory address of the data buffer. */
+	u32 next_des_addr; /**< Address of the next descriptor, or zero. */
+	u32 trans_phase; /**< Enabled command/address/mode/dummy phases. */
+	u32 flash_addr; /**< Target flash address for this segment. */
+	u32 cmd_mode_buswidth; /**< Command opcode and bus-width encodings. */
 	u32 addr_dummy_data_count; /**< Address, dummy, and data count fields. */
 };
 
@@ -57,9 +57,9 @@ struct spif_descriptor_op {
  */
 struct sunxi_spif_op_buffers {
 	struct spif_descriptor_op *desc; /**< Aligned descriptor array. */
-	void *desc_allocation;           /**< Raw allocation backing @p desc. */
-	uint8_t *cache;                  /**< Aligned bounce cache, when used. */
-	void *cache_allocation;          /**< Raw allocation backing @p cache. */
+	void *desc_allocation; /**< Raw allocation backing @p desc. */
+	uint8_t *cache; /**< Aligned bounce cache, when used. */
+	void *cache_allocation; /**< Raw allocation backing @p cache. */
 };
 
 /* Controller register, clock, and mode helpers. */
@@ -374,8 +374,8 @@ static int sunxi_spif_program_clock(sunxi_spif_t *spif, uint32_t speed_hz)
 	}
 	spif->actual_speed_hz = best_rate;
 #if DEBUG_SPIF_CLK == 1
-	pr_trace("requested=%u actual=%u parent=%u n=%u m=%u\n", speed_hz, best_rate, spif->clock_parent_hz,
-		best_n, best_m);
+	pr_trace("requested=%u actual=%u parent=%u n=%u m=%u\n", speed_hz, best_rate, spif->clock_parent_hz, best_n,
+		best_m);
 #endif
 	return 0;
 }
@@ -935,8 +935,7 @@ int sunxi_spif_init(sunxi_spif_t *spif)
 	}
 	spif->speed_hz = default_speed;
 	spif->initialized = 1U;
-	pr_info("initialized version=0x%x base=%p clock=%uHz\n", version, (void *)spif->base,
-		spif->actual_speed_hz);
+	pr_info("initialized version=0x%x base=%p clock=%uHz\n", version, (void *)spif->base, spif->actual_speed_hz);
 	return 0;
 }
 

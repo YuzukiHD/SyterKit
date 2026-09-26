@@ -37,15 +37,15 @@
 #include <drivers/serial/serial.h>
 
 #define EFEX_PARAM_DESC_MAGIC "SKEP"
-#define EFEX_PARAM_MAGIC 0x41504b53U /* "SKPA" */
-#define EFEX_PARAM_VERSION 1U
-#define EFEX_PARAM_AREA_SIZE 4096U
+#define EFEX_PARAM_MAGIC      0x41504b53U /* "SKPA" */
+#define EFEX_PARAM_VERSION    1U
+#define EFEX_PARAM_AREA_SIZE  4096U
 
 /* Target status written into efex_param_hdr.status. */
 #define EFEX_PARAM_STATUS_IDLE 0U
 #define EFEX_PARAM_STATUS_DONE 0x454e4f44U /* "DONE" */
 #define EFEX_PARAM_STATUS_FAIL 0x4c494146U /* "FAIL" */
-#define EFEX_PARAM_STATUS_BAD 0x50444142U  /* "BADP": host table rejected */
+#define EFEX_PARAM_STATUS_BAD  0x50444142U /* "BADP": host table rejected */
 
 /* Descriptor stored in the eGON head at image + 0x30. */
 struct efex_param_desc {
@@ -85,18 +85,18 @@ _Static_assert(sizeof(struct efex_param_area) == EFEX_PARAM_AREA_SIZE, "eFEX par
 
 /* Key encoding. */
 #define EFEX_PARAM_APPLIED (1U << 31)
-#define EFEX_PARAM_OUTPUT (1U << 30)
-#define EFEX_PARAM_FLAGS (EFEX_PARAM_APPLIED | EFEX_PARAM_OUTPUT)
+#define EFEX_PARAM_OUTPUT  (1U << 30)
+#define EFEX_PARAM_FLAGS   (EFEX_PARAM_APPLIED | EFEX_PARAM_OUTPUT)
 #define EFEX_PARAM_KEY(group, id, index) \
-	((((uint32_t) (group) & 0x3fU) << 24) | (((uint32_t) (id) & 0xffffU) << 8) | ((uint32_t) (index) & 0xffU))
+	((((uint32_t)(group) & 0x3fU) << 24) | (((uint32_t)(id) & 0xffffU) << 8) | ((uint32_t)(index) & 0xffU))
 
 /* Groups. */
-#define EFEX_PARAM_GROUP_UART 0x01U
-#define EFEX_PARAM_GROUP_PMU_TWI 0x02U
+#define EFEX_PARAM_GROUP_UART	  0x01U
+#define EFEX_PARAM_GROUP_PMU_TWI  0x02U
 #define EFEX_PARAM_GROUP_PMU_RAIL 0x03U
-#define EFEX_PARAM_GROUP_DRAM 0x04U
-#define EFEX_PARAM_GROUP_PSRAM 0x05U
-#define EFEX_PARAM_GROUP_APP 0x3fU
+#define EFEX_PARAM_GROUP_DRAM	  0x04U
+#define EFEX_PARAM_GROUP_PSRAM	  0x05U
+#define EFEX_PARAM_GROUP_APP	  0x3fU
 
 /*
  * Bus fields shared by the UART and PMU TWI groups.  PIN0/PIN1 are TX/RX for
@@ -104,43 +104,43 @@ _Static_assert(sizeof(struct efex_param_area) == EFEX_PARAM_AREA_SIZE, "eFEX par
  * first port of the pin controller at GPIO_BASE (GPIO_PORTL for R_PIO), so the
  * driver bank is port - GPIO_BANK0.
  */
-#define EFEX_PARAM_BUS_BASE 0x00U
-#define EFEX_PARAM_BUS_ID 0x01U
-#define EFEX_PARAM_BUS_RATE 0x02U /* UART baud rate, TWI speed in Hz */
-#define EFEX_PARAM_BUS_PIN0 0x03U
-#define EFEX_PARAM_BUS_MUX0 0x04U
-#define EFEX_PARAM_BUS_PIN1 0x05U
-#define EFEX_PARAM_BUS_MUX1 0x06U
-#define EFEX_PARAM_BUS_GPIO_BASE 0x07U
+#define EFEX_PARAM_BUS_BASE	  0x00U
+#define EFEX_PARAM_BUS_ID	  0x01U
+#define EFEX_PARAM_BUS_RATE	  0x02U /* UART baud rate, TWI speed in Hz */
+#define EFEX_PARAM_BUS_PIN0	  0x03U
+#define EFEX_PARAM_BUS_MUX0	  0x04U
+#define EFEX_PARAM_BUS_PIN1	  0x05U
+#define EFEX_PARAM_BUS_MUX1	  0x06U
+#define EFEX_PARAM_BUS_GPIO_BASE  0x07U
 #define EFEX_PARAM_BUS_GPIO_BANK0 0x08U
-#define EFEX_PARAM_BUS_GATE_REG 0x09U
-#define EFEX_PARAM_BUS_GATE_BIT 0x0aU
-#define EFEX_PARAM_BUS_RST_REG 0x0bU
-#define EFEX_PARAM_BUS_RST_BIT 0x0cU
+#define EFEX_PARAM_BUS_GATE_REG	  0x09U
+#define EFEX_PARAM_BUS_GATE_BIT	  0x0aU
+#define EFEX_PARAM_BUS_RST_REG	  0x0bU
+#define EFEX_PARAM_BUS_RST_BIT	  0x0cU
 #define EFEX_PARAM_BUS_PARENT_CLK 0x0dU
-#define EFEX_PARAM_UART_PARITY 0x0eU
-#define EFEX_PARAM_UART_STOP 0x0fU
-#define EFEX_PARAM_UART_DLEN 0x10U
+#define EFEX_PARAM_UART_PARITY	  0x0eU
+#define EFEX_PARAM_UART_STOP	  0x0fU
+#define EFEX_PARAM_UART_DLEN	  0x10U
 
-#define EFEX_PARAM_UART(field) EFEX_PARAM_KEY(EFEX_PARAM_GROUP_UART, field, 0)
+#define EFEX_PARAM_UART(field)	  EFEX_PARAM_KEY(EFEX_PARAM_GROUP_UART, field, 0)
 #define EFEX_PARAM_PMU_TWI(field) EFEX_PARAM_KEY(EFEX_PARAM_GROUP_PMU_TWI, field, 0)
 
 /* PMU rail voltage in mV: id = PMU number, index = rail number, both per app. */
 #define EFEX_PARAM_PMU_RAIL(pmu, rail) EFEX_PARAM_KEY(EFEX_PARAM_GROUP_PMU_RAIL, pmu, rail)
-#define EFEX_PARAM_RAIL_MAX 16U
+#define EFEX_PARAM_RAIL_MAX	       16U
 
 /* Application-defined value n (24 bits: id and index together). */
-#define EFEX_PARAM_APP(n) ((EFEX_PARAM_GROUP_APP << 24) | ((uint32_t) (n) & 0xffffffU))
+#define EFEX_PARAM_APP(n) ((EFEX_PARAM_GROUP_APP << 24) | ((uint32_t)(n) & 0xffffffU))
 
 /* DRAM and PSRAM fields. */
-#define EFEX_PARAM_MEM_PARA 0x00U /* index = parameter word */
+#define EFEX_PARAM_MEM_PARA	  0x00U /* index = parameter word */
 #define EFEX_PARAM_MEM_PARA_COUNT 0x01U
-#define EFEX_PARAM_MEM_BASE 0x02U
-#define EFEX_PARAM_MEM_SIZE 0x03U
-#define EFEX_PARAM_MEM_SIZE_MB 0x10U /* output */
-#define EFEX_PARAM_MEM_INIT_OK 0x11U /* output */
+#define EFEX_PARAM_MEM_BASE	  0x02U
+#define EFEX_PARAM_MEM_SIZE	  0x03U
+#define EFEX_PARAM_MEM_SIZE_MB	  0x10U /* output */
+#define EFEX_PARAM_MEM_INIT_OK	  0x11U /* output */
 
-#define EFEX_PARAM_DRAM(field, index) EFEX_PARAM_KEY(EFEX_PARAM_GROUP_DRAM, field, index)
+#define EFEX_PARAM_DRAM(field, index)  EFEX_PARAM_KEY(EFEX_PARAM_GROUP_DRAM, field, index)
 #define EFEX_PARAM_PSRAM(field, index) EFEX_PARAM_KEY(EFEX_PARAM_GROUP_PSRAM, field, index)
 
 extern struct efex_param_area efex_param;

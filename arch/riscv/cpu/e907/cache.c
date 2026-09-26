@@ -270,8 +270,9 @@ void sysmap_dump_region_info(void)
 			memcpy(mem_attr_buff_str, "NB", 2);
 		}
 
-		pr_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i, get_mem_region_start_addr(i), get_mem_region_end_addr(i),
-			     get_mem_region_len(i), mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
+		pr_debug("Region %u, start: 0x%08x, end: 0x%08x, len: 0x%08x, attr: %s%s%s (0x%x)\n", i,
+			get_mem_region_start_addr(i), get_mem_region_end_addr(i), get_mem_region_len(i),
+			mem_attr_so_str, mem_attr_cache_str, mem_attr_buff_str, mem_attr);
 	}
 #endif
 	return;

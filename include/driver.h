@@ -21,8 +21,8 @@
  * directly; the old registry lived in drivers/core.c and is no longer part of
  * the runtime model.
  */
-#define DRIVER_OK 0
+#define DRIVER_OK	     0
 #define DRIVER_ERROR_INVALID (-1)
-#define DRIVER_ERROR_EXISTS (-2)
+#define DRIVER_ERROR_EXISTS  (-2)
 
 #endif /* __DRIVER_H__ */

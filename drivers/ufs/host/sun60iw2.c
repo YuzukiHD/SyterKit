@@ -64,7 +64,8 @@ int sunxi_get_cal_words(struct sunxi_ufs_cal_words *cal)
 		pr_err("PHY: calibration decode failed ret=%d\n", ret);
 	else
 		ufs_debug("UFS PHY: calibration PLL(A/B)=0x%02x/0x%02x AFE0(att/ctle)=0x%02x/0x%02x "
-			"AFE1(att/ctle)=0x%02x/0x%02x\n", cal->pll_rate_a, cal->pll_rate_b,
-			cal->att_lane0, cal->ctle_lane0, cal->att_lane1, cal->ctle_lane1);
+			  "AFE1(att/ctle)=0x%02x/0x%02x\n",
+			cal->pll_rate_a, cal->pll_rate_b, cal->att_lane0, cal->ctle_lane0, cal->att_lane1,
+			cal->ctle_lane1);
 	return ret;
 }

@@ -89,23 +89,23 @@
  * @def I2C_ADDRWRITE_ACK
  * @brief I2C status code for successful slave address write with ACK
  */
-#define I2C_ADDRWRITE_ACK 0x18
+#define I2C_ADDRWRITE_ACK  0x18
 #define I2C_ADDRWRITE_NACK 0x20
 
 /**
  * @def I2C_ADDRREAD_ACK
  * @brief I2C status code for successful slave address read with ACK
  */
-#define I2C_ADDRREAD_ACK 0x40
+#define I2C_ADDRREAD_ACK  0x40
 #define I2C_ADDRREAD_NACK 0x48
 
 /**
  * @def I2C_DATAWRITE_ACK
  * @brief I2C status code for successful data write with ACK
  */
-#define I2C_DATAWRITE_ACK 0x28
+#define I2C_DATAWRITE_ACK  0x28
 #define I2C_DATAWRITE_NACK 0x30
-#define I2C_ARB_LOST 0x38
+#define I2C_ARB_LOST	   0x38
 
 /**
  * @def I2C_READY

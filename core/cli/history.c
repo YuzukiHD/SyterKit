@@ -112,6 +112,7 @@ const char *history_get(int histnum)
 	if (histlast > histnum) { // If the requested index is within the currently stored entries.
 		return history_slot(histlast - histnum - 1); // Return the corresponding history entry.
 	} else { // If the requested index refers to a wrapped-around entry.
-		return history_slot(MSH_CMD_HISTORY_MAX - (histnum - histlast) - 1); // Return the wrapped-around history entry.
+		return history_slot(
+			MSH_CMD_HISTORY_MAX - (histnum - histlast) - 1); // Return the wrapped-around history entry.
 	}
 }

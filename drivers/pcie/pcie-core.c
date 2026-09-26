@@ -19,15 +19,15 @@
 #include <drivers/pcie/pcie.h>
 #include <dt-compatible/pcie-dt.h>
 
-#define SUN55IW6_PCIE_DBI_BASE          0x04800000UL
-#define SUN55IW6_PCIE_APP_BASE          0x04c00000UL
-#define SUN55IW6_PCIE_SUBSYS_BASE       0x04f00000UL
-#define SUN55IW6_PCIE_PHY_BASE          0x04f80000UL
-#define SUN55IW6_PCIE_CCU_BASE          0x02002000UL
+#define SUN55IW6_PCIE_DBI_BASE	  0x04800000UL
+#define SUN55IW6_PCIE_APP_BASE	  0x04c00000UL
+#define SUN55IW6_PCIE_SUBSYS_BASE 0x04f00000UL
+#define SUN55IW6_PCIE_PHY_BASE	  0x04f80000UL
+#define SUN55IW6_PCIE_CCU_BASE	  0x02002000UL
 
-#define SUN55IW6_PCIE_CFG_BASE          0x20000000ULL
-#define SUN55IW6_PCIE_IO_BASE           0x21000000ULL
-#define SUN55IW6_PCIE_MEM_BASE          0x22000000ULL
+#define SUN55IW6_PCIE_CFG_BASE		 0x20000000ULL
+#define SUN55IW6_PCIE_IO_BASE		 0x21000000ULL
+#define SUN55IW6_PCIE_MEM_BASE		 0x22000000ULL
 #define SUN55IW6_PCIE_EP_FUNCTION_STRIDE 0x10000U
 
 /**
@@ -39,8 +39,7 @@
  * @param[in] config PCIe configuration.
  * @return PCIE_OK on success.
  */
-int __attribute__((weak)) pcie_platform_power_on(
-		const struct pcie_config *config)
+int __attribute__((weak)) pcie_platform_power_on(const struct pcie_config *config)
 {
 	(void)config;
 	return PCIE_OK;
@@ -104,8 +103,7 @@ int pcie_init(struct pcie *pcie, const struct pcie_config *config)
 {
 	int ret;
 
-	if (pcie == NULL || config == NULL ||
-	    (config->mode != PCIE_MODE_RC && config->mode != PCIE_MODE_EP))
+	if (pcie == NULL || config == NULL || (config->mode != PCIE_MODE_RC && config->mode != PCIE_MODE_EP))
 		return PCIE_ERR_INVALID;
 	ret = pcie_platform_power_on(config);
 	if (ret)
@@ -118,8 +116,7 @@ int pcie_init(struct pcie *pcie, const struct pcie_config *config)
 	if (ret)
 		return ret;
 	if (config->controller_ops != NULL)
-		ret = pcie_controller_init_with_ops(&pcie->controller,
-			&config->controller, config->controller_ops);
+		ret = pcie_controller_init_with_ops(&pcie->controller, &config->controller, config->controller_ops);
 	else
 		ret = pcie_controller_init(&pcie->controller, &config->controller);
 	if (ret) {

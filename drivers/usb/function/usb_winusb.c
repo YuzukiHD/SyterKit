@@ -67,8 +67,7 @@ static const char sunxi_usb_winusb_log_init[] = "USB: sunxi_usb_winusb_init\n";
 static const char sunxi_usb_winusb_log_exit[] = "USB: sunxi_usb_winusb_exit\n";
 static const char sunxi_usb_winusb_log_rx_dma[] = "USB: dma int for usb rx occur\n";
 static const char sunxi_usb_winusb_log_tx_dma[] = "USB: dma int for usb tx occur\n";
-static const char sunxi_usb_winusb_log_unsupported_request[] =
-	"USB: WinUSB standard request is not supported\n";
+static const char sunxi_usb_winusb_log_unsupported_request[] = "USB: WinUSB standard request is not supported\n";
 static const char sunxi_usb_winusb_log_host_detected[] = "USB: WinUSB host detected\n";
 static const char sunxi_usb_winusb_name[] = "winusb";
 static const char sunxi_usb_winusb_manufacturer[] = "Allwinner";
@@ -165,12 +164,14 @@ static int sunxi_usb_winusb_send_string(const struct usb_device_request *req, ui
 		static const uint8_t language[] = { 4U, USB_DT_STRING, 0x09U, 0x04U };
 
 		return sunxi_usb_send_setup(min(req->length, sizeof(language)), language) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	}
 	if (index == WINUSB_MS_OS_STRING_INDEX) {
-		return sunxi_usb_send_setup(
-			min(req->length, sizeof(sunxi_usb_winusb_ms_os_string)), sunxi_usb_winusb_ms_os_string) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, sizeof(sunxi_usb_winusb_ms_os_string)),
+			       sunxi_usb_winusb_ms_os_string) == 0 ?
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	}
 	if (index > ARRAY_SIZE(sunxi_usb_winusb_strings))
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
@@ -183,8 +184,8 @@ static int sunxi_usb_winusb_send_string(const struct usb_device_request *req, ui
 	}
 	buffer[0] = (uint8_t)length;
 	buffer[1] = USB_DT_STRING;
-	return sunxi_usb_send_setup(min(req->length, length), buffer) == 0 ?
-		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+	return sunxi_usb_send_setup(min(req->length, length), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+									     SUNXI_USB_REQ_OP_ERR;
 }
 
 /**
@@ -201,13 +202,15 @@ static int sunxi_usb_winusb_get_descriptor(const struct usb_device_request *req,
 	case USB_DT_DEVICE:
 		length = min(req->length, sizeof(sunxi_usb_winusb_device_descriptor));
 		return sunxi_usb_send_setup(length, &sunxi_usb_winusb_device_descriptor) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	case USB_DT_CONFIG:
 		if ((req->value & 0xffU) != 0U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 		length = min(req->length, sizeof(sunxi_usb_winusb_config_descriptor));
 		return sunxi_usb_send_setup(length, &sunxi_usb_winusb_config_descriptor) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	case USB_DT_OTHER_SPEED_CONFIG: {
 		struct sunxi_usb_winusb_configuration *configuration = (struct sunxi_usb_winusb_configuration *)buffer;
 
@@ -216,8 +219,8 @@ static int sunxi_usb_winusb_get_descriptor(const struct usb_device_request *req,
 		memcpy(configuration, &sunxi_usb_winusb_config_descriptor, sizeof(*configuration));
 		configuration->configuration.bDescriptorType = USB_DT_OTHER_SPEED_CONFIG;
 		length = min(req->length, sizeof(*configuration));
-		return sunxi_usb_send_setup(length, configuration) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(length, configuration) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+									  SUNXI_USB_REQ_OP_ERR;
 	}
 	case USB_DT_STRING:
 		return sunxi_usb_winusb_send_string(req, buffer);
@@ -231,7 +234,8 @@ static int sunxi_usb_winusb_get_descriptor(const struct usb_device_request *req,
 		qualifier->bMaxPacketSize0 = 64;
 		qualifier->bNumConfigurations = 1;
 		return sunxi_usb_send_setup(min(req->length, sizeof(*qualifier)), qualifier) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	}
 	default:
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
@@ -310,8 +314,8 @@ static int sunxi_usb_winusb_standard_req_op(uint32_t cmd, struct usb_device_requ
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = 0;
 		buffer[1] = 0;
-		return sunxi_usb_send_setup(min(req->length, 2U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 2U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	}
 	case USB_REQ_SET_ADDRESS: {
 		return sunxi_usb_set_address(req->value & 0x7fU);
@@ -325,29 +329,27 @@ static int sunxi_usb_winusb_standard_req_op(uint32_t cmd, struct usb_device_requ
 		if (buffer == NULL)
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = sunxi_usb_winusb_configuration;
-		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	}
 	case USB_REQ_SET_CONFIGURATION: {
 		if (req->value > 1U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 		sunxi_usb_winusb_configuration = (uint8_t)req->value;
 		sunxi_usb_winusb_flag = sunxi_usb_winusb_configuration;
-		return sunxi_usb_send_setup(0U, NULL) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(0U, NULL) == 0 ? SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	}
 	case USB_REQ_GET_INTERFACE: {
 		if (buffer == NULL)
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = 0;
-		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	}
 	case USB_REQ_SET_INTERFACE: {
 		if (req->value != 0U || req->index != 0U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
-		return sunxi_usb_send_setup(0U, NULL) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(0U, NULL) == 0 ? SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	}
 	default: {
 		printk_error(sunxi_usb_winusb_log_unsupported_request);
@@ -378,8 +380,10 @@ static int sunxi_usb_winusb_nonstandard_req_op(
 		req->request != WINUSB_MS_VENDOR_CODE || req->value != 0U || req->index != WINUSB_EXT_COMPAT_ID_INDEX)
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 
-	return sunxi_usb_send_setup(min(req->length, sizeof(sunxi_usb_winusb_compat_id)), sunxi_usb_winusb_compat_id) == 0 ?
-		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+	return sunxi_usb_send_setup(min(req->length, sizeof(sunxi_usb_winusb_compat_id)), sunxi_usb_winusb_compat_id) ==
+			       0 ?
+		       SUNXI_USB_REQ_SUCCESSED :
+		       SUNXI_USB_REQ_OP_ERR;
 }
 
 /**

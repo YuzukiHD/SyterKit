@@ -18,12 +18,12 @@
 extern "C" {
 #endif // __cplusplus
 
-#define LOG_LEVEL_MUTE 0
-#define LOG_LEVEL_ERROR 1
-#define LOG_LEVEL_WARNING 2
-#define LOG_LEVEL_INFO 3
-#define LOG_LEVEL_DEBUG 4
-#define LOG_LEVEL_TRACE 5
+#define LOG_LEVEL_MUTE	    0
+#define LOG_LEVEL_ERROR	    1
+#define LOG_LEVEL_WARNING   2
+#define LOG_LEVEL_INFO	    3
+#define LOG_LEVEL_DEBUG	    4
+#define LOG_LEVEL_TRACE	    5
 #define LOG_LEVEL_BACKTRACE 6
 
 #ifndef LOG_LEVEL_DEFAULT

@@ -190,8 +190,8 @@ static int ufs_select_power_mode(struct ufshc_host *host, struct ufshc_power_mod
 		mode.hs_rate = (uint8_t)hs_rate;
 	}
 	*selected = mode;
-	pr_info("selected mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode.pwr_tx, mode.pwr_rx,
-		mode.gear_tx, mode.gear_rx, mode.lane_tx, mode.lane_rx, mode.hs_rate);
+	pr_info("selected mode pwr=%u/%u gear=%u/%u lane=%u/%u hs_rate=%u\n", mode.pwr_tx, mode.pwr_rx, mode.gear_tx,
+		mode.gear_rx, mode.lane_tx, mode.lane_rx, mode.hs_rate);
 	return 0;
 }
 

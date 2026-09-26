@@ -129,7 +129,8 @@ unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
 
 	cp = _parse_integer_fixup_radix(cp, &base);
 
-	while (isxdigit(*cp) && (value = isdigit(*cp) ? *cp - '0' : (islower(*cp) ? toupper(*cp) : *cp) - 'A' + 10) < base) {
+	while (isxdigit(*cp) &&
+		(value = isdigit(*cp) ? *cp - '0' : (islower(*cp) ? toupper(*cp) : *cp) - 'A' + 10) < base) {
 		result = result * base + value;
 		cp++;
 	}

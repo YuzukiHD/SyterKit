@@ -7,11 +7,12 @@
 #include <drivers/mmc/sdhci.h>
 #include <dt-compatible/pinctrl-dt.h>
 
-#define SUNXI_MMC_COMPATIBLE "allwinner,sunxi-mmc"
+#define SUNXI_MMC_COMPATIBLE	     "allwinner,sunxi-mmc"
 #define SUNXI_MMC_MODULE_CLOCK_CELLS 4U
-#define SUNXI_MMC_CARD_DETECT_CELLS 5U
+#define SUNXI_MMC_CARD_DETECT_CELLS  5U
 
-static inline __attribute__((always_inline)) bool sunxi_sdhci_dt_clock_offsets_valid(uint32_t factor_n_offset, uint32_t factor_m_offset)
+static inline __attribute__((always_inline)) bool sunxi_sdhci_dt_clock_offsets_valid(
+	uint32_t factor_n_offset, uint32_t factor_m_offset)
 {
 	uint32_t factor_n_mask;
 	uint32_t factor_m_mask;
@@ -21,7 +22,8 @@ static inline __attribute__((always_inline)) bool sunxi_sdhci_dt_clock_offsets_v
 		return false;
 	factor_n_mask = 0x3U << factor_n_offset;
 	factor_m_mask = 0xfU << factor_m_offset;
-	return (factor_n_mask & factor_m_mask) == 0U && (factor_n_mask & fixed_mask) == 0U && (factor_m_mask & fixed_mask) == 0U;
+	return (factor_n_mask & factor_m_mask) == 0U && (factor_n_mask & fixed_mask) == 0U &&
+	       (factor_m_mask & fixed_mask) == 0U;
 }
 
 static inline __attribute__((always_inline)) const char *sunxi_sdhci_dt_name(int node)
@@ -53,7 +55,8 @@ static inline __attribute__((always_inline)) bool sunxi_sdhci_dt_dma_region(int 
 		return false;
 	region_address = dt2c_fdt32_to_cpu(reg[0]);
 	region_size = dt2c_fdt32_to_cpu(reg[1]);
-	if (region_address == 0U || region_address % __alignof__(sunxi_sdhci_desc_t) != 0U || region_size < sizeof(sunxi_sdhci_desc_t))
+	if (region_address == 0U || region_address % __alignof__(sunxi_sdhci_desc_t) != 0U ||
+		region_size < sizeof(sunxi_sdhci_desc_t))
 		return false;
 	*address = region_address;
 	*size = region_size;
@@ -104,7 +107,8 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 	int sample_fifo_bypass_length;
 	uint32_t io_voltage_uv = GPIO_IO_VOLTAGE_3V3;
 
-	if (sdhci == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_MMC_COMPATIBLE) != 0)
+	if (sdhci == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_MMC_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);
@@ -116,42 +120,55 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 	module_clock = syterkit_dt_cells(node, "allwinner,module-clock", SUNXI_MMC_MODULE_CLOCK_CELLS);
 	clock_source_rates = syterkit_dt_cells(node, "allwinner,clock-source-rates", SUNXI_SDHCI_CLOCK_SOURCE_COUNT);
 	config.name = sunxi_sdhci_dt_name(node);
-	if (reg == NULL || id_cells == NULL || width_cells == NULL || max_frequency == NULL || clock_gate == NULL || reset == NULL || module_clock == NULL ||
-	    clock_source_rates == NULL || config.name == NULL || !sunxi_sdhci_dt_dma_region(node, &config.dma_des_addr, &config.dma_des_size))
+	if (reg == NULL || id_cells == NULL || width_cells == NULL || max_frequency == NULL || clock_gate == NULL ||
+		reset == NULL || module_clock == NULL || clock_source_rates == NULL || config.name == NULL ||
+		!sunxi_sdhci_dt_dma_region(node, &config.dma_des_addr, &config.dma_des_size))
 		return DRIVER_ERROR_INVALID;
 
 	controller_id = dt2c_fdt32_to_cpu(id_cells[0]);
 	bus_width = dt2c_fdt32_to_cpu(width_cells[0]);
-	if (controller_id > MMC_CONTROLLER_2 || (bus_width != 1U && bus_width != 4U && bus_width != 8U) || dt2c_fdt32_to_cpu(reg[0]) == 0U || dt2c_fdt32_to_cpu(reg[1]) == 0U ||
-	    dt2c_fdt32_to_cpu(max_frequency[0]) == 0U || dt2c_fdt32_to_cpu(clock_gate[0]) == 0U || dt2c_fdt32_to_cpu(clock_gate[1]) >= 32U || dt2c_fdt32_to_cpu(reset[0]) == 0U ||
-	    dt2c_fdt32_to_cpu(reset[1]) >= 32U || dt2c_fdt32_to_cpu(module_clock[0]) == 0U ||
-	    !sunxi_sdhci_dt_clock_offsets_valid(dt2c_fdt32_to_cpu(module_clock[1]), dt2c_fdt32_to_cpu(module_clock[2])) ||
-	    dt2c_fdt32_to_cpu(module_clock[3]) >= SUNXI_SDHCI_CLOCK_SOURCE_COUNT || dt2c_fdt32_to_cpu(clock_source_rates[0]) == 0U ||
-	    dt2c_fdt32_to_cpu(clock_source_rates[dt2c_fdt32_to_cpu(module_clock[3])]) == 0U)
+	if (controller_id > MMC_CONTROLLER_2 || (bus_width != 1U && bus_width != 4U && bus_width != 8U) ||
+		dt2c_fdt32_to_cpu(reg[0]) == 0U || dt2c_fdt32_to_cpu(reg[1]) == 0U ||
+		dt2c_fdt32_to_cpu(max_frequency[0]) == 0U || dt2c_fdt32_to_cpu(clock_gate[0]) == 0U ||
+		dt2c_fdt32_to_cpu(clock_gate[1]) >= 32U || dt2c_fdt32_to_cpu(reset[0]) == 0U ||
+		dt2c_fdt32_to_cpu(reset[1]) >= 32U || dt2c_fdt32_to_cpu(module_clock[0]) == 0U ||
+		!sunxi_sdhci_dt_clock_offsets_valid(
+			dt2c_fdt32_to_cpu(module_clock[1]), dt2c_fdt32_to_cpu(module_clock[2])) ||
+		dt2c_fdt32_to_cpu(module_clock[3]) >= SUNXI_SDHCI_CLOCK_SOURCE_COUNT ||
+		dt2c_fdt32_to_cpu(clock_source_rates[0]) == 0U ||
+		dt2c_fdt32_to_cpu(clock_source_rates[dt2c_fdt32_to_cpu(module_clock[3])]) == 0U)
 		return DRIVER_ERROR_INVALID;
 
 	pin_count = bus_width + 2U + (bus_width == 8U ? 2U : 0U);
 	pins = syterkit_dt_pinctrl_cells(node, (size_t)pin_count * 3U, &gpio_controller);
 	if (pins == NULL || !syterkit_dt_pinctrl_gpio(pins, 0, &gpio_controller, &config.pinctrl.gpio_clk) ||
-	    !syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.pinctrl.gpio_cmd) || !syterkit_dt_pinctrl_gpio(pins, 6, &gpio_controller, &config.pinctrl.gpio_d0) ||
-	    (bus_width >= 4U &&
-	     (!syterkit_dt_pinctrl_gpio(pins, 9, &gpio_controller, &config.pinctrl.gpio_d1) || !syterkit_dt_pinctrl_gpio(pins, 12, &gpio_controller, &config.pinctrl.gpio_d2) ||
-	      !syterkit_dt_pinctrl_gpio(pins, 15, &gpio_controller, &config.pinctrl.gpio_d3))) ||
-	    (bus_width == 8U &&
-	     (!syterkit_dt_pinctrl_gpio(pins, 18, &gpio_controller, &config.pinctrl.gpio_d4) || !syterkit_dt_pinctrl_gpio(pins, 21, &gpio_controller, &config.pinctrl.gpio_d5) ||
-	      !syterkit_dt_pinctrl_gpio(pins, 24, &gpio_controller, &config.pinctrl.gpio_d6) || !syterkit_dt_pinctrl_gpio(pins, 27, &gpio_controller, &config.pinctrl.gpio_d7) ||
-	      !syterkit_dt_pinctrl_gpio(pins, 30, &gpio_controller, &config.pinctrl.gpio_ds) || !syterkit_dt_pinctrl_gpio(pins, 33, &gpio_controller, &config.pinctrl.gpio_rst))) ||
-	    !sunxi_sdhci_dt_card_detect(node, &config.pinctrl))
+		!syterkit_dt_pinctrl_gpio(pins, 3, &gpio_controller, &config.pinctrl.gpio_cmd) ||
+		!syterkit_dt_pinctrl_gpio(pins, 6, &gpio_controller, &config.pinctrl.gpio_d0) ||
+		(bus_width >= 4U &&
+			(!syterkit_dt_pinctrl_gpio(pins, 9, &gpio_controller, &config.pinctrl.gpio_d1) ||
+				!syterkit_dt_pinctrl_gpio(pins, 12, &gpio_controller, &config.pinctrl.gpio_d2) ||
+				!syterkit_dt_pinctrl_gpio(pins, 15, &gpio_controller, &config.pinctrl.gpio_d3))) ||
+		(bus_width == 8U &&
+			(!syterkit_dt_pinctrl_gpio(pins, 18, &gpio_controller, &config.pinctrl.gpio_d4) ||
+				!syterkit_dt_pinctrl_gpio(pins, 21, &gpio_controller, &config.pinctrl.gpio_d5) ||
+				!syterkit_dt_pinctrl_gpio(pins, 24, &gpio_controller, &config.pinctrl.gpio_d6) ||
+				!syterkit_dt_pinctrl_gpio(pins, 27, &gpio_controller, &config.pinctrl.gpio_d7) ||
+				!syterkit_dt_pinctrl_gpio(pins, 30, &gpio_controller, &config.pinctrl.gpio_ds) ||
+				!syterkit_dt_pinctrl_gpio(pins, 33, &gpio_controller, &config.pinctrl.gpio_rst))) ||
+		!sunxi_sdhci_dt_card_detect(node, &config.pinctrl))
 		return DRIVER_ERROR_INVALID;
 
 	non_removable = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "non-removable", &non_removable_length);
-	sample_fifo_bypass = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,sample-fifo-bypass", &sample_fifo_bypass_length);
-	io_voltage = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,io-voltage", &io_voltage_length);
-	if ((non_removable != NULL && non_removable_length != 0) || (non_removable == NULL && non_removable_length != -DT2C_FDT_ERR_NOTFOUND) ||
-	    (non_removable != NULL && config.pinctrl.has_card_detect) || (non_removable == NULL && bus_width == 8U))
+	sample_fifo_bypass = dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,sample-fifo-bypass", &sample_fifo_bypass_length);
+	io_voltage = (const dt2c_fdt32_t *)dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,io-voltage", &io_voltage_length);
+	if ((non_removable != NULL && non_removable_length != 0) ||
+		(non_removable == NULL && non_removable_length != -DT2C_FDT_ERR_NOTFOUND) ||
+		(non_removable != NULL && config.pinctrl.has_card_detect) || (non_removable == NULL && bus_width == 8U))
 		return DRIVER_ERROR_INVALID;
 	if ((sample_fifo_bypass != NULL && sample_fifo_bypass_length != 0) ||
-	    (sample_fifo_bypass == NULL && sample_fifo_bypass_length != -DT2C_FDT_ERR_NOTFOUND))
+		(sample_fifo_bypass == NULL && sample_fifo_bypass_length != -DT2C_FDT_ERR_NOTFOUND))
 		return DRIVER_ERROR_INVALID;
 	if (io_voltage != NULL && io_voltage_length != (int)sizeof(*io_voltage))
 		return DRIVER_ERROR_INVALID;
@@ -194,12 +211,15 @@ static inline __attribute__((always_inline)) int sunxi_sdhci_dt_read_config(sunx
 		config.sdhci_clk.source_rates[source] = dt2c_fdt32_to_cpu(clock_source_rates[source]);
 	*sdhci = config;
 	SYTERKIT_DT_TRACE_NODE("mmc", node);
-	SYTERKIT_DT_TRACE("mmc config name=%s base=%p id=%u width=%u max_clk=%u type=%u dma=%p/0x%x\n", sdhci->name, (void *)sdhci->reg_base, sdhci->id, sdhci->width,
-			  sdhci->max_clk, sdhci->sdhci_mmc_type, (void *)(uintptr_t)sdhci->dma_des_addr, sdhci->dma_des_size);
-	SYTERKIT_DT_TRACE("mmc clock gate=%p:%u reset=%p:%u module=%p source=%u rates=[%u,%u,%u,%u] n=%u m=%u\n", (void *)sdhci->clk_ctrl.gate_reg_base,
-			  sdhci->clk_ctrl.gate_reg_offset, (void *)sdhci->clk_ctrl.rst_reg_base, sdhci->clk_ctrl.rst_reg_offset, (void *)sdhci->sdhci_clk.reg_base,
-			  sdhci->sdhci_clk.default_clk_sel, sdhci->sdhci_clk.source_rates[0], sdhci->sdhci_clk.source_rates[1], sdhci->sdhci_clk.source_rates[2],
-			  sdhci->sdhci_clk.source_rates[3], sdhci->sdhci_clk.reg_factor_n_offset, sdhci->sdhci_clk.reg_factor_m_offset);
+	SYTERKIT_DT_TRACE("mmc config name=%s base=%p id=%u width=%u max_clk=%u type=%u dma=%p/0x%x\n", sdhci->name,
+		(void *)sdhci->reg_base, sdhci->id, sdhci->width, sdhci->max_clk, sdhci->sdhci_mmc_type,
+		(void *)(uintptr_t)sdhci->dma_des_addr, sdhci->dma_des_size);
+	SYTERKIT_DT_TRACE("mmc clock gate=%p:%u reset=%p:%u module=%p source=%u rates=[%u,%u,%u,%u] n=%u m=%u\n",
+		(void *)sdhci->clk_ctrl.gate_reg_base, sdhci->clk_ctrl.gate_reg_offset,
+		(void *)sdhci->clk_ctrl.rst_reg_base, sdhci->clk_ctrl.rst_reg_offset, (void *)sdhci->sdhci_clk.reg_base,
+		sdhci->sdhci_clk.default_clk_sel, sdhci->sdhci_clk.source_rates[0], sdhci->sdhci_clk.source_rates[1],
+		sdhci->sdhci_clk.source_rates[2], sdhci->sdhci_clk.source_rates[3],
+		sdhci->sdhci_clk.reg_factor_n_offset, sdhci->sdhci_clk.reg_factor_m_offset);
 	return DRIVER_OK;
 }
 

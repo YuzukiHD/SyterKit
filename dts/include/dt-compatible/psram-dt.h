@@ -21,10 +21,12 @@ static inline __attribute__((always_inline)) int sunxi_psram_dt_read_config(sunx
 	int psram_base_length;
 	int length;
 
-	if (psram == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_PSRAM_COMPATIBLE) != 0)
+	if (psram == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_PSRAM_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
-	parameters = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,psram-parameters", &length);
+	parameters = (const dt2c_fdt32_t *)dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,psram-parameters", &length);
 
 	/* Accept 1..32 words; the init library auto-fills the rest. */
 	if (parameters == NULL || length < (int)sizeof(*parameters))
@@ -36,7 +38,8 @@ static inline __attribute__((always_inline)) int sunxi_psram_dt_read_config(sunx
 
 	/* Keep platform-populated resources; DT overrides resources it describes. */
 	config = *psram;
-	psram_base = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "allwinner,psram-base", &psram_base_length);
+	psram_base = (const dt2c_fdt32_t *)dt2c_fdt_getprop(
+		DT2C_FDT_COMPILED_TREE, node, "allwinner,psram-base", &psram_base_length);
 	if (psram_base != NULL) {
 		if (psram_base_length != (int)sizeof(*psram_base) || dt2c_fdt32_to_cpu(psram_base[0]) == 0U)
 			return DRIVER_ERROR_INVALID;

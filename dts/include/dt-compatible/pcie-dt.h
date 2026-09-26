@@ -10,29 +10,25 @@
 #include <dt-compatible/dt-common.h>
 #include <dt-compatible/gpio-dt.h>
 
-#define SUNXI_PCIE_RC_COMPATIBLE        "allwinner,sun55iw6-pcie-rc"
-#define SUNXI_PCIE_EP_COMPATIBLE        "allwinner,sun55iw6-pcie-ep"
+#define SUNXI_PCIE_RC_COMPATIBLE "allwinner,sun55iw6-pcie-rc"
+#define SUNXI_PCIE_EP_COMPATIBLE "allwinner,sun55iw6-pcie-ep"
 
-static inline __attribute__((always_inline)) int sunxi_pcie_dt_mode(
-	int node, enum pcie_mode *mode)
+static inline __attribute__((always_inline)) int sunxi_pcie_dt_mode(int node, enum pcie_mode *mode)
 {
 	if (mode == NULL || node < 0 || !syterkit_dt_node_available(node))
 		return DRIVER_ERROR_INVALID;
-	if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node,
-		SUNXI_PCIE_RC_COMPATIBLE) == 0) {
+	if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_PCIE_RC_COMPATIBLE) == 0) {
 		*mode = PCIE_MODE_RC;
 		return DRIVER_OK;
 	}
-	if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node,
-		SUNXI_PCIE_EP_COMPATIBLE) == 0) {
+	if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_PCIE_EP_COMPATIBLE) == 0) {
 		*mode = PCIE_MODE_EP;
 		return DRIVER_OK;
 	}
 	return DRIVER_ERROR_INVALID;
 }
 
-static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_config(
-	struct pcie_config *config, int node)
+static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_config(struct pcie_config *config, int node)
 {
 	const dt2c_fdt32_t *reg;
 	const dt2c_fdt32_t *cells;
@@ -48,8 +44,7 @@ static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_config(
 		return DRIVER_ERROR_INVALID;
 	pcie_config_sun55iw6(&parsed, parsed.mode);
 
-	reg = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node,
-		"reg", &length);
+	reg = (const dt2c_fdt32_t *)dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "reg", &length);
 	if (reg == NULL || (length != 8 && length != 16))
 		return DRIVER_ERROR_INVALID;
 	if (length == 8) {
@@ -109,33 +104,28 @@ static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_config(
 		parsed.controller.timeout_us = dt2c_fdt32_to_cpu(value[0]);
 		parsed.phy.timeout_us = parsed.controller.timeout_us;
 	}
-	reset_gpio_property = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node,
-		"reset-gpios", &length);
+	reset_gpio_property = dt2c_fdt_getprop(DT2C_FDT_COMPILED_TREE, node, "reset-gpios", &length);
 	if (reset_gpio_property != NULL) {
-		if (length != (int)(SUNXI_GPIO_DT_SPECIFIER_CELLS *
-			 sizeof(*reset_gpio)))
+		if (length != (int)(SUNXI_GPIO_DT_SPECIFIER_CELLS * sizeof(*reset_gpio)))
 			return DRIVER_ERROR_INVALID;
 		reset_gpio = (const dt2c_fdt32_t *)reset_gpio_property;
 		if (!sunxi_gpio_dt_read_specifier(&parsed.reset_gpio, reset_gpio))
 			return DRIVER_ERROR_INVALID;
 		parsed.has_reset_gpio = true;
 	}
-	if (parsed.controller.app_base == 0U || parsed.phy.subsys_base == 0U ||
-	    parsed.phy.phy_base == 0U || parsed.controller.lanes == 0U ||
-	    parsed.controller.link_gen == 0U || parsed.controller.timeout_us == 0U)
+	if (parsed.controller.app_base == 0U || parsed.phy.subsys_base == 0U || parsed.phy.phy_base == 0U ||
+		parsed.controller.lanes == 0U || parsed.controller.link_gen == 0U || parsed.controller.timeout_us == 0U)
 		return DRIVER_ERROR_INVALID;
 
 	*config = parsed;
 	SYTERKIT_DT_TRACE_NODE("pcie", node);
-	SYTERKIT_DT_TRACE("pcie config mode=%u dbi=%p app=%p lanes=%u gen=%u\n",
-		config->mode, (void *)config->controller.dbi_base,
-		(void *)config->controller.app_base, config->controller.lanes,
+	SYTERKIT_DT_TRACE("pcie config mode=%u dbi=%p app=%p lanes=%u gen=%u\n", config->mode,
+		(void *)config->controller.dbi_base, (void *)config->controller.app_base, config->controller.lanes,
 		config->controller.link_gen);
 	return DRIVER_OK;
 }
 
-static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_alias(
-	struct pcie_config *config, const char *alias)
+static inline __attribute__((always_inline)) int sunxi_pcie_dt_read_alias(struct pcie_config *config, const char *alias)
 {
 	int node;
 

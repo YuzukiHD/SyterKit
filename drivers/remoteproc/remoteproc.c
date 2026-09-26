@@ -34,15 +34,18 @@ static int sunxi_remoteproc_validate(const sunxi_remoteproc_t *remoteproc)
 {
 	size_t index;
 
-	if (remoteproc == NULL || remoteproc->ops == NULL || remoteproc->firmware_count == 0U || remoteproc->firmware_count > SUNXI_REMOTEPROC_MAX_FIRMWARES ||
-	    remoteproc->address_map_count > SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS || remoteproc->register_count > SUNXI_REMOTEPROC_MAX_REGISTERS)
+	if (remoteproc == NULL || remoteproc->ops == NULL || remoteproc->firmware_count == 0U ||
+		remoteproc->firmware_count > SUNXI_REMOTEPROC_MAX_FIRMWARES ||
+		remoteproc->address_map_count > SUNXI_REMOTEPROC_MAX_ADDRESS_MAPS ||
+		remoteproc->register_count > SUNXI_REMOTEPROC_MAX_REGISTERS)
 		return DRIVER_ERROR_INVALID;
 
 	for (index = 0U; index < remoteproc->address_map_count; ++index) {
 		const sunxi_remoteproc_address_map_t *range = &remoteproc->address_map[index];
 
-		if (range->device_start > range->device_end || range->physical_start > (uintptr_t)-1 - (range->device_end - range->device_start) ||
-		    (index != 0U && range->device_start <= remoteproc->address_map[index - 1U].device_end))
+		if (range->device_start > range->device_end ||
+			range->physical_start > (uintptr_t)-1 - (range->device_end - range->device_start) ||
+			(index != 0U && range->device_start <= remoteproc->address_map[index - 1U].device_end))
 			return DRIVER_ERROR_INVALID;
 	}
 	return DRIVER_OK;
@@ -107,8 +110,9 @@ int sunxi_remoteproc_load(sunxi_remoteproc_t *remoteproc)
 	vaddr_map_t mapping;
 	size_t index;
 
-	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || remoteproc->firmware[0].load_address == 0U || remoteproc->format == SUNXI_REMOTEPROC_FIRMWARE_RAW ||
-	    sunxi_remoteproc_resolve_entry(remoteproc) != DRIVER_OK)
+	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || remoteproc->firmware[0].load_address == 0U ||
+		remoteproc->format == SUNXI_REMOTEPROC_FIRMWARE_RAW ||
+		sunxi_remoteproc_resolve_entry(remoteproc) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
 
 	load_address = (phys_addr_t)remoteproc->firmware[0].load_address;
@@ -183,7 +187,8 @@ static int sunxi_remoteproc_copy_raw(sunxi_remoteproc_t *remoteproc, const void 
  */
 int sunxi_remoteproc_load_buffer(sunxi_remoteproc_t *remoteproc, const void *firmware, size_t size)
 {
-	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || firmware == NULL || size == 0U || size > remoteproc->firmware[0].region_size)
+	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || firmware == NULL || size == 0U ||
+		size > remoteproc->firmware[0].region_size)
 		return DRIVER_ERROR_INVALID;
 	if (remoteproc->ops->load_buffer != NULL)
 		return remoteproc->ops->load_buffer(remoteproc, firmware, size);
@@ -200,7 +205,8 @@ int sunxi_remoteproc_load_buffer(sunxi_remoteproc_t *remoteproc, const void *fir
  */
 int sunxi_remoteproc_prepare(sunxi_remoteproc_t *remoteproc)
 {
-	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK || sunxi_remoteproc_resolve_entry(remoteproc) != DRIVER_OK)
+	if (sunxi_remoteproc_validate(remoteproc) != DRIVER_OK ||
+		sunxi_remoteproc_resolve_entry(remoteproc) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
 	return remoteproc->ops->prepare == NULL ? DRIVER_OK : remoteproc->ops->prepare(remoteproc);
 }

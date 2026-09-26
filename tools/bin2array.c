@@ -7,7 +7,8 @@
 int main(int argc, char *argv[])
 {
 	if (argc != 4) {
-		printf("Usage: %s input_file output_file\n", argv[0]); // Print usage information if the number of command-line arguments is not 3
+		printf("Usage: %s input_file output_file\n",
+			argv[0]); // Print usage information if the number of command-line arguments is not 3
 		return 1;
 	}
 
@@ -38,7 +39,8 @@ int main(int argc, char *argv[])
 	}
 
 	// Write the C array declaration to the output file
-	fprintf(outputFile, "const unsigned char __attribute__((section(\".%s\"))) %s[%d] = {\n\t", funcName, funcName, fileSize);
+	fprintf(outputFile, "const unsigned char __attribute__((section(\".%s\"))) %s[%d] = {\n\t", funcName, funcName,
+		fileSize);
 
 	// Read the binary file byte by byte and write to the C array file
 	for (int i = 0; i < fileSize; i++) {

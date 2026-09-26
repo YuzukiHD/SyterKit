@@ -53,7 +53,8 @@ static void free_symbols(struct symbol *symbols, size_t count)
  * @param[in] name Function name.
  * @return Zero on success, otherwise -1.
  */
-static int append_symbol(struct symbol **symbols, size_t *count, size_t *capacity, uint64_t address, uint64_t size, const char *name)
+static int append_symbol(
+	struct symbol **symbols, size_t *count, size_t *capacity, uint64_t address, uint64_t size, const char *name)
 {
 	struct symbol *resized;
 	char *copy;
@@ -154,24 +155,25 @@ static int write_assembly(FILE *output, const struct symbol *symbols, size_t cou
 
 	fputs("/* SPDX-License-Identifier: GPL-2.0+ */\n"
 	      ".section .rodata.backtrace_symbols,\"a\",%progbits\n",
-	      output);
+		output);
 	fprintf(output, ".balign %u\n", alignment);
 	fputs(".global __backtrace_symbols\n"
 	      ".type __backtrace_symbols, %object\n"
 	      "__backtrace_symbols:\n",
-	      output);
+		output);
 	for (index = 0; index < count; index++) {
 		fprintf(output,
 			"\t%s 0x%0*llx\n\t%s 0x%0*llx\n"
 			"\t%s .Lbacktrace_name_%zu - "
 			"__backtrace_symbol_names\n",
-			directive, width, (unsigned long long)symbols[index].address, directive, width, (unsigned long long)symbols[index].size, directive, index);
+			directive, width, (unsigned long long)symbols[index].address, directive, width,
+			(unsigned long long)symbols[index].size, directive, index);
 	}
 	fputs(".size __backtrace_symbols, . - __backtrace_symbols\n"
 	      ".global __backtrace_symbol_count\n"
 	      ".type __backtrace_symbol_count, %object\n"
 	      "__backtrace_symbol_count:\n",
-	      output);
+		output);
 	fprintf(output,
 		"\t%s %zu\n"
 		".size __backtrace_symbol_count, %u\n"
@@ -188,7 +190,7 @@ static int write_assembly(FILE *output, const struct symbol *symbols, size_t cou
 	fputs(".size __backtrace_symbol_names, . - "
 	      "__backtrace_symbol_names\n"
 	      ".section .note.GNU-stack,\"\",%progbits\n",
-	      output);
+		output);
 
 	return ferror(output) ? -1 : 0;
 }

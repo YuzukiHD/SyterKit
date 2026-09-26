@@ -551,7 +551,8 @@ static int sunxi_usb_fel_send_string(const struct usb_device_request *req, uint8
 		static const uint8_t language[] = { 4U, USB_DT_STRING, 0x09U, 0x04U };
 
 		return sunxi_usb_send_setup(min(req->length, sizeof(language)), language) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	}
 	if (index > sizeof(strings) / sizeof(strings[0]))
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
@@ -562,8 +563,8 @@ static int sunxi_usb_fel_send_string(const struct usb_device_request *req, uint8
 	}
 	buffer[0] = (uint8_t)length;
 	buffer[1] = USB_DT_STRING;
-	return sunxi_usb_send_setup(min(req->length, length), buffer) == 0 ?
-		SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+	return sunxi_usb_send_setup(min(req->length, length), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+									     SUNXI_USB_REQ_OP_ERR;
 }
 
 /**
@@ -635,16 +636,15 @@ static int sunxi_usb_fel_get_descriptor(const struct usb_device_request *req, ui
 	switch (type) {
 	case USB_DT_DEVICE:
 		length = min(req->length, sizeof(device));
-		return sunxi_usb_send_setup(length, &device) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(length, &device) == 0 ? SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	case USB_DT_CONFIG:
 		if ((req->value & 0xffU) != 0U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 		configuration.ep_in.wMaxPacketSize = sunxi_usb_get_ep_max();
 		configuration.ep_out.wMaxPacketSize = sunxi_usb_get_ep_max();
 		length = min(req->length, sizeof(configuration));
-		return sunxi_usb_send_setup(length, &configuration) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(length, &configuration) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+									   SUNXI_USB_REQ_OP_ERR;
 	case USB_DT_OTHER_SPEED_CONFIG:
 		if ((req->value & 0xffU) != 0U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
@@ -652,8 +652,8 @@ static int sunxi_usb_fel_get_descriptor(const struct usb_device_request *req, ui
 		configuration.ep_in.wMaxPacketSize = sunxi_usb_get_ep_max() == 64 ? 512 : 64;
 		configuration.ep_out.wMaxPacketSize = configuration.ep_in.wMaxPacketSize;
 		length = min(req->length, sizeof(configuration));
-		return sunxi_usb_send_setup(length, &configuration) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(length, &configuration) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+									   SUNXI_USB_REQ_OP_ERR;
 	case USB_DT_STRING:
 		return sunxi_usb_fel_send_string(req, buffer);
 	case USB_DT_DEVICE_QUALIFIER: {
@@ -669,7 +669,8 @@ static int sunxi_usb_fel_get_descriptor(const struct usb_device_request *req, ui
 		qualifier.bMaxPacketSize0 = 64;
 		qualifier.bNumConfigurations = 1;
 		return sunxi_usb_send_setup(min(req->length, sizeof(qualifier)), &qualifier) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+			       SUNXI_USB_REQ_SUCCESSED :
+			       SUNXI_USB_REQ_OP_ERR;
 	}
 	default:
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
@@ -694,8 +695,8 @@ static int sunxi_usb_fel_standard_req_op(uint32_t cmd, struct usb_device_request
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = 0U;
 		buffer[1] = 0U;
-		return sunxi_usb_send_setup(min(req->length, 2U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 2U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	case USB_REQ_SET_ADDRESS:
 		return sunxi_usb_set_address(req->value & 0x7fU);
 	case USB_REQ_GET_DESCRIPTOR:
@@ -704,28 +705,26 @@ static int sunxi_usb_fel_standard_req_op(uint32_t cmd, struct usb_device_request
 		if (buffer == NULL)
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = sunxi_usb_fel_configuration;
-		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	case USB_REQ_SET_CONFIGURATION:
 		if (req->value > 1U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 		sunxi_usb_fel_configuration = (uint8_t)req->value;
 		if (req->value == 1U)
 			sunxi_usb_ep_reset();
-		return sunxi_usb_send_setup(0U, NULL) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(0U, NULL) == 0 ? SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	case USB_REQ_GET_INTERFACE:
 		if (buffer == NULL || req->index != 0U)
 			return SUNXI_USB_REQ_OP_ERR;
 		buffer[0] = 0U;
-		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(min(req->length, 1U), buffer) == 0 ? SUNXI_USB_REQ_SUCCESSED :
+										 SUNXI_USB_REQ_OP_ERR;
 	case USB_REQ_SET_INTERFACE:
 		if (req->index != 0U || req->value != 0U)
 			return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 		sunxi_usb_ep_reset();
-		return sunxi_usb_send_setup(0U, NULL) == 0 ?
-			SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
+		return sunxi_usb_send_setup(0U, NULL) == 0 ? SUNXI_USB_REQ_SUCCESSED : SUNXI_USB_REQ_OP_ERR;
 	default:
 		return SUNXI_USB_REQ_DEVICE_NOT_SUPPORTED;
 	}

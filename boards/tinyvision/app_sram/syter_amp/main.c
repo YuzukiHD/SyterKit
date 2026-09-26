@@ -33,15 +33,15 @@
 #include <string.h>
 
 #define CONFIG_KERNEL_FILENAME "zImage"
-#define CONFIG_DTB_FILENAME "sunxi.dtb"
+#define CONFIG_DTB_FILENAME    "sunxi.dtb"
 
 #define CONFIG_SDMMC_SPEED_TEST_SIZE 1024 // (unit: 512B sectors)
 
-#define CONFIG_DTB_LOAD_ADDR (0x41008000)
+#define CONFIG_DTB_LOAD_ADDR	(0x41008000)
 #define CONFIG_KERNEL_LOAD_ADDR (0x41800000)
 
 // 128KB erase sectors, so place them starting from 2nd sector
-#define CONFIG_SPINAND_DTB_ADDR (128 * 2048)
+#define CONFIG_SPINAND_DTB_ADDR	   (128 * 2048)
 #define CONFIG_SPINAND_KERNEL_ADDR (256 * 2048)
 
 #define FILENAME_MAX_LEN 64
@@ -121,7 +121,8 @@ static int load_sdcard(image_info_t *image, sunxi_remoteproc_t *remoteproc)
 	start = time_ms();
 	sdmmc_blk_read(&card0, (uint8_t *)(dram.memory_base), 0, CONFIG_SDMMC_SPEED_TEST_SIZE);
 	test_time = time_ms() - start;
-	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time, (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
+	pr_debug("SDMMC: speedtest %uKB in %ums at %uKB/S\n", (CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / 1024, test_time,
+		(CONFIG_SDMMC_SPEED_TEST_SIZE * 512) / test_time);
 
 	start = time_ms();
 
@@ -174,7 +175,8 @@ int main(void)
 		pr_err("SMHC: invalid devicetree configuration\n");
 		return -1;
 	}
-	if (sunxi_serial_dt_read_alias(&uart_e907, "uart-e907") != DRIVER_OK || sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
+	if (sunxi_serial_dt_read_alias(&uart_e907, "uart-e907") != DRIVER_OK ||
+		sunxi_remoteproc_dt_read_alias(&e907, "e907", NULL) != DRIVER_OK) {
 		pr_err("Board: invalid devicetree configuration\n");
 		return -1;
 	}
@@ -222,7 +224,8 @@ int main(void)
 		goto _fel;
 	}
 
-	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK || sunxi_remoteproc_prepare(&e907) != DRIVER_OK || sunxi_remoteproc_load(&e907) != DRIVER_OK) {
+	if (sunxi_remoteproc_reset(&e907) != DRIVER_OK || sunxi_remoteproc_prepare(&e907) != DRIVER_OK ||
+		sunxi_remoteproc_load(&e907) != DRIVER_OK) {
 		pr_err("RISC-V E907: prepare or load failed\n");
 		goto _fel;
 	}

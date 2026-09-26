@@ -15,7 +15,8 @@ static inline __attribute__((always_inline)) int sunxi_clic_dt_read_config(sunxi
 	size_t size;
 	uint32_t sources;
 
-	if (clic == NULL || node < 0 || !syterkit_dt_node_available(node) || dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_CLIC_COMPATIBLE) != 0)
+	if (clic == NULL || node < 0 || !syterkit_dt_node_available(node) ||
+		dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, node, SUNXI_CLIC_COMPATIBLE) != 0)
 		return DRIVER_ERROR_INVALID;
 
 	reg = syterkit_dt_cells(node, "reg", 2);
@@ -35,7 +36,8 @@ static inline __attribute__((always_inline)) int sunxi_clic_dt_read_config(sunxi
 	clic->irq_count = sources;
 	clic->initialized = false;
 	SYTERKIT_DT_TRACE_NODE("clic", node);
-	SYTERKIT_DT_TRACE("clic config base=%p size=0x%lx irq_count=%u\n", (void *)clic->base, (unsigned long)clic->size, clic->irq_count);
+	SYTERKIT_DT_TRACE("clic config base=%p size=0x%lx irq_count=%u\n", (void *)clic->base,
+		(unsigned long)clic->size, clic->irq_count);
 	return DRIVER_OK;
 }
 
