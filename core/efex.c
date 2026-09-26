@@ -8,12 +8,17 @@ struct syterkit_efex_result syterkit_efex_result __attribute__((section(".efex.r
 
 void syterkit_efex_set_dram_result(const uint32_t *parameters, size_t count)
 {
+	syterkit_efex_set_dram_result_status(parameters, count, 1U);
+}
+
+void syterkit_efex_set_dram_result_status(const uint32_t *parameters, size_t count, uint32_t initialized)
+{
 	size_t index;
 
 	for (index = 0; index < SYTERKIT_EFEX_DRAM_PARA_WORDS; index++)
 		syterkit_efex_result.dram_paras[index] = (parameters != NULL && index < count) ? parameters[index] : 0;
 
-	syterkit_efex_result.dram_update_flag = 1;
+	syterkit_efex_result.dram_update_flag = initialized ? 1U : 0U;
 	syterkit_efex_result.dram_init_flag = SYTERKIT_EFEX_DRAM_MAGIC;
 }
 

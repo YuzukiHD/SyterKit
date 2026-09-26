@@ -25,7 +25,7 @@ $(objtree)/include/generated/config.h: $(auto_header) $(generated_config_inputs)
 
 build_dirs := core lib drivers arch/$(arch_dir)
 ifeq ($(CONFIG_EFEX),y)
-build_dirs += $(soc-build-dirs-y)
+build_dirs += soc/efex $(soc-build-dirs-y)
 else
 build_dirs += $(platform_dir)
 endif

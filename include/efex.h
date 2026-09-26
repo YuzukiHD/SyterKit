@@ -18,5 +18,7 @@ struct syterkit_efex_result {
 extern struct syterkit_efex_result syterkit_efex_result;
 
 void syterkit_efex_set_dram_result(const uint32_t *parameters, size_t count);
+void syterkit_efex_set_dram_result_status(const uint32_t *parameters, size_t count,
+						  uint32_t initialized);
 
 #endif
