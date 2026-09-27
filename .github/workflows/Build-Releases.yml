@@ -53,6 +53,12 @@ jobs:
           echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
             >> "${GITHUB_ENV}"
 
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add --toolchain stable riscv32imac-unknown-none-elf
+
       - name: Build and package release images
         env:
           ARM_CROSS_COMPILE: arm-none-eabi-

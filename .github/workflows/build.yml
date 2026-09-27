@@ -54,6 +54,12 @@ jobs:
           echo "RISCV_CROSS_COMPILE=${RUNNER_TEMP}/xuantie/bin/riscv64-unknown-elf-" \
             >> "${GITHUB_ENV}"
 
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add --toolchain stable riscv32imac-unknown-none-elf
+
       - name: Verify dt2c distributions
         run: |
           tools/bin/dt2c generate --help
@@ -64,8 +70,6 @@ jobs:
             tools/dt2c/include/dt2c/dt_runtime.h
           file tools/bin/dt2c | grep -F 'static-pie linked'
           ! readelf -d tools/bin/dt2c | grep -q '(NEEDED)'
-          rustup toolchain install stable --profile minimal
-          rustup target add --toolchain stable riscv32imac-unknown-none-elf
           source_build="${RUNNER_TEMP}/dt2c-source-build"
           make O="${source_build}" \
             DT2C="${source_build}/.obj/tools/dt2c/release/dt2c" \
