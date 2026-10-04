@@ -1768,6 +1768,59 @@ uint32_t spif_nor_read_block(spif_nor_t *nor, uint8_t *buf, uint32_t blk_no, uin
 }
 
 /**
+ * @brief Map the flash from @p offset into the XIP window of the controller.
+ * @details Uses the read command, protocol and dummy cycles selected at detection.
+ */
+int spif_nor_xip_enable(spif_nor_t *nor, uint32_t offset, uint32_t len)
+{
+	const spi_nor_info_t *info;
+	struct spi_mem_op op = { 0 };
+	uint8_t mode = 0U;
+	uint8_t addr_width;
+	bool dtr;
+
+	if (nor == NULL || nor->spif == NULL)
+		return DRIVER_ERROR_INVALID;
+	info = &nor->info;
+	if (info->address_length != 3U && info->address_length != 4U)
+		return DRIVER_ERROR_INVALID;
+	addr_width = spi_nor_get_protocol_addr_nbits(info->read_proto);
+	dtr = spi_nor_protocol_is_dtr(info->read_proto);
+	op.cmd.nbytes = 1U;
+	op.cmd.opcode = info->opcode_read;
+	op.cmd.buswidth = spi_nor_get_protocol_inst_nbits(info->read_proto);
+	op.addr.nbytes = info->address_length;
+	op.addr.val = offset;
+	op.addr.buswidth = addr_width;
+	op.dummy.nbytes = info->read_dummy;
+	op.dummy.buswidth = addr_width;
+	op.data.dir = SPI_MEM_DATA_IN;
+	op.data.buswidth = spi_nor_get_protocol_data_nbits(info->read_proto);
+	if ((nor->spif->mode & SPIF_IO_MODE) != 0U && addr_width == SPI_MEM_BUSWIDTH_4) {
+		op.mode.val = &mode;
+		op.mode.buswidth = addr_width;
+		/* the mode byte phase sends the mode clocks that the SFDP dummy count includes */
+		if (!dtr)
+			op.dummy.nbytes = info->read_dummy >= 2U ? info->read_dummy - 2U : 0U;
+	}
+	if (dtr) {
+		op.cmd.dtr = 1U;
+		op.addr.dtr = 1U;
+		op.dummy.dtr = 1U;
+		op.data.dtr = 1U;
+	}
+	return sunxi_spif_xip_enable(nor->spif, &op, len);
+}
+
+/** @brief Remove the XIP mapping. */
+int spif_nor_xip_disable(spif_nor_t *nor)
+{
+	if (nor == NULL || nor->spif == NULL)
+		return DRIVER_ERROR_INVALID;
+	return sunxi_spif_xip_disable(nor->spif);
+}
+
+/**
  * @brief Reads data from the SPI NOR flash memory.
  *
  * This function reads a specified length of data from a given address in the 

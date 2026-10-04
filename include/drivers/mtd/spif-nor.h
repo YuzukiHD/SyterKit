@@ -46,6 +46,11 @@ uint32_t spif_nor_read_block(spif_nor_t *nor, uint8_t *buf, uint32_t blk_no, uin
  */
 uint32_t spif_nor_read(spif_nor_t *nor, uint8_t *buf, uint32_t addr, uint32_t rxlen);
 
+/** Map the flash from @p offset into the XIP window (SUNXI_SPIF_XIP_BASE), with the detected read command. */
+int spif_nor_xip_enable(spif_nor_t *nor, uint32_t offset, uint32_t len);
+/** Remove the XIP mapping. */
+int spif_nor_xip_disable(spif_nor_t *nor);
+
 /**
  * @brief Program data to the SPIF NOR flash memory.
  *

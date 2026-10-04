@@ -24,11 +24,15 @@
 #define SPIF_TCF_REG	 0x24U
 #define SPIF_TCS_REG	 0x28U
 #define SPIF_TNM_REG	 0x2cU
+#define SPIF_PSA_REG	 0x34U /* prefetch (XIP window) start */
+#define SPIF_PEA_REG	 0x38U /* prefetch (XIP window) end */
+#define SPIF_PMA_REG	 0x3cU /* flash address of the window start */
 #define SPIF_DMA_CTL_REG 0x40U
 #define SPIF_DSC_REG	 0x44U
 
 /* Global control and timing bits. */
 #define SPIF_GC_CFG_MODE   BIT(0)
+#define SPIF_GC_ADDR_MAP   BIT(1)
 #define SPIF_GC_DMA_MODE   1U
 #define SPIF_GC_CPU_MODE   0U
 #define SPIF_GC_PMODE_EN   BIT(3)

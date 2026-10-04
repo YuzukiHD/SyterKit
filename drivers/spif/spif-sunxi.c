@@ -1078,4 +1078,89 @@ out:
 	return ret;
 }
 
+/**
+ * @brief Map the flash into the address space (XIP).
+ *
+ * Programs the four command words of @p op into the controller and switches on
+ * the prefetch mode: the controller then runs the command by itself for every
+ * read of the window at SUNXI_SPIF_XIP_BASE.
+ */
+int sunxi_spif_xip_enable(sunxi_spif_t *spif, const struct spi_mem_op *op, uint32_t len)
+{
+	struct spif_descriptor_op desc = { 0 };
+	uint32_t value;
+	int width;
+	int ret;
+
+	if (spif == NULL || op == NULL || !spif->initialized || len == 0U || len > SUNXI_SPIF_XIP_SIZE)
+		return DRIVER_ERROR_INVALID;
+	if (op->addr.nbytes == 0U || op->addr.val > 0xffffffffULL)
+		return DRIVER_ERROR_INVALID;
+	if (sunxi_spif_soft_reset(spif) != 0 || sunxi_spif_fifo_reset(spif) != 0)
+		return DRIVER_ERROR_INVALID;
+
+	/* a window read has no descriptor and no length */
+	ret = sunxi_spif_encode_phases(op, &desc);
+	if (ret != 0)
+		return ret;
+	width = sunxi_spif_buswidth(op->data.buswidth);
+	if (width < 0)
+		return width;
+	desc.trans_phase |= SPIF_TRANS_RX_EN;
+	desc.cmd_mode_buswidth |= (uint32_t)width << SPIF_DATA_TRANS_POS;
+
+	if (op->cmd.dtr && spif->rx_dtr_en) {
+		uint64_t dtr_speed = (uint64_t)spif->speed_hz * 2U;
+
+		if (dtr_speed > 0xffffffffULL || sunxi_spif_reconfigure_clock(spif, (uint32_t)dtr_speed) != 0)
+			return DRIVER_ERROR_INVALID;
+		sunxi_spif_set_dtr_clock(spif, true);
+		sunxi_spif_set_dtr(spif, true);
+		spif->dtr_active = 1U;
+		if (sunxi_spif_soft_reset(spif) != 0)
+			return DRIVER_ERROR_INVALID;
+	}
+
+	value = readl(sunxi_spif_reg(spif, SPIF_GC_REG));
+	value &= ~(SPIF_GC_NMODE_EN | SPIF_GC_PMODE_EN | SPIF_GC_CFG_MODE);
+	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
+	writel(SUNXI_SPIF_XIP_BASE, sunxi_spif_reg(spif, SPIF_PSA_REG));
+	writel(SUNXI_SPIF_XIP_BASE + len, sunxi_spif_reg(spif, SPIF_PEA_REG));
+	value |= SPIF_GC_ADDR_MAP;
+	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
+	writel(desc.flash_addr, sunxi_spif_reg(spif, SPIF_PMA_REG));
+	writel(desc.trans_phase, sunxi_spif_reg(spif, SPIF_PHC_REG));
+	writel(desc.flash_addr, sunxi_spif_reg(spif, SPIF_TCF_REG));
+	writel(desc.cmd_mode_buswidth, sunxi_spif_reg(spif, SPIF_TCS_REG));
+	writel(desc.addr_dummy_data_count & ~SPIF_DES_NORMAL_EN, sunxi_spif_reg(spif, SPIF_TNM_REG));
+	value |= SPIF_GC_PMODE_EN;
+	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
+
+	return 0;
+}
+
+/** @brief Remove the XIP mapping: the controller is usable for commands again. */
+int sunxi_spif_xip_disable(sunxi_spif_t *spif)
+{
+	uint32_t value;
+
+	if (spif == NULL || !spif->initialized)
+		return DRIVER_ERROR_INVALID;
+	if (sunxi_spif_soft_reset(spif) != 0 || sunxi_spif_fifo_reset(spif) != 0)
+		return DRIVER_ERROR_INVALID;
+	value = readl(sunxi_spif_reg(spif, SPIF_GC_REG));
+	value &= ~(SPIF_GC_NMODE_EN | SPIF_GC_PMODE_EN | SPIF_GC_ADDR_MAP);
+	writel(value, sunxi_spif_reg(spif, SPIF_GC_REG));
+	writel(0U, sunxi_spif_reg(spif, SPIF_PMA_REG));
+	if (spif->dtr_active) {
+		sunxi_spif_set_dtr_clock(spif, false);
+		sunxi_spif_set_dtr(spif, false);
+		if (sunxi_spif_reconfigure_clock(spif, spif->speed_hz) != 0)
+			return DRIVER_ERROR_INVALID;
+		spif->dtr_active = 0U;
+	}
+
+	return 0;
+}
+
 DT2C_DRIVER_COMPAT("allwinner,sunxi-spif");

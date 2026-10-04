@@ -136,6 +136,25 @@ enum spi_mem_buswidth {
 	SPI_MEM_BUSWIDTH_8 = 8,
 };
 
+/** Address of the memory window (XIP) of the controller on the F101. */
+#define SUNXI_SPIF_XIP_BASE 0x0e000000U
+#define SUNXI_SPIF_XIP_SIZE 0x02000000U
+
+/**
+ * @brief Map the flash into the address space.
+ *
+ * Every read of the window then issues the read command described by @p op
+ * (op->addr.val is the flash offset of the first byte of the window); the
+ * data phase of @p op is only used for its bus width. Other commands cannot
+ * be run on the controller while the window is mapped.
+ *
+ * @param len Bytes of the window that are used (at most SUNXI_SPIF_XIP_SIZE).
+ */
+int sunxi_spif_xip_enable(sunxi_spif_t *spif, const struct spi_mem_op *op, uint32_t len);
+
+/** @brief Remove the mapping again. */
+int sunxi_spif_xip_disable(sunxi_spif_t *spif);
+
 /** @brief Initialize a SPIF instance after sunxi_spif_dt_read_* filled it. */
 int sunxi_spif_init(sunxi_spif_t *spif);
 
