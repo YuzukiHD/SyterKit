@@ -939,6 +939,14 @@ static int spif_nor_read_operation(spif_nor_t *nor, enum spi_nor_protocol proto,
 	if (io_mode && addr_width == SPI_MEM_BUSWIDTH_4) {
 		op.mode.val = &mode;
 		op.mode.buswidth = addr_width;
+		/*
+		 * The dummy count decoded from SFDP is the mode clocks plus the wait states. The mode
+		 * byte phase above already sends the mode clocks (two on four wires), so they must not
+		 * be counted a second time; with them the data is shifted and no sample point reads.
+		 * The DTR count is a fixed value that already excludes them.
+		 */
+		if (!dtr)
+			op.dummy.nbytes = read_dummy >= 2U ? read_dummy - 2U : 0U;
 	}
 	if (dtr) {
 		op.cmd.dtr = 1U;
