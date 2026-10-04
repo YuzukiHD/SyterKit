@@ -7,6 +7,7 @@ apps-sram-y += spinor-boot
 apps-sram-y += spinor-boot-rv64i
 apps-sram-y += usb-boot
 apps-sram-y += arduino-boot
+apps-sram-y += xip-boot
 endif
 
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
