@@ -126,7 +126,7 @@
 			allwinner,reset = <(SUNXI_CCU_BASE + 0x984) 16>;
 			spif-rx-bus-width = <4>;
 			spif-tx-bus-width = <4>;
-			dtr-enable = <1>;
+			dtr-enable = <0>;
 			io-mode-enable = <1>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&spif_pins>;
