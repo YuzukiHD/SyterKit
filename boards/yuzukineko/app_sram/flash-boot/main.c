@@ -43,7 +43,7 @@
 #define NOR_SYS_HEADER_OFFSET 0x00030000U
 #define NOR_SYS_MAX_SIZE      0x001CF000U
 #define NOR_APP_HEADER_OFFSET 0x00200000U
-#define NOR_APP_MAX_SIZE      0x004CF000U
+#define NOR_APP_MAX_SIZE      0x009F0000U
 #define NOR_HEADER_SIZE	      0x00001000U
 #define NOR_EXTRA_MAX_SIZE    0x00200000U
 
@@ -54,9 +54,9 @@
 #define KEY_PORT GPIO_PORTD
 #define KEY_PIN	 5
 
-/* the PSRAM above the core region is free while loading: the heap of the SPIF training lives there */
-#define HEAP_BASE (SUNXI_PSRAM_BASE + 0x00800000U)
-#define HEAP_SIZE 0x00500000U
+/* the PSRAM above the application (up to 0x40A00000) is free while loading: the heap of the SPIF training lives there, below the window of the extra part */
+#define HEAP_BASE (SUNXI_PSRAM_BASE + 0x00A00000U)
+#define HEAP_SIZE 0x00400000U
 
 /* first words of the extra part (for the Arduino core: the sketch header, cores/f101/sketch_abi.h) */
 #define EXTRA_MAGIC 0x31303146U /* "F101" */
@@ -79,27 +79,6 @@ struct boot_header {
 	uint32_t extra_load; /* PSRAM address of the extra part, 0: none */
 	uint32_t extra_max;
 	uint32_t extra_offset; /* flash offset of the extra part */
-};
-
-/* console of the EVB: UART3 on PE8/PE9 */
-static const sunxi_serial_t console = {
-	.base = SUNXI_UART3_BASE,
-	.id = 3,
-	.uart_clk = {
-		.gate_reg_base = SUNXI_CCU_BASE + 0x90c,
-		.gate_reg_offset = 3,
-		.rst_reg_base = SUNXI_CCU_BASE + 0x90c,
-		.rst_reg_offset = 19,
-		.parent_clk = 24000000,
-	},
-	.gpio_pin = {
-		.gpio_tx = { .base = SUNXI_GPIO_BASE, .pin = GPIO_PIN(GPIO_PORTE, 8), .bank = GPIO_PORTE - GPIO_PORTA, .mux = 6 },
-		.gpio_rx = { .base = SUNXI_GPIO_BASE, .pin = GPIO_PIN(GPIO_PORTE, 9), .bank = GPIO_PORTE - GPIO_PORTA, .mux = 6 },
-	},
-	.baud_rate = UART_BAUDRATE_115200,
-	.parity = UART_PARITY_NO,
-	.stop = UART_STOP_BIT_0,
-	.dlen = UART_DLEN_8,
 };
 
 static int psram_up(void)
@@ -186,9 +165,9 @@ int main(void)
 	bool app_ok, key;
 	uint32_t offset, max_size;
 
-	uart_dbg = console;
-	sunxi_serial_init(&uart_dbg);
-	uart_log_console_ready();
+	/* the console is the stdout-path of the board devicetree */
+	if (sunxi_serial_init_stdout() != DRIVER_OK)
+		return -1;
 	show_banner();
 	sunxi_clk_init();
 
