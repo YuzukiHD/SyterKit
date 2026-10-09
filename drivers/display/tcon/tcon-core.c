@@ -150,7 +150,8 @@ static int tcon_setup_phy_clock(sunxi_tcon_t *t, uint32_t pixclk)
 /* ------------------------------------------------------------------ */
 static void tcon_init_regs(sunxi_tcon_t *t)
 {
-	UPD(t, gctl, TCON_GCTL_IO_MAP_SEL | TCON_GCTL_PAD_SEL, TCON_GCTL_PAD_SEL);
+	/* the pad select is only set for the DSI (trigger) interface */
+	UPD(t, gctl, TCON_GCTL_IO_MAP_SEL | TCON_GCTL_PAD_SEL, t->iface == SUNXI_DISP_IF_DSI ? TCON_GCTL_PAD_SEL : 0);
 	UPD(t, ctl, TCON0_CTL_EN, 0);
 	UPD(t, gctl, TCON_GCTL_EN, 0);
 	WR(t, gint0, 0);

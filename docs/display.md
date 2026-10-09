@@ -51,5 +51,7 @@ Things learned on the way (all handled in the code):
 - Backlight polarity follows the SyterKit PWM driver (`allwinner,active-high = <1>` on this board).
 - Panel BIST (`C2 30` after `DE 00` for the JD9168S) is a quick way to tell panel/reset problems from video link problems.
 
-Not done: a second SoC variant (needs the register reference of the target chip), LVDS/RGB outputs are untested on hardware,
-command-mode DSI is untested.
+RGB: the TCON and TCON top registers (and the pixel clock plan) match a working reference run bit for bit with the same panel timing
+(no panel attached on the bench board, so the picture itself was not seen). The TCON pad select (GCTL bit 1) is set for DSI only.
+
+Not done: a second SoC variant (needs the register reference of the target chip), LVDS and command-mode DSI are untested.
