@@ -6,3 +6,5 @@ config BOARD_YUZUKINEKO
 	select SOC_SUN252IW2
 	select DRIVER_SPIF
 	select DRIVER_SPIF_V2
+	select DRIVER_DISPLAY
+	select DRIVER_PWM

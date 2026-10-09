@@ -1,0 +1,33 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner display engine (UI layer passthrough) used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-de
+  reg:
+    type: reg
+  allwinner,variant:
+    type: string
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  allwinner,module-clock:
+    type: uint32-array
+  clock-frequency:
+    type: uint32
+  allwinner,de-port:
+    type: uint32
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - allwinner,variant
+  - allwinner,clock-gate
+  - allwinner,reset
+  - allwinner,module-clock
+
+dt2c,device: true

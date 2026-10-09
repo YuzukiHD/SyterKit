@@ -1,0 +1,73 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Display panel timing, bus format and command sequences used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-panel
+  clock-frequency:
+    type: uint32
+  hactive:
+    type: uint32
+  vactive:
+    type: uint32
+  hfront-porch:
+    type: uint32
+  hback-porch:
+    type: uint32
+  hsync-len:
+    type: uint32
+  vfront-porch:
+    type: uint32
+  vback-porch:
+    type: uint32
+  vsync-len:
+    type: uint32
+  hsync-active:
+    type: uint32
+  vsync-active:
+    type: uint32
+  de-active:
+    type: uint32
+  pixelclk-active:
+    type: uint32
+  allwinner,bus-format:
+    type: string
+    enum: [rgb888, rgb666, rgb565]
+  allwinner,dsi-lanes:
+    type: uint32
+  allwinner,dsi-channel:
+    type: uint32
+  allwinner,dsi-format:
+    type: string
+    enum: [rgb888, rgb666, rgb666-packed, rgb565]
+  allwinner,dsi-mode-flags:
+    type: uint32
+  enable-delay-ms:
+    type: uint32
+  width-mm:
+    type: uint32
+  height-mm:
+    type: uint32
+  allwinner,gpio-controller:
+    type: phandle
+  power-on-sequence:
+    type: uint32-array
+  power-off-sequence:
+    type: uint32-array
+  init-sequence:
+    type: uint32-array
+  exit-sequence:
+    type: uint32-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - clock-frequency
+  - hactive
+  - vactive
+  - hsync-len
+  - vsync-len
+
+dt2c,device: true

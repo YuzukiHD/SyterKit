@@ -1,0 +1,39 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner display pipeline (DE UI passthrough -> TCON -> output -> panel) used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-display
+  allwinner,variant:
+    type: string
+  allwinner,pll-video:
+    type: uint32-array
+  allwinner,pll-peri:
+    type: uint32-array
+  allwinner,de:
+    type: phandle
+  allwinner,tcon:
+    type: phandle
+  allwinner,tcon-top:
+    type: phandle
+  allwinner,output:
+    type: phandle
+  allwinner,panel:
+    type: phandle
+  allwinner,backlight:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - allwinner,variant
+  - allwinner,pll-video
+  - allwinner,pll-peri
+  - allwinner,de
+  - allwinner,tcon
+  - allwinner,output
+  - allwinner,panel
+
+dt2c,device: true

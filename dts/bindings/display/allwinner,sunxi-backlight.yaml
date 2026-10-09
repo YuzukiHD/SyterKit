@@ -1,0 +1,26 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Display backlight (GPIO enable or PWM) used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-backlight
+  allwinner,pwm:
+    type: phandle
+  allwinner,pwm-channel:
+    type: uint32
+  allwinner,pwm-period-ns:
+    type: uint32
+  enable-gpios:
+    type: uint32-array
+  allwinner,active-high:
+    type: uint32
+  allwinner,brightness:
+    type: uint32
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+
+dt2c,device: true

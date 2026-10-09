@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 
+#include <dt-bindings/display/sunxi-display.h>
 #include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/pwm/sunxi-pwm.h>
 #include <dt-bindings/soc/sun252iw2.h>
 
 / {
@@ -19,6 +21,8 @@
 		spif0 = &spif0;
 		spif-nor0 = &spif_nor0;
 		usb0 = &usb0;
+		pwm0 = &pwm0;
+		display0 = &display0;
 	};
 
 	chosen {
@@ -48,6 +52,21 @@
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_B 0 4>,
 				<SUNXI_GPIO_PORT_B 1 4>;
+		};
+
+		/* MIPI DSI panel of the carrier board: 4 lanes and the clock on PD12..PD21 */
+		dsi_pins: dsi-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 12 4>, <SUNXI_GPIO_PORT_D 13 4>,
+				<SUNXI_GPIO_PORT_D 14 4>, <SUNXI_GPIO_PORT_D 15 4>,
+				<SUNXI_GPIO_PORT_D 16 4>, <SUNXI_GPIO_PORT_D 17 4>,
+				<SUNXI_GPIO_PORT_D 18 4>, <SUNXI_GPIO_PORT_D 19 4>,
+				<SUNXI_GPIO_PORT_D 20 4>, <SUNXI_GPIO_PORT_D 21 4>;
+		};
+
+		/* PWM0 channel 2 on PD22 drives the panel backlight */
+		pwm0_pins: pwm0-pins {
+			allwinner,pins = <SUNXI_GPIO_PORT_D 22 4>;
 		};
 
 		spif_pins: spif-pins {
@@ -137,6 +156,179 @@
 				reg = <0>;
 				spi-max-frequency = <100000000>;
 			};
+		};
+
+		pwm0: pwm@2000c00 {
+			compatible = "allwinner,sunxi-pwm";
+			reg = <SUNXI_PWM_BASE 0x400>;
+			#pwm-cells = <3>;
+			allwinner,pwm-id = <0>;
+			clock-frequency = <24000000>;
+			allwinner,apb-clock-frequency = <24000000>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x7ac) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x7ac) 16>;
+			allwinner,channel-config = <2 SUNXI_PWM_CHANNEL_SINGLE 0 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pwm0_pins>;
+			status = "okay";
+		};
+
+		/*
+		 * Display: de0 -> tcon_lcd0 -> dsi0 (dphy0) -> panel_dsi, the 1024x768 JD9168S
+		 * panel of the carrier board. rgb0 / lvds0 are the other outputs of the TCON;
+		 * allwinner,output selects one.
+		 */
+		de0: display-engine@5000000 {
+			compatible = "allwinner,sunxi-de";
+			reg = <SUNXI_DE_BASE 0x200000>;
+			allwinner,variant = "sun252iw2";
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x600) 0>;
+			clock-frequency = <300000000>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x60c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x60c) 16>;
+			status = "okay";
+		};
+
+		tcon_top0: tcon-top@5460000 {
+			compatible = "allwinner,sunxi-tcon-top";
+			reg = <SUNXI_TCON_TOP_BASE 0x1000>;
+			allwinner,variant = "sun252iw2";
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xabc) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xabc) 16>;
+			status = "okay";
+		};
+
+		tcon_lcd0: tcon-lcd@5461000 {
+			compatible = "allwinner,sunxi-tcon-lcd";
+			reg = <SUNXI_TCON_LCD0_BASE 0x1000>;
+			allwinner,variant = "sun252iw2";
+			allwinner,tcon-id = <0>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0xb60) 1>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xb7c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xb7c) 16>;
+			status = "okay";
+		};
+
+		dphy0: phy@5451000 {
+			compatible = "allwinner,sunxi-combo-dphy";
+			reg = <SUNXI_COMBO_DPHY0_BASE 0x1000>;
+			allwinner,variant = "sun252iw2";
+			allwinner,phy-id = <0>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0xaa0) 0>;
+			allwinner,module-div = <4>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xaa4) 0>;
+			status = "okay";
+		};
+
+		dsi0: dsi@5450000 {
+			compatible = "allwinner,sunxi-mipi-dsi";
+			reg = <SUNXI_DSI0_BASE 0x1000>;
+			allwinner,variant = "sun252iw2";
+			allwinner,dsi-id = <0>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0xb24) 1>;
+			clock-frequency = <150000000>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xb4c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xb4c) 16>;
+			allwinner,phy = <&dphy0>;
+			allwinner,drive-level = <3>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&dsi_pins>;
+			status = "okay";
+		};
+
+		backlight0: backlight {
+			compatible = "allwinner,sunxi-backlight";
+			allwinner,pwm = <&pwm0>;
+			allwinner,pwm-channel = <2>;
+			allwinner,pwm-period-ns = <1000000>;
+			allwinner,active-high = <1>;
+			allwinner,brightness = <40>;
+			status = "okay";
+		};
+
+		panel_dsi: panel {
+			compatible = "allwinner,sunxi-panel";
+			allwinner,gpio-controller = <&pio>;
+			clock-frequency = <54000000>;
+			hactive = <1024>;
+			vactive = <768>;
+			hsync-len = <10>;
+			hfront-porch = <40>;
+			hback-porch = <40>;
+			vsync-len = <8>;
+			vfront-porch = <12>;
+			vback-porch = <21>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <0>;
+			pixelclk-active = <0>;
+			width-mm = <65>;
+			height-mm = <48>;
+			allwinner,bus-format = "rgb888";
+			allwinner,dsi-lanes = <4>;
+			allwinner,dsi-channel = <0>;
+			allwinner,dsi-format = "rgb888";
+			allwinner,dsi-mode-flags = <(SUNXI_DSI_MODE_VIDEO | SUNXI_DSI_MODE_VIDEO_SYNC_PULSE |
+						     SUNXI_DSI_MODE_LPM)>;
+			enable-delay-ms = <20>;
+
+			/* PD9 = reset */
+			power-on-sequence = <SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_D, 9), 1)
+					     SUNXI_CMD_DELAY(100)
+					     SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_D, 9), 0)
+					     SUNXI_CMD_DELAY(100)
+					     SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_D, 9), 1)
+					     SUNXI_CMD_DELAY(100)>;
+			init-sequence = <SUNXI_CMD_DCS(0, 4, 0xdf 0x91 0x68 0xf9)
+					 SUNXI_CMD_DCS(0, 2, 0xde 0x00)
+					 SUNXI_CMD_DCS(0, 3, 0xb2 0x00 0x7e)
+					 SUNXI_CMD_DCS(0, 3, 0xb3 0x00 0x7e)
+					 SUNXI_CMD_DCS(0, 7, 0xc1 0x00 0x10 0x00 0x00 0x00 0x00)
+					 SUNXI_CMD_DCS(0, 8, 0xbb 0x02 0x24 0x07 0x61 0x19 0x44 0x44)
+					 SUNXI_CMD_DCS(0, 3, 0xbe 0x1a 0xf2)
+					 SUNXI_CMD_DCS(0, 15, 0xc3 0x10 0x17 0x5a 0x17 0x5a 0x05 0x05 0x05 0x05 0x15 0x15 0x31 0x05 0xdf)
+					 SUNXI_CMD_DCS(0, 8, 0xc4 0x11 0x80 0x00 0xdf 0x09 0x06 0x14)
+					 SUNXI_CMD_DCS(0, 24, 0xce 0x00 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x03 0x0f 0x03)
+					 SUNXI_CMD_DCS(0, 10, 0xcf 0x00 0x01 0x40 0x01 0xca 0x01 0xca 0x01 0xca)
+					 SUNXI_CMD_DCS(0, 24, 0xd0 0x00 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x03 0x01 0x05 0x07 0x09 0x0b 0x1e 0x15 0x1f 0x1f 0x15 0x1f)
+					 SUNXI_CMD_DCS(0, 24, 0xd1 0x00 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x02 0x00 0x04 0x06 0x08 0x0a 0x1e 0x15 0x1f 0x1f 0x15 0x1f)
+					 SUNXI_CMD_DCS(0, 24, 0xd2 0x00 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x00 0x02 0x0a 0x08 0x06 0x04 0x1f 0x15 0x1f 0x1f 0x15 0x1e)
+					 SUNXI_CMD_DCS(0, 24, 0xd3 0x00 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x1f 0x01 0x03 0x0b 0x09 0x07 0x05 0x1f 0x15 0x1f 0x1f 0x15 0x1e)
+					 SUNXI_CMD_DCS(0, 38, 0xd4 0x30 0x00 0x00 0x04 0x00 0x06 0x00 0x00 0x00 0x00 0x00 0x03 0x03 0x00 0x11 0x00 0x01 0xc0 0x04 0x01 0x01 0x11 0x80 0x01 0xc0 0x05 0x01 0x01 0x00 0x00 0x00 0x04 0x00 0x06 0x18 0x02 0xe3)
+					 SUNXI_CMD_DCS(0, 9, 0xd5 0x68 0x73 0x00 0x08 0x08 0x00 0x03 0x00)
+					 SUNXI_CMD_DCS(0, 7, 0xb7 0x00 0xd8 0x00 0x00 0xd8 0x00)
+					 SUNXI_CMD_DCS(0, 39, 0xc8 0x7f 0x69 0x5a 0x4e 0x4a 0x3b 0x40 0x2a 0x44 0x43 0x44 0x63 0x51 0x59 0x4c 0x48 0x3a 0x28 0x0f 0x7f 0x69 0x5a 0x4e 0x4a 0x3b 0x40 0x2a 0x44 0x43 0x44 0x63 0x51 0x59 0x4c 0x48 0x3a 0x28 0x0f)
+					 SUNXI_CMD_DCS(0, 2, 0xde 0x02)
+					 SUNXI_CMD_DCS(0, 5, 0xbb 0x00 0x5b 0x5c 0x41)
+					 SUNXI_CMD_DCS(0, 4, 0xb5 0x00 0x5a 0x0a)
+					 SUNXI_CMD_DCS(0, 2, 0xc6 0x22)
+					 SUNXI_CMD_DCS(0, 2, 0xd7 0x12)
+					 SUNXI_CMD_DCS(0, 3, 0xe7 0x00 0x00)
+					 SUNXI_CMD_DCS(0, 2, 0xde 0x04)
+					 SUNXI_CMD_DCS(0, 2, 0xcc 0x02)
+					 SUNXI_CMD_DCS(0, 2, 0xe7 0x01)
+					 SUNXI_CMD_DCS(0, 2, 0xde 0x00)
+					 SUNXI_CMD_DCS(0, 2, 0x35 0x00)
+					 SUNXI_CMD_DCS(120, 1, 0x11)
+					 SUNXI_CMD_DCS(20, 1, 0x29)>;
+			exit-sequence = <SUNXI_CMD_DCS(0, 1, 0x28)
+					 SUNXI_CMD_DCS(120, 1, 0x10)>;
+			power-off-sequence = <SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_D, 9), 0)>;
+			status = "okay";
+		};
+
+		display0: display-subsystem {
+			compatible = "allwinner,sunxi-display";
+			allwinner,variant = "sun252iw2";
+			allwinner,pll-video = <(SUNXI_CCU_BASE + 0x40)>;
+			allwinner,pll-peri = <(SUNXI_CCU_BASE + 0x20)>;
+			allwinner,de = <&de0>;
+			allwinner,tcon = <&tcon_lcd0>;
+			allwinner,tcon-top = <&tcon_top0>;
+			allwinner,output = <&dsi0>;
+			allwinner,panel = <&panel_dsi>;
+			allwinner,backlight = <&backlight0>;
+			status = "okay";
 		};
 	};
 };

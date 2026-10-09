@@ -210,10 +210,11 @@ void sunxi_gpio_set_drv(const gpio_mux_t *gpio, gpio_drv_t drv)
 	port_addr = _port_base_get(gpio);
 	pin_num = _pin_num(gpio->pin);
 
-	addr = port_addr + GPIO_DRV0 + ((pin_num >> 4) << 2);
+	/* 8 pins per register, 4 bits each: DRV in bits 1:0, bits 3:2 reserved */
+	addr = port_addr + GPIO_DRV0 + ((pin_num >> 3) << 2);
 	val = read32(addr);
-	val &= ~(0x3 << ((pin_num & 0xf) << 1));
-	val |= (drv << ((pin_num & 0xf) << 1));
+	val &= ~(0xf << ((pin_num & 0x7) << 2));
+	val |= ((drv & GPIO_DRV_MASK) << ((pin_num & 0x7) << 2));
 	write32(addr, val);
 
 	pr_trace("DRV pin = %d, addr = 0x%08x, val = 0x%08x, set drv = %d\n", gpio->pin, (uint32_t)addr, read32(addr),

@@ -13,5 +13,7 @@ endif
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
 apps-sram-$(CONFIG_DRIVER_PLIC) += intc_test
 apps-sram-$(CONFIG_DRIVER_USB) += usb_test
+apps-sram-$(CONFIG_DRIVER_DISPLAY) += disp_test
+apps-dram-$(CONFIG_DRIVER_DISPLAY) += disp_test
 
 obj-$(CONFIG_ARCH_BOOT) += arch_boot/arch_boot.o

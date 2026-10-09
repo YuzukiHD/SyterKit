@@ -1,0 +1,38 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner parallel RGB (HV) output of the TCON used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-rgb
+  allwinner,hv-mode:
+    type: uint32
+  allwinner,srgb-seq:
+    type: uint32
+  allwinner,syuv-seq:
+    type: uint32
+  allwinner,syuv-fdly:
+    type: uint32
+  allwinner,rgb-swap:
+    type: uint32
+  allwinner,rb-swap:
+    type: uint32
+  allwinner,clk-phase:
+    type: uint32
+  allwinner,io-adjust:
+    type: uint32
+  allwinner,drive-level:
+    type: uint32
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true

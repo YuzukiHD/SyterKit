@@ -4,6 +4,7 @@ menu "Device drivers"
 
 source "drivers/clk/Kconfig"
 source "drivers/dma/Kconfig"
+source "drivers/display/Kconfig"
 source "drivers/gpio/Kconfig"
 source "drivers/i2c/Kconfig"
 source "drivers/intc/Kconfig"

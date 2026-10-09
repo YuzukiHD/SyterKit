@@ -1,0 +1,33 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner combo D-PHY (MIPI D-PHY / LVDS) used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-combo-dphy
+  reg:
+    type: reg
+  allwinner,variant:
+    type: string
+  allwinner,phy-id:
+    type: uint32
+  clock-frequency:
+    type: uint32
+  allwinner,module-div:
+    type: uint32
+  allwinner,module-clock:
+    type: uint32-array
+  allwinner,clock-gate:
+    type: uint32-array
+  allwinner,reset:
+    type: uint32-array
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - reg
+  - allwinner,variant
+  - allwinner,clock-gate
+
+dt2c,device: true
