@@ -16,6 +16,15 @@ static int sample_command(int argc, const char **argv)
 	return argc + (argv && argv[0] ? 10 : 0);
 }
 
+/* screenfetch needs the board information, the timer and the VT: not part of this test */
+msh_define_help(screenfetch, "stub", "Usage: screenfetch\n")
+int cmd_screenfetch(int argc, const char **argv)
+{
+	(void)argc;
+	(void)argv;
+	return 0;
+}
+
 static const msh_command_entry commands[] = {
 	{ "sample", sample_command, "sample command", "Usage: sample [arg]\n" },
 	msh_command_end,
