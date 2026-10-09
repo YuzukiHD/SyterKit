@@ -11,6 +11,8 @@
 #include <common.h>
 #include <log.h>
 #include <timer.h>
+#include <screenfetch.h>
+#include <vt.h>
 
 #include <dt-bindings/soc/sun252iw2.h>
 #include <drivers/clk/clk.h>
@@ -20,24 +22,7 @@
 #include <dt-compatible/psram-dt.h>
 
 #define FB_BASE (SUNXI_PSRAM_BASE + 0x00800000U)
-
-/* eight vertical colour bars with a horizontal brightness ramp */
-static void draw_test_picture(uint32_t *fb, uint32_t w, uint32_t h, uint32_t stride_px)
-{
-	static const uint32_t bars[8] = { 0xffffff, 0xffff00, 0x00ffff, 0x00ff00,
-					  0xff00ff, 0xff0000, 0x0000ff, 0x000000 };
-	uint32_t x, y;
-
-	for (y = 0; y < h; y++) {
-		for (x = 0; x < w; x++) {
-			uint32_t c = bars[x * 8U / w];
-			uint32_t k = 255U - y * 200U / h;
-
-			fb[y * stride_px + x] = (((c >> 16 & 0xff) * k / 255U) << 16) |
-						(((c >> 8 & 0xff) * k / 255U) << 8) | ((c & 0xff) * k / 255U);
-		}
-	}
-}
+#define FB_SIZE 0x00780000U	/* up to the end of the 16 MB PSRAM, minus a margin */
 
 /*
  * The display engine takes the SRAM above 0x2b000 away from the CPU (see platform/sun252iw2/soc.c): the image, its
@@ -45,6 +30,8 @@ static void draw_test_picture(uint32_t *fb, uint32_t w, uint32_t h, uint32_t str
  */
 #define PSRAM_STACK_TOP (SUNXI_PSRAM_BASE + 0x00400000U)
 #define DISP_STATE	(SUNXI_PSRAM_BASE + 0x00300000U)
+#define VT_EARLY_MEM	(SUNXI_PSRAM_BASE + 0x00200000U)
+#define VT_EARLY_SIZE	0x8000U
 
 static void call_on_stack(void (*fn)(void), uintptr_t top)
 {
@@ -58,10 +45,22 @@ static void call_on_stack(void (*fn)(void), uintptr_t top)
 		       "t6", "memory");
 }
 
-static void display_task(void)
+/* The console buffer is taller than the panel: scrolling moves the shown window and rarely copies. */
+#define VT_EXTRA_ROWS 1024U
+
+static void vt_set_origin(void *ctx, uint32_t y)
+{
+	sunxi_display_t *disp = ctx;
+
+	sunxi_display_set_fb(disp, FB_BASE + y * disp->fb_stride, disp->fb_width, disp->fb_height,
+			     disp->fb_stride, SUNXI_DE_FMT_XRGB8888);
+}
+
+static void display_setup(void)
 {
 	sunxi_display_t *disp = (sunxi_display_t *)DISP_STATE;
-	uint32_t w, h;
+	uint32_t w, h, total;
+	vt_config_t vt = { 0 };
 
 	if (sunxi_display_dt_read_alias(disp, "display0") != DRIVER_OK) {
 		pr_err("display: invalid devicetree configuration\n");
@@ -72,30 +71,40 @@ static void display_task(void)
 
 	w = disp->panel.timing.hactive;
 	h = disp->panel.timing.vactive;
-	draw_test_picture((uint32_t *)FB_BASE, w, h, w);
-	flush_dcache_range(FB_BASE, FB_BASE + w * h * 4U);
+	total = h + VT_EXTRA_ROWS;
+	if (total > FB_SIZE / (w * 4U))
+		total = FB_SIZE / (w * 4U);
 
-	if (sunxi_display_set_fb(disp, FB_BASE, w, h, w * 4U, SUNXI_DE_FMT_XRGB8888) != DRIVER_OK)
+	vt.fb = FB_BASE;
+	vt.width = w;
+	vt.height = h;
+	vt.stride = w * 4U;
+	vt.total_height = total;
+	vt.set_origin = vt_set_origin;
+	vt.ctx = disp;
+	if (vt_init(&vt) != 0) {
+		pr_err("vt: init failed\n");
+		return;
+	}
+
+	if (sunxi_display_set_fb(disp, FB_BASE + vt_origin() * w * 4U, w, h, w * 4U, SUNXI_DE_FMT_XRGB8888) != DRIVER_OK)
 		return;
 	if (sunxi_display_enable(disp) != DRIVER_OK)
 		return;
-	sunxi_display_dump(disp);	/* register dump: printed only with CONFIG_DRIVER_DISPLAY_LOG_DEBUG */
 
-	/* TCON colour bar (no DE involved) for 8 s, then the frame buffer through the DE */
-	pr_info("display: TCON colour bar for 8 s\n");
-	sunxi_display_set_pattern(disp, SUNXI_TCON_PATTERN_COLORBAR);
-	if (disp->if_cfg.dsi_command_mode) {
-		uint32_t frames = 0, t0 = time_ms();
+	screenfetch(true);
 
-		while (time_ms() - t0 < 8000U)
-			frames += (uint32_t)sunxi_display_poll(disp);
-		pr_info("display: %u command mode frames\n", (unsigned int)frames);
-		sunxi_display_dump(disp);
-	} else {
-		mdelay(8000);
-	}
-	sunxi_display_set_pattern(disp, SUNXI_TCON_PATTERN_NONE);
-	pr_info("display: DE frame buffer, %ux%u running\n", (unsigned int)w, (unsigned int)h);
+}
+
+/*
+ * Never return to the SRAM stack: its top is the part of the SRAM the display engine owns, so any call made on it
+ * after the display is up writes into the display engine registers.
+ */
+static void display_task(void)
+{
+	display_setup();
+	for (;;)
+		mdelay(1000);
 }
 
 int main(void)
@@ -119,9 +128,10 @@ int main(void)
 	sunxi_psram_init(&psram);
 #endif
 
+	/* the text logged so far (and from now on) must not stay in the SRAM the display engine takes over */
+	vt_set_memory((void *)VT_EARLY_MEM, VT_EARLY_SIZE);
+
 	call_on_stack(display_task, PSRAM_STACK_TOP);
 
-	for (;;)
-		mdelay(1000);
 	return 0;
 }
