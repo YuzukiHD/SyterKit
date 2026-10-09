@@ -13,7 +13,10 @@ endif
 rust-apps-sram-$(CONFIG_RUST_FFI) += app-rs
 apps-sram-$(CONFIG_DRIVER_PLIC) += intc_test
 apps-sram-$(CONFIG_DRIVER_USB) += usb_test
-apps-sram-$(CONFIG_DRIVER_DISPLAY) += disp_test
+# the display test keeps its frame buffer and stack in the PSRAM
+ifeq ($(CONFIG_DRIVER_DISPLAY)$(CONFIG_DRIVER_PSRAM),yy)
+apps-sram-y += disp_test
+endif
 apps-dram-$(CONFIG_DRIVER_DISPLAY) += disp_test
 
 obj-$(CONFIG_ARCH_BOOT) += arch_boot/arch_boot.o
