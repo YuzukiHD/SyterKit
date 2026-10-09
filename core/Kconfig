@@ -25,4 +25,21 @@ config CLI_HEAP_STORAGE
 	  heap. This reduces permanent SRAM use by about 3 KiB, and requires
 	  malloc_init() before the CLI is entered.
 
+config VT
+	bool "Text console on a frame buffer"
+	help
+	  Build the ANSI capable text console (vt_init() and friends, include/vt.h)
+	  that draws an 8x16 font into a XRGB8888 frame buffer. Everything written
+	  to the log UART is mirrored to it after vt_init(), colors included.
+
+config VT_EARLY_BUFFER_SIZE
+	int "Text kept for the console before vt_init()"
+	depends on VT
+	default 4096
+	range 256 65536
+	help
+	  Log output written before vt_init() is stored in this many bytes of
+	  SRAM and drawn on the screen when the console starts. Escape sequences
+	  count; what does not fit is dropped.
+
 endmenu

@@ -66,6 +66,12 @@ SECTIONS
 		__stack_srv_start = .; . += 0x1000; __stack_srv_end = .;
 	} > ram :data
 
+	/* console text kept before the display exists: after bss and stack so it never pushes them up */
+	.vt_early (NOLOAD) : {
+		. = ALIGN(16);
+		*(.vt_early)
+	} > ram :data
+
 	. = ALIGN(4);
 	_end = .;
 	PROVIDE(__sram_end = ORIGIN(ram) + LENGTH(ram));

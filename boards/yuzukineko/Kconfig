@@ -7,4 +7,5 @@ config BOARD_YUZUKINEKO
 	select DRIVER_SPIF
 	select DRIVER_SPIF_V2
 	select DRIVER_DISPLAY
+	select VT
 	select DRIVER_PWM

@@ -19,6 +19,9 @@
 #include <drivers/serial/serial.h>
 
 #include <uart.h>
+#ifdef CONFIG_VT
+#include <vt.h>
+#endif
 
 sunxi_serial_t uart_dbg;
 
@@ -72,6 +75,10 @@ static void uart_log_flush_early(void)
 void uart_log_putchar(void *arg, char c)
 {
 	(void)arg;
+#ifdef CONFIG_VT
+	/* mirror the log on the screen once vt_init() ran (vt_putc ignores it before) */
+	vt_putc(c);
+#endif
 #ifdef CONFIG_UART_EARLY_LOG
 	if (!uart_log_console_is_ready) {
 		if (uart_early_log_length < UART_EARLY_LOG_BUFFER_SIZE)
