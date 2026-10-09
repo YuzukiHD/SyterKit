@@ -508,7 +508,7 @@ void sunxi_tcon_dump(sunxi_tcon_t *t)
 {
 	const struct sunxi_tcon_regs *r = &t->var->reg;
 	const uint16_t regs[] = { r->gctl, r->gint0, r->frm_ctl, r->ctl, r->dclk, r->basic0, r->basic1, r->basic2,
-		r->basic3, r->hv_ctl, r->cpu_ctl, r->lvds_ctl, r->io_pol, r->io_tri, r->debug, r->cpu_tri0, r->cpu_tri2,
+		r->basic3, r->hv_ctl, r->cpu_ctl, r->lvds_ctl, r->io_pol, r->io_tri, r->debug, r->cpu_tri0, r->cpu_tri1, r->cpu_tri2, r->cpu_tri3,
 		r->safe_period, r->lvds_ana0 };
 	unsigned int i;
 
@@ -520,6 +520,27 @@ void sunxi_tcon_dump(sunxi_tcon_t *t)
 		pr_debug("  +%03x: %08x\n", regs[i], (unsigned int)readl(t->res.base + regs[i]));
 	if (t->top)
 		sunxi_tcon_top_dump(t->top);
+}
+
+/* GINT0 flags are cleared by writing 0; every write rewrites the other flags as 1 */
+#define TCON_IRQ_CNTR 10
+
+bool sunxi_tcon_frame_flag(sunxi_tcon_t *t)
+{
+	uint32_t v;
+
+	if (!t->powered)
+		return false;
+	v = RD(t, gint0);
+	if (!(v & TCON_GINT0_FLAG(TCON_IRQ_CNTR)))
+		return false;
+	WR(t, gint0, (v | TCON_GINT0_FLAGS) & ~TCON_GINT0_FLAG(TCON_IRQ_CNTR));
+	return true;
+}
+
+void sunxi_tcon_trigger(sunxi_tcon_t *t)
+{
+	UPD(t, cpu_ctl, TCON0_CPU_TRI_START, TCON0_CPU_TRI_START);
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-tcon-lcd");

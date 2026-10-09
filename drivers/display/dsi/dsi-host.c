@@ -709,6 +709,14 @@ void sunxi_dsi_unprepare(sunxi_dsi_t *dsi)
 	dsi->prepared = false;
 }
 
+bool sunxi_dsi_frame_start(sunxi_dsi_t *dsi)
+{
+	if (dsi == NULL || !dsi->prepared || dsi_wait_idle(dsi, 50))
+		return false;
+	dsi_hw_run(dsi, DSI_SEQ_HS_VIDEO);
+	return true;
+}
+
 void sunxi_dsi_dump(sunxi_dsi_t *dsi)
 {
 	static const uint16_t regs[] = {

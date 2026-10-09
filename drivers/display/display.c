@@ -226,6 +226,19 @@ void sunxi_display_dump(sunxi_display_t *d)
 	}
 }
 
+int sunxi_display_poll(sunxi_display_t *d)
+{
+	if (!d || !d->running || d->iface != SUNXI_DISP_IF_DSI || !d->if_cfg.dsi_command_mode)
+		return 0;
+	if (!sunxi_tcon_frame_flag(&d->tcon))
+		return 0;
+	/* the interface first, then the TCON */
+	if (!sunxi_dsi_frame_start(&d->dsi))
+		return 0;
+	sunxi_tcon_trigger(&d->tcon);
+	return 1;
+}
+
 DT2C_DRIVER_COMPAT("allwinner,sunxi-display");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-rgb");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-lvds");

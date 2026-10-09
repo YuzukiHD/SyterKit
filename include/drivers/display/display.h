@@ -257,6 +257,8 @@ void sunxi_dsi_unprepare(sunxi_dsi_t *dsi);
 int sunxi_dsi_dcs_write(sunxi_dsi_t *dsi, uint8_t cmd, const uint8_t *data, size_t len);
 int sunxi_dsi_generic_write(sunxi_dsi_t *dsi, const uint8_t *data, size_t len);
 void sunxi_dsi_dump(sunxi_dsi_t *dsi);
+/* Command mode: start the DSI side of one frame; false when the link is busy. */
+bool sunxi_dsi_frame_start(sunxi_dsi_t *dsi);
 
 /* ------------------------------------------------------------------ */
 /* TCON                                                                */
@@ -318,6 +320,9 @@ int sunxi_tcon_set_pattern(sunxi_tcon_t *tcon, sunxi_tcon_pattern_t pattern);
 bool sunxi_tcon_check_underflow(sunxi_tcon_t *tcon);
 uint32_t sunxi_tcon_get_line(sunxi_tcon_t *tcon);
 void sunxi_tcon_dump(sunxi_tcon_t *tcon);
+/* Command mode: true (and the flag is cleared) when the frame counter expired, and start the TCON side of the frame. */
+bool sunxi_tcon_frame_flag(sunxi_tcon_t *tcon);
+void sunxi_tcon_trigger(sunxi_tcon_t *tcon);
 
 /* ------------------------------------------------------------------ */
 /* DE: one UI channel straight into the TCON                           */
@@ -410,6 +415,11 @@ int sunxi_display_enable(sunxi_display_t *disp);
 void sunxi_display_disable(sunxi_display_t *disp);
 int sunxi_display_set_pattern(sunxi_display_t *disp, sunxi_tcon_pattern_t pattern);
 void sunxi_display_dump(sunxi_display_t *disp);
+/*
+ * DSI command mode has no interrupt here: call this regularly (at least once per frame) to push the next frame to
+ * the panel. Returns 1 when a frame was started, 0 otherwise (also in every other mode).
+ */
+int sunxi_display_poll(sunxi_display_t *disp);
 
 #ifdef __cplusplus
 }

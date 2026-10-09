@@ -84,7 +84,16 @@ static void display_task(void)
 	/* TCON colour bar (no DE involved) for 8 s, then the frame buffer through the DE */
 	pr_info("display: TCON colour bar for 8 s\n");
 	sunxi_display_set_pattern(disp, SUNXI_TCON_PATTERN_COLORBAR);
-	mdelay(8000);
+	if (disp->if_cfg.dsi_command_mode) {
+		uint32_t frames = 0, t0 = time_ms();
+
+		while (time_ms() - t0 < 8000U)
+			frames += (uint32_t)sunxi_display_poll(disp);
+		pr_info("display: %u command mode frames\n", (unsigned int)frames);
+		sunxi_display_dump(disp);
+	} else {
+		mdelay(8000);
+	}
 	sunxi_display_set_pattern(disp, SUNXI_TCON_PATTERN_NONE);
 	pr_info("display: DE frame buffer, %ux%u running\n", (unsigned int)w, (unsigned int)h);
 }

@@ -51,7 +51,14 @@ Things learned on the way (all handled in the code):
 - Backlight polarity follows the SyterKit PWM driver (`allwinner,active-high = <1>` on this board).
 - Panel BIST (`C2 30` after `DE 00` for the JD9168S) is a quick way to tell panel/reset problems from video link problems.
 
-RGB: the TCON and TCON top registers (and the pixel clock plan) match a working reference run bit for bit with the same panel timing
-(no panel attached on the bench board, so the picture itself was not seen). The TCON pad select (GCTL bit 1) is set for DSI only.
+Register comparison against a working reference run of the same board (all identical, bit for bit, apart from status flags):
 
-Not done: a second SoC variant (needs the register reference of the target chip), LVDS and command-mode DSI are untested.
+- RGB: TCON, TCON top and the pixel clock plan (1024x600 panel timing; no RGB panel on the bench board, so no picture seen).
+- LVDS: TCON (LVDS control included), TCON top and the combo D-PHY (1280x800 single link 6 bit; no LVDS panel on the bench board).
+- DSI command mode: TCON including the trigger registers, DSI host, and after `sunxi_display_poll()` has pushed frames also the
+  DSI run state. There is no interrupt: call `sunxi_display_poll()` at least once per frame. (No command-mode panel to look at.)
+- DSI video mode: shown on the JD9168S panel.
+
+The TCON pad select (GCTL bit 1) is set for DSI only.
+
+Not done: a second SoC variant (needs the register reference of the target chip).
