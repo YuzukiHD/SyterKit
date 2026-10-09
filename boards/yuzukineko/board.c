@@ -11,6 +11,7 @@
 #include <io.h>
 
 #include <log.h>
+#include <screenfetch.h>
 
 #include <common.h>
 
@@ -54,6 +55,29 @@ void show_chip()
 	pr_info("Core: XuanTie C907 RISC-V LP64D Core.\n");
 #endif
 	pr_info("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+}
+
+/**
+ * @brief Board information for screenfetch().
+ */
+void board_fetch_info(screenfetch_info_t *info)
+{
+	sunxi_sid_t sid;
+
+	info->model = "Yuzuki Neko board";
+	info->soc = "Allwinner F101";
+#if __riscv_xlen == 32
+	info->cpu = "XuanTie C907 RISC-V ILP32";
+#else
+	info->cpu = "XuanTie C907 RISC-V LP64D";
+#endif
+	if (sunxi_sid_dt_read_alias(&sid, "sid0") == DRIVER_OK) {
+		info->sid[0] = sunxi_efuse_read(&sid, 0x0U);
+		info->sid[1] = sunxi_efuse_read(&sid, 0x4U);
+		info->sid[2] = sunxi_efuse_read(&sid, 0x8U);
+		info->sid[3] = sunxi_efuse_read(&sid, 0xcU);
+		info->has_sid = 1;
+	}
 }
 
 /**
