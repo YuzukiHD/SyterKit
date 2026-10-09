@@ -56,7 +56,7 @@ Register comparison against a working reference run of the same board (all ident
 - RGB: TCON, TCON top and the pixel clock plan (1024x600 panel timing; no RGB panel on the bench board, so no picture seen).
 - LVDS: TCON (LVDS control included), TCON top and the combo D-PHY (1280x800 single link 6 bit; no LVDS panel on the bench board).
 - DSI command mode: TCON including the trigger registers, DSI host, and after `sunxi_display_poll()` has pushed frames also the
-  DSI run state. There is no interrupt: call `sunxi_display_poll()` at least once per frame. (No command-mode panel to look at.)
+  DSI run state. There is no interrupt: call `sunxi_display_poll()` at least once per frame. (No command-mode panel to look at: on the video-mode panel of the bench board only a few frames go out, as in the reference run, because the DSI sequence keeps waiting for pixel data of the last frame; per-frame behaviour needs a real command-mode panel with its tearing signal.)
 - DSI video mode: shown on the JD9168S panel.
 
 The TCON pad select (GCTL bit 1) is set for DSI only.
