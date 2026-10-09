@@ -62,7 +62,6 @@ enum dsi_seq {
 	DSI_SEQ_LP_TX, /* escape mode LP transmit */
 };
 
-
 static const struct sunxi_dsi_variant *const dsi_variants[] = {
 	&sunxi_dsi_variant_sun252iw2,
 };
@@ -84,21 +83,29 @@ const struct sunxi_dsi_variant *sunxi_dsi_variant_lookup(const char *name)
 /* Video running state, indexed by host id (the public struct has no room). */
 static uint8_t dsi_video_running[4];
 
-#define DSI_RUNNING(d) dsi_video_running[(d)->id & 3]
-
-static inline void dsi_write(const sunxi_dsi_t *d, uint32_t reg, uint32_t val)
+static bool dsi_video_is_running(const sunxi_dsi_t *dsi)
 {
-	writel(val, d->res.base + reg);
+	return dsi_video_running[dsi->id & 3];
 }
 
-static inline uint32_t dsi_read(const sunxi_dsi_t *d, uint32_t reg)
+static void dsi_video_set_running(const sunxi_dsi_t *dsi, bool running)
 {
-	return readl(d->res.base + reg);
+	dsi_video_running[dsi->id & 3] = running;
 }
 
-static inline void dsi_update(const sunxi_dsi_t *d, uint32_t reg, uint32_t mask, uint32_t val)
+static inline void dsi_write(const sunxi_dsi_t *dsi, uint32_t reg, uint32_t val)
 {
-	clrsetbits_le32(d->res.base + reg, mask, val);
+	writel(val, dsi->res.base + reg);
+}
+
+static inline uint32_t dsi_read(const sunxi_dsi_t *dsi, uint32_t reg)
+{
+	return readl(dsi->res.base + reg);
+}
+
+static inline void dsi_update(const sunxi_dsi_t *dsi, uint32_t reg, uint32_t mask, uint32_t val)
+{
+	clrsetbits_le32(dsi->res.base + reg, mask, val);
 }
 
 /* ------------------------------------------------------------------ */
@@ -191,41 +198,42 @@ struct dsi_mode_info {
 	uint8_t channel;
 };
 
-static void dsi_mode_from_panel(struct dsi_mode_info *m, const sunxi_panel_t *p)
+static void dsi_mode_from_panel(struct dsi_mode_info *mode_info, const sunxi_panel_t *panel)
 {
-	const sunxi_disp_timing_t *t = &p->timing;
+	const sunxi_disp_timing_t *timing = &panel->timing;
 
-	m->hdisplay = t->hactive;
-	m->hsync_start = t->hactive + t->hfront_porch;
-	m->hsync_end = m->hsync_start + t->hsync_len;
-	m->htotal = m->hsync_end + t->hback_porch;
-	m->vdisplay = t->vactive;
-	m->vsync_start = t->vactive + t->vfront_porch;
-	m->vsync_end = m->vsync_start + t->vsync_len;
-	m->vtotal = m->vsync_end + t->vback_porch;
-	m->pixclk_hz = t->pixel_clock_hz;
-	m->lanes = p->dsi_lanes;
-	m->format = p->dsi_format;
-	m->bpp = dsi_bpp(p->dsi_format);
-	m->channel = p->dsi_channel;
-	if (!(p->dsi_mode_flags & SUNXI_DSI_MODE_VIDEO))
-		m->mode = DSI_COMMAND;
-	else if (p->dsi_mode_flags & SUNXI_DSI_MODE_VIDEO_BURST)
-		m->mode = DSI_VIDEO_BURST;
+	mode_info->hdisplay = timing->hactive;
+	mode_info->hsync_start = timing->hactive + timing->hfront_porch;
+	mode_info->hsync_end = mode_info->hsync_start + timing->hsync_len;
+	mode_info->htotal = mode_info->hsync_end + timing->hback_porch;
+	mode_info->vdisplay = timing->vactive;
+	mode_info->vsync_start = timing->vactive + timing->vfront_porch;
+	mode_info->vsync_end = mode_info->vsync_start + timing->vsync_len;
+	mode_info->vtotal = mode_info->vsync_end + timing->vback_porch;
+	mode_info->pixclk_hz = timing->pixel_clock_hz;
+	mode_info->lanes = panel->dsi_lanes;
+	mode_info->format = panel->dsi_format;
+	mode_info->bpp = dsi_bpp(panel->dsi_format);
+	mode_info->channel = panel->dsi_channel;
+	if (!(panel->dsi_mode_flags & SUNXI_DSI_MODE_VIDEO))
+		mode_info->mode = DSI_COMMAND;
+	else if (panel->dsi_mode_flags & SUNXI_DSI_MODE_VIDEO_BURST)
+		mode_info->mode = DSI_VIDEO_BURST;
 	else
-		m->mode = DSI_VIDEO_SYNC_PULSE;
+		mode_info->mode = DSI_VIDEO_SYNC_PULSE;
 }
 
 /*
  * In the non-burst video modes every horizontal blanking period is sent as a
  * packet; it has to be long enough to carry the packet overheads.
  */
-static int dsi_check_mode(const struct dsi_mode_info *m)
+static int dsi_check_mode(const struct dsi_mode_info *mode_info)
 {
-	if (m->mode == DSI_COMMAND || m->mode == DSI_VIDEO_BURST)
+	if (mode_info->mode == DSI_COMMAND || mode_info->mode == DSI_VIDEO_BURST)
 		return 0;
-	if ((m->hsync_end - m->hsync_start) * m->bpp / 8 <= 4 + 4 + 2 ||
-		(m->htotal - m->hsync_end) * m->bpp / 8 <= 10 || (m->hsync_start - m->hdisplay) * m->bpp / 8 <= 6 + 6)
+	if ((mode_info->hsync_end - mode_info->hsync_start) * mode_info->bpp / 8 <= 4 + 4 + 2 ||
+		(mode_info->htotal - mode_info->hsync_end) * mode_info->bpp / 8 <= 10 ||
+		(mode_info->hsync_start - mode_info->hdisplay) * mode_info->bpp / 8 <= 6 + 6)
 		return DRIVER_ERROR_INVALID;
 	return 0;
 }
@@ -234,7 +242,7 @@ static int dsi_check_mode(const struct dsi_mode_info *m)
 /* Instruction engine                                                  */
 /* ------------------------------------------------------------------ */
 static void dsi_set_inst(
-	const sunxi_dsi_t *d, uint32_t slot, uint32_t mode, uint32_t packet, bool clock, uint32_t data_lanes)
+	const sunxi_dsi_t *dsi, uint32_t slot, uint32_t mode, uint32_t packet, bool clock, uint32_t data_lanes)
 {
 	uint32_t reg = slot < 8 ? DSI_INST_FUNC(slot) : DSI_INST_FUNC1(slot);
 	uint32_t val = DISP_FIELD_PREP(DSI_INST_MODE, mode) | DISP_FIELD_PREP(DSI_INST_PACKET, packet) |
@@ -242,134 +250,140 @@ static void dsi_set_inst(
 
 	if (mode == DSI_MODE_ESCAPE)
 		val |= DISP_FIELD_PREP(DSI_INST_ESCAPE_ENTRY, DSI_ESCAPE_LPDT);
-	dsi_write(d, reg, val);
+	dsi_write(dsi, reg, val);
 }
 
-#define DSI_SLOT(slot, next) ((uint32_t)(next) << (4 * (slot)))
-
-static void dsi_config_instructions(const sunxi_dsi_t *d, const struct dsi_mode_info *m)
+static uint32_t dsi_inst_slot(uint32_t slot, uint32_t next)
 {
-	const struct sunxi_dsi_variant *v = d->var;
-	uint32_t lanes = (1U << m->lanes) - 1;
-	uint32_t n0 = v->inst_loop_count, n1;
+	return next << (4 * slot);
+}
+
+static void dsi_config_instructions(const sunxi_dsi_t *dsi, const struct dsi_mode_info *mode_info)
+{
+	const struct sunxi_dsi_variant *variant = dsi->var;
+	uint32_t lanes = (1U << mode_info->lanes) - 1;
+	uint32_t n0 = variant->inst_loop_count, n1;
 
 	/* bank 0: normal operation */
-	dsi_set_inst(d, DSI_INST_LP11, DSI_MODE_STOP, 0, true, lanes);
-	dsi_set_inst(d, DSI_INST_TBA, DSI_MODE_TBA, 0, false, 0x1);
-	dsi_set_inst(d, DSI_INST_HSC, DSI_MODE_HS, DSI_PACKET_PIXEL, true, 0);
-	dsi_set_inst(d, DSI_INST_HSD, DSI_MODE_HS, DSI_PACKET_PIXEL, false, lanes);
-	dsi_set_inst(d, DSI_INST_LPDT, DSI_MODE_ESCAPE, DSI_PACKET_COMMAND, false, 0x1);
-	dsi_set_inst(d, DSI_INST_HSCEXIT, DSI_MODE_HSCEXIT, 0, true, 0);
-	dsi_set_inst(d, DSI_INST_NOP, DSI_MODE_STOP, 0, false, lanes);
-	dsi_set_inst(d, DSI_INST_DLY, DSI_MODE_NOP, 0, true, lanes);
+	dsi_set_inst(dsi, DSI_INST_LP11, DSI_MODE_STOP, 0, true, lanes);
+	dsi_set_inst(dsi, DSI_INST_TBA, DSI_MODE_TBA, 0, false, 0x1);
+	dsi_set_inst(dsi, DSI_INST_HSC, DSI_MODE_HS, DSI_PACKET_PIXEL, true, 0);
+	dsi_set_inst(dsi, DSI_INST_HSD, DSI_MODE_HS, DSI_PACKET_PIXEL, false, lanes);
+	dsi_set_inst(dsi, DSI_INST_LPDT, DSI_MODE_ESCAPE, DSI_PACKET_COMMAND, false, 0x1);
+	dsi_set_inst(dsi, DSI_INST_HSCEXIT, DSI_MODE_HSCEXIT, 0, true, 0);
+	dsi_set_inst(dsi, DSI_INST_NOP, DSI_MODE_STOP, 0, false, lanes);
+	dsi_set_inst(dsi, DSI_INST_DLY, DSI_MODE_NOP, 0, true, lanes);
 
-	if (v->has_second_bank) {
+	if (variant->has_second_bank) {
 		/* bank 1: same with an initial skew calibration step */
-		dsi_set_inst(d, DSI_INST_LP11_1, DSI_MODE_STOP, 0, true, lanes);
-		dsi_set_inst(d, DSI_INST_HSC_1, DSI_MODE_HS, DSI_PACKET_PIXEL, true, 0);
-		dsi_set_inst(d, DSI_INST_DS_1, DSI_MODE_SCINIT, DSI_PACKET_PIXEL, false, lanes);
-		dsi_set_inst(d, DSI_INST_LPDT_1, DSI_MODE_ESCAPE, DSI_PACKET_COMMAND, false, 0x1);
-		dsi_set_inst(d, DSI_INST_HSCEXIT_1, DSI_MODE_HSCEXIT, 0, true, 0);
-		dsi_set_inst(d, DSI_INST_NOP_1, DSI_MODE_STOP, 0, false, lanes);
-		dsi_set_inst(d, DSI_INST_DLY_1, DSI_MODE_NOP, 0, true, lanes);
-		dsi_write(d, DSI_INST_LOOP_SEL1, DSI_SLOT(DSI_INST_LP11_1 - 8, 2) | DSI_SLOT(DSI_INST_DLY_1 - 8, 3));
+		dsi_set_inst(dsi, DSI_INST_LP11_1, DSI_MODE_STOP, 0, true, lanes);
+		dsi_set_inst(dsi, DSI_INST_HSC_1, DSI_MODE_HS, DSI_PACKET_PIXEL, true, 0);
+		dsi_set_inst(dsi, DSI_INST_DS_1, DSI_MODE_SCINIT, DSI_PACKET_PIXEL, false, lanes);
+		dsi_set_inst(dsi, DSI_INST_LPDT_1, DSI_MODE_ESCAPE, DSI_PACKET_COMMAND, false, 0x1);
+		dsi_set_inst(dsi, DSI_INST_HSCEXIT_1, DSI_MODE_HSCEXIT, 0, true, 0);
+		dsi_set_inst(dsi, DSI_INST_NOP_1, DSI_MODE_STOP, 0, false, lanes);
+		dsi_set_inst(dsi, DSI_INST_DLY_1, DSI_MODE_NOP, 0, true, lanes);
+		dsi_write(dsi, DSI_INST_LOOP_SEL1,
+			dsi_inst_slot(DSI_INST_LP11_1 - 8, 2) | dsi_inst_slot(DSI_INST_DLY_1 - 8, 3));
 	}
 
 	/* the stop and delay slots loop (select loop counters 2 and 3) */
-	dsi_write(d, DSI_INST_LOOP_SEL, DSI_SLOT(DSI_INST_LP11, 2) | DSI_SLOT(DSI_INST_DLY, 3));
+	dsi_write(dsi, DSI_INST_LOOP_SEL, dsi_inst_slot(DSI_INST_LP11, 2) | dsi_inst_slot(DSI_INST_DLY, 3));
 
-	switch (m->mode) {
+	switch (mode_info->mode) {
 	case DSI_COMMAND:
-		dsi_write(d, DSI_INST_LOOP_NUM,
+		dsi_write(dsi, DSI_INST_LOOP_NUM,
 			DISP_FIELD_PREP(DSI_INST_LOOP_N0, n0) | DISP_FIELD_PREP(DSI_INST_LOOP_N1, n0));
 		break;
 	case DSI_VIDEO_BURST:
 		/* stay in LP for the horizontal blank, counted in module clock (MHz) ticks */
-		n1 = (m->htotal - m->hdisplay) * ((d->mod_hz + 500000U) / 1000000U) / (m->pixclk_hz / 1000 * 8);
+		n1 = (mode_info->htotal - mode_info->hdisplay) * ((dsi->mod_hz + 500000U) / 1000000U) /
+		     (mode_info->pixclk_hz / 1000 * 8);
 		n1 = n1 > n0 ? n1 - n0 : 1;
-		dsi_write(d, DSI_INST_LOOP_NUM,
+		dsi_write(dsi, DSI_INST_LOOP_NUM,
 			DISP_FIELD_PREP(DSI_INST_LOOP_N0, n0 - 1) | DISP_FIELD_PREP(DSI_INST_LOOP_N1, n1));
 		break;
 	default:
-		dsi_write(d, DSI_INST_LOOP_NUM,
+		dsi_write(dsi, DSI_INST_LOOP_NUM,
 			DISP_FIELD_PREP(DSI_INST_LOOP_N0, n0 - 1) | DISP_FIELD_PREP(DSI_INST_LOOP_N1, n0 - 1));
 		break;
 	}
-	dsi_write(d, DSI_INST_LOOP_NUM2, dsi_read(d, DSI_INST_LOOP_NUM));
+	dsi_write(dsi, DSI_INST_LOOP_NUM2, dsi_read(dsi, DSI_INST_LOOP_NUM));
 
 	/*
 	 * In command mode the NOP slot jumps to HS clock exit after one frame of
 	 * lines; in video mode the jump is armed only to pause.
 	 */
-	dsi_write(d, DSI_INST_JUMP_CFG(0),
+	dsi_write(dsi, DSI_INST_JUMP_CFG(0),
 		DISP_FIELD_PREP(DSI_JUMP_CFG_POINT, DSI_INST_NOP) | DISP_FIELD_PREP(DSI_JUMP_CFG_TO, DSI_INST_HSCEXIT) |
-			(m->mode == DSI_COMMAND ? DSI_JUMP_CFG_EN | DISP_FIELD_PREP(DSI_JUMP_CFG_NUM, m->vdisplay) :
-						  DISP_FIELD_PREP(DSI_JUMP_CFG_NUM, 1)));
+			(mode_info->mode == DSI_COMMAND ?
+					DSI_JUMP_CFG_EN | DISP_FIELD_PREP(DSI_JUMP_CFG_NUM, mode_info->vdisplay) :
+					DISP_FIELD_PREP(DSI_JUMP_CFG_NUM, 1)));
 }
 
-static void dsi_config_basic(const sunxi_dsi_t *d, const struct dsi_mode_info *m, bool slave)
+static void dsi_config_basic(const sunxi_dsi_t *dsi, const struct dsi_mode_info *mode_info, bool slave)
 {
-	const struct sunxi_dsi_variant *v = d->var;
-	uint32_t hbp = m->htotal - m->hsync_start; /* includes sync */
+	const struct sunxi_dsi_variant *variant = dsi->var;
+	uint32_t hbp = mode_info->htotal - mode_info->hsync_start; /* includes sync */
 	uint32_t basic = 0;
-	uint32_t ctl0 = v->ecc_crc_en ? DSI_CTL0_ECC_EN | DSI_CTL0_CRC_EN : 0;
+	uint32_t ctl0 = variant->ecc_crc_en ? DSI_CTL0_ECC_EN | DSI_CTL0_CRC_EN : 0;
 
-	dsi_write(d, DSI_TRANS_START, v->trans_start);
-	dsi_write(d, DSI_TRANS_ZERO, 0);
+	dsi_write(dsi, DSI_TRANS_START, variant->trans_start);
+	dsi_write(dsi, DSI_TRANS_ZERO, 0);
 
-	if (m->mode == DSI_COMMAND) {
-		dsi_write(d, DSI_BASIC_CTL0, ctl0 | DSI_CTL0_HS_EOTP_EN);
-		dsi_write(d, DSI_BASIC_CTL1, 0);
-		dsi_write(d, DSI_BASIC_CTL, 0);
+	if (mode_info->mode == DSI_COMMAND) {
+		dsi_write(dsi, DSI_BASIC_CTL0, ctl0 | DSI_CTL0_HS_EOTP_EN);
+		dsi_write(dsi, DSI_BASIC_CTL1, 0);
+		dsi_write(dsi, DSI_BASIC_CTL, 0);
 		return;
 	}
 
-	dsi_write(d, DSI_BASIC_CTL0, ctl0);
+	dsi_write(dsi, DSI_BASIC_CTL0, ctl0);
 	/* the TCON holds the start delay; request data one line early */
-	dsi_write(d, DSI_BASIC_CTL1,
+	dsi_write(dsi, DSI_BASIC_CTL1,
 		DSI_CTL1_VIDEO_MODE | DSI_CTL1_VIDEO_FRAME_START | DSI_CTL1_VIDEO_PREC_ALIGN |
-			DISP_FIELD_PREP(DSI_CTL1_VIDEO_START_DELAY, v->video_start_delay) |
-			(slave ? DISP_FIELD_PREP(DSI_CTL1_TRI_DELAY, v->slave_tri_delay) : 0));
+			DISP_FIELD_PREP(DSI_CTL1_VIDEO_START_DELAY, variant->video_start_delay) |
+			(slave ? DISP_FIELD_PREP(DSI_CTL1_TRI_DELAY, variant->slave_tri_delay) : 0));
 
-	if (m->mode == DSI_VIDEO_BURST) {
-		uint32_t sync_point = v->burst_sync_point;
+	if (mode_info->mode == DSI_VIDEO_BURST) {
+		uint32_t sync_point = variant->burst_sync_point;
 		uint32_t line_num, edge0, edge1;
 
-		line_num = m->htotal * m->bpp / (8 * m->lanes) * 10 / 9;
-		edge1 = sync_point + (m->hdisplay + hbp + 20) * m->bpp / (8 * m->lanes);
+		line_num = mode_info->htotal * mode_info->bpp / (8 * mode_info->lanes) * 10 / 9;
+		edge1 = sync_point + (mode_info->hdisplay + hbp + 20) * mode_info->bpp / (8 * mode_info->lanes);
 		edge1 = edge1 < line_num ? edge1 : line_num;
-		edge0 = edge1 + (m->hdisplay + 40) * 4 / 8;
+		edge0 = edge1 + (mode_info->hdisplay + 40) * 4 / 8;
 		edge0 = edge0 > line_num ? edge0 - line_num : 1;
-		dsi_write(d, DSI_BURST_DRQ,
+		dsi_write(dsi, DSI_BURST_DRQ,
 			DISP_FIELD_PREP(DSI_BURST_DRQ_EDGE0, edge0) | DISP_FIELD_PREP(DSI_BURST_DRQ_EDGE1, edge1));
-		dsi_write(d, DSI_TCON_DRQ, DSI_DRQ_MODE);
-		dsi_write(d, DSI_BURST_LINE,
+		dsi_write(dsi, DSI_TCON_DRQ, DSI_DRQ_MODE);
+		dsi_write(dsi, DSI_BURST_LINE,
 			DISP_FIELD_PREP(DSI_BURST_LINE_NUM, line_num) |
 				DISP_FIELD_PREP(DSI_BURST_SYNC_POINT, sync_point));
 		basic |= DSI_BASIC_VIDEO_BURST;
-		if (m->lanes == 4)
+		if (mode_info->lanes == 4)
 			basic |= DISP_FIELD_PREP(DSI_BASIC_TRAIL_INV, 0xc) | DSI_BASIC_TRAIL_FILL;
 	} else {
-		uint32_t hfp = m->htotal - m->hdisplay - hbp;
+		uint32_t hfp = mode_info->htotal - mode_info->hdisplay - hbp;
 
 		if (hfp < 21)
-			dsi_write(d, DSI_TCON_DRQ, 0);
+			dsi_write(dsi, DSI_TCON_DRQ, 0);
 		else
-			dsi_write(d, DSI_TCON_DRQ,
-				DSI_DRQ_MODE | DISP_FIELD_PREP(DSI_DRQ_SET, (hfp - 20) * m->bpp / (8 * 4)));
+			dsi_write(dsi, DSI_TCON_DRQ,
+				DSI_DRQ_MODE | DISP_FIELD_PREP(DSI_DRQ_SET, (hfp - 20) * mode_info->bpp / (8 * 4)));
 	}
 	if (slave)
 		basic |= DSI_BASIC_START_MODE;
-	dsi_write(d, DSI_BASIC_CTL, basic);
+	dsi_write(dsi, DSI_BASIC_CTL, basic);
 }
 
-static void dsi_write_blank(const sunxi_dsi_t *d, uint32_t reg0, uint32_t reg1, uint8_t vc, uint32_t size)
+static void dsi_write_blank(const sunxi_dsi_t *dsi, uint32_t reg0, uint32_t reg1, uint8_t vc, uint32_t size)
 {
-	dsi_write(d, reg0, dsi_header(DSI_DT_BLANKING_PACKET, vc, (uint16_t)size));
-	dsi_write(d, reg1, DISP_FIELD_PREP(DSI_BLK_PD, 0) | DISP_FIELD_PREP(DSI_BLK_PF, dsi_crc_repeat(0, size)));
+	dsi_write(dsi, reg0, dsi_header(DSI_DT_BLANKING_PACKET, vc, (uint16_t)size));
+	dsi_write(dsi, reg1, DISP_FIELD_PREP(DSI_BLK_PD, 0) | DISP_FIELD_PREP(DSI_BLK_PF, dsi_crc_repeat(0, size)));
 }
 
-static void dsi_config_packets(const sunxi_dsi_t *d, const struct dsi_mode_info *m)
+static void dsi_config_packets(const sunxi_dsi_t *dsi, const struct dsi_mode_info *mode_info)
 {
 	static const uint8_t pixel_dt[] = {
 		[SUNXI_DSI_FMT_RGB888] = DSI_DT_PIXEL_24,
@@ -377,113 +391,118 @@ static void dsi_config_packets(const sunxi_dsi_t *d, const struct dsi_mode_info 
 		[SUNXI_DSI_FMT_RGB666_PACKED] = DSI_DT_PIXEL_18_PACKED,
 		[SUNXI_DSI_FMT_RGB565] = DSI_DT_PIXEL_16,
 	};
-	uint32_t hspw = m->hsync_end - m->hsync_start;
-	uint32_t hbp = m->htotal - m->hsync_start; /* includes sync */
-	uint32_t vspw = m->vsync_end - m->vsync_start;
-	uint32_t vbp = m->vtotal - m->vsync_start;
+	uint32_t hspw = mode_info->hsync_end - mode_info->hsync_start;
+	uint32_t hbp = mode_info->htotal - mode_info->hsync_start; /* includes sync */
+	uint32_t vspw = mode_info->vsync_end - mode_info->vsync_start;
+	uint32_t vbp = mode_info->vtotal - mode_info->vsync_start;
 	uint32_t hsa, hbp_b, hact, hfp, hblk, vblk;
 
-	if (m->mode == DSI_COMMAND) {
-		dsi_write(d, DSI_PIXEL_CTL0, DISP_FIELD_PREP(DSI_PIXEL_FORMAT, m->format));
-		dsi_write(d, DSI_PIXEL_PH,
-			dsi_header(DSI_DT_DCS_LONG, m->channel, (uint16_t)(1 + m->hdisplay * m->bpp / 8)));
-		dsi_write(d, DSI_PIXEL_PD,
+	if (mode_info->mode == DSI_COMMAND) {
+		dsi_write(dsi, DSI_PIXEL_CTL0, DISP_FIELD_PREP(DSI_PIXEL_FORMAT, mode_info->format));
+		dsi_write(dsi, DSI_PIXEL_PH,
+			dsi_header(DSI_DT_DCS_LONG, mode_info->channel,
+				(uint16_t)(1 + mode_info->hdisplay * mode_info->bpp / 8)));
+		dsi_write(dsi, DSI_PIXEL_PD,
 			DISP_FIELD_PREP(DSI_PIXEL_PD_TRAN0, DSI_DCS_WRITE_MEM_START) |
 				DISP_FIELD_PREP(DSI_PIXEL_PD_TRANN, DSI_DCS_WRITE_MEM_CONT));
-		dsi_write(d, DSI_PIXEL_PF0, 0xffff);
+		dsi_write(dsi, DSI_PIXEL_PF0, 0xffff);
 		/* CRC seeds of the command byte for first/next lines */
-		dsi_write(d, DSI_PIXEL_PF1, 0xe4e9 | (0xf468U << 16));
+		dsi_write(dsi, DSI_PIXEL_PF1, 0xe4e9 | (0xf468U << 16));
 		return;
 	}
 
-	dsi_write(d, DSI_PIXEL_CTL0, DSI_PIXEL_PD_PLUG_DIS | DISP_FIELD_PREP(DSI_PIXEL_FORMAT, 8 + m->format));
-	dsi_write(d, DSI_PIXEL_PH, dsi_header(pixel_dt[m->format], 0, (uint16_t)(m->hdisplay * m->bpp / 8)));
-	dsi_write(d, DSI_PIXEL_PF0, 0xffff);
-	dsi_write(d, DSI_PIXEL_PF1, 0xffffffff);
+	dsi_write(
+		dsi, DSI_PIXEL_CTL0, DSI_PIXEL_PD_PLUG_DIS | DISP_FIELD_PREP(DSI_PIXEL_FORMAT, 8 + mode_info->format));
+	dsi_write(dsi, DSI_PIXEL_PH,
+		dsi_header(pixel_dt[mode_info->format], 0, (uint16_t)(mode_info->hdisplay * mode_info->bpp / 8)));
+	dsi_write(dsi, DSI_PIXEL_PF0, 0xffff);
+	dsi_write(dsi, DSI_PIXEL_PF1, 0xffffffff);
 
-	hact = m->hdisplay * m->bpp / 8;
-	if (m->mode == DSI_VIDEO_BURST) {
+	hact = mode_info->hdisplay * mode_info->bpp / 8;
+	if (mode_info->mode == DSI_VIDEO_BURST) {
 		hsa = 0;
 		hbp_b = 0;
 		hfp = 0;
 		hblk = hact;
 		vblk = 0;
-		dsi_update(d, DSI_BASIC_CTL, DSI_BASIC_HSA_HSE_DIS | DSI_BASIC_HBP_DIS,
+		dsi_update(dsi, DSI_BASIC_CTL, DSI_BASIC_HSA_HSE_DIS | DSI_BASIC_HBP_DIS,
 			DSI_BASIC_HSA_HSE_DIS | DSI_BASIC_HBP_DIS);
 	} else {
 		/* blanking payload sizes minus the packet overheads */
-		hsa = hspw * m->bpp / 8 - (4 + 4 + 2);
-		hbp_b = (hbp - hspw) * m->bpp / 8 - 10;
-		hblk = (m->htotal - hspw) * m->bpp / 8 - (4 + 4 + 2);
-		hfp = (m->htotal - hbp - m->hdisplay) * m->bpp / 8 - 6 - 6;
-		if (m->lanes == 4) {
-			uint32_t t = (m->htotal * m->bpp / 8) * m->vtotal - (4 + hblk + 2);
+		hsa = hspw * mode_info->bpp / 8 - (4 + 4 + 2);
+		hbp_b = (hbp - hspw) * mode_info->bpp / 8 - 10;
+		hblk = (mode_info->htotal - hspw) * mode_info->bpp / 8 - (4 + 4 + 2);
+		hfp = (mode_info->htotal - hbp - mode_info->hdisplay) * mode_info->bpp / 8 - 6 - 6;
+		if (mode_info->lanes == 4) {
+			uint32_t frame_bytes =
+				(mode_info->htotal * mode_info->bpp / 8) * mode_info->vtotal - (4 + hblk + 2);
 
-			vblk = m->lanes - t % m->lanes;
+			vblk = mode_info->lanes - frame_bytes % mode_info->lanes;
 		} else {
 			vblk = 0;
 		}
 	}
 	(void)hact;
 
-	dsi_write(d, DSI_SYNC_HSS, dsi_header(DSI_DT_H_SYNC_START, 0, 0));
-	dsi_write(d, DSI_SYNC_HSE, dsi_header(DSI_DT_H_SYNC_END, 0, 0));
-	dsi_write(d, DSI_SYNC_VSS, dsi_header(DSI_DT_V_SYNC_START, 0, 0));
-	dsi_write(d, DSI_SYNC_VSE, dsi_header(DSI_DT_V_SYNC_END, 0, 0));
+	dsi_write(dsi, DSI_SYNC_HSS, dsi_header(DSI_DT_H_SYNC_START, 0, 0));
+	dsi_write(dsi, DSI_SYNC_HSE, dsi_header(DSI_DT_H_SYNC_END, 0, 0));
+	dsi_write(dsi, DSI_SYNC_VSS, dsi_header(DSI_DT_V_SYNC_START, 0, 0));
+	dsi_write(dsi, DSI_SYNC_VSE, dsi_header(DSI_DT_V_SYNC_END, 0, 0));
 
-	dsi_write(
-		d, DSI_BASIC_SIZE0, DISP_FIELD_PREP(DSI_SIZE0_VSA, vspw) | DISP_FIELD_PREP(DSI_SIZE0_VBP, vbp - vspw));
-	dsi_write(d, DSI_BASIC_SIZE1,
-		DISP_FIELD_PREP(DSI_SIZE1_VACT, m->vdisplay) | DISP_FIELD_PREP(DSI_SIZE1_VT, m->vtotal));
+	dsi_write(dsi, DSI_BASIC_SIZE0,
+		DISP_FIELD_PREP(DSI_SIZE0_VSA, vspw) | DISP_FIELD_PREP(DSI_SIZE0_VBP, vbp - vspw));
+	dsi_write(dsi, DSI_BASIC_SIZE1,
+		DISP_FIELD_PREP(DSI_SIZE1_VACT, mode_info->vdisplay) |
+			DISP_FIELD_PREP(DSI_SIZE1_VT, mode_info->vtotal));
 
-	dsi_write_blank(d, DSI_BLK_HSA0, DSI_BLK_HSA1, 0, hsa);
-	dsi_write_blank(d, DSI_BLK_HBP0, DSI_BLK_HBP1, 0, hbp_b);
-	dsi_write_blank(d, DSI_BLK_HFP0, DSI_BLK_HFP1, 0, hfp);
-	dsi_write_blank(d, DSI_BLK_HBLK0, DSI_BLK_HBLK1, 0, hblk);
-	dsi_write_blank(d, DSI_BLK_VBLK0, DSI_BLK_VBLK1, 0, vblk);
+	dsi_write_blank(dsi, DSI_BLK_HSA0, DSI_BLK_HSA1, 0, hsa);
+	dsi_write_blank(dsi, DSI_BLK_HBP0, DSI_BLK_HBP1, 0, hbp_b);
+	dsi_write_blank(dsi, DSI_BLK_HFP0, DSI_BLK_HFP1, 0, hfp);
+	dsi_write_blank(dsi, DSI_BLK_HBLK0, DSI_BLK_HBLK1, 0, hblk);
+	dsi_write_blank(dsi, DSI_BLK_VBLK0, DSI_BLK_VBLK1, 0, vblk);
 }
 
-static void dsi_hw_run(const sunxi_dsi_t *d, enum dsi_seq seq)
+static void dsi_hw_run(const sunxi_dsi_t *dsi, enum dsi_seq seq)
 {
 	uint32_t jump;
 
 	switch (seq) {
 	case DSI_SEQ_HS_CLOCK:
-		jump = DSI_SLOT(DSI_INST_LP11, DSI_INST_HSC) | DSI_SLOT(DSI_INST_HSC, DSI_INST_END);
+		jump = dsi_inst_slot(DSI_INST_LP11, DSI_INST_HSC) | dsi_inst_slot(DSI_INST_HSC, DSI_INST_END);
 		break;
 	case DSI_SEQ_HS_VIDEO:
-		jump = DSI_SLOT(DSI_INST_LP11, DSI_INST_HSC) | DSI_SLOT(DSI_INST_HSC, DSI_INST_NOP) |
-		       DSI_SLOT(DSI_INST_NOP, DSI_INST_HSD) | DSI_SLOT(DSI_INST_HSD, DSI_INST_DLY) |
-		       DSI_SLOT(DSI_INST_DLY, DSI_INST_NOP) | DSI_SLOT(DSI_INST_HSCEXIT, DSI_INST_END);
+		jump = dsi_inst_slot(DSI_INST_LP11, DSI_INST_HSC) | dsi_inst_slot(DSI_INST_HSC, DSI_INST_NOP) |
+		       dsi_inst_slot(DSI_INST_NOP, DSI_INST_HSD) | dsi_inst_slot(DSI_INST_HSD, DSI_INST_DLY) |
+		       dsi_inst_slot(DSI_INST_DLY, DSI_INST_NOP) | dsi_inst_slot(DSI_INST_HSCEXIT, DSI_INST_END);
 		break;
 	case DSI_SEQ_HS_DATA:
-		jump = DSI_SLOT(DSI_INST_LP11, DSI_INST_NOP) | DSI_SLOT(DSI_INST_NOP, DSI_INST_HSD) |
-		       DSI_SLOT(DSI_INST_HSD, DSI_INST_DLY) | DSI_SLOT(DSI_INST_DLY, DSI_INST_NOP) |
-		       DSI_SLOT(DSI_INST_HSCEXIT, DSI_INST_END);
+		jump = dsi_inst_slot(DSI_INST_LP11, DSI_INST_NOP) | dsi_inst_slot(DSI_INST_NOP, DSI_INST_HSD) |
+		       dsi_inst_slot(DSI_INST_HSD, DSI_INST_DLY) | dsi_inst_slot(DSI_INST_DLY, DSI_INST_NOP) |
+		       dsi_inst_slot(DSI_INST_HSCEXIT, DSI_INST_END);
 		break;
 	case DSI_SEQ_LP_TX:
-		jump = DSI_SLOT(DSI_INST_LP11, DSI_INST_LPDT) | DSI_SLOT(DSI_INST_LPDT, DSI_INST_END);
+		jump = dsi_inst_slot(DSI_INST_LP11, DSI_INST_LPDT) | dsi_inst_slot(DSI_INST_LPDT, DSI_INST_END);
 		break;
 	default:
-		jump = DSI_SLOT(DSI_INST_LP11, DSI_INST_END);
+		jump = dsi_inst_slot(DSI_INST_LP11, DSI_INST_END);
 		break;
 	}
-	dsi_write(d, DSI_INST_JUMP_SEL, jump);
+	dsi_write(dsi, DSI_INST_JUMP_SEL, jump);
 	/* a rising edge of INST_ST starts the engine */
-	dsi_update(d, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, 0);
-	dsi_update(d, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, DSI_CTL0_INST_ST);
+	dsi_update(dsi, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, 0);
+	dsi_update(dsi, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, DSI_CTL0_INST_ST);
 
 	if (seq == DSI_SEQ_HS_CLOCK) {
 		/* keep the clock lane in HS unless pixel data is plugged */
-		bool plug_dis = dsi_read(d, DSI_PIXEL_CTL0) & DSI_PIXEL_PD_PLUG_DIS;
+		bool plug_dis = dsi_read(dsi, DSI_PIXEL_CTL0) & DSI_PIXEL_PD_PLUG_DIS;
 
-		dsi_update(d, DSI_INST_FUNC(DSI_INST_LP11), DSI_INST_LANE_CEN, plug_dis ? 0 : DSI_INST_LANE_CEN);
+		dsi_update(dsi, DSI_INST_FUNC(DSI_INST_LP11), DSI_INST_LANE_CEN, plug_dis ? 0 : DSI_INST_LANE_CEN);
 	}
 }
 
-static int dsi_wait_idle(const sunxi_dsi_t *d, uint32_t timeout_us)
+static int dsi_wait_idle(const sunxi_dsi_t *dsi, uint32_t timeout_us)
 {
-	while (dsi_read(d, DSI_BASIC_CTL0) & DSI_CTL0_INST_ST) {
+	while (dsi_read(dsi, DSI_BASIC_CTL0) & DSI_CTL0_INST_ST) {
 		if (!timeout_us--)
 			return DSI_ERR_TIMEOUT;
 		udelay(1);
@@ -492,18 +511,18 @@ static int dsi_wait_idle(const sunxi_dsi_t *d, uint32_t timeout_us)
 }
 
 /* pause/resume the video stream so LP commands can be interleaved */
-static void dsi_video_hold(const sunxi_dsi_t *d, bool hold)
+static void dsi_video_hold(const sunxi_dsi_t *dsi, bool hold)
 {
-	dsi_update(d, DSI_INST_JUMP_CFG(0), DSI_JUMP_CFG_EN, hold ? DSI_JUMP_CFG_EN : 0);
+	dsi_update(dsi, DSI_INST_JUMP_CFG(0), DSI_JUMP_CFG_EN, hold ? DSI_JUMP_CFG_EN : 0);
 	if (!hold)
-		dsi_hw_run(d, DSI_SEQ_HS_VIDEO);
+		dsi_hw_run(dsi, DSI_SEQ_HS_VIDEO);
 }
 
 /* ------------------------------------------------------------------ */
 /* Messages                                                            */
 /* ------------------------------------------------------------------ */
 /* Send one packet in LP escape mode. @tx: payload (long) or 1..2 bytes (short). */
-static int dsi_send(sunxi_dsi_t *d, uint8_t type, uint8_t channel, const uint8_t *tx, size_t tx_len, bool is_long)
+static int dsi_send(sunxi_dsi_t *dsi, uint8_t type, uint8_t channel, const uint8_t *tx, size_t tx_len, bool is_long)
 {
 	uint8_t pkt[256 + 8];
 	uint32_t header, word = 0;
@@ -511,14 +530,14 @@ static int dsi_send(sunxi_dsi_t *d, uint8_t type, uint8_t channel, const uint8_t
 	bool hold;
 	int ret;
 
-	if (!d->prepared || d->var == NULL)
+	if (!dsi->prepared || dsi->var == NULL)
 		return DRIVER_ERROR_INVALID;
 
 	if (is_long) {
 		uint16_t crc;
 
 		/* the TX size field is 8 bits wide */
-		if (tx_len + 6 > d->var->max_tx_bytes || tx_len + 6 > sizeof(pkt))
+		if (tx_len + 6 > dsi->var->max_tx_bytes || tx_len + 6 > sizeof(pkt))
 			return DRIVER_ERROR_INVALID;
 		header = dsi_header(type, channel, (uint16_t)tx_len);
 		memcpy(&pkt[4], tx, (int)tx_len);
@@ -542,28 +561,28 @@ static int dsi_send(sunxi_dsi_t *d, uint8_t type, uint8_t channel, const uint8_t
 	pkt[3] = (uint8_t)(header >> 24);
 
 	/* the engine loops over the video sequence while a stream runs */
-	hold = DSI_RUNNING(d);
+	hold = dsi_video_is_running(dsi);
 	if (hold) {
-		dsi_video_hold(d, true);
+		dsi_video_hold(dsi, true);
 		mdelay(20);
 	}
 
-	if (dsi_wait_idle(d, 5000))
-		dsi_update(d, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, 0);
+	if (dsi_wait_idle(dsi, 5000))
+		dsi_update(dsi, DSI_BASIC_CTL0, DSI_CTL0_INST_ST, 0);
 
 	for (i = 0; i < len; i++) {
 		word |= (uint32_t)pkt[i] << (8 * (i & 3));
 		if ((i & 3) == 3 || i == len - 1) {
-			dsi_write(d, DSI_CMD_TX(i / 4), word);
+			dsi_write(dsi, DSI_CMD_TX(i / 4), word);
 			word = 0;
 		}
 	}
-	dsi_update(d, DSI_CMD_CTL, DSI_CMD_TX_SIZE, DISP_FIELD_PREP(DSI_CMD_TX_SIZE, len - 1));
-	dsi_hw_run(d, DSI_SEQ_LP_TX);
-	ret = dsi_wait_idle(d, 5000);
+	dsi_update(dsi, DSI_CMD_CTL, DSI_CMD_TX_SIZE, DISP_FIELD_PREP(DSI_CMD_TX_SIZE, len - 1));
+	dsi_hw_run(dsi, DSI_SEQ_LP_TX);
+	ret = dsi_wait_idle(dsi, 5000);
 
 	if (hold)
-		dsi_video_hold(d, false);
+		dsi_video_hold(dsi, false);
 	return ret;
 }
 
@@ -609,7 +628,7 @@ int sunxi_dsi_generic_write(sunxi_dsi_t *dsi, const uint8_t *data, size_t len)
 int sunxi_dsi_prepare(sunxi_dsi_t *dsi, const sunxi_panel_t *panel)
 {
 	sunxi_dphy_dsi_cfg_t phy_cfg;
-	struct dsi_mode_info m;
+	struct dsi_mode_info mode_info;
 	uint32_t rate;
 
 	if (dsi == NULL || panel == NULL || dsi->var == NULL || dsi->clk == NULL || dsi->phy == NULL)
@@ -618,8 +637,8 @@ int sunxi_dsi_prepare(sunxi_dsi_t *dsi, const sunxi_panel_t *panel)
 		pr_err("dsi: invalid lane count %u\n", panel->dsi_lanes);
 		return DRIVER_ERROR_INVALID;
 	}
-	dsi_mode_from_panel(&m, panel);
-	if (dsi_check_mode(&m)) {
+	dsi_mode_from_panel(&mode_info, panel);
+	if (dsi_check_mode(&mode_info)) {
 		pr_err("dsi: horizontal blanking too short for the sync packets\n");
 		return DRIVER_ERROR_INVALID;
 	}
@@ -641,16 +660,16 @@ int sunxi_dsi_prepare(sunxi_dsi_t *dsi, const sunxi_panel_t *panel)
 	}
 
 	/* host registers */
-	dsi_config_basic(dsi, &m, false);
-	dsi_config_instructions(dsi, &m);
-	dsi_config_packets(dsi, &m);
+	dsi_config_basic(dsi, &mode_info, false);
+	dsi_config_instructions(dsi, &mode_info);
+	dsi_config_packets(dsi, &mode_info);
 	dsi_write(dsi, DSI_DEBUG_DATA, 0xff);
 	dsi_write(dsi, DSI_CTL, DSI_CTL_EN);
 
 	memset(&phy_cfg, 0, sizeof(phy_cfg));
-	phy_cfg.lanes = m.lanes;
-	phy_cfg.pixclk_hz = m.pixclk_hz;
-	phy_cfg.bpp = m.bpp;
+	phy_cfg.lanes = mode_info.lanes;
+	phy_cfg.pixclk_hz = mode_info.pixclk_hz;
+	phy_cfg.bpp = mode_info.bpp;
 	if (sunxi_dphy_dsi_enable(dsi->phy, &phy_cfg, NULL)) {
 		dsi_write(dsi, DSI_CTL, 0);
 		sunxi_dphy_power_off(dsi->phy);
@@ -661,7 +680,7 @@ int sunxi_dsi_prepare(sunxi_dsi_t *dsi, const sunxi_panel_t *panel)
 
 	/* clock lane in HS before talking to the panel */
 	dsi->prepared = true;
-	DSI_RUNNING(dsi) = 0;
+	dsi_video_set_running(dsi, false);
 	dsi_hw_run(dsi, DSI_SEQ_HS_CLOCK);
 	dsi_wait_idle(dsi, 1000);
 	return 0;
@@ -679,7 +698,7 @@ int sunxi_dsi_start_video(sunxi_dsi_t *dsi)
 		dsi_update(dsi, DSI_INST_FUNC(DSI_INST_LP11), DSI_INST_LANE_CEN, 0);
 	/* the LP command transfers drop the clock lane out of HS: bring clock and data lanes up together */
 	dsi_hw_run(dsi, DSI_SEQ_HS_VIDEO);
-	DSI_RUNNING(dsi) = 1;
+	dsi_video_set_running(dsi, true);
 	return 0;
 }
 
@@ -687,11 +706,11 @@ void sunxi_dsi_stop_video(sunxi_dsi_t *dsi)
 {
 	if (dsi == NULL || !dsi->prepared)
 		return;
-	if (DSI_RUNNING(dsi)) {
+	if (dsi_video_is_running(dsi)) {
 		/* finish the current frame and fall back to LP */
 		dsi_video_hold(dsi, true);
 		mdelay(30);
-		DSI_RUNNING(dsi) = 0;
+		dsi_video_set_running(dsi, false);
 	}
 }
 
@@ -740,7 +759,7 @@ void sunxi_dsi_dump(sunxi_dsi_t *dsi)
 	if (dsi == NULL)
 		return;
 	pr_debug("dsi%u: %s, module clock %u Hz, video %s\n", dsi->id, dsi->prepared ? "on" : "off", dsi->mod_hz,
-		DSI_RUNNING(dsi) ? "running" : "stopped");
+		dsi_video_is_running(dsi) ? "running" : "stopped");
 	if (!dsi->prepared)
 		return;
 	for (i = 0; i < sizeof(regs) / sizeof(regs[0]); i++)

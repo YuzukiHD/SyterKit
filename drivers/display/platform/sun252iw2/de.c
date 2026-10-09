@@ -7,8 +7,12 @@
  */
 #include "../../de/de-regs.h"
 
-#define DE_CHN(slot) (0x100000 + (slot) * 0x20000)
-#define DE_DISP0     0x1c0000
+#define DE_DISP0 0x1c0000
+
+/* channel slots are 0x20000 apart from 0x100000; the UI channel is slot 3 */
+enum {
+	DE_UI_CHANNEL_BASE = 0x100000 + 3 * 0x20000,
+};
 
 const struct sunxi_de_variant sunxi_de_variant_sun252iw2 = {
 	.name = "sun252iw2",
@@ -36,7 +40,7 @@ const struct sunxi_de_variant sunxi_de_variant_sun252iw2 = {
 	.size_h_mask = 0x1fff,
 	.size_minus_one = 1,
 
-	.ovl_base = DE_CHN(3) + 0x1000,
+	.ovl_base = DE_UI_CHANNEL_BASE + 0x1000,
 	.layer_attr = 0x00,
 	.layer_size = 0x04,
 	.layer_coor = 0x08,

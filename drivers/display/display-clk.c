@@ -40,7 +40,7 @@ static inline bool bit_valid(uint8_t bit)
 uint32_t sunxi_disp_src_rate(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src)
 {
 	const struct sunxi_disp_soc *soc = clk->soc;
-	uint32_t reg, n, p0, rate;
+	uint32_t reg, n, post_div0, rate;
 
 	switch (src) {
 	case SUNXI_DISP_SRC_HOSC:
@@ -50,11 +50,13 @@ uint32_t sunxi_disp_src_rate(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src)
 		reg = readl(clk->pll_peri_reg);
 		n = ((reg & field_mask(soc->pll_peri_n_shift, soc->pll_peri_n_width)) >> soc->pll_peri_n_shift) +
 		    soc->pll_peri_n_bias;
-		p0 = ((reg & field_mask(soc->pll_peri_p0_shift, soc->pll_peri_p0_width)) >> soc->pll_peri_p0_shift) + 1;
+		post_div0 =
+			((reg & field_mask(soc->pll_peri_p0_shift, soc->pll_peri_p0_width)) >> soc->pll_peri_p0_shift) +
+			1;
 		rate = soc->hosc_hz;
 		if (bit_valid(soc->pll_peri_m_bit) && (reg & (1U << soc->pll_peri_m_bit)))
 			rate /= 2;
-		rate = rate / p0 * n;
+		rate = rate / post_div0 * n;
 		return src == SUNXI_DISP_SRC_PLL_PERI_1X ? rate / 2 : rate;
 	case SUNXI_DISP_SRC_PLL_VIDEO_4X:
 	case SUNXI_DISP_SRC_PLL_VIDEO_1X:
