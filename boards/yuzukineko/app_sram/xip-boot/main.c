@@ -43,7 +43,6 @@
 #define HEAP_BASE (SUNXI_PSRAM_BASE + 0x00800000U)
 #define HEAP_SIZE 0x00500000U
 
-
 static int psram_up(void)
 {
 	sunxi_psram_t psram = { 0 };
@@ -84,6 +83,7 @@ int main(void)
 	sunxi_spif_t spif = { 0 };
 	spif_nor_t nor = { 0 };
 
+	/* the console is the stdout-path of the board devicetree */
 	if (sunxi_serial_init_stdout() != DRIVER_OK)
 		return -1;
 	show_banner();
