@@ -2,14 +2,15 @@
 
 /*
  * Boot stub for an image that runs from the flash window (XIP) of the SPIF controller, for the
- * Yuzuki Neko / F101 EVB.
+ * Yuzuki Neko (console on the board's UART from the devicetree).
  *
  * The BROM (or the FEL loader) starts this SPL in SRAM. It brings up the PSRAM (the RAM of the image),
  * the SPIF controller and the flash with the usual detection and sampling training, maps the flash
  * from XIP_FLASH_OFFSET at the window (0x0e000000) and jumps to the first word of the window, the
  * entry of the image.
  *
- * Build with -DXIP_FLASH_OFFSET=0x... to place the image elsewhere (4 KiB aligned).
+ * Build with -DXIP_FLASH_OFFSET=0x... to place the image elsewhere (4 KiB aligned) and
+-DXIP_LENGTH=0x... for the size of the window (default 6 MiB, up to the end of the 16 MiB flash).
  */
 
 #include <stdint.h>
@@ -34,32 +35,14 @@
 #ifndef XIP_FLASH_OFFSET
 #define XIP_FLASH_OFFSET 0x00a00000U
 #endif
-#define XIP_LENGTH 0x00200000U
+#ifndef XIP_LENGTH
+#define XIP_LENGTH 0x00600000U
+#endif
 
 /* the PSRAM above the image is free while the SPIF training runs: its heap lives there */
 #define HEAP_BASE (SUNXI_PSRAM_BASE + 0x00800000U)
 #define HEAP_SIZE 0x00500000U
 
-/* console of the EVB: UART3 on PE8/PE9 */
-static const sunxi_serial_t console = {
-	.base = SUNXI_UART3_BASE,
-	.id = 3,
-	.uart_clk = {
-		.gate_reg_base = SUNXI_CCU_BASE + 0x90c,
-		.gate_reg_offset = 3,
-		.rst_reg_base = SUNXI_CCU_BASE + 0x90c,
-		.rst_reg_offset = 19,
-		.parent_clk = 24000000,
-	},
-	.gpio_pin = {
-		.gpio_tx = { .base = SUNXI_GPIO_BASE, .pin = GPIO_PIN(GPIO_PORTE, 8), .bank = GPIO_PORTE - GPIO_PORTA, .mux = 6 },
-		.gpio_rx = { .base = SUNXI_GPIO_BASE, .pin = GPIO_PIN(GPIO_PORTE, 9), .bank = GPIO_PORTE - GPIO_PORTA, .mux = 6 },
-	},
-	.baud_rate = UART_BAUDRATE_115200,
-	.parity = UART_PARITY_NO,
-	.stop = UART_STOP_BIT_0,
-	.dlen = UART_DLEN_8,
-};
 
 static int psram_up(void)
 {
@@ -101,9 +84,8 @@ int main(void)
 	sunxi_spif_t spif = { 0 };
 	spif_nor_t nor = { 0 };
 
-	uart_dbg = console;
-	sunxi_serial_init(&uart_dbg);
-	uart_log_console_ready();
+	if (sunxi_serial_init_stdout() != DRIVER_OK)
+		return -1;
 	show_banner();
 	sunxi_clk_init();
 
