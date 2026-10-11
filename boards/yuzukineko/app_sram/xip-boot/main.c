@@ -33,7 +33,7 @@
 #include <dt-compatible/spif-nor-dt.h>
 
 #ifndef XIP_FLASH_OFFSET
-#define XIP_FLASH_OFFSET 0x00a00000U
+#define XIP_FLASH_OFFSET 0x00008000U
 #endif
 #ifndef XIP_LENGTH
 #define XIP_LENGTH 0x00600000U
