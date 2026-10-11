@@ -33,8 +33,21 @@
 #include <dt-compatible/spif-nor-dt.h>
 
 #ifndef XIP_FLASH_OFFSET
-#define XIP_FLASH_OFFSET 0x00008000U
+#define XIP_FLASH_OFFSET CONFIG_DRIVER_MTD_SPIF_NOR_XIP_OFFSET
 #endif
+/*
+ * Flash layout: 0..128 KiB the boot stub, 128..192 KiB (PARAMS_OFFSET, 64 KiB aligned) the parameter
+ * area where the result of the sampling training is kept, the image from XIP_FLASH_OFFSET. A start with
+ * saved parameters skips the training, the first start (or a changed flash) trains and saves.
+ */
+#ifndef PARAMS_OFFSET
+#ifdef CONFIG_DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+#define PARAMS_OFFSET CONFIG_DRIVER_MTD_SPIF_NOR_PARAMS_OFFSET
+#else
+#define PARAMS_OFFSET 0U
+#endif
+#endif
+
 #ifndef XIP_LENGTH
 #define XIP_LENGTH 0x00600000U
 #endif
@@ -66,6 +79,7 @@ static int nor_up(sunxi_spif_t *spif, spif_nor_t *nor)
 		pr_err("SPI NOR: invalid devicetree configuration\n");
 		return -1;
 	}
+	nor->params_offset = PARAMS_OFFSET;
 	if (sunxi_spif_init(spif) != 0) {
 		pr_err("SPIF: controller init failed\n");
 		return -1;

@@ -1186,13 +1186,14 @@ static int spif_nor_get_training_erase(const spif_nor_t *nor, uint32_t *size, ui
 static int spif_nor_restore_training(spif_nor_t *nor, uint32_t erase_size, uint32_t training_size, uint8_t erase_opcode,
 	const uint8_t *backup, uint8_t *result)
 {
+	const uint32_t base = nor->params_offset;
 	uint32_t erase_addr;
 	uint32_t offset;
 	uint32_t count;
 	int ret;
 
 	for (erase_addr = 0U; erase_addr < training_size; erase_addr += erase_size) {
-		ret = spif_nor_erase_block(nor, erase_addr, erase_size, erase_opcode);
+		ret = spif_nor_erase_block(nor, base + erase_addr, erase_size, erase_opcode);
 		if (ret != 0)
 			return ret;
 	}
@@ -1200,7 +1201,7 @@ static int spif_nor_restore_training(spif_nor_t *nor, uint32_t erase_size, uint3
 		count = training_size - offset;
 		if (count > SPIF_NOR_TRAINING_PAGE_SIZE)
 			count = SPIF_NOR_TRAINING_PAGE_SIZE;
-		ret = spif_nor_write_page(nor, offset, &backup[offset], count);
+		ret = spif_nor_write_page(nor, base + offset, &backup[offset], count);
 		if (ret != 0)
 			return ret;
 	}
@@ -1208,7 +1209,7 @@ static int spif_nor_restore_training(spif_nor_t *nor, uint32_t erase_size, uint3
 		count = training_size - offset;
 		if (count > SPIF_NOR_TRAINING_PAGE_SIZE)
 			count = SPIF_NOR_TRAINING_PAGE_SIZE;
-		ret = spif_nor_read_single(nor, offset, result, count);
+		ret = spif_nor_read_single(nor, base + offset, result, count);
 		if (ret != 0 || memcmp(result, &backup[offset], count) != 0)
 			return DRIVER_ERROR_INVALID;
 	}
@@ -1307,7 +1308,7 @@ static int spif_nor_backup_training(spif_nor_t *nor, const struct spif_nor_train
 		frequency, false, false, SUNXI_SPIF_SAMPLE_DEFAULT, SUNXI_SPIF_SAMPLE_DEFAULT);
 	if (ret != 0)
 		return ret;
-	return spif_nor_read_single(nor, 0U, training->backup, training->size);
+	return spif_nor_read_single(nor, nor->params_offset, training->backup, training->size);
 }
 
 /**
@@ -1325,19 +1326,19 @@ static int spif_nor_program_training_pattern(spif_nor_t *nor, struct spif_nor_tr
 	int ret;
 
 	for (offset = 0U; offset < training->size; offset += training->erase_size) {
-		ret = spif_nor_erase_block(nor, offset, training->erase_size, training->erase_opcode);
+		ret = spif_nor_erase_block(nor, nor->params_offset + offset, training->erase_size, training->erase_opcode);
 		if (ret != 0)
 			return ret;
 	}
 	for (index = 0U; index < SPIF_NOR_TRAINING_PAGE_SIZE; ++index)
 		training->pattern[index] = (uint8_t)(0x5aU + index);
 	for (offset = 0U; offset < training->test_size; offset += SPIF_NOR_TRAINING_PAGE_SIZE) {
-		ret = spif_nor_write_page(nor, offset, training->pattern, SPIF_NOR_TRAINING_PAGE_SIZE);
+		ret = spif_nor_write_page(nor, nor->params_offset + offset, training->pattern, SPIF_NOR_TRAINING_PAGE_SIZE);
 		if (ret != 0)
 			return ret;
 	}
 	memset(training->result, 0xff, SPIF_NOR_TRAINING_PAGE_SIZE);
-	if (spif_nor_read_single(nor, 0U, training->result, SPIF_NOR_TRAINING_PAGE_SIZE) != 0 ||
+	if (spif_nor_read_single(nor, nor->params_offset, training->result, SPIF_NOR_TRAINING_PAGE_SIZE) != 0 ||
 		memcmp(training->result, training->pattern, SPIF_NOR_TRAINING_PAGE_SIZE) != 0)
 		return DRIVER_ERROR_INVALID;
 	return DRIVER_OK;
@@ -1429,7 +1430,7 @@ static int spif_nor_find_training_window(spif_nor_t *nor, const struct spif_nor_
 				return DRIVER_ERROR_INVALID;
 			}
 			passed = spif_nor_read_operation(nor, info->read_proto, info->opcode_read, info->read_dummy,
-					 delay * SPIF_NOR_TRAINING_PAGE_SIZE, training->result,
+					 nor->params_offset + delay * SPIF_NOR_TRAINING_PAGE_SIZE, training->result,
 					 SPIF_NOR_TRAINING_PAGE_SIZE) == 0 &&
 				 memcmp(training->pattern, training->result, SPIF_NOR_TRAINING_PAGE_SIZE) == 0;
 #ifdef CONFIG_DRIVER_MTD_SPIF_NOR_SHOW_TRAINING
@@ -1507,6 +1508,184 @@ static int spif_nor_apply_training_config(spif_nor_t *nor, uint32_t frequency, b
 	return ret;
 }
 
+#ifdef CONFIG_DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+/*
+ * The result of the sampling training is kept in the parameter area of the flash (a 64 KiB block at
+ * nor->params_offset, the training also works there, never at the start of the flash where the boot
+ * code is). A record is 32 bytes, appended into the first 4 KiB sector; the last valid one counts.
+ * The format is the one of the Zephyr and RT-Thread drivers.
+ */
+#define SPIF_REC_MAGIC "SPIFTUNE"
+#define SPIF_REC_SIZE  32U
+#define SPIF_REC_SECTOR 4096U
+
+struct spif_nor_rec {
+	uint8_t magic[8];
+	uint8_t jedec[3];
+	uint8_t mode;
+	uint32_t frequency; /* the frequency the sample point is good for */
+	uint32_t requested; /* the frequency asked for */
+	uint8_t delay;
+	uint8_t dtr; /* the sample point is for DTR reads */
+	uint8_t reserved[6];
+	uint32_t crc;
+} __attribute__((packed));
+
+static uint32_t spif_nor_crc32(const uint8_t *data, uint32_t len)
+{
+	uint32_t crc = 0xffffffffU;
+
+	while (len-- != 0U) {
+		crc ^= *data++;
+		for (int bit = 0; bit < 8; bit++)
+			crc = (crc >> 1) ^ (0xedb88320U & -(crc & 1U));
+	}
+	return ~crc;
+}
+
+static bool spif_nor_rec_blank(const struct spif_nor_rec *rec)
+{
+	const uint8_t *p = (const uint8_t *)rec;
+
+	for (uint32_t i = 0U; i < sizeof(*rec); i++)
+		if (p[i] != 0xffU)
+			return false;
+	return true;
+}
+
+static bool spif_nor_rec_valid(const spif_nor_t *nor, const struct spif_nor_rec *rec, bool dtr)
+{
+	return memcmp(rec->magic, SPIF_REC_MAGIC, sizeof(rec->magic)) == 0 &&
+	       rec->crc == spif_nor_crc32((const uint8_t *)rec, offsetof(struct spif_nor_rec, crc)) &&
+	       rec->jedec[0] == ((nor->info.id >> 16) & 0xffU) && rec->jedec[1] == ((nor->info.id >> 8) & 0xffU) &&
+	       rec->jedec[2] == (nor->info.id & 0xffU) && rec->requested == nor->max_frequency &&
+	       rec->frequency > 0U && rec->frequency <= rec->requested && rec->mode < SPIF_NOR_TRAINING_MODES &&
+	       rec->delay < SPIF_NOR_TRAINING_DELAYS && rec->dtr == (dtr ? 1U : 0U);
+}
+
+/* low speed, default sampling, plain reads: the state in which any flash answers */
+static int spif_nor_safe_config(spif_nor_t *nor)
+{
+	return spif_nor_set_controller_config(nor,
+		SPIF_CFG_SPEED_HZ | SPIF_CFG_RX_DTR | SPIF_CFG_TX_DTR | SPIF_CFG_SAMPLE_MODE | SPIF_CFG_SAMPLE_DELAY,
+		spif_nor_training_frequency(nor), false, false, SUNXI_SPIF_SAMPLE_DEFAULT, SUNXI_SPIF_SAMPLE_DEFAULT);
+}
+
+/* the sector of the records, read at the safe operating point; the index of the last valid and of the
+ * first blank record is returned (-1 for none) */
+static int spif_nor_params_scan(spif_nor_t *nor, bool dtr, uint8_t *sector, int *last, int *blank)
+{
+	if (spif_nor_safe_config(nor) != 0 ||
+	    spif_nor_read_single(nor, nor->params_offset, sector, SPIF_REC_SECTOR) != 0)
+		return DRIVER_ERROR_INVALID;
+	*last = *blank = -1;
+	for (int i = 0; i < (int)(SPIF_REC_SECTOR / SPIF_REC_SIZE); i++) {
+		const struct spif_nor_rec *rec = (const struct spif_nor_rec *)&sector[i * SPIF_REC_SIZE];
+
+		if (spif_nor_rec_blank(rec)) {
+			*blank = i;
+			break;
+		}
+		if (spif_nor_rec_valid(nor, rec, dtr))
+			*last = i;
+	}
+	return DRIVER_OK;
+}
+
+/**
+ * @brief Use the sample point saved in the parameter area, when there is one.
+ * @details Reads the records at low speed, applies the last valid one and checks the result by
+ *          reading the same sector again at the saved operating point: the data must be the same.
+ * @return DRIVER_OK when the saved point is applied and works
+ */
+static int spif_nor_params_load(spif_nor_t *nor, bool dtr)
+{
+	struct spif_nor_rec rec;
+	uint8_t *sector, *again;
+	int last, blank, ret = DRIVER_ERROR_INVALID;
+	const spi_nor_info_t *info = &nor->info;
+
+	sector = malloc(SPIF_REC_SECTOR);
+	again = malloc(SPIF_REC_SECTOR);
+	if (sector == NULL || again == NULL)
+		goto out;
+	if (spif_nor_params_scan(nor, dtr, sector, &last, &blank) != DRIVER_OK || last < 0)
+		goto out;
+	memcpy(&rec, &sector[last * SPIF_REC_SIZE], sizeof(rec));
+	if (spif_nor_apply_training_config(nor, rec.frequency, dtr, rec.mode, rec.delay) != 0)
+		goto out;
+	if (spif_nor_read_operation(nor, info->read_proto, info->opcode_read, info->read_dummy, nor->params_offset,
+				    again, SPIF_REC_SECTOR) != 0 ||
+	    memcmp(sector, again, SPIF_REC_SECTOR) != 0) {
+		pr_warn("the saved sample point does not read back, training again\n");
+		goto out;
+	}
+	pr_info("sample point from the flash parameters: mode=%u delay=%u\n", rec.mode, rec.delay);
+	ret = DRIVER_OK;
+out:
+	free(again);
+	free(sector);
+	return ret;
+}
+
+/**
+ * @brief Append the sample point that was found to the parameter area (it is erased when full).
+ * @details Works at the safe operating point and puts the tuned one back afterwards.
+ */
+static int spif_nor_params_save(spif_nor_t *nor, bool dtr, uint32_t mode, uint32_t delay)
+{
+	struct spif_nor_rec rec = { 0 }, check;
+	uint8_t *sector;
+	uint32_t erase_size = SPIF_REC_SECTOR;
+	uint8_t erase_opcode = nor->info.opcode_erase_4k;
+	int last, blank, ret = DRIVER_ERROR_INVALID;
+
+	sector = malloc(SPIF_REC_SECTOR);
+	if (sector == NULL)
+		return ret;
+	memcpy(rec.magic, SPIF_REC_MAGIC, sizeof(rec.magic));
+	rec.jedec[0] = (nor->info.id >> 16) & 0xffU;
+	rec.jedec[1] = (nor->info.id >> 8) & 0xffU;
+	rec.jedec[2] = nor->info.id & 0xffU;
+	rec.mode = mode;
+	rec.frequency = nor->max_frequency;
+	rec.requested = nor->max_frequency;
+	rec.delay = delay;
+	rec.dtr = dtr ? 1U : 0U;
+	rec.crc = spif_nor_crc32((const uint8_t *)&rec, offsetof(struct spif_nor_rec, crc));
+
+	if (spif_nor_params_scan(nor, dtr, sector, &last, &blank) != DRIVER_OK)
+		goto out;
+	if (last >= 0 && memcmp(&sector[last * SPIF_REC_SIZE], &rec, sizeof(rec)) == 0) {
+		ret = DRIVER_OK; /* what is stored is what was found */
+		goto out;
+	}
+	if (blank < 0) {
+		if (erase_opcode == 0U && spif_nor_get_training_erase(nor, &erase_size, &erase_opcode) != DRIVER_OK)
+			goto out;
+		if (spif_nor_erase_block(nor, nor->params_offset, erase_size, erase_opcode) != 0)
+			goto out;
+		blank = 0;
+	}
+	if (spif_nor_write_page(nor, nor->params_offset + blank * SPIF_REC_SIZE, (const uint8_t *)&rec, sizeof(rec)) != 0)
+		goto out;
+	/* a protected flash ignores the program command silently */
+	if (spif_nor_read_single(nor, nor->params_offset + blank * SPIF_REC_SIZE, (uint8_t *)&check, sizeof(check)) != 0 ||
+	    memcmp(&check, &rec, sizeof(rec)) != 0) {
+		pr_warn("the flash parameters could not be written\n");
+		goto out;
+	}
+	pr_info("sample point saved in the flash parameters\n");
+	ret = DRIVER_OK;
+out:
+	free(sector);
+	/* the tuned operating point again */
+	spif_nor_apply_training_config(nor, nor->max_frequency, dtr, mode, delay);
+	return ret;
+}
+
+#endif /* CONFIG_DRIVER_MTD_SPIF_NOR_SAVE_PARAMS */
+
 /**
  * @brief Train the SPI controller sampling timing for reliable reads.
  * @details Backs up the training area, programs a test pattern, sweeps sample modes and
@@ -1529,6 +1708,12 @@ static int spif_nor_train_sampling(spif_nor_t *nor)
 	if (nor == NULL || nor->spif == NULL)
 		return DRIVER_ERROR_INVALID;
 	dtr = spi_nor_protocol_is_dtr(nor->info.read_proto);
+
+	/* with a parameter area the saved sample point is used, the training runs only without one */
+#ifdef CONFIG_DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+	if (nor->params_offset != 0U && spif_nor_params_load(nor, dtr) == DRIVER_OK)
+		return DRIVER_OK;
+#endif
 
 	safe_frequency = spif_nor_training_frequency(nor);
 
@@ -1579,6 +1764,10 @@ restore:
 
 	pr_trace("training applied: mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
 	pr_info("sample training mode=%u delay=%u window=%u\n", best_mode, best_delay, best_length);
+#ifdef CONFIG_DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+	if (nor->params_offset != 0U)
+		spif_nor_params_save(nor, dtr, best_mode, best_delay);
+#endif
 	ret = DRIVER_OK;
 	goto cleanup;
 

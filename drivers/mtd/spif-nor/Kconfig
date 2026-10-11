@@ -6,3 +6,30 @@ config DRIVER_MTD_SPIF_NOR_SHOW_TRAINING
 	help
 	  Print the SPIF NOR sampling training result as a mode-by-delay chart.
 	  Disable this option to remove the chart buffers and logging code.
+
+config DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+	bool "Keep the sampling point in a parameter area of the flash"
+	depends on DRIVER_MTD_SPIF_NOR
+	default y
+	help
+	  The sampling training of the SPIF controller takes about 0.6 s at every start. With this
+	  option an application that sets spif_nor_t.params_offset keeps the result in a 64 KiB area
+	  of the flash: a later start reads it at low speed, checks it against the data of the area
+	  and goes on without the training. The training, when it runs, works in that area and not
+	  at the start of the flash where the boot code is. Without the option, or without an offset,
+	  the training runs at every start at the beginning of the flash.
+
+config DRIVER_MTD_SPIF_NOR_PARAMS_OFFSET
+	hex "Flash offset of the parameter area (64 KiB aligned)"
+	depends on DRIVER_MTD_SPIF_NOR_SAVE_PARAMS
+	default 0x20000
+	help
+	  Used by the applications that keep the sampling point (xip-boot). 128 KiB leaves room for the
+	  boot code in front of it.
+
+config DRIVER_MTD_SPIF_NOR_XIP_OFFSET
+	hex "Flash offset of the image run in place (xip-boot)"
+	depends on DRIVER_MTD_SPIF_NOR
+	default 0x80000
+	help
+	  The image that xip-boot maps at the window of the controller starts here (4 KiB aligned).
