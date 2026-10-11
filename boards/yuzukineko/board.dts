@@ -36,7 +36,7 @@
 
 	psram0: psram-controller {
 		compatible = "allwinner,sunxi-psram";
-		allwinner,psram-parameters = <252>;
+		allwinner,psram-parameters = <312>;
 		status = "okay";
 	};
 

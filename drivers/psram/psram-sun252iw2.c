@@ -266,8 +266,8 @@ static int lpsram_para_merge_config(lpsram_para_t *para)
 			width = 8;
 		break;
 	case 3:
-		if ((para->dram_clk - 1) > 251)
-			para->dram_clk = 252;
+		if ((para->dram_clk - 1) > 311)
+			para->dram_clk = 312;
 		if (para->dram_zq == 0)
 			para->dram_zq = 0x7bfbfb;
 		if ((width - 1) > 15)
@@ -286,8 +286,8 @@ static int lpsram_para_merge_config(lpsram_para_t *para)
 			width = 8;
 		break;
 	case 7:
-		if ((para->dram_clk - 1) > 251)
-			para->dram_clk = 252;
+		if ((para->dram_clk - 1) > 311)
+			para->dram_clk = 312;
 		if (para->dram_zq == 0)
 			para->dram_zq = 0x7b7bfb;
 		if ((width - 1) > 15)
