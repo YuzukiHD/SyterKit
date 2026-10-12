@@ -25,6 +25,12 @@ typedef struct {
 	uint32_t current_frequency; /**< Currently configured SPI clock frequency, in Hz. */
 	sunxi_spif_t *spif; /**< Underlying SPIF controller instance. */
 	spi_nor_info_t info; /**< Detected SPI NOR flash device information. */
+	/**
+	 * Flash offset of the parameter area (a 64 KiB block, 64 KiB aligned), 0 for none. The sampling
+	 * training works in this area, never at the start of the flash, and its result is saved here:
+	 * the next start reads it at low speed and skips the training.
+	 */
+	uint32_t params_offset;
 } spif_nor_t;
 
 /**
