@@ -5,6 +5,25 @@ menu "Display driver"
 config DRIVER_DISPLAY
 	bool "Display (TCON + DE UI passthrough) support"
 
+config DRIVER_DISPLAY_DSI
+	bool "MIPI DSI output"
+	depends on DRIVER_DISPLAY
+	select DRIVER_DISPLAY_DPHY
+	help
+	  Needs a chip with a DSI host (not V861). Leave it off to build without the DSI host.
+
+config DRIVER_DISPLAY_LVDS
+	bool "LVDS output"
+	depends on DRIVER_DISPLAY
+	select DRIVER_DISPLAY_DPHY
+	help
+	  Needs a chip with LVDS pads (not V861). Leave it off to build without the LVDS paths.
+
+# the LVDS and DSI outputs share one combo D-PHY
+config DRIVER_DISPLAY_DPHY
+	bool
+	depends on DRIVER_DISPLAY
+
 choice
 	prompt "Display driver log level"
 	default DRIVER_DISPLAY_LOG_TRACE if BUILD_TRACE

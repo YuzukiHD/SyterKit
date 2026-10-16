@@ -89,6 +89,7 @@ void sunxi_tcon_top_lcd_to_pads(sunxi_tcon_top_t *top, uint32_t tcon_id)
 	clrbits_le32(tcon_top_reg_address(top, top->var->reg.tv_setup), top->var->lcd_pad_clr[tcon_id]);
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 void sunxi_tcon_top_lcd_clk_from_phy(sunxi_tcon_top_t *top, uint32_t tcon_id, uint32_t phy_id, bool from_phy)
 {
 	uint32_t mask = TCON_TOP_LCD_CLK_SRC(tcon_id) | TCON_TOP_PHY_CLK_SRC(phy_id);
@@ -104,6 +105,7 @@ void sunxi_tcon_top_dsi_route(sunxi_tcon_top_t *top, uint32_t dsi_id, uint32_t t
 		clrsetbits_le32(tcon_top_reg_address(top, top->var->reg.clk_gate), TCON_TOP_DSI_CLK_GATE,
 			enable ? TCON_TOP_DSI_CLK_GATE : 0);
 }
+#endif
 
 void sunxi_tcon_top_dump(sunxi_tcon_top_t *top)
 {

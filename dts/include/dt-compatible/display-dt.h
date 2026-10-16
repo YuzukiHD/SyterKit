@@ -269,6 +269,7 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->if_cfg.rb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rb-swap", 0U);
 		disp->if_cfg.clk_phase = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,clk-phase", 0U);
 		disp->if_cfg.io_adjust = sunxi_disp_dt_u32(out, "allwinner,io-adjust", 0U);
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_LVDS_COMPATIBLE) == 0) {
 		const dt2c_fdt32_t *rst = syterkit_dt_cells(out, "allwinner,reset", 2);
 
@@ -279,6 +280,8 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 			disp->lvds_reset.reg = (uintptr_t)dt2c_fdt32_to_cpu(rst[0]);
 			disp->lvds_reset.bit = (uint8_t)dt2c_fdt32_to_cpu(rst[1]);
 		}
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DSI_COMPATIBLE) == 0) {
 		disp->iface = SUNXI_DISP_IF_DSI;
 		if (sunxi_dsi_dt_read_config(&disp->dsi, out) != DRIVER_OK)
@@ -286,12 +289,14 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->dsi.clk = &disp->clk;
 		disp->dsi.phy = &disp->dphy;
 		disp->if_cfg.dsi_id = disp->dsi.id;
+#endif
 	} else {
 		return DRIVER_ERROR_INVALID;
 	}
 	if (sunxi_display_dt_read_pins(disp, out) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
 
+#ifdef CONFIG_DRIVER_DISPLAY_DPHY
 	if (disp->iface == SUNXI_DISP_IF_LVDS || disp->iface == SUNXI_DISP_IF_DSI) {
 		n = sunxi_disp_dt_ref(out, "allwinner,phy");
 		if (n < 0 || sunxi_dphy_dt_read_config(&disp->dphy, n) != DRIVER_OK)
@@ -300,14 +305,17 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->has_dphy = true;
 		disp->if_cfg.phy_id = disp->dphy.id;
 	}
+#endif
 
 	panel = sunxi_disp_dt_ref(node, "allwinner,panel");
 	if (sunxi_panel_dt_read_config(&disp->panel, panel) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	if (disp->iface == SUNXI_DISP_IF_DSI) {
 		disp->if_cfg.dsi_lanes = disp->panel.dsi_lanes;
 		disp->if_cfg.dsi_command_mode = !(disp->panel.dsi_mode_flags & SUNXI_DSI_MODE_VIDEO);
 	}
+#endif
 
 	n = sunxi_disp_dt_ref(node, "allwinner,backlight");
 	if (n >= 0 && sunxi_backlight_dt_read_config(&disp->backlight, n) != DRIVER_OK)

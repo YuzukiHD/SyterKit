@@ -92,6 +92,7 @@ int sunxi_display_set_fb(sunxi_display_t *display, uintptr_t addr, uint32_t widt
 	return DRIVER_OK;
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 static int display_enable_dsi(sunxi_display_t *display)
 {
 	int ret;
@@ -116,7 +117,9 @@ static int display_enable_dsi(sunxi_display_t *display)
 	sunxi_dsi_start_video(&display->dsi);
 	return DRIVER_OK;
 }
+#endif
 
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 static int display_enable_lvds(sunxi_display_t *display)
 {
 	int ret;
@@ -135,6 +138,7 @@ static int display_enable_lvds(sunxi_display_t *display)
 	sunxi_tcon_enable(&display->tcon);
 	return DRIVER_OK;
 }
+#endif
 
 /*
  * i8080: the TCON is switched on first so that the panel init commands can go out over the bus, then
@@ -192,12 +196,16 @@ int sunxi_display_enable(sunxi_display_t *display)
 	case SUNXI_DISP_IF_RGB:
 		ret = display_enable_rgb(display);
 		break;
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	case SUNXI_DISP_IF_LVDS:
 		ret = display_enable_lvds(display);
 		break;
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	case SUNXI_DISP_IF_DSI:
 		ret = display_enable_dsi(display);
 		break;
+#endif
 	case SUNXI_DISP_IF_I8080:
 		ret = display_enable_i8080(display);
 		break;
@@ -228,16 +236,21 @@ void sunxi_display_disable(sunxi_display_t *display)
 	if (display->iface == SUNXI_DISP_IF_I8080)
 		sunxi_panel_run_seq_i8080(&display->panel, &display->panel.exit, &display->tcon);
 	sunxi_tcon_disable(&display->tcon);
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	if (display->iface == SUNXI_DISP_IF_DSI) {
 		sunxi_panel_run_seq(&display->panel, &display->panel.exit, &display->dsi);
 		sunxi_dsi_stop_video(&display->dsi);
 		sunxi_panel_run_seq(&display->panel, &display->panel.power_off, &display->dsi);
 		sunxi_dsi_unprepare(&display->dsi);
-	} else {
+	} else
+#endif
+	{
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 		if (display->iface == SUNXI_DISP_IF_LVDS) {
 			sunxi_dphy_lvds_disable(&display->dphy);
 			sunxi_dphy_power_off(&display->dphy);
 		}
+#endif
 		sunxi_panel_run_seq(&display->panel, &display->panel.power_off, NULL);
 	}
 	sunxi_tcon_unprepare(&display->tcon);
@@ -264,10 +277,12 @@ void sunxi_display_dump(sunxi_display_t *display)
 		(unsigned int)display->fb_stride);
 	sunxi_de_dump(&display->de);
 	sunxi_tcon_dump(&display->tcon);
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	if (display->iface == SUNXI_DISP_IF_DSI) {
 		sunxi_dsi_dump(&display->dsi);
 		sunxi_dphy_dump(&display->dphy);
 	}
+#endif
 }
 
 int sunxi_display_poll(sunxi_display_t *display)
@@ -280,6 +295,7 @@ int sunxi_display_poll(sunxi_display_t *display)
 		sunxi_tcon_trigger(&display->tcon);
 		return 1;
 	}
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	if (!display || !display->running || display->iface != SUNXI_DISP_IF_DSI || !display->if_cfg.dsi_command_mode)
 		return 0;
 	if (!sunxi_tcon_frame_flag(&display->tcon))
@@ -289,11 +305,16 @@ int sunxi_display_poll(sunxi_display_t *display)
 		return 0;
 	sunxi_tcon_trigger(&display->tcon);
 	return 1;
+#else
+	return 0;
+#endif
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-display");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-rgb");
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 DT2C_DRIVER_COMPAT("allwinner,sunxi-lvds");
+#endif
 DT2C_DRIVER_COMPAT("allwinner,sunxi-i8080");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-panel");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-backlight");

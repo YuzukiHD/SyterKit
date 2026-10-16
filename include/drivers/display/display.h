@@ -393,8 +393,12 @@ typedef struct {
 	bool has_top;
 	sunxi_tcon_t tcon;
 	sunxi_de_t de;
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	sunxi_dsi_t dsi;
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_DPHY
 	sunxi_dphy_t dphy;
+#endif
 	sunxi_tcon_if_cfg_t if_cfg;
 	sunxi_backlight_t backlight;
 	/* pads of the selected output (pinctrl-0 of the output node) */
@@ -402,8 +406,12 @@ typedef struct {
 	gpio_mux_t pins[SUNXI_DISP_MAX_PINS];
 	uint8_t pin_count;
 	int8_t pin_drive;		/* -1: leave the drive strength alone */
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	sunxi_disp_bit_t lvds_reset;	/* LVDS bus reset, reg 0: none */
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_DPHY
 	bool has_dphy;
+#endif
 	/* frame buffer */
 	uintptr_t fb_addr;
 	uint32_t fb_width, fb_height, fb_stride;

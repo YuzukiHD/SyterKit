@@ -57,8 +57,11 @@ static int panel_run_seq(
 	const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_dsi *dsi, struct sunxi_tcon *tcon)
 {
 	uint32_t i = 0;
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	uint8_t buf[64];
+#endif
 
+	(void)dsi; /* only used by the DSI commands */
 	while (seq && seq->cells && i + 3U <= seq->count) {
 		uint32_t type = be32(seq->cells[i]);
 		uint32_t len = be32(seq->cells[i + 1]);
@@ -74,6 +77,7 @@ static int panel_run_seq(
 			/* len = level, arg = pin; a missing pin must not stop the rest */
 			panel_gpio(panel, arg, len);
 			continue;
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 		case CMD_DCS:
 		case CMD_GENERIC: {
 			uint32_t k;
@@ -101,6 +105,12 @@ static int panel_run_seq(
 				mdelay(arg);
 			continue;
 		}
+#else
+		case CMD_DCS:
+		case CMD_GENERIC:
+			pr_err("DSI commands need a chip with DSI\n");
+			return DRIVER_ERROR_INVALID;
+#endif
 		case CMD_I8080: {
 			uint32_t k;
 

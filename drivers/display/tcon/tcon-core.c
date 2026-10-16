@@ -134,6 +134,7 @@ static int tcon_setup_clock(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_di
 	return DRIVER_OK;
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 /* DSI: the dot clock is made by the combo phy PLL, the module clock only has to run */
 static int tcon_setup_phy_clock(sunxi_tcon_t *tcon, uint32_t pixclk)
 {
@@ -148,6 +149,7 @@ static int tcon_setup_phy_clock(sunxi_tcon_t *tcon, uint32_t pixclk)
 	tcon_modify_reg(tcon, tcon->var->reg.dclk, TCON0_DCLK_DIV, TPREP(TCON0_DCLK_DIV, 1));
 	return DRIVER_OK;
 }
+#endif
 
 /* ------------------------------------------------------------------ */
 /* Register programming                                                */
@@ -267,6 +269,7 @@ static void tcon_config_hv(sunxi_tcon_t *tcon)
 	tcon_set_io(tcon, &tcon->timing, if_cfg->clk_phase, if_cfg->rgb_swap, if_cfg->rb_swap, if_cfg->io_adjust);
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 static void tcon_config_lvds(sunxi_tcon_t *tcon)
 {
 	uint32_t ctl = TCON0_LVDS_CLK_SEL;
@@ -285,7 +288,9 @@ static void tcon_config_lvds(sunxi_tcon_t *tcon)
 	tcon_set_frm(tcon, tcon->bus);
 	tcon_set_io(tcon, &tcon->timing, 0, 0, 0, 0);
 }
+#endif
 
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 /*
  * DSI: the TCON runs in trigger ("CPU") mode and streams lines to the DSI
  * host. In video mode the host generates the frame timing; in command mode
@@ -352,6 +357,7 @@ static void tcon_config_dsi(sunxi_tcon_t *tcon)
 		sunxi_tcon_top_dsi_route(tcon->top, tcon->cfg.dsi_id, tcon->id, true);
 	}
 }
+#endif
 
 /*
  * i8080 (TCON "CPU" interface): panel commands go through the TCON write register. Frames either stream
@@ -431,17 +437,21 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 		if (!ret)
 			tcon_config_cpu(tcon);
 		break;
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	case SUNXI_DISP_IF_LVDS:
 		/* seven bits per pixel clock on each LVDS pair */
 		ret = tcon_setup_clock(tcon, timing->pixel_clock_hz, tcon->var->lvds_div, tcon->var->lvds_div);
 		if (!ret)
 			tcon_config_lvds(tcon);
 		break;
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	case SUNXI_DISP_IF_DSI:
 		ret = tcon_setup_phy_clock(tcon, timing->pixel_clock_hz);
 		if (!ret)
 			tcon_config_dsi(tcon);
 		break;
+#endif
 	default:
 		ret = DRIVER_ERROR_INVALID;
 		break;
@@ -460,8 +470,10 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 
 int sunxi_tcon_enable(sunxi_tcon_t *tcon)
 {
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	const struct sunxi_tcon_variant *variant = tcon->var;
 	int i;
+#endif
 
 	if (!tcon->powered)
 		return DRIVER_ERROR_INVALID;
@@ -472,6 +484,7 @@ int sunxi_tcon_enable(sunxi_tcon_t *tcon)
 	tcon_modify_reg(tcon, tcon->var->reg.dclk, TCON0_DCLK_EN, TCON0_DCLK_EN);
 	tcon_modify_reg(tcon, tcon->var->reg.ctl, TCON0_CTL_EN, TCON0_CTL_EN);
 
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	if (tcon->iface == SUNXI_DISP_IF_LVDS) {
 		tcon_modify_reg(tcon, tcon->var->reg.lvds_ctl, TCON0_LVDS_EN, TCON0_LVDS_EN);
 		if (tcon->cfg.lvds_dual_link) {
@@ -494,15 +507,19 @@ int sunxi_tcon_enable(sunxi_tcon_t *tcon)
 								     tcon->bus != SUNXI_DISP_BUS_RGB888 ? 0x7 : 0xf));
 		}
 	}
+#endif
 	return DRIVER_OK;
 }
 
 void sunxi_tcon_disable(sunxi_tcon_t *tcon)
 {
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	int i;
+#endif
 
 	if (!tcon->powered)
 		return;
+#ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	if (tcon->iface == SUNXI_DISP_IF_LVDS) {
 		uintptr_t ana[2] = { tcon_reg_address(tcon, tcon->var->reg.lvds_ana0),
 			tcon_reg_address(tcon, tcon->var->reg.lvds_ana1) };
@@ -514,6 +531,7 @@ void sunxi_tcon_disable(sunxi_tcon_t *tcon)
 			clrbits_le32(ana[i], TCON0_LVDS_ANA_EN_MB | TCON0_LVDS_ANA_SRC_SEL);
 		tcon_modify_reg(tcon, tcon->var->reg.lvds_ctl, TCON0_LVDS_EN, 0);
 	}
+#endif
 	tcon_modify_reg(tcon, tcon->var->reg.ctl, TCON0_CTL_EN, 0);
 	tcon_modify_reg(tcon, tcon->var->reg.dclk, TCON0_DCLK_EN, 0);
 	mdelay(20); /* let the panel see a clean end of frame */
@@ -523,11 +541,13 @@ void sunxi_tcon_unprepare(sunxi_tcon_t *tcon)
 {
 	if (!tcon->powered)
 		return;
+#ifdef CONFIG_DRIVER_DISPLAY_DSI
 	/* the DSI routing stays up until here: panel exit commands need the DSI clocks */
 	if (tcon->iface == SUNXI_DISP_IF_DSI && tcon->top && tcon->var->dclk_from_phy_for_dsi) {
 		sunxi_tcon_top_dsi_route(tcon->top, tcon->cfg.dsi_id, tcon->id, false);
 		sunxi_tcon_top_lcd_clk_from_phy(tcon->top, tcon->id, tcon->cfg.phy_id, false);
 	}
+#endif
 	tcon_modify_reg(tcon, tcon->var->reg.gctl, TCON_GCTL_EN, 0);
 	tcon_modify_reg(tcon, tcon->var->reg.dclk, TCON0_DCLK_EN, 0);
 	tcon_modify_reg(tcon, tcon->var->reg.gctl, TCON_GCTL_PAD_SEL | TCON_GCTL_IO_MAP_SEL, TCON_GCTL_IO_MAP_SEL);
