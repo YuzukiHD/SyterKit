@@ -83,8 +83,44 @@ int cmd_speedtest(int argc, const char **argv)
 }
 
 
+#ifdef CONFIG_COMPONENT_MEMTESTER
+/* DRAM above the heap, the flash and SD buffers and the SD DMA descriptors of this application */
+#define MEMTEST_BASE	 0x44000000U
+#define MEMTEST_MAX_SIZE (64U * 1024U * 1024U)
+
+int memtester_run(void *base, size_t bytes, unsigned int loops);
+
+msh_declare_command(memtester);
+msh_define_help(memtester, "Test DRAM (memtester 4.6 tests)",
+		"Usage: memtester [size_mb [loops]]\n  size_mb: 1..64 MiB at 0x44000000, default 4\n  loops: default 1, 0 for ever\n");
+int cmd_memtester(int argc, const char **argv)
+{
+	uint32_t size_mb = 4, loops = 1;
+	int ret;
+
+	if (argc > 1)
+		size_mb = simple_strtoul(argv[1], NULL, 0);
+	if (argc > 2)
+		loops = simple_strtoul(argv[2], NULL, 0);
+	if (size_mb < 1 || size_mb > MEMTEST_MAX_SIZE >> 20) {
+		pr_err("memtester: size 1..%u MiB\n", MEMTEST_MAX_SIZE >> 20);
+		return -1;
+	}
+
+	ret = memtester_run((void *)MEMTEST_BASE, (size_t)size_mb << 20, loops);
+	if (ret != 0)
+		pr_err("memtester: FAILED (0x%02x)\n", ret);
+	else
+		pr_info("memtester: PASS (0 failures)\n");
+	return ret ? -1 : 0;
+}
+#endif
+
 const msh_command_entry commands[] = {
 	msh_define_command(speedtest),
+#ifdef CONFIG_COMPONENT_MEMTESTER
+	msh_define_command(memtester),
+#endif
 	msh_command_end,
 };
 

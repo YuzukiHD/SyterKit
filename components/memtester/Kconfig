@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config COMPONENT_MEMTESTER
+	bool "memtester (DRAM test)"
+	help
+	  The tests of memtester 4.6.0 (components/memtester) and memtester_run(), which runs them
+	  on a region of memory the application gives it.

@@ -23,7 +23,7 @@ $(objtree)/include/generated/config.h: $(auto_header) $(generated_config_inputs)
 		echo '#endif'; \
 	} > $@
 
-build_dirs := core lib drivers $(if $(CONFIG_COMPONENT_COREMARK),components) arch/$(arch_dir)
+build_dirs := core lib drivers $(if $(CONFIG_COMPONENT_COREMARK)$(CONFIG_COMPONENT_MEMTESTER),components) arch/$(arch_dir)
 ifeq ($(CONFIG_EFEX),y)
 build_dirs += soc/efex $(soc-build-dirs-y)
 else

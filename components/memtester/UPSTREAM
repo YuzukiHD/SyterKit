@@ -1,0 +1,1 @@
+https://pyropus.ca/software/memtester/ version 4.6.0 (GPL-2.0, see COPYING); tests.c, tests.h, types.h, sizes.h and memtester.h are unmodified, the SyterKit side (libc gaps and the run loop of memtester.c without mmap/mlock) is in shim/ and syterkit/.

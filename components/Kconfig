@@ -3,5 +3,6 @@
 menu "Components"
 
 source "components/coremark/Kconfig"
+source "components/memtester/Kconfig"
 
 endmenu
