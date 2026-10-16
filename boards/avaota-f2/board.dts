@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 
+#include <dt-bindings/display/sunxi-display.h>
 #include <dt-bindings/dram/dram-param.h>
 
 #include <dt-bindings/gpio/sunxi-gpio.h>
@@ -14,6 +15,9 @@
 
 	aliases {
 		sid0 = &sid0;
+		display0 = &display0;
+		display1 = &display_srgb;
+		display2 = &display_i8080;
 		dram0 = &dram0;
 		i2c2 = &i2c2;
 		intc0 = &clic0;
@@ -108,6 +112,73 @@
 				<SUNXI_GPIO_PORT_F 0 2>,
 				<SUNXI_GPIO_PORT_F 5 2>,
 				<SUNXI_GPIO_PORT_F 4 2>;
+		};
+
+		/* parallel RGB888: D0..D23 are PD0-PD17 and PE0-PE5 (low bits), PD18 pixel clock, PD19..PD21 DE/HS/VS. Pins from the vendor BSP, the signal order is not checked on the board */
+		lcd_rgb24_pins: lcd-rgb24-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 0 2>,
+				<SUNXI_GPIO_PORT_D 1 2>,
+				<SUNXI_GPIO_PORT_D 2 2>,
+				<SUNXI_GPIO_PORT_D 3 2>,
+				<SUNXI_GPIO_PORT_D 4 2>,
+				<SUNXI_GPIO_PORT_D 5 2>,
+				<SUNXI_GPIO_PORT_D 6 2>,
+				<SUNXI_GPIO_PORT_D 7 2>,
+				<SUNXI_GPIO_PORT_D 8 2>,
+				<SUNXI_GPIO_PORT_D 9 2>,
+				<SUNXI_GPIO_PORT_D 10 2>,
+				<SUNXI_GPIO_PORT_D 11 2>,
+				<SUNXI_GPIO_PORT_D 12 2>,
+				<SUNXI_GPIO_PORT_D 13 2>,
+				<SUNXI_GPIO_PORT_D 14 2>,
+				<SUNXI_GPIO_PORT_D 15 2>,
+				<SUNXI_GPIO_PORT_D 16 2>,
+				<SUNXI_GPIO_PORT_D 17 2>,
+				<SUNXI_GPIO_PORT_D 18 2>,
+				<SUNXI_GPIO_PORT_D 19 2>,
+				<SUNXI_GPIO_PORT_D 20 2>,
+				<SUNXI_GPIO_PORT_D 21 2>,
+				<SUNXI_GPIO_PORT_E 0 4>,
+				<SUNXI_GPIO_PORT_E 1 4>,
+				<SUNXI_GPIO_PORT_E 2 4>,
+				<SUNXI_GPIO_PORT_E 3 4>,
+				<SUNXI_GPIO_PORT_E 4 4>,
+				<SUNXI_GPIO_PORT_E 5 4>;
+		};
+
+		/* serial RGB: 8 data pins PD1-PD8, PD18 clock, PD19..PD21 DE/HS/VS (vendor BSP rgb8 group), not checked on the board */
+		lcd_rgb8_pins: lcd-rgb8-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 1 2>,
+				<SUNXI_GPIO_PORT_D 2 2>,
+				<SUNXI_GPIO_PORT_D 3 2>,
+				<SUNXI_GPIO_PORT_D 4 2>,
+				<SUNXI_GPIO_PORT_D 5 2>,
+				<SUNXI_GPIO_PORT_D 6 2>,
+				<SUNXI_GPIO_PORT_D 7 2>,
+				<SUNXI_GPIO_PORT_D 8 2>,
+				<SUNXI_GPIO_PORT_D 18 2>,
+				<SUNXI_GPIO_PORT_D 19 2>,
+				<SUNXI_GPIO_PORT_D 20 2>,
+				<SUNXI_GPIO_PORT_D 21 2>;
+		};
+
+		/* i8080, 8 bit data (the vendor cpu_16bit_65k group): PD1-PD8 data, PD18 write strobe, PD19..PD21 control; not checked on the board */
+		lcd_i8080_pins: lcd-i8080-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_D 1 2>,
+				<SUNXI_GPIO_PORT_D 2 2>,
+				<SUNXI_GPIO_PORT_D 3 2>,
+				<SUNXI_GPIO_PORT_D 4 2>,
+				<SUNXI_GPIO_PORT_D 5 2>,
+				<SUNXI_GPIO_PORT_D 6 2>,
+				<SUNXI_GPIO_PORT_D 7 2>,
+				<SUNXI_GPIO_PORT_D 8 2>,
+				<SUNXI_GPIO_PORT_D 18 2>,
+				<SUNXI_GPIO_PORT_D 19 2>,
+				<SUNXI_GPIO_PORT_D 20 2>,
+				<SUNXI_GPIO_PORT_D 21 2>;
 		};
 	};
 
@@ -215,6 +286,237 @@
 				reg = <0>;
 				spi-max-frequency = <80000000>;
 			};
+		};
+
+		/*
+		 * Display: de0 -> tcon_lcd0 -> one of three outputs, each with a panel preset:
+		 *   display0  parallel RGB888, 800x480 (the timing of the vendor BSP boards)
+		 *   display1  serial RGB, the ILI8961 320x240 panel of the vendor board
+		 *   display2  i8080, the ILITEK ILI3031B 240x240 panel of the vendor board
+		 * The board has no panel, so none of these is checked on real hardware. The outputs share the TCON,
+		 * use one at a time. The TCON pixel clock comes from PLL_PERI(2X) (mux 1): PLL_VIDEO starts at
+		 * 1272 MHz, too fast for a slow pixel clock.
+		 */
+		de0: display-engine@5000000 {
+			compatible = "allwinner,sunxi-de";
+			reg = <SUNXI_DE_BASE 0x200000>;
+			allwinner,variant = "sun252iw1";
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x600) 0>;
+			clock-frequency = <300000000>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x60c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x60c) 16>;
+			status = "okay";
+		};
+
+		tcon_top0: tcon-top@5460000 {
+			compatible = "allwinner,sunxi-tcon-top";
+			reg = <SUNXI_TCON_TOP_BASE 0x1000>;
+			allwinner,variant = "sun252iw1";
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xabc) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xabc) 16>;
+			status = "okay";
+		};
+
+		tcon_lcd0: tcon-lcd@5461000 {
+			compatible = "allwinner,sunxi-tcon-lcd";
+			reg = <SUNXI_TCON_LCD0_BASE 0x1000>;
+			allwinner,variant = "sun252iw1";
+			allwinner,tcon-id = <0>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0xb60) 1>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0xb7c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0xb7c) 16>;
+			status = "okay";
+		};
+
+		rgb0: rgb-output {
+			compatible = "allwinner,sunxi-rgb";
+			allwinner,hv-mode = <0>;
+			allwinner,drive-level = <1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&lcd_rgb24_pins>;
+			status = "okay";
+		};
+
+		rgb_serial0: rgb-serial-output {
+			compatible = "allwinner,sunxi-rgb";
+			allwinner,hv-mode = <8>;
+			allwinner,srgb-seq = <6>; /* BRG then GBR, as the vendor board */
+			allwinner,drive-level = <1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&lcd_rgb8_pins>;
+			status = "okay";
+		};
+
+		/* ILI3031B as in the vendor board: 8 bit bus, 65K colours (mode 14), frames by trigger with the TE pad */
+		i8080_0: i8080-output {
+			compatible = "allwinner,sunxi-i8080";
+			allwinner,cpu-mode = <14>;
+			allwinner,cpu-trigger;
+			allwinner,cpu-te = <2>;
+			allwinner,drive-level = <1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&lcd_i8080_pins>;
+			status = "okay";
+		};
+
+		panel_rgb: panel-rgb {
+			compatible = "allwinner,sunxi-panel";
+			allwinner,gpio-controller = <&pio>;
+			clock-frequency = <33000000>;
+			hactive = <800>;
+			vactive = <480>;
+			hsync-len = <10>;
+			hfront-porch = <25>;
+			hback-porch = <46>;
+			vsync-len = <10>;
+			vfront-porch = <22>;
+			vback-porch = <20>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+			allwinner,bus-format = "rgb888";
+			status = "okay";
+		};
+
+		/* ILI8961, 320x240 serial RGB (vendor default/linux-6.6-xuantie/lcd/ili8961.dtsi): the porches are in dclk cycles */
+		panel_srgb: panel-srgb {
+			compatible = "allwinner,sunxi-panel";
+			allwinner,gpio-controller = <&pio>;
+			clock-frequency = <27000000>;
+			hactive = <320>;
+			vactive = <240>;
+			hsync-len = <1>;
+			hfront-porch = <1325>;
+			hback-porch = <70>;
+			vsync-len = <1>;
+			vfront-porch = <1>;
+			vback-porch = <21>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+			allwinner,bus-format = "rgb888";
+			status = "okay";
+		};
+
+		/*
+		 * ILITEK ILI3031B, 240x240 i8080 panel of the vendor board (default/linux-6.6-xuantie/lcd/ilitek_ili3031b.dtsi).
+		 * PE15 reset, PE10 chip select (low = selected), PD22 backlight as a plain GPIO.
+		 */
+		panel_i8080: panel-i8080 {
+			compatible = "allwinner,sunxi-panel";
+			allwinner,gpio-controller = <&pio>;
+			clock-frequency = <16000000>;
+			hactive = <240>;
+			vactive = <240>;
+			hsync-len = <10>;
+			hfront-porch = <20>;
+			hback-porch = <10>;
+			vsync-len = <4>;
+			vfront-porch = <4>;
+			vback-porch = <4>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+			allwinner,bus-format = "rgb565";
+			power-on-sequence = <SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 15), 1)
+					     SUNXI_CMD_DELAY(10)
+					     SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 15), 0)
+					     SUNXI_CMD_DELAY(200)
+					     SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 15), 1)
+					     SUNXI_CMD_DELAY(120)
+					     SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 10), 0)>;
+			power-off-sequence = <SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 10), 1)
+					      SUNXI_CMD_GPIO(SUNXI_PIN(SUNXI_GPIO_PORT_E, 15), 0)
+					      SUNXI_CMD_DELAY(100)>;
+			init-sequence = <SUNXI_CMD_I8080(0, 3, 0xfd 0x06 0x08)
+					 SUNXI_CMD_I8080(0, 3, 0x61 0x07 0x07)
+					 SUNXI_CMD_I8080(0, 2, 0x73 0x70)
+					 SUNXI_CMD_I8080(0, 2, 0x73 0x00)
+					 SUNXI_CMD_I8080(0, 4, 0x62 0x00 0x44 0x40)
+					 SUNXI_CMD_I8080(0, 5, 0x63 0x41 0x07 0x12 0x12)
+					 SUNXI_CMD_I8080(0, 2, 0x64 0x37)
+					 SUNXI_CMD_I8080(0, 4, 0x65 0x08 0x10 0x21)
+					 SUNXI_CMD_I8080(0, 4, 0x66 0x08 0x10 0x21)
+					 SUNXI_CMD_I8080(0, 3, 0x67 0x20 0x40)
+					 SUNXI_CMD_I8080(0, 5, 0x68 0x90 0x30 0x77 0x5f)
+					 SUNXI_CMD_I8080(0, 4, 0xb1 0x0f 0x02 0x01)
+					 SUNXI_CMD_I8080(0, 2, 0xb4 0x01)
+					 SUNXI_CMD_I8080(0, 5, 0xb5 0x02 0x02 0x0a 0x14)
+					 SUNXI_CMD_I8080(0, 6, 0xb6 0x44 0x01 0x9f 0x00 0x02)
+					 SUNXI_CMD_I8080(0, 2, 0xdf 0x11)
+					 SUNXI_CMD_I8080(0, 7, 0xe2 0x02 0x02 0x04 0x2f 0x3b 0x3f)
+					 SUNXI_CMD_I8080(0, 7, 0xe5 0x3f 0x3b 0x2e 0x03 0x02 0x03)
+					 SUNXI_CMD_I8080(0, 3, 0xe1 0x0e 0x62)
+					 SUNXI_CMD_I8080(0, 3, 0xe4 0x54 0x0f)
+					 SUNXI_CMD_I8080(0, 9, 0xe0 0x05 0x06 0x0c 0x10 0x0d 0x0e 0x11 0x14)
+					 SUNXI_CMD_I8080(0, 9, 0xe3 0x19 0x10 0x0d 0x0e 0x0d 0x0e 0x05 0x03)
+					 SUNXI_CMD_I8080(0, 3, 0xe6 0x00 0xff)
+					 SUNXI_CMD_I8080(0, 7, 0xe7 0x01 0x04 0x03 0x03 0x00 0x12)
+					 SUNXI_CMD_I8080(0, 4, 0xe8 0x00 0x70 0x00)
+					 SUNXI_CMD_I8080(0, 2, 0xec 0x52)
+					 SUNXI_CMD_I8080(0, 4, 0xf1 0x01 0x01 0x02)
+					 SUNXI_CMD_I8080(0, 5, 0xf6 0x01 0x30 0x00 0x00)
+					 SUNXI_CMD_I8080(0, 3, 0xfd 0xfa 0xfc)
+					 SUNXI_CMD_I8080(0, 2, 0x3a 0x05)
+					 SUNXI_CMD_I8080(0, 2, 0x35 0x00)
+					 SUNXI_CMD_I8080(0, 2, 0x36 0x00)
+					 SUNXI_CMD_I8080(255, 1, 0x11)
+					 SUNXI_CMD_I8080(10, 1, 0x29)
+					 SUNXI_CMD_I8080(0, 1, 0x2c)>;
+			vsync-sequence = <SUNXI_CMD_I8080(0, 1, 0x2c)>;
+			exit-sequence = <SUNXI_CMD_I8080(0, 1, 0x28)
+					 SUNXI_CMD_I8080(120, 1, 0x10)>;
+			status = "okay";
+		};
+
+		backlight_i8080: backlight-i8080 {
+			compatible = "allwinner,sunxi-backlight";
+			enable-gpios = <&pio SUNXI_GPIO_PORT_D 22 1>;
+			allwinner,active-high = <1>;
+			status = "okay";
+		};
+
+		display0: display-subsystem {
+			compatible = "allwinner,sunxi-display";
+			allwinner,variant = "sun252iw1";
+			allwinner,pll-video = <(SUNXI_CCU_BASE + 0x40)>;
+			allwinner,pll-peri = <(SUNXI_CCU_BASE + 0x20)>;
+			allwinner,de = <&de0>;
+			allwinner,tcon = <&tcon_lcd0>;
+			allwinner,tcon-top = <&tcon_top0>;
+			allwinner,output = <&rgb0>;
+			allwinner,panel = <&panel_rgb>;
+			status = "okay";
+		};
+
+		display_srgb: display-subsystem-serial {
+			compatible = "allwinner,sunxi-display";
+			allwinner,variant = "sun252iw1";
+			allwinner,pll-video = <(SUNXI_CCU_BASE + 0x40)>;
+			allwinner,pll-peri = <(SUNXI_CCU_BASE + 0x20)>;
+			allwinner,de = <&de0>;
+			allwinner,tcon = <&tcon_lcd0>;
+			allwinner,tcon-top = <&tcon_top0>;
+			allwinner,output = <&rgb_serial0>;
+			allwinner,panel = <&panel_srgb>;
+			status = "okay";
+		};
+
+		display_i8080: display-subsystem-i8080 {
+			compatible = "allwinner,sunxi-display";
+			allwinner,variant = "sun252iw1";
+			allwinner,pll-video = <(SUNXI_CCU_BASE + 0x40)>;
+			allwinner,pll-peri = <(SUNXI_CCU_BASE + 0x20)>;
+			allwinner,de = <&de0>;
+			allwinner,tcon = <&tcon_lcd0>;
+			allwinner,tcon-top = <&tcon_top0>;
+			allwinner,output = <&i8080_0>;
+			allwinner,panel = <&panel_i8080>;
+			allwinner,backlight = <&backlight_i8080>;
+			status = "okay";
 		};
 	};
 };

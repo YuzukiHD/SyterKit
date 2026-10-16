@@ -4,6 +4,7 @@ board-soc := sun252iw1
 apps-sram-y := app
 apps-sram-$(CONFIG_ARCH_SMP) += smp_test
 apps-sram-$(CONFIG_COMPONENT_COREMARK) += coremark
+apps-sram-$(CONFIG_DRIVER_DISPLAY) += disp_test
 apps-dram-y := hello_world
 
 board-libs-$(CONFIG_ARCH_CPU_E907) := $(soc-lib-dir)/libdram-e907.a
