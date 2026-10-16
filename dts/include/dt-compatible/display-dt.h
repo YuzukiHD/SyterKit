@@ -250,7 +250,9 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 	out = sunxi_disp_dt_ref(node, "allwinner,output");
 	if (out < 0 || !syterkit_dt_node_available(out))
 		return DRIVER_ERROR_INVALID;
-	if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_RGB_COMPATIBLE) == 0) {
+	if (0) {
+#ifdef CONFIG_DRIVER_DISPLAY_RGB
+	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_RGB_COMPATIBLE) == 0) {
 		disp->iface = SUNXI_DISP_IF_RGB;
 		disp->if_cfg.hv_mode = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,hv-mode", 0U);
 		disp->if_cfg.srgb_seq = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,srgb-seq", 0U);
@@ -260,6 +262,8 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->if_cfg.rb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rb-swap", 0U);
 		disp->if_cfg.clk_phase = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,clk-phase", 0U);
 		disp->if_cfg.io_adjust = sunxi_disp_dt_u32(out, "allwinner,io-adjust", 0U);
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_I8080_COMPATIBLE) == 0) {
 		disp->iface = SUNXI_DISP_IF_I8080;
 		disp->if_cfg.cpu_mode = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,cpu-mode", 0U);
@@ -269,6 +273,7 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->if_cfg.rb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rb-swap", 0U);
 		disp->if_cfg.clk_phase = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,clk-phase", 0U);
 		disp->if_cfg.io_adjust = sunxi_disp_dt_u32(out, "allwinner,io-adjust", 0U);
+#endif
 #ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_LVDS_COMPATIBLE) == 0) {
 		const dt2c_fdt32_t *rst = syterkit_dt_cells(out, "allwinner,reset", 2);

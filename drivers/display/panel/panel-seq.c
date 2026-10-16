@@ -62,11 +62,12 @@ static int panel_run_seq(
 #endif
 
 	(void)dsi; /* only used by the DSI commands */
+	(void)tcon; /* only used by the i8080 commands */
 	while (seq && seq->cells && i + 3U <= seq->count) {
 		uint32_t type = be32(seq->cells[i]);
 		uint32_t len = be32(seq->cells[i + 1]);
 		uint32_t arg = be32(seq->cells[i + 2]);
-		int ret = 0;
+		int ret __attribute__((unused)) = 0;
 
 		i += 3U;
 		switch (type) {
@@ -111,6 +112,7 @@ static int panel_run_seq(
 			pr_err("DSI commands need a chip with DSI\n");
 			return DRIVER_ERROR_INVALID;
 #endif
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 		case CMD_I8080: {
 			uint32_t k;
 
@@ -132,6 +134,7 @@ static int panel_run_seq(
 				mdelay(arg);
 			continue;
 		}
+#endif
 		default:
 			pr_err("unsupported command type %u\n", (unsigned int)type);
 			return DRIVER_ERROR_INVALID;
@@ -145,7 +148,9 @@ int sunxi_panel_run_seq(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq,
 	return panel_run_seq(panel, seq, dsi, NULL);
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 int sunxi_panel_run_seq_i8080(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_tcon *tcon)
 {
 	return panel_run_seq(panel, seq, NULL, tcon);
 }
+#endif

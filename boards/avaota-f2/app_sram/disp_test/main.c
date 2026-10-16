@@ -229,6 +229,7 @@ static void test_de_frames(const char *tag, sunxi_display_t *disp)
 	CHECK(tag, "underflow", !sunxi_tcon_check_underflow(&disp->tcon), "no TCON FIFO underflow");
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 /*
  * i8080: the bus handshake of a command write, then one manual frame trigger. Both only read status bits that are
  * 0 when the TCON does not answer at all, so they are only meaningful when the CPU control register reads back
@@ -253,8 +254,9 @@ static void test_i8080(const char *tag, sunxi_display_t *disp)
 		alive ? "" : "TCON does not answer, ", busy ? "still busy" : "finished",
 		(unsigned int)(time_us() - start), (unsigned int)readl(TCON_CPU_CTL));
 }
+#endif
 
-static void run_output(const char *alias, const char *tag)
+static __attribute__((unused)) void run_output(const char *alias, const char *tag)
 {
 	sunxi_display_t disp;
 	int ret;
@@ -288,9 +290,12 @@ static void run_output(const char *alias, const char *tag)
 	test_clocks(tag, &disp);
 	test_de_regs(tag, &disp);
 	test_tcon_regs(tag, &disp);
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 	if (disp.iface == SUNXI_DISP_IF_I8080) {
 		test_i8080(tag, &disp);
-	} else {
+	} else
+#endif
+	{
 		test_frame_rate(tag, &disp);
 		test_de_frames(tag, &disp);
 	}
@@ -321,9 +326,14 @@ int main(void)
 		return -1;
 	}
 
+	/* only the outputs that are built can be tested */
+#ifdef CONFIG_DRIVER_DISPLAY_RGB
 	run_output("display0", "rgb");
 	run_output("display1", "srgb");
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 	run_output("display2", "i8080");
+#endif
 
 	if (failures)
 		pr_err("DISP: %d test(s) FAILED\n", failures);

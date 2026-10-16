@@ -65,7 +65,7 @@ static void tcon_modify_reg(const sunxi_tcon_t *tcon, uint16_t off, uint32_t mas
 	clrsetbits_le32(tcon_reg_address(tcon, off), mask, val);
 }
 
-static uint32_t abs_diff(uint32_t lhs, uint32_t rhs)
+static __attribute__((unused)) uint32_t abs_diff(uint32_t lhs, uint32_t rhs)
 {
 	return lhs > rhs ? lhs - rhs : rhs - lhs;
 }
@@ -74,7 +74,7 @@ static uint32_t abs_diff(uint32_t lhs, uint32_t rhs)
 /* Pixel clock                                                         */
 /* ------------------------------------------------------------------ */
 /* the module rate that can really be made for a wanted one: the chip knows how its clock sources are built */
-static uint32_t mod_round(const sunxi_tcon_t *tcon, uint32_t want)
+static __attribute__((unused)) uint32_t mod_round(const sunxi_tcon_t *tcon, uint32_t want)
 {
 	const struct sunxi_disp_soc *soc = tcon->clk->soc;
 	sunxi_disp_src_t src = tcon->res.mod_mux < SUNXI_DISP_MAX_PARENTS ?
@@ -85,7 +85,7 @@ static uint32_t mod_round(const sunxi_tcon_t *tcon, uint32_t want)
 }
 
 /* choose module rate and dclk divider closest to the pixel clock */
-static int tcon_clk_plan(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_div, uint32_t max_div)
+static __attribute__((unused)) int tcon_clk_plan(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_div, uint32_t max_div)
 {
 	uint32_t best_err = 0xffffffffU, div, rate, pix, err;
 
@@ -115,7 +115,7 @@ static int tcon_clk_plan(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_div, 
 	return DRIVER_OK;
 }
 
-static int tcon_setup_clock(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_div, uint32_t max_div)
+static __attribute__((unused)) int tcon_setup_clock(sunxi_tcon_t *tcon, uint32_t pixclk, uint32_t min_div, uint32_t max_div)
 {
 	uint32_t got;
 
@@ -165,7 +165,7 @@ static void tcon_init_regs(sunxi_tcon_t *tcon)
 	tcon_modify_reg(tcon, tcon->var->reg.gctl, TCON_GCTL_EN, TCON_GCTL_EN);
 }
 
-static void tcon_set_timing(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing)
+static __attribute__((unused)) void tcon_set_timing(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing)
 {
 	uint32_t hbp = timing->hsync_len + timing->hback_porch; /* back porch + sync */
 	uint32_t vbp = timing->vsync_len + timing->vback_porch;
@@ -183,7 +183,7 @@ static void tcon_set_timing(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timin
 }
 
 /* lines between the start of the vertical blank and the data request */
-static void tcon_set_start_delay(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing)
+static __attribute__((unused)) void tcon_set_start_delay(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing)
 {
 	int32_t delay = (int32_t)timing->vtotal - (int32_t)timing->vactive - (int32_t)tcon->var->start_delay_margin;
 	int32_t max = (int32_t)(TCON0_CTL_START_DELAY >> __builtin_ctz(TCON0_CTL_START_DELAY));
@@ -197,7 +197,7 @@ static void tcon_set_start_delay(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *
 }
 
 /* spread the dropped low bits over consecutive frames for 6 bit (or 5/6/5 bit) panels */
-static void tcon_set_frm(sunxi_tcon_t *tcon, sunxi_disp_bus_t bus)
+static __attribute__((unused)) void tcon_set_frm(sunxi_tcon_t *tcon, sunxi_disp_bus_t bus)
 {
 	static const uint32_t seeds[6] = { 1, 3, 5, 7, 11, 13 };
 	static const uint32_t patterns[4] = { 0x01010000, 0x15151111, 0x57575555, 0x7f7f7777 };
@@ -215,7 +215,7 @@ static void tcon_set_frm(sunxi_tcon_t *tcon, sunxi_disp_bus_t bus)
 		TCON0_FRM_EN | (bus == SUNXI_DISP_BUS_RGB565 ? TCON0_FRM_MODE_R | TCON0_FRM_MODE_B : 0));
 }
 
-static void tcon_set_io(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing, uint8_t clk_phase, uint8_t rgb_swap,
+static __attribute__((unused)) void tcon_set_io(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing, uint8_t clk_phase, uint8_t rgb_swap,
 	uint8_t rb_swap, uint32_t io_adjust)
 {
 	static const struct {
@@ -255,6 +255,7 @@ static void tcon_set_io(sunxi_tcon_t *tcon, const sunxi_disp_timing_t *timing, u
 	tcon_write_reg(tcon, tcon->var->reg.fsync_gen_ctrl, 0);
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_RGB
 static void tcon_config_hv(sunxi_tcon_t *tcon)
 {
 	const sunxi_tcon_if_cfg_t *if_cfg = &tcon->cfg;
@@ -268,6 +269,7 @@ static void tcon_config_hv(sunxi_tcon_t *tcon)
 	tcon_set_frm(tcon, tcon->bus);
 	tcon_set_io(tcon, &tcon->timing, if_cfg->clk_phase, if_cfg->rgb_swap, if_cfg->rb_swap, if_cfg->io_adjust);
 }
+#endif
 
 #ifdef CONFIG_DRIVER_DISPLAY_LVDS
 static void tcon_config_lvds(sunxi_tcon_t *tcon)
@@ -359,6 +361,7 @@ static void tcon_config_dsi(sunxi_tcon_t *tcon)
 }
 #endif
 
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 /*
  * i8080 (TCON "CPU" interface): panel commands go through the TCON write register. Frames either stream
  * continuously (auto) or are sent block by block when sunxi_tcon_trigger() is called, paced by the TCON
@@ -400,6 +403,7 @@ static void tcon_config_cpu(sunxi_tcon_t *tcon)
 	if (cfg->cpu_te)
 		tcon_modify_reg(tcon, tcon->var->reg.io_tri, TCON0_IO_TRI_IO0, TCON0_IO_TRI_IO0);
 }
+#endif
 
 /* ------------------------------------------------------------------ */
 /* Operations                                                          */
@@ -411,8 +415,10 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 
 	if (!tcon || !tcon->var || !timing || !cfg)
 		return DRIVER_ERROR_INVALID;
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 	if (iface == SUNXI_DISP_IF_I8080 && !tcon->var->reg.cpu_wr)
 		return DRIVER_ERROR_INVALID; /* this TCON variant has no i8080 write path */
+#endif
 	tcon->iface = iface;
 	tcon->timing = *timing;
 	tcon->bus = bus;
@@ -426,17 +432,21 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 	tcon_init_regs(tcon);
 
 	switch (iface) {
+#ifdef CONFIG_DRIVER_DISPLAY_RGB
 	case SUNXI_DISP_IF_RGB:
 		ret = tcon_setup_clock(tcon, timing->pixel_clock_hz, tcon->var->hv_div_min, tcon->var->hv_div_max);
 		if (!ret)
 			tcon_config_hv(tcon);
 		break;
+#endif
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 	case SUNXI_DISP_IF_I8080:
 		/* the write strobe is the pixel clock, same divider range as the HV interface */
 		ret = tcon_setup_clock(tcon, timing->pixel_clock_hz, tcon->var->hv_div_min, tcon->var->hv_div_max);
 		if (!ret)
 			tcon_config_cpu(tcon);
 		break;
+#endif
 #ifdef CONFIG_DRIVER_DISPLAY_LVDS
 	case SUNXI_DISP_IF_LVDS:
 		/* seven bits per pixel clock on each LVDS pair */
@@ -629,6 +639,7 @@ void sunxi_tcon_trigger(sunxi_tcon_t *tcon)
 	tcon_modify_reg(tcon, tcon->var->reg.cpu_ctl, TCON0_CPU_TRI_START, TCON0_CPU_TRI_START);
 }
 
+#ifdef CONFIG_DRIVER_DISPLAY_I8080
 /* every command and data word is expanded like this, whatever the bus width (the vendor driver does the same) */
 static uint32_t tcon_cpu_16b_to_24b(uint32_t value)
 {
@@ -654,5 +665,6 @@ int sunxi_tcon_cpu_write(sunxi_tcon_t *tcon, bool is_data, uint32_t value)
 	tcon_modify_reg(tcon, tcon->var->reg.cpu_ctl, TCON0_CPU_DA, TCON0_CPU_DA);
 	return DRIVER_OK;
 }
+#endif
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-tcon-lcd");

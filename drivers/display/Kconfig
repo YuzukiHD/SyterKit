@@ -5,6 +5,14 @@ menu "Display driver"
 config DRIVER_DISPLAY
 	bool "Display (TCON + DE UI passthrough) support"
 
+config DRIVER_DISPLAY_RGB
+	bool "Parallel and serial RGB output"
+	depends on DRIVER_DISPLAY
+
+config DRIVER_DISPLAY_I8080
+	bool "i8080 (TCON CPU interface) output"
+	depends on DRIVER_DISPLAY
+
 config DRIVER_DISPLAY_DSI
 	bool "MIPI DSI output"
 	depends on DRIVER_DISPLAY
