@@ -82,6 +82,7 @@ int cmd_speedtest(int argc, const char **argv)
 	return 0;
 }
 
+
 const msh_command_entry commands[] = {
 	msh_define_command(speedtest),
 	msh_command_end,
@@ -151,6 +152,13 @@ int main(void)
 		pr_err("SPIF NOR: invalid devicetree configuration\n");
 		return -1;
 	}
+
+	/* this board's flash comes with the block protect bits set, which makes erase and program no-ops */
+	nor.clear_block_protect = 1U;
+#ifdef CONFIG_DRIVER_MTD_SPIF_NOR_PARAMS_OFFSET
+	/* the sampling training works in this area and keeps its result there, never at the start of the flash */
+	nor.params_offset = CONFIG_DRIVER_MTD_SPIF_NOR_PARAMS_OFFSET;
+#endif
 
 	if (sunxi_spif_init(&spif) != 0) {
 		pr_err("SPIF: controller init failed\n");
