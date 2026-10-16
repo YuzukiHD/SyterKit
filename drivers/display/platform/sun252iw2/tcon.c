@@ -39,4 +39,5 @@ const struct sunxi_tcon_top_variant sunxi_tcon_top_variant_sun252iw2 = {
 	.n_de_ports = 2,
 	.n_tcons = 2,
 	.n_dsi_clk_gates = 1,
+	.lcd_pad_clr = { 1U << 8, 1U << 12 }, /* tv0_out, tv1_out */
 };

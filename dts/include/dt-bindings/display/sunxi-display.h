@@ -34,5 +34,7 @@
 #define SUNXI_CMD_DCS(ms, n, bytes)	4 n ms bytes
 /* generic MIPI DSI write */
 #define SUNXI_CMD_GENERIC(ms, n, bytes)	5 n ms bytes
+/* i8080 write through the TCON: @n words, the first is the command index, then @ms delay */
+#define SUNXI_CMD_I8080(ms, n, words)	6 n ms words
 
 #endif

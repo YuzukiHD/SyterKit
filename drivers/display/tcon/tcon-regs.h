@@ -63,6 +63,10 @@
 #define TCON0_CPU_MODE	      TMASK(31, 28)
 #define TCON0_CPU_MODE_DSI    1
 #define TCON0_CPU_DA	      TBIT(26)
+#define TCON0_CPU_CA	      TBIT(25)
+#define TCON0_CPU_WR_FLAG     TBIT(23)
+#define TCON0_CPU_RD_FLAG     TBIT(22)
+#define TCON0_CPU_AUTO	      TBIT(17)
 #define TCON0_CPU_FLUSH	      TBIT(16)
 #define TCON0_CPU_TRI_FIFO_EN TBIT(2)
 #define TCON0_CPU_TRI_START   TBIT(1)
@@ -79,6 +83,7 @@
 #define TCON0_IO_CLK_INV	TBIT(26)
 #define TCON0_IO_HSYNC_POSITIVE TBIT(25)
 #define TCON0_IO_VSYNC_POSITIVE TBIT(24)
+#define TCON0_IO_TRI_IO0	TBIT(24) /* io_tri: IO0 pad is an input (i8080 TE) */
 
 #define TCON_ECC_FIFO_SETTING TMASK(7, 0)
 #define TCON_DEBUG_UNDERFLOW  TBIT(31)

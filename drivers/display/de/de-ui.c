@@ -19,6 +19,7 @@
 #define pr_fmt(fmt) "de: " fmt
 
 static const struct sunxi_de_variant *const sunxi_de_variants[] = {
+	&sunxi_de_variant_sun252iw1,
 	&sunxi_de_variant_sun252iw2,
 };
 
@@ -72,14 +73,16 @@ static void de_core_enable(sunxi_de_t *de, bool on)
 		/* release the mixer core, then open its bus and clock gates */
 		de_modify_reg(de, variant->top_reset, core, core);
 		de_modify_reg(de, variant->top_ahb_gate, core, core);
-		de_modify_reg(de, variant->top_mbus_gate, core, core);
+		if (!variant->top_no_mbus_gate)
+			de_modify_reg(de, variant->top_mbus_gate, core, core);
 		de_modify_reg(de, variant->top_clk_gate, core, core);
 		de_write_reg(de, variant->glb_size, de_size_word(variant, de->width, de->height));
 		de_write_reg(de, variant->glb_ctl, variant->glb_ctl_enable);
 	} else {
 		de_write_reg(de, variant->glb_ctl, 0);
 		de_modify_reg(de, variant->top_clk_gate, core, 0);
-		de_modify_reg(de, variant->top_mbus_gate, core, 0);
+		if (!variant->top_no_mbus_gate)
+			de_modify_reg(de, variant->top_mbus_gate, core, 0);
 		de_modify_reg(de, variant->top_ahb_gate, core, 0);
 		de_modify_reg(de, variant->top_reset, core, 0);
 	}

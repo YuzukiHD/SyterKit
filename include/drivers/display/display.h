@@ -60,6 +60,7 @@ typedef enum {
 	SUNXI_DISP_SRC_PLL_PERI_2X,
 	SUNXI_DISP_SRC_PLL_VIDEO_1X,
 	SUNXI_DISP_SRC_PLL_VIDEO_4X,
+	SUNXI_DISP_SRC_PLL_PERI_300M,	/* PLL_PERI(2X) / 4 */
 } sunxi_disp_src_t;
 
 #define SUNXI_DISP_MAX_PARENTS 4
@@ -153,6 +154,7 @@ typedef enum {
 	SUNXI_DISP_IF_RGB = 0,
 	SUNXI_DISP_IF_LVDS,
 	SUNXI_DISP_IF_DSI,
+	SUNXI_DISP_IF_I8080,	/* TCON CPU interface: panel commands through the TCON, frames by trigger */
 } sunxi_disp_if_t;
 
 /* Bus format of the panel side, drives TCON dithering and output width. */
@@ -190,6 +192,7 @@ typedef struct {
 	sunxi_dsi_format_t dsi_format;
 	uint32_t dsi_mode_flags;
 	sunxi_disp_seq_t power_on, power_off, init, exit;
+	sunxi_disp_seq_t vsync;	/* i8080 trigger mode: sent before every frame (e.g. memory write) */
 	uint32_t enable_delay_ms;
 	uint16_t width_mm, height_mm;
 	/* GPIO controller the SUNXI_CMD_GPIO pin numbers (bank * 32 + n) refer to */
@@ -199,7 +202,10 @@ typedef struct {
 
 /* Executes a command sequence; @dsi may be NULL when no DSI command appears. */
 struct sunxi_dsi;
+struct sunxi_tcon;
 int sunxi_panel_run_seq(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_dsi *dsi);
+/* Same for an i8080 panel: SUNXI_CMD_I8080 commands are written through @tcon. */
+int sunxi_panel_run_seq_i8080(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_tcon *tcon);
 
 /* ------------------------------------------------------------------ */
 /* Combo D-PHY (DSI / LVDS)                                            */
@@ -288,6 +294,10 @@ typedef struct {
 	uint8_t srgb_seq, syuv_seq, syuv_fdly;
 	uint8_t rgb_swap, rb_swap, clk_phase;
 	uint32_t io_adjust;
+	/* i8080: bus width / data mapping (TCON0_CPU_MODE), 1: frames are started by sunxi_tcon_trigger() */
+	uint8_t cpu_mode;
+	bool cpu_trigger;
+	uint8_t cpu_te;		/* 0: frames paced by the TCON counter, 1: counter + TE, 2: TE (falling edge) only */
 	/* lvds */
 	bool lvds_dual_link, lvds_jeida;
 	/* dsi (filled in by the display from the dsi node) */
@@ -295,7 +305,7 @@ typedef struct {
 	bool dsi_command_mode;
 } sunxi_tcon_if_cfg_t;
 
-typedef struct {
+typedef struct sunxi_tcon {
 	sunxi_disp_res_t res;
 	const struct sunxi_tcon_variant *var;
 	const sunxi_disp_clk_t *clk;
@@ -323,6 +333,12 @@ void sunxi_tcon_dump(sunxi_tcon_t *tcon);
 /* Command mode: true (and the flag is cleared) when the frame counter expired, and start the TCON side of the frame. */
 bool sunxi_tcon_frame_flag(sunxi_tcon_t *tcon);
 void sunxi_tcon_trigger(sunxi_tcon_t *tcon);
+/*
+ * i8080: write one panel command index (@is_data false) or data word to the bus. The value is the 16 bit
+ * word of the vendor driver (a command or parameter byte for 8 bit panels), it is expanded to the 24 bit write
+ * register layout here. Fails when the TCON variant has no CPU write register or the bus stays busy.
+ */
+int sunxi_tcon_cpu_write(sunxi_tcon_t *tcon, bool is_data, uint32_t value);
 
 /* ------------------------------------------------------------------ */
 /* DE: one UI channel straight into the TCON                           */

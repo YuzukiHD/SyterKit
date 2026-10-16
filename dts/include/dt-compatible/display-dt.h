@@ -24,6 +24,7 @@
 #define SUNXI_DISPLAY_COMPATIBLE   "allwinner,sunxi-display"
 #define SUNXI_DISPLAY_RGB_COMPATIBLE  "allwinner,sunxi-rgb"
 #define SUNXI_DISPLAY_LVDS_COMPATIBLE "allwinner,sunxi-lvds"
+#define SUNXI_DISPLAY_I8080_COMPATIBLE "allwinner,sunxi-i8080"
 #define SUNXI_DISPLAY_PANEL_COMPATIBLE "allwinner,sunxi-panel"
 #define SUNXI_DISPLAY_BACKLIGHT_COMPATIBLE "allwinner,sunxi-backlight"
 
@@ -137,6 +138,7 @@ static inline __attribute__((always_inline)) int sunxi_panel_dt_read_config(
 	panel->power_off = sunxi_disp_dt_seq(node, "power-off-sequence");
 	panel->init = sunxi_disp_dt_seq(node, "init-sequence");
 	panel->exit = sunxi_disp_dt_seq(node, "exit-sequence");
+	panel->vsync = sunxi_disp_dt_seq(node, "vsync-sequence");
 
 	ctrl = sunxi_disp_dt_ref(node, "allwinner,gpio-controller");
 	if (ctrl >= 0) {
@@ -257,6 +259,15 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 		disp->if_cfg.rb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rb-swap", 0U);
 		disp->if_cfg.clk_phase = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,clk-phase", 0U);
 		disp->if_cfg.io_adjust = sunxi_disp_dt_u32(out, "allwinner,io-adjust", 0U);
+	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_I8080_COMPATIBLE) == 0) {
+		disp->iface = SUNXI_DISP_IF_I8080;
+		disp->if_cfg.cpu_mode = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,cpu-mode", 0U);
+		disp->if_cfg.cpu_trigger = sunxi_disp_dt_flag(out, "allwinner,cpu-trigger");
+		disp->if_cfg.cpu_te = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,cpu-te", 0U);
+		disp->if_cfg.rgb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rgb-swap", 0U);
+		disp->if_cfg.rb_swap = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,rb-swap", 0U);
+		disp->if_cfg.clk_phase = (uint8_t)sunxi_disp_dt_u32(out, "allwinner,clk-phase", 0U);
+		disp->if_cfg.io_adjust = sunxi_disp_dt_u32(out, "allwinner,io-adjust", 0U);
 	} else if (dt2c_fdt_node_check_compatible(DT2C_FDT_COMPILED_TREE, out, SUNXI_DISPLAY_LVDS_COMPATIBLE) == 0) {
 		const dt2c_fdt32_t *rst = syterkit_dt_cells(out, "allwinner,reset", 2);
 
@@ -280,7 +291,7 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 	if (sunxi_display_dt_read_pins(disp, out) != DRIVER_OK)
 		return DRIVER_ERROR_INVALID;
 
-	if (disp->iface != SUNXI_DISP_IF_RGB) {
+	if (disp->iface == SUNXI_DISP_IF_LVDS || disp->iface == SUNXI_DISP_IF_DSI) {
 		n = sunxi_disp_dt_ref(out, "allwinner,phy");
 		if (n < 0 || sunxi_dphy_dt_read_config(&disp->dphy, n) != DRIVER_OK)
 			return DRIVER_ERROR_INVALID;

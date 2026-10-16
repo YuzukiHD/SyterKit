@@ -20,9 +20,11 @@
 #include "tcon-priv.h"
 #include "tcon-regs.h"
 
+extern const struct sunxi_tcon_top_variant sunxi_tcon_top_variant_sun252iw1;
 extern const struct sunxi_tcon_top_variant sunxi_tcon_top_variant_sun252iw2;
 
 static const struct sunxi_tcon_top_variant *const top_variants[] = {
+	&sunxi_tcon_top_variant_sun252iw1,
 	&sunxi_tcon_top_variant_sun252iw2,
 };
 
@@ -79,7 +81,7 @@ void sunxi_tcon_top_lcd_to_pads(sunxi_tcon_top_t *top, uint32_t tcon_id)
 {
 	if (tcon_id >= top->var->n_tcons)
 		return;
-	clrbits_le32(tcon_top_reg_address(top, top->var->reg.tv_setup), tcon_id ? TCON_TOP_TV1_OUT : TCON_TOP_TV0_OUT);
+	clrbits_le32(tcon_top_reg_address(top, top->var->reg.tv_setup), top->var->lcd_pad_clr[tcon_id]);
 }
 
 void sunxi_tcon_top_lcd_clk_from_phy(sunxi_tcon_top_t *top, uint32_t tcon_id, uint32_t phy_id, bool from_phy)

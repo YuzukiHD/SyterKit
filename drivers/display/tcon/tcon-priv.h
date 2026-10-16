@@ -10,6 +10,7 @@ struct sunxi_tcon_regs {
 	uint16_t frm_ctl, frm_seed, frm_tbl; /* seed/tbl: first of an array of u32 */
 	uint16_t ctl, dclk, basic0, basic1, basic2, basic3;
 	uint16_t hv_ctl, cpu_ctl, lvds_ctl, io_pol, io_tri, io_adj;
+	uint16_t cpu_wr; /* i8080 write data, 0: variant has no CPU interface */
 	uint16_t ecc_fifo, debug;
 	uint16_t cpu_tri0, cpu_tri1, cpu_tri2, cpu_tri3, cpu_tri4;
 	uint16_t safe_period, lvds_ana0, lvds_ana1, sync_ctl, fsync_gen_ctrl;
@@ -38,6 +39,7 @@ struct sunxi_tcon_top_variant {
 	const char *name;
 	struct sunxi_tcon_top_regs reg;
 	uint8_t n_de_ports, n_tcons, n_dsi_clk_gates;
+	uint32_t lcd_pad_clr[2]; /* bits of tv_setup cleared to hand the LCD pads to TCON n */
 };
 
 const struct sunxi_tcon_variant *sunxi_tcon_find_variant(const char *name);

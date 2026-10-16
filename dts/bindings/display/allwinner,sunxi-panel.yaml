@@ -58,6 +58,8 @@ properties:
     type: uint32-array
   exit-sequence:
     type: uint32-array
+  vsync-sequence:
+    type: uint32-array
   status:
     type: string
     enum: [okay, disabled]

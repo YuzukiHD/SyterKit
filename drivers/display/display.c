@@ -20,9 +20,11 @@
 
 #include <drivers/display/display.h>
 
+extern const struct sunxi_disp_soc sunxi_disp_soc_sun252iw1;
 extern const struct sunxi_disp_soc sunxi_disp_soc_sun252iw2;
 
 static const struct sunxi_disp_soc *const disp_socs[] = {
+	&sunxi_disp_soc_sun252iw1,
 	&sunxi_disp_soc_sun252iw2,
 };
 
@@ -129,6 +131,32 @@ static int display_enable_lvds(sunxi_display_t *display)
 	return DRIVER_OK;
 }
 
+/*
+ * i8080: the TCON is switched on first so that the panel init commands can go out over the bus, then
+ * frames start (streaming, or the first trigger).
+ */
+static int display_enable_i8080(sunxi_display_t *display)
+{
+	int ret;
+
+	ret = sunxi_tcon_prepare(
+		&display->tcon, display->iface, &display->panel.timing, display->panel.bus, &display->if_cfg);
+	if (ret)
+		return ret;
+	sunxi_panel_run_seq(&display->panel, &display->panel.power_on, NULL);
+	sunxi_tcon_enable(&display->tcon);
+	ret = sunxi_panel_run_seq_i8080(&display->panel, &display->panel.init, &display->tcon);
+	if (ret) {
+		pr_err("panel init sequence failed: %d\n", ret);
+		sunxi_tcon_disable(&display->tcon);
+		sunxi_tcon_unprepare(&display->tcon);
+		return ret;
+	}
+	if (display->if_cfg.cpu_trigger)
+		sunxi_tcon_trigger(&display->tcon);
+	return DRIVER_OK;
+}
+
 static int display_enable_rgb(sunxi_display_t *display)
 {
 	int ret;
@@ -165,6 +193,9 @@ int sunxi_display_enable(sunxi_display_t *display)
 	case SUNXI_DISP_IF_DSI:
 		ret = display_enable_dsi(display);
 		break;
+	case SUNXI_DISP_IF_I8080:
+		ret = display_enable_i8080(display);
+		break;
 	default:
 		ret = DRIVER_ERROR_INVALID;
 		break;
@@ -188,6 +219,9 @@ void sunxi_display_disable(sunxi_display_t *display)
 	if (!display || !display->running)
 		return;
 	sunxi_backlight_set(&display->backlight, false);
+	/* the exit commands need the bus clock, so they go out before the TCON stops */
+	if (display->iface == SUNXI_DISP_IF_I8080)
+		sunxi_panel_run_seq_i8080(&display->panel, &display->panel.exit, &display->tcon);
 	sunxi_tcon_disable(&display->tcon);
 	if (display->iface == SUNXI_DISP_IF_DSI) {
 		sunxi_panel_run_seq(&display->panel, &display->panel.exit, &display->dsi);
@@ -218,6 +252,7 @@ void sunxi_display_dump(sunxi_display_t *display)
 	pr_debug("%s, %ux%u@%uHz pixclk, fb %p stride %u\n",
 		display->iface == SUNXI_DISP_IF_RGB  ? "rgb" :
 		display->iface == SUNXI_DISP_IF_LVDS ? "lvds" :
+		display->iface == SUNXI_DISP_IF_I8080 ? "i8080" :
 						       "dsi",
 		(unsigned int)display->panel.timing.hactive, (unsigned int)display->panel.timing.vactive,
 		(unsigned int)display->panel.timing.pixel_clock_hz, (void *)display->fb_addr,
@@ -232,6 +267,14 @@ void sunxi_display_dump(sunxi_display_t *display)
 
 int sunxi_display_poll(sunxi_display_t *display)
 {
+	if (display && display->running && display->iface == SUNXI_DISP_IF_I8080 && display->if_cfg.cpu_trigger) {
+		/* i8080 trigger mode: the TCON counter paces the frames */
+		if (!sunxi_tcon_frame_flag(&display->tcon))
+			return 0;
+		sunxi_panel_run_seq_i8080(&display->panel, &display->panel.vsync, &display->tcon);
+		sunxi_tcon_trigger(&display->tcon);
+		return 1;
+	}
 	if (!display || !display->running || display->iface != SUNXI_DISP_IF_DSI || !display->if_cfg.dsi_command_mode)
 		return 0;
 	if (!sunxi_tcon_frame_flag(&display->tcon))
@@ -246,5 +289,6 @@ int sunxi_display_poll(sunxi_display_t *display)
 DT2C_DRIVER_COMPAT("allwinner,sunxi-display");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-rgb");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-lvds");
+DT2C_DRIVER_COMPAT("allwinner,sunxi-i8080");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-panel");
 DT2C_DRIVER_COMPAT("allwinner,sunxi-backlight");

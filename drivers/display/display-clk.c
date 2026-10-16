@@ -47,6 +47,7 @@ uint32_t sunxi_disp_src_rate(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src)
 		return soc->hosc_hz;
 	case SUNXI_DISP_SRC_PLL_PERI_1X:
 	case SUNXI_DISP_SRC_PLL_PERI_2X:
+	case SUNXI_DISP_SRC_PLL_PERI_300M:
 		reg = readl(clk->pll_peri_reg);
 		n = ((reg & field_mask(soc->pll_peri_n_shift, soc->pll_peri_n_width)) >> soc->pll_peri_n_shift) +
 		    soc->pll_peri_n_bias;
@@ -57,6 +58,8 @@ uint32_t sunxi_disp_src_rate(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src)
 		if (bit_valid(soc->pll_peri_m_bit) && (reg & (1U << soc->pll_peri_m_bit)))
 			rate /= 2;
 		rate = rate / post_div0 * n;
+		if (src == SUNXI_DISP_SRC_PLL_PERI_300M)
+			return rate / 4;
 		return src == SUNXI_DISP_SRC_PLL_PERI_1X ? rate / 2 : rate;
 	case SUNXI_DISP_SRC_PLL_VIDEO_4X:
 	case SUNXI_DISP_SRC_PLL_VIDEO_1X:

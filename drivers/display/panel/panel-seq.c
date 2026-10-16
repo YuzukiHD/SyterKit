@@ -9,6 +9,7 @@
  *   2 level pin       GPIO output (pin = bank * 32 + n)
  *   4 n ms bytes...   DCS write: bytes[0] is the command
  *   5 n ms bytes...   generic DSI write
+ *   6 n ms words...   i8080 write through the TCON: words[0] is the command index, the others are data
  */
 
 #include <stdbool.h>
@@ -26,6 +27,7 @@
 #define CMD_GPIO    2U
 #define CMD_DCS	    4U
 #define CMD_GENERIC 5U
+#define CMD_I8080   6U
 
 static uint32_t be32(uint32_t value)
 {
@@ -51,7 +53,8 @@ static void panel_gpio(const sunxi_panel_t *panel, uint32_t pin, uint32_t level)
 		(unsigned int)(level ? 1 : 0), sunxi_gpio_read(&gpio));
 }
 
-int sunxi_panel_run_seq(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_dsi *dsi)
+static int panel_run_seq(
+	const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_dsi *dsi, struct sunxi_tcon *tcon)
 {
 	uint32_t i = 0;
 	uint8_t buf[64];
@@ -98,10 +101,41 @@ int sunxi_panel_run_seq(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq,
 				mdelay(arg);
 			continue;
 		}
+		case CMD_I8080: {
+			uint32_t k;
+
+			if (len == 0U || i + len > seq->count)
+				return DRIVER_ERROR_INVALID;
+			if (!tcon) {
+				pr_err("i8080 command without a TCON\n");
+				return DRIVER_ERROR_INVALID;
+			}
+			for (k = 0; k < len; k++) {
+				ret = sunxi_tcon_cpu_write(tcon, k != 0U, be32(seq->cells[i + k]));
+				if (ret < 0) {
+					pr_err("i8080 write failed: %d\n", ret);
+					return ret;
+				}
+			}
+			i += len;
+			if (arg)
+				mdelay(arg);
+			continue;
+		}
 		default:
 			pr_err("unsupported command type %u\n", (unsigned int)type);
 			return DRIVER_ERROR_INVALID;
 		}
 	}
 	return DRIVER_OK;
+}
+
+int sunxi_panel_run_seq(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_dsi *dsi)
+{
+	return panel_run_seq(panel, seq, dsi, NULL);
+}
+
+int sunxi_panel_run_seq_i8080(const sunxi_panel_t *panel, const sunxi_disp_seq_t *seq, struct sunxi_tcon *tcon)
+{
+	return panel_run_seq(panel, seq, NULL, tcon);
 }

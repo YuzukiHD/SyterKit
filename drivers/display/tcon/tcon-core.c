@@ -22,9 +22,11 @@
 #include "tcon-priv.h"
 #include "tcon-regs.h"
 
+extern const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw1;
 extern const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw2;
 
 static const struct sunxi_tcon_variant *const tcon_variants[] = {
+	&sunxi_tcon_variant_sun252iw1,
 	&sunxi_tcon_variant_sun252iw2,
 };
 
@@ -365,6 +367,48 @@ static void tcon_config_dsi(sunxi_tcon_t *tcon)
 	}
 }
 
+/*
+ * i8080 (TCON "CPU" interface): panel commands go through the TCON write register. Frames either stream
+ * continuously (auto) or are sent block by block when sunxi_tcon_trigger() is called, paced by the TCON
+ * counter in between.
+ */
+static void tcon_config_cpu(sunxi_tcon_t *tcon)
+{
+	const sunxi_tcon_if_cfg_t *cfg = &tcon->cfg;
+	const sunxi_disp_timing_t *timing = &tcon->timing;
+	uint32_t cpu = TPREP(TCON0_CPU_MODE, cfg->cpu_mode) | TCON0_CPU_DA;
+
+	tcon_modify_reg(tcon, tcon->var->reg.ctl, TCON0_CTL_IF, TPREP(TCON0_CTL_IF, TCON0_IF_CPU));
+	tcon_set_timing(tcon, timing);
+	tcon_modify_reg(tcon, tcon->var->reg.ctl, TCON0_CTL_START_DELAY, TPREP(TCON0_CTL_START_DELAY, 2));
+
+	if (cfg->cpu_trigger) {
+		uint32_t cntr = (uint32_t)timing->htotal * timing->vtotal / 4U, mdiv;
+
+		cpu |= TCON0_CPU_FLUSH | TCON0_CPU_TRI_FIFO_EN | TCON0_CPU_TRI_EN;
+		tcon_write_reg(tcon, tcon->var->reg.cpu_tri0,
+			TPREP(TCON0_TRI0_BLOCK_SIZE, timing->hactive - 1) | TPREP(TCON0_TRI0_BLOCK_SPACE, 199));
+		tcon_write_reg(tcon, tcon->var->reg.cpu_tri1, TPREP(TCON0_TRI1_BLOCK_NUM, timing->vactive - 1));
+		tcon_write_reg(tcon, tcon->var->reg.cpu_tri2,
+			TPREP(TCON0_TRI2_START_DELAY, 3) | TPREP(TCON0_TRI2_TRANS_START_SET, 9));
+		/* the counter paces the blocks, with TE it only is the fallback (mode 1) */
+		if (cfg->cpu_te == 1U)
+			cntr = ((uint32_t)timing->hactive + 200U) * ((uint32_t)timing->vactive + 50U) / 4U;
+		for (mdiv = 1; mdiv < 256; mdiv++)
+			if (cntr / mdiv < 65535)
+				break;
+		tcon_write_reg(tcon, tcon->var->reg.cpu_tri3,
+			TPREP(TCON0_TRI3_COUNTER_M, mdiv - 1) | TPREP(TCON0_TRI3_COUNTER_N, cntr / mdiv - 1) |
+				TPREP(TCON0_TRI3_INT_MODE, cfg->cpu_te == 0U ? 1U : cfg->cpu_te + 1U));
+	}
+	tcon_write_reg(tcon, tcon->var->reg.cpu_ctl, cpu);
+
+	tcon_set_frm(tcon, tcon->bus);
+	tcon_set_io(tcon, timing, cfg->clk_phase, cfg->rgb_swap, cfg->rb_swap, cfg->io_adjust);
+	if (cfg->cpu_te)
+		tcon_modify_reg(tcon, tcon->var->reg.io_tri, TCON0_IO_TRI_IO0, TCON0_IO_TRI_IO0);
+}
+
 /* ------------------------------------------------------------------ */
 /* Operations                                                          */
 /* ------------------------------------------------------------------ */
@@ -375,6 +419,8 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 
 	if (!tcon || !tcon->var || !timing || !cfg)
 		return DRIVER_ERROR_INVALID;
+	if (iface == SUNXI_DISP_IF_I8080 && !tcon->var->reg.cpu_wr)
+		return DRIVER_ERROR_INVALID; /* this TCON variant has no i8080 write path */
 	tcon->iface = iface;
 	tcon->timing = *timing;
 	tcon->bus = bus;
@@ -392,6 +438,12 @@ int sunxi_tcon_prepare(sunxi_tcon_t *tcon, sunxi_disp_if_t iface, const sunxi_di
 		ret = tcon_setup_clock(tcon, timing->pixel_clock_hz, tcon->var->hv_div_min, tcon->var->hv_div_max);
 		if (!ret)
 			tcon_config_hv(tcon);
+		break;
+	case SUNXI_DISP_IF_I8080:
+		/* the write strobe is the pixel clock, same divider range as the HV interface */
+		ret = tcon_setup_clock(tcon, timing->pixel_clock_hz, tcon->var->hv_div_min, tcon->var->hv_div_max);
+		if (!ret)
+			tcon_config_cpu(tcon);
 		break;
 	case SUNXI_DISP_IF_LVDS:
 		/* seven bits per pixel clock on each LVDS pair */
@@ -569,6 +621,32 @@ bool sunxi_tcon_frame_flag(sunxi_tcon_t *tcon)
 void sunxi_tcon_trigger(sunxi_tcon_t *tcon)
 {
 	tcon_modify_reg(tcon, tcon->var->reg.cpu_ctl, TCON0_CPU_TRI_START, TCON0_CPU_TRI_START);
+}
+
+/* every command and data word is expanded like this, whatever the bus width (the vendor driver does the same) */
+static uint32_t tcon_cpu_16b_to_24b(uint32_t value)
+{
+	return ((value & 0xfc00) << 8) | ((value & 0x0300) << 6) | ((value & 0x00e0) << 5) | ((value & 0x001f) << 3);
+}
+
+int sunxi_tcon_cpu_write(sunxi_tcon_t *tcon, bool is_data, uint32_t value)
+{
+	uint32_t timeout = 5000U;
+
+	if (!tcon->powered || tcon->iface != SUNXI_DISP_IF_I8080 || !tcon->var->reg.cpu_wr)
+		return DRIVER_ERROR_INVALID;
+	while ((tcon_read_reg(tcon, tcon->var->reg.cpu_ctl) & (TCON0_CPU_WR_FLAG | TCON0_CPU_RD_FLAG)) && --timeout)
+		udelay(1);
+	if (!timeout) {
+		pr_err("i8080 bus busy\n");
+		return -110;
+	}
+	value = tcon_cpu_16b_to_24b(value);
+	/* DA low while the word is loaded, CA selects command (0) or data (1), DA high starts the write */
+	tcon_modify_reg(tcon, tcon->var->reg.cpu_ctl, TCON0_CPU_DA | TCON0_CPU_CA, is_data ? TCON0_CPU_CA : 0);
+	tcon_write_reg(tcon, tcon->var->reg.cpu_wr, value & 0xffffffU);
+	tcon_modify_reg(tcon, tcon->var->reg.cpu_ctl, TCON0_CPU_DA, TCON0_CPU_DA);
+	return DRIVER_OK;
 }
 
 DT2C_DRIVER_COMPAT("allwinner,sunxi-tcon-lcd");

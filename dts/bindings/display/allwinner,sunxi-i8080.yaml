@@ -1,0 +1,39 @@
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+title: Allwinner i8080 (TCON CPU interface) output used by SyterKit
+
+properties:
+  compatible:
+    const: allwinner,sunxi-i8080
+  allwinner,cpu-mode:
+    type: uint32
+    description: TCON0_CPU_MODE, 0 18 bit, 2/4/6/8 16 bit variants, 10 9 bit, 12 8 bit 256K, 14 8 bit 65K
+  allwinner,cpu-trigger:
+    type: boolean
+    description: frames are sent by trigger (sunxi_display_poll) instead of streaming
+  allwinner,cpu-te:
+    type: uint32
+    description: 0 no TE, 1 counter plus TE, 2 TE only (needs allwinner,cpu-trigger)
+  allwinner,rgb-swap:
+    type: uint32
+  allwinner,rb-swap:
+    type: uint32
+  allwinner,clk-phase:
+    type: uint32
+  allwinner,io-adjust:
+    type: uint32
+  allwinner,drive-level:
+    type: uint32
+  pinctrl-names:
+    type: string
+  pinctrl-0:
+    type: phandle
+  status:
+    type: string
+    enum: [okay, disabled]
+
+required:
+  - compatible
+  - pinctrl-names
+  - pinctrl-0
+
+dt2c,device: true

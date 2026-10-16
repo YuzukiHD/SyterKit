@@ -35,10 +35,11 @@ struct sunxi_de_variant {
 	sunxi_de_commit_t commit;
 
 	/* engine top: per mixer reset / gate registers, one bit (core_shift) each */
-	uint16_t top_reset, top_ahb_gate, top_mbus_gate, top_clk_gate;
+	uint32_t top_reset, top_ahb_gate, top_mbus_gate, top_clk_gate;
+	uint8_t top_no_mbus_gate;		/* the top has no mbus gate register */
 	uint8_t core_shift;
 	/* global control of the mixer */
-	uint16_t glb_ctl, glb_size;
+	uint32_t glb_ctl, glb_size;
 	uint32_t glb_ctl_enable;
 	uint8_t size_w_shift, size_h_shift;
 	uint32_t size_w_mask, size_h_mask;	/* masks of the value, unshifted */
@@ -77,6 +78,7 @@ struct sunxi_de_variant {
 	uint8_t nbypass;
 };
 
+extern const struct sunxi_de_variant sunxi_de_variant_sun252iw1;
 extern const struct sunxi_de_variant sunxi_de_variant_sun252iw2;
 
 #endif /* __SUNXI_DE_REGS_H__ */
