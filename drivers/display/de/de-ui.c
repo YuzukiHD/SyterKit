@@ -19,8 +19,13 @@
 #define pr_fmt(fmt) "de: " fmt
 
 static const struct sunxi_de_variant *const sunxi_de_variants[] = {
+#ifdef CONFIG_SOC_SUN252IW1
 	&sunxi_de_variant_sun252iw1,
+#endif
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_de_variant_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_de_variant *sunxi_de_variant_find(const char *name)
@@ -29,7 +34,7 @@ const struct sunxi_de_variant *sunxi_de_variant_find(const char *name)
 
 	if (name == NULL)
 		return NULL;
-	for (i = 0; i < sizeof(sunxi_de_variants) / sizeof(sunxi_de_variants[0]); i++)
+	for (i = 0; name != NULL && sunxi_de_variants[i]; i++)
 		if (strcmp(name, sunxi_de_variants[i]->name) == 0)
 			return sunxi_de_variants[i];
 	return NULL;

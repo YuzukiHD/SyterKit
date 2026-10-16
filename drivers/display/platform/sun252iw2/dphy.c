@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#include <drivers/display/sun252iw2.h>
+
 #include "../../dphy/dphy-variant.h"
 
 /* sun252iw2 DPHY */
@@ -7,7 +9,7 @@ const struct sunxi_dphy_variant sunxi_dphy_variant_sun252iw2 = {
 	.modclk = {
 		.div = SUNXI_DISP_DIV_LINEAR,
 		.div_width = 5,
-		.parents = { SUNXI_DISP_SRC_PLL_VIDEO_4X, SUNXI_DISP_SRC_PLL_PERI_2X },
+		.parents = { SUN252IW2_DISP_SRC_PLL_VIDEO_4X, SUN252IW2_DISP_SRC_PLL_PERI_2X },
 	},
 	.ref_hz = 24000000U,
 	.vco_min_hz = 1100000000U,

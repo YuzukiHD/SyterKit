@@ -5,6 +5,8 @@
  *   channel slots at 0x100000 + slot * 0x20000, UI channel 0 = slot 3
  *   mixer 0 at 0x1c0000: display CSC 0x100, blender 0x1000, dither 0x8000, gamma 0x9000
  */
+#include <drivers/display/sun252iw2.h>
+
 #include "../../de/de-regs.h"
 
 #define DE_DISP0 0x1c0000
@@ -20,7 +22,7 @@ const struct sunxi_de_variant sunxi_de_variant_sun252iw2 = {
 	.modclk = {
 		.div = SUNXI_DISP_DIV_LINEAR,
 		.div_width = 5,
-		.parents = { SUNXI_DISP_SRC_PLL_PERI_2X, SUNXI_DISP_SRC_PLL_VIDEO_4X },
+		.parents = { SUN252IW2_DISP_SRC_PLL_PERI_2X, SUN252IW2_DISP_SRC_PLL_VIDEO_4X },
 	},
 	.default_mod_hz = 300000000,
 	.port = 0,

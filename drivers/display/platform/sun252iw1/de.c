@@ -9,6 +9,8 @@
  *
  * Only UI channel 1 is used, it reaches the blender through route value 1.
  */
+#include <drivers/display/sun252iw1.h>
+
 #include "../../de/de-regs.h"
 
 #define DE_GLB	0x100000
@@ -21,7 +23,7 @@ const struct sunxi_de_variant sunxi_de_variant_sun252iw1 = {
 	.modclk = {
 		.div = SUNXI_DISP_DIV_LINEAR,
 		.div_width = 5,
-		.parents = { SUNXI_DISP_SRC_PLL_PERI_300M, SUNXI_DISP_SRC_PLL_VIDEO_1X },
+		.parents = { SUN252IW1_DISP_SRC_PLL_PERI_300M, SUN252IW1_DISP_SRC_PLL_VIDEO_1X },
 	},
 	.default_mod_hz = 300000000,
 	.port = 0,

@@ -27,6 +27,7 @@
 #include <dt-bindings/soc/sun252iw1.h>
 #include <drivers/clk/clk.h>
 #include <drivers/display/display.h>
+#include <drivers/display/sun252iw1.h>
 #include <drivers/dram/dram.h>
 #include <drivers/i2c/i2c.h>
 #include <drivers/pmu/axp.h>
@@ -114,13 +115,13 @@ static void test_clocks(const char *tag, sunxi_display_t *disp)
 
 	/* display engine: gate, mux 0 = PLL_PERI(300M), 5 bit divider */
 	reg = readl(CCU_DE_CLK);
-	rate = sunxi_disp_src_rate(&disp->clk, SUNXI_DISP_SRC_PLL_PERI_300M) / ((reg & 0x1fU) + 1U);
+	rate = sunxi_disp_src_rate(&disp->clk, SUN252IW1_DISP_SRC_PLL_PERI_300M) / ((reg & 0x1fU) + 1U);
 	CHECK(tag, "de_clock", (reg & BIT(31)) && !(reg & BIT(24)) && abs_diff(rate, want) <= want / 20U,
 		"reg %08x, %u Hz (want %u)", (unsigned int)reg, (unsigned int)rate, (unsigned int)want);
 
 	/* TCON: gate, mux 1 = PLL_PERI(2X), M 3:0, P 9:8 */
 	reg = readl(CCU_TCON_CLK);
-	mod = sunxi_disp_src_rate(&disp->clk, SUNXI_DISP_SRC_PLL_PERI_2X) / ((reg & 0xfU) + 1U) >> ((reg >> 8) & 3U);
+	mod = sunxi_disp_src_rate(&disp->clk, SUN252IW1_DISP_SRC_PLL_PERI_2X) / ((reg & 0xfU) + 1U) >> ((reg >> 8) & 3U);
 	CHECK(tag, "tcon_clock", (reg & BIT(31)) && ((reg >> 24) & 7U) == 1U && mod == disp->tcon.mod_hz,
 		"reg %08x, module %u Hz (driver %u), pixel %u Hz (want %u)", (unsigned int)reg, (unsigned int)mod,
 		(unsigned int)disp->tcon.mod_hz, (unsigned int)disp->tcon.pixclk_hz,

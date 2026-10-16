@@ -18,7 +18,10 @@
 #define DPHY_ERR_RANGE (-5)
 
 static const struct sunxi_dphy_variant *const dphy_variants[] = {
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_dphy_variant_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_dphy_variant *sunxi_dphy_variant_lookup(const char *name)
@@ -27,7 +30,7 @@ const struct sunxi_dphy_variant *sunxi_dphy_variant_lookup(const char *name)
 
 	if (name == NULL)
 		return NULL;
-	for (i = 0; i < sizeof(dphy_variants) / sizeof(dphy_variants[0]); i++)
+	for (i = 0; name != NULL && dphy_variants[i]; i++)
 		if (strcmp(name, dphy_variants[i]->name) == 0)
 			return dphy_variants[i];
 	return NULL;

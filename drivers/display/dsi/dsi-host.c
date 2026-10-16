@@ -63,7 +63,10 @@ enum dsi_seq {
 };
 
 static const struct sunxi_dsi_variant *const dsi_variants[] = {
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_dsi_variant_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_dsi_variant *sunxi_dsi_variant_lookup(const char *name);
@@ -74,7 +77,7 @@ const struct sunxi_dsi_variant *sunxi_dsi_variant_lookup(const char *name)
 
 	if (name == NULL)
 		return NULL;
-	for (i = 0; i < sizeof(dsi_variants) / sizeof(dsi_variants[0]); i++)
+	for (i = 0; name != NULL && dsi_variants[i]; i++)
 		if (strcmp(name, dsi_variants[i]->name) == 0)
 			return dsi_variants[i];
 	return NULL;

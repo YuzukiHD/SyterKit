@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#include <drivers/display/sun252iw1.h>
+
 #include "../../tcon/tcon-priv.h"
 
 /*
@@ -28,7 +30,7 @@ const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw1 = {
 	 */
 	.modclk = {
 		.div = SUNXI_DISP_DIV_MP,
-		.parents = { SUNXI_DISP_SRC_PLL_VIDEO_4X, SUNXI_DISP_SRC_PLL_PERI_2X, SUNXI_DISP_SRC_NONE,
+		.parents = { SUN252IW1_DISP_SRC_PLL_VIDEO_4X, SUN252IW1_DISP_SRC_PLL_PERI_2X, SUNXI_DISP_SRC_NONE,
 			     SUNXI_DISP_SRC_NONE },
 	},
 	.mod_rate_max = 600000000U,

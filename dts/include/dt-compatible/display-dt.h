@@ -227,8 +227,9 @@ static inline __attribute__((always_inline)) int sunxi_display_dt_read_config(su
 	disp->clk.soc = sunxi_disp_soc_find(variant);
 	if (disp->clk.soc == NULL)
 		return DRIVER_ERROR_INVALID;
-	disp->clk.pll_video_reg = (uintptr_t)dt2c_fdt32_to_cpu(pll_video[0]);
-	disp->clk.pll_peri_reg = (uintptr_t)dt2c_fdt32_to_cpu(pll_peri[0]);
+	/* the chip knows which of the two is which: video first, peri second, as the properties are named */
+	disp->clk.pll_reg[0] = (uintptr_t)dt2c_fdt32_to_cpu(pll_video[0]);
+	disp->clk.pll_reg[1] = (uintptr_t)dt2c_fdt32_to_cpu(pll_peri[0]);
 
 	/* display engine and timing controller */
 	if (sunxi_de_dt_read_config(&disp->de, sunxi_disp_dt_ref(node, "allwinner,de")) != DRIVER_OK ||

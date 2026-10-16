@@ -26,15 +26,20 @@ extern const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw1;
 extern const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw2;
 
 static const struct sunxi_tcon_variant *const tcon_variants[] = {
+#ifdef CONFIG_SOC_SUN252IW1
 	&sunxi_tcon_variant_sun252iw1,
+#endif
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_tcon_variant_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_tcon_variant *sunxi_tcon_find_variant(const char *name)
 {
 	unsigned int i;
 
-	for (i = 0; name != NULL && i < sizeof(tcon_variants) / sizeof(tcon_variants[0]); i++)
+	for (i = 0; name != NULL && tcon_variants[i]; i++)
 		if (strcmp(tcon_variants[i]->name, name) == 0)
 			return tcon_variants[i];
 	return NULL;
@@ -68,34 +73,15 @@ static uint32_t abs_diff(uint32_t lhs, uint32_t rhs)
 /* ------------------------------------------------------------------ */
 /* Pixel clock                                                         */
 /* ------------------------------------------------------------------ */
-static bool src_is_video(sunxi_disp_src_t src)
-{
-	return src == SUNXI_DISP_SRC_PLL_VIDEO_1X || src == SUNXI_DISP_SRC_PLL_VIDEO_4X;
-}
-
-/* the module rate that can really be made for a wanted one */
+/* the module rate that can really be made for a wanted one: the chip knows how its clock sources are built */
 static uint32_t mod_round(const sunxi_tcon_t *tcon, uint32_t want)
 {
 	const struct sunxi_disp_soc *soc = tcon->clk->soc;
 	sunxi_disp_src_t src = tcon->res.mod_mux < SUNXI_DISP_MAX_PARENTS ?
 				       tcon->var->modclk.parents[tcon->res.mod_mux] :
 				       SUNXI_DISP_SRC_NONE;
-	uint32_t mult, hosc_mult, parent, div;
 
-	if (src_is_video(src)) {
-		mult = src == SUNXI_DISP_SRC_PLL_VIDEO_1X ? soc->pll_video_4x_div : 1U;
-		hosc_mult = (want * mult + soc->hosc_hz / 2) / soc->hosc_hz;
-		if (hosc_mult == 0)
-			hosc_mult = 1;
-		return hosc_mult * soc->hosc_hz / mult;
-	}
-	parent = sunxi_disp_src_rate(tcon->clk, src);
-	if (!parent)
-		return want;
-	div = (parent + want / 2) / want;
-	if (div == 0)
-		div = 1;
-	return parent / div;
+	return soc->src_round ? soc->src_round(tcon->clk, src, want) : want;
 }
 
 /* choose module rate and dclk divider closest to the pixel clock */

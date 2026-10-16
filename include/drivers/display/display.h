@@ -52,16 +52,12 @@ typedef struct {
 	uint8_t mod_div;	/* fixed divider (>= 1): parent and PLL stay as they are, 0: not used */
 } sunxi_disp_res_t;
 
-/* Clock sources a module clock can pick (meaning of the mux in the variants). */
-typedef enum {
-	SUNXI_DISP_SRC_NONE = 0,
-	SUNXI_DISP_SRC_HOSC,
-	SUNXI_DISP_SRC_PLL_PERI_1X,
-	SUNXI_DISP_SRC_PLL_PERI_2X,
-	SUNXI_DISP_SRC_PLL_VIDEO_1X,
-	SUNXI_DISP_SRC_PLL_VIDEO_4X,
-	SUNXI_DISP_SRC_PLL_PERI_300M,	/* PLL_PERI(2X) / 4 */
-} sunxi_disp_src_t;
+/*
+ * Id of a clock source a module clock can pick. Only 0 (none) is common: the ids are defined by the chip
+ * (include/drivers/display/<soc>.h) and only the ops of its struct sunxi_disp_soc interpret them.
+ */
+typedef uint8_t sunxi_disp_src_t;
+#define SUNXI_DISP_SRC_NONE 0
 
 #define SUNXI_DISP_MAX_PARENTS 4
 
@@ -78,55 +74,47 @@ typedef struct {
 	sunxi_disp_src_t parents[SUNXI_DISP_MAX_PARENTS];
 } sunxi_disp_modclk_t;
 
+#define SUNXI_DISP_MAX_PLLS 2
+
+struct sunxi_disp_soc;
+
+/* The clock tree of the display node: the chip and the PLL registers it listed (meaning given by the chip). */
+typedef struct {
+	const struct sunxi_disp_soc *soc;
+	uintptr_t pll_reg[SUNXI_DISP_MAX_PLLS];
+} sunxi_disp_clk_t;
+
 /*
- * SoC level clock and glue description (compatible of the display node).
- * Rates of the shared PLLs and PLL_VIDEO programming are chip specific.
+ * Chip level description (allwinner,variant of the display node). Everything that depends on how the chip builds
+ * its clock sources lives behind these ops, the common code only knows bus gates, module clock registers and
+ * dividers.
  */
 struct sunxi_disp_soc {
 	const char *compatible;
-	uint32_t hosc_hz;
-	/* PLL_VIDEO register layout (offsets relative to the register in the node) */
-	uint8_t pll_video_n_shift;
-	uint8_t pll_video_n_width;
-	uint8_t pll_video_n_bias;		/* field + bias = N */
-	uint8_t pll_video_m_bit;		/* bit that divides the reference by two, 0xff: none */
-	uint8_t pll_video_en_bit;
-	uint8_t pll_video_ldo_bit;		/* 0xff: none */
-	uint8_t pll_video_lock_en_bit;		/* 0xff: none */
-	uint8_t pll_video_locked_bit;		/* 0xff: none */
-	uint8_t pll_video_out_bit;		/* output gate, 0xff: none */
-	uint32_t pll_video_min_hz;
-	uint32_t pll_video_max_hz;
-	uint8_t pll_video_4x_div;		/* VIDEO_4X = pll, VIDEO_1X = pll / this */
-	/* PLL_PERI: rate = hosc / (m? 2:1) / p0 * n, 1X = 2X / 2 */
-	uint8_t pll_peri_n_shift;
-	uint8_t pll_peri_n_width;
-	uint8_t pll_peri_n_bias;
-	uint8_t pll_peri_p0_shift;
-	uint8_t pll_peri_p0_width;
-	uint8_t pll_peri_m_bit;			/* reference / 2, 0xff: none */
+	/* rate of a module clock source in Hz, 0 when unknown */
+	uint32_t (*src_rate)(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src);
+	/* the module clock rate that can really be made from @src for a wanted one */
+	uint32_t (*src_round)(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src, uint32_t want_hz);
+	/*
+	 * Bring @src up for a module clock of @rate_hz (0: keep the rate of the source, only make it run).
+	 * Returns 1 when the source was set to the module rate itself (the module divider must stay at 1), 0 when
+	 * it keeps its rate and the divider does the work, negative on error.
+	 */
+	int (*src_prepare)(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src, uint32_t rate_hz);
 	/* write-once bring-up of glue registers (system control etc.), may be NULL */
 	void (*soc_init)(void);
 	/* D-PHY termination trim copied from the fuses, may be NULL */
 	void (*dphy_calibrate)(void);
 };
 
-/* PLL helpers (display-clk.c), all take the PLL registers from the display node. */
-typedef struct {
-	const struct sunxi_disp_soc *soc;
-	uintptr_t pll_video_reg;
-	uintptr_t pll_peri_reg;
-} sunxi_disp_clk_t;
-
+/* module clock source rate, asks the chip */
 uint32_t sunxi_disp_src_rate(const sunxi_disp_clk_t *clk, sunxi_disp_src_t src);
-int sunxi_disp_pll_video_set(const sunxi_disp_clk_t *clk, uint32_t hz);
-void sunxi_disp_pll_video_enable(const sunxi_disp_clk_t *clk, bool on);
 /* bus gate + reset of a block (idempotent per call, no refcount) */
 void sunxi_disp_res_bus_enable(const sunxi_disp_res_t *res, bool on);
 /*
  * Program and gate the module clock. @rate_hz: wanted module clock rate; the
- * parent is mux res->mod_mux. If that parent is a PLL_VIDEO source, the PLL is
- * retuned to the wanted rate times @pll_mult (the block owns it then).
+ * parent is mux res->mod_mux, the chip decides whether it has to be retuned
+ * for that rate (see struct sunxi_disp_soc) or the divider does the work.
  * Returns the rate that was set (0 on error).
  */
 uint32_t sunxi_disp_modclk_set(const sunxi_disp_clk_t *clk, const sunxi_disp_res_t *res,

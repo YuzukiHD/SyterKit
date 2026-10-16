@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#include <drivers/display/sun252iw2.h>
+
 #include "../../tcon/tcon-priv.h"
 
 /* sun252iw2: TCON LCD generation with a TCON top, one LVDS/DSI combo phy */
@@ -20,8 +22,8 @@ const struct sunxi_tcon_variant sunxi_tcon_variant_sun252iw2 = {
 	/* gate 31, mux 26:24 = { PLL_VIDEO/4, PLL_VIDEO, PLL_PERI(2X) }, P 9:8, M 3:0 */
 	.modclk = {
 		.div = SUNXI_DISP_DIV_MP,
-		.parents = { SUNXI_DISP_SRC_PLL_VIDEO_1X, SUNXI_DISP_SRC_PLL_VIDEO_4X,
-			     SUNXI_DISP_SRC_PLL_PERI_2X, SUNXI_DISP_SRC_NONE },
+		.parents = { SUN252IW2_DISP_SRC_PLL_VIDEO_1X, SUN252IW2_DISP_SRC_PLL_VIDEO_4X,
+			     SUN252IW2_DISP_SRC_PLL_PERI_2X, SUNXI_DISP_SRC_NONE },
 	},
 	.mod_rate_max = 600000000U,
 	.hv_div_min = 6, .hv_div_max = 127,

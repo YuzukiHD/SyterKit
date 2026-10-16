@@ -24,15 +24,20 @@ extern const struct sunxi_tcon_top_variant sunxi_tcon_top_variant_sun252iw1;
 extern const struct sunxi_tcon_top_variant sunxi_tcon_top_variant_sun252iw2;
 
 static const struct sunxi_tcon_top_variant *const top_variants[] = {
+#ifdef CONFIG_SOC_SUN252IW1
 	&sunxi_tcon_top_variant_sun252iw1,
+#endif
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_tcon_top_variant_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_tcon_top_variant *sunxi_tcon_top_find_variant(const char *name)
 {
 	unsigned int i;
 
-	for (i = 0; name != NULL && i < sizeof(top_variants) / sizeof(top_variants[0]); i++)
+	for (i = 0; name != NULL && top_variants[i]; i++)
 		if (strcmp(top_variants[i]->name, name) == 0)
 			return top_variants[i];
 	return NULL;

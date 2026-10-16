@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
+#include <drivers/display/sun252iw2.h>
+
 #include "../../dsi/dsi-variant.h"
 
 /* sun252iw2 DSI */
@@ -7,7 +9,7 @@ const struct sunxi_dsi_variant sunxi_dsi_variant_sun252iw2 = {
 	.modclk = {
 		.div = SUNXI_DISP_DIV_LINEAR,
 		.div_width = 4,
-		.parents = { SUNXI_DISP_SRC_HOSC, SUNXI_DISP_SRC_PLL_PERI_1X },
+		.parents = { SUN252IW2_DISP_SRC_HOSC, SUN252IW2_DISP_SRC_PLL_PERI_1X },
 	},
 	.max_lanes = 4,
 	.max_tx_bytes = 256,

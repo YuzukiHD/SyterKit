@@ -24,15 +24,20 @@ extern const struct sunxi_disp_soc sunxi_disp_soc_sun252iw1;
 extern const struct sunxi_disp_soc sunxi_disp_soc_sun252iw2;
 
 static const struct sunxi_disp_soc *const disp_socs[] = {
+#ifdef CONFIG_SOC_SUN252IW1
 	&sunxi_disp_soc_sun252iw1,
+#endif
+#ifdef CONFIG_SOC_SUN252IW2
 	&sunxi_disp_soc_sun252iw2,
+#endif
+	NULL,
 };
 
 const struct sunxi_disp_soc *sunxi_disp_soc_find(const char *name)
 {
 	unsigned int i;
 
-	for (i = 0; name != NULL && i < sizeof(disp_socs) / sizeof(disp_socs[0]); i++)
+	for (i = 0; name != NULL && disp_socs[i]; i++)
 		if (strcmp(disp_socs[i]->compatible, name) == 0)
 			return disp_socs[i];
 	return NULL;
