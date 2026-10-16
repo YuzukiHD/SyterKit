@@ -1,0 +1,1 @@
+https://github.com/eembc/coremark commit 1f483d5; core_*.c and coremark.h are unmodified, the SyterKit port is in syterkit/ (ee_printf.c and cvt.c are from its barebones port, uart_send_char() removed).

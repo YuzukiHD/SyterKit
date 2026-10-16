@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config COMPONENT_COREMARK
+	bool "CoreMark benchmark (EEMBC)"
+	help
+	  Build the unmodified CoreMark sources with a SyterKit port
+	  (components/coremark/syterkit). An application calls
+	  coremark_main() after the console is up.
+
+config COREMARK_THREADS
+	int "Harts that run CoreMark in parallel"
+	depends on COMPONENT_COREMARK
+	range 1 2
+	default 1
+	help
+	  1 runs the benchmark on the boot hart. 2 runs one copy per hart and
+	  needs ARCH_SMP; the score is the sum of both harts.
+
+config COREMARK_ITERATIONS
+	int "Iterations (0 = pick so that the run lasts 10 to 100 seconds)"
+	depends on COMPONENT_COREMARK
+	default 0
+
+config COREMARK_CPU_MV
+	int "CPU core voltage in mV (AXP333 dcdc1), set before the CPU PLL is raised; 0 leaves it alone"
+	depends on COMPONENT_COREMARK
+	default 0
+
+config COREMARK_CPU_MHZ
+	int "C907 frequency in MHz set before the run, a multiple of 24 (0 keeps the one sunxi_clk_init() chose)"
+	depends on COMPONENT_COREMARK
+	default 0

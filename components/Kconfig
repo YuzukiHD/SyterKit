@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menu "Components"
+
+source "components/coremark/Kconfig"
+
+endmenu

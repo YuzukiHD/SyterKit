@@ -6,6 +6,7 @@ source "arch/Kconfig"
 source "drivers/Kconfig"
 source "core/Kconfig"
 source "lib/Kconfig"
+source "components/Kconfig"
 
 choice
 	prompt "Application runtime mode"
