@@ -31,6 +31,12 @@ typedef struct {
 	 * the next start reads it at low speed and skips the training.
 	 */
 	uint32_t params_offset;
+	/**
+	 * Non-zero: spif_nor_detect() clears the block-protect bits of the status register when
+	 * they are set, before anything is written (the sampling training erases and programs).
+	 * The bits are non-volatile, so this changes the flash permanently. Set it before the call.
+	 */
+	uint8_t clear_block_protect;
 } spif_nor_t;
 
 /**

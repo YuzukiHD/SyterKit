@@ -651,6 +651,60 @@ static int spif_nor_enable_quad(spif_nor_t *nor)
 }
 
 /**
+ * @brief Clear the block-protect bits of the flash status register.
+ * @details A protected flash ignores erase and program commands without an error, so the
+ *          status register is read first and written only when a protect bit is set. The
+ *          bit that holds the quad-enable flag on some chips (bit 6) is left alone for them,
+ *          and the second status register is written back as it was where the chip takes
+ *          both registers in one command. Verified by reading the register again.
+ * @param nor SPIF NOR flash device
+ * @return DRIVER_OK when no block is protected afterwards, otherwise a negative driver error code
+ */
+static int spif_nor_clear_block_protect(spif_nor_t *nor)
+{
+	uint8_t bp_mask = 0x3cU; /* BP0..BP3 / TB */
+	uint8_t status[2];
+	uint32_t len = 1U;
+	int ret;
+
+	if (nor->info.qe_method != 2U)
+		bp_mask |= BIT(6); /* BP4 on the 5 bit chips; the QE bit is in the other register */
+
+	ret = spif_nor_read_reg(nor, NOR_OPCODE_RDSR, &status[0], 1U);
+	if (ret != 0)
+		return ret;
+	if ((status[0] & bp_mask) == 0U)
+		return DRIVER_OK;
+	pr_info("block protect set (status=0x%02x), clearing\n", status[0]);
+
+	if (nor->info.qe_method == 1U || nor->info.qe_method == 4U || nor->info.qe_method == 5U) {
+		ret = spif_nor_read_reg(nor, NOR_OPCODE_RDSR2, &status[1], 1U);
+		if (ret != 0)
+			return ret;
+		len = 2U;
+	}
+	status[0] &= (uint8_t)~bp_mask;
+	ret = spif_nor_set_write_enable(nor);
+	if (ret != 0)
+		return ret;
+	ret = spif_nor_write_reg(nor, NOR_OPCODE_WRSR, status, len);
+	if (ret != 0)
+		return ret;
+	ret = spif_nor_wait_for_busy(nor);
+	if (ret != 0)
+		return ret;
+	ret = spif_nor_read_reg(nor, NOR_OPCODE_RDSR, &status[0], 1U);
+	if (ret != 0)
+		return ret;
+	if ((status[0] & bp_mask) != 0U) {
+		pr_warn("block protect still set (status=0x%02x)\n", status[0]);
+		return DRIVER_ERROR_INVALID;
+	}
+	pr_info("block protect cleared (status=0x%02x)\n", status[0]);
+	return DRIVER_OK;
+}
+
+/**
  * @brief Retrieves the information of the SPI NOR flash.
  * 
  * This function reads the identification (ID) of the SPI NOR flash and attempts
@@ -1887,6 +1941,8 @@ int spif_nor_detect(spif_nor_t *nor)
 			info->opcode_read = info->address_length == 4U ? NOR_OPCODE_READ_4B : NOR_OPCODE_READ;
 		}
 	}
+	if (nor->clear_block_protect != 0U && spif_nor_clear_block_protect(nor) != DRIVER_OK)
+		pr_warn("could not clear the block protect bits\n");
 	if (spif_nor_train_sampling(nor) != DRIVER_OK)
 		return -1;
 
