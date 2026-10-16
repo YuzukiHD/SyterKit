@@ -338,3 +338,62 @@ void sunxi_clk_dump(void)
 
 	pr_debug("CPU PLL=%s FREQ=%uMHz\n", clock_str, clk_freq);
 }
+
+#define PLL_LOCK_TIMEOUT_US 2000U
+
+/**
+ * @brief Change the frequency of the CPU PLL that clocks the C907.
+ *
+ * The core is moved to the 24 MHz oscillator while the PLL is reprogrammed and moved back
+ * once it has locked. The frequency chosen by sunxi_clk_init() is not changed; this is for
+ * callers that want another one. The core voltage is not touched: the caller raises it
+ * first when the new frequency needs it.
+ *
+ * @param mhz New frequency; a multiple of 24 from 24 to 6120.
+ * @return 0 on success, -1 for a frequency the PLL cannot make, -2 when the PLL did not
+ * lock (the core is then left on the oscillator).
+ */
+int sunxi_clk_cpu_set_freq(uint32_t mhz)
+{
+	uint32_t n, reg_val, cpu_clk, start;
+
+	if (mhz == 0 || (mhz % 24U) != 0 || (mhz / 24U) > 0xffU)
+		return -1;
+	n = mhz / 24U;
+
+	/* Run from the oscillator while the PLL changes. */
+	cpu_clk = readl(SUNXI_CCU_BASE + CPU_CLK_REG);
+	reg_val = cpu_clk & ~CPU_CLK_REG_CPU_CLK_SEL_CLEAR_MASK;
+	reg_val |= CPU_CLK_REG_CPU_CLK_SEL_HOSC << CPU_CLK_REG_CPU_CLK_SEL_OFFSET;
+	writel(reg_val, SUNXI_CCU_BASE + CPU_CLK_REG);
+	udelay(1);
+
+	clrbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+
+	/* PLL_OUTPUT = 24M * N / (M * P) with M and P left at 1 */
+	reg_val = readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG);
+	reg_val &= ~(PLL_CPU_CTRL_REG_PLL_P_CLEAR_MASK | PLL_CPU_CTRL_REG_PLL_N_CLEAR_MASK |
+		     PLL_CPU_CTRL_REG_PLL_M1_CLEAR_MASK);
+	reg_val |= n << PLL_CPU_CTRL_REG_PLL_N_OFFSET;
+	writel(reg_val, SUNXI_CCU_BASE + PLL_CPU_CTRL_REG);
+
+	setbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	setbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET));
+	setbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_PLL_PLL_EN_OFFSET));
+
+	start = (uint32_t)time_us();
+	while (!(readl(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG) & BIT(PLL_CPU_CTRL_REG_LOCK_OFFSET))) {
+		if ((uint32_t)time_us() - start > PLL_LOCK_TIMEOUT_US)
+			return -2;
+	}
+	udelay(20);
+
+	setbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+	clrbits_le32(SUNXI_CCU_BASE + PLL_CPU_CTRL_REG, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	udelay(1);
+
+	/* Back to the clock source it had. */
+	writel(cpu_clk, SUNXI_CCU_BASE + CPU_CLK_REG);
+	udelay(1);
+	return 0;
+}

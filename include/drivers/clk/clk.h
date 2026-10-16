@@ -23,6 +23,16 @@ void sunxi_clk_preinit(void);
 /** @brief Initialize the system clock tree. */
 void sunxi_clk_init(void);
 
+/**
+ * @brief Change the frequency of the CPU PLL after sunxi_clk_init().
+ *
+ * The core voltage is not touched; raise it first when the new frequency needs it.
+ *
+ * @param mhz New frequency in MHz (a multiple of 24 on the SoCs that implement this).
+ * @return 0 on success, negative when the frequency is not possible or the PLL did not lock.
+ */
+int sunxi_clk_cpu_set_freq(uint32_t mhz);
+
 /** @brief Reset the system clock tree to its boot configuration. */
 void sunxi_clk_reset(void);
 
