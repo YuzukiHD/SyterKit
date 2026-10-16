@@ -9,6 +9,9 @@
  */
 #include <asm/trap.h>
 #include <csr.h>
+#ifdef CONFIG_ARCH_SMP
+#include <smp.h>
+#endif
 
 	.section .text.entry, "ax", @progbits
 	.balign 4
@@ -16,6 +19,10 @@
 	.weak malloc_init_early
 	.type _start, @function
 _start:
+#ifdef CONFIG_ARCH_SMP
+	csrr t0, mhartid
+	bnez t0, _start_secondary
+#endif
 	/* Clear L1 cache & BTB & BHT ... */
 	li t0, 0x70013
 	csrw mcor, t0
@@ -83,6 +90,45 @@ _start:
 
 1:	wfi
 	j 1b
+
+#ifdef CONFIG_ARCH_SMP
+/*
+ * Secondary harts: the same cache/coherency set-up as hart 0, a private
+ * stack, no bss clearing (hart 0 owns the image). t0 holds the hart id.
+ */
+_start_secondary:
+	li t1, 0x70013
+	csrw mcor, t1
+	li t1, 0x1
+	csrw msmpr, t1
+
+	csrc mstatus, MSTATUS_MIE
+	csrw mie, zero
+
+	la t1, smp_stacks
+	li t2, SMP_STACK_SIZE
+	addi t3, t0, 1
+	mul t2, t2, t3
+	add sp, t1, t2
+
+	la a0, smp_park
+	csrw mtvec, a0
+
+	li t1, MSTATUS_FS | MSTATUS_XS
+	csrs mstatus, t1
+	li t1, MXSTATUS_C9XX
+	csrs mxstatus, t1
+	fence.i
+
+	jal smp_secondary_main
+
+	.balign 4
+	.globl smp_park
+	.type smp_park, @function
+smp_park:
+	wfi
+	j smp_park
+#endif
 
 clear_bss:
 	la t0, _sbss

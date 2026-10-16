@@ -4,6 +4,7 @@ obj-$(CONFIG_APP_SRAM) += start.o
 obj-$(CONFIG_APP_DRAM) += start.o
 obj-$(CONFIG_EFEX) += efex.o
 obj-y += cache.o
+obj-$(CONFIG_ARCH_SMP) += smp.o
 
 ifeq ($(CONFIG_ARCH_RISCV64),y)
 ifeq ($(CONFIG_ARCH_RISCV64_ABI_LP64),y)

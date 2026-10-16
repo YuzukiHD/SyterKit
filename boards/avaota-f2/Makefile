@@ -2,6 +2,7 @@
 include $(srctree)/boards/Makefile.common
 board-soc := sun252iw1
 apps-sram-y := app
+apps-sram-$(CONFIG_ARCH_SMP) += smp_test
 apps-dram-y := hello_world
 
 board-libs-$(CONFIG_ARCH_CPU_E907) := $(soc-lib-dir)/libdram-e907.a
@@ -12,3 +13,4 @@ board-libs-$(CONFIG_ARCH_RISCV64) := $(soc-lib-dir)/libdram-c907-rv64.a
 endif
 
 obj-$(CONFIG_ARCH_BOOT) += arch_boot/arch_boot.o
+obj-$(CONFIG_ARCH_SMP) += board_smp.o

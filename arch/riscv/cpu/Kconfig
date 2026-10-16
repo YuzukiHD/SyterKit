@@ -25,6 +25,14 @@ config ARCH_MTVT
 	help
 	  Program the Xuantie mtvt CSR (0x307) with the interrupt vector-table base.
 
+config ARCH_SMP
+	bool "Start the secondary Xuantie C907 harts"
+	depends on ARCH_CPU_C907
+	help
+	  Let harts other than 0 enter _start and park in a per hart stack,
+	  and provide smp_hart_start() to run a function on them. The board
+	  supplies smp_soc_hart_start() that powers the hart on.
+
 config ARCH_EXTRA_CFLAG
 	string
 	default "-mcpu=e907f" if ARCH_CPU_E907
