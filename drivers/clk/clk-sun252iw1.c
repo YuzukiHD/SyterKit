@@ -397,3 +397,46 @@ int sunxi_clk_cpu_set_freq(uint32_t mhz)
 	udelay(1);
 	return 0;
 }
+
+#define NPU_CLK_PARENT_PLL 2U /* NPU clock register bits 25:24: 0 PERI 800M, 1 PERI 600M, 2 PLL_NPU */
+
+/**
+ * @brief Run the NPU module clock from the NPU PLL at @p mhz.
+ *
+ * @return 0 on success, -1 for a frequency the PLL cannot make, -2 when the PLL did not lock.
+ */
+int sunxi_clk_npu_set_freq(uint32_t mhz)
+{
+	uint32_t reg_val, start;
+
+	if (mhz == 0 || (mhz % 24U) != 0 || (mhz / 24U) > 256U)
+		return -1;
+
+	clrbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+	/* PLL_OUTPUT = 24M * (N + 1), with both halvers off */
+	reg_val = readl(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG);
+	reg_val &= ~(PLL_NPU_CTRL_REG_PLL_N_CLEAR_MASK | PLL_NPU_CTRL_REG_PLL_INPUT_DIV2_CLEAR_MASK |
+		     PLL_NPU_CTRL_REG_PLL_OUTPUT_DIV2_CLEAR_MASK | PLL_NPU_CTRL_REG_PLL_SDM_EN_CLEAR_MASK);
+	reg_val |= (mhz / 24U - 1U) << PLL_NPU_CTRL_REG_PLL_N_OFFSET;
+	writel(reg_val, SUNXI_CCU_BASE + PLL_NPU_CTRL_REG);
+
+	setbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_PLL_LDO_EN_OFFSET));
+	setbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	setbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_PLL_EN_OFFSET));
+
+	start = (uint32_t)time_us();
+	while (!(readl(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG) & BIT(PLL_NPU_CTRL_REG_LOCK_OFFSET))) {
+		if ((uint32_t)time_us() - start > PLL_LOCK_TIMEOUT_US)
+			return -2;
+	}
+	udelay(20);
+
+	setbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+	clrbits_le32(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG, BIT(PLL_NPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	udelay(1);
+
+	clrsetbits_le32(SUNXI_CCU_BASE + NPU_CLK_REG, (3U << 24) | 0x1fU, NPU_CLK_PARENT_PLL << 24);
+	pr_info("NPU PLL %u MHz: PLL_NPU %08x, NPU clock %08x\n", (unsigned)mhz, (unsigned)readl(SUNXI_CCU_BASE + PLL_NPU_CTRL_REG),
+		(unsigned)readl(SUNXI_CCU_BASE + NPU_CLK_REG));
+	return 0;
+}

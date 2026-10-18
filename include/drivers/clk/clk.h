@@ -33,6 +33,18 @@ void sunxi_clk_init(void);
  */
 int sunxi_clk_cpu_set_freq(uint32_t mhz);
 
+/**
+ * @brief Run the NPU from its own PLL at @p mhz instead of the 600 MHz of the peripheral PLL.
+ *
+ * Programs the NPU PLL, waits for the lock and makes it the parent of the NPU module clock, with no divider. The NPU
+ * must be idle, and its module clock open (sunxi_npu_init() does that, and chooses the parent again, so call this
+ * after it). The supply is not touched; the NPU shares the core rail (AXP333 dcdc1) with the CPU.
+ *
+ * @param mhz New frequency in MHz, a multiple of 24 up to 6144.
+ * @return 0 on success, -1 for a frequency the PLL cannot make, -2 when the PLL did not lock (the clock is left alone).
+ */
+int sunxi_clk_npu_set_freq(uint32_t mhz);
+
 /** @brief Reset the system clock tree to its boot configuration. */
 void sunxi_clk_reset(void);
 
