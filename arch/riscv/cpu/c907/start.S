@@ -50,6 +50,12 @@ _start:
 	li t0, MSTATUS_FS | MSTATUS_XS
 	csrs mstatus, t0
 
+#ifdef __riscv_vector
+	/* vector state field of mstatus (RVV 1.0): initial, so vector instructions are allowed */
+	li t0, 1 << 9
+	csrs mstatus, t0
+#endif
+
 	/* C907 DRAM/cache code uses the complete T-Head extension state. */
 	li t0, MXSTATUS_C9XX
 	csrs mxstatus, t0
