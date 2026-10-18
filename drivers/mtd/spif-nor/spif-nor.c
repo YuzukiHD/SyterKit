@@ -2143,4 +2143,27 @@ uint32_t spif_nor_write(spif_nor_t *nor, const uint8_t *buf, uint32_t addr, uint
 	return done;
 }
 
+/**
+ * @brief Erase a range of the SPIF NOR flash with its largest erase blocks (64 KiB, 32 KiB or 4 KiB).
+ */
+int spif_nor_erase(spif_nor_t *nor, uint32_t addr, uint32_t len)
+{
+	uint32_t size, done;
+	uint8_t opcode;
+
+	if (nor == NULL || len == 0U || nor->info.capacity == 0U || spif_nor_select(nor) != 0 ||
+		spif_nor_get_training_erase(nor, &size, &opcode) != DRIVER_OK || (addr & (size - 1U)) != 0U ||
+		(len & (size - 1U)) != 0U || (uint64_t)addr + len > nor->info.capacity)
+		return DRIVER_ERROR_INVALID;
+	for (done = 0U; done < len; done += size) {
+		int ret = spif_nor_wait_for_busy(nor);
+
+		if (ret == 0)
+			ret = spif_nor_erase_block(nor, addr + done, size, opcode);
+		if (ret != 0)
+			return ret;
+	}
+	return DRIVER_OK;
+}
+
 DT2C_DRIVER_COMPAT("jedec,spi-nor");

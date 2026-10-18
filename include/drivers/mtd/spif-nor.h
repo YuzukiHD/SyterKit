@@ -73,4 +73,14 @@ int spif_nor_xip_disable(spif_nor_t *nor);
  */
 uint32_t spif_nor_write(spif_nor_t *nor, const uint8_t *buf, uint32_t addr, uint32_t txlen);
 
+/**
+ * @brief Erase a range of the SPIF NOR flash.
+ *
+ * @p addr and @p len must be multiples of the erase block the driver uses (64 KiB when the chip has it, else 32 KiB or
+ * 4 KiB). A write protected flash ignores the command without an error (see spif_nor_t::clear_block_protect).
+ *
+ * @return 0 on success, or a negative driver error code.
+ */
+int spif_nor_erase(spif_nor_t *nor, uint32_t addr, uint32_t len);
+
 #endif /* __DRIVERS_MTD_SPIF_NOR_H__ */
