@@ -290,14 +290,23 @@ void data_sync_barrier(void)
 	asm volatile("fence.i");
 }
 
+/** @brief The board's system map (see sysmap_add_mem_region()); the default leaves it as it is. */
+__attribute__((weak)) void board_sysmap_init(void)
+{
+}
+
 /**
  * @brief Initialize E907 cache control and prefetch settings.
  *
- * This routine only programs control CSRs; it does not enable either cache
+ * Programs the system map (board_sysmap_init()), then the control CSRs; it does not enable either cache
  * until the corresponding explicit enable hook is called.
  */
 void cache_init(void)
-{ // Configure cache options
+{
+	/* the system map has to be programmed before either cache is on: what is cacheable decides how every access
+	 * made from here on is treated, the code that is running and its stack included */
+	board_sysmap_init();
+	// Configure cache options
 	csr_write(mhcr, MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE | MHCR_BTE); // Set cache hit control register
 	csr_write(mhint, MHINT_D_PLD | MHINT_IWPE | MHINT_AMR_1 | MHINT_PREF_N_16); // Set hint for cache operations
 }

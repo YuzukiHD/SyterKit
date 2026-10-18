@@ -16,3 +16,6 @@ endif
 
 obj-$(CONFIG_ARCH_BOOT) += arch_boot/arch_boot.o
 obj-$(CONFIG_ARCH_SMP) += board_smp.o
+ifeq ($(CONFIG_ARCH_CPU_E907),y)
+obj-$(CONFIG_ARCH_DCACHE) += sysmap.o
+endif
