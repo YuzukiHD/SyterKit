@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-apps-efex-y := init_dram
+apps-efex-y := init_dram c907_boot
 soc-libs-$(CONFIG_ARCH_CPU_E907) := lib/libdram-e907.a
 
 ifeq ($(CONFIG_ARCH_CPU_C907),y)
