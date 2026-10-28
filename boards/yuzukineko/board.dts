@@ -18,6 +18,7 @@
 		psram0 = &psram0;
 		intc0 = &plic0;
 		uart1 = &uart1;
+		mmc0 = &mmc0;
 		spif0 = &spif0;
 		spif-nor0 = &spif_nor0;
 		usb0 = &usb0;
@@ -69,6 +70,17 @@
 			allwinner,pins = <SUNXI_GPIO_PORT_D 22 4>;
 		};
 
+		/* SD slot: PF0..PF5 function 2, the card-detect switch is PF6 */
+		mmc0_pins: mmc0-pins {
+			allwinner,pins =
+				<SUNXI_GPIO_PORT_F 2 2>,
+				<SUNXI_GPIO_PORT_F 3 2>,
+				<SUNXI_GPIO_PORT_F 1 2>,
+				<SUNXI_GPIO_PORT_F 0 2>,
+				<SUNXI_GPIO_PORT_F 5 2>,
+				<SUNXI_GPIO_PORT_F 4 2>;
+		};
+
 		spif_pins: spif-pins {
 			allwinner,pins =
 				<SUNXI_GPIO_PORT_C 1 4>,
@@ -77,6 +89,18 @@
 				<SUNXI_GPIO_PORT_C 2 4>,
 				<SUNXI_GPIO_PORT_C 3 4>,
 				<SUNXI_GPIO_PORT_C 5 4>;
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* SMHC0 descriptor list: the top MiB of the 32 MiB PSRAM */
+		mmc0_dma: dma-descriptors@41f00000 {
+			reg = <0x41f00000 0x100000>;
+			no-map;
 		};
 	};
 
@@ -130,6 +154,23 @@
 			allwinner,reset = <(SUNXI_CCU_BASE + 0x90c) 17>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&uart1_pins>;
+			status = "okay";
+		};
+
+		mmc0: mmc@4020000 {
+			compatible = "allwinner,sunxi-mmc";
+			reg = <SUNXI_SMHC0_BASE 0x1000>;
+			label = "sdhci0";
+			allwinner,mmc-id = <0>;
+			bus-width = <4>;
+			max-frequency = <50000000>;
+			memory-region = <&mmc0_dma>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x84c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x84c) 16>;
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x830) 8 0 1>;
+			allwinner,clock-source-rates = <24000000 600000000 0 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc0_pins>;
 			status = "okay";
 		};
 
