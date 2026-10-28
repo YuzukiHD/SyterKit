@@ -1361,6 +1361,7 @@ uint32_t sunxi_psram_init(sunxi_psram_t *psram)
 	if (psram == NULL || psram->parameter_count == 0U)
 		return 0U;
 	psram->size = lpsram_init((void *)psram->parameters);
+	psram->memory_size = (size_t)psram->size << 20;
 	return psram->size;
 }
 

@@ -35,7 +35,7 @@ static sunxi_psram_t psram = {
 	.parameters = { 252U },
 	.parameter_count = 32,
 	.memory_base = SUNXI_PSRAM_BASE,
-	.memory_size = 0x01000000U,
+	.memory_size = 0x02000000U, /* the largest part; the driver sets the measured size */
 };
 
 int main(void)

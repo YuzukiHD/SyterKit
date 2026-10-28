@@ -31,7 +31,7 @@
 
 	memory@40000000 {
 		device_type = "memory";
-		reg = <SUNXI_PSRAM_BASE 0x01000000>;
+		reg = <SUNXI_PSRAM_BASE 0x02000000>;
 	};
 
 	psram0: psram-controller {

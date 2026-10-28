@@ -27,9 +27,9 @@
 #include <common.h>
 #include <cache.h>
 
-#define YUZUKINEKO_PSRAM_SIZE 0x01000000U
-#define YUZUKINEKO_HEAP_BASE  (SUNXI_PSRAM_BASE + 0x00100000U)
-#define YUZUKINEKO_HEAP_SIZE  (YUZUKINEKO_PSRAM_SIZE - 0x00100000U)
+/* the heap starts 1 MiB into the PSRAM and runs to the end of the size the init reports */
+#define YUZUKINEKO_HEAP_OFFSET	0x00100000U
+#define YUZUKINEKO_PSRAM_MIN_MB	16U
 
 #include <cli/cli.h>
 #include <cli/cli_shell.h>
@@ -51,6 +51,9 @@ int main(void)
 
 	sunxi_clk_dump();
 
+	/* without the PSRAM driver the memory was brought up before this image: assume the smallest part */
+	uint32_t psram_mb = YUZUKINEKO_PSRAM_MIN_MB;
+
 #ifdef CONFIG_DRIVER_PSRAM
 	sunxi_psram_t psram = { 0 };
 
@@ -59,12 +62,17 @@ int main(void)
 		return -1;
 	}
 
-	sunxi_psram_init(&psram);
+	if (sunxi_psram_init(&psram) == 0U) {
+		pr_err("PSRAM: initialization failed\n");
+		return -1;
+	}
 
-	pr_info("LPSRAM Size = %d MB\n", sunxi_get_psram_size(&psram));
+	psram_mb = sunxi_get_psram_size(&psram);
+	pr_info("LPSRAM Size = %d MB\n", psram_mb);
 #endif
 
-	if (malloc_init(YUZUKINEKO_HEAP_BASE, YUZUKINEKO_HEAP_SIZE) != 0) {
+	if (malloc_init(SUNXI_PSRAM_BASE + YUZUKINEKO_HEAP_OFFSET,
+			((size_t)psram_mb << 20) - YUZUKINEKO_HEAP_OFFSET) != 0) {
 		pr_err("Heap: PSRAM heap initialization failed\n");
 		return -1;
 	}
