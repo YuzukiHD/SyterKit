@@ -229,14 +229,16 @@ static uint32_t lpsram_get_type_by_hwid(void)
 		printf_dram("[ERROR] Not supported PSRAM type of F101S2: %d\n", variant);
 		return 0;
 	}
-	if (chipid_lo == 0x4300) { /* F101S3 */
+	if (chipid_lo == 0x4300 || chipid_lo == 0x7100) { /* F101S3 */
 		if (variant == 4)
 			return PSRAM_TYPE_W957;
-		if (((variant - 3) & ~3u) == 0) /* variant == 3 or 4 */
+		if (variant == 3 || variant == 5)
 			return PSRAM_TYPE_APS128M;
 		printf_dram("[ERROR] Not supported PSRAM type of F101S3: %d\n", variant);
 		return 0;
 	}
+	if (chipid_lo == 0x4700 || chipid_lo == 0x7000) /* 32 MB W958 parts */
+		return PSRAM_TYPE_W958;
 	printf_dram("Unknown error: 0x%04x\n", chipid_lo);
 	return 0;
 }
@@ -292,6 +294,14 @@ static int lpsram_para_merge_config(lpsram_para_t *para)
 			para->dram_zq = 0x7b7bfb;
 		if ((width - 1) > 15)
 			width = 16;
+		break;
+	case 8:
+		if ((para->dram_clk - 1) > 251)
+			para->dram_clk = 252;
+		if (para->dram_zq == 0)
+			para->dram_zq = 0x7b7bfb;
+		if ((width - 1) > 31)
+			width = 32;
 		break;
 	default:
 		printf_dram("[ERROR] Not supported PSRAM type: %d\n", type);
@@ -525,7 +535,7 @@ static void lpsram_phy_dx_bit_delay_compensation(lpsram_para_t *para)
 		    ((uint32_t)dram_wdqbit[i] << 9 & 0x1e00);
 		writel(v, LPSRAM_PHY_3310 + 4 * i);
 	}
-	for (i = 0; i < 16; i++) {
+	for (i = 8; i < 16; i++) {
 		v = readl(LPSRAM_PHY_3370 + 4 * i);
 		v = (v & 0xffffc0c0) | ((uint32_t)dram_rdqbit[i] << 1 & 0x1e) |
 		    ((uint32_t)dram_wdqbit[i] << 9 & 0x1e00);
@@ -653,8 +663,8 @@ static void lpsram_db_remap_config(uint32_t mask, const uint32_t *src, const uin
 /* MSI PHY initialisation                                                    */
 /* ------------------------------------------------------------------------ */
 
-static const uint32_t db_remap_type7_src[4] = { 0x10326475, 0x10325476, 0, 0 };
-static const uint32_t db_remap_type8_src[4] = { 0x67452301, 0x67452301, 0, 0 };
+static const uint32_t db_remap_type7_src[4] = { 0x75643210, 0x76543210, 0, 0 };
+static const uint32_t db_remap_type8_src[4] = { 0x01234567, 0x01234567, 0, 0 };
 static const uint32_t db_remap_dst[4] = { 8, 8, 8, 8 };
 
 static uint32_t msi_phy_initial_cfg(lpsram_para_t *para)
@@ -786,8 +796,8 @@ static void lpsram_controller_initial_finish(lpsram_para_t *para)
 	uint32_t val;
 
 	writel(readl(LPSRAM_MCTL_212c) & ~8u, LPSRAM_MCTL_212c);
-	val = ((tpr2 >> 8) & 0x7f) ? (tpr2 & 0x2f00) : 0xc00;
-	writel((readl(LPSRAM_MCTL_2154) & 0xff000000) | val | 0x880005, LPSRAM_MCTL_2154);
+	val = ((tpr2 >> 8) & 0x3f) ? (tpr2 & 0x2f00) : 0xc00;
+	writel((readl(LPSRAM_MCTL_2154) & 0xff000000) | val | 0xee0005, LPSRAM_MCTL_2154);
 }
 
 /* .L214 of the original: final 0x02052200 update before the epilogue. */
@@ -901,7 +911,7 @@ static void lpsram_controller_initial_cfg(lpsram_para_t *para)
 	} else if (type >= 5 && type <= 8) {
 		writel((readl(0x0205308c) & 0xffff0000) | 0x00c000ff, 0x0205308c);
 		writel(readl(LPSRAM_MCTL_2000) | 7, LPSRAM_MCTL_2000);
-		writel((readl(LPSRAM_MCTL_2004) & ~0x300u) | (1u << 12), LPSRAM_MCTL_2004);
+		writel((readl(LPSRAM_MCTL_2004) & ~0x300u) | 0x200, LPSRAM_MCTL_2004);
 		writel((readl(LPSRAM_MCTL_200c) & 0x3ffffff) | 0x88000000, LPSRAM_MCTL_200c);
 		writel(readl(LPSRAM_MCTL_200c) & ~(1u << 16), LPSRAM_MCTL_200c);
 		writel(readl(LPSRAM_MCTL_2100) | 2, LPSRAM_MCTL_2100);
@@ -926,7 +936,7 @@ static void lpsram_controller_initial_cfg(lpsram_para_t *para)
 			writel((readl(LPSRAM_MCTL_2204) & 0xffffff) | 0x13000000, LPSRAM_MCTL_2204);
 			writel((readl(0x02052214) & 0xffff8080) | 0x52c, 0x02052214);
 			lpsram_mr_write(
-				para, 1, mr_or_default(para->dram_mr1, 193), mr_hi_or_default(para->dram_mr1, 175));
+				para, 1, mr_or_default(para->dram_mr1, 193), mr_hi_or_default(para->dram_mr1, 255));
 			lpsram_mr_write(para, 0, mr_or_default(para->dram_mr0, 95),
 				mr_hi_or_default(para->dram_mr0, type == 8 ? 134 : 142));
 			{
