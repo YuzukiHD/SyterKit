@@ -30,9 +30,30 @@ static const sunxi_serial_t console = {
 	.dlen = UART_DLEN_8,
 };
 
-/* Match the board's PSRAM profile: 252 MHz, with the remaining fields auto-filled. */
+/*
+ * Match the board's PSRAM profile: the vendor "dram_para" table of the 32 MiB
+ * W958 part, word for word (see lpsram_para_t in the driver). The clock is
+ * 192 MHz: the parts on these boards are not stable at the 252 MHz of the
+ * vendor table (instruction fetch from PSRAM fails on some boards, and the
+ * upper 16 MiB shows intermittent bit errors). The host can set para[0] to
+ * 252 for a single run.
+ */
 static sunxi_psram_t psram = {
-	.parameters = { 252U },
+	.parameters = {
+		[0] = 192U,		/* dram_clk (MHz) */
+		[1] = 8U,		/* dram_type: W958 */
+		[2] = 0x007bfffbU,	/* dram_zq */
+		[3] = 0x0U,		/* dram_odt_en */
+		[4] = 0x00000020U,	/* dram_para1: 32 MiB */
+		[5] = 0x0U,		/* dram_para2 */
+		[6] = 0x0U,		/* dram_mr0 */
+		[7] = 0x0U,		/* dram_mr1 */
+		[8] = 0x0U,		/* dram_mr2 */
+		[9] = 0x0U,		/* dram_mr3 */
+		/* [10]..[20]: dram_tpr0..dram_tpr10, all 0 */
+		[21] = 0x00ff44ffU,	/* dram_tpr11: RDQ window */
+		/* [22], [23]: dram_tpr12, dram_tpr13, 0 */
+	},
 	.parameter_count = 32,
 	.memory_base = SUNXI_PSRAM_BASE,
 	.memory_size = 0x02000000U, /* the largest part; the driver sets the measured size */

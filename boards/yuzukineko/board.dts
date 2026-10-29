@@ -37,7 +37,14 @@
 
 	psram0: psram-controller {
 		compatible = "allwinner,sunxi-psram";
-		allwinner,psram-parameters = <312>;
+		/*
+		 * The vendor dram_para table of the 32 MiB W958: clk type zq odt
+		 * para1 para2 mr0..mr3 tpr0..tpr13. The parts are not stable at
+		 * the 252 MHz of the vendor table; 192 MHz is the validated clock.
+		 */
+		allwinner,psram-parameters = <192 8 0x7bfffb 0 0x20 0
+					      0 0 0 0
+					      0 0 0 0 0 0 0 0 0 0 0 0x00ff44ff 0 0>;
 		status = "okay";
 	};
 
