@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include "../avaota-f2/board.dts"
+
+/ {
+	model = "Yuzuki CardSight";
+	compatible = "yuzuki,cardsight", "allwinner,sun252iw1";
+
+	aliases {
+		/delete-property/ display0;
+		/delete-property/ display1;
+		/delete-property/ display2;
+		/delete-property/ dram0;
+		/delete-property/ i2c2;
+		/delete-property/ mmc0;
+		/delete-property/ spif0;
+		/delete-property/ spif-nor0;
+	};
+
+	/* External memory is PSRAM; no DRAM layout or DMA carveout is assumed. */
+	/delete-node/ dram-controller;
+	/delete-node/ reserved-memory;
+
+	/* PF0..PF5 are wired to SD; its DMA area needs external memory. */
+	soc {
+		/delete-node/ mmc@4020000;
+	};
+};
+
+/* UART0 TX/RX on PH13/PH14, function 6, 115200 8N1. */
+&uart0_pins {
+	allwinner,pins = <SUNXI_GPIO_PORT_H 13 6>, <SUNXI_GPIO_PORT_H 14 6>;
+};
+
+&i2c2 {
+	status = "disabled";
+};
+
+&spif0 {
+	status = "disabled";
+};
+
+&de0 {
+	status = "disabled";
+};
+
+&tcon_top0 {
+	status = "disabled";
+};
+
+&tcon_lcd0 {
+	status = "disabled";
+};
+
+&rgb0 {
+	status = "disabled";
+};
+
+&rgb_serial0 {
+	status = "disabled";
+};
+
+&i8080_0 {
+	status = "disabled";
+};
+
+&panel_rgb {
+	status = "disabled";
+};
+
+&panel_srgb {
+	status = "disabled";
+};
+
+&panel_i8080 {
+	status = "disabled";
+};
+
+&backlight_i8080 {
+	status = "disabled";
+};
+
+&display0 {
+	status = "disabled";
+};
+
+&display_srgb {
+	status = "disabled";
+};
+
+&display_i8080 {
+	status = "disabled";
+};
