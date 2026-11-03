@@ -4,9 +4,23 @@
 #include <common.h>
 #include <io.h>
 #include <log.h>
+#include <timer.h>
+#include <drivers/clk/clk.h>
+#include <drivers/clk/sun252iw1/reg.h>
 #include <drivers/sid/sid.h>
 #include <dt-compatible/sid-dt.h>
 #include <dt-bindings/soc/sun252iw1.h>
+
+#ifdef CONFIG_ARCH_CPU_C907
+void sunxi_clk_preinit(void)
+{
+	/* Run from HOSC while sunxi_clk_init() reprograms the CPU PLL. */
+	clrsetbits_le32(SUNXI_CCU_BASE + CPU_CLK_REG,
+		CPU_CLK_REG_CPU_CLK_SEL_CLEAR_MASK | CPU_CLK_REG_PLL_CPU_OUT_EXT_DIVP_CLEAR_MASK,
+		CPU_CLK_REG_CPU_CLK_SEL_HOSC << CPU_CLK_REG_CPU_CLK_SEL_OFFSET);
+	udelay(2);
+}
+#endif
 
 void show_chip(void)
 {

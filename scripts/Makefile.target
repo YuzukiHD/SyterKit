@@ -6,6 +6,10 @@ board := $(call unquote,$(CONFIG_SYS_BOARD))
 soc := $(call unquote,$(CONFIG_SYS_SOC))
 
 ifeq ($(CONFIG_EFEX),y)
+ifneq ($(board),)
+include $(srctree)/boards/$(board)/Makefile
+soc := $(board-soc)
+endif
 target_name := soc/$(soc)
 platform_dir := soc/$(soc)
 else
@@ -54,6 +58,9 @@ build_inputs := $(srctree)/Makefile \
 	$(srctree)/arch/$(arch_dir)/Makefile
 ifneq ($(strip $(board)$(soc)),)
 build_inputs += $(srctree)/$(platform_dir)/Makefile
+endif
+ifneq ($(board),)
+build_inputs += $(srctree)/boards/$(board)/Makefile
 endif
 
 ifneq ($(filter default undefined,$(origin CC)),)

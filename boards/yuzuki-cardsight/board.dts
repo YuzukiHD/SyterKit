@@ -1,92 +1,102 @@
-// SPDX-License-Identifier: GPL-2.0+
-#include "../avaota-f2/board.dts"
+// SPDX-License-Identifier: MIT
+/dts-v1/;
+
+#include <dt-bindings/gpio/sunxi-gpio.h>
+#include <dt-bindings/soc/sun252iw1.h>
 
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
 	model = "Yuzuki CardSight";
 	compatible = "yuzuki,cardsight", "allwinner,sun252iw1";
 
 	aliases {
-		/delete-property/ display0;
-		/delete-property/ display1;
-		/delete-property/ display2;
-		/delete-property/ dram0;
-		/delete-property/ i2c2;
-		/delete-property/ mmc0;
-		/delete-property/ spif0;
-		/delete-property/ spif-nor0;
+		sid0 = &sid0;
+		intc0 = &clic0;
+		psram0 = &psram0;
 	};
 
-	/* External memory is PSRAM; no DRAM layout or DMA carveout is assumed. */
-	/delete-node/ dram-controller;
-	/delete-node/ reserved-memory;
+	chosen {
+		stdout-path = &uart0;
+	};
 
-	/* PF0..PF5 are wired to SD; its DMA area needs external memory. */
+	pio: pinctrl@2000000 {
+		compatible = "allwinner,sunxi-pinctrl";
+		reg = <SUNXI_GPIO_BASE 0x1000>;
+		allwinner,bank-base = <SUNXI_GPIO_PORT_A>;
+		allwinner,bank-count = <11>;
+		gpio-controller;
+		#gpio-cells = <3>;
+
+		uart0_pins: uart0-pins {
+			/* TX, RX. */
+			allwinner,pins = <SUNXI_GPIO_PORT_H 13 6>, <SUNXI_GPIO_PORT_H 14 6>;
+		};
+
+		psram_pins: psram-pins {
+			/* CS, CLK, IO0, IO1, IO2, IO3. */
+			allwinner,pins = <SUNXI_GPIO_PORT_A 6 7>, <SUNXI_GPIO_PORT_A 7 7>,
+					 <SUNXI_GPIO_PORT_A 8 7>, <SUNXI_GPIO_PORT_A 9 7>,
+					 <SUNXI_GPIO_PORT_A 10 7>, <SUNXI_GPIO_PORT_A 11 7>;
+		};
+
+		mmc0_pins: mmc0-pins {
+			/* CLK, CMD, D0, D1, D2, D3. */
+			allwinner,pins = <SUNXI_GPIO_PORT_F 2 2>, <SUNXI_GPIO_PORT_F 3 2>,
+					 <SUNXI_GPIO_PORT_F 1 2>, <SUNXI_GPIO_PORT_F 0 2>,
+					 <SUNXI_GPIO_PORT_F 5 2>, <SUNXI_GPIO_PORT_F 4 2>;
+		};
+	};
+
 	soc {
-		/delete-node/ mmc@4020000;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		sid0: efuse@7091000 {
+			compatible = "allwinner,sunxi-sid";
+			reg = <SUNXI_SID_BASE 0x400>;
+			status = "okay";
+		};
+
+		clic0: interrupt-controller@30800000 {
+			compatible = "thead,c900-clic";
+			reg = <SUNXI_RISCV_CLIC_BASE 0x2000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			riscv,num-sources = <208>;
+			status = "okay";
+		};
+
+		uart0: serial@2500000 {
+			compatible = "allwinner,sunxi-uart";
+			reg = <SUNXI_UART0_BASE 0x400>;
+			current-speed = <115200>;
+			data-bits = <8>;
+			stop-bits = <1>;
+			parity = "none";
+			clock-frequency = <24000000>;
+			allwinner,uart-id = <0>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x90c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x90c) 16>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+			status = "okay";
+		};
+
+		psram0: psram@3043000 {
+			compatible = "allwinner,sun252iw1-sqpi-psram";
+			reg = <0x03043000 0x1000>, <0x12000000 0x00800000>;
+			/* PERI400 / 4: FEL supplies the peripheral PLL. */
+			allwinner,module-clock = <(SUNXI_CCU_BASE + 0x850) 2 400000000>;
+			allwinner,clock-gate = <(SUNXI_CCU_BASE + 0x85c) 0>;
+			allwinner,reset = <(SUNXI_CCU_BASE + 0x85c) 16>;
+			clock-frequency = <100000000>;
+			allwinner,capacity = <0x00800000>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&psram_pins>;
+			status = "okay";
+		};
 	};
-};
-
-/* UART0 TX/RX on PH13/PH14, function 6, 115200 8N1. */
-&uart0_pins {
-	allwinner,pins = <SUNXI_GPIO_PORT_H 13 6>, <SUNXI_GPIO_PORT_H 14 6>;
-};
-
-&i2c2 {
-	status = "disabled";
-};
-
-&spif0 {
-	status = "disabled";
-};
-
-&de0 {
-	status = "disabled";
-};
-
-&tcon_top0 {
-	status = "disabled";
-};
-
-&tcon_lcd0 {
-	status = "disabled";
-};
-
-&rgb0 {
-	status = "disabled";
-};
-
-&rgb_serial0 {
-	status = "disabled";
-};
-
-&i8080_0 {
-	status = "disabled";
-};
-
-&panel_rgb {
-	status = "disabled";
-};
-
-&panel_srgb {
-	status = "disabled";
-};
-
-&panel_i8080 {
-	status = "disabled";
-};
-
-&backlight_i8080 {
-	status = "disabled";
-};
-
-&display0 {
-	status = "disabled";
-};
-
-&display_srgb {
-	status = "disabled";
-};
-
-&display_i8080 {
-	status = "disabled";
 };

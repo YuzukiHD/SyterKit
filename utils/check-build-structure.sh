@@ -213,7 +213,10 @@ while IFS= read -r defconfig; do
 	[[ "${gpio_count}" -eq 1 ]] || fail "${name} must select exactly one GPIO controller"
 	if [[ "${is_soc_config}" == boards ]]; then
 		[[ "${board_count}" -eq 1 ]] || fail "${name} must select exactly one board"
-		[[ "${value_count}" -eq 5 ]] || fail "${name} must define all board image parameters"
+		expected_value_count=5
+		[[ "${configured_mode}" != EFEX ]] || expected_value_count=3
+		[[ "${value_count}" -eq "${expected_value_count}" ]] || \
+			fail "${name} must define all board image parameters"
 	else
 		[[ "${mode}" == efex ]] || fail "${name} SoC configurations must use eFEX mode"
 	fi

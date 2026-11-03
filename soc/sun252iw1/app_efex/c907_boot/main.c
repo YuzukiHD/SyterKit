@@ -1,37 +1,27 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
-/*
- * Hand the system to the C907 after the DRAM is up.
- *
- * Run from FEL on the E907 once init_dram has returned and the image of the C907 is in DRAM:
- *
- *   xfel write 0x100000 init_dram_efex.bin; xfel exec 0x100000
- *   xfel write 0x40000000 <c907 image>
- *   xfel write 0x100000 c907_boot_efex.bin; xfel exec 0x100000
- *
- * The C907 starts as rv32 at C907_ENTRY (the same register sequence as the arch boot payload of
- * the board), then this core sleeps. Nothing else is touched: clocks and the PMU stay as
- * init_dram left them.
- */
 
-#include <common.h>
+#include <stdint.h>
 #include <io.h>
 #include <log.h>
 #include <uart.h>
-#include <dt-bindings/soc/sun252iw1.h>
 #include <drivers/serial/serial.h>
+#ifdef CONFIG_DRIVER_PSRAM
+#include <dt-compatible/psram-sqpi-dt.h>
+#endif
+#include <dt-bindings/soc/sun252iw1.h>
 
+#define C907_RESET_CONFIG 0x504U
+#define C907_PIC_CLOCK	  0x508U
+#define C907_CONFIG_BUS	  0x50cU
+#define C907_CPU_CLOCK	  0x500U
+#define C907_CONFIG_BASE  0x08008000U
+#define C907_RESET_ENTRY  0x100U
+#define C907_CORE_CONFIG  0x108U
+
+#ifndef CONFIG_DRIVER_PSRAM
 #ifndef C907_ENTRY
 #define C907_ENTRY 0x40000000U
 #endif
-
-#define CCU_BASE        0x02001000U
-#define CCU_RESET_CFG   (CCU_BASE + 0x504)
-#define CCU_PIC_CLK     (CCU_BASE + 0x508)
-#define CCU_CFG_BUS     (CCU_BASE + 0x50c)
-#define CCU_CPU_CLK     (CCU_BASE + 0x500)
-#define RISCV_CFG_BASE  0x08008000U
-#define C907_CORE_CFG   (RISCV_CFG_BASE + 0x108)
-#define C907_RESET_ENT  (RISCV_CFG_BASE + 0x100)
 
 static const sunxi_serial_t console = {
 	.base = SUNXI_UART0_BASE,
@@ -53,54 +43,64 @@ static const sunxi_serial_t console = {
 	.dlen = UART_DLEN_8,
 };
 
-static inline void fence_io(void)
+#endif
+
+static void c907_prepare_clock(void)
 {
-	__asm__ volatile("fence ow, ow" ::: "memory");
+	setbits_le32(SUNXI_CCU_BASE + C907_PIC_CLOCK, 1U << 31);
+	setbits_le32(SUNXI_CCU_BASE + C907_CONFIG_BUS, 0x00010001U);
+	setbits_le32(SUNXI_CCU_BASE + C907_RESET_CONFIG, 0x16aa100cU);
+	asm volatile("fence ow, ow" ::: "memory");
+}
+
+static void c907_set_entry(uintptr_t entry)
+{
+	clrsetbits_le32(C907_CONFIG_BASE + C907_CORE_CONFIG, 0x300U, 0x100U);
+	writel((uint32_t)entry, C907_CONFIG_BASE + C907_RESET_ENTRY);
+	writel(0U, C907_CONFIG_BASE + C907_RESET_ENTRY + 4U);
+	asm volatile("fence ow, ow" ::: "memory");
+}
+
+static void c907_release_reset(void)
+{
+	clrbits_le32(SUNXI_CCU_BASE + C907_CPU_CLOCK, 1U << 17);
+	setbits_le32(SUNXI_CCU_BASE + C907_RESET_CONFIG, 0x16aa0103U);
+	asm volatile("fence ow, ow" ::: "memory");
+	setbits_le32(SUNXI_CCU_BASE + C907_RESET_CONFIG, 0x16aa0010U);
+	asm volatile("fence ow, ow" ::: "memory");
+	setbits_le32(SUNXI_CCU_BASE + C907_RESET_CONFIG, 0x16aa0020U);
+	asm volatile("fence ow, ow" ::: "memory");
+}
+
+static void __attribute__((noreturn)) e907_park(void)
+{
+	asm volatile("csrrc zero, mexstatus, %0" : : "r"(0xcU) : "memory");
+	asm volatile("csrrs zero, mexstatus, %0" : : "r"(0x4U) : "memory");
+	for (;;)
+		asm volatile("wfi");
 }
 
 int main(void)
 {
-	uint32_t v;
+	uintptr_t entry;
 
+#ifdef CONFIG_DRIVER_PSRAM
+	sunxi_psram_t psram;
+
+	if (sunxi_serial_init_stdout() != DRIVER_OK || sunxi_sqpi_psram_dt_read_alias(&psram, "psram0") != DRIVER_OK)
+		return -1;
+	entry = psram.memory_base;
+#else
 	uart_dbg = console;
 	sunxi_serial_init(&uart_dbg);
 	uart_log_console_ready();
-	pr_info("c907_boot: starting the C907 (rv32) at 0x%08x, this core sleeps afterwards\n",
-		C907_ENTRY);
-	/* the C907 takes the UART over: let everything we said leave the FIFO first */
-	while (!(readl(SUNXI_UART0_BASE + 0x14) & BIT(6))) {
-	}
-
-	__asm__ volatile("csrc mstatus, %0" ::"r"(0x8));
-
-	/* clock/reset controls of the C907, peripheral clock for the interrupt controller */
-	writel(0xf8216310U, CCU_BASE + 0x20);
-	v = readl(CCU_PIC_CLK);
-	writel((v & 0x7fffffffU) | 0x80000000U, CCU_PIC_CLK);
-
-	/* configuration bus on, resets released */
-	writel(readl(CCU_CFG_BUS) | 0x00010001U, CCU_CFG_BUS);
-	writel(readl(CCU_RESET_CFG) | 0x16aa100cU, CCU_RESET_CFG);
-	fence_io();
-
-	/* reset mode rv32 and the address fetched after reset */
-	writel((readl(C907_CORE_CFG) & ~0x300U) | 0x100U, C907_CORE_CFG);
-	fence_io();
-	writel(C907_ENTRY, C907_RESET_ENT);
-	fence_io();
-
-	/* CPU clock and gates, then core 0 and core 1 out of reset */
-	writel(readl(CCU_CPU_CLK) & 0xfffdffffU, CCU_CPU_CLK);
-	writel(readl(CCU_RESET_CFG) | 0x16aa0103U, CCU_RESET_CFG);
-	fence_io();
-	writel(readl(CCU_RESET_CFG) | 0x16aa0010U, CCU_RESET_CFG);
-	fence_io();
-	writel(readl(CCU_RESET_CFG) | 0x16aa0020U, CCU_RESET_CFG);
-
-	/* light sleep, the C907 owns the system from here */
-	__asm__ volatile("csrrc zero, mexstatus, %0" ::"r"(0xc));
-	__asm__ volatile("csrrs zero, mexstatus, %0" ::"r"(0x4));
-	for (;;) {
-		__asm__ volatile("wfi");
-	}
+	entry = C907_ENTRY;
+#endif
+	pr_info("Starting C907 RV32 at %08x\n", (uint32_t)entry);
+	sunxi_serial_flush(&uart_dbg);
+	asm volatile("csrc mstatus, %0" : : "r"(0x8U) : "memory");
+	c907_prepare_clock();
+	c907_set_entry(entry);
+	c907_release_reset();
+	e907_park();
 }

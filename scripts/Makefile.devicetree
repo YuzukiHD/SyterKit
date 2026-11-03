@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# eFEX has explicit driver descriptors and does not consume a board DTS.
-ifeq ($(CONFIG_EFEX),y)
+# SoC eFEX applications use explicit descriptors; board applications use DT2C.
+ifeq ($(CONFIG_EFEX)$(board),y)
 .PHONY: dt2c-check
 else
 include $(srctree)/scripts/Makefile.dt2c

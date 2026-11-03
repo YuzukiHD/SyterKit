@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 menu "Board selection"
-	depends on APP_SRAM || APP_DRAM
+	depends on APP_SRAM || APP_DRAM || EFEX
 
 choice
 	prompt "Target board"

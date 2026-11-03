@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 menu "SoC eFEX applications"
-	depends on EFEX
+	depends on EFEX && SYS_BOARD = ""
 
 choice
 	prompt "Target SoC"
