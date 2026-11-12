@@ -63,6 +63,7 @@ extern "C" {
 #define MHINT_PREF_N_16 (0b11 << 13)
 #define MHINT_AEE (1 << 20)
 #define MHINT_PCFIFO_FREEZE (1 << 24)
+#define MHINT_IPLD (1 << 8)
 
 /** @brief Machine Interrupt Pending (mip) Bit Definitions */
 #define MIP_USIP (1 << 0) /**< User Software Interrupt Pending */
